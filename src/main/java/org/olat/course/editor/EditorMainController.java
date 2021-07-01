@@ -70,6 +70,7 @@ import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.CourseLoggingAction;
@@ -88,7 +89,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
@@ -355,12 +355,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	public boolean requestForClose(UserRequest ureq) {
 		boolean immediateClose = true;
 		try {
-			ICourse course = CourseFactory.loadCourse(ores.getResourceableId());
+			ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 			if(hasPublishableChanges(course)) {
 				doQuickPublish(ureq, course);
 				immediateClose = false;
 			}
-		} catch (CorruptedCourseException | NullPointerException e) {
+		} catch (AssertException | NullPointerException e) {
 			logError("Error request on close: " + ores, e);
 		}
 		return immediateClose;

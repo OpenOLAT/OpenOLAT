@@ -58,7 +58,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuickPublishController extends BasicController {
 	
-	private final Link noLink, manualLink, autoLink;
+	private final Link noLink;
+	private final Link autoLink;
+	private final Link manualLink;
 	private final OLATResourceable courseOres;
 	
 	@Autowired
@@ -135,7 +137,7 @@ public class QuickPublishController extends BasicController {
 	}
 	
 	private boolean doAutoPublish() {
-		ICourse course = CourseFactory.loadCourse(courseOres);
+		ICourse course = CourseFactory.getCourseEditSession(courseOres.getResourceableId());
 		CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		PublishProcess publishProcess = PublishProcess.getInstance(course, cetm, getLocale());
 		PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
@@ -178,7 +180,7 @@ public class QuickPublishController extends BasicController {
 				logError("",  e);
 			}
 			
-			if(publishEvents.getPostPublishingEvents().size() > 0) {
+			if(!publishEvents.getPostPublishingEvents().isEmpty()) {
 				for(MultiUserEvent event:publishEvents.getPostPublishingEvents()) {
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, courseOres);
 				}

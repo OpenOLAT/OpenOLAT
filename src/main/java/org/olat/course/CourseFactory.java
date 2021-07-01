@@ -153,14 +153,14 @@ import org.springframework.core.task.TaskRejectedException;
 public class CourseFactory {
 
 	private static CacheWrapper<Long,PersistingCourseImpl> loadedCourses;
-	private static ConcurrentMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<>();
 
 	public static final String COURSE_EDITOR_LOCK = "courseEditLock";
 	/**
 	 * This is the lock that must be acquired at course editing, copy course, export course, configure course. It must
 	 * be very short life: acquire, do something, release.
 	 */
-	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<>();
+	private static final Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<>();
 	private static final Logger log = Tracing.createLoggerFor(CourseFactory.class);
 	private static ReferenceManager referenceManager;
 
@@ -875,23 +875,20 @@ public class CourseFactory {
 		if (resourceableId == null) throw new AssertException("No resourceable ID found.");
 
 		PersistingCourseImpl theCourse = getCourseEditSession(resourceableId);
-		if(theCourse!=null) {
+		if(theCourse != null) {
 			//o_clusterOK by: ld (although the course is locked for editing, we still have to insure that load course is synchronized)
-			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(theCourse, new SyncerExecutor(){
-				@Override
-				public void execute() {
-					final PersistingCourseImpl course = getCourseEditSession(resourceableId);
-					if(course!=null && course.isReadAndWrite()) {
-						course.initHasAssessableNodes();
-						course.saveRunStructure();
-						course.saveEditorTreeModel();
+			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(theCourse, () -> {
+				final PersistingCourseImpl course = getCourseEditSession(resourceableId);
+				if(course != null && course.isReadAndWrite()) {
+					course.initHasAssessableNodes();
+					course.saveRunStructure();
+					course.saveEditorTreeModel();
 
-						//clear modifyCourseEvents at publish, since the updateCourseInCache is called anyway
-						modifyCourseEvents.remove(resourceableId);
-						updateCourseInCache(resourceableId, course);
-					} else if(!course.isReadAndWrite()) {
-						throw new AssertException("Cannot saveCourse because theCourse is readOnly! You have to open an courseEditSession first!");
-					}
+					//clear modifyCourseEvents at publish, since the updateCourseInCache is called anyway
+					modifyCourseEvents.remove(resourceableId);
+					updateCourseInCache(resourceableId, course);
+				} else if(!course.isReadAndWrite()) {
+					throw new AssertException("Cannot saveCourse because theCourse is readOnly! You have to open an courseEditSession first!");
 				}
 			});
 		} else {
@@ -906,16 +903,13 @@ public class CourseFactory {
 	public static void saveCourseEditorTreeModel(Long resourceableId) {
 		if (resourceableId == null) throw new AssertException("No resourceable ID found.");
 
-		PersistingCourseImpl course = getCourseEditSession(resourceableId);
-		if(course!=null && course.isReadAndWrite()) {
+		final PersistingCourseImpl course = getCourseEditSession(resourceableId);
+		if(course.isReadAndWrite()) {
 			synchronized(loadedCourses) { //o_clusterOK by: ld (clusterOK since the course is locked for editing)
-		    course.saveEditorTreeModel();
-
-		    modifyCourseEvents.putIfAbsent(resourceableId, new ModifyCourseEvent(resourceableId));
+				course.saveEditorTreeModel();
+				modifyCourseEvents.putIfAbsent(resourceableId, new ModifyCourseEvent(resourceableId));
 			}
-		} else if(course==null) {
-			throw new AssertException("Cannot saveCourseEditorTreeModel because course is null! Have you opened a courseEditSession yet?");
-		} else if(!course.isReadAndWrite()) {
+		} else {
 			throw new AssertException("Cannot saveCourse because theCourse is readOnly! You have to open an courseEditSession first!");
 		}
 	}
