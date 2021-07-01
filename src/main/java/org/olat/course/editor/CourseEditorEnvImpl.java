@@ -40,7 +40,10 @@ import org._3pq.jgrapht.alg.CycleDetector;
 import org._3pq.jgrapht.edge.EdgeFactories;
 import org._3pq.jgrapht.edge.EdgeFactories.DirectedEdgeFactory;
 import org._3pq.jgrapht.graph.DefaultDirectedGraph;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.logging.AssertException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
@@ -64,6 +67,9 @@ import org.olat.group.area.BGArea;
 
 
 public class CourseEditorEnvImpl implements CourseEditorEnv {
+	
+	private static final Logger log = Tracing.createLoggerFor(CourseEditorEnvImpl.class);
+	
 	/**
 	 * the course editor tree model used in this editing session, exist only once
 	 * per open course editor
@@ -269,50 +275,46 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 			all2gether.addAll(statusDescs.get(a[i]));
 		}
 
-
-		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
-		if(course!= null){
-			if(course.getCourseConfig().getSharedFolderSoftkey().equals("sf.notconfigured")){
-				INode rootNode = course.getEditorTreeModel().getRootNode();
-				List<StatusDescription> descriptions = new ArrayList<>();
-				descriptions = checkFolderNodes(rootNode, course, descriptions);
-				if(!descriptions.isEmpty()){
-					all2gether.addAll(descriptions);
-				}
-			}
+		ICourse course = null;
+		try {
+			course = CourseFactory.getCourseEditSession(cgm.getCourseEntry().getOlatResource().getResourceableId());
+		} catch (AssertException e) {
+			log.error("", e);
+			course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		}
 
-
+		if(course != null && course.getCourseConfig().getSharedFolderSoftkey().equals("sf.notconfigured")){
+			INode rootNode = course.getEditorTreeModel().getRootNode();
+			List<StatusDescription> descriptions = new ArrayList<>();
+			checkFolderNodes(rootNode, course, descriptions);
+			if(!descriptions.isEmpty()){
+				all2gether.addAll(descriptions);
+			}
+		}
 
 		StatusDescription[] retVal = new StatusDescription[all2gether.size()];
 		retVal = all2gether.toArray(retVal);
 		return retVal;
 	}
 
-	private List<StatusDescription> checkFolderNodes(INode rootNode, ICourse course, List<StatusDescription> descriptions){
-		List<StatusDescription> descriptionsI = descriptions;
-		Visitor visitor = new Visitor() {
-			@Override
-			public void visit(INode node) {
-				CourseEditorTreeNode courseNode = (CourseEditorTreeNode) course.getEditorTreeModel().getNodeById(node.getIdent());
-				if(!courseNode.isDeleted() && courseNode.getCourseNode() instanceof BCCourseNode){
-					BCCourseNode bcNode = (BCCourseNode) courseNode.getCourseNode();
-					if (bcNode.isSharedFolder()) {
-						String translPackage = Util.getPackageName(BCCourseNodeEditController.class);
-						StatusDescription status = new StatusDescription(StatusDescription.ERROR, "warning.no.sharedfolder", "warning.no.sharedfolder", null, translPackage);
-						status.setDescriptionForUnit(bcNode.getIdent());
-						// set which pane is affected by error
-						status.setActivateableViewIdentifier(BCCourseNodeEditController.PANE_TAB_FOLDER);
-						descriptionsI.add(status);
-					}
+	private void checkFolderNodes(INode rootNode, ICourse course, final List<StatusDescription> descriptions){
+		Visitor visitor = node -> {
+			CourseEditorTreeNode courseNode = (CourseEditorTreeNode) course.getEditorTreeModel().getNodeById(node.getIdent());
+			if(!courseNode.isDeleted() && courseNode.getCourseNode() instanceof BCCourseNode){
+				BCCourseNode bcNode = (BCCourseNode) courseNode.getCourseNode();
+				if (bcNode.isSharedFolder()) {
+					String translPackage = Util.getPackageName(BCCourseNodeEditController.class);
+					StatusDescription status = new StatusDescription(StatusDescription.ERROR, "warning.no.sharedfolder", "warning.no.sharedfolder", null, translPackage);
+					status.setDescriptionForUnit(bcNode.getIdent());
+					// set which pane is affected by error
+					status.setActivateableViewIdentifier(BCCourseNodeEditController.PANE_TAB_FOLDER);
+					descriptions.add(status);
 				}
 			}
 		};
 
 		TreeVisitor v = new TreeVisitor(visitor, rootNode, false);
 		v.visitAll();
-
-		return descriptionsI;
 	}
 
 	@Override
