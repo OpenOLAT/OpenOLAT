@@ -19,8 +19,13 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -35,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCel
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
@@ -112,70 +118,133 @@ public class CompetencesOverviewController extends FormBasicController implement
 	}
 	
 	private void loadModel() {
+		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(assessedIdentity);
 		List<CompetencesOverviewTableRow> rows = new ArrayList<>();
 		
-		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(assessedIdentity);
+		List<TaxonomyLevel> taxonomyLevels = new ArrayList<>();
+		List<Taxonomy> taxonomies = new ArrayList<>();
 		
-		List<TaxonomyLevel> levels = competences.stream()
+		Map<Taxonomy, CompetencesOverviewTableRow> taxonomyRows = new HashMap<>();						// Root rows
+		Map<Taxonomy, List<CompetencesOverviewTableRow>> taxonomyToLevelRows = new HashMap<>();			// Level to a taxonomy
+		Map<TaxonomyLevel, List<CompetencesOverviewTableRow>> levelToCompetenceRows = new HashMap<>();	// Competences to a level
+		
+		Map<TaxonomyLevel, CompetencesOverviewTableRow> levelRows = new HashMap<>();					// Helper map
+		
+		int linkCounter = 0;
+		
+		// Load taxonomy levels to competences
+		taxonomyLevels = competences.stream()
 				.map(competence -> competence.getTaxonomyLevel())
 				.distinct()
 				.collect(Collectors.toList());
 		
-		List<Taxonomy> taxonomies = levels.stream()
-				.map(level -> level.getTaxonomy())
+		// Load taxonomies
+		taxonomies = competences.stream()
+				.map(competence -> competence.getTaxonomyLevel().getTaxonomy())
 				.distinct()
 				.collect(Collectors.toList());
 		
-		int linkCounter = 0;
+		// Load all parents
+		for (TaxonomyLevel taxonomyLevel : new ArrayList<>(taxonomyLevels)) {
+			loadParents(taxonomyLevel, taxonomyLevels);
+		}
 		
+		// Create rows for taxonomies
 		for (Taxonomy taxonomy : taxonomies) {
-			List<TaxonomyLevel> taxonomyLevels = levels.stream()
-					.filter(level -> level.getTaxonomy()
-					.equals(taxonomy))
-					.collect(Collectors.toList());
-			
 			CompetencesOverviewTableRow taxonomyRow = new CompetencesOverviewTableRow(getTranslator());
 			taxonomyRow.setTaxonomy(taxonomy);
+
 			if (taxonomyRow.hasDescription()) {
 				FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 				detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 				detailsLink.setUserObject(taxonomyRow);
 				taxonomyRow.setDetailsLink(detailsLink);
 			}
-			rows.add(taxonomyRow);
 			
-			for (TaxonomyLevel taxonomyLevel : taxonomyLevels) {
-				List<TaxonomyCompetence> taxonomyLevelCompetences = competences.stream()
-						.filter(competence -> competence.getTaxonomyLevel().equals(taxonomyLevel))
-						.collect(Collectors.toList());
-				
-				CompetencesOverviewTableRow levelRow = new CompetencesOverviewTableRow(getTranslator());
-				levelRow.setTaxonomy(taxonomy);
-				levelRow.setLevel(taxonomyLevel);
-				levelRow.setParent(taxonomyRow);
-				if (levelRow.hasDescription()) {
-					FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
-					detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
-					detailsLink.setUserObject(levelRow);
-					levelRow.setDetailsLink(detailsLink);
-				}
+			taxonomyRows.put(taxonomy, taxonomyRow);
+			taxonomyToLevelRows.put(taxonomy, new ArrayList<>());
+		}
+		
+		// Create rows for all levels
+		for (TaxonomyLevel level : taxonomyLevels) {
+			CompetencesOverviewTableRow levelRow = new CompetencesOverviewTableRow(getTranslator());
+			levelRow.setLevel(level);
+			levelRow.setTaxonomy(level.getTaxonomy());
+			
+			if (levelRow.hasDescription()) {
+				FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+				detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+				detailsLink.setUserObject(levelRow);
+				levelRow.setDetailsLink(detailsLink);
+			}
+			
+			levelRows.put(level, levelRow);
+			taxonomyToLevelRows.get(level.getTaxonomy()).add(levelRow);
+			levelToCompetenceRows.put(level, new ArrayList<>());
+		}
+		
+		// Create rows for all competences
+		for (TaxonomyCompetence competence : competences) {
+			CompetencesOverviewTableRow competenceRow = new CompetencesOverviewTableRow(getTranslator());
+			competenceRow.setCompetence(competence);
+			competenceRow.setLevel(competence.getTaxonomyLevel());
+			competenceRow.setTaxonomy(competence.getTaxonomyLevel().getTaxonomy());
+			
+			if (competence.getLinkLocation().equals(TaxonomyCompetenceLinkLocations.PORTFOLIO)) {
+				competenceRow.setPortfolioLocation(portfolioService.getPageToCompetence(competence));
+			}
+			if (competenceRow.hasDescription()) {
+				FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + competenceRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+				detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
+				detailsLink.setUserObject(competenceRow);
+				competenceRow.setDetailsLink(detailsLink);
+			}
+			
+			levelToCompetenceRows.get(competence.getTaxonomyLevel()).add(competenceRow);
+		}
+		
+		// Set parent row for each row
+		for (CompetencesOverviewTableRow levelRow : levelRows.values()) {
+			if (levelRow.getLevel().getParent() != null) {
+				// Add levelParent as parentRow
+				levelRow.setParent(levelRows.get(levelRow.getLevel().getParent()));
+			} else {
+				// Add taxonomyRow as parentRow
+				levelRow.setParent(taxonomyRows.get(levelRow.getTaxonomy()));
+			}
+			
+			// Set current row as parent for the competences
+			for (CompetencesOverviewTableRow competenceRow : levelToCompetenceRows.get(levelRow.getLevel())) {
+				competenceRow.setParent(levelRow);
+			}
+		}
+		
+		// Sort everything
+		Collator collator = Collator.getInstance(getLocale());
+		
+		taxonomies = taxonomies.stream().sorted(Comparator.comparing(Taxonomy::getDisplayName, collator)).collect(Collectors.toList());
+		
+		for (Taxonomy taxonomy : taxonomies) {
+			Collections.sort(taxonomyToLevelRows.get(taxonomy), new FlexiTreeNodeComparator());
+		}
+		
+		for (TaxonomyLevel level : taxonomyLevels) {
+			List<CompetencesOverviewTableRow> sortedCompetenceRows = levelToCompetenceRows.get(level).stream().sorted(Comparator.comparing(CompetencesOverviewTableRow::getDisplayName, collator)).collect(Collectors.toList());
+			levelToCompetenceRows.replace(level, sortedCompetenceRows);
+		}
+		
+		// Put everything together
+		
+		for (Taxonomy taxonomy : taxonomies) {
+			// Put taxonomy
+			rows.add(taxonomyRows.get(taxonomy));
+			
+			// Put all levels to taxonomy
+			for (CompetencesOverviewTableRow levelRow : taxonomyToLevelRows.get(taxonomy)) {
 				rows.add(levelRow);
 				
-				for (TaxonomyCompetence competence : taxonomyLevelCompetences) {
-					CompetencesOverviewTableRow competenceRow = new CompetencesOverviewTableRow(getTranslator());
-					competenceRow.setTaxonomy(taxonomy);
-					competenceRow.setLevel(taxonomyLevel);
-					competenceRow.setParent(levelRow);
-					competenceRow.setCompetence(competence);
-					if (competence.getLinkLocation().equals(TaxonomyCompetenceLinkLocations.PORTFOLIO)) {
-						competenceRow.setPortfolioLocation(portfolioService.getPageToCompetence(competence));
-					}
-					if (competenceRow.hasDescription()) {
-						FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + competenceRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
-						detailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
-						detailsLink.setUserObject(competenceRow);
-						competenceRow.setDetailsLink(detailsLink);
-					}
+				// Put all competences to level
+				for (CompetencesOverviewTableRow competenceRow : levelToCompetenceRows.get(levelRow.getLevel())) {
 					rows.add(competenceRow);
 				}
 			}
@@ -183,6 +252,16 @@ public class CompetencesOverviewController extends FormBasicController implement
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(false, true, true);
+	}
+	
+	private void loadParents(TaxonomyLevel taxonomyLevel, List<TaxonomyLevel> taxonomyLevels) {
+		if (taxonomyLevel.getParent() != null) {
+			loadParents(taxonomyLevel.getParent(), taxonomyLevels);
+		}
+		
+		if (!taxonomyLevels.contains(taxonomyLevel)) {
+			taxonomyLevels.add(taxonomyLevel);
+		}
 	}
 
 	@Override
