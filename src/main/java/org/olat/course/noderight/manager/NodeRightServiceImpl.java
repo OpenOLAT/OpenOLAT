@@ -136,7 +136,7 @@ public class NodeRightServiceImpl implements NodeRightService {
 			clonedGrant.setEnd(grant.getEnd());
 			clonedGrants.add(clonedGrant);
 		}
-		clone.setGrants(grants);
+		clone.setGrants(clonedGrants);
 		
 		return clone;
 	}
