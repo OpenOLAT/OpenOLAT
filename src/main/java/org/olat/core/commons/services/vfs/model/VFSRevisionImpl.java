@@ -29,6 +29,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -49,6 +50,7 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="vfsrevision")
 @Table(name="o_vfs_revision")
+@NamedQuery(name="loadRevisionReferenceByKey", query="select rev from vfsrevision rev where rev.key=:revisionKey")
 public class VFSRevisionImpl implements Persistable, VFSRevision {
 
 	private static final long serialVersionUID = 2868142296811338251L;

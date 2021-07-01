@@ -96,6 +96,10 @@ public class VFSRevisionDAO {
 		return rev;
 	}
 
+	/**
+	 * @param revisionKey The primary key
+	 * @return A revision with initialized by and metadata loaded
+	 */
 	public VFSRevision loadRevision(Long revisionKey) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rev from vfsrevision rev")
@@ -105,6 +109,20 @@ public class VFSRevisionDAO {
 		.append(" where rev.key=:revisionKey");
 		List<VFSRevision> revisions = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), VFSRevision.class)
+				.setParameter("revisionKey", revisionKey)
+				.getResultList();
+		return revisions == null || revisions.isEmpty() ? null : revisions.get(0);
+	}
+	
+	/**
+	 * @param revisionKey The primary key
+	 * @return A revision without any fetch loading
+	 */
+	public VFSRevision loadRevisionReference(Long revisionKey) {
+		if(revisionKey == null) return null;
+		
+		List<VFSRevision> revisions = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRevisionReferenceByKey", VFSRevision.class)
 				.setParameter("revisionKey", revisionKey)
 				.getResultList();
 		return revisions == null || revisions.isEmpty() ? null : revisions.get(0);
@@ -235,12 +253,15 @@ public class VFSRevisionDAO {
 	}
 
 	public void deleteRevision(VFSRevision revision) {
-		try {
-			VFSRevision reloadedRev = dbInstance.getCurrentEntityManager()
-					.getReference(VFSRevisionImpl.class, ((VFSRevisionImpl)revision).getKey());
-			dbInstance.getCurrentEntityManager().remove(reloadedRev);
-		} catch (EntityNotFoundException e) {
-			log.error("Entity not found", e);
+		if(revision instanceof VFSRevisionImpl) {
+			try {
+				VFSRevision reloadedRev = loadRevisionReference(((VFSRevisionImpl)revision).getKey());
+				if(reloadedRev != null) {
+					dbInstance.getCurrentEntityManager().remove(reloadedRev);
+				}
+			} catch (EntityNotFoundException e) {
+				log.error("Entity not found", e);
+			}
 		}
 	}
 

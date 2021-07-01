@@ -209,11 +209,17 @@ public class EvaluationFormHandler implements PageElementHandler {
 			//find the evaluation form
 			EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 			RepositoryEntry re = assignment.getFormEntry();
-			File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
-			File formFile = new File(repositoryDir, FORM_XML_FILE);
-
-			DataStorage storage = evaluationFormManager.loadStorage(re);
-			return new EvaluationFormExecutionController(ureq, wControl, formFile, storage, null);
+			if(re == null) {
+				Translator translator = Util.createPackageTranslator(PortfolioHomeController.class, ureq.getLocale());
+				String title = translator.translate("error.form.missing.title");
+				String text = translator.translate("error.form.missing.description");	
+				return MessageUIFactory.createErrorMessage(ureq, wControl, title, text);
+			} else {
+				File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
+				File formFile = new File(repositoryDir, FORM_XML_FILE);
+				DataStorage storage = evaluationFormManager.loadStorage(re);
+				return new EvaluationFormExecutionController(ureq, wControl, formFile, storage, null);
+			}
 		}
 		return null;
 	}
