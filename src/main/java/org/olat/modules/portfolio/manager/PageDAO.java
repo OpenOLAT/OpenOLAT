@@ -139,9 +139,8 @@ public class PageDAO {
 		newBody = dbInstance.getCurrentEntityManager().merge(newBody);
 		
 		newPageImpl.setBody(newBody);
+		newPageImpl.setEditable(existingPage.isEditable());
 		newPage = updatePage(newPageImpl);
-		
-		
 
 		boolean deleteBody = oldBody.getUsage() <= 1;
 		if(deleteBody) {
@@ -155,7 +154,6 @@ public class PageDAO {
 			portfolioService.deleteSurvey(oldBody);
 			dbInstance.getCurrentEntityManager().remove(oldBody);
 		}
-		
 		return newPage;
 	}
 	
