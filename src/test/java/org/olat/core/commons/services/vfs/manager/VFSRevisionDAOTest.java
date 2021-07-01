@@ -316,6 +316,11 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 
 		revisionDao.deleteRevision(revision);
 		List<VFSRevision> revisions = revisionDao.getRevisions(metadata);
+		// this update produce an error because the transaction is in error status
+		metadata.setCity("Biel");
+		vfsMetadataDao.updateMetadata(metadata);
+		dbInstance.commit();
+		
 		Assert.assertNotNull(revisions);
 		Assert.assertTrue(revisions.isEmpty());
 	}
