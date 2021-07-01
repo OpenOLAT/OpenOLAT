@@ -22,6 +22,7 @@ package org.olat.core.gui.components.dropdown;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
+import org.olat.core.gui.components.dropdown.Dropdown.CaretPosition;
 import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -74,14 +75,16 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		sb.append("</span>", (dropdownInnerText != null));
 		sb.append("</span>");
 		
-		sb.append(" <i class='");
-		if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
-			sb.append(dropdown.getCarretIconCSS());
-		} else {
-			// Caret to indicate the drop-down nature of the button
-			sb.append("o_icon o_icon_caret");
+		if (dropdown.getCaretPosition().equals(CaretPosition.left)) {
+			sb.append(" <i class='");
+			if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
+				sb.append(dropdown.getCarretIconCSS());
+			} else {
+				// Caret to indicate the drop-down nature of the button
+				sb.append("o_icon o_icon_caret");
+			}
+			sb.append("'> </i> ");
 		}
-		sb.append("'> </i> ");
 		// Button label, normally rendered below the button, but within the clickable link
 		String i18nKey = dropdown.getI18nKey();
 		if(StringHelper.containsNonWhitespace(i18nKey)) {
@@ -92,6 +95,17 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 				label = dropdown.getTranslator().translate(dropdown.getI18nKey());
 			}
 			sb.append("<span class='o_label'>").append(label).append("</span>");
+		}
+		
+		if (dropdown.getCaretPosition().equals(CaretPosition.right)) {
+			sb.append(" <i class='");
+			if(StringHelper.containsNonWhitespace(dropdown.getCarretIconCSS())) {
+				sb.append(dropdown.getCarretIconCSS());
+			} else {
+				// Caret to indicate the drop-down nature of the button
+				sb.append("o_icon o_icon_caret");
+			}
+			sb.append("'> </i> ");
 		}
 		
 		if(dropdown.isButton()) {

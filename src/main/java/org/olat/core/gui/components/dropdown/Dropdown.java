@@ -43,10 +43,12 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	private static final ComponentRenderer RENDERER = new DropdownRenderer();
 	
 	public enum ButtonSize { extraSmall, small, regular, large }
+	public enum CaretPosition { left, right };
 	
 	private String i18nKey;
 	private boolean button = false;
 	private ButtonSize buttonSize = ButtonSize.regular;
+	private CaretPosition caretPosition = CaretPosition.right;
 	private boolean embbeded = false;
 	private boolean expandContentHeight = false;
 	private boolean translated = false;
@@ -94,6 +96,14 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 
 	public void setButtonSize(ButtonSize buttonSize) {
 		this.buttonSize = buttonSize;
+	}
+	
+	public CaretPosition getCaretPosition() {
+		return caretPosition;
+	}
+	
+	public void setCaretPosition(CaretPosition caretPosition) {
+		this.caretPosition = caretPosition;
 	}
 
 	public boolean isEmbbeded() {
