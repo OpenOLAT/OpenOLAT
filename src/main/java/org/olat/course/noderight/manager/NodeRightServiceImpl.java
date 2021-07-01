@@ -40,6 +40,7 @@ import org.olat.course.noderight.model.NodeRightGrantImpl;
 import org.olat.course.noderight.model.NodeRightImpl;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupRef;
+import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.springframework.stereotype.Service;
 
@@ -131,6 +132,9 @@ public class NodeRightServiceImpl implements NodeRightService {
 			clonedGrant.setRole(grant.getRole());
 			if (grant.getIdentityRef() != null) {
 				clonedGrant.setIdentityRef(new IdentityRefImpl(grant.getIdentityRef().getKey()));
+			}
+			if (grant.getBusinessGroupRef() != null) {
+				clonedGrant.setBusinessGroupRef(new BusinessGroupRefImpl(grant.getBusinessGroupRef().getKey()));	
 			}
 			clonedGrant.setStart(grant.getStart());
 			clonedGrant.setEnd(grant.getEnd());
