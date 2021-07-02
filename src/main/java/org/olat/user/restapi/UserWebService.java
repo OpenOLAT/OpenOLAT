@@ -339,9 +339,10 @@ public class UserWebService {
 			return Response.ok(errorVos).status(Status.NOT_ACCEPTABLE).build();
 		}
 			
-		// Check if login is still available
-		Identity identity = securityManager.findIdentityByLogin(user.getLogin());
-		if (identity != null) {
+		// Check if login and nickname are still available (DB constraints on both)
+		Identity identityLogin = securityManager.findIdentityByLogin(user.getLogin());
+		Identity identityNickname = securityManager.findIdentityByNickName(user.getLogin());
+		if (identityLogin != null || identityNickname != null) {
 			Locale locale = getLocale(request);
 			Translator translator = Util.createPackageTranslator(UserShortDescription.class, locale);
 			String translation = translator.translate("new.error.loginname.choosen");
