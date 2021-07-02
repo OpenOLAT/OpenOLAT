@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.logging.OLATRuntimeException;
@@ -32,7 +33,6 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.wildfly.common.Assert;
 
 /**
  * 

@@ -994,6 +994,58 @@ public class UserMgmtTest extends OlatRestTestCase {
 		conn.shutdown();
 	}
 	
+	/**
+	 * Test if we can create two users with the same login.
+	 */
+	@Test
+	public void testCreateUser_same_login() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		UserVO vo = new UserVO();
+		String username = UUID.randomUUID().toString();
+		vo.setLogin(username);
+		vo.setFirstName("John");
+		vo.setLastName("Dupont");
+		vo.setEmail(UUID.randomUUID() + "@frentix.com");
+		vo.putProperty("gender", "male");//male or female
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		method.addHeader("Accept-Language", "en");
+		
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		UserVO savedVo = conn.parse(response, UserVO.class);
+		Identity savedIdent = securityManager.loadIdentityByKey(savedVo.getKey());
+
+		assertNotNull(savedVo);
+		assertNotNull(savedIdent);
+		assertEquals(savedVo.getKey(), savedIdent.getKey());
+		
+		//second 
+		UserVO vo2 = new UserVO();
+		vo2.setLogin(username);
+		vo2.setFirstName("Eva");
+		vo2.setLastName("Smith");
+		vo2.setEmail(UUID.randomUUID() + "@frentix.com");
+		vo2.putProperty("gender", "female");
+
+		URI request2 = UriBuilder.fromUri(getContextURI()).path("users").build();
+		HttpPut method2 = conn.createPut(request2, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method2, vo2);
+		method2.addHeader("Accept-Language", "en");
+		
+		HttpResponse response2 = conn.execute(method2);
+		int  statusCode2 = response2.getStatusLine().getStatusCode();
+		Assert.assertEquals(406, statusCode2);
+		String errorMessage = EntityUtils.toString(response2.getEntity());
+		Assert.assertNotNull(errorMessage);
+
+		conn.shutdown();
+	}
+	
 	@Test
 	public void testCreateUserWithValidationError() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
