@@ -98,7 +98,7 @@ public class BigBlueButtonPage {
 		return this;
 	}
 	
-	public BigBlueButtonPage addMultipleMeetings(String name, String template) {
+	public BigBlueButtonPage addMultipleDailyMeetings(String name, String template) {
 		openCreateDropDown();
 		
 		By addSingleMeetingBy = By.cssSelector("a.o_sel_bbb_daily_meeting_add");
@@ -134,6 +134,11 @@ public class BigBlueButtonPage {
 		return this;
 	}
 	
+	/**
+	 * 
+	 * @param numOfMeetings Num. of meetings + 1
+	 * @return Itself
+	 */
 	public BigBlueButtonPage assertOnDatesList(int numOfMeetings) {
 		By datesBy = By.cssSelector("div.o_sel_bbb_recurring_meeting_dates table tr");
 		OOGraphene.waitElement(datesBy, browser);

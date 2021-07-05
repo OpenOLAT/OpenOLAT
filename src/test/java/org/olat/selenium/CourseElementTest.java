@@ -2267,7 +2267,7 @@ public class CourseElementTest extends Deployments {
 		bigBlueButton
 			.assertOnRuntime()
 			.selectEditMeetingsList()
-			.addMultipleMeetings(meetingName, "Classroom")
+			.addMultipleDailyMeetings(meetingName, "Classroom")
 			.nextToDatesList()
 			.assertOnDatesList(5)
 			.finishRecurringMeetings()
@@ -2329,10 +2329,76 @@ public class CourseElementTest extends Deployments {
 		teams
 			.assertOnRuntime()
 			.selectEditMeetingsList()
-			.addSingleMeeting(meetingName, "Classroom")
+			.addSingleMeeting(meetingName)
 			.assertOnList(meetingName)
 			.selectMeetingsList()
 			.assertOnList(meetingName)
+			.selectMeeting(meetingName)
+			.assertOnMeeting(meetingName);
+		
+		// Teams is not configured, errors
+		OOGraphene.closeErrorBox(browser);
+		
+		teams
+			.assertOnJoinDisabled();
+	}
+	
+	
+
+	/**
+	 * An author creates a course with a course element of type Teams, add a
+	 * serie of weekly meetings in the edit list, then goes in the meetings list
+	 * and goes to the page dedicated to join the meeting.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithTeamsWeeklyMeetings()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Teams-2-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		String nodeTitle = "Teams-2";
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("msteams")
+			.nodeTitle(nodeTitle);
+		
+		//publish the course
+		courseEditor
+			.autoPublish();
+		
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+
+		String meetingName = "Teams meeting";
+		TeamsPage teams = new TeamsPage(browser);
+		teams
+			.assertOnRuntime()
+			.selectEditMeetingsList()
+			.addMultipleWeeklyMeetings(meetingName)
+			.nextToDatesList()
+			.assertOnDatesList(5)
+			.finishRecurringMeetings()
+			.assertOnList(meetingName, 4)
+			.selectMeetingsList()
 			.selectMeeting(meetingName)
 			.assertOnMeeting(meetingName);
 		

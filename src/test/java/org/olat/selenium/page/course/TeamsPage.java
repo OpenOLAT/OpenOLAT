@@ -19,9 +19,13 @@
  */
 package org.olat.selenium.page.course;
 
+import java.util.List;
+
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -69,7 +73,7 @@ public class TeamsPage {
 	 * @param template The name of the template
 	 * @return Itself
 	 */
-	public TeamsPage addSingleMeeting(String name, String template) {
+	public TeamsPage addSingleMeeting(String name) {
 		openCreateDropDown();
 		
 		By addSingleMeetingBy = By.cssSelector("a.o_sel_teams_single_meeting_add");
@@ -86,6 +90,58 @@ public class TeamsPage {
 		OOGraphene.waitBusy(browser);
 		
 		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	public TeamsPage addMultipleWeeklyMeetings(String name) {
+		openCreateDropDown();
+		
+		By addWeeklyMeetingBy = By.cssSelector("a.o_sel_teams_weekly_meeting_add");
+		OOGraphene.waitElement(addWeeklyMeetingBy, browser);
+		browser.findElement(addWeeklyMeetingBy).click();
+		OOGraphene.waitModalWizard(browser);
+		
+		By nameBy = By.cssSelector("fieldset.o_sel_teams_recurring_form div.o_sel_teams_recurring_meeting_name input[type='text']");
+		OOGraphene.waitElement(nameBy, browser);
+		browser.findElement(nameBy).sendKeys(name);
+		
+		By startBy = By.cssSelector("div.o_sel_teams_recurring_meeting_start span.input-group-addon i");
+		browser.findElement(startBy).click();
+		OOGraphene.selectNextMonthInDatePicker(browser);
+		OOGraphene.selectDayInDatePicker(3, browser);
+		
+		By endBy = By.cssSelector("div.o_sel_teams_recurring_meeting_end span.input-group-addon i");
+		browser.findElement(endBy).click();
+		OOGraphene.selectNextMonthInDatePicker(browser);
+		OOGraphene.selectDayInDatePicker(25, browser);
+		
+		return this;
+	}
+	
+	public TeamsPage nextToDatesList() {
+		OOGraphene.nextStep(browser);
+		By datesBy = By.cssSelector("div.o_sel_teams_recurring_meeting_dates");
+		OOGraphene.waitElement(datesBy, browser);
+		return this;
+	}
+	
+	/**
+	 * 
+	 * @param numOfMeetings Num. of meetings + 1 (for the headers)
+	 * @return Itself
+	 */
+	public TeamsPage assertOnDatesList(int numOfMeetings) {
+		By datesBy = By.cssSelector("div.o_sel_teams_recurring_meeting_dates table tr");
+		OOGraphene.waitElement(datesBy, browser);
+		
+		List<WebElement> lines = browser.findElements(datesBy);
+		Assert.assertEquals(numOfMeetings, lines.size());
+		
+		return this;
+	}
+	
+	public TeamsPage finishRecurringMeetings() {
+		OOGraphene.finishStep(browser);
 		return this;
 	}
 	
@@ -120,6 +176,14 @@ public class TeamsPage {
 	public TeamsPage assertOnList(String meetingName) {
 		By meetingBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//td[contains(@class,'o_dnd_label')][text()[contains(.,'" + meetingName + "')]]");
 		OOGraphene.waitElement(meetingBy, browser);
+		return this;
+	}
+	
+	public TeamsPage assertOnList(String meetingName, int numOfMeetings) {
+		By meetingBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//td[contains(@class,'o_dnd_label')][text()[contains(.,'" + meetingName + "')]]");
+		OOGraphene.waitElement(meetingBy, browser);
+		List<WebElement> meetings = browser.findElements(meetingBy);
+		Assert.assertEquals(numOfMeetings, meetings.size());
 		return this;
 	}
 	
