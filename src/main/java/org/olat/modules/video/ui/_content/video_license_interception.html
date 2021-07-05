@@ -1,0 +1,30 @@
+<div class="row">
+	#if($r.isNotNull($licenseIcon))
+	<div class="col-sm-12 col-md-4">
+		<i class="o_icon $licenseIcon" style="font-size: 150px"> </i>
+	</div>
+	#end
+	<div class="col-sm-12 col-md-8">
+		#if($r.isNotNull($licenseType))
+		<h4>$r.translate("license.popup.type")</h4>
+		<p>$licenseType</p>
+		<br>
+		#end
+	
+		#if($r.isNotNull($licenseText))
+		<h4>$r.translate("license.popup.text")</h4>
+		<p>$licenseText</p>
+		<br>
+		#end
+		
+		#if($r.isNotNull($licensor))
+		<h4>$r.translate("license.popup.licensor")</h4>
+		<p>$licensor</p>
+		<br>
+		#end
+	</div>
+	
+	<div class="col-sm-12 col-md-8 col-md-offset-4">
+		$r.render("buttons")
+	</div>
+</div>

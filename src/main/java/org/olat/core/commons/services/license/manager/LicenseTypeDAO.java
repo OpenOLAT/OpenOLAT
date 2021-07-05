@@ -37,10 +37,10 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-class LicenseTypeDAO {
+public class LicenseTypeDAO {
 	
-	static final String NO_LICENSE_NAME = "no.license";
-	static final String FREETEXT_NAME = "freetext";
+	public static final String NO_LICENSE_NAME = "no.license";
+	public static final String FREETEXT_NAME = "freetext";
 	
 	@Autowired
 	private DB dbInstance;

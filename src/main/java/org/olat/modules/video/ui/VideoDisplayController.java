@@ -32,6 +32,9 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityC
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.manager.LicenseTypeDAO;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.PublishingInformations;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -50,6 +53,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
@@ -101,6 +105,9 @@ public class VideoDisplayController extends BasicController {
 	
 	private VideoAssessmentItemController questionCtrl;
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
+	private CloseableModalController cmc;
+	private VideoLicenseInterceptionController licenseController;
+	
 	
 	private final VelocityContainer mainVC;
 	private final VelocityContainer markerVC;
@@ -124,6 +131,8 @@ public class VideoDisplayController extends BasicController {
 	private VideoModule videoModule;
 	@Autowired
 	private VideoManager videoManager;
+	@Autowired
+	private LicenseService licenseService;
 	
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
 		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, true, true, true, videoEntry.getDescription(), false, false));
@@ -526,20 +535,51 @@ public class VideoDisplayController extends BasicController {
 			Link sourceLink = (Link) source;
 			if (sourceLink.getCommand().equals("download_video")) {
 				VideoTranscoding transcoding = (VideoTranscoding) sourceLink.getUserObject();
-				VFSItem videoFile = videoManager.getTranscodingContainer(videoMetadata.getVideoResource()).resolve(transcoding.getResolution() + "video.mp4");
+				License license = licenseService.loadLicense(videoEntry.getOlatResource());
 				
-				if (videoFile != null && videoFile.exists()) {
-					VFSMediaResource resource = new VFSMediaResource((VFSLeaf) videoFile);
-					resource.setDownloadable(true);
-					ureq.getDispatchResult().setResultingMediaResource(resource);
+				if (license != null && !license.getLicenseType().getName().equals(LicenseTypeDAO.NO_LICENSE_NAME)) {
+					interceptLicense(ureq, license, null, transcoding);
+				} else {
+					downloadTranscoding(transcoding, ureq);
 				}
 				
 			} else if (sourceLink.getCommand().equals("download_master_video")) {
-				VFSMediaResource resource = new VFSMediaResource((VFSLeaf) sourceLink.getUserObject());
-				resource.setDownloadable(true);
-				ureq.getDispatchResult().setResultingMediaResource(resource);
+				VFSLeaf masterFile = (VFSLeaf) sourceLink.getUserObject();
+				License license = licenseService.loadLicense(videoEntry.getOlatResource());
+				
+				if (license != null && !license.getLicenseType().getName().equals(LicenseTypeDAO.NO_LICENSE_NAME)) {
+					interceptLicense(ureq, license, masterFile, null);
+				} else {
+					downloadMasterVidoe(masterFile, ureq);
+				}
 			}
 		}
+	}
+	
+	private void interceptLicense(UserRequest ureq, License license, VFSLeaf masterFile, VideoTranscoding transcoding) {
+		licenseController = new VideoLicenseInterceptionController(ureq, getWindowControl(), license, masterFile, transcoding);
+		listenTo(licenseController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), licenseController.getInitialComponent());
+		listenTo(cmc);
+		
+		cmc.activate();
+	}
+	
+	private void downloadTranscoding(VideoTranscoding transcoding, UserRequest ureq) {
+		VFSItem videoFile = videoManager.getTranscodingContainer(videoMetadata.getVideoResource()).resolve(transcoding.getResolution() + "video.mp4");
+		
+		if (videoFile != null && videoFile.exists()) {
+			VFSMediaResource resource = new VFSMediaResource((VFSLeaf) videoFile);
+			resource.setDownloadable(true);
+			ureq.getDispatchResult().setResultingMediaResource(resource);
+		}
+	}
+	
+	private void downloadMasterVidoe(VFSLeaf vfsLeaf, UserRequest ureq) {
+		VFSMediaResource resource = new VFSMediaResource(vfsLeaf);
+		resource.setDownloadable(true);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
 	private void processVideoEvents(UserRequest ureq, String cmd) {
@@ -595,6 +635,30 @@ public class VideoDisplayController extends BasicController {
 			} else if(event == Event.DONE_EVENT) {
 				doContinueAfterQuestion();
 			}
+		} else if (licenseController == source) {
+			VideoLicenseAcceptEvent licenseEvent = (VideoLicenseAcceptEvent) event;
+			
+			if (licenseEvent.getCommand().equals(VideoLicenseAcceptEvent.ACCEPT_LICENSE)) {
+				if (licenseEvent.getMasterFile() != null) {
+					downloadMasterVidoe(licenseEvent.getMasterFile(), ureq);
+				} else if (licenseEvent.getTranscoding() != null) {
+					downloadTranscoding(licenseEvent.getTranscoding(), ureq);
+				}
+			}
+			
+			cmc.deactivate();
+			
+			removeAsListenerAndDispose(licenseController);
+			removeAsListenerAndDispose(cmc);
+			licenseController = null;
+			cmc = null;
+		} else if (cmc == source) {
+			removeAsListenerAndDispose(questionCtrl);
+			removeAsListenerAndDispose(licenseController);
+			removeAsListenerAndDispose(cmc);
+			questionCtrl = null;
+			licenseController = null;
+			cmc = null;
 		}
 		super.event(ureq, source, event);
 	}
