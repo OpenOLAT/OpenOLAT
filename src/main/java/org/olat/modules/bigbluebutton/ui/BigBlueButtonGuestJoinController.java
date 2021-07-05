@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -179,8 +179,8 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		loginButton.setElementCssClass("o_sel_bbb_guest_login");
 		loginButton.setVisible(!authenticated);
 		
-		KeyValues acknowledgeKeyValue = new KeyValues();
-		acknowledgeKeyValue.add(KeyValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
+		SelectionValues acknowledgeKeyValue = new SelectionValues();
+		acknowledgeKeyValue.add(SelectionValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
 		acknowledgeRecordingEl = uifactory.addCheckboxesHorizontal("meeting.acknowledge.recording", null, formLayout,
 				acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
 		acknowledgeRecordingEl.setVisible(!end && BigBlueButtonUIHelper.isRecord(meeting));

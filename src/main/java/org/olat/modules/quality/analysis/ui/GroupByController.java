@@ -61,7 +61,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -347,7 +347,7 @@ public abstract class GroupByController extends FormBasicController implements F
 		
 		// Temporal
 		if (showTemporalConfig()) {
-			KeyValues temporalKV = AnalysisUIFactory.getTemporalGroupByKeyValues(getTranslator());
+			SelectionValues temporalKV = AnalysisUIFactory.getTemporalGroupByKeyValues(getTranslator());
 			temporalGroupEl = uifactory.addDropdownSingleselect("trend.temporal.group", groupingCont,
 					temporalKV.keys(), temporalKV.values());
 			temporalGroupEl.addActionListener(FormEvent.ONCHANGE);
@@ -356,7 +356,7 @@ public abstract class GroupByController extends FormBasicController implements F
 				temporalGroupEl.select(temporalGroupKey, true);
 			}
 			
-			KeyValues diffKV = AnalysisUIFactory.getTrendDifferenceKeyValues(getTranslator());
+			SelectionValues diffKV = AnalysisUIFactory.getTrendDifferenceKeyValues(getTranslator());
 			differenceEl = uifactory.addDropdownSingleselect("trend.difference", groupingCont,
 					diffKV.keys(), diffKV.values());
 			differenceEl.addActionListener(FormEvent.ONCHANGE);
@@ -367,7 +367,7 @@ public abstract class GroupByController extends FormBasicController implements F
 			
 			List<Rubric> rubrics = getSliders().stream().map(SliderWrapper::getRubric).distinct().collect(toList());
 			if (rubrics.size() > 0) {
-				KeyValues rubricKV = AnalysisUIFactory.getRubricKeyValue(getTranslator(), rubrics, identicalRubricsAttributes);
+				SelectionValues rubricKV = AnalysisUIFactory.getRubricKeyValue(getTranslator(), rubrics, identicalRubricsAttributes);
 				rubricEl = uifactory.addDropdownSingleselect("trend.rubrics", groupingCont, rubricKV.keys(), rubricKV.values());
 				rubricEl.addActionListener(FormEvent.ONCHANGE);
 				if (StringHelper.containsNonWhitespace(rubricId)) {
@@ -393,7 +393,7 @@ public abstract class GroupByController extends FormBasicController implements F
 	
 	private void updateUI() {
 		// groupings
-		KeyValues groupByKV1 = initGroupByKeyValues(groupEl1);
+		SelectionValues groupByKV1 = initGroupByKeyValues(groupEl1);
 		String[] groupKeys1 = groupByKV1.keys();
 		if (multiGroupBy.isNoGroupBy() && groupKeys1.length > 0) {
 			GroupBy groupBy1 = GroupBy.valueOf(groupKeys1[0]);
@@ -402,12 +402,12 @@ public abstract class GroupByController extends FormBasicController implements F
 		groupEl1.setKeysAndValues(groupKeys1, groupByKV1.values(), null);
 		selectGroupBy(groupEl1, multiGroupBy.getGroupBy1());
 
-		KeyValues groupByKV2 = initGroupByKeyValues(groupEl2);
+		SelectionValues groupByKV2 = initGroupByKeyValues(groupEl2);
 		groupEl2.setKeysAndValues(groupByKV2.keys(), groupByKV2.values(), null);
 		groupEl2.setVisible(!groupByKV2.isEmpty());
 		selectGroupBy(groupEl2, multiGroupBy.getGroupBy2());
 
-		KeyValues groupByKV3 = initGroupByKeyValues(groupEl3);
+		SelectionValues groupByKV3 = initGroupByKeyValues(groupEl3);
 		groupEl3.setKeysAndValues(groupByKV3.keys(), groupByKV3.values(), null);
 		groupEl3.setVisible(!groupByKV3.isEmpty());
 		selectGroupBy(groupEl3, multiGroupBy.getGroupBy3());
@@ -424,8 +424,8 @@ public abstract class GroupByController extends FormBasicController implements F
 		insufficientEl.setVisible(insufficientConfigured);
 	}
 	
-	private KeyValues initGroupByKeyValues(SingleSelection groupEl) {
-		KeyValues keyValues = AnalysisUIFactory.getGroupByKeyValues(getTranslator(), availableAttributes);
+	private SelectionValues initGroupByKeyValues(SingleSelection groupEl) {
+		SelectionValues keyValues = AnalysisUIFactory.getGroupByKeyValues(getTranslator(), availableAttributes);
 		Collection<GroupBy> elsewhereSelected = getElsewhereSelected(groupEl);
 		for (GroupBy groupBy : elsewhereSelected) {
 			keyValues.remove(getKey(groupBy));

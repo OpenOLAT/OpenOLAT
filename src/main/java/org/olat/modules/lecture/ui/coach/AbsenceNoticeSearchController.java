@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -98,9 +98,9 @@ public class AbsenceNoticeSearchController extends FormBasicController {
 		authorizedEl = uifactory.addCheckboxesHorizontal("authorized", null, formLayout, authorizedKeys, authorizedValues);
 		authorizedEl.selectAll();
 		
-		KeyValues categoriesKeyValues = new KeyValues();
-		categoriesKeyValues.add(KeyValues.entry("", translate("all")));
-		categories.forEach(cat -> categoriesKeyValues.add(KeyValues.entry(cat.getKey().toString(), cat.getTitle())));
+		SelectionValues categoriesKeyValues = new SelectionValues();
+		categoriesKeyValues.add(SelectionValues.entry("", translate("all")));
+		categories.forEach(cat -> categoriesKeyValues.add(SelectionValues.entry(cat.getKey().toString(), cat.getTitle())));
 		absenceCategoryEl = uifactory.addDropdownSingleselect("search.form.category", formLayout,
 				categoriesKeyValues.keys(), categoriesKeyValues.values());
 		absenceCategoryEl.setVisible(!categoriesKeyValues.isEmpty());

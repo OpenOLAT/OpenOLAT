@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -137,9 +137,9 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		
 		addServerButton = uifactory.addFormLink("add.server", formLayout, Link.BUTTON);
 		
-		KeyValues handlersKeyPairs = new KeyValues();
+		SelectionValues handlersKeyPairs = new SelectionValues();
 		for(BigBlueButtonRecordingsHandler recordingsHandler:recordingsHandlers) {
-			handlersKeyPairs.add(KeyValues.entry(recordingsHandler.getId(), recordingsHandler.getName(getLocale())));
+			handlersKeyPairs.add(SelectionValues.entry(recordingsHandler.getId(), recordingsHandler.getName(getLocale())));
 		}
 		recordingsHandlerEl = uifactory.addDropdownSingleselect("bigbluebutton.recording.handler", formLayout,
 				handlersKeyPairs.keys(), handlersKeyPairs.values());

@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -206,7 +206,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 			participantsOpenEl.select("on", true);
 		}
 
-		KeyValues presentersKeyValues = getPresenters(participantsOpenEl.isAtLeastSelected(1));
+		SelectionValues presentersKeyValues = getPresenters(participantsOpenEl.isAtLeastSelected(1));
 		presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 		presentersEl.setMandatory(true);
 		presentersEl.setEnabled(editable);
@@ -221,17 +221,17 @@ public class EditTeamsMeetingController extends FormBasicController {
 		}
 	}
 	
-	private KeyValues getPresenters(boolean attendee) {
-		KeyValues presentersKeyValues = new KeyValues();
+	private SelectionValues getPresenters(boolean attendee) {
+		SelectionValues presentersKeyValues = new SelectionValues();
 		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.ROLE_IS_PRESENTER, "meeting.presenters.role");
 		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.ORGANIZATION, "meeting.presenters.organization");
 		addPresenter(presentersKeyValues, attendee, OnlineMeetingPresenters.EVERYONE, "meeting.presenters.everyone");
 		return presentersKeyValues;
 	}
 	
-	private void addPresenter(KeyValues presentersKeyValues, boolean attendee, OnlineMeetingPresenters presenter, String i18nKey) {
+	private void addPresenter(SelectionValues presentersKeyValues, boolean attendee, OnlineMeetingPresenters presenter, String i18nKey) {
 		if(!attendee || MicrosoftGraphDAO.ALLOWED_PRESENTERS_FOR_ATTENDEE.contains(presenter)) {
-			presentersKeyValues.add(KeyValues.entry(presenter.name(), translate(i18nKey)));	
+			presentersKeyValues.add(SelectionValues.entry(presenter.name(), translate(i18nKey)));	
 		}
 	}
 
@@ -239,7 +239,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		boolean attendeeMode = participantsOpenEl.isAtLeastSelected(1);
 		
 		String presentersKey = presentersEl.getSelectedKey();
-		KeyValues presentersKeyValues = getPresenters(attendeeMode);
+		SelectionValues presentersKeyValues = getPresenters(attendeeMode);
 		presentersEl.setKeysAndValues(presentersKeyValues.keys(), presentersKeyValues.values(), null);
 		if(presentersKeyValues.containsKey(presentersKey)) {
 			presentersEl.select(presentersKey, true);

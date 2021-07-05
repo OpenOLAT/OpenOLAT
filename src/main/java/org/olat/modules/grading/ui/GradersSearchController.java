@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -96,9 +96,9 @@ public class GradersSearchController extends FormBasicController {
 		formLayout.add(rightContainer);
 		rightContainer.setRootForm(mainForm);
 		
-		KeyValues statusKeys = new KeyValues();
+		SelectionValues statusKeys = new SelectionValues();
 		for(GraderStatus status: GraderStatus.values()) {
-			statusKeys.add(KeyValues.entry(status.name(), translate("search.grader.status.".concat(status.name()))));
+			statusKeys.add(SelectionValues.entry(status.name(), translate("search.grader.status.".concat(status.name()))));
 		}
 		statusEl = uifactory.addCheckboxesDropdown("status", "search.grader.status", rightContainer, statusKeys.keys(), statusKeys.values());
 		
@@ -124,10 +124,10 @@ public class GradersSearchController extends FormBasicController {
 		if(referenceEntries != null && !referenceEntries.isEmpty()) {
 			Collections.sort(referenceEntries, new RepositoryEntryComparator(getLocale()));
 			
-			KeyValues entriesKeyValues = new KeyValues();
-			entriesKeyValues.add(KeyValues.entry("all", translate("show.all")));
+			SelectionValues entriesKeyValues = new SelectionValues();
+			entriesKeyValues.add(SelectionValues.entry("all", translate("show.all")));
 			referenceEntries.forEach(entry
-					-> entriesKeyValues.add(KeyValues.entry(entry.getKey().toString(), entry.getDisplayname())));
+					-> entriesKeyValues.add(SelectionValues.entry(entry.getKey().toString(), entry.getDisplayname())));
 			referenceEntriesEl.setKeysAndValues(entriesKeyValues.keys(), entriesKeyValues.values(), null);
 		}
 		
@@ -135,10 +135,10 @@ public class GradersSearchController extends FormBasicController {
 		if(graders != null && !graders.isEmpty()) {
 			Collections.sort(graders, new IdentityComparator());
 			
-			KeyValues gradersKeyValues = new KeyValues();
-			gradersKeyValues.add(KeyValues.entry("all", translate("show.all")));
+			SelectionValues gradersKeyValues = new SelectionValues();
+			gradersKeyValues.add(SelectionValues.entry("all", translate("show.all")));
 			graders.forEach(identity
-					-> gradersKeyValues.add(KeyValues.entry(identity.getKey().toString(), userManager.getUserDisplayName(identity))));
+					-> gradersKeyValues.add(SelectionValues.entry(identity.getKey().toString(), userManager.getUserDisplayName(identity))));
 			gradersEl.setKeysAndValues(gradersKeyValues.keys(), gradersKeyValues.values(), null);
 		}
 	}

@@ -39,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -267,10 +267,10 @@ public class PreferencesFormController extends FormBasicController {
 		// Document editor
 		List<DocEditor> editors = docEditorService.getExternalEditors(getIdentity(), ureq.getUserSession().getRoles());
 		if (editors.size() >= 2) {
-			KeyValues editorKV = new KeyValues();
+			SelectionValues editorKV = new SelectionValues();
 			editors.stream()
 					.sorted((e1, e2) -> e1.getDisplayName(getLocale()).compareTo(e2.getDisplayName(getLocale())))
-					.forEach(e -> editorKV.add(KeyValues.entry(e.getType(), e.getDisplayName(getLocale()))));
+					.forEach(e -> editorKV.add(SelectionValues.entry(e.getType(), e.getDisplayName(getLocale()))));
 			documentEditorEl = uifactory.addDropdownSingleselect("form.document.editor", formLayout, editorKV.keys(), editorKV.values());
 			String preferredEditorType = docEditorService.getPreferredEditorType(getIdentity());
 			if (Arrays.asList(documentEditorEl.getKeys()).contains(preferredEditorType)) {

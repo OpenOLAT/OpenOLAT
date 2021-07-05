@@ -19,7 +19,7 @@
  */
 package org.olat.modules.appointments.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -161,7 +161,7 @@ public class TopicGroupsController extends FormBasicController {
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
 		List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
 		if (!businessGroups.isEmpty()) {
-			KeyValues businessGroupKV = new KeyValues();
+			SelectionValues businessGroupKV = new SelectionValues();
 			keyToBussinesGroups = new HashMap<>();
 			businessGroups.forEach(bg -> {
 				String key = bg.getBaseGroup().getKey().toString();
@@ -182,7 +182,7 @@ public class TopicGroupsController extends FormBasicController {
 		
 		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
 		if (!elements.isEmpty()) {
-			KeyValues curriculumKV = new KeyValues();
+			SelectionValues curriculumKV = new SelectionValues();
 			keyToCurriculumElementGroup = new HashMap<>();
 			elements.forEach(curEle -> {
 				String key = curEle.getGroup().getKey().toString();

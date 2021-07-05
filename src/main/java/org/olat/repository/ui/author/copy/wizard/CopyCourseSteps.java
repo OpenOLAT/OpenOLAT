@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+
 /**
  * Initial date: 22.02.2021<br>
  *
@@ -32,14 +34,12 @@ public class CopyCourseSteps {
 	private boolean advancedMode;
 	
 	// General steps
-	private boolean editTitleOrReference;
 	private boolean editMetadata;
 	private boolean editGroups;
 	private boolean editCoaches;
 	private boolean editOwners;
 	private boolean editCatalog;
 	private boolean editDisclaimer;
-	private boolean editResourceFolder;
 	
 	// Node steps
 	private boolean editBlogSettings;
@@ -54,61 +54,86 @@ public class CopyCourseSteps {
 	private boolean editAssessmentModes;
 	
 	// Lecutre block steps
-	private boolean editLecutreBlocks;
+	private boolean editLectureBlocks;
+	
+	// Load steps from config 
+	public void loadFromWizardConfig(CopyCourseWizardModule wizardModule) {
+		setAdvancedMode(isCustomConfig(wizardModule.getWizardMode()));
+		
+		setEditMetadata(isCustomConfig(wizardModule.getMetaDataCopyType()));
+		setEditGroups(isCustomConfig(wizardModule.getGroupsCopyType()));
+		setEditCoaches(isCustomConfig(wizardModule.getCoachesCopyType()));
+		setEditOwners(isCustomConfig(wizardModule.getOwnersCopyType()));
+		setEditCatalog(isCustomConfig(wizardModule.getCatalogCopyType()));
+		setEditDisclaimer(isCustomConfig(wizardModule.getDisclaimerCopyType()));
+		
+		setEditBlogSettings(isCustomConfig(wizardModule.getBlogCopyType()));
+		setEditFolderSettings(isCustomConfig(wizardModule.getFolderCopyType()));
+		setEditWikiSettings(isCustomConfig(wizardModule.getWikiCopyType()));
+		
+		setEditReminders(isCustomConfig(wizardModule.getReminderCopyType()));
+		setEditAssessmentModes(isCustomConfig(wizardModule.getAssessmentCopyType()));
+		setEditLectureBlocks(isCustomConfig(wizardModule.getLectureBlockCopyType()));
+	}
+	
+	private boolean isCustomConfig(CopyType copyType) {
+		return copyType.equals(CopyType.custom);
+	}
 	
 	public boolean isAdvancedMode() {
 		return advancedMode;
 	}
+	
 	public void setAdvancedMode(boolean advancedMode) {
 		this.advancedMode = advancedMode;
 	}
-	public boolean isEditTitleOrReference() {
-		return editTitleOrReference;
-	}
-	public void setEditTitleOrReference(boolean editTitleOrReference) {
-		this.editTitleOrReference = editTitleOrReference;
-	}
+	
 	public boolean isEditMetadata() {
 		return editMetadata;
 	}
+	
 	public void setEditMetadata(boolean editMetadata) {
 		this.editMetadata = editMetadata;
 	}
+	
 	public boolean isEditGroups() {
 		return editGroups;
 	}
+	
 	public void setEditGroups(boolean editGroups) {
 		this.editGroups = editGroups;
 	}
+	
 	public boolean isEditCoaches() {
 		return editCoaches;
 	}
+	
 	public void setEditCoaches(boolean editCoaches) {
 		this.editCoaches = editCoaches;
 	}
+	
 	public boolean isEditOwners() {
 		return editOwners;
 	}
+	
 	public void setEditOwners(boolean editOwners) {
 		this.editOwners = editOwners;
 	}
+	
 	public boolean isEditCatalog() {
 		return editCatalog;
 	}
+	
 	public void setEditCatalog(boolean editCatalog) {
 		this.editCatalog = editCatalog;
 	}
+	
 	public boolean isEditDisclaimer() {
 		return editDisclaimer;
 	}
+	
 	public void setEditDisclaimer(boolean editDisclaimer) {
 		this.editDisclaimer = editDisclaimer;
-	}
-	public boolean isEditResourceFolder() {
-		return editResourceFolder;
-	}
-	public void setEditResourceFolder(boolean editResourceFolder) {
-		this.editResourceFolder = editResourceFolder;
 	}
 	
 	public boolean isEditBlogSettings() {
@@ -159,12 +184,12 @@ public class CopyCourseSteps {
 		this.editAssessmentModes = editAssessmentModes;
 	}
 	
-	public boolean isEditLecutreBlocks() {
-		return editLecutreBlocks;
+	public boolean isEditLectureBlocks() {
+		return editLectureBlocks;
 	}
 	
-	public void setEditLecutreBlocks(boolean editLecutreBlocks) {
-		this.editLecutreBlocks = editLecutreBlocks;
+	public void setEditLectureBlocks(boolean editLecutreBlocks) {
+		this.editLectureBlocks = editLecutreBlocks;
 	}	
 	
 	public boolean showNodesOverview() {

@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodeaccess.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.modules.assessment.model.AssessmentObligation.mandatory;
 
 import java.util.Arrays;
@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -116,7 +116,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 		}
 		
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
-			KeyValues completionKV = new KeyValues();
+			SelectionValues completionKV = new SelectionValues();
 			completionKV.add(entry(CompletionType.numberOfNodes.name(), translate("settings.completion.type.number.of.nodes")));
 			completionKV.add(entry(CompletionType.duration.name(), translate("settings.completion.type.duration")));
 			completionEvaluationeEl = uifactory.addRadiosVertical("settings.completion.type", formLayout,

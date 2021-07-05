@@ -23,8 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -132,11 +132,11 @@ public class FolderStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormDescription("folders.form.help");
 			
-			KeyValue reference = new KeyValue(CopyType.reference.name(), translate("folder.copy"));
-			KeyValue createNew = new KeyValue(CopyType.createNew.name(), translate("folder.create.new"));
-			KeyValue ignore = new KeyValue(CopyType.ignore.name(), translate("folder.ignore"));
+			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("folder.copy"));
+			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("folder.create.new"));
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("folder.ignore"));
 			
-			KeyValues folderCopyModes = new KeyValues(reference, createNew, ignore);
+			SelectionValues folderCopyModes = new SelectionValues(reference, createNew, ignore);
 			
 			folderCopyModeEl = uifactory.addRadiosVertical("folder.copy.mode", formLayout, folderCopyModes.keys(), folderCopyModes.values());
 		}

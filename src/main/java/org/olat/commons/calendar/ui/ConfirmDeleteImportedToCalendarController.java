@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -82,9 +82,9 @@ public class ConfirmDeleteImportedToCalendarController extends FormBasicControll
 		formLayout.add("confirm", layoutCont);
 		layoutCont.setRootForm(mainForm);
 		
-		KeyValues calendarKeyValues = new KeyValues();
+		SelectionValues calendarKeyValues = new SelectionValues();
 		for(ImportedToCalendar importedCalendar:importedCalendars) {
-			calendarKeyValues.add(KeyValues.entry(importedCalendar.getKey().toString(), importedCalendar.getUrl()));
+			calendarKeyValues.add(SelectionValues.entry(importedCalendar.getKey().toString(), importedCalendar.getUrl()));
 		}
 		calendarEl = uifactory.addCheckboxesVertical("calendars", "cal.confirm.delete.imported.to.calendars", layoutCont,
 				calendarKeyValues.keys(), calendarKeyValues.values(), 1);

@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms.rules.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.util.Arrays;
@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
@@ -83,7 +83,7 @@ public class ChoiceConditionFragement implements ConditionEditorFragment {
 		formLayout.add(ruleCont);
 		ruleCont.getFormItemComponent().contextPut("id", id);
 	
-		KeyValues conditionKV = new KeyValues();
+		SelectionValues conditionKV = new SelectionValues();
 		for (AbstractElement element : form.getElements()) {
 			if (element instanceof SingleChoice) {
 				SingleChoice singleChoice = (SingleChoice)element;
@@ -91,14 +91,14 @@ public class ChoiceConditionFragement implements ConditionEditorFragment {
 						? singleChoice.getName()
 						: PageEditorUIFactory.formatUntitled(translator, singleChoice.getId());
 				value = Formatter.truncate(value, 23);
-				conditionKV.add(KeyValues.entry(singleChoice.getId(), value));
+				conditionKV.add(SelectionValues.entry(singleChoice.getId(), value));
 			} else if (element instanceof MultipleChoice) {
 				MultipleChoice multipleChoice = (MultipleChoice)element;
 				String value = StringHelper.containsNonWhitespace(multipleChoice.getName())
 						? multipleChoice.getName()
 						: PageEditorUIFactory.formatUntitled(translator, multipleChoice.getId());
 				value = Formatter.truncate(value, 23);
-				conditionKV.add(KeyValues.entry(multipleChoice.getId(), value));
+				conditionKV.add(SelectionValues.entry(multipleChoice.getId(), value));
 			}
 		}
 		elementEl = uifactory.addDropdownSingleselect("element." + id, null, ruleCont, conditionKV.keys(),
@@ -145,12 +145,12 @@ public class ChoiceConditionFragement implements ConditionEditorFragment {
 	
 	private void updateChoiceUI() {
 		String elementKey = elementEl.isOneSelected()? elementEl.getSelectedKey(): null;
-		KeyValues choiceKV = getChoiceKV(elementKey);
+		SelectionValues choiceKV = getChoiceKV(elementKey);
 		choiceEl.setKeysAndValues(choiceKV.keys(), choiceKV.values(), null);
 	}
 	
-	private KeyValues getChoiceKV(String elementKey) {
-		KeyValues choiceKV = new KeyValues();
+	private SelectionValues getChoiceKV(String elementKey) {
+		SelectionValues choiceKV = new SelectionValues();
 		if (elementKey != null) {
 			Optional<AbstractElement> element = form.getElements().stream().filter(e -> elementKey.equals(e.getId())).findFirst();
 			if (element.isPresent()) {

@@ -48,7 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -178,13 +178,13 @@ public class ContactForm extends FormBasicController {
 			templateEl.setVisible(templates.size() > 1);
 			templateEl.enableNoneSelection();
 			
-			KeyValues templatesKeyValues = new KeyValues();
+			SelectionValues templatesKeyValues = new SelectionValues();
 			for(int i=0; i<templates.size(); i++) {
 				String templateName = templates.get(i).getTemplateName();
 				if(!StringHelper.containsNonWhitespace(templateName)) {
 					templateName = Integer.toString(i);
 				}
-				templatesKeyValues.add(KeyValues.entry(Integer.toString(i), templateName));
+				templatesKeyValues.add(SelectionValues.entry(Integer.toString(i), templateName));
 			}
 			String[] templateKeys = templatesKeyValues.keys();
 			templateEl.setKeysAndValues(templatesKeyValues.keys(), templatesKeyValues.values(), null);

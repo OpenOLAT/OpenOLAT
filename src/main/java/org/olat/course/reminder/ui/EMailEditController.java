@@ -19,7 +19,7 @@
  */
 package org.olat.course.reminder.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -96,7 +96,7 @@ public class EMailEditController extends StepFormBasicController {
 		
 		uifactory.addStaticTextElement("email.to", translate("email.to.text"), recipientsCont);
 		
-		KeyValues emailCopyKV = new KeyValues();
+		SelectionValues emailCopyKV = new SelectionValues();
 		emailCopyKV.add(entry(EmailCopy.owner.name(), translate("email.copy.owner")));
 		emailCopyKV.add(entry(EmailCopy.assignedCoach.name(), translate("email.copy.assignedCoach")));
 		emailCopyKV.add(entry(EmailCopy.custom.name(), translate("email.copy.custom")));

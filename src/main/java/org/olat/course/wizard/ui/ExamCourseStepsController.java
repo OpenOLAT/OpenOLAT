@@ -25,7 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -69,17 +69,17 @@ public class ExamCourseStepsController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("wizard.title.exam.steps");
 		
-		KeyValues configKV = new KeyValues();
-		configKV.add(KeyValues.entry(KEY_DISCLAIMER, translate("exam.disclaimer")));
-		configKV.add(KeyValues.entry(KEY_RETEST, translate("exam.retest")));
-		configKV.add(KeyValues.entry(KEY_CERTIFICATE, translate("exam.certificate")));
+		SelectionValues configKV = new SelectionValues();
+		configKV.add(SelectionValues.entry(KEY_DISCLAIMER, translate("exam.disclaimer")));
+		configKV.add(SelectionValues.entry(KEY_RETEST, translate("exam.retest")));
+		configKV.add(SelectionValues.entry(KEY_CERTIFICATE, translate("exam.certificate")));
 		configEl = uifactory.addCheckboxesVertical("exam.config", formLayout, configKV.keys(), configKV.values(), 1);
 		configEl.select(KEY_RETEST, parts.isRetest());
 		configEl.select(KEY_CERTIFICATE, parts.isCertificate());
 		
-		KeyValues membersKV = new KeyValues();
-		membersKV.add(KeyValues.entry(KEY_COACHES, translate("exam.coaches")));
-		membersKV.add(KeyValues.entry(KEY_PARTICIPANTS, translate("exam.participants")));
+		SelectionValues membersKV = new SelectionValues();
+		membersKV.add(SelectionValues.entry(KEY_COACHES, translate("exam.coaches")));
+		membersKV.add(SelectionValues.entry(KEY_PARTICIPANTS, translate("exam.participants")));
 		membersEl = uifactory.addCheckboxesVertical("exam.members", formLayout, membersKV.keys(), membersKV.values(), 1);
 		membersEl.select(KEY_RETEST, parts.isRetest());
 		membersEl.select(KEY_CERTIFICATE, parts.isCertificate());

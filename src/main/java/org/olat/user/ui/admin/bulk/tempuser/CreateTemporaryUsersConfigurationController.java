@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -83,13 +83,13 @@ public class CreateTemporaryUsersConfigurationController extends StepFormBasicCo
 		List<Organisation> organisationList = new ArrayList<>(organisations);
 		Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
 		
-		KeyValues values = new KeyValues();
+		SelectionValues values = new SelectionValues();
 		for(Organisation organisation:organisationList) {
-			values.add(KeyValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
+			values.add(SelectionValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
 		}
 		if(values.isEmpty()) {
 			Organisation defaultOrganisation = organisationService.getDefaultOrganisation();
-			values.add(KeyValues.entry(defaultOrganisation.getKey().toString(), defaultOrganisation.getDisplayName()));
+			values.add(SelectionValues.entry(defaultOrganisation.getKey().toString(), defaultOrganisation.getDisplayName()));
 		}
 		organisationEl = uifactory.addDropdownSingleselect("organisation", formLayout, values.keys(), values.values());
 		if(createTemporaryUsers.getOrganisation() != null

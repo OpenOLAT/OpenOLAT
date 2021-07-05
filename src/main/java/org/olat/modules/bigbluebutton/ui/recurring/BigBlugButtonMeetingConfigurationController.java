@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -115,11 +115,11 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		mainPresenterEl = uifactory.addTextElement("meeting.main.presenter", "meeting.main.presenter", 128, mainPresenter, formLayout);
 		
 		Long selectedTemplateKey = meetingsContext.getTemplate() == null ? null : meetingsContext.getTemplate().getKey();
-		KeyValues templatesKeyValues = new KeyValues();
+		SelectionValues templatesKeyValues = new SelectionValues();
 		for(BigBlueButtonMeetingTemplate template:templates) {
 			if((template.isEnabled() && template.availableTo(meetingsContext.getPermissions()))
 					|| template.getKey().equals(selectedTemplateKey)) {
-				templatesKeyValues.add(KeyValues.entry(template.getKey().toString(), template.getName()));
+				templatesKeyValues.add(SelectionValues.entry(template.getKey().toString(), template.getName()));
 			}
 		}
 		String[] templatesKeys = templatesKeyValues.keys();
@@ -153,18 +153,18 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		recordEl.select(yesNoKeys[0], true);
 		
-		KeyValues publishKeyValues = new KeyValues();
-		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
-		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
+		SelectionValues publishKeyValues = new SelectionValues();
+		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
+		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
 		publishingEl = uifactory.addRadiosVertical("meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
 		BigBlueButtonRecordingsPublishingEnum publish = meetingsContext.getRecordingsPublishing() == null
 				? BigBlueButtonRecordingsPublishingEnum.auto :  meetingsContext.getRecordingsPublishing();
 		publishingEl.select(publish.name(), true);
 
-		KeyValues layoutKeyValues = new KeyValues();
-		layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
+		SelectionValues layoutKeyValues = new SelectionValues();
+		layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
 		if(isWebcamLayoutAvailable(BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates))) {
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
+			layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
 		}
 		layoutEl = uifactory.addDropdownSingleselect("meeting.layout", "meeting.layout", formLayout,
 				layoutKeyValues.keys(), layoutKeyValues.values());

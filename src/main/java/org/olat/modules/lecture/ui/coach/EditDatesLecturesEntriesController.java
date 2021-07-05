@@ -41,7 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -203,12 +203,12 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			targetsEl.select(targetKeys[2], true);
 		}
 
-		KeyValues entriesKeyValues = new KeyValues();
+		SelectionValues entriesKeyValues = new SelectionValues();
 		entriesEl = uifactory.addCheckboxesVertical("noticed.entries", formLayout, entriesKeyValues.keys(), entriesKeyValues.values(), 1);
 		entriesEl.setEscapeHtml(false);
 		entriesEl.setMandatory(true);
 
-		KeyValues lecturesKeyValues = new KeyValues();
+		SelectionValues lecturesKeyValues = new SelectionValues();
 		lectureBlocksEl = uifactory.addCheckboxesVertical("noticed.lectures", formLayout, lecturesKeyValues.keys(), lecturesKeyValues.values(), 1);
 		lectureBlocksEl.setEscapeHtml(false);
 		lectureBlocksEl.setMandatory(true);
@@ -256,13 +256,13 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private void loadRepositoryEntries() {
 		loadedRepositoryEntries = new ArrayList<>();
 
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		Map<RepositoryEntry,Long> entries = getRepositoryEntries();
 		for(Map.Entry<RepositoryEntry, Long> entry:entries.entrySet()) {
 			loadedRepositoryEntries.add(entry.getKey());
 			String key = entry.getKey().getKey().toString();
 			String title = getRepositoryEntryLabel(entry);
-			keyValues.add(KeyValues.entry(key, title));
+			keyValues.add(SelectionValues.entry(key, title));
 		}
 		
 		entriesEl.setKeysAndValues(keyValues.keys(), keyValues.values());
@@ -353,11 +353,11 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		loadedLectureBlocks = lectureService.getLectureBlocksWithTeachers(searchParams);
 		Collections.sort(loadedLectureBlocks, new LectureBlockWithTeachersComparator());
 		
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		for(LectureBlockWithTeachers lectureBlock:loadedLectureBlocks) {
 			String key = lectureBlock.getLectureBlock().getKey().toString();
 			String value = getLectureBlockLabel(lectureBlock);
-			keyValues.add(KeyValues.entry(key, value));
+			keyValues.add(SelectionValues.entry(key, value));
 		}
 		lectureBlocksEl.setKeysAndValues(keyValues.keys(), keyValues.values());
 		

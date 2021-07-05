@@ -44,8 +44,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -175,10 +175,10 @@ public class OwnersStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			KeyValue copy = new KeyValue(CopyType.copy.name(), translate("options.copy"));
-			KeyValue replace = new KeyValue(CopyType.replace.name(), translate("owners.options.replace"));
+			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"));
+			SelectionValue replace = new SelectionValue(CopyType.replace.name(), translate("owners.options.replace"));
 			
-			KeyValues copyOwnerModes = new KeyValues(copy, replace);
+			SelectionValues copyOwnerModes = new SelectionValues(copy, replace);
 			
 			ownersCopyModeEl = uifactory.addRadiosHorizontal("owners", formLayout, copyOwnerModes.keys(), copyOwnerModes.values());
 			ownersCopyModeEl.setAllowNoSelection(false);

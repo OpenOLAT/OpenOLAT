@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.editor.NodeEditController;
@@ -58,9 +58,9 @@ public class AppointmentsConfigController extends FormBasicController {
 		setFormTitle("pane.tab.config");
 		setFormContextHelp("Administration and Organisation#_terminvergabe");
 		
-		KeyValues organizersKV = new KeyValues();
-		organizersKV.add(KeyValues.entry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, translate("config.edit.owner")));
-		organizersKV.add(KeyValues.entry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH, translate("config.edit.coach")));
+		SelectionValues organizersKV = new SelectionValues();
+		organizersKV.add(SelectionValues.entry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, translate("config.edit.owner")));
+		organizersKV.add(SelectionValues.entry(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_COACH, translate("config.edit.coach")));
 		orzanizersEl = uifactory.addCheckboxesVertical("config.edit.organizers", formLayout, organizersKV.keys(), organizersKV.values(), 1);
 		orzanizersEl.addActionListener(FormEvent.ONCHANGE);
 		orzanizersEl.select(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER, configs.getBooleanSafe(AppointmentsCourseNode.CONFIG_KEY_ORGANIZER_OWNER));

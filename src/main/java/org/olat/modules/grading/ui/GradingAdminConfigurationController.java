@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.grading.GradingModule;
@@ -70,11 +70,11 @@ public class GradingAdminConfigurationController extends FormBasicController {
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		enableEl.select(onKeys[0], gradingModule.isEnabled());
 
-		KeyValues rolesKeyValues = new KeyValues();
-		rolesKeyValues.add(KeyValues.entry(OrganisationRoles.administrator.name(), translate("grading.real.correction.time.administrator")));
-		rolesKeyValues.add(KeyValues.entry(OrganisationRoles.learnresourcemanager.name(), translate("grading.real.correction.time.learnresourcemanager")));
-		rolesKeyValues.add(KeyValues.entry(OrganisationRoles.author.name(), translate("grading.real.correction.time.author")));
-		rolesKeyValues.add(KeyValues.entry(GradingRoles.grader.name(), translate("grading.real.correction.time.grader")));
+		SelectionValues rolesKeyValues = new SelectionValues();
+		rolesKeyValues.add(SelectionValues.entry(OrganisationRoles.administrator.name(), translate("grading.real.correction.time.administrator")));
+		rolesKeyValues.add(SelectionValues.entry(OrganisationRoles.learnresourcemanager.name(), translate("grading.real.correction.time.learnresourcemanager")));
+		rolesKeyValues.add(SelectionValues.entry(OrganisationRoles.author.name(), translate("grading.real.correction.time.author")));
+		rolesKeyValues.add(SelectionValues.entry(GradingRoles.grader.name(), translate("grading.real.correction.time.grader")));
 		realCorrectionTimevisibilityEl = uifactory.addCheckboxesVertical("grading.real.correction.time.visibility", "grading.real.correction.time.visibility",
 				formLayout, rolesKeyValues.keys(), rolesKeyValues.values(), 1);
 		List<String> roles = gradingModule.getCorrectionRealMinutesVisibility();

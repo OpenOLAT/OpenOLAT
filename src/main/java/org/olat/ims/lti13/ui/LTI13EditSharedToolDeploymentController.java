@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -89,9 +89,9 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		KeyValues platformsValues = new KeyValues();
+		SelectionValues platformsValues = new SelectionValues();
 		for(LTI13Platform platform:platforms) {
-			platformsValues.add(KeyValues.entry(platform.getKey().toString(), label(platform)));
+			platformsValues.add(SelectionValues.entry(platform.getKey().toString(), label(platform)));
 		}
 		
 		platformsEl = uifactory.addDropdownSingleselect("deployment.platform", formLayout,
@@ -116,9 +116,9 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		String loginRedirectUrl = lti13Module.getToolLoginRedirectUri();
 		uifactory.addStaticTextElement("tool.login.redirection", loginRedirectUrl, formLayout);
 		
-		KeyValues kValues = new KeyValues();
-		kValues.add(KeyValues.entry(PublicKeyType.KEY.name(), translate("tool.public.key.type.key")));
-		kValues.add(KeyValues.entry(PublicKeyType.URL.name(), translate("tool.public.key.type.url")));
+		SelectionValues kValues = new SelectionValues();
+		kValues.add(SelectionValues.entry(PublicKeyType.KEY.name(), translate("tool.public.key.type.key")));
+		kValues.add(SelectionValues.entry(PublicKeyType.URL.name(), translate("tool.public.key.type.url")));
 		publicKeyTypeEl = uifactory.addDropdownSingleselect("tool.public.key.type", "tool.public.key.type", formLayout, kValues.keys(), kValues.values());
 		publicKeyTypeEl.addActionListener(FormEvent.ONCHANGE);
 		publicKeyTypeEl.select(kValues.keys()[0], true);

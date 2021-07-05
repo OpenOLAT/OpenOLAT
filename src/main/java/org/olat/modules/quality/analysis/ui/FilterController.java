@@ -20,8 +20,8 @@
 package org.olat.modules.quality.analysis.ui;
 
 import static java.util.stream.Collectors.toList;
-import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.quality.analysis.ui.AnalysisUIFactory.translateRole;
 
@@ -46,7 +46,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
@@ -719,7 +719,7 @@ public class FilterController extends FormBasicController {
 		searchParamsClone.setContextTaxonomyLevelRefs(null);
 		List<TaxonomyLevel> levels = analysisService.loadContextTaxonomyLevels(searchParamsClone, true);
 
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		// Create the key / value pairs and sort them according to the hierarchical
 		// structure.
 		for (TaxonomyLevel level : levels) {
@@ -799,7 +799,7 @@ public class FilterController extends FormBasicController {
 		clonedSearchParams.setSeriesIndexes(null);
 		Integer maxSerieIndex = analysisService.loadMaxSeriesIndex(clonedSearchParams);
 		maxSerieIndex = maxSerieIndex != null? maxSerieIndex: 0;
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		for (int i = 1; i <= maxSerieIndex; i++) {
 			String key = String.valueOf(i);
 			String value = translate("filter.series.index.value", new String[] { key });
@@ -832,7 +832,7 @@ public class FilterController extends FormBasicController {
 		AnalysisSearchParameter clonedSearchParams = searchParams.clone();
 		clonedSearchParams.setContextRoles(null);
 		List<QualityContextRole> roles = analysisService.loadContextRoles(clonedSearchParams);
-		KeyValues kv = new KeyValues();
+		SelectionValues kv = new SelectionValues();
 		for (QualityContextRole role: QualityContextRole.values()) {
 			if (roles.contains(role)) {
 				kv.add(entry(role.name(), translateRole(getTranslator(), role)));

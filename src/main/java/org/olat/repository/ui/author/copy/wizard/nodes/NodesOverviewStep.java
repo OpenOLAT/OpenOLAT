@@ -30,8 +30,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -168,11 +168,11 @@ public class NodesOverviewStep extends BasicStep {
 			formLayout.add(tableItems);
 			
 			
-			KeyValue createNew = new KeyValue(CopyType.createNew.name(), translate("options.empty.resource"));
-			KeyValue reference = new KeyValue(CopyType.reference.name(), translate("options.reference"));
-			KeyValue ignore = new KeyValue(CopyType.ignore.name(), translate("options.configure.later"));
+			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"));
+			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"));
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"));
 			
-			KeyValues copyModes = new KeyValues(reference, createNew, ignore);
+			SelectionValues copyModes = new SelectionValues(reference, createNew, ignore);
 			
 			for (OverviewRow row : context.getCourseNodes()) {
 				if (isConfigurable(row.getCourseNode())) {

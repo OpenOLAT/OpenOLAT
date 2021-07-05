@@ -24,7 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.video.VideoManager;
@@ -58,7 +58,7 @@ public class VideoDownloadSettingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.video.downloadConfig");
 		
-		KeyValues options = new KeyValues(KeyValues.entry(DownloadOptions.allowed.name(), translate("download.options.allowed")));
+		SelectionValues options = new SelectionValues(SelectionValues.entry(DownloadOptions.allowed.name(), translate("download.options.allowed")));
 		allowDownloadEl = uifactory.addCheckboxesVertical("download.options", formLayout, options.keys(), options.values(), 1);
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());

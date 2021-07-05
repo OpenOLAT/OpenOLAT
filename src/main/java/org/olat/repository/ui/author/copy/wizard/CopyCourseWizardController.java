@@ -62,6 +62,7 @@ import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,7 +81,9 @@ public class CopyCourseWizardController extends BasicController {
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
-	CopyService copyService;
+	private CopyService copyService;
+	@Autowired
+	private CopyCourseWizardModule wizardModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -89,8 +92,6 @@ public class CopyCourseWizardController extends BasicController {
 	private LectureService lectureService;
 	@Autowired
 	private ReminderService reminderManager;
-	@Autowired
-	RepositoryService repositoryService;
 
 	public CopyCourseWizardController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course) {
 		super(ureq, wControl);
@@ -105,11 +106,17 @@ public class CopyCourseWizardController extends BasicController {
         CancelCallback cancel = new CancelCallback();
         
         CopyCourseSteps copySteps = new CopyCourseSteps();
+        copySteps.setAdvancedMode(wizardModule.getWizardMode().equals(CopyType.custom));
+        
         copyContext = new CopyCourseContext();
         copyContext.setExecutingIdentity(getIdentity());
         copyContext.setSourceRepositoryEntry(repositoryEntry);
         copyContext.setCourse(course);
 		copyContext.setLearningPath(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType()));
+		
+		// Load copy mode defaults
+		copySteps.loadFromWizardConfig(wizardModule);
+		copyContext.loadFromWizardConfig(wizardModule);
 		
 		TreeNode rootNode = course.getEditorTreeModel().getRootNode();
 		List<OverviewRow> courseNodes = new ArrayList<>();

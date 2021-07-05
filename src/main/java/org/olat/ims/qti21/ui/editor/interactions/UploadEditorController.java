@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -106,10 +106,10 @@ public class UploadEditorController extends FormBasicController {
 			formLayout.add(textReadOnlyEl);
 		}
 		
-		KeyValues numKeyValues = new KeyValues();
+		SelectionValues numKeyValues = new SelectionValues();
 		for(int i=1; i<=10; i++) {
 			String val = Integer.toString(i);
-			numKeyValues.add(KeyValues.entry(val, val));
+			numKeyValues.add(SelectionValues.entry(val, val));
 		}
 		numOfUploadsEl = uifactory.addDropdownSingleselect("numuploads", "form.imd.num.uploads", formLayout,
 				numKeyValues.keys(), numKeyValues.values());

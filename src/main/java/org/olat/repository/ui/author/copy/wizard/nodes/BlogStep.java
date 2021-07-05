@@ -23,8 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -130,11 +130,11 @@ public class BlogStep extends BasicStep {
 			setFormDescription("blogs.form.help");
 			
 			
-			KeyValue reference = new KeyValue(CopyType.reference.name(), translate("blog.reference"));
-			KeyValue createNew = new KeyValue(CopyType.createNew.name(), translate("blog.create.new"));
-			KeyValue ignore = new KeyValue(CopyType.ignore.name(), translate("blog.ignore"));
+			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("blog.reference"));
+			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("blog.create.new"));
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("blog.ignore"));
 			
-			KeyValues blogCopyModes = new KeyValues(reference, createNew, ignore);
+			SelectionValues blogCopyModes = new SelectionValues(reference, createNew, ignore);
 
 			blogCopyModeEl = uifactory.addRadiosVertical("blog.copy.mode", formLayout, blogCopyModes.keys(), blogCopyModes.values());
 			blogCopyModeEl.setAllowNoSelection(false);

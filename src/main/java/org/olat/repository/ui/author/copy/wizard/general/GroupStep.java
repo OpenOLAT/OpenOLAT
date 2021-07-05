@@ -39,8 +39,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -187,11 +187,11 @@ public class GroupStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			KeyValue copy = new KeyValue(CopyType.copy.name(), translate("options.copy"));
-			KeyValue reference = new KeyValue(CopyType.reference.name(), translate("options.reference"));
-			KeyValue ignore = new KeyValue(CopyType.ignore.name(), translate("options.ignore"));
+			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"));
+			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"));
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.ignore"));
 			
-			KeyValues copyGroupModes = new KeyValues(copy, reference, ignore);
+			SelectionValues copyGroupModes = new SelectionValues(copy, reference, ignore);
 			
 			copyGroupsModeEl = uifactory.addRadiosHorizontal("groups", formLayout, copyGroupModes.keys(), copyGroupModes.values());
 			copyGroupsModeEl.setAllowNoSelection(false);

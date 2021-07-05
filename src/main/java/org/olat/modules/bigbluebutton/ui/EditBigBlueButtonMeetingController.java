@@ -44,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -260,11 +260,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		Long selectedTemplateKey = meeting == null || meeting.getTemplate() == null
 				? null : meeting.getTemplate().getKey();
-		KeyValues templatesKeyValues = new KeyValues();
+		SelectionValues templatesKeyValues = new SelectionValues();
 		for(BigBlueButtonMeetingTemplate template:templates) {
 			if((template.isEnabled() && template.availableTo(permissions))
 					|| template.getKey().equals(selectedTemplateKey)) {
-				templatesKeyValues.add(KeyValues.entry(template.getKey().toString(), template.getName()));
+				templatesKeyValues.add(SelectionValues.entry(template.getKey().toString(), template.getName()));
 			}
 		}
 		String[] templatesKeys = templatesKeyValues.keys();
@@ -288,8 +288,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			templateEl.select(templatesKeys[0], true);
 		}
 		
-		KeyValues serverKeyValues = new KeyValues();
-		serverKeyValues.add(KeyValues.entry("auto", translate("meeting.server.auto")));
+		SelectionValues serverKeyValues = new SelectionValues();
+		serverKeyValues.add(SelectionValues.entry("auto", translate("meeting.server.auto")));
 		appendServerList(serverKeyValues);
 		serverEl = uifactory.addDropdownSingleselect("meeting.server", formLayout, serverKeyValues.keys(), serverKeyValues.values());
 		serverEl.setEnabled((editable || editableInternal || running) && administrator);
@@ -310,18 +310,18 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			recordEl.select(yesNoKeys[1], true);
 		}
 		
-		KeyValues publishKeyValues = new KeyValues();
-		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
-		publishKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
+		SelectionValues publishKeyValues = new SelectionValues();
+		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
+		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
 		publishingEl = uifactory.addRadiosVertical("meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
 		BigBlueButtonRecordingsPublishingEnum publish = meeting == null ? BigBlueButtonRecordingsPublishingEnum.auto :  meeting.getRecordingsPublishingEnum();
 		publishingEl.select(publish.name(), true);
 		publishingEl.setEnabled(editable);
 
-		KeyValues layoutKeyValues = new KeyValues();
-		layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
+		SelectionValues layoutKeyValues = new SelectionValues();
+		layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
 		if(isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates))) {
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
+			layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
 		}
 		layoutEl = uifactory.addDropdownSingleselect("meeting.layout", "meeting.layout", formLayout,
 				layoutKeyValues.keys(), layoutKeyValues.values());
@@ -339,10 +339,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		layoutEl.setVisible(layoutEl.getKeys().length > 1);
 		
-		KeyValues joinKeyValues = new KeyValues();
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
+		SelectionValues joinKeyValues = new SelectionValues();
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
 		joinPolicyEl = uifactory.addDropdownSingleselect("template.join.policy", "template.join.policy", formLayout,
 				joinKeyValues.keys(), joinKeyValues.values());
 		JoinPolicyEnum joinPolicy = meeting == null ? JoinPolicyEnum.disabled : meeting.getJoinPolicyEnum();
@@ -421,7 +421,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 	}
 	
-	private void appendServerList(KeyValues serverKeyValues) {
+	private void appendServerList(SelectionValues serverKeyValues) {
 		List<BigBlueButtonServer> servers = bigBlueButtonManager.getServers();
 		for(BigBlueButtonServer server:servers) {
 			if(!server.isEnabled()) continue;
@@ -430,7 +430,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			if(!StringHelper.containsNonWhitespace(name)) {
 				name = BigBlueButtonUIHelper.getServerNameFromUrl(server.getUrl());
 			}
-			serverKeyValues.add(KeyValues.entry(server.getKey().toString(), name));
+			serverKeyValues.add(SelectionValues.entry(server.getKey().toString(), name));
 		}
 	}
 	

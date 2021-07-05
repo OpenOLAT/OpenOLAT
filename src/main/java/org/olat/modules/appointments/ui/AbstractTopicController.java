@@ -19,8 +19,8 @@
  */
 package org.olat.modules.appointments.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.util.ArrayHelper.emptyStrings;
 
 import java.util.Collection;
@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -139,7 +139,7 @@ public abstract class AbstractTopicController extends FormBasicController {
 				false, description, formLayout);
 		
 		// Configs
-		KeyValues typeKV = new KeyValues();
+		SelectionValues typeKV = new SelectionValues();
 		typeKV.add(entry(Topic.Type.enrollment.name(), translate("topic.type.enrollment")));
 		typeKV.add(entry(Topic.Type.finding.name(), translate("topic.type.finding")));
 		typeEl = uifactory.addRadiosHorizontal("topic.type", formLayout, typeKV.keys(), typeKV.values());
@@ -151,7 +151,7 @@ public abstract class AbstractTopicController extends FormBasicController {
 		configurationEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// Organizers
-		KeyValues organizerCandidateKV = new KeyValues();
+		SelectionValues organizerCandidateKV = new SelectionValues();
 		for (Identity organizerCandidate : organizerCandidates) {
 			organizerCandidateKV.add(entry(organizerCandidate.getKey().toString(), userManager.getUserDisplayName(organizerCandidate.getKey())));
 		}
@@ -176,7 +176,7 @@ public abstract class AbstractTopicController extends FormBasicController {
 		
 		boolean enrollment = typeEl.isOneSelected() && Type.valueOf(typeEl.getSelectedKey()) != Type.finding;
 		
-		KeyValues configKV = new KeyValues();
+		SelectionValues configKV = new SelectionValues();
 		configKV.add(entry(KEY_MULTI_PARTICIPATION, translate("topic.multi.participation")));
 		if (enrollment) {
 			configKV.add(entry(KEY_COACH_CONFIRMATION, translate("topic.coach.confirmation")));

@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -79,10 +79,10 @@ public class SessionInformationsEditorController extends FormBasicController imp
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
 		
-		KeyValues obligationKV = new KeyValues();
-		obligationKV.add(KeyValues.entry(Obligation.optional.name(), translate("session.information.obligation.optional")));
-		obligationKV.add(KeyValues.entry(Obligation.mandatory.name(), translate("session.information.obligation.mandatory")));
-		obligationKV.add(KeyValues.entry(Obligation.autofill.name(), translate("session.information.obligation.autofill")));
+		SelectionValues obligationKV = new SelectionValues();
+		obligationKV.add(SelectionValues.entry(Obligation.optional.name(), translate("session.information.obligation.optional")));
+		obligationKV.add(SelectionValues.entry(Obligation.mandatory.name(), translate("session.information.obligation.mandatory")));
+		obligationKV.add(SelectionValues.entry(Obligation.autofill.name(), translate("session.information.obligation.autofill")));
 		obligationEl = uifactory.addDropdownSingleselect("gi_m_" + postfix, "session.information.obligation",
 				settingsCont, obligationKV.keys(), obligationKV.values());
 		String selectedObligation = sessionInformations.getObligation() != null

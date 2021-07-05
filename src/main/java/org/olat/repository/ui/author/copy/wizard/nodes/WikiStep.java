@@ -23,8 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -132,11 +132,11 @@ public class WikiStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormDescription("wikis.form.help");
 			
-			KeyValue reference = new KeyValue(CopyType.reference.name(), translate("wiki.reference"));
-			KeyValue createNew = new KeyValue(CopyType.createNew.name(), translate("wiki.create.new"));
-			KeyValue ignore = new KeyValue(CopyType.ignore.name(), translate("wiki.ignore"));
+			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("wiki.reference"));
+			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("wiki.create.new"));
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("wiki.ignore"));
 			
-			KeyValues wikiCopyModes = new KeyValues(reference, createNew, ignore);
+			SelectionValues wikiCopyModes = new SelectionValues(reference, createNew, ignore);
 			
 			wikiCopyModeEl = uifactory.addRadiosVertical("wiki.copy.mode", formLayout, wikiCopyModes.keys(), wikiCopyModes.values());
 		}

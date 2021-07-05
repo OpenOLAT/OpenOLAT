@@ -77,7 +77,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LectureBlocksStep extends BasicStep {
 
 	public static Step create(UserRequest ureq, BasicStepCollection stepCollection, CopyCourseSteps steps) {
-		if (steps.isEditLecutreBlocks()) {
+		if (steps.isEditLectureBlocks()) {
 			return new LectureBlocksStep(ureq, stepCollection, steps);
 		} else {
 			return AssessmentModesStep.create(ureq, stepCollection, steps);

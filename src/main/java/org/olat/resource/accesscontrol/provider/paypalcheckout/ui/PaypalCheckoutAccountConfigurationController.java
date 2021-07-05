@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -93,9 +93,9 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		enableEl.select(onKeys[0], acModule.isPaypalCheckoutEnabled());
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		
-		KeyValues smartButtons = new KeyValues();
-		smartButtons.add(KeyValues.entry(smartButtonsKeys[0], translate("checkout.smart.buttons.enabled")));
-		smartButtons.add(KeyValues.entry(smartButtonsKeys[1], translate("checkout.standard")));
+		SelectionValues smartButtons = new SelectionValues();
+		smartButtons.add(SelectionValues.entry(smartButtonsKeys[0], translate("checkout.smart.buttons.enabled")));
+		smartButtons.add(SelectionValues.entry(smartButtonsKeys[1], translate("checkout.standard")));
 		smartButtonsEl = uifactory.addRadiosVertical("checkout.smart.buttons", "checkout.smart.buttons", formLayout, smartButtons.keys(), smartButtons.values());
 		if(paypalModule.isSmartButtons()) {
 			smartButtonsEl.select(smartButtonsKeys[0], true);
@@ -109,8 +109,8 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		pendingReviewEl.select(onKeys[0], paypalModule.isAcceptPendingReview());
 		pendingReviewEl.addActionListener(FormEvent.ONCHANGE);
 		
-		KeyValues currencies = new KeyValues();
-		paypalCurrencies.forEach(currency -> currencies.add(KeyValues.entry(currency, currency)));
+		SelectionValues currencies = new SelectionValues();
+		paypalCurrencies.forEach(currency -> currencies.add(SelectionValues.entry(currency, currency)));
 		currencyEl = uifactory.addDropdownSingleselect("currency", "currency", formLayout, currencies.keys(), currencies.values(), null);
 		if(StringHelper.containsNonWhitespace(paypalModule.getPaypalCurrency())) {
 			currencyEl.select(paypalModule.getPaypalCurrency(), true);
@@ -118,7 +118,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 			currencyEl.select("CHF", true);
 		}
 		
-		KeyValues countries = getCountries();
+		SelectionValues countries = getCountries();
 		preferredCountriesEl = uifactory.addCheckboxesDropdown("countries", "paypal.preferred.countries", formLayout,
 				countries.keys(), countries.values());
 		preferredCountriesEl.setHelpTextKey("paypal.preferred.countries.hint", null);
@@ -139,8 +139,8 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
 	}
 	
-	private KeyValues getCountries() {
-		KeyValues keyValues = new KeyValues();
+	private SelectionValues getCountries() {
+		SelectionValues keyValues = new SelectionValues();
 		Collection<Locale> languages = i18nModule.getAllLocales().values();
 		Locale[] locales = Locale.getAvailableLocales();
 		for(Locale language:languages) {
@@ -149,7 +149,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 					String country = locale.getCountry();
 					String displayCountry = locale.getDisplayCountry(getLocale());
 					if(!keyValues.containsKey(country) && StringHelper.containsNonWhitespace(displayCountry)) {
-						keyValues.add(KeyValues.entry(country, displayCountry));
+						keyValues.add(SelectionValues.entry(country, displayCountry));
 					}
 				}
 			}

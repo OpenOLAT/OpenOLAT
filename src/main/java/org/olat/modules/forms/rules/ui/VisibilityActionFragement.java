@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
@@ -76,7 +76,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 		formLayout.add(ruleCont);
 		ruleCont.getFormItemComponent().contextPut("id", id);
 	
-		KeyValues conditionKV = new KeyValues();
+		SelectionValues conditionKV = new SelectionValues();
 		for (AbstractElement element : form.getElements()) {
 			if (element instanceof Container) {
 				Container container = (Container)element;
@@ -84,7 +84,7 @@ public class VisibilityActionFragement implements ActionEditorFragment {
 						? container.getContainerSettings().getName()
 						: PageEditorUIFactory.formatUntitled(translator, container.getId());
 				value = Formatter.truncate(value, 40);
-				conditionKV.add(KeyValues.entry(container.getId(), value));
+				conditionKV.add(SelectionValues.entry(container.getId(), value));
 			}
 		}
 		elementEl = uifactory.addDropdownSingleselect("element." + id, null, ruleCont, conditionKV.keys(),

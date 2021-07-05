@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -130,11 +130,11 @@ public class SingleParticipantCallController extends FormBasicController {
 			}
 
 			AbsenceCategory currentCategory = rollCall.getAbsenceCategory();
-			KeyValues absenceKeyValues = new KeyValues();
-			absenceKeyValues.add(KeyValues.entry("", ""));
+			SelectionValues absenceKeyValues = new SelectionValues();
+			absenceKeyValues.add(SelectionValues.entry("", ""));
 			for(AbsenceCategory absenceCategory: absenceCategories) {
 				if(absenceCategory.isEnabled() || absenceCategory.equals(currentCategory)) {
-					absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+					absenceKeyValues.add(SelectionValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
 				}
 			}
 			absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", "absence.category", formLayout, absenceKeyValues.keys(), absenceKeyValues.values());

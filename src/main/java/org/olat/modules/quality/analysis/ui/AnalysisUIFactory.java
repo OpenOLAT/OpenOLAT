@@ -19,7 +19,7 @@
  */
 package org.olat.modules.quality.analysis.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumModule;
@@ -106,11 +106,11 @@ class AnalysisUIFactory {
 		return GroupBy.valueOf(key);
 	}
 	
-	static KeyValues getGroupByKeyValues(Translator translator, AvailableAttributes availableAttributes) {
+	static SelectionValues getGroupByKeyValues(Translator translator, AvailableAttributes availableAttributes) {
 		OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
 		CurriculumModule curriculumModule = CoreSpringFactory.getImpl(CurriculumModule.class);
 		
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		if (availableAttributes.isTopicIdentity()) {
 			addEntry(translator, keyValues, GroupBy.TOPIC_IDENTITY);
 		}
@@ -150,8 +150,8 @@ class AnalysisUIFactory {
 		return keyValues;
 	}
 
-	static private void addEntry(Translator translator, KeyValues keyValues, GroupBy groupBy) {
-		keyValues.add(KeyValues.entry(getKey(groupBy), translator.translate(groupBy.i18nKey())));
+	static private void addEntry(Translator translator, SelectionValues keyValues, GroupBy groupBy) {
+		keyValues.add(SelectionValues.entry(getKey(groupBy), translator.translate(groupBy.i18nKey())));
 	}
 
 	static String getKey(TemporalGroupBy groupBy) {
@@ -162,8 +162,8 @@ class AnalysisUIFactory {
 		return TemporalGroupBy.valueOf(key);
 	}
 
-	static KeyValues getTemporalGroupByKeyValues(Translator translator) {
-		KeyValues keyValues = new KeyValues();
+	static SelectionValues getTemporalGroupByKeyValues(Translator translator) {
+		SelectionValues keyValues = new SelectionValues();
 		for (TemporalGroupBy groupBy : TemporalGroupBy.values()) {
 			keyValues.add(entry(getKey(groupBy), translator.translate(groupBy.i18nKey())));
 		}
@@ -178,8 +178,8 @@ class AnalysisUIFactory {
 		return TrendDifference.valueOf(key);
 	}
 
-	static KeyValues getTrendDifferenceKeyValues(Translator translator) {
-		KeyValues keyValues = new KeyValues();
+	static SelectionValues getTrendDifferenceKeyValues(Translator translator) {
+		SelectionValues keyValues = new SelectionValues();
 		for (TrendDifference groupBy : TrendDifference.values()) {
 			keyValues.add(entry(getKey(groupBy), translator.translate(groupBy.i18nKey())));
 		}
@@ -198,9 +198,9 @@ class AnalysisUIFactory {
 		return key;
 	}
 
-	static KeyValues getRubricKeyValue(Translator translator, List<Rubric> rubrics,
+	static SelectionValues getRubricKeyValue(Translator translator, List<Rubric> rubrics,
 			RubricsComparison.Attribute... attributes) {
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		boolean identicaRubrics = RubricsComparison.areIdentical(rubrics, attributes);
 		if (identicaRubrics) {
 			keyValues.add(entry(ALL_RUBRICS_KEY, translator.translate("trend.rubric.index.all")));

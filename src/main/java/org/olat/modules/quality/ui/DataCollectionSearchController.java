@@ -19,7 +19,7 @@
  */
 package org.olat.modules.quality.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -96,9 +96,9 @@ public class DataCollectionSearchController extends FormBasicController implemen
 
 		// LEFT part of form
 		List<RepositoryEntry> formEntries = qualityService.getFormEntries(defaultSearchParams);
-		KeyValues formEntriesKV = new KeyValues();
+		SelectionValues formEntriesKV = new SelectionValues();
 		formEntries.forEach(formEntry -> formEntriesKV.add(entry(formEntry.getKey().toString(), formEntry.getDisplayname())));
-		formEntriesKV.sort(KeyValues.VALUE_ASC);
+		formEntriesKV.sort(SelectionValues.VALUE_ASC);
 		fromEntriesEl = uifactory.addCheckboxesDropdown("data.collection.form", "data.collection.form",
 				leftContainer, formEntriesKV.keys(), formEntriesKV.values());
 		fromEntriesEl.setNonSelectedText(translate("search.show.all"));
@@ -106,7 +106,7 @@ public class DataCollectionSearchController extends FormBasicController implemen
 		titleEl = uifactory.addTextElement("data.collection.title", "data.collection.title", 255, "", leftContainer);
 		titleEl.setFocus(true);
 		
-		KeyValues topicTypeKV = new KeyValues();
+		SelectionValues topicTypeKV = new SelectionValues();
 		Arrays.stream(QualityDataCollectionTopicType.values())
 				.forEach(type -> topicTypeKV.add(entry(type.name(), translate(type.getI18nKey()))));
 		topicTypeEl = uifactory.addCheckboxesDropdown("data.collection.topic.type", "data.collection.topic.type",
@@ -119,9 +119,9 @@ public class DataCollectionSearchController extends FormBasicController implemen
 		
 		List<QualityGenerator> generators = qualityService.getGenerators(defaultSearchParams);
 		if (!generators.isEmpty()) {
-			KeyValues generatorsKV = new KeyValues();
+			SelectionValues generatorsKV = new SelectionValues();
 			generators.forEach(generator -> generatorsKV.add(entry(generator.getKey().toString(), generator.getTitle())));
-			generatorsKV.sort(KeyValues.VALUE_ASC);
+			generatorsKV.sort(SelectionValues.VALUE_ASC);
 			generatorsEl = uifactory.addCheckboxesDropdown("data.collection.generator.title",
 					"data.collection.generator.title", leftContainer, generatorsKV.keys(), generatorsKV.values());
 		}
@@ -143,7 +143,7 @@ public class DataCollectionSearchController extends FormBasicController implemen
 		deadlineBeforeEl = uifactory.addDateChooser("data.collection.deadline.before", null, rightContainer);
 		deadlineBeforeEl.setDateChooserTimeEnabled(true);
 		
-		KeyValues statusKV = new KeyValues();
+		SelectionValues statusKV = new SelectionValues();
 		statusKV.add(entry(QualityDataCollectionStatus.PREPARATION.name(), translate("data.collection.status.preparation")));
 		statusKV.add(entry(QualityDataCollectionStatus.READY.name(), translate("data.collection.status.ready")));
 		statusKV.add(entry(QualityDataCollectionStatus.RUNNING.name(), translate("data.collection.status.running")));

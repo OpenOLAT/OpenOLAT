@@ -35,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -296,7 +296,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 	}
 	
 	private void updateElementSelection(RepositoryEntry selectedEntry, String currentSelectedIdent) {
-		final KeyValues values = new KeyValues();
+		final SelectionValues values = new SelectionValues();
 		Visitor visitor = node -> {
 			if(node instanceof IQTESTCourseNode) {
 				IQTESTCourseNode testNode = (IQTESTCourseNode)node;
@@ -305,7 +305,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 					StringBuilder sb = new StringBuilder(32);
 					sb.append(testNode.getShortTitle())
 					  .append(" (").append(testNode.getIdent()).append(")");
-					values.add(KeyValues.entry(testNode.getIdent(), sb.toString()));
+					values.add(SelectionValues.entry(testNode.getIdent(), sb.toString()));
 				}
 			}
 		};

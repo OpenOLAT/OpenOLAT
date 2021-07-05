@@ -19,8 +19,8 @@
  */
 package org.olat.repository.ui.author;
 
-import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -202,20 +202,20 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		types = uifactory.addCheckboxesDropdown("cif.type", "cif.type", rightContainer, typeKeys, typeValues, null, typeCSS);
 		types.setNonSelectedText(translate("table.showall"));
 		
-		KeyValues technicalTypeKV = new KeyValues();
+		SelectionValues technicalTypeKV = new SelectionValues();
 		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
 			String name = identifier.getDisplayName(getLocale());
 			technicalTypeKV.add(entry(identifier.getType(), name));
 		}
-		technicalTypeKV.sort(KeyValues.VALUE_ASC);
+		technicalTypeKV.sort(SelectionValues.VALUE_ASC);
 		technicalTypeEl = uifactory.addCheckboxesDropdown("cif.technical.type", "cif.technical.type",
 				rightContainer, technicalTypeKV.keys(), technicalTypeKV.values());
 		technicalTypeEl.setNonSelectedText(translate("table.showall"));
 		
-		KeyValues educationalTypeKV = new KeyValues();
+		SelectionValues educationalTypeKV = new SelectionValues();
 		repositoryManager.getAllEducationalTypes()
 				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
-		educationalTypeKV.sort(KeyValues.VALUE_ASC);
+		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
 		educationalTypeEl = uifactory.addCheckboxesDropdown("cif.educational.type", "cif.educational.type",
 				rightContainer, educationalTypeKV.keys(), educationalTypeKV.values());
 		educationalTypeEl.setNonSelectedText(translate("table.showall"));
@@ -289,7 +289,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private void initFormTaxonomyLevels(FormLayoutContainer formLayout) {
 		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
 
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		for (TaxonomyLevel level:allTaxonomyLevels) {
 			String key = Long.toString(level.getKey());
 			ArrayList<String> names = new ArrayList<>();

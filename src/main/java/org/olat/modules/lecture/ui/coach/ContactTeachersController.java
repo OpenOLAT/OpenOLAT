@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -113,11 +113,11 @@ public class ContactTeachersController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		for(Identity identity:identities) {
 			String key = identity.getKey().toString();
 			String fullName = userManager.getUserDisplayName(identity);
-			keyValues.add(KeyValues.entry(key, fullName));
+			keyValues.add(SelectionValues.entry(key, fullName));
 		}
 		teachersEl = uifactory.addCheckboxesVertical("contact.teachers", "contact.teachers", formLayout, keyValues.keys(), keyValues.values(), 1);
 		teachersEl.selectAll();

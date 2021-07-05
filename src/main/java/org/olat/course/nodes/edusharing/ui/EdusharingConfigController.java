@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodes.edusharing.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -107,7 +107,7 @@ public class EdusharingConfigController extends FormBasicController {
 		selectLink = uifactory.addFormLink("edit.select", buttonsCont, "btn btn-default o_xsmall");
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		
-		KeyValues versionKV = new KeyValues();
+		SelectionValues versionKV = new SelectionValues();
 		versionKV.add(entry(EdusharingCourseNode.CONFIG_VERSION_VALUE_CURRENT, translate("edit.version.current")));
 		versionKV.add(entry(EdusharingCourseNode.CONFIG_VERSION_VALUE_LATEST, translate("edit.version.latest")));
 		versionEl = uifactory.addRadiosHorizontal("edit.version", formLayout, versionKV.keys(), versionKV.values());

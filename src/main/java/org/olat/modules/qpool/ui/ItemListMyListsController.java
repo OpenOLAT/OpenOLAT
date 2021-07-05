@@ -19,7 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.List;
 import java.util.Set;
@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -70,14 +70,14 @@ public class ItemListMyListsController extends AbstractItemListController {
         myCollections = qpoolService.getCollections(getIdentity());
 		int numOfCollections = myCollections.size();
 
-		KeyValues listKV = new KeyValues();
+		SelectionValues listKV = new SelectionValues();
 		if (numOfCollections == 0) {
 			listKV.add(entry("", ""));
 		} else {
 			for (QuestionItemCollection collection : myCollections) {
 				listKV.add(entry(collection.getKey().toString(), collection.getName()));
 			}
-			listKV.sort(KeyValues.VALUE_ASC);
+			listKV.sort(SelectionValues.VALUE_ASC);
 		}
 
         myListEl = uifactory.addDropdownSingleselect("source.selector", "my.list", formLayout, listKV.keys(), listKV.values(), null);

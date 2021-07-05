@@ -28,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -132,9 +132,9 @@ public class EssayEditorController extends FormBasicController {
 		maxWordsEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		//copy/paste
-		KeyValues keys = new KeyValues();
-		keys.add(KeyValues.entry("yes", translate("yes")));
-		keys.add(KeyValues.entry("no", translate("no")));
+		SelectionValues keys = new SelectionValues();
+		keys.add(SelectionValues.entry("yes", translate("yes")));
+		keys.add(SelectionValues.entry("no", translate("no")));
 		copyPasteEl = uifactory.addRadiosHorizontal("copy.paste", "essay.copy.paste", formLayout, keys.keys(), keys.values());
 		copyPasteEl.setEnabled(!restrictedEdit && !readOnly);
 		if(itemBuilder.isCopyPasteDisabled()) {

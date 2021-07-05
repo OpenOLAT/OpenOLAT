@@ -44,8 +44,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -175,10 +175,10 @@ public class CoachesStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			KeyValue copy = new KeyValue(CopyType.copy.name(), translate("options.copy"));
-			KeyValue replace = new KeyValue(CopyType.ignore.name(), translate("options.ignore"));
+			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"));
+			SelectionValue replace = new SelectionValue(CopyType.ignore.name(), translate("options.ignore"));
 			
-			KeyValues copyCoachesModes = new KeyValues(copy, replace);
+			SelectionValues copyCoachesModes = new SelectionValues(copy, replace);
 			
 			coachesCopyModeEl = uifactory.addRadiosHorizontal("coaches", formLayout, copyCoachesModes.keys(), copyCoachesModes.values());
 			coachesCopyModeEl.setAllowNoSelection(false);

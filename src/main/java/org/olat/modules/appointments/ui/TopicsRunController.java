@@ -46,7 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -390,8 +390,8 @@ public class TopicsRunController extends FormBasicController implements Activate
 		wrapper.setJoinLinkName(joinButton.getName());
 		
 		if (BigBlueButtonUIHelper.isRecord(meeting)) {
-			KeyValues acknowledgeKeyValue = new KeyValues();
-			acknowledgeKeyValue.add(KeyValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
+			SelectionValues acknowledgeKeyValue = new SelectionValues();
+			acknowledgeKeyValue.add(SelectionValues.entry("agree", translate("meeting.acknowledge.recording.agree")));
 			MultipleSelectionElement acknowledgeRecordingEl = uifactory.addCheckboxesHorizontal("ack_" + counter++, null, flc,
 					acknowledgeKeyValue.keys(), acknowledgeKeyValue.values());
 			if (acknowlededRecordings.contains(wrapper.getTopic())) {

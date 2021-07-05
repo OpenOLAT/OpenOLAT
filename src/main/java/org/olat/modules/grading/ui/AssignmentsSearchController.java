@@ -19,8 +19,8 @@
  */
 package org.olat.modules.grading.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -137,15 +137,15 @@ public class AssignmentsSearchController extends FormBasicController {
 			initFormTaxonomy(rightContainer, new TaxonomyRefImpl(Long.valueOf(taxonomyTreeKey)));
 		}
 		
-		KeyValues empty = new KeyValues();
-		empty.add(KeyValues.entry("all", translate("show.all")));
+		SelectionValues empty = new SelectionValues();
+		empty.add(SelectionValues.entry("all", translate("show.all")));
 		entriesEl = uifactory.addDropdownSingleselect("search.entries", rightContainer,
 				empty.keys(), empty.values());
 
-		KeyValues referenceEntriesKeyValues = new KeyValues();
-		referenceEntriesKeyValues.add(KeyValues.entry("all", translate("show.all")));
+		SelectionValues referenceEntriesKeyValues = new SelectionValues();
+		referenceEntriesKeyValues.add(SelectionValues.entry("all", translate("show.all")));
 		if(referenceEntry != null) {
-			referenceEntriesKeyValues.add(KeyValues.entry(referenceEntry.getKey().toString(), referenceEntry.getDisplayname()));
+			referenceEntriesKeyValues.add(SelectionValues.entry(referenceEntry.getKey().toString(), referenceEntry.getDisplayname()));
 		}
 		referenceEntriesEl = uifactory.addDropdownSingleselect("search.reference.entries", rightContainer,
 				referenceEntriesKeyValues.keys(), referenceEntriesKeyValues.values());
@@ -154,10 +154,10 @@ public class AssignmentsSearchController extends FormBasicController {
 			referenceEntriesEl.setEnabled(false);
 		}
 
-		KeyValues identities = new KeyValues();
-		identities.add(KeyValues.entry("all", translate("show.all")));
+		SelectionValues identities = new SelectionValues();
+		identities.add(SelectionValues.entry("all", translate("show.all")));
 		if(grader != null) {
-			identities.add(KeyValues.entry(grader.getKey().toString(), userManager.getUserDisplayName(grader)));
+			identities.add(SelectionValues.entry(grader.getKey().toString(), userManager.getUserDisplayName(grader)));
 		}
 		gradersEl = uifactory.addDropdownSingleselect("search.graders", rightContainer,
 				identities.keys(), identities.values());
@@ -172,9 +172,9 @@ public class AssignmentsSearchController extends FormBasicController {
 		formLayout.add(leftContainer);
 		leftContainer.setRootForm(mainForm);
 		
-		KeyValues statusKeys = new KeyValues();
+		SelectionValues statusKeys = new SelectionValues();
 		for(SearchStatus status: SearchStatus.values()) {
-			statusKeys.add(KeyValues.entry(status.name(), translate("search.status.".concat(status.name()))));
+			statusKeys.add(SelectionValues.entry(status.name(), translate("search.status.".concat(status.name()))));
 		}
 		statusEl = uifactory.addCheckboxesDropdown("status", "search.status", leftContainer, statusKeys.keys(), statusKeys.values());
 		statusEl.select(SearchStatus.unassigned.name(), true);
@@ -204,7 +204,7 @@ public class AssignmentsSearchController extends FormBasicController {
 	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {
 		allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
 
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		for (TaxonomyLevel level:allTaxonomyLevels) {
 			String key = Long.toString(level.getKey());
 			ArrayList<String> names = new ArrayList<>();
@@ -235,10 +235,10 @@ public class AssignmentsSearchController extends FormBasicController {
 		}
 		Collections.sort(entries, new RepositoryEntryComparator(getLocale()));
 		
-		KeyValues entriesKeyValues = new KeyValues();
-		entriesKeyValues.add(KeyValues.entry("all", translate("show.all")));
+		SelectionValues entriesKeyValues = new SelectionValues();
+		entriesKeyValues.add(SelectionValues.entry("all", translate("show.all")));
 		entries.forEach(entry
-				-> entriesKeyValues.add(KeyValues.entry(entry.getKey().toString(), entry.getDisplayname())));
+				-> entriesKeyValues.add(SelectionValues.entry(entry.getKey().toString(), entry.getDisplayname())));
 		entriesEl.setKeysAndValues(entriesKeyValues.keys(), entriesKeyValues.values(), null);
 		
 		if(referenceEntry == null) {
@@ -249,10 +249,10 @@ public class AssignmentsSearchController extends FormBasicController {
 			}
 			Collections.sort(referenceEntries, new RepositoryEntryComparator(getLocale()));
 			
-			KeyValues referenceKeyValues = new KeyValues();
-			referenceKeyValues.add(KeyValues.entry("all", translate("show.all")));
+			SelectionValues referenceKeyValues = new SelectionValues();
+			referenceKeyValues.add(SelectionValues.entry("all", translate("show.all")));
 			referenceEntries.forEach(entry
-					-> referenceKeyValues.add(KeyValues.entry(entry.getKey().toString(), entry.getDisplayname())));
+					-> referenceKeyValues.add(SelectionValues.entry(entry.getKey().toString(), entry.getDisplayname())));
 			referenceEntriesEl.setKeysAndValues(referenceKeyValues.keys(), referenceKeyValues.values(), null);
 		}
 		
@@ -268,10 +268,10 @@ public class AssignmentsSearchController extends FormBasicController {
 			}
 			Collections.sort(graders, new IdentityComparator());
 			
-			KeyValues gradersKeyValues = new KeyValues();
-			gradersKeyValues.add(KeyValues.entry("all", translate("show.all")));
+			SelectionValues gradersKeyValues = new SelectionValues();
+			gradersKeyValues.add(SelectionValues.entry("all", translate("show.all")));
 			graders.forEach(identity
-					-> gradersKeyValues.add(KeyValues.entry(identity.getKey().toString(), userManager.getUserDisplayName(identity))));
+					-> gradersKeyValues.add(SelectionValues.entry(identity.getKey().toString(), userManager.getUserDisplayName(identity))));
 			gradersEl.setKeysAndValues(gradersKeyValues.keys(), gradersKeyValues.values(), null);
 		}
 	}

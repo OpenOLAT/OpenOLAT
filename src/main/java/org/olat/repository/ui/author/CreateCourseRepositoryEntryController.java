@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -58,11 +58,11 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 
 	@Override
 	protected void initAdditionalFormElements(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		KeyValues nodeAccessKV = new KeyValues();
+		SelectionValues nodeAccessKV = new SelectionValues();
 		String helpText = "";
 		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
 			String title = identifier.getDisplayName(getLocale());
-			nodeAccessKV.add(KeyValues.entry(identifier.getType(), title));
+			nodeAccessKV.add(SelectionValues.entry(identifier.getType(), title));
 			helpText += "<strong>" + title + "</strong><br />" + identifier.getToolTipHelpText(getLocale()) + "<br /><br />";
 		}
 		nodeAccessEl = uifactory.addRadiosVertical("cif.node.access", "cif.node.access", formLayout,

@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,12 +69,12 @@ public class ChangeStatusController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		KeyValues statusKeys = new KeyValues();
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_ACTIV), translate("rightsForm.status.activ")));
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_PERMANENT), translate("rightsForm.status.permanent")));
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_PENDING), translate("rightsForm.status.pending")));
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_INACTIVE), translate("rightsForm.status.inactive")));
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_LOGIN_DENIED), translate("rightsForm.status.login_denied")));
+		SelectionValues statusKeys = new SelectionValues();
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_ACTIV), translate("rightsForm.status.activ")));
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_PERMANENT), translate("rightsForm.status.permanent")));
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_PENDING), translate("rightsForm.status.pending")));
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_INACTIVE), translate("rightsForm.status.inactive")));
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_LOGIN_DENIED), translate("rightsForm.status.login_denied")));
 		statusEl = uifactory.addRadiosVertical("status", "rightsForm.status", formLayout, statusKeys.keys(), statusKeys.values());
 		statusEl.addActionListener(FormEvent.ONCHANGE);
 		

@@ -26,7 +26,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,10 +69,10 @@ public class ReasonController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		AbsenceCategory currentCategory = row.getRollCall() == null ? null : row.getRollCall().getAbsenceCategory();
-		KeyValues absenceKeyValues = new KeyValues();
+		SelectionValues absenceKeyValues = new SelectionValues();
 		for(AbsenceCategory absenceCategory: absenceCategories) {
 			if(absenceCategory.isEnabled() || absenceCategory.equals(currentCategory)) {
-				absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+				absenceKeyValues.add(SelectionValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
 			}
 		}
 		absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", null, formLayout, absenceKeyValues.keys(), absenceKeyValues.values());

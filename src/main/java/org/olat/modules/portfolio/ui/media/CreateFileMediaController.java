@@ -19,7 +19,7 @@
  */
 package org.olat.modules.portfolio.ui.media;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -128,7 +128,7 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 8, 60, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
-		KeyValues fileTypeKV = new KeyValues();
+		SelectionValues fileTypeKV = new SelectionValues();
 		for (int i = 0; i < docTemplates.size(); i++) {
 			DocTemplate docTemplate = docTemplates.get(i);
 			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";

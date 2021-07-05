@@ -27,7 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -59,11 +59,11 @@ public class PublishRecordingController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		KeyValues publishToKeyValues = new KeyValues();
-		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.coach.name(), translate("publish.to.coach")));
-		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.participant.name(), translate("publish.to.participant")));
-		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.all.name(), translate("publish.to.all")));
-		publishToKeyValues.add(KeyValues.entry(BigBlueButtonRecordingsPublishedRoles.guest.name(), translate("publish.to.guest")));
+		SelectionValues publishToKeyValues = new SelectionValues();
+		publishToKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.coach.name(), translate("publish.to.coach")));
+		publishToKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.participant.name(), translate("publish.to.participant")));
+		publishToKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.all.name(), translate("publish.to.all")));
+		publishToKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.guest.name(), translate("publish.to.guest")));
 		publishEl = uifactory.addCheckboxesVertical("publish.to.list", "publish.to.list", formLayout,
 				publishToKeyValues.keys(), publishToKeyValues.values(), 1);
 		BigBlueButtonRecordingsPublishedRoles[] currentRoles = row.getReference().getPublishToEnum();

@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -73,11 +73,11 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		courseSettings.setFormTitle(translate("admin.course.type.settings"));
 		courseSettings.setRootForm(mainForm);
 		
-		KeyValues nodeAccessKV = new KeyValues();
+		SelectionValues nodeAccessKV = new SelectionValues();
 		String helpText = "";
 		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
 			String title = identifier.getDisplayName(getLocale());
-			nodeAccessKV.add(KeyValues.entry(identifier.getType(), title));
+			nodeAccessKV.add(SelectionValues.entry(identifier.getType(), title));
 			helpText += "<strong>" + title + "</strong><br />" + identifier.getToolTipHelpText(getLocale()) + "<br /><br />";
 		}
 		

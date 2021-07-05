@@ -23,29 +23,31 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 24.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class KeyValues {
+public class SelectionValues {
 	
 	private static final Comparator<String> nullSafeStringComparator = Comparator.nullsLast(String::compareToIgnoreCase);
-	public static final Comparator<KeyValue> VALUE_ASC = Comparator.comparing(KeyValue::getValue, nullSafeStringComparator);
+	public static final Comparator<SelectionValue> VALUE_ASC = Comparator.comparing(SelectionValue::getValue, nullSafeStringComparator);
 	
-	private List<KeyValue> keyValues = new ArrayList<>();
+	private List<SelectionValue> keyValues = new ArrayList<>();
 	
-	public KeyValues(KeyValue... keyValues) {
+	public SelectionValues(SelectionValue... keyValues) {
 		if (keyValues != null && keyValues.length != 0) {
-			for (KeyValue keyValue : keyValues) {
+			for (SelectionValue keyValue : keyValues) {
 				add(keyValue);
 			}
 		}
 	}
 	
-	public static KeyValue entry(String key, String value) {
-		return new KeyValue(key, value);
+	public static SelectionValue entry(String key, String value) {
+		return new SelectionValue(key, value);
 	}
 	
 	/**
@@ -54,7 +56,7 @@ public class KeyValues {
 	 *
 	 * @param keyValue
 	 */
-	public void add(KeyValue keyValue) {
+	public void add(SelectionValue keyValue) {
 		remove(keyValue.getKey());
 		keyValues.add(keyValue);
 	}
@@ -64,20 +66,20 @@ public class KeyValues {
 	 * 
 	 * @param keyValues
 	 */
-	public void add(KeyValue... keyValues) {
+	public void add(SelectionValue... keyValues) {
 		if (keyValues == null || keyValues.length == 0) {
 			return;
 		}
 		
-		for (KeyValue keyValue : keyValues) {
+		for (SelectionValue keyValue : keyValues) {
 			add(keyValue);
 		}
 	}
 
-	public void addAll(KeyValues additionalKeyValues) {
+	public void addAll(SelectionValues additionalKeyValues) {
 		if (additionalKeyValues == null) return;
 		
-		for (KeyValue additionalKeyValue : additionalKeyValues.keyValues) {
+		for (SelectionValue additionalKeyValue : additionalKeyValues.keyValues) {
 			add(additionalKeyValue);
 		}
 	}
@@ -88,7 +90,7 @@ public class KeyValues {
 	 * 
 	 * @param keyValue
 	 */
-	public void replaceOrPut(KeyValue keyValue) {
+	public void replaceOrPut(SelectionValue keyValue) {
 		if (containsKey(keyValue.getKey())) {
 			replace(keyValue);
 		} else {
@@ -96,7 +98,7 @@ public class KeyValues {
 		}
 	}
 	
-	private void replace(KeyValue keyValue) {
+	private void replace(SelectionValue keyValue) {
 		int index = keyValues.indexOf(keyValue);
 		keyValues.set(index, keyValue);
 	}
@@ -116,7 +118,7 @@ public class KeyValues {
 	 * @return
 	 */
 	public String[] keys() {
-		return keyValues.stream().map(KeyValue::getKey).toArray(String[]::new);
+		return keyValues.stream().map(SelectionValue::getKey).toArray(String[]::new);
 	}
 	
 	/**
@@ -125,15 +127,33 @@ public class KeyValues {
 	 * @return
 	 */
 	public String[] values() {
-		return keyValues.stream().map(KeyValue::getValue).toArray(String[]::new);
+		return keyValues.stream().map(SelectionValue::getValue).toArray(String[]::new);
 	}
 	
-	public void sort(Comparator<KeyValue> comparator) {
+	/**
+	 * Returns a array of all descriptions. The method creates a new array every time it is invoked.
+	 *
+	 * @return
+	 */
+	public String[] descriptions() {
+		return keyValues.stream().map(SelectionValue::getDescription).toArray(String[]::new);
+	}
+	
+	/**
+	 * Returns a array of all icons. The method creates a new array every time it is invoked.
+	 *
+	 * @return
+	 */
+	public String[] icons() {
+		return keyValues.stream().map(SelectionValue::getIcon).toArray(String[]::new);
+	}
+	
+	public void sort(Comparator<SelectionValue> comparator) {
 		keyValues.sort(comparator);
 	}
 	
 	public boolean containsKey(String key) {
-		return keyValues.stream().map(KeyValue::getKey).anyMatch(k -> k.equals(key));
+		return keyValues.stream().map(SelectionValue::getKey).anyMatch(k -> k.equals(key));
 	}
 	
 	public int size() {
@@ -144,27 +164,40 @@ public class KeyValues {
 		return keyValues.isEmpty();
 	}
 	
-	public List<KeyValue> keyValues() {
+	public List<SelectionValue> keyValues() {
 		return new ArrayList<>(keyValues);
 	}
 	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		for (KeyValue keyValue : keyValues) {
+		for (SelectionValue keyValue : keyValues) {
 			builder.append(keyValue.toString()).append(" ");
 		}
 		return builder.toString();
 	}
 
-	public final static class KeyValue {
+	public final static class SelectionValue {
 		
 		private final String key;
 		private final String value;
+		private final String description;
+		private final String icon;
 		
-		public KeyValue(String key, String value) {
+		
+		public SelectionValue(String key, String value, String description, String icon) {
 			this.key = key;
 			this.value = value;
+			this.description = description;
+			this.icon = icon;
+		}
+		
+		public SelectionValue(String key, String value, String description) {
+			this(key, value, description, null);
+		}
+		
+		public SelectionValue(String key, String value) {
+			this(key, value, null, null);
 		}
 
 		public String getKey() {
@@ -173,6 +206,14 @@ public class KeyValues {
 
 		public String getValue() {
 			return value;
+		}
+		
+		public String getIcon() {
+			return icon;
+		}
+		
+		public String getDescription() {
+			return description;
 		}
 
 		@Override
@@ -191,7 +232,7 @@ public class KeyValues {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			KeyValue other = (KeyValue) obj;
+			SelectionValue other = (SelectionValue) obj;
 			if (key == null) {
 				if (other.key != null)
 					return false;
@@ -207,6 +248,15 @@ public class KeyValues {
 			builder.append(key);
 			builder.append(" : ");
 			builder.append(value);
+			
+			if (StringHelper.containsNonWhitespace(icon)) {
+				builder.append(" : ").append(icon);
+			}
+			
+			if (StringHelper.containsNonWhitespace(description)) {
+				builder.append(" : ").append(description);
+			}
+			
 			builder.append("]");
 			return builder.toString();
 		}

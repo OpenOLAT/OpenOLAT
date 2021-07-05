@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -143,15 +143,15 @@ public class BigBlueButtonUIHelper {
 	
 	public static void updateLayoutSelection(SingleSelection layoutEl, Translator translator, boolean webcamAvailable) {
 		if(webcamAvailable && layoutEl.getKeys().length == 1) {
-			KeyValues layoutKeyValues = new KeyValues();
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translator.translate("layout.standard")));
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translator.translate("layout.webcam")));
+			SelectionValues layoutKeyValues = new SelectionValues();
+			layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translator.translate("layout.standard")));
+			layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translator.translate("layout.webcam")));
 			layoutEl.setKeysAndValues(layoutKeyValues.keys(), layoutKeyValues.values(), null);
 		} else if(!webcamAvailable && layoutEl.getKeys().length > 1) {
 			layoutEl.select(BigBlueButtonMeetingLayoutEnum.standard.name(), true);
 			
-			KeyValues layoutKeyValues = new KeyValues();
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translator.translate("layout.standard")));
+			SelectionValues layoutKeyValues = new SelectionValues();
+			layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translator.translate("layout.standard")));
 			layoutEl.setKeysAndValues(layoutKeyValues.keys(), layoutKeyValues.values(), null);
 		}
 		

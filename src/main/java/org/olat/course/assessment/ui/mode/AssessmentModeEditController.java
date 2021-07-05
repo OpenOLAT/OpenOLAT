@@ -41,7 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -250,15 +250,15 @@ public class AssessmentModeEditController extends FormBasicController {
 		}
 		startModeEl.setEnabled(status != Status.end);
 		
-		KeyValues targetKeyValues = new KeyValues();
+		SelectionValues targetKeyValues = new SelectionValues();
 		boolean curriculumEnabled = curriculumModule.isEnabled();
-		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.course.name(), translate("target.course")));
-		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.groups.name(), translate("target.groups")));
+		targetKeyValues.add(SelectionValues.entry(AssessmentMode.Target.course.name(), translate("target.course")));
+		targetKeyValues.add(SelectionValues.entry(AssessmentMode.Target.groups.name(), translate("target.groups")));
 		if(curriculumEnabled) {
-			targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.curriculumEls.name(), translate("target.curriculumElements")));
+			targetKeyValues.add(SelectionValues.entry(AssessmentMode.Target.curriculumEls.name(), translate("target.curriculumElements")));
 		}
 		String allLabel = curriculumEnabled ? translate("target.courseGroupsAndCurriculums") : translate("target.courseAndGroups");
-		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.courseAndGroups.name(), allLabel));
+		targetKeyValues.add(SelectionValues.entry(AssessmentMode.Target.courseAndGroups.name(), allLabel));
 		targetEl = uifactory.addRadiosVertical("audience", "mode.target", formLayout, targetKeyValues.keys(), targetKeyValues.values());
 		targetEl.setElementCssClass("o_sel_assessment_mode_audience");
 		targetEl.setEnabled(status != Status.end);

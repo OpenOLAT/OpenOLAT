@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -81,7 +81,7 @@ public class AddRolesController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		KeyValues rolesKV = new KeyValues();
+		SelectionValues rolesKV = new SelectionValues();
 		addRole(rolesKV, NodeRightRole.owner);
 		addRole(rolesKV, NodeRightRole.coach);
 		addRole(rolesKV, NodeRightRole.participant);
@@ -101,9 +101,9 @@ public class AddRolesController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 	
-	private void addRole(KeyValues rolesKV, NodeRightRole role) {
+	private void addRole(SelectionValues rolesKV, NodeRightRole role) {
 		if (type.getRoles().contains(role)) {
-			rolesKV.add(KeyValues.entry(role.name(), translateRole(role)));
+			rolesKV.add(SelectionValues.entry(role.name(), translateRole(role)));
 		}
 	}
 	

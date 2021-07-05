@@ -26,7 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -62,10 +62,10 @@ public class LectureBlockTeacherController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (context.getNewCoaches() != null && !context.getNewCoaches().isEmpty()) {
-			KeyValues teachers = new KeyValues();
+			SelectionValues teachers = new SelectionValues();
 			
 			for (Identity coach : context.getNewCoaches()) {
-				teachers.add(KeyValues.entry(coach.getKey().toString(), coach.getUser().getFirstName() + " " + coach.getUser().getLastName()));
+				teachers.add(SelectionValues.entry(coach.getKey().toString(), coach.getUser().getFirstName() + " " + coach.getUser().getLastName()));
 			}
 			
 			teachersEl = uifactory.addCheckboxesVertical("noticed.teachers", formLayout, teachers.keys(), teachers.values(), 1);

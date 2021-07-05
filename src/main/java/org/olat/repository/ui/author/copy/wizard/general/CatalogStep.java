@@ -30,8 +30,8 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -140,9 +140,9 @@ public class CatalogStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			KeyValues copyModes = new KeyValues();
-			KeyValue copy = new KeyValue(CopyType.copy.name(), translate("options.copy"));
-			KeyValue ignore = new KeyValue(CopyType.ignore.name(), translate("options.ignore"));
+			SelectionValues copyModes = new SelectionValues();
+			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"));
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.ignore"));
 			
 			copyModes.add(copy, ignore);
 			

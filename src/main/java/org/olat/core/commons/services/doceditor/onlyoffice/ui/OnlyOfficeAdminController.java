@@ -21,7 +21,7 @@ package org.olat.core.commons.services.doceditor.onlyoffice.ui;
 
 import static org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeUIFactory.validateIsMandatory;
 import static org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeUIFactory.validatePositiveInteger;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import java.util.Collection;
@@ -42,7 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -114,10 +114,10 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		editorEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		editorEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isEditorEnabled());
 		
-		KeyValues mobileModesKV = new KeyValues();
-		mobileModesKV.add(KeyValues.entry(Mode.VIEW.name(), translate("admin.mode.view")));
-		mobileModesKV.add(KeyValues.entry(Mode.EMBEDDED .name(), translate("admin.mode.embedded")));
-		mobileModesKV.add(KeyValues.entry(Mode.EDIT.name(), translate("admin.mode.edit")));
+		SelectionValues mobileModesKV = new SelectionValues();
+		mobileModesKV.add(SelectionValues.entry(Mode.VIEW.name(), translate("admin.mode.view")));
+		mobileModesKV.add(SelectionValues.entry(Mode.EMBEDDED .name(), translate("admin.mode.embedded")));
+		mobileModesKV.add(SelectionValues.entry(Mode.EDIT.name(), translate("admin.mode.edit")));
 		mobileModeEl = uifactory.addCheckboxesHorizontal("admin.mobile.modes", formLayout, mobileModesKV.keys(), mobileModesKV.values());
 		mobileModeEl.addActionListener(FormEvent.ONCHANGE);
 
@@ -135,7 +135,7 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		
 		licenseInUseEl = uifactory.addStaticTextElement("admin.license.edit.in.use", "", formLayout);
 		
-		KeyValues usageRolesKV = new KeyValues();
+		SelectionValues usageRolesKV = new SelectionValues();
 		usageRolesKV.add(entry(USAGE_AUTHOR, translate("admin.usage.roles.author")));
 		usageRolesKV.add(entry(USAGE_COACH, translate("admin.usage.roles.coach")));
 		usageRolesKV.add(entry(USAGE_MANAGERS, translate("admin.usage.roles.managers")));

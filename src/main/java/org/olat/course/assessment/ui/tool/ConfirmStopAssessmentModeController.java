@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -91,8 +91,8 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		}
 		
 		if(runningSessions) {
-			KeyValues keyValues = new KeyValues();
-			keyValues.add(KeyValues.entry("with", translate("confirm.stop.pull.running.sessions")));
+			SelectionValues keyValues = new SelectionValues();
+			keyValues.add(SelectionValues.entry("with", translate("confirm.stop.pull.running.sessions")));
 			pullRunningSessionsEl = uifactory.addCheckboxesHorizontal("runningSessions", "confirm.stop.pull.running.sessions", formLayout,
 					keyValues.keys(), keyValues.values());
 			pullRunningSessionsEl.select(keyValues.keys()[0], true);
@@ -128,8 +128,8 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		}
 		
 		if(numOfDisadvantagedUsers > 0) {
-			KeyValues keyValues = new KeyValues();
-			keyValues.add(KeyValues.entry("with", translate("confirm.stop.with.disadvantages")));
+			SelectionValues keyValues = new SelectionValues();
+			keyValues.add(SelectionValues.entry("with", translate("confirm.stop.with.disadvantages")));
 			withDisadvantagesEl = uifactory.addCheckboxesHorizontal("disadvantages", "confirm.stop.with.disadvantages", formLayout,
 					keyValues.keys(), keyValues.values());
 		}

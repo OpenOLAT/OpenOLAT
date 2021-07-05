@@ -19,7 +19,7 @@
  */
 package org.olat.modules.quality.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +50,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -136,7 +136,7 @@ public abstract class ReportAccessController extends FormBasicController {
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		
-		KeyValues emailTriggerKV = getEmailTriggerKV();
+		SelectionValues emailTriggerKV = getEmailTriggerKV();
 		this.emailTriggerKeys = emailTriggerKV.keys();
 		this.emailTriggerValues = emailTriggerKV.values();
 	}
@@ -147,9 +147,9 @@ public abstract class ReportAccessController extends FormBasicController {
 	
 	protected abstract boolean canEditReportMembers();
 
-	private KeyValues getEmailTriggerKV() {
+	private SelectionValues getEmailTriggerKV() {
 		EmailTrigger[] emailTriggers = QualityReportAccess.EmailTrigger.values();
-		KeyValues kv = new KeyValues();
+		SelectionValues kv = new SelectionValues();
 		for (int i = 0; i < emailTriggers.length; i++) {
 			EmailTrigger emailTrigger = emailTriggers[i];
 			String key = emailTrigger.name();

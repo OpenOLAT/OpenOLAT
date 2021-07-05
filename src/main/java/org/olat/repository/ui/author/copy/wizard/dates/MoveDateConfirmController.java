@@ -32,8 +32,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -82,8 +82,8 @@ public class MoveDateConfirmController extends FormBasicController {
 		
 		setFormDescription("dates.confirm.move.others", dateArguments);
 		
-		KeyValue rememberMyChoice = new KeyValue(REMEMBER_ME, translate("dates.remember.my.choice"));
-		KeyValues dontAskAgainOptions = new KeyValues(rememberMyChoice);
+		SelectionValue rememberMyChoice = new SelectionValue(REMEMBER_ME, translate("dates.remember.my.choice"));
+		SelectionValues dontAskAgainOptions = new SelectionValues(rememberMyChoice);
 		
 		dontAskAgainEl = uifactory.addCheckboxesHorizontal("dates.do.not.ask.again", formLayout, dontAskAgainOptions.keys(), dontAskAgainOptions.values());
 		

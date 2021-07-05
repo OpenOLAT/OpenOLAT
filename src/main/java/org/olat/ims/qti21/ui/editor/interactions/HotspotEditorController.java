@@ -49,7 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -485,10 +485,10 @@ public class HotspotEditorController extends FormBasicController {
 		choiceWrappers.clear();
 		
 		List<HotspotChoice> choices = itemBuilder.getHotspotChoices();
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		for(int i=0; i<choices.size(); i++) {
 			HotspotChoice choice = choices.get(i);
-			keyValues.add(KeyValues.entry(choice.getIdentifier().toString(), translate("position.hotspot", new String[] { Integer.toString(i + 1) })));
+			keyValues.add(SelectionValues.entry(choice.getIdentifier().toString(), translate("position.hotspot", new String[] { Integer.toString(i + 1) })));
 			choiceWrappers.add(new HotspotWrapper(choice, itemBuilder));
 		}
 		correctHotspotsEl.setKeysAndValues(keyValues.keys(), keyValues.values());

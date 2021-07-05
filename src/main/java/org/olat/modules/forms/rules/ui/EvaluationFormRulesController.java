@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms.rules.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -150,10 +150,10 @@ public class EvaluationFormRulesController extends FormBasicController {
 	protected RuleElement initRuleForm(UserRequest ureq, Rule rule, ConditionHandler conditionHandler, Condition condition,
 			ActionHandler actionHandler, Action action) {
 		//Condition
-		KeyValues conditionTypeKV = new KeyValues();
+		SelectionValues conditionTypeKV = new SelectionValues();
 		ruleHandlerProvider.getConditionHandlers().stream()
 				.forEach(handler -> conditionTypeKV.add(entry(handler.getHandledType(), translate(handler.getI18nKey()))));
-		conditionTypeKV.sort(KeyValues.VALUE_ASC);
+		conditionTypeKV.sort(SelectionValues.VALUE_ASC);
 		
 		// This element is not in the velocity template, because it has only one entry.
 		// When you add a second ConditionHandler (see CourseReminderEditController):
@@ -174,10 +174,10 @@ public class EvaluationFormRulesController extends FormBasicController {
 		FormItem conditionItem = conditionEditor.initForm(rulesCont, this, ureq);
 		
 		// Action
-		KeyValues actionTypeKV = new KeyValues();
+		SelectionValues actionTypeKV = new SelectionValues();
 		ruleHandlerProvider.getActionHandlers().stream()
 				.forEach(handler -> actionTypeKV.add(entry(handler.getHandledType(), translate(handler.getI18nKey()))));
-		actionTypeKV.sort(KeyValues.VALUE_ASC);
+		actionTypeKV.sort(SelectionValues.VALUE_ASC);
 		
 		SingleSelection actionTypeEl = uifactory.addDropdownSingleselect("action.type." + counter++, null, rulesCont,
 				actionTypeKV.keys(), actionTypeKV.values(), null);

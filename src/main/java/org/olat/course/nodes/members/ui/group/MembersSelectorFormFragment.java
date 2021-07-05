@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodes.members.ui.group;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -151,7 +151,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		}
 		wantCoaches.addActionListener(FormEvent.ONCLICK);
 		
-		KeyValues coachesKV = new KeyValues();
+		SelectionValues coachesKV = new SelectionValues();
 		coachesKV.add(entry(MEMEBER_KEY_ALL, translate("form.message.coaches.all")));
 		if (withAssignedCoaches) {
 			coachesKV.add(entry(MEMEBER_KEY_ASSIGNED, translate("form.message.coaches.assigned")));
@@ -255,7 +255,7 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 		if(particiapntSelection) wantParticipants.select("xx", true);
 		wantParticipants.addActionListener(FormEvent.ONCLICK);
 		
-		KeyValues participantKV = new KeyValues();
+		SelectionValues participantKV = new SelectionValues();
 		participantKV.add(entry(MEMEBER_KEY_ALL, translate("form.message.participants.all")));
 		participantKV.add(entry(MEMEBER_KEY_COURSE, translate("form.message.participants.course")));
 		participantKV.add(entry(MEMEBER_KEY_GROUP, translate("form.message.participants.group")));

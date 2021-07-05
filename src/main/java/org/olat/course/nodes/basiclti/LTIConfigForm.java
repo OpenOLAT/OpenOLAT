@@ -44,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -184,7 +184,7 @@ public class LTIConfigForm extends FormBasicController {
 			"1300", "1320", "1340", "1360", "1380"
 	};
 	private String[] heightValues;
-	private KeyValues userPropKeysValues;
+	private SelectionValues userPropKeysValues;
 	
 	@Autowired
 	private DB dbInstance;
@@ -249,11 +249,11 @@ public class LTIConfigForm extends FormBasicController {
 		};
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, true);
-		userPropKeysValues = new KeyValues();
-		userPropKeysValues.add(KeyValues.entry(LTIManager.USER_NAME_PROP, userPropsTranslator.translate("form.name.username")));
+		userPropKeysValues = new SelectionValues();
+		userPropKeysValues.add(SelectionValues.entry(LTIManager.USER_NAME_PROP, userPropsTranslator.translate("form.name.username")));
 		for (int i=userPropertyHandlers.size(); i-->0; ) {
 			UserPropertyHandler handler = userPropertyHandlers.get(i);
-			userPropKeysValues.add(KeyValues.entry(handler.getName(), userPropsTranslator.translate(handler.i18nFormElementLabelKey())));
+			userPropKeysValues.add(SelectionValues.entry(handler.getName(), userPropsTranslator.translate(handler.i18nFormElementLabelKey())));
 		}
 		
 		String proto = (String)config.get(CONFIGKEY_PROTO);
@@ -297,19 +297,19 @@ public class LTIConfigForm extends FormBasicController {
 		setFormContextHelp("Other#_lti_config");
 		formLayout.setElementCssClass("o_sel_lti_config_form");
 		
-		KeyValues kValues = new KeyValues();
-		kValues.add(KeyValues.entry(CONFIGKEY_LTI_11, translate("config.lti.11")));
+		SelectionValues kValues = new SelectionValues();
+		kValues.add(SelectionValues.entry(CONFIGKEY_LTI_11, translate("config.lti.11")));
 		if(lti13Module.isEnabled()) {
-			kValues.add(KeyValues.entry(CONFIGKEY_LTI_13, translate("config.lti.13")));
+			kValues.add(SelectionValues.entry(CONFIGKEY_LTI_13, translate("config.lti.13")));
 			List<LTI13Tool> tools = lti13Service.getTools(LTI13ToolType.EXT_TEMPLATE);
 			for(LTI13Tool template:tools) {
-				kValues.add(KeyValues.entry(template.getKey().toString(), template.getToolName()));
+				kValues.add(SelectionValues.entry(template.getKey().toString(), template.getToolName()));
 			}
 		} else if(tool != null) {
 			if(tool.getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE) {
-				kValues.add(KeyValues.entry(tool.getKey().toString(), tool.getToolName()));
+				kValues.add(SelectionValues.entry(tool.getKey().toString(), tool.getToolName()));
 			} else {
-				kValues.add(KeyValues.entry(CONFIGKEY_LTI_13, translate("config.lti.13")));
+				kValues.add(SelectionValues.entry(CONFIGKEY_LTI_13, translate("config.lti.13")));
 			}
 		}
 		ltiVersionEl = uifactory.addDropdownSingleselect("config.lti.version", "config.lti.version", formLayout, kValues.keys(), kValues.values());
@@ -352,9 +352,9 @@ public class LTIConfigForm extends FormBasicController {
 		deploymentIdEl = uifactory.addStaticTextElement("config.deployment.id", deploymentId, formLayout);
 		deploymentIdEl.setExampleKey("config.deployment.id.example", null);
 		
-		KeyValues kValues = new KeyValues();
-		kValues.add(KeyValues.entry(PublicKeyType.KEY.name(), translate("config.public.key.type.key")));
-		kValues.add(KeyValues.entry(PublicKeyType.URL.name(), translate("config.public.key.type.url")));
+		SelectionValues kValues = new SelectionValues();
+		kValues.add(SelectionValues.entry(PublicKeyType.KEY.name(), translate("config.public.key.type.key")));
+		kValues.add(SelectionValues.entry(PublicKeyType.URL.name(), translate("config.public.key.type.url")));
 		PublicKeyType publicKeyType = tool == null ? null : tool.getPublicKeyTypeEnum();
 		publicKeyTypeEl = uifactory.addDropdownSingleselect("config.public.key.type", "config.public.key.type", formLayout, kValues.keys(), kValues.values());
 		publicKeyTypeEl.addActionListener(FormEvent.ONCHANGE);

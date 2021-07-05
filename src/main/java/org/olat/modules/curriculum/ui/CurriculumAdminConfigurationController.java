@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -84,14 +84,14 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		relationRights.sort(Comparator.comparing(RightProvider::getUserRelationsPosition));
 
 		String[] cssClasses = new String[relationRights.size()];
-		KeyValues rightsKeyValues = new KeyValues();
+		SelectionValues rightsKeyValues = new SelectionValues();
 		for(int i=0; i < relationRights.size(); i++) {
 			RightProvider provider = relationRights.get(i);
 			if (provider.getParent() != null) {
 				cssClasses[i] = "o_checkbox_indented";
 			}
 			String val = provider.getTranslatedName(getLocale());
-			rightsKeyValues.add(KeyValues.entry(provider.getRight(), val));
+			rightsKeyValues.add(SelectionValues.entry(provider.getRight(), val));
 		}
 
 		curriculumUserOverviewEl = uifactory.addCheckboxesVertical("curriculum.user.rights.overview", "curriculum.user.rights.overview", formLayout,

@@ -19,7 +19,7 @@
  */
 package org.olat.course.learningpath.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -93,7 +93,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		setFormTitle("config.title");
 		setFormContextHelp("Learning path element");
 		formLayout.setElementCssClass("o_sel_learnpath_element");
-		KeyValues obligationKV = new KeyValues();
+		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
 		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
 		obligationEl = uifactory.addRadiosHorizontal("config.obligation", formLayout, obligationKV.keys(), obligationKV.values());
@@ -120,7 +120,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		durationEl = uifactory.addTextElement("config.duration", 128, duration , formLayout);
 		durationEl.setHelpTextKey("config.duration.help", null);
 		
-		KeyValues triggerKV = getTriggerKV();
+		SelectionValues triggerKV = getTriggerKV();
 		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
 				triggerKV.keys(), triggerKV.values());
 		triggerEl.addActionListener(FormEvent.ONCHANGE);
@@ -143,8 +143,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		updateUI();
 	}
 
-	private KeyValues getTriggerKV() {
-		KeyValues triggerKV = new KeyValues();
+	private SelectionValues getTriggerKV() {
+		SelectionValues triggerKV = new SelectionValues();
 		if (editConfigs.isTriggerNodeVisited()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_NODE_VISITED, translate("config.trigger.visited")));
 		}

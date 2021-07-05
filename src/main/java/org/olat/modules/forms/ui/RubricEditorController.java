@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.forms.ui.EvaluationFormFormatter.oneDecimal;
 
@@ -43,7 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -306,7 +306,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		noAnswerEl.setEnabled(!restrictedEdit);
 		
 		// mandatory
-		KeyValues obligationKV = new KeyValues();
+		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
 		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsLayout,

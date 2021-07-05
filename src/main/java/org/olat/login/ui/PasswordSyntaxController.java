@@ -19,7 +19,7 @@
  */
 package org.olat.login.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.login.LoginModule.AT_LEAST_1;
 import static org.olat.login.LoginModule.AT_LEAST_2;
 import static org.olat.login.LoginModule.AT_LEAST_3;
@@ -43,7 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -108,7 +108,7 @@ public class PasswordSyntaxController extends FormBasicController {
 				String.valueOf(loginModule.getPasswordMaxLength()), formLayout);
 		maxLengthEl.setMandatory(true);
 		
-		KeyValues lettersKV = new KeyValues();
+		SelectionValues lettersKV = new SelectionValues();
 		lettersKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
 		lettersKV.add(entry(AT_LEAST_1, translate("admin.syntax.min.1")));
 		lettersKV.add(entry(AT_LEAST_2, translate("admin.syntax.min.2")));
@@ -122,7 +122,7 @@ public class PasswordSyntaxController extends FormBasicController {
 		}
 		lettersEl.addActionListener(FormEvent.ONCHANGE);
 		
-		KeyValues lettersUppercaseKV = new KeyValues();
+		SelectionValues lettersUppercaseKV = new SelectionValues();
 		lettersUppercaseKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
 		lettersUppercaseKV.add(entry(AT_LEAST_1, translate("admin.syntax.min.1")));
 		lettersUppercaseKV.add(entry(AT_LEAST_2, translate("admin.syntax.min.2")));
@@ -134,7 +134,7 @@ public class PasswordSyntaxController extends FormBasicController {
 			lettersUppercaseEl.select(loginModule.getPasswordLettersUppercase(), true);
 		}
 		
-		KeyValues lettersLowercaseKV = new KeyValues();
+		SelectionValues lettersLowercaseKV = new SelectionValues();
 		lettersLowercaseKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
 		lettersLowercaseKV.add(entry(AT_LEAST_1, translate("admin.syntax.min.1")));
 		lettersLowercaseKV.add(entry(AT_LEAST_2, translate("admin.syntax.min.2")));
@@ -146,7 +146,7 @@ public class PasswordSyntaxController extends FormBasicController {
 			lettersLowercaseEl.select(loginModule.getPasswordLettersLowercase(), true);
 		}
 		
-		KeyValues digitsOrSpecialsKV = new KeyValues();
+		SelectionValues digitsOrSpecialsKV = new SelectionValues();
 		digitsOrSpecialsKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
 		digitsOrSpecialsKV.add(entry(AT_LEAST_1, translate("admin.syntax.min.1")));
 		digitsOrSpecialsKV.add(entry(AT_LEAST_2, translate("admin.syntax.min.2")));
@@ -160,7 +160,7 @@ public class PasswordSyntaxController extends FormBasicController {
 		}
 		digitsAndSpecialsEl.addActionListener(FormEvent.ONCHANGE);
 		
-		KeyValues digitsKV = new KeyValues();
+		SelectionValues digitsKV = new SelectionValues();
 		digitsKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
 		digitsKV.add(entry(AT_LEAST_1, translate("admin.syntax.min.1")));
 		digitsKV.add(entry(AT_LEAST_2, translate("admin.syntax.min.2")));
@@ -172,7 +172,7 @@ public class PasswordSyntaxController extends FormBasicController {
 			digitsEl.select(loginModule.getPasswordDigits(), true);
 		}
 		
-		KeyValues specialsKV = new KeyValues();
+		SelectionValues specialsKV = new SelectionValues();
 		specialsKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
 		specialsKV.add(entry(AT_LEAST_1, translate("admin.syntax.min.1")));
 		specialsKV.add(entry(AT_LEAST_2, translate("admin.syntax.min.2")));
@@ -184,7 +184,7 @@ public class PasswordSyntaxController extends FormBasicController {
 			specialsEl.select(loginModule.getPasswordSpecialSigns(), true);
 		}
 		
-		KeyValues forbiddenValuesKV = new KeyValues();
+		SelectionValues forbiddenValuesKV = new SelectionValues();
 		forbiddenValuesKV.add(entry(FORBIDDEN_USERNAME, translate("admin.syntax.forbidden.username")));
 		forbiddenValuesKV.add(entry(FORBIDDEN_FIRSTNAME, translate("admin.syntax.forbidden.firstname")));
 		forbiddenValuesKV.add(entry(FORBIDDEN_LASTNAME, translate("admin.syntax.forbidden.lastname")));

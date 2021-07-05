@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
@@ -118,9 +118,9 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		passedEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		passedEnabledEl.setEnabled(!restrictedEdit && testBuilder.isEditable());
 		
-		KeyValues passeddTypeKV = new KeyValues();
-		passeddTypeKV.add(KeyValues.entry(PassedType.manually.name(), translate("passed.manually")));
-		passeddTypeKV.add(KeyValues.entry(PassedType.cutValue.name(), translate("passed.cut.value")));
+		SelectionValues passeddTypeKV = new SelectionValues();
+		passeddTypeKV.add(SelectionValues.entry(PassedType.manually.name(), translate("passed.manually")));
+		passeddTypeKV.add(SelectionValues.entry(PassedType.cutValue.name(), translate("passed.cut.value")));
 		passedTypeEl = uifactory.addRadiosVertical("passed.type", formLayout, passeddTypeKV.keys(), passeddTypeKV.values());
 		passedTypeEl.addActionListener(FormEvent.ONCHANGE);
 		if (passedType != PassedType.none) {

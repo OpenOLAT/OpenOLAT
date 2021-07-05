@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -143,10 +143,10 @@ public class OpencastAdminController extends FormBasicController {
 		courseNodeSpacerEl = uifactory.addSpacerElement("spacer.cn", formLayout, false);
 		courseNodeEnabledEl = uifactory.addCheckboxesHorizontal("admin.course.node.enabled", formLayout, ENABLED_KEYS, enableValues);
 		
-		KeyValues authDelegateKV = new KeyValues();
-		authDelegateKV.add(KeyValues.entry(AuthDelegate.Type.None.name(), translate("admin.auth.delegate.type.none")));
-		authDelegateKV.add(KeyValues.entry(AuthDelegate.Type.User.name(), translate("admin.auth.delegate.type.user")));
-		authDelegateKV.add(KeyValues.entry(AuthDelegate.Type.Roles.name(), translate("admin.auth.delegate.type.roles")));
+		SelectionValues authDelegateKV = new SelectionValues();
+		authDelegateKV.add(SelectionValues.entry(AuthDelegate.Type.None.name(), translate("admin.auth.delegate.type.none")));
+		authDelegateKV.add(SelectionValues.entry(AuthDelegate.Type.User.name(), translate("admin.auth.delegate.type.user")));
+		authDelegateKV.add(SelectionValues.entry(AuthDelegate.Type.Roles.name(), translate("admin.auth.delegate.type.roles")));
 		authDelegateTypeEl = uifactory.addRadiosHorizontal("admin.auth.delegate.type", formLayout, authDelegateKV.keys(), authDelegateKV.values());
 		authDelegateTypeEl.addActionListener(FormEvent.ONCHANGE);
 		authDelegateRolesEl = uifactory.addTextElement("admin.auth.delegate.roles", 128, null, formLayout);

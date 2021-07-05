@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -85,8 +85,8 @@ public class UserNickNameEditController extends FormBasicController {
 		String nickName = changeableIdentity.getUser().getProperty(UserConstants.NICKNAME, getLocale());
 		nickNameEl = uifactory.addTextElement("username", 255, nickName, formLayout);
 		
-		KeyValues providers = new KeyValues();
-		providers.add(KeyValues.entry("change.providers.on", translate("change.providers.on")));
+		SelectionValues providers = new SelectionValues();
+		providers.add(SelectionValues.entry("change.providers.on", translate("change.providers.on")));
 		changeProvidersEl = uifactory.addCheckboxesHorizontal("change.providers", formLayout, providers.keys(), providers.values());
 		changeProvidersEl.select("change.providers.on", true);
 		changeProvidersEl.setVisible(!manageableAuthentications.isEmpty());

@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodes.livestream.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateInteger;
 import static org.olat.course.nodes.livestream.ui.LiveStreamUIFactory.validateMandatory;
@@ -35,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.livestream.LiveStreamModule;
@@ -109,7 +109,7 @@ public class LiveStreamAdminSettingsController extends FormBasicController {
 		boolean coachCanEdit = liveStreamModule.isEditCoach();
 		coachCanEditEl.select(ENABLED_KEYS[0], coachCanEdit);
 		
-		KeyValues playerProfileKV = new KeyValues();
+		SelectionValues playerProfileKV = new SelectionValues();
 		for (PlayerProfile playerProfile : PlayerProfile.values()) {
 			playerProfileKV.add(entry(playerProfile.name(), translate(playerProfile.getI18nKey())));
 		}

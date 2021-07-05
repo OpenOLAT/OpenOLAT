@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -90,7 +90,7 @@ public class SliderTrendController extends FormBasicController {
 		FormLayoutContainer groupingCont = FormLayoutContainer.createCustomFormLayout("grouping", getTranslator(), groupPage);
 		flc.add("grouping", groupingCont);
 		
-		KeyValues temporalKV = AnalysisUIFactory.getTemporalGroupByKeyValues(getTranslator());
+		SelectionValues temporalKV = AnalysisUIFactory.getTemporalGroupByKeyValues(getTranslator());
 		temporalGroupEl = uifactory.addDropdownSingleselect("slider.trend.group.temporal", groupingCont,
 				temporalKV.keys(), temporalKV.values());
 		temporalGroupEl.addActionListener(FormEvent.ONCHANGE);
@@ -99,7 +99,7 @@ public class SliderTrendController extends FormBasicController {
 			temporalGroupEl.select(temporalGroupKey, true);
 		}
 		
-		KeyValues diffKV = AnalysisUIFactory.getTrendDifferenceKeyValues(getTranslator());
+		SelectionValues diffKV = AnalysisUIFactory.getTrendDifferenceKeyValues(getTranslator());
 		differenceEl = uifactory.addDropdownSingleselect("slider.trend.difference", groupingCont,
 				diffKV.keys(), diffKV.values());
 		differenceEl.addActionListener(FormEvent.ONCHANGE);

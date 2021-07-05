@@ -54,7 +54,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -506,13 +506,13 @@ public class CalendarEntryForm extends FormBasicController {
 				return;
 			}
 			
-			KeyValues typeKV = new KeyValues();
-			typeKV.add(KeyValues.entry("key", translate("cal.live.stream.url.type.manually")));
-			KeyValues urlTemplateKV = new KeyValues();
+			SelectionValues typeKV = new SelectionValues();
+			typeKV.add(SelectionValues.entry("key", translate("cal.live.stream.url.type.manually")));
+			SelectionValues urlTemplateKV = new SelectionValues();
 			liveStreamUrlTypeEl.setKeysAndValues(typeKV.keys(), typeKV.values());
 			
-			urlTemplates.forEach(urlTemplate -> urlTemplateKV.add(KeyValues.entry(urlTemplate.getKey().toString(), urlTemplate.getName())));
-			urlTemplateKV.sort(KeyValues.VALUE_ASC);
+			urlTemplates.forEach(urlTemplate -> urlTemplateKV.add(SelectionValues.entry(urlTemplate.getKey().toString(), urlTemplate.getName())));
+			urlTemplateKV.sort(SelectionValues.VALUE_ASC);
 			liveStreamUrlTemplateEl.setKeysAndValues(urlTemplateKV.keys(), urlTemplateKV.values(), null);
 			liveStreamUrlTemplateEl.select(liveStreamUrlTemplateEl.getKey(0), true);
 			

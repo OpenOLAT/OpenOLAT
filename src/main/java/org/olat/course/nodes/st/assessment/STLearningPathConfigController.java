@@ -25,7 +25,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
@@ -59,9 +59,9 @@ public class STLearningPathConfigController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
 		setFormContextHelp("Learning Path");
-		KeyValues sequenceKV = new KeyValues();
-		sequenceKV.add(KeyValues.entry(STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL, translate("config.sequence.sequential")));
-		sequenceKV.add(KeyValues.entry(STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT, translate("config.sequence.without")));
+		SelectionValues sequenceKV = new SelectionValues();
+		sequenceKV.add(SelectionValues.entry(STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL, translate("config.sequence.sequential")));
+		sequenceKV.add(SelectionValues.entry(STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT, translate("config.sequence.without")));
 		sequenceEl = uifactory.addRadiosHorizontal("config.sequence", formLayout, sequenceKV.keys(), sequenceKV.values());
 		sequenceEl.addActionListener(FormEvent.ONCHANGE);
 		String sequenceKey = moduleConfig.getStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_DEFAULT);

@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -220,12 +220,12 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 
 		uifactory.addSpacerElement("spaceman", formLayout, false);
 		
-		KeyValues contentCharsetKeyValues = new KeyValues();
-		contentCharsetKeyValues.add(KeyValues.entry(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO, translate("encoding.auto")));
+		SelectionValues contentCharsetKeyValues = new SelectionValues();
+		contentCharsetKeyValues.add(SelectionValues.entry(NodeEditController.CONFIG_CONTENT_ENCODING_AUTO, translate("encoding.auto")));
 		loadCharsets(contentCharsetKeyValues);
 		
-		KeyValues jsCharsetKeyValues = new KeyValues();
-		jsCharsetKeyValues.add(KeyValues.entry(NodeEditController.CONFIG_JS_ENCODING_AUTO, translate("encoding.same")));
+		SelectionValues jsCharsetKeyValues = new SelectionValues();
+		jsCharsetKeyValues.add(SelectionValues.entry(NodeEditController.CONFIG_JS_ENCODING_AUTO, translate("encoding.same")));
 		loadCharsets(jsCharsetKeyValues);
 		
 		encodingContentEl = uifactory.addDropdownSingleselect("encoContent", "encoding.content", formLayout,
@@ -243,7 +243,7 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 		}
 	}
 	
-	private void loadCharsets(KeyValues charsetKeyValues) {
+	private void loadCharsets(SelectionValues charsetKeyValues) {
 		Map<String,Charset> charsets = new LinkedHashMap<>(Charset.availableCharsets());
 		preloadCharset(charsetKeyValues, charsets, StandardCharsets.UTF_8.name());
 		preloadCharset(charsetKeyValues, charsets, StandardCharsets.ISO_8859_1.name());
@@ -253,14 +253,14 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 
 		Locale locale = getLocale();
 		for(Map.Entry<String, Charset> charset:charsets.entrySet()) {
-			charsetKeyValues.add(KeyValues.entry(charset.getKey(), charset.getValue().displayName(locale)));
+			charsetKeyValues.add(SelectionValues.entry(charset.getKey(), charset.getValue().displayName(locale)));
 		}
 	}
 
-	private void preloadCharset(KeyValues charsetKeyValues, Map<String,Charset> charsets, String charsetName) {
+	private void preloadCharset(SelectionValues charsetKeyValues, Map<String,Charset> charsets, String charsetName) {
 		if(charsets.containsKey(charsetName)) {
 			Charset charset = charsets.get(charsetName);
-			charsetKeyValues.add(KeyValues.entry(charset.name(), charset.displayName(getLocale())));
+			charsetKeyValues.add(SelectionValues.entry(charset.name(), charset.displayName(getLocale())));
 			charsets.remove(charsetName);
 		}
 	}

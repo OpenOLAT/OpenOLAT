@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import org.olat.core.gui.UserRequest;
@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -143,7 +143,7 @@ public class TextInputEditorController extends FormBasicController implements Pa
 				"textinput.numeric.max", 8, numericMax, settingsCont);
 		numericMaxEl.setEnabled(!restrictedEdit);
 		
-		KeyValues obligationKV = new KeyValues();
+		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
 		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,

@@ -25,7 +25,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,9 +69,9 @@ public class EditReasonController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "reason.title", 128, title, formLayout);
 		titleEl.setMandatory(true);
 		
-		KeyValues activeKeyValues = new KeyValues();
-		activeKeyValues.add(KeyValues.entry("true", translate("reason.enabled")));
-		activeKeyValues.add(KeyValues.entry("false", translate("reason.disabled")));
+		SelectionValues activeKeyValues = new SelectionValues();
+		activeKeyValues.add(SelectionValues.entry("true", translate("reason.enabled")));
+		activeKeyValues.add(SelectionValues.entry("false", translate("reason.disabled")));
 		enableEl = uifactory.addRadiosHorizontal("reason.activated", "reason.activated", formLayout,
 				activeKeyValues.keys(), activeKeyValues.values());
 		if(reason != null) {

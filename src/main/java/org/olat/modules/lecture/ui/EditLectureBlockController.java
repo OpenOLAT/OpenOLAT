@@ -41,7 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -163,10 +163,10 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		int plannedNumOfLectures = lectureBlock == null ? 4 : lectureBlock.getPlannedLecturesNumber();
 		int maxNumOfLectures = Math.max(12, plannedNumOfLectures);
-		KeyValues plannedLecturesKeys = new KeyValues();
+		SelectionValues plannedLecturesKeys = new SelectionValues();
 		for(int i=1; i<=maxNumOfLectures; i++) {
 			String num = String.valueOf(i);
-			plannedLecturesKeys.add(KeyValues.entry(num, num));
+			plannedLecturesKeys.add(SelectionValues.entry(num, num));
 		}
 		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
 				plannedLecturesKeys.keys(), plannedLecturesKeys.values(), null);

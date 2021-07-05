@@ -19,7 +19,7 @@
  */
 package org.olat.modules.video.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.text.DateFormat;
 import java.util.Arrays;
@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -67,7 +67,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		KeyValues languageKV = new KeyValues();
+		SelectionValues languageKV = new SelectionValues();
 		Arrays.stream(DateFormat.getAvailableLocales())
 				.filter(locale -> locale.hashCode() != 0)
 				.distinct()
@@ -75,7 +75,7 @@ public class VideoTrackUploadForm extends FormBasicController {
 						locale.getLanguage(), 
 						locale.getDisplayLanguage(getTranslator().getLocale())
 						)));
-		languageKV.sort(KeyValues.VALUE_ASC);
+		languageKV.sort(SelectionValues.VALUE_ASC);
 		langsItem = uifactory.addDropdownSingleselect("track.langs", formLayout, languageKV.keys(), languageKV.values(), null);
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "track.upload", formLayout);
 		langsItem.setMandatory(true);

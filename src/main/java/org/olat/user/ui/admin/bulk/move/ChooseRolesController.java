@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -93,25 +93,25 @@ public class ChooseRolesController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		KeyValues rolesKeyValues = new KeyValues();
+		SelectionValues rolesKeyValues = new SelectionValues();
 		for(OrganisationMembershipStats stats:statistics) {
 			if(stats.getRole() != null) {
 				String roleKey = stats.getRole().name();
 				String roleValue = translate("role.".concat(stats.getRole().name())) + " ( " + stats.getNumOfMembers() + " )";
-				rolesKeyValues.add(KeyValues.entry(roleKey, roleValue));
+				rolesKeyValues.add(SelectionValues.entry(roleKey, roleValue));
 			}
 		}
 		rolesEl = uifactory.addCheckboxesVertical("roles", formLayout, rolesKeyValues.keys(), rolesKeyValues.values(), 1);
 		
 		uifactory.addStaticTextElement("source.organisation", organisation.getDisplayName(), formLayout);
 
-		KeyValues organisationsKeyValues = new KeyValues();
+		SelectionValues organisationsKeyValues = new SelectionValues();
 		for(Organisation target:targetOrganisations) {
 			String organisationKey = target.getKey().toString();
 			String parentLine = organisationWithParentLine(target);
-			organisationsKeyValues.add(KeyValues.entry(organisationKey, parentLine));
+			organisationsKeyValues.add(SelectionValues.entry(organisationKey, parentLine));
 		}
-		organisationsKeyValues.sort(KeyValues.VALUE_ASC);
+		organisationsKeyValues.sort(SelectionValues.VALUE_ASC);
 		targetOrganisationEl = uifactory.addDropdownSingleselect("target.organisation", formLayout, organisationsKeyValues.keys(), organisationsKeyValues.values());
 	}
 	

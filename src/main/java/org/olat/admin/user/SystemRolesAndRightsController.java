@@ -53,7 +53,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -104,7 +104,7 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	private final List<MultipleSelectionElement> rolesEls = new ArrayList<>();
 
 	private int counter = 0;
-	private KeyValues statusKeys;
+	private SelectionValues statusKeys;
 	
 	/**
 	 * The roles without inheritance
@@ -161,14 +161,14 @@ public class SystemRolesAndRightsController extends FormBasicController {
 	}
 	
 	private void initStatusKeysAndValues() {
-		statusKeys = new KeyValues();
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_ACTIV), translate("rightsForm.status.activ")));
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_PERMANENT), translate("rightsForm.status.permanent")));
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_PENDING), translate("rightsForm.status.pending")));
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_INACTIVE), translate("rightsForm.status.inactive")));
-		statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_LOGIN_DENIED), translate("rightsForm.status.login_denied")));
+		statusKeys = new SelectionValues();
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_ACTIV), translate("rightsForm.status.activ")));
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_PERMANENT), translate("rightsForm.status.permanent")));
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_PENDING), translate("rightsForm.status.pending")));
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_INACTIVE), translate("rightsForm.status.inactive")));
+		statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_LOGIN_DENIED), translate("rightsForm.status.login_denied")));
 		if (editedIdentity.getStatus() != null && editedIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
-			statusKeys.add(KeyValues.entry(Integer.toString(Identity.STATUS_DELETED), translate("rightsForm.status.deleted")));
+			statusKeys.add(SelectionValues.entry(Integer.toString(Identity.STATUS_DELETED), translate("rightsForm.status.deleted")));
 		}
 	}
 

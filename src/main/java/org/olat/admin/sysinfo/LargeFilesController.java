@@ -63,7 +63,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -278,26 +278,26 @@ public class LargeFilesController extends FormBasicController implements Extende
 		lockedAtOlderChooser = uifactory.addDateChooser("largefiles.filter.locked.older", null, rightContainer);
 
 		
-		KeyValues deletedKeys = new KeyValues();
-		deletedKeys.add(KeyValues.entry(VFSFilterKeys.DELETED.name(), translate("largefiles.filter.trashed.only")));
-		deletedKeys.add(KeyValues.entry(VFSFilterKeys.NOT_DELETED.name(), translate("largefiles.filter.trashed.not")));
-		deletedKeys.add(KeyValues.entry(VFSFilterKeys.BOTH_DELETED.name(), translate("largefiles.filter.trashed.both")));
+		SelectionValues deletedKeys = new SelectionValues();
+		deletedKeys.add(SelectionValues.entry(VFSFilterKeys.DELETED.name(), translate("largefiles.filter.trashed.only")));
+		deletedKeys.add(SelectionValues.entry(VFSFilterKeys.NOT_DELETED.name(), translate("largefiles.filter.trashed.not")));
+		deletedKeys.add(SelectionValues.entry(VFSFilterKeys.BOTH_DELETED.name(), translate("largefiles.filter.trashed.both")));
 		
 		trashedSelection = uifactory.addRadiosHorizontal("largefiles.filter.trashed", "largefiles.filter.trashed", rightContainer, deletedKeys.keys(), deletedKeys.values());
 		trashedSelection.select(VFSFilterKeys.BOTH_DELETED.name(), true);
 
-		KeyValues revisionKeys = new KeyValues();
-		revisionKeys.add(KeyValues.entry(VFSFilterKeys.REVISIONS.name(), translate("largefiles.filter.revision.only")));
-		revisionKeys.add(KeyValues.entry(VFSFilterKeys.FILES.name(), translate("largefiles.filter.revision.not")));
-		revisionKeys.add(KeyValues.entry(VFSFilterKeys.BOTH_REVISIONS_FILES.name(), translate("largefiles.filter.revision.both")));
+		SelectionValues revisionKeys = new SelectionValues();
+		revisionKeys.add(SelectionValues.entry(VFSFilterKeys.REVISIONS.name(), translate("largefiles.filter.revision.only")));
+		revisionKeys.add(SelectionValues.entry(VFSFilterKeys.FILES.name(), translate("largefiles.filter.revision.not")));
+		revisionKeys.add(SelectionValues.entry(VFSFilterKeys.BOTH_REVISIONS_FILES.name(), translate("largefiles.filter.revision.both")));
 		
 		revisionSelection = uifactory.addRadiosHorizontal("largefiles.filter.revision", "largefiles.filter.revision", rightContainer, revisionKeys.keys(), revisionKeys.values());
 		revisionSelection.select(VFSFilterKeys.BOTH_REVISIONS_FILES.name(), true);
 
-		KeyValues lockedValues = new KeyValues();
-		lockedValues.add(KeyValues.entry(VFSFilterKeys.LOCKED.name(), translate("largefiles.filter.locked.only")));
-		lockedValues.add(KeyValues.entry(VFSFilterKeys.NOT_LOCKED.name(), translate("largefiles.filter.locked.not")));
-		lockedValues.add(KeyValues.entry(VFSFilterKeys.BOTH_LOCKED.name(), translate("largefiles.filter.locked.both")));
+		SelectionValues lockedValues = new SelectionValues();
+		lockedValues.add(SelectionValues.entry(VFSFilterKeys.LOCKED.name(), translate("largefiles.filter.locked.only")));
+		lockedValues.add(SelectionValues.entry(VFSFilterKeys.NOT_LOCKED.name(), translate("largefiles.filter.locked.not")));
+		lockedValues.add(SelectionValues.entry(VFSFilterKeys.BOTH_LOCKED.name(), translate("largefiles.filter.locked.both")));
 		
 		lockedSelection = uifactory.addRadiosHorizontal("largefiles.filter.locked", rightContainer, lockedValues.keys(), lockedValues.values());
 		lockedSelection.select(VFSFilterKeys.BOTH_LOCKED.name(), true);

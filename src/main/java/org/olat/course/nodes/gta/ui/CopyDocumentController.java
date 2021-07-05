@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -155,10 +155,10 @@ public class CopyDocumentController extends FormBasicController {
 			} else {
 				metadatas.sort((m1, m2) -> m1.getFilename().compareToIgnoreCase(m2.getFilename()));
 				
-				KeyValues metadataKV = new KeyValues();
+				SelectionValues metadataKV = new SelectionValues();
 				metadatas.stream()
 						.sorted((m1, m2) -> m1.getFilename().compareToIgnoreCase(m2.getFilename()))
-						.forEach(metadata -> metadataKV.add(KeyValues.entry(metadata.getKey().toString(), getDisplayname(metadata))));
+						.forEach(metadata -> metadataKV.add(SelectionValues.entry(metadata.getKey().toString(), getDisplayname(metadata))));
 				
 				sourceFileEl = uifactory.addRadiosVertical("copy.document", formLayout, metadataKV.keys(), metadataKV.values());
 				sourceFileEl.setMandatory(true);

@@ -24,8 +24,8 @@
 */
 package org.olat.repository.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.VALUE_ASC;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +38,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.GenericMainController;
@@ -129,8 +129,8 @@ public class RepositoyUIFactory {
 		return new LifecycleAdminController(ureq, wControl);
 	}
 	
-	public static KeyValues createTaxonomyLevelKV(List<TaxonomyLevel> allTaxonomyLevels) {
-		KeyValues keyValues = new KeyValues();
+	public static SelectionValues createTaxonomyLevelKV(List<TaxonomyLevel> allTaxonomyLevels) {
+		SelectionValues keyValues = new SelectionValues();
 		for (TaxonomyLevel level:allTaxonomyLevels) {
 			String key = Long.toString(level.getKey());
 			ArrayList<String> names = new ArrayList<>();

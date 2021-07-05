@@ -20,7 +20,7 @@
 package org.olat.modules.forms.ui;
 
 import static org.olat.core.gui.components.updown.UpDown.Layout.LINK_HORIZONTAL;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +49,7 @@ import org.olat.core.gui.components.updown.UpDown;
 import org.olat.core.gui.components.updown.UpDownEvent;
 import org.olat.core.gui.components.updown.UpDownEvent.Direction;
 import org.olat.core.gui.components.updown.UpDownFactory;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -124,7 +124,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		nameEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// presentation
-		KeyValues presentationKV = new KeyValues();
+		SelectionValues presentationKV = new SelectionValues();
 		Arrays.stream(Presentation.values()).forEach(presentation -> presentationKV.add(entry(
 				presentation.name(),
 				translate("single.choice.presentation." + presentation.name().toLowerCase()))));
@@ -143,7 +143,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		withOthersEl.setEnabled(!restrictedEdit);
 		
 		// Mandatory
-		KeyValues obligationKV = new KeyValues();
+		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(OBLIGATION_MANDATORY_KEY, translate("obligation.mandatory")));
 		obligationKV.add(entry(OBLIGATION_OPTIONAL_KEY, translate("obligation.optional")));
 		obligationEl = uifactory.addRadiosHorizontal("obli_" + CodeHelper.getRAMUniqueID(), "obligation", settingsCont,

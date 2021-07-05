@@ -27,7 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -79,11 +79,11 @@ public class PublicationController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("wizard.title.publication");
 		
-		KeyValues statusKV = new KeyValues();
-		statusKV.add(KeyValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate("cif.status.preparation")));
-		statusKV.add(KeyValues.entry(RepositoryEntryStatusEnum.review.name(), translate("cif.status.review")));
-		statusKV.add(KeyValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate("cif.status.coachpublished")));
-		statusKV.add(KeyValues.entry(RepositoryEntryStatusEnum.published.name(), translate("cif.status.published")));
+		SelectionValues statusKV = new SelectionValues();
+		statusKV.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate("cif.status.preparation")));
+		statusKV.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate("cif.status.review")));
+		statusKV.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate("cif.status.coachpublished")));
+		statusKV.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate("cif.status.published")));
 		statusEl = uifactory.addDropdownSingleselect("publishedStatus", "cif.publish", formLayout, statusKV.keys(), statusKV.values());
 		statusEl.select(context.getStatus().name(), true);
 		

@@ -25,7 +25,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -69,9 +69,9 @@ public class EditAbsenceCategoryController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "absence.category.title", 128, title, formLayout);
 		titleEl.setMandatory(true);
 		
-		KeyValues activeKeyValues = new KeyValues();
-		activeKeyValues.add(KeyValues.entry("true", translate("absence.category.enabled")));
-		activeKeyValues.add(KeyValues.entry("false", translate("absence.category.disabled")));
+		SelectionValues activeKeyValues = new SelectionValues();
+		activeKeyValues.add(SelectionValues.entry("true", translate("absence.category.enabled")));
+		activeKeyValues.add(SelectionValues.entry("false", translate("absence.category.disabled")));
 		enableEl = uifactory.addRadiosHorizontal("absence.category.activated", "absence.category.activated", formLayout,
 				activeKeyValues.keys(), activeKeyValues.values());
 		if(category != null) {

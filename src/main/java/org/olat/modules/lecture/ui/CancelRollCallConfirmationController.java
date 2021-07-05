@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -76,10 +76,10 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 		
 		List<Reason> allReasons = lectureService.getAllReasons();
 		Collections.sort(allReasons, new ReasonComparator());
-		KeyValues reasonKeyValues = new KeyValues();
+		SelectionValues reasonKeyValues = new SelectionValues();
 		for(Reason reason:allReasons) {
 			if(reason.isEnabled() || reason.equals(lectureBlock.getReasonEffectiveEnd())) {
-				reasonKeyValues.add(KeyValues.entry(reason.getKey().toString(), reason.getTitle()));
+				reasonKeyValues.add(SelectionValues.entry(reason.getKey().toString(), reason.getTitle()));
 			}
 		}
 		effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", formLayout,

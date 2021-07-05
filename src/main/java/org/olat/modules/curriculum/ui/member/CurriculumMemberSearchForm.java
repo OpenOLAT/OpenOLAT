@@ -37,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -115,12 +115,12 @@ public class CurriculumMemberSearchForm extends FormBasicController implements E
 		formLayout.add(rightContainer);
 		
 		//roles
-		KeyValues rolesKeyValues = new KeyValues();
-		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.participant.name(), translate("role.participant")));
-		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.coach.name(), translate("role.coach")));
-		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.mastercoach.name(), translate("role.mastercoach")));
-		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.owner.name(), translate("role.owner")));
-		rolesKeyValues.add(KeyValues.entry(CurriculumRoles.curriculumowner.name(), translate("role.curriculumelementowner")));
+		SelectionValues rolesKeyValues = new SelectionValues();
+		rolesKeyValues.add(SelectionValues.entry(CurriculumRoles.participant.name(), translate("role.participant")));
+		rolesKeyValues.add(SelectionValues.entry(CurriculumRoles.coach.name(), translate("role.coach")));
+		rolesKeyValues.add(SelectionValues.entry(CurriculumRoles.mastercoach.name(), translate("role.mastercoach")));
+		rolesKeyValues.add(SelectionValues.entry(CurriculumRoles.owner.name(), translate("role.owner")));
+		rolesKeyValues.add(SelectionValues.entry(CurriculumRoles.curriculumowner.name(), translate("role.curriculumelementowner")));
 		
 		rolesEl = uifactory.addCheckboxesHorizontal("roles", "search.roles", rightContainer, rolesKeyValues.keys(), rolesKeyValues.values());
 		for(String roleKey: rolesKeyValues.keys()) {

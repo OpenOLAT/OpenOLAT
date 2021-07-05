@@ -34,7 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -60,14 +60,14 @@ public class DateChooserController extends FormBasicController {
 	private FormLink link;
 	
 	private SingleSelection typeSelection;
-	private KeyValues typeKeys;
+	private SelectionValues typeKeys;
 
 	public DateChooserController(UserRequest ureq, WindowControl wControl, Date initDate) {
 		super(ureq, wControl);
 		this.initDate = initDate;
 		
-		typeKeys = new KeyValues();
-		typeKeys.add(KeyValues.entry("all", translate("news.type.all")));
+		typeKeys = new SelectionValues();
+		typeKeys.add(SelectionValues.entry("all", translate("news.type.all")));
 
 		initForm(ureq);
 	}
@@ -154,12 +154,12 @@ public class DateChooserController extends FormBasicController {
 			types.add(type);
 		}
 		
-		typeKeys = new KeyValues();
-		typeKeys.add(KeyValues.entry("all", translate("news.type.all")));
+		typeKeys = new SelectionValues();
+		typeKeys.add(SelectionValues.entry("all", translate("news.type.all")));
 
 		for(String type:types) {
 			String typeName = NewControllerFactory.translateResourceableTypeName(type, getLocale());
-			typeKeys.add(KeyValues.entry(type, typeName));
+			typeKeys.add(SelectionValues.entry(type, typeName));
 		}
 		
 		typeSelection.setKeysAndValues(typeKeys.keys(), typeKeys.values(), null);

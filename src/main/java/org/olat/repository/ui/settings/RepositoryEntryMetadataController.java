@@ -19,7 +19,7 @@
  */
 package org.olat.repository.ui.settings;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,7 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -194,10 +194,10 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		}
 		
 		if (CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
-			KeyValues educationalTypeKV = new KeyValues();
+			SelectionValues educationalTypeKV = new SelectionValues();
 			repositoryManager.getAllEducationalTypes()
 					.forEach(type -> educationalTypeKV.add(entry(type.getIdentifier(), translate(RepositoyUIFactory.getI18nKey(type)))));
-			educationalTypeKV.sort(KeyValues.VALUE_ASC);
+			educationalTypeKV.sort(SelectionValues.VALUE_ASC);
 			educationalTypeEl = uifactory.addDropdownSingleselect("cif.educational.type", formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
 			educationalTypeEl.enableNoneSelection();
 			RepositoryEntryEducationalType educationalType = repositoryEntry.getEducationalType();
@@ -282,7 +282,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomyRef);
 		taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(repositoryEntry));
 
-		KeyValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(allTaxonomyLevels);
+		SelectionValues keyValues = RepositoyUIFactory.createTaxonomyLevelKV(allTaxonomyLevels);
 		taxonomyLevelEl = uifactory.addCheckboxesDropdown("taxonomyLevels", "cif.taxonomy.levels", formLayout,
 				keyValues.keys(), keyValues.values(), null, null);
 		RepositoyUIFactory.selectTaxonomyLevels(taxonomyLevelEl, taxonomyLevels);

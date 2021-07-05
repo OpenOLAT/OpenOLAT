@@ -40,7 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -161,16 +161,16 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 		}
 		
 		if (isShowParticipations()) {
-			KeyValues participationsKV = new KeyValues();
+			SelectionValues participationsKV = new SelectionValues();
 			
 			ParticipationSearchParams params = new ParticipationSearchParams();
 			params.setAppointments(Collections.singletonList(currentAppointment));
 			appointmentsService.getParticipations(params)
-					.forEach(participation -> participationsKV.add(KeyValues.entry(
+					.forEach(participation -> participationsKV.add(SelectionValues.entry(
 							participation.getKey().toString(),
 							userManager.getUserDisplayName(participation.getIdentity().getKey()))));
 			
-			participationsKV.sort(KeyValues.VALUE_ASC);
+			participationsKV.sort(SelectionValues.VALUE_ASC);
 			participationsEl.setKeysAndValues(participationsKV.keys(), participationsKV.values());
 			if (isAllParticipationsSelected()) {
 				participationsEl.selectAll();
@@ -201,13 +201,13 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 			Map<Long, List<Participation>> appointmentKeyToParticipations = participations.stream()
 					.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));
 			
-			KeyValues freeKV = new KeyValues();
+			SelectionValues freeKV = new SelectionValues();
 			AppointmentSearchParams aParams = new AppointmentSearchParams();
 			aParams.setTopic(currentAppointment.getTopic());
 			appointmentsService.getAppointments(aParams).stream()
 					.filter(appointment -> hasFreeParticipations(appointment, appointmentKeyToParticipations, numParticipants))
 					.sorted((a1, a2) -> a1.getStart().compareTo(a2.getStart()))
-					.forEach(appointment -> freeKV.add(KeyValues.entry(appointment.getKey().toString(), formatDate(appointment))));
+					.forEach(appointment -> freeKV.add(SelectionValues.entry(appointment.getKey().toString(), formatDate(appointment))));
 			
 			if (freeKV.size() > 0) {
 				appointmentsEl.setKeysAndValues(freeKV.keys(), freeKV.values(), null);

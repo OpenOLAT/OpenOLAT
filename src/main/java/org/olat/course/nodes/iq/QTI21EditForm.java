@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodes.iq;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.io.File;
 import java.util.Date;
@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -239,7 +239,7 @@ public class QTI21EditForm extends FormBasicController {
 		endTestDateElement.setMandatory(wizard);
 		
 		if (wizard) {
-			KeyValues assessmentModeKV = new KeyValues();
+			SelectionValues assessmentModeKV = new SelectionValues();
 			assessmentModeKV.add(entry(ASSESSMENT_MODE_AUTO, translate("assessment.mode.auto")));
 			assessmentModeKV.add(entry(ASSESSMENT_MODE_MANUAL, translate("assessment.mode.manual")));
 			assessmentModeKV.add(entry(ASSESSMENT_MODE_NONE, translate("assessment.mode.none")));
@@ -266,11 +266,11 @@ public class QTI21EditForm extends FormBasicController {
 	protected void initFormCorrection(FormItemContainer formLayout) {
 		String mode = modConfig.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
 		
-		KeyValues correctionKeyValues = new KeyValues();
-		correctionKeyValues.add(KeyValues.entry(correctionModeKeys[0], translate("correction.auto")));
-		correctionKeyValues.add(KeyValues.entry(correctionModeKeys[1], translate("correction.manual")));
+		SelectionValues correctionKeyValues = new SelectionValues();
+		correctionKeyValues.add(SelectionValues.entry(correctionModeKeys[0], translate("correction.auto")));
+		correctionKeyValues.add(SelectionValues.entry(correctionModeKeys[1], translate("correction.manual")));
 		if(correctionModeKeys[2].equals(mode) || IQEditController.isGradingEnabled(modConfig)) {
-			correctionKeyValues.add(KeyValues.entry(correctionModeKeys[2], translate("correction.grading")));
+			correctionKeyValues.add(SelectionValues.entry(correctionModeKeys[2], translate("correction.grading")));
 		}
 		
 		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout,
@@ -295,9 +295,9 @@ public class QTI21EditForm extends FormBasicController {
 			}
 		}
 		
-		KeyValues visibilityKeyValues = new KeyValues();
-		visibilityKeyValues.add(KeyValues.entry(IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.visible")));
-		visibilityKeyValues.add(KeyValues.entry(IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.not.visible")));
+		SelectionValues visibilityKeyValues = new SelectionValues();
+		visibilityKeyValues.add(SelectionValues.entry(IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.visible")));
+		visibilityKeyValues.add(SelectionValues.entry(IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.not.visible")));
 		scoreVisibilityAfterCorrectionEl = uifactory.addRadiosVertical("results.visibility.after.correction", "results.visibility.after.correction", formLayout,
 				visibilityKeyValues.keys(), visibilityKeyValues.values());
 		scoreVisibilityAfterCorrectionEl.setVisible(!selfAssessment);

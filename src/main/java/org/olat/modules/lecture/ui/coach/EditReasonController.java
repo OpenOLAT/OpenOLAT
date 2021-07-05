@@ -44,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
@@ -145,10 +145,10 @@ public class EditReasonController extends FormBasicController {
 		}
 
 		AbsenceCategory currentCategory = noticeWrapper.getAbsenceCategory();
-		KeyValues absenceKeyValues = new KeyValues();
+		SelectionValues absenceKeyValues = new SelectionValues();
 		for(AbsenceCategory absenceCategory: absenceCategories) {
 			if(absenceCategory.isEnabled() || absenceCategory.equals(currentCategory)) {
-				absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+				absenceKeyValues.add(SelectionValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
 			}
 		}
 		absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", "noticed.category", formLayout,

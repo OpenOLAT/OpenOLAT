@@ -19,7 +19,7 @@
  */
 package org.olat.course.editor.overview;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -161,7 +161,7 @@ public class BulkChangeController extends FormBasicController {
 		durationEl = uifactory.addTextElement("config.duration", 128, "", lpCont);
 		decorate(durationEl, lpCont);
 		
-		KeyValues obligationKV = new KeyValues();
+		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
 		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
 		obligationEl = uifactory.addRadiosHorizontal("config.obligation", lpCont, obligationKV.keys(), obligationKV.values());

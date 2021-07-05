@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.List;
 import java.util.function.Function;
@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -91,7 +91,7 @@ public class CreateDocumentController extends FormBasicController {
 		FormLayoutContainer docCont = FormLayoutContainer.createDefaultFormLayout("doc", getTranslator());
 		formLayout.add(docCont);
 		
-		KeyValues docTypeKV = new KeyValues();
+		SelectionValues docTypeKV = new SelectionValues();
 		for (int i = 0; i < templates.size(); i++) {
 			DocTemplate docTemplate = templates.get(i);
 			String name = docTemplate.getName() + " (." + docTemplate.getSuffix() + ")";

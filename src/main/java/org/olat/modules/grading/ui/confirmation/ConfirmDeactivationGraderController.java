@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -124,10 +124,10 @@ public class ConfirmDeactivationGraderController extends FormBasicController {
 		}
 		replacements.remove(grader);
 		
-		KeyValues replacementKeyValues = new KeyValues();
-		replacementKeyValues.add(KeyValues.entry("-", translate("confirm.deactivate.replacement.none")));
+		SelectionValues replacementKeyValues = new SelectionValues();
+		replacementKeyValues.add(SelectionValues.entry("-", translate("confirm.deactivate.replacement.none")));
 		for(Identity identity:replacements) {
-			replacementKeyValues.add(KeyValues.entry(identity.getKey().toString(), userManager.getUserDisplayName(identity)));
+			replacementKeyValues.add(SelectionValues.entry(identity.getKey().toString(), userManager.getUserDisplayName(identity)));
 		}
 		replacementEl = uifactory.addDropdownSingleselect("replacements", "confirm.deactivate.replacement", formLayout,
 				replacementKeyValues.keys(), replacementKeyValues.values());

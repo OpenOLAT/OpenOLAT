@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -133,10 +133,10 @@ public class CourseScoreController extends FormBasicController {
 		flc.removeAll();
 		setFormTitle("options.score.title");
 		
-		KeyValues scoreKV = new KeyValues();
-		scoreKV.add(KeyValues.entry(SCORE_VALUE_NONE, translate( "options.score.points.none")));
-		scoreKV.add(KeyValues.entry(STCourseNode.CONFIG_SCORE_VALUE_SUM, translate("options.score.points.sum")));
-		scoreKV.add(KeyValues.entry(STCourseNode.CONFIG_SCORE_VALUE_AVG, translate("options.score.points.average")));
+		SelectionValues scoreKV = new SelectionValues();
+		scoreKV.add(SelectionValues.entry(SCORE_VALUE_NONE, translate( "options.score.points.none")));
+		scoreKV.add(SelectionValues.entry(STCourseNode.CONFIG_SCORE_VALUE_SUM, translate("options.score.points.sum")));
+		scoreKV.add(SelectionValues.entry(STCourseNode.CONFIG_SCORE_VALUE_AVG, translate("options.score.points.average")));
 		scoreEl = uifactory.addDropdownSingleselect("options.score.points", formLayout, scoreKV.keys(), scoreKV.values());
 		scoreEl.setEnabled(editable);
 		ICourse course = CourseFactory.loadCourse(courseEntry);

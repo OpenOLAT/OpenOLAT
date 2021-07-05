@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodes.co;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
@@ -81,7 +81,7 @@ public class COToolRecipientsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tool.title");
 		
-		KeyValues recipientKV = new KeyValues();
+		SelectionValues recipientKV = new SelectionValues();
 		for (Recipients recipient : Recipients.values()) {
 			recipientKV.add(entry(recipient.name(), translate(recipient.getI18nKey())));
 		}

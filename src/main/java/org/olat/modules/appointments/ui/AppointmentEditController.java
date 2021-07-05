@@ -20,7 +20,7 @@
 package org.olat.modules.appointments.ui;
 
 import static java.util.Arrays.asList;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.getSelectedTemplate;
 import static org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper.isWebcamLayoutAvailable;
 
@@ -42,7 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -203,7 +203,7 @@ public class AppointmentEditController extends FormBasicController {
 		if (appointmentsService.isBigBlueButtonEnabled() || appointmentsService.isTeamsEnabled()) {
 			meetingSpacer = uifactory.addSpacerElement("meeting.spacer", formLayout, false);
 			
-			KeyValues meetingKV = new KeyValues();
+			SelectionValues meetingKV = new SelectionValues();
 			meetingKV.add(entry(KEY_NO, translate("appointment.meeting.no")));
 			if (appointmentsService.isBigBlueButtonEnabled()) {
 				meetingKV.add(entry(KEY_BIGBLUEBUTTON, translate("appointment.meeting.bigbluebutton")));
@@ -228,11 +228,11 @@ public class AppointmentEditController extends FormBasicController {
 			welcomeEl = uifactory.addRichTextElementForStringDataMinimalistic("meeting.welcome", "meeting.welcome", welcome, 8, 60, formLayout, getWindowControl());
 			welcomeEl.setEnabled(bbbEditable);
 			
-			KeyValues templatesKV = new KeyValues();
+			SelectionValues templatesKV = new SelectionValues();
 			Long selectedTemplateKey = bbbMeeting == null || bbbMeeting.getTemplate() == null ? null : bbbMeeting.getTemplate().getKey();
 			templates = appointmentsService.getBigBlueButtonTemplates(() -> topic.getEntry().getKey(), getIdentity(), ureq.getUserSession().getRoles(), selectedTemplateKey);
-			templates.forEach(template -> templatesKV.add(KeyValues.entry(template.getKey().toString(), template.getName())));
-			templatesKV.sort(KeyValues.VALUE_ASC);
+			templates.forEach(template -> templatesKV.add(SelectionValues.entry(template.getKey().toString(), template.getName())));
+			templatesKV.sort(SelectionValues.VALUE_ASC);
 			templateEl = uifactory.addDropdownSingleselect("meeting.template", "meeting.template", formLayout,
 					templatesKV.keys(), templatesKV.values());
 			templateEl.addActionListener(FormEvent.ONCHANGE);
@@ -246,10 +246,10 @@ public class AppointmentEditController extends FormBasicController {
 				}
 			}
 		
-			KeyValues layoutKeyValues = new KeyValues();
-			layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
+			SelectionValues layoutKeyValues = new SelectionValues();
+			layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
 			if(isWebcamLayoutAvailable(getSelectedTemplate(templateEl, templates))) {
-				layoutKeyValues.add(KeyValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
+				layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.webcam.name(), translate("layout.webcam")));
 			}
 			
 			String[] yesNoValues = new String[] { translate("yes"), translate("no")  };
@@ -330,10 +330,10 @@ public class AppointmentEditController extends FormBasicController {
 			teamsFollowupTimeEl = uifactory.addTextElement("meeting.followupTime.teams", "meeting.followupTime", 8, followup, formLayout);
 			teamsFollowupTimeEl.setEnabled(teamsEditable);
 
-			KeyValues presentersKeyValues = new KeyValues();
-			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
-			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.ORGANIZATION.name(), translate("meeting.presenters.organization")));
-			presentersKeyValues.add(KeyValues.entry(OnlineMeetingPresenters.EVERYONE.name(), translate("meeting.presenters.everyone")));
+			SelectionValues presentersKeyValues = new SelectionValues();
+			presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), translate("meeting.presenters.role")));
+			presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.ORGANIZATION.name(), translate("meeting.presenters.organization")));
+			presentersKeyValues.add(SelectionValues.entry(OnlineMeetingPresenters.EVERYONE.name(), translate("meeting.presenters.everyone")));
 			presentersEl = uifactory.addDropdownSingleselect("meeting.presenters", formLayout, presentersKeyValues.keys(), presentersKeyValues.values());
 			presentersEl.setMandatory(true);
 			presentersEl.setEnabled(teamsEditable);

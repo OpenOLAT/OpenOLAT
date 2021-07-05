@@ -19,7 +19,7 @@
  */
 package org.olat.modules.appointments.ui;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -44,7 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -140,7 +140,7 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		configCont.setRootForm(mainForm);
 		formLayout.add(configCont);
 		
-		KeyValues moveKV = new KeyValues();
+		SelectionValues moveKV = new SelectionValues();
 		moveKV.add(entry(KEY_NONE, translate("duplicate.move.none")));
 		moveKV.add(entry(KEY_PERIOD, translate("duplicate.move.period")));
 		moveKV.add(entry(KEY_FIRST, translate("duplicate.move.first")));

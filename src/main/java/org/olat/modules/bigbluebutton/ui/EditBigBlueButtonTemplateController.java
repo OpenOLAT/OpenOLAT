@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -152,10 +152,10 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		externalEl.setElementCssClass("o_sel_bbb_template_external");
 		externalEl.select(onKeys[0], external);
 		
-		KeyValues joinKeyValues = new KeyValues();
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
+		SelectionValues joinKeyValues = new SelectionValues();
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
 		joinPolicyEl = uifactory.addDropdownSingleselect("template.join.policy", "template.join.policy", formLayout,
 				joinKeyValues.keys(), joinKeyValues.values());
 		if(template != null && template.getJoinPolicyEnum() != null) {
@@ -164,9 +164,9 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 			joinPolicyEl.select(JoinPolicyEnum.disabled.name(), true);
 		}
 		
-		KeyValues rolesKeyValues = new KeyValues();
+		SelectionValues rolesKeyValues = new SelectionValues();
 		for(BigBlueButtonTemplatePermissions role:BigBlueButtonTemplatePermissions.values()) {
-			rolesKeyValues.add(KeyValues.entry(role.name(), translate("role.".concat(role.name()))));
+			rolesKeyValues.add(SelectionValues.entry(role.name(), translate("role.".concat(role.name()))));
 		}
 		rolesEl = uifactory.addCheckboxesVertical("template.roles", "template.roles", formLayout,
 				rolesKeyValues.keys(), rolesKeyValues.values(), 1);

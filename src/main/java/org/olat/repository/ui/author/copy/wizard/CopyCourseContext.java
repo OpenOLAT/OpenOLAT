@@ -85,7 +85,6 @@ public class CopyCourseContext {
 	private List<Identity> newCoaches;
 	
 	// ExecutionStep
-	private CopyType executionCopyType;
 	private ExecutionType executionType;
 	private Date beginDate;
 	private Date endDate;
@@ -129,6 +128,24 @@ public class CopyCourseContext {
 	private CopyType lectureBlockCopyType;
 	private CopyType customLectureBlockCopyType;
 	private List<LectureBlockRow> lectureBlockRows;
+	
+	// Load config from module
+	public void loadFromWizardConfig(CopyCourseWizardModule wizardModule) {
+		setMetadataCopyType(wizardModule.getMetaDataCopyType());
+		setGroupCopyType(wizardModule.getGroupsCopyType());
+		setOwnersCopyType(wizardModule.getOwnersCopyType());
+		setCoachesCopyType(wizardModule.getCoachesCopyType());
+		setCatalogCopyType(wizardModule.getCatalogCopyType());
+		setDisclaimerCopyType(wizardModule.getDisclaimerCopyType());
+		
+		setBlogCopyType(wizardModule.getBlogCopyType());
+		setFolderCopyType(wizardModule.getFolderCopyType());
+		setWikiCopyType(wizardModule.getWikiCopyType());
+		
+		setReminderCopyType(wizardModule.getReminderCopyType());
+		setAssessmentModeCopyType(wizardModule.getAssessmentCopyType());
+		setLectureBlockCopyType(wizardModule.getLectureBlockCopyType());
+	}
 	
 	public Identity getExecutingIdentity() {
 		return executingIdentity;
@@ -590,7 +607,8 @@ public class CopyCourseContext {
 		selectNew,
 		createNew,
 		ignore,
-		custom;
+		custom,
+		automatic;
 	}
 	
 	public enum ExecutionType {

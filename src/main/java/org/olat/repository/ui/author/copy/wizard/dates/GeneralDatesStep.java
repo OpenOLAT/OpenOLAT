@@ -35,8 +35,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -175,9 +175,9 @@ public class GeneralDatesStep extends BasicStep {
 			tableItems.setRootForm(mainForm);
 			formLayout.add(tableItems);
 			
-			KeyValues obligationModes = new KeyValues();
-			KeyValue optional = new KeyValue(AssessmentObligation.optional.name(), translate("config.obligation.optional"));
-			KeyValue mandatory = new KeyValue(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory"));
+			SelectionValues obligationModes = new SelectionValues();
+			SelectionValue optional = new SelectionValue(AssessmentObligation.optional.name(), translate("config.obligation.optional"));
+			SelectionValue mandatory = new SelectionValue(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory"));
 			obligationModes.add(optional, mandatory);
 			
 			for (OverviewRow row : context.getCourseNodes()) {

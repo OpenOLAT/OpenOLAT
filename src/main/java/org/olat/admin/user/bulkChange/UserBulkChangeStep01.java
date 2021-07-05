@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -198,7 +198,7 @@ class UserBulkChangeStep01 extends BasicStep {
 			formLayout.add(innerFormLayout);
 			
 			if(userBulkChanges.getOrganisation() == null) {
-				KeyValues orgKeyValues = getOrganisationKeyValues(ureq);
+				SelectionValues orgKeyValues = getOrganisationKeyValues(ureq);
 				if(!orgKeyValues.isEmpty()) {
 					String[] keys = orgKeyValues.keys();
 					organisationEl = uifactory.addDropdownSingleselect("organisations", "organisations", innerFormLayout,
@@ -262,16 +262,16 @@ class UserBulkChangeStep01 extends BasicStep {
 			}
 		}
 		
-		private KeyValues getOrganisationKeyValues(UserRequest ureq) {
+		private SelectionValues getOrganisationKeyValues(UserRequest ureq) {
 			Roles roles = ureq.getUserSession().getRoles();
 			List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
 					OrganisationRoles.administrator, OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
 			if(organisations.size() > 1) {
 				Collections.sort(organisations, new OrganisationNameComparator(getLocale()));
 			}
-			KeyValues organisationKeyValues = new KeyValues();
+			SelectionValues organisationKeyValues = new SelectionValues();
 			for(Organisation organisation:organisations) {
-				organisationKeyValues.add(KeyValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
+				organisationKeyValues.add(SelectionValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
 			}
 			return organisationKeyValues;
 		}

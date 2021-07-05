@@ -40,7 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -189,9 +189,9 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		if (wizardsEnabled) {
 			List<RepositoryWizardProvider> wizardProviders = wizardService.getProviders(handler.getSupportedType());
 			if (!wizardProviders.isEmpty()) {
-				KeyValues wizardKV = new KeyValues();
-				wizardProviders.forEach(provider -> wizardKV.add(KeyValues.entry(provider.getType(), provider.getDisplayName(getLocale()))));
-				wizardKV.sort(KeyValues.VALUE_ASC);
+				SelectionValues wizardKV = new SelectionValues();
+				wizardProviders.forEach(provider -> wizardKV.add(SelectionValues.entry(provider.getType(), provider.getDisplayName(getLocale()))));
+				wizardKV.sort(SelectionValues.VALUE_ASC);
 				wizardEl = uifactory.addRadiosVertical("csc.wizard", formLayout, wizardKV.keys(), wizardKV.values());
 				wizardEl.enableNoneSelection();
 			}

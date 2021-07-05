@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -190,8 +190,8 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 		}
 		
 		if(!identityKeysWithCompensations.isEmpty()) {
-			KeyValues keyValues = new KeyValues();
-			keyValues.add(KeyValues.entry("on", translate("retrievetest.confirm.with.compensation")));
+			SelectionValues keyValues = new SelectionValues();
+			keyValues.add(SelectionValues.entry("on", translate("retrievetest.confirm.with.compensation")));
 			withCompensationEl = uifactory.addCheckboxesHorizontal("with.compensation", null, formLayout,
 					keyValues.keys(), keyValues.values());
 		}

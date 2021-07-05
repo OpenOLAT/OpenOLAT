@@ -19,7 +19,7 @@
  */
 package org.olat.course.nodes.ms;
 
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 
@@ -42,7 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -272,7 +272,7 @@ public class MSConfigController extends FormBasicController {
 		String scoreKey = scoreEl.isOneSelected()
 				? scoreEl.getSelectedKey()
 				: config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
-		KeyValues scoreKV = new KeyValues();
+		SelectionValues scoreKV = new SelectionValues();
 		scoreKV.add(entry(MSCourseNode.CONFIG_VALUE_SCORE_NONE, translate("form.score.none")));
 		scoreKV.add(entry(MSCourseNode.CONFIG_VALUE_SCORE_MANUAL, translate("form.score.manual")));
 		if (evaluationFormEnabledEl.isAtLeastSelected(1)) {

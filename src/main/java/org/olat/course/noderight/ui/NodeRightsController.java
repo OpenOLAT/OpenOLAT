@@ -43,7 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -199,7 +199,7 @@ public class NodeRightsController extends FormBasicController {
 		FormLayoutContainer cont = wrapper.getContainer();
 		
 		Collection<NodeRightRole> roles = wrapper.getType().getRoles();
-		KeyValues rolesKV = new KeyValues();
+		SelectionValues rolesKV = new SelectionValues();
 		addRole(rolesKV, roles, NodeRightRole.owner);
 		addRole(rolesKV, roles, NodeRightRole.coach);
 		addRole(rolesKV, roles, NodeRightRole.participant);
@@ -219,9 +219,9 @@ public class NodeRightsController extends FormBasicController {
 		}
 	}
 	
-	private void addRole(KeyValues rolesKV, Collection<NodeRightRole> roles, NodeRightRole role) {
+	private void addRole(SelectionValues rolesKV, Collection<NodeRightRole> roles, NodeRightRole role) {
 		if (roles.contains(role)) {
-			rolesKV.add(KeyValues.entry(role.name(), translateRole(role)));
+			rolesKV.add(SelectionValues.entry(role.name(), translateRole(role)));
 		}
 	}
 	

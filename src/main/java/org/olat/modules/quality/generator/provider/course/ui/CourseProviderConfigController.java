@@ -42,7 +42,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -133,9 +133,9 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		
 		// daily days of week
 		DayOfWeek[] dayOfWeeks = DayOfWeek.values();
-		KeyValues dayOfWeekKV = new KeyValues();
+		SelectionValues dayOfWeekKV = new SelectionValues();
 		for (int i = 0; i < dayOfWeeks.length; i++) {
-			dayOfWeekKV.add(KeyValues.entry(dayOfWeeks[i].name(), dayOfWeeks[i].getDisplayName(TextStyle.FULL_STANDALONE, getLocale())));
+			dayOfWeekKV.add(SelectionValues.entry(dayOfWeeks[i].name(), dayOfWeeks[i].getDisplayName(TextStyle.FULL_STANDALONE, getLocale())));
 		}
 		daysOfWeekEl = uifactory.addCheckboxesHorizontal("config.days.of.week", formLayout, dayOfWeekKV.keys(), dayOfWeekKV.values());
 		String dayOfWeekConfig = configs.getValue(CourseProvider.CONFIG_KEY_DAILY_WEEKDAYS);

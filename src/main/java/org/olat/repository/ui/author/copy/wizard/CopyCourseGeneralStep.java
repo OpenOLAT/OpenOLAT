@@ -27,8 +27,8 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
-import org.olat.core.gui.components.util.KeyValues.KeyValue;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -65,12 +65,16 @@ public class CopyCourseGeneralStep extends BasicStep {
 		
 		steps.setEditDates(context.hasDateDependantNodes());
 		
-		setNextStep(GeneralDatesStep.create(ureq, null, steps));
+		if (steps.isAdvancedMode()) {
+			setNextStep(CopyCourseStepsStep.create(ureq, steps));
+		} else {
+			setNextStep(GeneralDatesStep.create(ureq, null, steps));
+		}
 	}
 
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, !nextStep().equals(NOSTEP), nextStep().equals(NOSTEP));
+		return new PrevNextFinishConfig(false, !nextStep().equals(NOSTEP), nextStep().equals(NOSTEP));
 	}
 
 	@Override
@@ -95,6 +99,8 @@ public class CopyCourseGeneralStep extends BasicStep {
 		
 		@Autowired
 		private RepositoryService repositoryService;
+		@Autowired
+		private CopyCourseWizardModule wizardModule;
 		
 		public GeneralStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -168,11 +174,11 @@ public class CopyCourseGeneralStep extends BasicStep {
 			formLayout.add(copyModeLayout);
 			
 			// Copy mode
-			KeyValue custom = new KeyValue(CUSTOM_MODE, translate(CUSTOM_MODE));
-			KeyValue automatic = new KeyValue(AUTOMATIC_MODE, translate(AUTOMATIC_MODE));
-			KeyValues modes = new KeyValues(automatic, custom);
+			SelectionValue custom = new SelectionValue(CUSTOM_MODE, translate(CUSTOM_MODE), translate(CUSTOM_MODE + ".desc"));
+			SelectionValue automatic = new SelectionValue(AUTOMATIC_MODE, translate(AUTOMATIC_MODE), translate(AUTOMATIC_MODE + ".desc"));
+			SelectionValues modes = new SelectionValues(automatic, custom);
 			
-			copyModeEl = uifactory.addRadiosVertical("wizard.mode", copyModeLayout, modes.keys(), modes.values());
+			copyModeEl = uifactory.addCardSingleSelectVertical("wizard.mode", copyModeLayout, modes.keys(), modes.values(), modes.descriptions(), null);
 			copyModeEl.select(steps.isAdvancedMode() ? custom.getKey() : automatic.getKey(), true);
 			copyModeEl.addActionListener(FormEvent.ONCHANGE);
 		}

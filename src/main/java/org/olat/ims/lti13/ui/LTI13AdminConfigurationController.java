@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.util.KeyValues;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
@@ -88,10 +88,10 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		
 		initOrganisationsEl(formLayout);
 		
-		KeyValues rolesEntriesValues = new KeyValues();
-		rolesEntriesValues.add(KeyValues.entry(LTI13Roles.author.name(), translate("role.author.plus")));
-		rolesEntriesValues.add(KeyValues.entry(LTI13Roles.learnresourcemanager.name(), translate("role.learnresourcemanager")));
-		rolesEntriesValues.add(KeyValues.entry(LTI13Roles.administrator.name(), translate("role.administrator")));
+		SelectionValues rolesEntriesValues = new SelectionValues();
+		rolesEntriesValues.add(SelectionValues.entry(LTI13Roles.author.name(), translate("role.author.plus")));
+		rolesEntriesValues.add(SelectionValues.entry(LTI13Roles.learnresourcemanager.name(), translate("role.learnresourcemanager")));
+		rolesEntriesValues.add(SelectionValues.entry(LTI13Roles.administrator.name(), translate("role.administrator")));
 		deploymentRolesForEntriesEl = uifactory.addCheckboxesVertical("lti13.deployment.roles.entries", formLayout,
 				rolesEntriesValues.keys(), rolesEntriesValues.values(), 1);
 		List<LTI13Roles> rolesForEntries = lti13Module.getDeploymentRolesListForRepositoryEntries();
@@ -101,12 +101,12 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 			}
 		}
 		
-		KeyValues rolesGroupsValues = new KeyValues();
-		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.groupCoach.name(), translate("role.group.coach")));
-		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.groupCoachAndAuthor.name(), translate("role.group.coach.author")));
-		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.author.name(), translate("role.author")));
-		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.groupmanager.name(), translate("role.groupmanager")));
-		rolesGroupsValues.add(KeyValues.entry(LTI13Roles.administrator.name(), translate("role.administrator")));
+		SelectionValues rolesGroupsValues = new SelectionValues();
+		rolesGroupsValues.add(SelectionValues.entry(LTI13Roles.groupCoach.name(), translate("role.group.coach")));
+		rolesGroupsValues.add(SelectionValues.entry(LTI13Roles.groupCoachAndAuthor.name(), translate("role.group.coach.author")));
+		rolesGroupsValues.add(SelectionValues.entry(LTI13Roles.author.name(), translate("role.author")));
+		rolesGroupsValues.add(SelectionValues.entry(LTI13Roles.groupmanager.name(), translate("role.groupmanager")));
+		rolesGroupsValues.add(SelectionValues.entry(LTI13Roles.administrator.name(), translate("role.administrator")));
 		deploymentRolesForGroupsEl = uifactory.addCheckboxesVertical("lti13.deployment.roles.groups", formLayout,
 				rolesGroupsValues.keys(), rolesGroupsValues.values(), 1);
 		List<LTI13Roles> rolesForGroups = lti13Module.getDeploymentRolesListForBusinessGroups();
@@ -125,9 +125,9 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		List<Organisation> organisations = organisationService.getOrganisations(OrganisationStatus.notDelete());
 		String defaultLtiOrgKey = lti13Module.getDefaultOrganisationKey();
 		
-		KeyValues keyValues = new KeyValues();
+		SelectionValues keyValues = new SelectionValues();
 		for(Organisation organisation:organisations) {
-			keyValues.add(KeyValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
+			keyValues.add(SelectionValues.entry(organisation.getKey().toString(), organisation.getDisplayName()));
 		}
 		organisationsEl = uifactory.addDropdownSingleselect("organisations", "lti13.default.organisation", formLayout,
 				keyValues.keys(), keyValues.values());
