@@ -529,6 +529,35 @@ public class OOGraphene {
 		waitElementDisappears(datePickerBy, 5, browser);
 	}
 	
+	/**
+	 * Select the next month in the jQuery UI (need to be open).
+	 * 
+	 * @param browser The browser
+	 */
+	public static final void selectNextMonthInDatePicker(WebDriver browser) {
+		By nextBy = By.cssSelector("#ui-datepicker-div div.ui-datepicker-header a.ui-datepicker-next");
+		waitElement(nextBy, browser);
+		browser.findElement(nextBy).click();
+		waitElement(nextBy, browser);
+	}
+	
+	/**
+	 * Select the day in the jQuery UI date picker (need to be open).
+	 * 
+	 * @param day The day
+	 * @param browser The browser
+	 */
+	public static final void selectDayInDatePicker(int day, WebDriver browser) {
+		By datePickerBy = By.id("ui-datepicker-div");
+		waitElement(datePickerBy, browser);
+		
+		By dayBy = By.xpath("//div[@id='ui-datepicker-div']//td//a[normalize-space(text())='" + day + "']");
+		waitElement(dayBy, browser);
+		browser.findElement(dayBy).click();
+		
+		waitElementDisappears(datePickerBy, 5, browser);
+	}
+	
 	public static final void flexiTableSelectAll(WebDriver browser) {
 		By selectAll = By.xpath("//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
 		waitElement(selectAll, browser);

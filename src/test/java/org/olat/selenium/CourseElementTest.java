@@ -2221,6 +2221,64 @@ public class CourseElementTest extends Deployments {
 	
 	
 	/**
+	 * An author creates a course with a course element of type BigBlueButton,
+	 * add 4 meetings planned for next month in the edit list. Than it goes the meetings list
+	 * and goes to the page dedicated to join the meeting.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithBigBlueButtonMultipleMeetings()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-With-BBB-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		String nodeTitle = "BBB Node-2";
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("bigbluebutton")
+			.nodeTitle(nodeTitle);
+		
+		//publish the course
+		courseEditor
+			.autoPublish();
+		
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		String meetingName = "Recurring meeting";
+		BigBlueButtonPage bigBlueButton = new BigBlueButtonPage(browser);
+		bigBlueButton
+			.assertOnRuntime()
+			.selectEditMeetingsList()
+			.addMultipleMeetings(meetingName, "Classroom")
+			.nextToDatesList()
+			.assertOnDatesList(5)
+			.finishRecurringMeetings()
+			.assertOnList(meetingName, 4)
+			.selectMeetingsList()
+			.selectMeeting(meetingName, 1)
+			.assertOnMeeting(meetingName);
+	}
+	
+	
+	/**
 	 * An author creates a course with a course element of type Microsoft Teams,
 	 * add a meeting in the edit list, go the meetings list and goes to the page
 	 * dedicated to the meeting. The selenium works without teams to be configured

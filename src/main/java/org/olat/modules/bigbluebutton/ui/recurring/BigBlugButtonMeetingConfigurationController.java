@@ -98,8 +98,11 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_bbb_recurring_meeting_form");
+		
 		String name = meetingsContext.getName();
 		nameEl = uifactory.addTextElement("meeting.name", "meeting.name", 128, name, formLayout);
+		nameEl.setElementCssClass("o_sel_bbb_recurring_meeting_name");
 		nameEl.setMandatory(true);
 		if(!StringHelper.containsNonWhitespace(name)) {
 			nameEl.setFocus(true);
@@ -125,6 +128,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		String[] templatesKeys = templatesKeyValues.keys();
 		templateEl = uifactory.addDropdownSingleselect("meeting.template", "meeting.template", formLayout,
 				templatesKeys, templatesKeyValues.values());
+		templateEl.setElementCssClass("o_sel_bbb_recurring_meeting_template");
 		templateEl.addActionListener(FormEvent.ONCHANGE);
 		templateEl.setMandatory(true);
 		templateEl.setElementCssClass("o_omit_margin");
@@ -196,9 +200,11 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 				templates, false);
 		
 		startRecurringDateEl = uifactory.addDateChooser("meeting.recurring.start", "meeting.recurring.start", null, formLayout);
+		startRecurringDateEl.setElementCssClass("o_sel_bbb_recurring_meeting_start");
 		startRecurringDateEl.setMandatory(true);
 		
 		endRecurringDateEl = uifactory.addDateChooser("meeting.recurring.end", "meeting.recurring.end", null, formLayout);
+		endRecurringDateEl.setElementCssClass("o_sel_bbb_recurring_meeting_end");
 		endRecurringDateEl.setMandatory(true);
 		
 		Date startDate = new Date();
