@@ -408,7 +408,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 		link.setUserObject(row);
 		if (!selected) {
 			link.setIconLeftCSS("o_icon o_icon_lg o_icon_selected");
-			link.setElementCssClass("btn-primary");
+			link.setElementCssClass("o_sel_appointment_select btn-primary");
+		} else {
+			link.setElementCssClass("o_sel_appointment_select");
 		}
 		row.setSelectLink(link);
 	}

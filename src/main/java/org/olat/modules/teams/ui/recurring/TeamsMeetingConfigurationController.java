@@ -82,8 +82,11 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_teams_recurring_form");
+		
 		String name = meetingsContext.getName();
 		nameEl = uifactory.addTextElement("meeting.subject", "meeting.subject", 128, name, formLayout);
+		nameEl.setElementCssClass("o_sel_teams_recurring_meeting_name");
 		nameEl.setMandatory(true);
 		if(!StringHelper.containsNonWhitespace(name)) {
 			nameEl.setFocus(true);
@@ -96,9 +99,11 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		mainPresenterEl = uifactory.addTextElement("meeting.main.presenter", "meeting.main.presenter", 128, mainPresenter, formLayout);
 		
 		startRecurringDateEl = uifactory.addDateChooser("meeting.recurring.start", "meeting.recurring.start", null, formLayout);
+		startRecurringDateEl.setElementCssClass("o_sel_teams_recurring_meeting_start");
 		startRecurringDateEl.setMandatory(true);
 		
 		endRecurringDateEl = uifactory.addDateChooser("meeting.recurring.end", "meeting.recurring.end", null, formLayout);
+		endRecurringDateEl.setElementCssClass("o_sel_teams_recurring_meeting_end");
 		endRecurringDateEl.setMandatory(true);
 		
 		Date startDate = new Date();

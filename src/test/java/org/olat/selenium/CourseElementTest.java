@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.DayOfWeek;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -2316,6 +2317,64 @@ public class CourseElementTest extends Deployments {
 	
 	
 	/**
+	 * An author creates a course with a course element of type BigBlueButton,
+	 * add 4 meetings planned for next month in the edit list. Than it goes the meetings list
+	 * and goes to the page dedicated to join the meeting.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithBigBlueButtonMultipleMeetings()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-With-BBB-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		String nodeTitle = "BBB Node-2";
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("bigbluebutton")
+			.nodeTitle(nodeTitle);
+		
+		//publish the course
+		courseEditor
+			.autoPublish();
+		
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		String meetingName = "Recurring meeting";
+		BigBlueButtonPage bigBlueButton = new BigBlueButtonPage(browser);
+		bigBlueButton
+			.assertOnRuntime()
+			.selectEditMeetingsList()
+			.addMultipleDailyMeetings(meetingName, "Classroom")
+			.nextToDatesList()
+			.assertOnDatesList(5)
+			.finishRecurringMeetings()
+			.assertOnList(meetingName, 4)
+			.selectMeetingsList()
+			.selectMeeting(meetingName, 1)
+			.assertOnMeeting(meetingName);
+	}
+	
+	
+	/**
 	 * An author creates a course with a course element of type Microsoft Teams,
 	 * add a meeting in the edit list, go the meetings list and goes to the page
 	 * dedicated to the meeting. The selenium works without teams to be configured
@@ -2366,10 +2425,76 @@ public class CourseElementTest extends Deployments {
 		teams
 			.assertOnRuntime()
 			.selectEditMeetingsList()
-			.addSingleMeeting(meetingName, "Classroom")
+			.addSingleMeeting(meetingName)
 			.assertOnList(meetingName)
 			.selectMeetingsList()
 			.assertOnList(meetingName)
+			.selectMeeting(meetingName)
+			.assertOnMeeting(meetingName);
+		
+		// Teams is not configured, errors
+		OOGraphene.closeErrorBox(browser);
+		
+		teams
+			.assertOnJoinDisabled();
+	}
+	
+	
+
+	/**
+	 * An author creates a course with a course element of type Teams, add a
+	 * serie of weekly meetings in the edit list, then goes in the meetings list
+	 * and goes to the page dedicated to join the meeting.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithTeamsWeeklyMeetings()
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Teams-2-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		String nodeTitle = "Teams-2";
+		//create a course element of type CP with the CP that we create above
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("msteams")
+			.nodeTitle(nodeTitle);
+		
+		//publish the course
+		courseEditor
+			.autoPublish();
+		
+		course
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+
+		String meetingName = "Teams meeting";
+		TeamsPage teams = new TeamsPage(browser);
+		teams
+			.assertOnRuntime()
+			.selectEditMeetingsList()
+			.addMultipleWeeklyMeetings(meetingName)
+			.nextToDatesList()
+			.assertOnDatesList(5)
+			.finishRecurringMeetings()
+			.assertOnList(meetingName, 4)
+			.selectMeetingsList()
 			.selectMeeting(meetingName)
 			.assertOnMeeting(meetingName);
 		
@@ -2434,8 +2559,130 @@ public class CourseElementTest extends Deployments {
 			.choose();
 		
 		appointment
-			.assertOnConfirmAppointment(day)
-			.confirmAppointment(day);
+			.assertOnConfirmAppointmentByDay(day)
+			.confirmAppointmentByDay(day);
+	}
+	
+
+	/**
+	 * An author creates a course with an appointment course element, add a topic
+	 * with multiple appointment, add herself to the appointment and confirm the event.
+	 * The course has a second participant which selects an appointment, the author
+	 * confirms it, and the participant checks the confirmation of the appointment.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithRecurringAppointment(@Drone @Participant WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "App-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type appointment
+		String nodeTitle = "App-Week";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		CoursePageFragment course = courseEditor
+			.createNode("appointments")
+			.nodeTitle(nodeTitle)
+			.autoPublish();
+		course
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly)
+			.save()
+			.clickToolbarBack();
+		
+		//add participant
+		MembersPage members = course
+			.members();
+		members
+			.importMembers()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		String topicTitle = "Multi topic";
+		
+		AppointmentPage appointment = new AppointmentPage(browser);
+		appointment
+			.addTopic(topicTitle)
+			.setRecurringTopic(1, 25, 13, 14, DayOfWeek.MONDAY)
+			.saveTopic()
+			.assertOnTopicMultipleMeetings(topicTitle, 3)
+			.addUserToAppointment(1)
+			.searchUserByFirstName(author)
+			.selectAll()
+			.choose();
+		
+		appointment
+			.assertOnConfirmAppointmentByPosition(1)
+			.confirmAppointmentByPosition(1);
+
+		
+		// participant comes in book an appointment
+		LoginPage.load(participantBrowser, deploymentUrl)
+			.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		AppointmentPage participantAppointment = new AppointmentPage(participantBrowser);
+		participantAppointment
+			.assertOnTopicMultipleMeetings(topicTitle, 3)
+			.assertOnSelectAppointmentByPosition(1)
+			.selectAppointmentByPosition(1);
+		
+		// author confirm the participant's appointment
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		appointment
+			.selectTopicAsCoach(topicTitle)
+			.assertOnPlannedAppointmentByPosition(2)
+			.confirmPlannedAppointmentByPosition(2)
+			.assertOnConfirmedAppointmentByPosition(2);
+		
+		// participant check the confirmation
+		participantCourse
+			.clickTree();
+		
+		participantAppointment
+			.selectTopicAsParticipant(topicTitle)
+			.assertOnConfirmedAppointmentByPosition(1);
 	}
 	
 	
