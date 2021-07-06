@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.DayOfWeek;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -2463,8 +2464,130 @@ public class CourseElementTest extends Deployments {
 			.choose();
 		
 		appointment
-			.assertOnConfirmAppointment(day)
-			.confirmAppointment(day);
+			.assertOnConfirmAppointmentByDay(day)
+			.confirmAppointmentByDay(day);
+	}
+	
+
+	/**
+	 * An author creates a course with an appointment course element, add a topic
+	 * with multiple appointment, add herself to the appointment and confirm the event.
+	 * The course has a second participant which selects an appointment, the author
+	 * confirms it, and the participant checks the confirmation of the appointment.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithRecurringAppointment(@Drone @Participant WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "App-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type appointment
+		String nodeTitle = "App-Week";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		CoursePageFragment course = courseEditor
+			.createNode("appointments")
+			.nodeTitle(nodeTitle)
+			.autoPublish();
+		course
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly)
+			.save()
+			.clickToolbarBack();
+		
+		//add participant
+		MembersPage members = course
+			.members();
+		members
+			.importMembers()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		String topicTitle = "Multi topic";
+		
+		AppointmentPage appointment = new AppointmentPage(browser);
+		appointment
+			.addTopic(topicTitle)
+			.setRecurringTopic(1, 25, 13, 14, DayOfWeek.MONDAY)
+			.saveTopic()
+			.assertOnTopicMultipleMeetings(topicTitle, 3)
+			.addUserToAppointment(1)
+			.searchUserByFirstName(author)
+			.selectAll()
+			.choose();
+		
+		appointment
+			.assertOnConfirmAppointmentByPosition(1)
+			.confirmAppointmentByPosition(1);
+
+		
+		// participant comes in book an appointment
+		LoginPage.load(participantBrowser, deploymentUrl)
+			.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		AppointmentPage participantAppointment = new AppointmentPage(participantBrowser);
+		participantAppointment
+			.assertOnTopicMultipleMeetings(topicTitle, 3)
+			.assertOnSelectAppointmentByPosition(1)
+			.selectAppointmentByPosition(1);
+		
+		// author confirm the participant's appointment
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		appointment
+			.selectTopicAsCoach(topicTitle)
+			.assertOnPlannedAppointmentByPosition(2)
+			.confirmPlannedAppointmentByPosition(2)
+			.assertOnConfirmedAppointmentByPosition(2);
+		
+		// participant check the confirmation
+		participantCourse
+			.clickTree();
+		
+		participantAppointment
+			.selectTopicAsParticipant(topicTitle)
+			.assertOnConfirmedAppointmentByPosition(1);
 	}
 	
 	

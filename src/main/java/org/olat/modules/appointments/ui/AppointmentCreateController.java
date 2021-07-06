@@ -279,6 +279,7 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		// Recurring appointments
 		recurringFirstEl = uifactory.addDateChooser("appointments.recurring.first", null, formLayout);
+		recurringFirstEl.setElementCssClass("o_sel_app_topic_recurring_first");
 		recurringFirstEl.setDateChooserTimeEnabled(true);
 		recurringFirstEl.setSecondDate(true);
 		recurringFirstEl.setSameDay(true);
@@ -291,9 +292,11 @@ public class AppointmentCreateController extends FormBasicController {
 		}
 		recurringDaysOfWeekEl = uifactory.addCheckboxesHorizontal("appointments.recurring.days.of.week", formLayout,
 				dayOfWeekKV.keys(), dayOfWeekKV.values());
+		recurringDaysOfWeekEl.setElementCssClass("o_sel_app_topic_recurring_day");
 		recurringDaysOfWeekEl.setMandatory(true);
 		
 		recurringLastEl = uifactory.addDateChooser("appointments.recurring.last", null, formLayout);
+		recurringLastEl.setElementCssClass("o_sel_app_topic_recurring_last");
 		recurringLastEl.setMandatory(true);
 		
 		if (appointmentsService.isBigBlueButtonEnabled() || appointmentsService.isTeamsEnabled()) {
