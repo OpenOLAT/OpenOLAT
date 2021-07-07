@@ -255,6 +255,7 @@
 												<include>${basedir}/target/jquery/jquery/qti/jquery.selectPoint.min.js</include>
 												<include>${basedir}/target/jquery/jquery/qti/jquery.slider.min.js</include>
 												<include>${basedir}/target/jquery/jquery/qti/jquery.countWords.min.js</include>
+												<include>${basedir}/target/jquery/jquery/openolat/jquery.paint.v2.min.js</include>
 											</includes>
 										</aggregation>
 										<aggregation>

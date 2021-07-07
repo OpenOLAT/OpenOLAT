@@ -26,6 +26,7 @@ import static uk.ac.ed.ph.qtiworks.mathassess.MathAssessConstants.MATHS_CONTENT_
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +184,26 @@ public class AssessmentRenderFunctions {
 	        File submittedFile = new File(submissionDir, fileValue.getFileName());
 	        try(InputStream inStream = new FileInputStream(submittedFile)) {
 	        	 byte[] binaryData = IOUtils.toByteArray(inStream);
-	        	 encodedString = new String(Base64.encodeBase64(binaryData), "UTF8");
+	        	 encodedString = new String(Base64.encodeBase64(binaryData), StandardCharsets.UTF_8);
+	        } catch(Exception e) {
+	        	log.error("", e);
+	        }
+		}
+		return encodedString;
+	}
+	
+	public static String getCompanionResponseValue(AssessmentItem assessmentItem, AssessmentTestSession candidateSession, ItemSessionState itemSessionState,
+			Identifier identifier, boolean solutionMode) {
+		Value val = getResponseValue(assessmentItem, itemSessionState, identifier, solutionMode);
+		
+		String encodedString = null;
+		if(val instanceof FileValue) {
+			FileValue fileValue = (FileValue)val;
+			File myStore = CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).getSessionStorage(candidateSession);
+	        File submissionDir = new File(myStore, "submissions");
+	        File submittedFile = new File(submissionDir, fileValue.getFileName() + ".json");
+	        try(InputStream inStream = new FileInputStream(submittedFile)) {
+	        	encodedString = IOUtils.toString(inStream, StandardCharsets.UTF_8);
 	        } catch(Exception e) {
 	        	log.error("", e);
 	        }

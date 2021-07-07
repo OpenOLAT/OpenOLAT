@@ -249,8 +249,6 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js");
 		// hotspot
 		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
-		// drawing
-		jsa.addRequiredStaticJsFile("js/jquery/openolat/jquery.paint.js");
 		//tab
 		jsa.addRequiredStaticJsFile("js/jquery/taboverride/taboverride-4.0.0.min.js");
 		
@@ -274,10 +272,13 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.selectPoint.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.countWords.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.slider.js");
+			jsa.addRequiredStaticJsFile("js/jquery/openolat/jquery.paint.v2.js");
+			jsa.addRequiredStaticJsFile("js/fabricjs/paint.fabric.js");
 		} else {
 			jsa.addRequiredStaticJsFile("js/dragula/dragula.min.js");
 			jsa.addRequiredStaticJsFile("js/jquery/taboverride/jquery.taboverride.min.js");
 			jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.qti.min.js");
+			jsa.addRequiredStaticJsFile("js/fabricjs/paint.fabric.min.js");
 		}
 	}
 	

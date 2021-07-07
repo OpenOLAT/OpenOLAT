@@ -1,0 +1,85 @@
+#set($responseIdentifier = $r.responseUniqueId($interaction))
+#set($containerId = "qtiworks_id_container_" + $responseIdentifier)
+#set($responseValue = $r.getResponseValueAsBase64($interaction.responseIdentifier))
+
+<input type="hidden" id="color_value_form">
+<input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
+<input id="op_${responseIdentifier}" type="hidden" name="qtiworks_response_64_${responseIdentifier}" #if($responseValue && !$responseValue.isEmpty()) value="data:image/png;base64,$responseValue" #else value="" #end />
+	
+<div class="$localName">
+	#if($interaction.getPrompt())
+		<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
+	#end
+	#if($isItemSessionOpen)
+	<div class="btn-toolbar clearfix o_block" role="toolbar">
+		<div id="tools" class="btn-group">
+			<a href="javascript:;" id="brush" class="btn btn-default" title="Brush"><i class="o_icon o_icon_brush"> </i></a>
+			<a href="javascript:;" id="circle" class="btn btn-default" title="Circle"><i class="o_icon o_icon_circle"> </i></a>
+			<a href="javascript:;" id="line" class="btn btn-default" title="Line"><i class="o_icon o_icon_line o_icon-rotate-180"> </i></a>
+			<a href="javascript:;" id="rectangle" class="btn btn-default" title="Rectangle"><i class="o_icon o_icon_rectangle"> </i></a>
+			<a href="javascript:;" id="ellipse" class="btn btn-default" title="Ellipse">Ellipse</a>
+			<a href="javascript:;" id="spray" class="btn btn-default">Spray</a>
+			<a href="javascript:;" id="eraser" class="btn btn-default" title="Eraser"><i class="o_icon o_icon_eraser"> </i></a>
+		</div>
+		<div id="colors" class="btn-group">
+			<a href="javascript:;" class="black btn btn-default" id="#000000"><i class="o_icon o_icon_circle_color"> </i></a>
+			<a href="javascript:;" class="white btn btn-default" id="#FFFFFF"><i class="o_icon o_icon_circle"> </i></a>
+			<a href="javascript:;" class="blue btn btn-default" id='#0000FF'><i class="o_icon o_icon_circle_color"> </i></a>
+			<a href="javascript:;" class="red btn btn-default" id='#FF0000'><i class="o_icon o_icon_circle_color"> </i></a>
+			<a href="javascript:;" class="yellow btn btn-default" id='#FFFF00'><i class="o_icon o_icon_circle_color"> </i></a>
+			<a href="javascript:;" class="green btn btn-default" id='#008000'><i class="o_icon o_icon_circle_color"> </i></a>
+			<a href="javascript:;" class="purple btn btn-default" id='#800080'><i class="o_icon o_icon_circle_color"> </i></a> 
+		</div>
+		<div class="btn-group">
+			<a href="javascript:;" id="clear" class="btn btn-default"><i class="o_icon o_icon_clear_all"> </i></a>
+		</div> 
+	</div>
+	<div id="functions" class="btn-toolbar clearfix">
+		<div class="btn-group">
+			<canvas id="brush_size" width="50" height="50"> </canvas>
+		</div>
+		<div class="btn-group o_slider_width_range">	
+			<div id="width_range_ui"></div>$r.translate("drawing.brushsize")
+		</div>
+		<div class="btn-group o_slider_opacity_range">
+			<div id="opacity_range_ui"></div>$r.translate("drawing.opacity")
+		</div>
+	</div>
+	#end
+	
+	#set($widthWithBorder = $r.parseInt(${interaction.object.width}) + 2)
+	#set($heightWithBorder = $r.parseInt(${interaction.object.height}) + 2)
+	<div id="sketch_${responseIdentifier}" class="sketch" style="border:1px solid black; width:${widthWithBorder}px; height:${heightWithBorder}px;" draggable="false" ondragstart="return false;">
+		<canvas id="paint_${responseIdentifier}" width="${interaction.object.width}" height="${interaction.object.height}" style="background:url('${r.convertLinkFull($interaction.object.data)}') !important;" draggable="false" ondragstart="return false;"></canvas>
+	</div>
+	<script>
+	jQuery(function() {
+		var itemOpen = $isItemSessionOpen; 
+		if(itemOpen) {
+			jQuery('#sketch_${responseIdentifier}').paint({
+				inputHolderId: 'op_${responseIdentifier}',
+				formDispatchFieldId: '$r.formDispatchFieldId'
+			});
+			
+			var val = jQuery('#op_${responseIdentifier}').val();
+			if(!(typeof val == "undefined") && val.length > 0) {
+				var canvas = document.getElementById("paint_${responseIdentifier}");
+				var ctx = canvas.getContext("2d");
+				var image = new Image();
+				image.onload = function() {
+				    ctx.drawImage(image, 0, 0);
+				};
+				image.src = val;
+			}
+		} else {
+			var canvas = document.getElementById("paint_${responseIdentifier}");
+			var ctx = canvas.getContext("2d");
+			var image = new Image();
+			image.onload = function() {
+			    ctx.drawImage(image, 0, 0);
+			};
+			image.src = jQuery('#op_${responseIdentifier}').val();
+		}
+	});
+	</script>
+</div>

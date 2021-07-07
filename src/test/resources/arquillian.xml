@@ -22,7 +22,7 @@
     </container>
    
 	<extension qualifier="webdriver">
-		<property name="browser">${webdriver.browser:chrome}</property>
+		<property name="browser">${webdriver.browser:firefox}</property>
 		<property name="dimensions">1024x800</property>
 		<!--
 		<property name="downloadBinaries">no</property>

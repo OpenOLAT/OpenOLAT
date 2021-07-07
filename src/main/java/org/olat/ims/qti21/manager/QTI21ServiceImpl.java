@@ -439,12 +439,12 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 					Path testPath = cp.getTest();
 					return testPath.toUri();
 				} catch (IOException e) {
-					log.error("Error reading this QTI 2.1 manifest: " + manifestPath, e);
+					log.error("Error reading this QTI 2.1 manifest: {}", manifestPath, e);
 					return null;
 				}
 			});
 		} catch (RuntimeException e) {
-			log.error("Error reading this QTI 2.1 manifest: " + resourceDirectory, e);
+			log.error("Error reading this QTI 2.1 manifest: {}", resourceDirectory, e);
 			return null;
 		}
 	}
@@ -983,7 +983,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 				}
 			}
 		} catch (Exception e) {
-			log.error("Cannot read the issue date of the signature: " + signatureFile, e);
+			log.error("Cannot read the issue date of the signature: {}", signatureFile, e);
 		}
 		return issueDate;
 	}
@@ -1484,25 +1484,34 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
-	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data) {
+	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data, String companionExtension, byte[] companionData) {
 		File submissionDir = getSubmissionDirectory(candidateSession);
 
-        	//add the date in the file
-        	String extension = FileUtils.getFileSuffix(filename);
-        	if(extension != null && extension.length() > 0) {
-        		filename = filename.substring(0, filename.length() - extension.length() - 1);
-        		extension = "." + extension;
-        	} else {
-        		extension = "";
-        	}
-        	String date = testSessionDao.formatDate(new Date());
-        	String datedFilename = FileUtils.normalizeFilename(filename) + "_" + date + extension;
+		//add the date in the file
+		String extension = FileUtils.getFileSuffix(filename);
+		if(extension != null && extension.length() > 0) {
+			filename = filename.substring(0, filename.length() - extension.length() - 1);
+			extension = "." + extension;
+		} else {
+			extension = "";
+		}
+		String date = testSessionDao.formatDate(new Date());
+		String datedFilename = FileUtils.normalizeFilename(filename) + "_" + date + extension;
         	
         	//make sure we don't overwrite an existing file
 		File submittedFile = new File(submissionDir, datedFilename);
 		String renamedFile = FileUtils.rename(submittedFile);
 		if(!datedFilename.equals(renamedFile)) {
 			submittedFile = new File(submissionDir, datedFilename);
+		}
+		
+		if(companionData != null) {
+			File submittedCompanionFile = new File(submittedFile.getParentFile(), submittedFile.getName() + "." + companionExtension);
+			try(FileOutputStream out = new FileOutputStream(submittedCompanionFile)) {
+				out.write(companionData);
+			} catch (IOException e) {
+				log.error("", e);
+			}
 		}
 		
 		try(FileOutputStream out = new FileOutputStream(submittedFile)) {

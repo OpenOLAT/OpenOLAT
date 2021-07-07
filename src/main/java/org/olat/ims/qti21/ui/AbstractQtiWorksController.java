@@ -51,6 +51,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public abstract class AbstractQtiWorksController extends FormBasicController {
 	
 	public static final String PNG_BASE64_PREFIX = "data:image/png;base64,";
+	public static final String JSON_BASE64_PREFIX = "data:application/json;base64,";
 		
 	public AbstractQtiWorksController(UserRequest ureq, WindowControl wControl, String pageName) {
 		super(ureq, wControl, pageName);
@@ -159,13 +160,23 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
                 }
                 
                 String[] responseBase64Values = mainForm.getRequestParameterValues("qtiworks_response_64_" + responseIdentifierString);
-				if(responseBase64Values != null && responseBase64Values.length == 1) {
+				if(responseBase64Values != null && (responseBase64Values.length == 1 || responseBase64Values.length == 2)) {
 					//only used from drawing interaction as image/png
-					String responseData = responseBase64Values[0];
-					if(responseData.startsWith(PNG_BASE64_PREFIX)) {
-	                		byte[] file = Base64.decodeBase64(responseData.substring(PNG_BASE64_PREFIX.length(), responseData.length()));
-	                		final Base64Input stringResponseData = new Base64Input("image/png", file);
-	                		responseMap.put(responseIdentifier, stringResponseData);
+					byte[] filePng = null;
+					byte[] fileJson = null;
+					
+					for(int i=responseBase64Values.length; i-->0; ) {
+						String responseData = responseBase64Values[i];
+						if(responseData.startsWith(PNG_BASE64_PREFIX)) {
+							filePng = Base64.decodeBase64(responseData.substring(PNG_BASE64_PREFIX.length(), responseData.length()));
+						} else if(responseData.startsWith(JSON_BASE64_PREFIX)) {
+							fileJson = responseData.substring(JSON_BASE64_PREFIX.length(), responseData.length()).getBytes();
+						}
+					}
+					
+					if(filePng != null) {
+						final Base64Input stringResponseData = new Base64Input("image/png", filePng, fileJson);
+						responseMap.put(responseIdentifier, stringResponseData);
 					}
 				} else {
 					final String[] responseValues = mainForm.getRequestParameterValues("qtiworks_response_" + responseIdentifierString);
@@ -174,8 +185,8 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 							responseValues[i] = FilterFactory.getXMLValidCharacterFilter().filter(responseValues[i]);
 						}
 					}
-                		final StringInput stringResponseData = new StringInput(responseValues);
-                		responseMap.put(responseIdentifier, stringResponseData);
+					final StringInput stringResponseData = new StringInput(responseValues);
+					responseMap.put(responseIdentifier, stringResponseData);
                 }
             }
         }
