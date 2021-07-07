@@ -139,6 +139,7 @@ This product uses software based on the MIT License
 * Dragula (MIT License) [https://github.com/bevacqua/dragula]
 * tabOverride (MIT License) [https://github.com/wjbryant/taboverride]
 * scorm-again (MIT License) [https://github.com/jcputney/scorm-again]
+* fabric.js (MIT License) [https://github.com/fabricjs/fabric.js]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License

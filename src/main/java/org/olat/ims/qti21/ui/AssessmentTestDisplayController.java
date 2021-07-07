@@ -1428,7 +1428,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					//only used from drawing interaction
 					Base64Input fileInput = (Base64Input)responseData;
 					String filename = "submitted_image.png";
-					File storedFile = qtiService.importFileSubmission(candidateSession, filename, fileInput.getResponseData());
+					File storedFile = qtiService.importFileSubmission(candidateSession, filename, fileInput.getResponseData(), "json", fileInput.getResponseCompanionData());
                     responseDataMap.put(identifier, new FileResponseData(storedFile, fileInput.getContentType(), storedFile.getName()));
                     fileSubmissionMap.put(identifier, storedFile);
 				} else if(responseData instanceof FileInput) {

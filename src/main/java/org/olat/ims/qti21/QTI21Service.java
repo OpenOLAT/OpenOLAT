@@ -535,13 +535,22 @@ public interface QTI21Service {
 	/**
 	 * Import submitted file by an assessed identity in its session storage.
 	 * 
-	 * @param candidateSession
-	 * @param multipartFile
+	 * @param candidateSession The candidate session
+	 * @param multipartFile The file
 	 * @return
 	 */
 	public File importFileSubmission(AssessmentTestSession candidateSession, MultipartFileInfos multipartFile);
 	
-	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data);
+	/**
+	 * 
+	 * @param candidateSession The candidate session
+	 * @param filename The file name
+	 * @param data The data of the file
+	 * @param companionExtension The extensions of the additional data
+	 * @param companionData Additional / companion / separates data
+	 * @return
+	 */
+	public File importFileSubmission(AssessmentTestSession candidateSession, String filename, byte[] data, String companionExtension, byte[] companionData);
 	
 	
 	public File getAssessmentDocumentsDirectory(AssessmentTestSession candidateSession);

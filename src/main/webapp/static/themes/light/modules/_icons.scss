@@ -252,6 +252,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_password:before { content: $fa-var-lock;}
 .o_icon_pending:before { content: $fa-var-spinner; }
 .o_icon_phone:before { content: $fa-var-phone; }
+.o_icon_pointer:before { content: $fa-var-mouse-pointer; }
 .o_icon_post:before { content: $fa-var-comment-o; }
 .o_icon_presence:before { content: $fa-var-check; }
 .o_icon_preview:before { content: $fa-var-eye;}
@@ -364,6 +365,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_table_custom:before { content: $fa-var-th-list; }
 .o_icon_table_large:before { content: $fa-var-th-large; }
 .o_icon_tags:before { content: $fa-var-tags; }
+.o_icon_text:before { content: $fa-var-font; }
 .o_icon_textinput:before { content: $fa-var-align-left; }
 .o_icon_time:before { content: $fa-var-clock-o; }
 .o_icon_timelimit:before { content: $fa-var-clock-o; }

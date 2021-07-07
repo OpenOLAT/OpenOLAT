@@ -664,6 +664,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return AssessmentRenderFunctions.getResponseValueAsBase64(assessmentItem, assessmentTestSession, itemSessionState, identifier, isSolutionMode());
 	}
 	
+	public String getCompanionResponseValue(Identifier identifier) {
+		AssessmentTestSession assessmentTestSession = avc.getCandidateSessionContext().getCandidateSession();
+		return AssessmentRenderFunctions.getCompanionResponseValue(assessmentItem, assessmentTestSession, itemSessionState, identifier, isSolutionMode());
+	}
+	
 	public ResponseDeclaration getResponseDeclaration(Identifier identifier) {
 		return AssessmentRenderFunctions.getResponseDeclaration(assessmentItem, identifier);
 	}

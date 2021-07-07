@@ -47,11 +47,13 @@ public abstract class ResponseInput {
 	public static class Base64Input extends ResponseInput {
 		
 		private final byte[] responseData;
+		private final byte[] responseCompanionData;
 		private final String contentType;
 		
-		public Base64Input(String contentType, byte[] responseData) {
+		public Base64Input(String contentType, byte[] responseData, byte[] responseCompanionData) {
 			this.contentType = contentType;
 			this.responseData = responseData;
+			this.responseCompanionData = responseCompanionData;
 		}
 		
 		public String getContentType() {
@@ -60,6 +62,10 @@ public abstract class ResponseInput {
 		
 		public byte[] getResponseData() {
 			return responseData;
+		}
+		
+		public byte[] getResponseCompanionData() {
+			return responseCompanionData;
 		}
 	}
 	

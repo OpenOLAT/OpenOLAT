@@ -667,7 +667,7 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page answerDrawing() {
-		By drawingBy = By.xpath("//div[contains(@class,'drawingInteraction')]//canvas[@id='tmp_canvas']");
+		By drawingBy = By.xpath("//div[contains(@class,'drawingInteraction')]//div[@class='canvas-container']/canvas[contains(@class,'upper-canvas')]");
 		WebElement drawingEl = browser.findElement(drawingBy);
 		new Actions(browser)
 			.moveToElement(drawingEl, 30, 30)
