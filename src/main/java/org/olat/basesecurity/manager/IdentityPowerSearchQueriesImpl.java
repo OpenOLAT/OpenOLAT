@@ -371,6 +371,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		sb.append(" or ");
 		PersistenceHelper.appendFuzzyLike(sb, "user.lastName", "searchString", dbInstance.getDbVendor());
 		sb.append(" or ");
+		PersistenceHelper.appendFuzzyLike(sb, "user.nickName", "searchString", dbInstance.getDbVendor());
+		sb.append(" or ");
 		PersistenceHelper.appendFuzzyLike(sb, "user.email", "searchString", dbInstance.getDbVendor());
 		sb.append(" or ");
 		PersistenceHelper.appendFuzzyLike(sb, "ident.name", "searchString", dbInstance.getDbVendor());
