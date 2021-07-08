@@ -1,10 +1,9 @@
-<html>
-  <head>
-    <title></title>
-    <meta content="">
-    <style></style>
-  </head>
-  
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en" xml:lang="en">
+<head>
+	<meta content="text/html; charset=utf-8" />
+	<title>Documentation</title>
+</head>
 <body>
 <h3>OLAT AJAX mode</h3>
 <p>
@@ -12,7 +11,7 @@ OLAT can be run in two modes. Either in normal mode where with each request ever
 In the normal mode every component renderer or velocity page that belongs to a component gets rendered and packt together into a whole html page. The other mode, called AJAX mode works different.
 In the AJAX mode all (most) links are sended to a background target which is an hidden Iframe. The server then goes again through the render three and rerenders only the components that are dirty.
 The dirty components are rerenderd as html fragments and packed into a json object and send back to the hidden Iframe. When they are arrived the browser replaces the dirty stuff by dom replacements.
-
+</p>
 <p>
 To differ the uri's on the page they are tainted:
 <ul>
@@ -21,6 +20,5 @@ To differ the uri's on the page they are tainted:
 </ul>
 </p>
 
-</p>
 </body>
 </html>

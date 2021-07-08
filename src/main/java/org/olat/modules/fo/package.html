@@ -1,8 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Overview description of flexible form package</title>
+	<meta content="text/html; charset=utf-8" />
+	<title>Overview description of flexible form package</title>
 </head>
 <body>
 <p>Package org.olat.modules.fo Description</p>
@@ -14,17 +14,17 @@ The thread top {@link org.olat.modules.fo.Message} has the threadtop and the par
 Note: One could improve the Message interface by adding a new isThreadtop() method.
 </p>
 <p>
-A forum thread has a {@link org.olat.modules.fo.Status}: <i>Sticky</i>, <i>Hidden</i>, <i>Closed</i>, a combination of the mentioned ones, or none of the mentioned ones (Normal). 
+A forum thread has a {@link org.olat.modules.fo.Status}: <em>Sticky</em>, <em>Hidden</em>, <em>Closed</em>, a combination of the mentioned ones, or none of the mentioned ones (Normal). 
 The statusCode integer value is stored on the threadtop message. The {@link org.olat.modules.fo.Status} class converts the statusCode integer into a meaningful Status object
 and vice versa. <br>
-A <i>Sticky</i> forum thread is always displayed on the top of the thread list. That is the sorting of the forum threads should always keep the Sticky threads first.<br>
-A <i>Closed</i> forum thread is not editable anymore.<br>
-A <i>Hidden</i> forum thread is only visible by the moderators.
+A <em>Sticky</em> forum thread is always displayed on the top of the thread list. That is the sorting of the forum threads should always keep the Sticky threads first.<br>
+A <em>Closed</em> forum thread is not editable anymore.<br>
+A <em>Hidden</em> forum thread is only visible by the moderators.
 
 <p>The {@link org.olat.modules.fo.ForumCallback} controls the actions the current user is allowed to perfom upon a {@link org.olat.modules.fo.Forum}.<br>
 Only a moderator (forumCallback.mayEditMessageAsModerator()) is allowed to create a Sticky thread or to change a thread Status in Sticky, Hidden, Closed or vice versa.<br>
 Only a moderator is allowed to edit/delete/attach file a/to message with children or to split a thread.<br>
-The <i>split thread</i> outcome is a new thread starting from the selected Message on. The old thread loses the subtree starting from the selected Message.</p>
+The <em>split thread</em> outcome is a new thread starting from the selected Message on. The old thread loses the subtree starting from the selected Message.</p>
 
 <p>The {@link org.olat.modules.fo.ForumManager} provides the forum storage layer.<br>
 The {@link org.olat.modules.fo.ForumController} provides the business workflow. It processes the events coming from different Components or Controllers either by delegating

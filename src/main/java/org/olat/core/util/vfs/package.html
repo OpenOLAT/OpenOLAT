@@ -1,4 +1,9 @@
-<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en" xml:lang="en">
+<head>
+	<meta content="text/html; charset=utf-8" />
+	<title>Documentation</title>
+</head>
 <body>
 <h3>Virtual File System (VFS) code examples</h3>
 <p>The virtial file system allows the same operations as you are may
@@ -12,7 +17,7 @@ techdocu for an introduction to the <a href="http://www.olat.org/docu/5.X/Applic
 		if (item instanceof VFSLeaf) {
 			VFSLeaf leaf = (VFSLeaf)item;
 		}
-		<i>TODO:Add methods like isLeaf() or isContainer() to item.</i>
+		<em>TODO:Add methods like isLeaf() or isContainer() to item.</em>
 		</pre></li>
 
 	<li>Get a folder in the OLAT bcroot/repository hierarchie: <pre>VFSContainer rootContainer = FileResourceManager.getInstance().getFileResourceRootImpl(ores);</pre>

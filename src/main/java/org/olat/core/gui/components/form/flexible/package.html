@@ -1,21 +1,21 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Overview description of flexible form package</title>
+	<meta content="text/html; charset=utf-8" />
+	<title>Overview description of flexible form package</title>
 </head>
 <body>
 
-<tt>Flexi.Form</tt> is the way to create forms in OLAT since release 5.2.
-The following classes and the package <tt>elements</tt> define a infrastructure 
-and API for the <tt>Flexi.Form</tt>
+<code>Flexi.Form</code> is the way to create forms in OLAT since release 5.2.
+The following classes and the package <code>elements</code> define a infrastructure 
+and API for the <code>Flexi.Form</code>
 <ul>
 <li>The atomic form element is the {@link org.olat.core.gui.components.form.flexible.FormItem}</li>
 <li>The {@link org.olat.core.gui.components.form.flexible.FormItemContainer} together with the 
 {@link org.olat.core.gui.components.form.flexible.FormItem} represents the
  <a href="http://en.wikipedia.org/wiki/Composite_pattern">composite pattern</a>.</li>
 <li>The {@link org.olat.core.gui.components.form.flexible.FormDecorator} is 
-available as <tt>$f</tt> in velocity pages and wraps an instance of a
+available as <code>$f</code> in velocity pages and wraps an instance of a
 {@link org.olat.core.gui.components.form.flexible.FormItem} in a velocity container.
 It follows the <a href="http://en.wikipedia.org/wiki/Decorator_pattern">decorator pattern</a>, 
 although it does not add - but removes functionality of the decorated class.</li>
@@ -28,9 +28,9 @@ to be compatible with the GUI Framework.</li>
 
 
 <p>
-The <tt>Flexi.Form</tt> can be used in two ways - extend the 
+The <code>Flexi.Form</code> can be used in two ways - extend the 
 {@link org.olat.core.gui.components.form.flexible.impl.FormBasicController} or 
-create your own <tt>FooBarController</tt>, but in this case  one has to implement
+create your own <code>FooBarController</code>, but in this case  one has to implement
 all form creation stuff itself. It is recommended to use the <i>extending FormBasicController</i> approach.</br>
 The impatient may read the 
 <a href="doc-files/how-to.html">examples and how-tos here</a> to quick start. 
@@ -43,17 +43,17 @@ For a deeper understanding you may also read the
 <h3>General usage</h3>
 TODO:pb: describe general usage
 
-<h3>Basic form elements provided by <tt>Flexi.Form</tt></h3>
+<h3>Basic form elements provided by <code>Flexi.Form</code></h3>
 TODO:pb: list elements
 
 <h3>Behind the scene</h3>
 TODO:pb: diagrams (class/sequence) explaining the main concepts
 
-<h3>Benefit of <tt>Flexi.Form</tt></h3>
-<tt>Flexi.Form</tt> is the way to create forms in OLAT since release 5.2. It is
+<h3>Benefit of <code>Flexi.Form</code></h3>
+<code>Flexi.Form</code> is the way to create forms in OLAT since release 5.2. It is
 designed to 
 <ul>
-<li>add new form elements without changing the <tt>Flexi.Form</tt> 
+<li>add new form elements without changing the <code>Flexi.Form</code> 
 infrastructure</li>
 <li>form layout can be done with velocity, or a default is available</li>
 <li>start subworkflows within the form without loosing already entered form data
