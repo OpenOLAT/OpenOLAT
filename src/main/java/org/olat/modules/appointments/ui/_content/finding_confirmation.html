@@ -1,14 +1,16 @@
-<div class="o_info">
-	$r.translate("finding.confirmation.info")
-</div>
-#if($meeting)
-	<div class="o_warning">
-		$r.translate("finding.confirmation.meeting")
+<div class="o_sel_appointment_confirm_finding">
+	<div class="o_info">
+		$r.translate("finding.confirmation.info")
 	</div>
-#end
-$r.render("users")
-#if($f.hasError("users"))
-	<span class="o_icon o_icon_error form-control-feedback"></span>
-	$r.render("users_ERROR")
-#end
-$r.render("buttons")
+	#if($meeting)
+		<div class="o_warning">
+			$r.translate("finding.confirmation.meeting")
+		</div>
+	#end
+	$r.render("users")
+	#if($f.hasError("users"))
+		<span class="o_icon o_icon_error form-control-feedback"></span>
+		$r.render("users_ERROR")
+	#end
+	$r.render("buttons")
+</div>

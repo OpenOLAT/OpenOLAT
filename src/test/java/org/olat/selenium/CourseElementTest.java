@@ -2480,7 +2480,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithRecurringAppointment(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithAppointmentRecurring(@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
@@ -2588,6 +2588,119 @@ public class CourseElementTest extends Deployments {
 		participantAppointment
 			.selectTopicAsParticipant(topicTitle)
 			.assertOnConfirmedAppointmentByPosition(1);
+	}
+	
+
+	/**
+	 * An author creates a course with an appointment course element, add a topic
+	 * to find an hour to meet. The course has a second participant which selects
+	 * the proposed appointment, the author confirms it, and the participant checks
+	 * the confirmation of the appointment.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithAppointmentFinding(@Drone @Participant WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+						
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "App-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type appointment
+		String nodeTitle = "App-Finding";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		CoursePageFragment course = courseEditor
+			.createNode("appointments")
+			.nodeTitle(nodeTitle)
+			.autoPublish();
+		
+		course
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.membersOnly)
+			.save()
+			.clickToolbarBack();
+		
+		//add participant
+		MembersPage members = course
+			.members();
+		members
+			.importMembers()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		// back to course
+		members
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		String topicTitle = "Find topic";
+		int today = AppointmentPage.getDay(new Date());
+		
+		AppointmentPage appointment = new AppointmentPage(browser);
+		appointment
+			.addTopic(topicTitle)
+			.setFinding()
+			.saveTopic()
+			.assertOnTopic(topicTitle);
+		
+		// participant comes in book an appointment
+		LoginPage.load(participantBrowser, deploymentUrl)
+			.loginAs(participant.getLogin(), participant.getPassword());
+
+		NavigationPage participantNavBar = NavigationPage.load(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(nodeTitle);
+		
+		AppointmentPage participantAppointment = new AppointmentPage(participantBrowser);
+		participantAppointment
+			.assertOnTopic(topicTitle)
+			.selectAppointmentByDay(today);
+		
+		// author confirm the participant's appointment
+		course
+			.clickTree()
+			.assertWithTitle(nodeTitle);
+		
+		appointment
+			.selectTopicAsCoach(topicTitle)
+			.confirmAppointmentFindingByDay(today, participant)
+			.assertOnConfirmedAppointmentByDay(today);
+		
+		// participant check the confirmation
+		participantCourse
+			.clickTree();
+		
+		participantAppointment
+			.selectTopicAsParticipant(topicTitle)
+			.assertOnConfirmedAppointmentByDay(today);
 	}
 	
 	
