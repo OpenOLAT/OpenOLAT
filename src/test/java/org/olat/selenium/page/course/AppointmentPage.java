@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.olat.selenium.page.core.UserSearchPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -61,6 +62,18 @@ public class AppointmentPage {
 		By titleBy = By.xpath("//div[contains(@class,'modal-dialog')]//div[contains(@class,'o_sel_app_topic_title')]//input[@type='text']");
 		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
+		return this;
+	}
+	
+	/**
+	 * Set the "Finding" option.
+	 * $
+	 * @return Itself
+	 */
+	public AppointmentPage setFinding() {
+		By findingBy = By.cssSelector("div#o_cotopic_type input[name='topic.type'][value='finding']");
+		browser.findElement(findingBy).click();
+		OOGraphene.waitBusy(browser);	
 		return this;
 	}
 	
@@ -121,6 +134,11 @@ public class AppointmentPage {
 		return this;
 	}
 	
+	/**
+	 * 
+	 * @param title The title of the topic
+	 * @return Itself
+	 */
 	public AppointmentPage selectTopicAsCoach(String title) {
 		By selectTopicBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'panel-default')][div[@class='panel-heading']/h4/div[text()[contains(.,'" + title + "')]]]//a[i[contains(@class,'o_icon_start')]]");
 		OOGraphene.waitElement(selectTopicBy, browser);
@@ -182,6 +200,12 @@ public class AppointmentPage {
 		return new UserSearchPage(browser);
 	}
 
+	/**
+	 * Assert on the confirmation button.
+	 * 
+	 * @param day The day
+	 * @return Itself
+	 */
 	public AppointmentPage assertOnConfirmAppointmentByDay(int day) {
 		String dayStr = dayToString(day);
 		By confirmBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_main_cont')][div[contains(@class,'o_datecomp')]/div[contains(@class,'o_day_" + dayStr + "')]]//a[contains(@class,'o_button_confirm')]");
@@ -197,6 +221,19 @@ public class AppointmentPage {
 	 */
 	public AppointmentPage assertOnConfirmAppointmentByPosition(int posInList) {
 		By confirmBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')][" + posInList + "]//div[contains(@class,'o_main_cont')]//a[contains(@class,'o_button_confirm')]");
+		OOGraphene.waitElement(confirmBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Assert on the status of the appointment.
+	 * 
+	 * @param day The day
+	 * @return Itself
+	 */
+	public AppointmentPage assertOnConfirmedAppointmentByDay(int day) {
+		String dayStr = dayToString(day);
+		By confirmBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_ap_confirmed')]//div[contains(@class,'o_main_cont')][div[contains(@class,'o_datecomp')]/div[contains(@class,'o_day_" + dayStr + "')]]");
 		OOGraphene.waitElement(confirmBy, browser);
 		return this;
 	}
@@ -233,7 +270,7 @@ public class AppointmentPage {
 	/**
 	 * Confirm the appointment and assert that the appointment is successfully confirmed.
 	 * 
-	 * @param day Position in the list (starts with 1)
+	 * @param posInList Position in the list (starts with 1)
 	 * @return Itself
 	 */
 	public AppointmentPage confirmAppointmentByPosition(int posInList) {
@@ -246,6 +283,12 @@ public class AppointmentPage {
 		return this;
 	}
 	
+	/**
+	 * Assert on the status of the appointment.
+	 * 
+	 * @param posInList Position in the list (starts with 1)
+	 * @return Itself
+	 */
 	public AppointmentPage assertOnPlannedAppointmentByPosition(int posInList) {
 		By plannedBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')][" + posInList + "]/div[contains(@class,'o_ap_planned')]//div[contains(@class,'o_main_cont')]");
 		OOGraphene.waitElement(plannedBy, browser);
@@ -268,6 +311,17 @@ public class AppointmentPage {
 		return this;
 	}
 	
+	public AppointmentPage selectAppointmentByDay(int day) {
+		String dayStr = dayToString(day);
+		By selectBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_main_cont')][div[contains(@class,'o_datecomp')]/div[contains(@class,'o_day_" + dayStr + "')]]//a[contains(@class,'o_sel_appointment_select')][contains(@class,'btn-primary')]");
+		OOGraphene.waitElement(selectBy, browser);
+		browser.findElement(selectBy).click();
+		
+		By confirmedBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_table_row')]/div[contains(@class,'o_ap_planned')]//div[contains(@class,'o_day_" + dayStr + "')]");
+		OOGraphene.waitElement(confirmedBy, browser);
+		return this;
+	}
+	
 	/**
 	 * 
 	 * @param posInList The position of the appointment in list (start with 1)
@@ -280,6 +334,24 @@ public class AppointmentPage {
 		
 		By plannedBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_table_row')][" + posInList + "]/div[contains(@class,'o_ap_planned')]");
 		OOGraphene.waitElement(plannedBy, browser);
+		return this;
+	}
+	
+	public AppointmentPage confirmAppointmentFindingByDay(int day, UserVO user) {
+		String dayStr = dayToString(day);
+		By confirmBy = By.xpath("//div[contains(@class,'o_appointments')]//div[contains(@class,'o_main_cont')][div[contains(@class,'o_datecomp')]/div[contains(@class,'o_day_" + dayStr + "')]]//a[contains(@class,'o_button_confirm')]");
+		OOGraphene.waitElement(confirmBy, browser);
+		browser.findElement(confirmBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By userBy = By.xpath("//div[@class='o_sel_appointment_confirm_finding']//table//td[text()[contains(.,'" + user.getFirstName() +"')]]");
+		OOGraphene.waitElement(userBy, browser);
+		
+		By saveBy = By.xpath("//div[@class='o_sel_appointment_confirm_finding']//button[contains(@class,'btn-primary')]");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		
 		return this;
 	}
 	

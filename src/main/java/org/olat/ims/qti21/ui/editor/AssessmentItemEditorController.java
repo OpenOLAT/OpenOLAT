@@ -399,7 +399,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.match"), itemEditor);
+		tabbedPane.addTab(translate("form.matchdraganddrop"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return matchItemBuilder;
@@ -418,7 +418,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.match"), itemEditor);
+		tabbedPane.addTab(translate("form.matchtruefalse"), itemEditor);
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return matchItemBuilder;

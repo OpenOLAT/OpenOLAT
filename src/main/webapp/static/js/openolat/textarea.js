@@ -62,7 +62,6 @@ var O_TEXTAREA = {
                 console.warn("[O_TEXTAREA.js] Error arguments are not sufficient");
             }
             return;
-            return;
         }
         // Get reference to desired <textarea>
         var textarea = document.getElementById(id);

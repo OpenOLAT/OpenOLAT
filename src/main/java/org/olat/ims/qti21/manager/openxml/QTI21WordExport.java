@@ -301,7 +301,7 @@ public class QTI21WordExport implements MediaResource {
 		StringBuilder addText = new StringBuilder();
 		
 		QTI21QuestionType type = QTI21QuestionType.getType(item);
-		String typeDescription = "";
+		String typeDescription;
 		switch(type) {
 			case sc: typeDescription = translator.translate("form.choice"); break;
 			case mc: typeDescription = translator.translate("form.choice"); break;
@@ -313,6 +313,10 @@ public class QTI21WordExport implements MediaResource {
 			case upload: typeDescription = translator.translate("form.upload"); break;
 			case drawing: typeDescription = translator.translate("form.drawing"); break;
 			case match: typeDescription = translator.translate("form.match"); break;
+			case matchdraganddrop: typeDescription = translator.translate("form.matchdraganddrop"); break;
+			case matchtruefalse: typeDescription = translator.translate("form.matchtruefalse"); break;
+			case hottext: typeDescription = translator.translate("form.hottext"); break;
+			case order: typeDescription = translator.translate("form.order"); break;
 			default: typeDescription = null; break;
 		}
 		
@@ -400,6 +404,7 @@ public class QTI21WordExport implements MediaResource {
 			switch(tag) {
 				case "choiceinteraction":
 					responseIdentifier = attributes.getValue("responseidentifier");
+					startChoice();
 					break;
 				case "simplechoice":
 					startSimpleChoice(attributes);
@@ -524,6 +529,11 @@ public class QTI21WordExport implements MediaResource {
 					}
 				}
 			}
+		}
+		
+		private void startChoice() {
+			closeParagraph();
+			appendText("");
 		}
 
 		private void startSimpleChoice(Attributes attributes) {

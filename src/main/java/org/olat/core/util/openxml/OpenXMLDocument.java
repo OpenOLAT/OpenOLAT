@@ -222,8 +222,7 @@ public class OpenXMLDocument {
 			runsEl.add(addRunEl);
 		}
 
-		Element paragraphEl = createParagraphEl(styleEl, runsEl);
-		return paragraphEl;
+		return createParagraphEl(styleEl, runsEl);
 	}
 	
 	public void appendSubtitle(String text) {
