@@ -54,7 +54,7 @@ public class ColorCategoryDataModel extends DefaultFlexiTableDataModel<ColorCate
 			case identifier: return row.getColorCategory().getIdentifier();
 			case translaton: return row.getTranslation();
 			case enabled: return Boolean.valueOf(row.getColorCategory().isEnabled());
-			case color: return row.getColorCategory().getCssClass();
+			case color: return "o_colcat_bg " + row.getColorCategory().getCssClass();
 			case cssClass: return row.getColorCategory().getCssClass();
 			case edit: return Boolean.TRUE;
 			case delete: return Boolean.valueOf(ColorCategory.Type.custom == row.getColorCategory().getType());

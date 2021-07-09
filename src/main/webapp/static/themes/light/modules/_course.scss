@@ -4,36 +4,28 @@
 	border: solid 1px $btn-default-border;
 }
 
-.o_colcat_dark_blue.o_circle { background-color: $o-cn-header-cat-dark-blue-color; }
-.o_colcat_dark_blue.o_square { background-color: $o-cn-header-cat-dark-blue-color; }
+.o_colcat_dark_blue.o_colcat_bg { background-color: $o-cn-header-cat-dark-blue-color; }
 .o_colcat_dark_blue.o_cn_header > .panel { border-left-color: $o-cn-header-cat-dark-blue-color; }
 
-.o_colcat_light_blue.o_circle { background-color: $o-cn-header-cat-light-blue-color; }
-.o_colcat_light_blue.o_square { background-color: $o-cn-header-cat-light-blue-color; }
+.o_colcat_light_blue.o_colcat_bg { background-color: $o-cn-header-cat-light-blue-color; }
 .o_colcat_light_blue.o_cn_header > .panel { border-left-color: $o-cn-header-cat-light-blue-color; }
 
-.o_colcat_purple.o_circle { background-color: $o-cn-header-cat-purple-color; }
-.o_colcat_purple.o_square { background-color: $o-cn-header-cat-purple-color; }
+.o_colcat_purple.o_colcat_bg { background-color: $o-cn-header-cat-purple-color; }
 .o_colcat_purple.o_cn_header > .panel { border-left-color: $o-cn-header-cat-purple-color; }
 
-.o_colcat_red.o_circle { background-color: $o-cn-header-cat-red-color; }
-.o_colcat_red.o_square { background-color: $o-cn-header-cat-red-color; }
+.o_colcat_red.o_colcat_bg { background-color: $o-cn-header-cat-red-color; }
 .o_colcat_red.o_cn_header > .panel { border-left-color: $o-cn-header-cat-red-color; }
 
-.o_colcat_orange.o_circle { background-color: $o-cn-header-cat-orange-color; }
-.o_colcat_orange.o_square { background-color: $o-cn-header-cat-orange-color; }
+.o_colcat_orange.o_colcat_bg { background-color: $o-cn-header-cat-orange-color; }
 .o_colcat_orange.o_cn_header > .panel { border-left-color: $o-cn-header-cat-orange-color; }
 
-.o_colcat_yellow.o_circle { background-color: $o-cn-header-cat-yellow-color; }
-.o_colcat_yellow.o_square { background-color: $o-cn-header-cat-yellow-color; }
 .o_colcat_yellow.o_cn_header > .panel { border-left-color: $o-cn-header-cat-yellow-color; }
+.o_colcat_yellow.o_colcat_bg { background-color: $o-cn-header-cat-yellow-color; }
 
-.o_colcat_light_green.o_circle { background-color: $o-cn-header-cat-light-green-color; }
-.o_colcat_light_green.o_square { background-color: $o-cn-header-cat-light-green-color; }
+.o_colcat_light_green.o_colcat_bg { background-color: $o-cn-header-cat-light-green-color; }
 .o_colcat_light_green.o_cn_header > .panel { border-left-color: $o-cn-header-cat-light-green-color; }
 
-.o_colcat_dark_green.o_circle { background-color: $o-cn-header-cat-dark-green-color; }
-.o_colcat_dark_green.o_square { background-color: $o-cn-header-cat-dark-green-color; }
+.o_colcat_dark_green.o_colcat_bg { background-color: $o-cn-header-cat-dark-green-color; }
 .o_colcat_dark_green.o_cn_header > .panel { border-left-color: $o-cn-header-cat-dark-green-color; }
 
 .o_colcal_ele {
@@ -67,12 +59,15 @@
 	h2:first-child {
 		margin-top: 0;
 	}
-	.o_image, &.o_cover > .panel {
-		/* Transparent background. Works not for small images! */
-		background-color: $o-cn-header-image-bg;
+	.o_image,
+	&.o_cover > .panel {
 		background-repeat: no-repeat;
 		background-position: center;
 		background-size: cover;
+	}
+	.o_image.o_colcat_nocolor,
+	&.o_cover > .panel.o_colcat_nocolor {
+		background-color: $o-cn-header-image-bg;
 	}
 	&.o_cover {
 		/* The second empty div is to press the first div to left side.

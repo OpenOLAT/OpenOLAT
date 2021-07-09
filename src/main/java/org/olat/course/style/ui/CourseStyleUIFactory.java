@@ -67,7 +67,7 @@ public class CourseStyleUIFactory {
 	}
 
 	public static String getIconLeftCss(ColorCategory colorCategory) {
-		return "o_square " + colorCategory.getCssClass();
+		return "o_square o_colcat_bg " + colorCategory.getCssClass();
 	}
 	
 	public static String getI18nKey(TeaserImageStyle style) {

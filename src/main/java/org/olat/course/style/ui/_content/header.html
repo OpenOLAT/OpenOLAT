@@ -1,5 +1,5 @@
 <div class="o_cn_header #if($header.colorCategoryCss) $header.colorCategoryCss #end #if($r.isNotEmpty($teaserImageUrl)) o_$header.getTeaserImageStyle() #end">
-	<div class="panel panel-default panel-alert panel-bottomless" #if($cover) style="background-image:url($teaserImageUrl) #end">
+	<div class="panel panel-default panel-alert panel-bottomless #if($cover) o_colcat_bg $header.colorCategoryCss #end" #if($cover) style="background-image:url($teaserImageUrl) #end">
 		<div class="panel-body o_text">
 			#if($r.isNotEmpty($header.title))
 				<div class="o_text_block">
@@ -28,7 +28,7 @@
 			#end
 		</div>
 		#if($r.isNotEmpty($teaserImageUrl) && !$cover)
-			<div class="o_image" style="background-image:#if($gradient)linear-gradient(to right, rgba(255, 255, 255), rgba(255, 255, 255, 0) 10% ),#end url($teaserImageUrl);"></div>
+			<div class="o_image o_colcat_bg $header.colorCategoryCss" style="background-image:#if($gradient)linear-gradient(to right, rgba(255, 255, 255), rgba(255, 255, 255, 0) 10% ),#end url($teaserImageUrl);"></div>
 		#end
 	</div>
 </div>
