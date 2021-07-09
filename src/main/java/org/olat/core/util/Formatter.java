@@ -726,7 +726,8 @@ public class Formatter {
 			}
 			// OpenOLAT URL's are opened in same window, all other URL's in separate window
 			else if (!url.startsWith(Settings.getServerContextPathURI())) {
-				sb.append(" target=\"_blank\"");
+				sb.append(" target=\"_blank\"")
+				  .append(" rel=\"noopener noreferrer\"");
 			}
 			sb.append(">");
 			if (url.startsWith("mailto")) {

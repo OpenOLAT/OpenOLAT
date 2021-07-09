@@ -284,7 +284,7 @@ $r.renderForce("development")
 <div id="o_navbar_wrapper" class="o_navbar" role="navigation">
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
 		#set($logoLinkUri = $logoInfos.logoLinkUri)
-		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end></a>
+		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end rel="noopener noreferrer"></a>
 		
 		<div class="o_collapse o_navbar-collapse">
 			## sites and tabs
