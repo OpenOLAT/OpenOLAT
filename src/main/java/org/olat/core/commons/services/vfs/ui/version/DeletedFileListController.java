@@ -124,6 +124,7 @@ public class DeletedFileListController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableSettings("version.noDeletedFiles", null, "o_icon_files");
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions(true);
 		sortOptions.setDefaultOrderBy(new SortKey(RevisionCols.nr.name(), false));
 		tableEl.setSortSettings(sortOptions);
