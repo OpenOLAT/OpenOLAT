@@ -26,6 +26,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.util.CodeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -332,6 +333,34 @@ public class ConditionTest extends OlatTestCase {
 		String condition = "isUser(\"" + olatAuthentication.getAuthusername() + "\")";
 		boolean result = interpreter.evaluateCondition(condition);
 		Assert.assertTrue(condition, result);
+	}
+	
+	@Test
+	public void testIsUserWithSibboleth() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		Identity identity = uce.getIdentityEnvironment().getIdentity();
+		Authentication shibAuthentication = securityManager.findAuthentication(identity, "Shib", BaseSecurity.DEFAULT_ISSUER);
+		if(shibAuthentication == null) {
+			String rnd = "ConDitIon." + CodeHelper.getForeverUniqueID();
+			shibAuthentication = securityManager
+				.createAndPersistAuthentication(identity, "Shib", BaseSecurity.DEFAULT_ISSUER, rnd, null, null);
+		}
+		Assert.assertNotNull(shibAuthentication);
+
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+		String condition = "isUser(\"" + shibAuthentication.getAuthusername() + "\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+		
+		// lower case
+		String lowerCondition = "isUser(\"" + shibAuthentication.getAuthusername().toLowerCase() + "\")";
+		boolean lowerResult = interpreter.evaluateCondition(lowerCondition);
+		Assert.assertTrue(lowerCondition, lowerResult);
+		
+		// upper case
+		String upperCondition = "isUser(\"" + shibAuthentication.getAuthusername().toUpperCase() + "\")";
+		boolean upperResult = interpreter.evaluateCondition(upperCondition);
+		Assert.assertTrue(upperCondition, upperResult);
 	}
 	
 	@Test

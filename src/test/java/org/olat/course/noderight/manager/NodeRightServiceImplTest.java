@@ -760,6 +760,11 @@ public class NodeRightServiceImplTest {
 			return false;
 		}
 		
+		@Override
+		public List<String> getUsernames() {
+			return List.of();
+		}
+		
 		private class IdentityMock implements Identity {
 
 			private static final long serialVersionUID = -39929795824681088L;

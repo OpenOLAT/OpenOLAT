@@ -143,5 +143,11 @@ public interface UserCourseEnvironment {
 	 */
 	public boolean hasEfficiencyStatementOrCertificate(boolean update);
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public List<String> getUsernames();
+	
 
 }

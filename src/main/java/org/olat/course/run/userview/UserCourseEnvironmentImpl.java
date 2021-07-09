@@ -26,16 +26,21 @@
 package org.olat.course.run.userview;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.certificate.CertificatesManager;
@@ -68,6 +73,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private List<BusinessGroup> participatingGroups;
 	private List<BusinessGroup> waitingLists;
 	private List<CurriculumElement> coachedCurriculums;
+	private List<String> usernames;
 	
 	private final WindowControl windowControl;
 	
@@ -410,6 +416,28 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 			} 
 		}
 		return certification.booleanValue();
+	}
+
+	@Override
+	public List<String> getUsernames() {
+		if(usernames != null) return usernames;
+		
+		Set<String> nameSet = new HashSet<>();
+		if(identityEnvironment != null && identityEnvironment.getIdentity() != null) {
+			Identity identity = identityEnvironment.getIdentity();
+			nameSet.add(identity.getName());
+			if(StringHelper.containsNonWhitespace(identity.getUser().getNickName())) {
+				nameSet.add(identity.getUser().getNickName());
+			}
+			
+			List<Authentication> authentications = CoreSpringFactory.getImpl(BaseSecurity.class).getAuthentications(identity);
+			for(Authentication authentication:authentications) {
+				nameSet.add(authentication.getAuthusername());
+			}
+		}
+		
+		usernames = List.copyOf(nameSet);
+		return usernames;
 	}
 
 	public void setGroupMemberships(List<BusinessGroup> coachedGroups,
