@@ -21,6 +21,7 @@ package org.olat.course.style.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +35,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
@@ -58,6 +60,16 @@ public class SystemImageStorage {
 		if (!Files.exists(ROOT_PATH)) {
 			Files.createDirectories(ROOT_PATH);
 		}
+	}
+	
+	public void initProvidedSystemImages() throws Exception {
+		URL providedUrl = SystemImageStorage.class.getResource("_system_images/");
+		File providedDir = new File(providedUrl.toURI());
+		FileUtils.copyDirToDir(providedDir, ROOT_PATH.toFile(), "");
+	}
+
+	public void store(File file) {
+		FileUtils.copyFileToDir(file, ROOT_PATH.toFile(), "");
 	}
 	
 	public File load(String filename) {

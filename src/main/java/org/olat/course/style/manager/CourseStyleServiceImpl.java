@@ -59,6 +59,15 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	@Autowired
 	private ColorCategoryDAO colorCategoryDao;
 	
+	@Override
+	public void initProvidedSystemImages() throws Exception {
+		systemImageStorage.initProvidedSystemImages();
+	}
+	
+	@Override
+	public void storeSystemImage(File file) {
+		systemImageStorage.store(file);
+	}
 	
 	@Override
 	public List<ImageSource> getSystemTeaserImageSources() {
