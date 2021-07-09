@@ -38,6 +38,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
@@ -93,13 +94,13 @@ public class IdentityDAO {
 	}
 	
 	public List<Identity> findByUsernames(String username) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident")
 		  .append(" left join ").append(AuthenticationImpl.class.getName()).append(" as auth on (auth.identity.key=ident.key)")
 		  .append(" inner join fetch ident.user user")
-		  .append(" where lower(ident.name) = :username")
-		  .append(" or lower(auth.authusername) = :username")
-		  .append(" or lower(user.nickName) = :username");
+		  .append(" where ").lowerEqual("ident.name").append(":username")
+		  .append(" or ").lowerEqual("auth.authusername").append(":username")
+		  .append(" or ").lowerEqual("user.nickName").append(":username");
 		
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)

@@ -31,6 +31,7 @@ import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
@@ -50,11 +51,11 @@ public class AuthenticationDAO {
 	private DB dbInstance;
 	
 	public Authentication getAuthenticationByAuthusername(String authusername, String provider, String issuer) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
-		  .append(" where auth.provider=:provider and auth.issuer=:issuer and lower(auth.authusername)=:authusername");
+		  .append(" where auth.provider=:provider and auth.issuer=:issuer and ").lowerEqual("auth.authusername").append(":authusername");
 
 		List<Authentication> results = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
@@ -70,11 +71,11 @@ public class AuthenticationDAO {
 	}
 	
 	public List<Authentication> getAuthenticationsByAuthusername(String authusername) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
-		  .append(" where lower(auth.authusername)=:authusername");
+		  .append(" where ").lowerEqual("auth.authusername").append(":authusername");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
@@ -83,11 +84,11 @@ public class AuthenticationDAO {
 	}
 	
 	public List<Authentication> getAuthenticationsByAuthusername(String authusername, List<String> providers) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity ident")
 		  .append(" inner join fetch ident.user identUser")
-		  .append(" where lower(auth.authusername)=:authusername and auth.provider in (:providers)");
+		  .append(" where ").lowerEqual("auth.authusername").append(":authusername and auth.provider in (:providers)");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
@@ -102,11 +103,11 @@ public class AuthenticationDAO {
 	 * @return A list of identities (the user is not fetched)
 	 */
 	public List<Identity> getIdentitiesWithLogin(String login) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select ident from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join auth.identity as ident")
 		  .append(" inner join ident.user as user")
-		  .append(" where lower(auth.authusername)=:login");
+		  .append(" where ").lowerEqual("auth.authusername").append(":login");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("login", login.toLowerCase())
@@ -230,11 +231,11 @@ public class AuthenticationDAO {
 	 * @return An authentication
 	 */
 	public Authentication getAuthentication(String authUsername, String provider, String issuer) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join fetch auth.identity as ident")
 		  .append(" inner join fetch ident.user as user")
-		  .append(" where lower(auth.authusername)=:authUsername and auth.provider=:provider and auth.issuer=:issuer");
+		  .append(" where ").lowerEqual("auth.authusername").append(":authUsername and auth.provider=:provider and auth.issuer=:issuer");
 		List<Authentication> authentications = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Authentication.class)
 				.setFlushMode(FlushModeType.COMMIT)

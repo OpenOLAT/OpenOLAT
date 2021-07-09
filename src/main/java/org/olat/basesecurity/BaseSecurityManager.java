@@ -54,6 +54,7 @@ import org.olat.basesecurity.model.FindNamedIdentityCollection;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -453,8 +454,9 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public Identity findIdentityByNameCaseInsensitive(String identityName) {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");
 
-		StringBuilder sb = new StringBuilder();
-		sb.append("select ident from ").append(IdentityImpl.class.getName()).append(" as ident where lower(ident.name)=:username");
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ident from ").append(IdentityImpl.class.getName())
+		  .append(" as ident where ").lowerEqual("ident.name").append(":username");
 		
 		List<Identity> identities = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)

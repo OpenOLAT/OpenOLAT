@@ -30,19 +30,21 @@ public class QueryBuilder implements Appendable {
 	private boolean and = false;
 	private boolean groupBy = false;
 	private final StringBuilder sb;
+	private final DB dbInstance;
 
 	/**
 	 * @param len
 	 */
 	public QueryBuilder(int len) {
 		sb = new StringBuilder(len);
+		dbInstance = DBFactory.getInstance();
 	}
 
 	/**
 	 * 
 	 */
 	public QueryBuilder() {
-		sb = new StringBuilder(128);
+		this(128);
 	}
 
 	/**
@@ -192,13 +194,30 @@ public class QueryBuilder implements Appendable {
 		return this;
 	}
 	
-	public QueryBuilder likeFuzzy(String var, String key, String dbVendor) {
-		if(dbVendor.equals("mysql")) {
+	/**
+	 * Optimize the lower function in an equality. Use the lower
+	 * function for PostgreSQL and Oracle but omit it for MySQL where
+	 * the = is case insensitive.
+	 * 
+	 * @param var The field of the object
+	 * @return Itself
+	 */
+	public QueryBuilder lowerEqual(String var) {
+		if(dbInstance.isMySQL()) {
+			append(" ").append(var).append("=");
+		} else {
+			append(" lower(").append(var).append(")=");
+		}
+		return this;
+	}
+	
+	public QueryBuilder likeFuzzy(String var, String key) {
+		if(dbInstance.isMySQL()) {
 			append(" ").append(var).append(" like :").append(key);
 		} else {
 			append(" lower(").append(var).append(") like :").append(key);
 		}
-		if(dbVendor.equals("oracle")) {
+		if(dbInstance.isOracle()) {
 			append(" escape '\\'");
 		}
 		return this;
