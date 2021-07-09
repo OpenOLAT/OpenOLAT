@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.bigbluebutton.BigBlueButtonAttendee;
@@ -80,9 +81,9 @@ public class BigBlueButtonAttendeeDAO {
 	public boolean hasAttendee(String pseudo, BigBlueButtonMeeting meeting) {
 		if(!StringHelper.containsNonWhitespace(pseudo)) return false;
 
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select attendee.key from bigbluebuttonattendee as attendee")
-		  .append(" where attendee.meeting.key=:meetingKey and lower(attendee.pseudo)=:pseudo");
+		  .append(" where attendee.meeting.key=:meetingKey and ").lowerEqual("attendee.pseudo").append(":pseudo");
 		
 		List<Long> attendeeKeys = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Long.class)

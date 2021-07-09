@@ -496,17 +496,17 @@ public class CurriculumElementDAO {
 			
 			sb.and()
 			  .append(" (cur.externalId=:ref or curEl.externalId=:ref or v.externalId=:ref or ")
-			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.displayName", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.identifier", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("curEl.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("curEl.displayName", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("curEl.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("curEl.identifier", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("v.displayname", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("v.displayname", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("v.externalRef", "fuzzyRef", dbInstance.getDbVendor());
+			  .likeFuzzy("v.externalRef", "fuzzyRef");
 			if(StringHelper.isLong(ref)) {
 				key = Long.valueOf(ref);
 				sb.append(" or cur.key=:cKey or curEl.key=:cKey");
@@ -542,9 +542,9 @@ public class CurriculumElementDAO {
 			
 			sb.and()
 			  .append("(")
-			  .likeFuzzy("curEl.identifier", "elementFuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("curEl.identifier", "elementFuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("curEl.externalId", "elementFuzzyRef", dbInstance.getDbVendor());
+			  .likeFuzzy("curEl.externalId", "elementFuzzyRef");
 			if(StringHelper.isLong(elementId)) {
 				elementKey = Long.valueOf(elementId);
 				sb.append(" or curEl.key=:elementKey");
@@ -557,7 +557,7 @@ public class CurriculumElementDAO {
 			elementTextFuzzyRef = PersistenceHelper.makeFuzzyQueryString(params.getElementText());
 			sb.and()
 			  .append("(")
-			  .likeFuzzy("curEl.displayName", "elementTextFuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("curEl.displayName", "elementTextFuzzyRef")
 			  .append(")");
 		}
 		
@@ -571,7 +571,7 @@ public class CurriculumElementDAO {
 			
 			sb.and()
 			  .append("(v.softkey=:entryRef or v.externalId=:entryRef or ")
-			  .likeFuzzy("v.externalRef", "entryFuzzyRef", dbInstance.getDbVendor());
+			  .likeFuzzy("v.externalRef", "entryFuzzyRef");
 			if(StringHelper.isLong(entryRef)) {
 				entryKey = Long.valueOf(entryRef);
 				sb.append(" or v.key=:entryKey or res.resId=:entryKey");
@@ -584,7 +584,7 @@ public class CurriculumElementDAO {
 			entryTextFuzzyRef = PersistenceHelper.makeFuzzyQueryString(params.getEntryText());
 			sb.and()
 			  .append("(")
-			  .likeFuzzy("v.displayname", "entryTextFuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("v.displayname", "entryTextFuzzyRef")
 			  .append(")");
 		}
 		

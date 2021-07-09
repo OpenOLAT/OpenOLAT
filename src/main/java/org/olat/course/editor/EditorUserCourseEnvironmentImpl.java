@@ -181,6 +181,11 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
+	public List<String> getUsernames() {
+		return List.of();
+	}
+
+	@Override
 	public RepositoryEntryLifecycle getLifecycle() {
 		if(lifecycle == null) {
 			CourseGroupManager cgm = courseEditorEnv.getCourseGroupManager();

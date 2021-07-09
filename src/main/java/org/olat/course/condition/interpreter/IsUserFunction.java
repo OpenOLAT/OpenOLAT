@@ -25,8 +25,8 @@
 
 package org.olat.course.condition.interpreter;
 
-import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.CoreSpringFactory;
+import java.util.List;
+
 import org.olat.core.id.Identity;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -86,8 +86,13 @@ public class IsUserFunction extends AbstractFunction {
 			return ConditionInterpreter.INT_TRUE;
 		}
 		
-		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByLogin(userName);
-		return identity != null && identity.getKey().equals(ident.getKey()) ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+		List<String> usernames = getUserCourseEnv().getUsernames();
+		for(String uname:usernames) {
+			if(userName.equalsIgnoreCase(uname)) {
+				return ConditionInterpreter.INT_TRUE;
+			}
+		}
+		return ConditionInterpreter.INT_FALSE;
 	}
 
 	@Override

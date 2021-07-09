@@ -45,6 +45,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.MarkingService;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.commons.services.text.TextService;
@@ -373,9 +374,9 @@ public class ForumManager {
 	}
 
 	public boolean isPseudonymProtected(String pseudonym) {
-		StringBuilder query = new StringBuilder();
+		QueryBuilder query = new QueryBuilder();
 		query.append("select pseudonym.key from fopseudonym as pseudo")
-	     .append(" where lower(pseudo.pseudonym)=:pseudonym");
+	     .append(" where ").lowerEqual("pseudo.pseudonym").append(":pseudonym");
 		
 		List<Long> pseudonyms = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Long.class)
@@ -387,9 +388,9 @@ public class ForumManager {
 	}
 	
 	public boolean isPseudonymInUseInForums(String pseudonym) {
-		StringBuilder query = new StringBuilder();
+		QueryBuilder query = new QueryBuilder();
 		query.append("select msg.key from fomessage as msg")
-		     .append(" where lower(msg.pseudonym)=:pseudonym");
+		     .append(" where ").lowerEqual("msg.pseudonym").append(":pseudonym");
 		
 		List<Long> pseudonyms = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Long.class)
@@ -401,9 +402,9 @@ public class ForumManager {
 	}
 	
 	public List<Pseudonym> getPseudonyms(String pseudonym) {
-		StringBuilder query = new StringBuilder();
+		QueryBuilder query = new QueryBuilder();
 		query.append("select pseudo from fopseudonym as pseudo")
-		     .append(" where lower(pseudo.pseudonym)=:pseudonym");
+		     .append(" where ").lowerEqual("pseudo.pseudonym").append(":pseudonym");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Pseudonym.class)

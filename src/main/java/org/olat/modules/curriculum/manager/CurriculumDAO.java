@@ -198,12 +198,12 @@ public class CurriculumDAO {
 			
 			sb.and()
 			  .append(" (cur.externalId=:ref or ")
-			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.displayName", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.identifier", "fuzzyRef")
 			  .append(" or exists (select curEl.key from curriculumelement as curEl where")
 			  .append("  curEl.curriculum.key=cur.key and")
-			  .likeFuzzy("curEl.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("curEl.identifier", "fuzzyRef")
 			  .append(")");
 			if(StringHelper.isLong(ref)) {
 				key = Long.valueOf(ref);
@@ -271,12 +271,12 @@ public class CurriculumDAO {
 			
 			sb.and()
 			  .append(" (cur.externalId=:ref or ")
-			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.displayName", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.identifier", "fuzzyRef")
 			  .append(" or exists (select curEl.key from curriculumelement as curEl where")
 			  .append("  curEl.curriculum.key=cur.key and")
-			  .likeFuzzy("curEl.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("curEl.identifier", "fuzzyRef")
 			  .append(")");
 			if(StringHelper.isLong(ref)) {
 				key = Long.valueOf(ref);

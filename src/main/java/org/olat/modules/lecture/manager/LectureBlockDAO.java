@@ -341,13 +341,13 @@ public class LectureBlockDAO {
 			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(ref);
 			
 			sb.append(" and (cur.externalId=:ref or curEl.externalId=:ref or ")
-			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.displayName", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.identifier", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("curEl.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("curEl.displayName", "fuzzyRef")
 			  .append(" or ")
-			  .likeFuzzy("curEl.identifier", "fuzzyRef", dbInstance.getDbVendor());
+			  .likeFuzzy("curEl.identifier", "fuzzyRef");
 			if(StringHelper.isLong(ref)) {
 				key = Long.valueOf(ref);
 				sb.append(" or cur.key=:cKey or curEl.key=:cKey");
@@ -628,11 +628,11 @@ public class LectureBlockDAO {
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
 			sb.and()
 			  .append("(")
-			  .likeFuzzy("entry.externalRef", "fuzzySearchString", dbInstance.getDbVendor())
+			  .likeFuzzy("entry.externalRef", "fuzzySearchString")
 			  .append(" or ")
-			  .likeFuzzy("entry.displayname", "fuzzySearchString", dbInstance.getDbVendor())
+			  .likeFuzzy("entry.displayname", "fuzzySearchString")
 			  .append(" or ")
-			  .likeFuzzy("block.title", "fuzzySearchString", dbInstance.getDbVendor())
+			  .likeFuzzy("block.title", "fuzzySearchString")
 			  .append(")");
 		}
 		
@@ -975,11 +975,15 @@ public class LectureBlockDAO {
 				refId = Long.valueOf(searchParams.getSearchString());
 				sb.append("ident.key=:idKey or identUser.key=:idKey or ");
 			}
-			sb.likeFuzzy(" ident.externalId", "fuzzyString", dbInstance.getDbVendor())
-			  .append(" or ").likeFuzzy(" identUser.firstName", "fuzzyString", dbInstance.getDbVendor())
-			  .append(" or ").likeFuzzy(" identUser.lastName", "fuzzyString", dbInstance.getDbVendor())
-			  .append(" or ").likeFuzzy(" identUser.email", "fuzzyString", dbInstance.getDbVendor())
-			  .append(" or ").likeFuzzy(" identUser.nickName", "fuzzyString", dbInstance.getDbVendor())
+			sb.likeFuzzy(" ident.externalId", "fuzzyString")
+			  .append(" or ")
+			  .likeFuzzy(" identUser.firstName", "fuzzyString")
+			  .append(" or ")
+			  .likeFuzzy(" identUser.lastName", "fuzzyString")
+			  .append(" or ")
+			  .likeFuzzy(" identUser.email", "fuzzyString")
+			  .append(" or ")
+			  .likeFuzzy(" identUser.nickName", "fuzzyString")
 			  .append(")");
 		}
 		
@@ -1044,11 +1048,15 @@ public class LectureBlockDAO {
 				refId = Long.valueOf(searchParams.getSearchString());
 				sb.append("ident.key=:idKey or identUser.key=:idKey or ");
 			}
-			sb.likeFuzzy(" ident.externalId", "fuzzyString", dbInstance.getDbVendor())
-			  .append(" or ").likeFuzzy(" identUser.firstName", "fuzzyString", dbInstance.getDbVendor())
-			  .append(" or ").likeFuzzy(" identUser.lastName", "fuzzyString", dbInstance.getDbVendor())
-			  .append(" or ").likeFuzzy(" identUser.email", "fuzzyString", dbInstance.getDbVendor())
-			  .append(" or ").likeFuzzy(" identUser.nickName", "fuzzyString", dbInstance.getDbVendor())
+			sb.likeFuzzy(" ident.externalId", "fuzzyString")
+			  .append(" or ")
+			  .likeFuzzy(" identUser.firstName", "fuzzyString")
+			  .append(" or ")
+			  .likeFuzzy(" identUser.lastName", "fuzzyString")
+			  .append(" or ")
+			  .likeFuzzy(" identUser.email", "fuzzyString")
+			  .append(" or ")
+			  .likeFuzzy(" identUser.nickName", "fuzzyString")
 			  .append(")");
 		}
 		

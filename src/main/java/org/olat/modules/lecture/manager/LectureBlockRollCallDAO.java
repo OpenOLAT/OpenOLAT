@@ -800,15 +800,15 @@ public class LectureBlockRollCallDAO {
 			  .append("  and (")
 			  .append("   cur.externalId=:curriculumRef")
 			  .append("   or")
-			  .likeFuzzy("cur.displayName", "curriculumFuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.displayName", "curriculumFuzzyRef")
 			  .append("   or")
-			  .likeFuzzy("cur.identifier", "curriculumFuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("cur.identifier", "curriculumFuzzyRef")
 			  .append("   or")
 			  .append("   curEl.externalId=:curriculumRef")
 			  .append("   or")
-			  .likeFuzzy("curEl.displayName", "curriculumFuzzyRef", dbInstance.getDbVendor())
+			  .likeFuzzy("curEl.displayName", "curriculumFuzzyRef")
 			  .append("   or")
-			  .likeFuzzy("curEl.identifier", "curriculumFuzzyRef", dbInstance.getDbVendor());
+			  .likeFuzzy("curEl.identifier", "curriculumFuzzyRef");
 
 			if(StringHelper.isLong(curriculumRef)) {
 				curriculumKey = Long.valueOf(curriculumRef);
