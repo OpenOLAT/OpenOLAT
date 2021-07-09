@@ -178,7 +178,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			SelectionValue automatic = new SelectionValue(AUTOMATIC_MODE, translate(AUTOMATIC_MODE), translate(AUTOMATIC_MODE + ".desc"));
 			SelectionValues modes = new SelectionValues(automatic, custom);
 			
-			copyModeEl = uifactory.addCardSingleSelectVertical("wizard.mode", copyModeLayout, modes.keys(), modes.values(), modes.descriptions(), null);
+			copyModeEl = uifactory.addCardSingleSelectHorizontal("wizard.mode", copyModeLayout, modes.keys(), modes.values(), modes.descriptions(), null);
 			copyModeEl.select(steps.isAdvancedMode() ? custom.getKey() : automatic.getKey(), true);
 			copyModeEl.addActionListener(FormEvent.ONCHANGE);
 		}

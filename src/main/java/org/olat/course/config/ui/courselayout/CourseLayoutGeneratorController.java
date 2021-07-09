@@ -372,7 +372,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		SelectionValues teaserImageStyleKV = new SelectionValues();
 		Arrays.stream(TeaserImageStyle.values()).forEach(
 				style -> teaserImageStyleKV.add(entry(style.name(), translate(CourseStyleUIFactory.getI18nKey(style)))));
-		teaserImageStyleEl = uifactory.addCardSingleSelectVertical("teaser.image.style", styleCont, teaserImageStyleKV.keys(), teaserImageStyleKV.values(), null, null);
+		teaserImageStyleEl = uifactory.addCardSingleSelectHorizontal("teaser.image.style", styleCont, teaserImageStyleKV.keys(), teaserImageStyleKV.values(), null, null);
 		teaserImageStyleEl.addActionListener(FormEvent.ONCHANGE);
 		if (teaserImageStyle == null || !teaserImageStyleEl.containsKey(teaserImageStyle.name())) {
 			teaserImageStyle = TeaserImageStyle.gradient;
