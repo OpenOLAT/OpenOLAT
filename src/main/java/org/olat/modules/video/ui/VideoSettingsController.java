@@ -230,7 +230,7 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	}
 	
 	private void initDownload() {
-		if (videoMetadata.getVideoFormat().equals(VideoFormat.mp4)) {
+		if (videoMetadata.getVideoFormat() != null && videoMetadata.getVideoFormat().equals(VideoFormat.mp4)) {
 			downloadConfigLink = LinkFactory.createLink("tab.video.downloadConfig", getTranslator(), this);
 			downloadConfigLink.setElementCssClass("o_sel_download");
 			buttonsGroup.addButton(downloadConfigLink, false);
@@ -312,7 +312,7 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 	}
 	
 	private void doOpenDownload(UserRequest ureq) {
-		if (videoMetadata.getVideoFormat().equals(VideoFormat.mp4)) {
+		if (videoMetadata.getVideoFormat() != null && videoMetadata.getVideoFormat().equals(VideoFormat.mp4)) {
 			entry = repositoryService.loadByKey(entry.getKey());
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Download"), null);
 			downloadSettingsController = new VideoDownloadSettingsController(ureq, swControl, videoMetadata);

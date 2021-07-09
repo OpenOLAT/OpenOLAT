@@ -787,7 +787,7 @@ public class VideoDisplayController extends BasicController {
 	
 	private void initDownloadOptions() {
 		// Only show download for local videos
-		if (videoMetadata.getVideoFormat().equals(VideoFormat.mp4) && videoMetadata.isDownloadEnabled()) {
+		if (videoMetadata.getVideoFormat() != null && videoMetadata.getVideoFormat().equals(VideoFormat.mp4) && videoMetadata.isDownloadEnabled()) {
 			List<Link> downloadLinks = new ArrayList<>();
 			List<VideoTranscoding> videoTranscodings = videoManager.getVideoTranscodings(videoMetadata.getVideoResource());
 			int i = 0;
