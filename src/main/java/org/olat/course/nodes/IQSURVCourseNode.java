@@ -98,7 +98,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 		
 		Translator transe = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
 		Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.qti12.survey"));
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqsurv_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_iqsurv_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 

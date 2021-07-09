@@ -150,7 +150,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		DialogSecurityCallback secCallback = SecurityCallbackFactory.create(this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
 		DialogCourseNodeRunController ctrl = new DialogCourseNodeRunController(ureq, wControl, this, userCourseEnv, secCallback);
-		Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, this, "o_dialog_icon");
+		Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, userCourseEnv, this, "o_dialog_icon");
 		return new NodeRunConstructionResult(wrappedCtrl);
 	}
 

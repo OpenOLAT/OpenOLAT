@@ -249,6 +249,15 @@
 	}
 }
 
+.panel-alert {
+	background-color: $o-panel-alert-bg;
+	border-left-width: $o-panel-alert-border-width;
+}
+
+.panel-bottomless {
+	margin-bottom: 0;
+}
+
 /* ---------------------------------------------------------- */
 /* general content styles for fonts, links and other elements */
 /* ---------------------------------------------------------- */
@@ -463,4 +472,21 @@
 
 .o_spacer_left {
 	margin-left: 2.5em;
+}
+
+.o_circle {
+	display: block;
+	width: 16px;
+	height: 16px;
+	border-radius:8px;
+}
+.o_table_wrapper {
+	.o_circle {
+		margin-top: 2px;
+	}
+}
+.o_square {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
 }

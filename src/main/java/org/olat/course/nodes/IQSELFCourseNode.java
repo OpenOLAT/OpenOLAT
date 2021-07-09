@@ -120,7 +120,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			runController = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.qti12"));
 		}
 		
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runController, this, "o_iqself_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runController, userCourseEnv, this, "o_iqself_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 

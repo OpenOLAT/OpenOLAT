@@ -106,6 +106,7 @@ import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.InvisibleTreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
+import org.olat.course.style.ui.HeaderContentController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.modules.cp.TreeNodeEvent;
@@ -1099,9 +1100,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	public void disableCourseClose(boolean disable) {
 		toolbarPanel.setShowCloseLink(true, !disable);
 	}
+	
+	public void reloadCourseNodeHeader(UserRequest ureq) {
+		if (currentNodeController instanceof HeaderContentController) {
+			((HeaderContentController)currentNodeController).reloadHeader(ureq);
+		}
+	}
 
 	@Override
 	public void setDisposedMsgController(Controller disposeMsgController) {
 		super.setDisposedMsgController(disposeMsgController);
 	}
+	
 }

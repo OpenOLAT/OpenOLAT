@@ -218,7 +218,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		}
 		
-		Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ms_icon");
+		Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_ms_icon");
 		return new NodeRunConstructionResult(wrappedCtrl);
 	}
 

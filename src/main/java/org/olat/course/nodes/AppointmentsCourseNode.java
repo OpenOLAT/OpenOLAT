@@ -134,7 +134,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 					.create(getModuleConfiguration(), userCourseEnv, organizerCandidateSupplier);
 			controller = new AppointmentsRunController(ureq, wControl, entry, getIdent(), secCallback, organizerCandidateSupplier);
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, ICON_CSS);
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

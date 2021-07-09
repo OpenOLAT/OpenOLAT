@@ -143,6 +143,8 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		} else if(layoutCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				doOpenLayout(ureq);
+			} else {
+				fireEvent(ureq, event);
 			}
 		} else if(assessmentSettingsCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {

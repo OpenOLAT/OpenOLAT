@@ -162,7 +162,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.portfolioV1"));
 			}
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ep_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_ep_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

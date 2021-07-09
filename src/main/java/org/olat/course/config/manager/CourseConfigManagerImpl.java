@@ -40,6 +40,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
+import org.olat.course.style.model.ImageSourceImpl;
 import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
@@ -58,9 +59,9 @@ public class CourseConfigManagerImpl implements CourseConfigManager {
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
 		Class<?>[] types = new Class[] {
-				CourseConfig.class, Hashtable.class, HashMap.class
-		};
+				CourseConfig.class, Hashtable.class, HashMap.class, ImageSourceImpl.class };
 		xstream.addPermission(new ExplicitTypePermission(types));
+		xstream.alias("ImageSource", ImageSourceImpl.class);
 	}
 
 	@Override

@@ -112,7 +112,7 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 			controller = new DENRunController(ureq, wControl, getModuleConfiguration(), userCourseEnv, this);
 		}
 		
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_en_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_en_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 

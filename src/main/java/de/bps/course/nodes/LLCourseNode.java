@@ -122,7 +122,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, true);
-		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ll_icon");
+		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_ll_icon");
 		return new NodeRunConstructionResult(controller);
 	}
 
@@ -137,7 +137,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, true);
-		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ll_icon");
+		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_ll_icon");
 		return controller;
 	}
 

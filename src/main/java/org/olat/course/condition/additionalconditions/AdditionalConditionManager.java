@@ -71,7 +71,7 @@ public class AdditionalConditionManager {
 			if(!retVal) {
 				Controller ctrl = cond.getUserInputController(ureq, wControl, userCourseEnv);
 				CourseNodeConfiguration config = CourseNodeFactory.getInstance().getCourseNodeConfiguration(node.getType());
-				return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, node, config.getIconCSSClass());
+				return TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, userCourseEnv, node, config.getIconCSSClass());
 			}
 		}		
 		

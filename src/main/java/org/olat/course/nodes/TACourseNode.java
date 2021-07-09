@@ -204,7 +204,7 @@ public class TACourseNode extends GenericCourseNode {
 		} else {
 			controller = new TACourseNodeRunController(ureq, wControl, userCourseEnv, this, nodeSecCallback.getNodeEvaluation(), false);
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ta_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_ta_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 

@@ -30,12 +30,18 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.title.TitleInfo;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.util.StringHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.style.ui.HeaderContentController;
 
 public class TitledWrapperHelper {
 
+	public static Controller getWrapper(UserRequest ureq, WindowControl wControl, Controller controller,
+			UserCourseEnvironment userCourseEnv, CourseNode courseNode, String iconCssClass) {
+		return new HeaderContentController(ureq, wControl, controller, userCourseEnv, courseNode, iconCssClass);
+	}
 	
-	public static Controller getWrapper(UserRequest ureq, WindowControl wControl,
-			Controller controller, CourseNode courseNode, String iconCssClass) {
+	public static Controller getWrapper(UserRequest ureq, WindowControl wControl, Controller controller,
+			CourseNode courseNode, String iconCssClass) {
 		
 		String displayOption = courseNode.getDisplayOption();
 		if(CourseNode.DISPLAY_OPTS_CONTENT.equals(displayOption)) {
@@ -92,6 +98,7 @@ public class TitledWrapperHelper {
 				controller = new TitledWrapperController(ureq, wControl, controller, null, titleInfo);
 			} 
 		}
+		
 		return controller;
 	}
 }

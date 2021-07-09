@@ -40,6 +40,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessableCourseNodeAdminController;
+import org.olat.course.style.ui.ColorCategoryAdminController;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.admin.EducationalTypeAdminController;
 
@@ -53,14 +54,17 @@ public class CourseAdminController extends BasicController implements Activateab
 
 	private static final String ORES_TYPE_SETTINGS = "Settings";
 	private static final String ORES_TYPE_EDUCATIONAL = "EducationalTypes";
+	private static final String ORES_TYPE_COLOR_CATEGORIES = "ColorCategory";
 	
 	private final Link settingsLink;
 	private final Link educationalTypesLink;
+	private final Link colorCategoriesLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
 	private Controller settingsCtrl;
 	private Controller educationalTypesCtrl;
+	private Controller colorCategoriesCtrl;
 	
 	public CourseAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -75,6 +79,9 @@ public class CourseAdminController extends BasicController implements Activateab
 		
 		educationalTypesLink = LinkFactory.createLink("educational.types", mainVC, this);
 		segmentView.addSegment(educationalTypesLink, false);
+		
+		colorCategoriesLink = LinkFactory.createLink("color.categories", mainVC, this);
+		segmentView.addSegment(colorCategoriesLink, false);
 
 		doOpenSettings(ureq);
 		
@@ -97,6 +104,9 @@ public class CourseAdminController extends BasicController implements Activateab
 		} else if(ORES_TYPE_EDUCATIONAL.equalsIgnoreCase(type)) {
 			doOpenEducationalTypes(ureq);
 			segmentView.select(educationalTypesLink);
+		} else if(ORES_TYPE_COLOR_CATEGORIES.equalsIgnoreCase(type)) {
+			doOpenColorCategories(ureq);
+			segmentView.select(colorCategoriesLink);
 		}
 	}
 
@@ -111,6 +121,8 @@ public class CourseAdminController extends BasicController implements Activateab
 					doOpenSettings(ureq);
 				} else if (clickedLink == educationalTypesLink) {
 					doOpenEducationalTypes(ureq);
+				} else if (clickedLink == colorCategoriesLink) {
+					doOpenColorCategories(ureq);
 				}
 			}
 		}
@@ -137,4 +149,16 @@ public class CourseAdminController extends BasicController implements Activateab
 		}
 		mainVC.put("segmentCmp", educationalTypesCtrl.getInitialComponent());
 	}
+	
+	private void doOpenColorCategories(UserRequest ureq) {
+		if(colorCategoriesCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_COLOR_CATEGORIES, 0l), null);
+			colorCategoriesCtrl = new ColorCategoryAdminController(ureq, bwControl);
+			listenTo(colorCategoriesCtrl);
+		} else {
+			addToHistory(ureq, colorCategoriesCtrl);
+		}
+		mainVC.put("segmentCmp", colorCategoriesCtrl.getInitialComponent());
+	}
+	
 }

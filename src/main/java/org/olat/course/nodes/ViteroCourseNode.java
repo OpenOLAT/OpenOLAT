@@ -118,7 +118,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 			String courseTitle = userCourseEnv.getCourseEnvironment().getCourseTitle();
 			runCtr = new ViteroBookingsRunController(ureq, wControl, null, ores, getIdent(), courseTitle, moderator, userCourseEnv.isCourseReadOnly());
 		}
-		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, this, "o_vitero_icon");
+		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, runCtr, userCourseEnv, this, "o_vitero_icon");
 		return new NodeRunConstructionResult(controller);
 	}
 

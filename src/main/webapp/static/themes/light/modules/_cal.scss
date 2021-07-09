@@ -95,13 +95,6 @@ $o-cal-sec-border-width: 5px;
 	display: inline;
 }
 
-.o_cal_config_color {
-	display: block;
-	width: 16px;
-	height: 16px;
-	border-radius:8px;
-}
-
 .o_cal_colorchooser_selected:before {
 	content: $fa-var-check;
 }

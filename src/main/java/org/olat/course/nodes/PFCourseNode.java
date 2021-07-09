@@ -248,7 +248,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("no.membership.message");
 			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_pf_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, "o_pf_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

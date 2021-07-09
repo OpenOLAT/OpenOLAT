@@ -54,7 +54,7 @@ import org.olat.course.condition.additionalconditions.AdditionalCondition;
 import org.olat.course.condition.interpreter.ConditionErrorMessage;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.CourseEditorEnv;
-import org.olat.course.editor.NodeConfigFormController;
+import org.olat.course.editor.NodeConfigController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -64,6 +64,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
+import org.olat.course.style.ColorCategory;
+import org.olat.course.style.ImageSource;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -75,6 +77,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	
 	private static final long serialVersionUID = -1093400247219150363L;
 	private String type, shortTitle, longTitle, learningObjectives, displayOption;
+	private ImageSource teaserImageSource;
+	private String colorCategoryIdentifier;
 	private ModuleConfiguration moduleConfiguration;
 	private String noAccessExplanation;
 	private Condition preConditionVisibility;
@@ -164,25 +168,16 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return false;
 	}
 
-	/**
-	 * @return String
-	 */
 	@Override
 	public String getLearningObjectives() {
 		return learningObjectives;
 	}
 
-	/**
-	 * @return String
-	 */
 	@Override
 	public String getLongTitle() {
 		return longTitle;
 	}
 
-	/**
-	 * @return String
-	 */
 	@Override
 	public String getShortTitle() {
 		return shortTitle;
@@ -208,100 +203,76 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return getDisplayOption(true);		
 	}
 
-	/**
-	 * @return String
-	 */
 	@Override
 	public String getType() {
 		return type;
 	}
 
-	/**
-	 * Sets the learningObjectives.
-	 * 
-	 * @param learningObjectives The learningObjectives to set
-	 */
 	@Override
 	public void setLearningObjectives(String learningObjectives) {
 		this.learningObjectives = learningObjectives;
 	}
 
-	/**
-	 * Sets the longTitle.
-	 * 
-	 * @param longTitle The longTitle to set
-	 */
 	@Override
 	public void setLongTitle(String longTitle) {
 		this.longTitle = longTitle;
 	}
 
-	/**
-	 * Sets the shortTitle.
-	 * 
-	 * @param shortTitle The shortTitle to set
-	 */
 	@Override
 	public void setShortTitle(String shortTitle) {
 		this.shortTitle = shortTitle;
 	}
 	
-	/**
-	 * Sets the display option
-	 * @param displayOption
-	 */
 	@Override
 	public void setDisplayOption(String displayOption) {
 		this.displayOption = displayOption;
 	}
+	
+	@Override
+	public ImageSource getTeaserImageSource() {
+		return teaserImageSource;
+	}
 
-	/**
-	 * Sets the type.
-	 * 
-	 * @param type The type to set
-	 */
+	@Override
+	public void setTeaserImageSource(ImageSource teaserImageSource) {
+		this.teaserImageSource = teaserImageSource;
+	}
+
+	@Override
+	public String getColorCategoryIdentifier() {
+		return colorCategoryIdentifier != null
+				? colorCategoryIdentifier
+				: ColorCategory.IDENTIFIER_FALLBACK_COURSE_NODE;
+	}
+
+	@Override
+	public void setColorCategoryIdentifier(String colorCategoryIdentifier) {
+		this.colorCategoryIdentifier = colorCategoryIdentifier;
+	}
+
 	public void setType(String type) {
 		this.type = type;
 	}
 
-	/**
-	 * @return ModuleConfiguration
-	 */
 	@Override
 	public ModuleConfiguration getModuleConfiguration() {
 		return moduleConfiguration;
 	}
 
-	/**
-	 * Sets the moduleConfiguration.
-	 * 
-	 * @param moduleConfiguration The moduleConfiguration to set
-	 */
 	public void setModuleConfiguration(ModuleConfiguration moduleConfiguration) {
 		this.moduleConfiguration = moduleConfiguration;
 	}
 
-	/**
-	 * @return String
-	 */
 	@Override
 	public String getNoAccessExplanation() {
 		return noAccessExplanation;
 	}
 
-	/**
-	 * Sets the noAccessExplanation.
-	 * 
-	 * @param noAccessExplanation The noAccessExplanation to set
-	 */
 	@Override
 	public void setNoAccessExplanation(String noAccessExplanation) {
 		this.noAccessExplanation = noAccessExplanation;
 	}
 
-	/**
-	 * @return Condition
-	 */
 	@Override
 	public Condition getPreConditionVisibility() {
 		if (preConditionVisibility == null) {
@@ -311,11 +282,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return preConditionVisibility;
 	}
 
-	/**
-	 * Sets the preConditionVisibility.
-	 * 
-	 * @param preConditionVisibility The preConditionVisibility to set
-	 */
 	@Override
 	public void setPreConditionVisibility(Condition preConditionVisibility) {
 		if (preConditionVisibility == null) {
@@ -325,9 +291,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		this.preConditionVisibility.setConditionId("visibility");
 	}
 
-	/**
-	 * @return Condition
-	 */
 	@Override
 	public Condition getPreConditionAccess() {
 		if (preConditionAccess == null) {
@@ -492,10 +455,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 	
 
-
-	/**
-	 * @see org.olat.core.gui.ShortName#getShortName()
-	 */
 	@Override
 	public String getShortName() {
 		return getShortTitle();
@@ -508,8 +467,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		copyInstance.setPreConditionVisibility(null);
 		if (isNewTitle) {
 			String newTitle = "Copy of " + getShortTitle();
-			if (newTitle.length() > NodeConfigFormController.SHORT_TITLE_MAX_LENGTH) {
-				newTitle = newTitle.substring(0, NodeConfigFormController.SHORT_TITLE_MAX_LENGTH - 1);
+			if (newTitle.length() > NodeConfigController.SHORT_TITLE_MAX_LENGTH) {
+				newTitle = newTitle.substring(0, NodeConfigController.SHORT_TITLE_MAX_LENGTH - 1);
 			}
 			copyInstance.setShortTitle(newTitle);
 		}
@@ -532,9 +491,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		}
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(64);
@@ -542,9 +498,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return sb.toString();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getConditionExpressions()
-	 */
 	@Override
 	public List<ConditionExpression> getConditionExpressions() {
 		ArrayList<ConditionExpression> retVal = new ArrayList<>();
@@ -605,9 +558,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return condExprsStatusDescs;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#explainThisDuringPublish(org.olat.core.gui.control.StatusDescription)
-	 */
 	@Override
 	public StatusDescription explainThisDuringPublish(StatusDescription description) {
 		if (description == null) return null;

@@ -104,7 +104,7 @@ public class TeamsCourseNode extends AbstractAccessableCourseNode {
 		Controller controller = new TeamsMeetingsRunController(ureq, wControl, entry, getIdent(), null,
 				admin, moderator, userCourseEnv.isCourseReadOnly());
 
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_vc_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_vc_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

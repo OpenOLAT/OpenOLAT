@@ -119,6 +119,7 @@ import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.statistic.AsyncExportManager;
+import org.olat.course.style.CourseStyleService;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
@@ -513,6 +514,15 @@ public class CourseFactory {
 			targetCourse.saveRunStructure();
 			targetCourse.setEditorTreeModel((CourseEditorTreeModel) XStreamHelper.xstreamClone(sourceCourse.getEditorTreeModel()));
 			targetCourse.saveEditorTreeModel();
+			
+			// copy course style folder
+			VFSContainer sourceCourseStyleCont = VFSManager.olatRootContainer(
+					sourceCourse.getCourseEnvironment().getCourseBaseContainer().getRelPath() + "/" + CourseStyleService.FOLDER_ROOT);
+			if (sourceCourseStyleCont.exists()) {
+				VFSContainer targetCourseStyleCont = VFSManager.olatRootContainer(
+						targetCourse.getCourseEnvironment().getCourseBaseContainer().getRelPath() + "/" + CourseStyleService.FOLDER_ROOT);
+				targetCourseStyleCont.copyContentOf(sourceCourseStyleCont, author);
+			}
 
 			// copy course folder
 			VFSContainer sourceCourseContainer = sourceCourse.getIsolatedCourseBaseContainer();

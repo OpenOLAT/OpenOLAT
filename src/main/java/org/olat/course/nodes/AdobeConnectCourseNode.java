@@ -169,7 +169,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 			controller = new AdobeConnectRunController(ureq, wControl, entry, getIdent(), null, configuration,
 					admin, moderator, userCourseEnv.isCourseReadOnly());
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_vc_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_vc_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 

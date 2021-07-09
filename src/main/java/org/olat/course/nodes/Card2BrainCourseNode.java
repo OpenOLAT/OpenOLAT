@@ -101,7 +101,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			runCtrl = new Card2BrainRunController(ureq, wControl, this.getModuleConfiguration());
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_card2brain_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, "o_card2brain_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 		

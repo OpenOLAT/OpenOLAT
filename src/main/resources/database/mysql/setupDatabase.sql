@@ -3286,6 +3286,19 @@ create table o_grad_configuration (
    primary key (id)
 );
 
+-- course styles
+create table o_course_color_category (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_identifier varchar(128) not null,
+   c_type varchar(16) not null,
+   c_sort_order int not null,
+   c_enabled bool not null default true,
+   c_css_class varchar(128),
+   primary key (id)
+);
+
 -- course disclaimer
 create table o_course_disclaimer_consent(
     id bigint not null auto_increment,
@@ -3764,6 +3777,7 @@ alter table o_grad_to_identity ENGINE = InnoDB;
 alter table o_grad_assignment ENGINE = InnoDB;
 alter table o_grad_time_record ENGINE = InnoDB;
 alter table o_grad_configuration ENGINE = InnoDB;
+alter table o_course_color_category ENGINE = InnoDB;
 alter table o_course_disclaimer_consent ENGINE = InnoDB;
 alter table o_ap_topic ENGINE = InnoDB;
 alter table o_ap_organizer ENGINE = InnoDB;
@@ -4511,6 +4525,9 @@ alter table o_grad_time_record add constraint grad_time_to_assign_idx foreign ke
 alter table o_grad_time_record add constraint grad_time_to_grader_idx foreign key (fk_grader) references o_grad_to_identity (id);
 
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+-- Course styles
+create unique index idx_course_colcat_ident on o_course_color_category (c_identifier);
 
 -- Appointments
 alter table o_ap_topic add constraint ap_topic_entry_idx foreign key (fk_entry_id) references o_repositoryentry (repositoryentry_id);

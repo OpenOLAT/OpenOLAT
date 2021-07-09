@@ -79,7 +79,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	
 	private VelocityContainer descriptionVc;
 
-	private NodeConfigFormController nodeConfigController;
+	private NodeConfigController nodeConfigController;
 
 	private TabbedPane myTabbedPane;
 	private VisibilityEditController visibilityEditCtrl;
@@ -87,7 +87,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	private TabbableController childTabsCntrllr;
 	private CourseNodeReminderController reminderCtrl;
 	
-	private final CourseNode courseNode;
 	private final CourseNodeReminderProvider reminderProvider;
 	private boolean reminderInitiallyEnabled;
 	private int reminderPos;
@@ -105,7 +104,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			TabbableController childTabsController) {
 		super(ureq, wControl);
-		this.courseNode = courseNode;
 		RepositoryEntry courseEntry = userCourseEnvironment.getCourseEditorEnv().getCourseGroupManager().getCourseEntry();
 		
 		addLoggingResourceable(LoggingResourceable.wrap(course));
@@ -131,7 +129,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		
 		putInitialPanel(descriptionVc);
 
-		nodeConfigController = new NodeConfigFormController(ureq, wControl, courseNode, courseEntry.getKey());
+		nodeConfigController = new NodeConfigController(ureq, wControl, courseNode, userCourseEnvironment);
 		listenTo(nodeConfigController);
 		descriptionVc.put("nodeConfigForm", nodeConfigController.getInitialComponent());
 		
@@ -191,13 +189,9 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 				doUpdateReminderUI(urequest, false);
 			}
 		} else if (source == nodeConfigController) {
-			if (event == Event.DONE_EVENT) {
-				courseNode.setShortTitle(nodeConfigController.getMenuTitle());
-				courseNode.setLongTitle(nodeConfigController.getDisplayTitle());
-				courseNode.setLearningObjectives(nodeConfigController.getLearningObjectives());
-				courseNode.setDisplayOption(nodeConfigController.getDisplayOption());
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(urequest, event);
 			}
-			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 		
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_EDITED, getClass());

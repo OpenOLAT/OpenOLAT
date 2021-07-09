@@ -151,7 +151,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			ctrl = new CheckListRunController(ureq, wControl, userCourseEnv, ores, this);
 		}
 
-		Controller cont = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, this, ICON_CSS_CLASS);
+		Controller cont = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, userCourseEnv, this, ICON_CSS_CLASS);
 		return new NodeRunConstructionResult(cont);
 	}
 	

@@ -148,7 +148,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 				runCtrl = new LTIRunSegmentController(ureq, wControl, userCourseEnv, this);
 			}
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_lti_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, "o_lti_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

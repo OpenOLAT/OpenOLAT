@@ -97,7 +97,7 @@ public class OpencastCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			runCtrl = new OpencastRunController(ureq, wControl, this, userCourseEnv);
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, ICON_CSS);
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
 	}
 

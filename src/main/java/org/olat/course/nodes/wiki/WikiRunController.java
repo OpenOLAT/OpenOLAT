@@ -138,7 +138,7 @@ public class WikiRunController extends BasicController implements Activateable2 
 		}
 		listenTo(wikiCtr);
 
-		Controller wrappedCtr = TitledWrapperHelper.getWrapper(ureq, wControl, wikiCtr, wikiCourseNode, Wiki.CSS_CLASS_WIKI_ICON);
+		Controller wrappedCtr = TitledWrapperHelper.getWrapper(ureq, wControl, wikiCtr, userCourseEnv, wikiCourseNode, Wiki.CSS_CLASS_WIKI_ICON);
 		
 		CloneLayoutControllerCreatorCallback clccc = (uureq, contentControllerCreator) -> BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, (lureq, lwControl)  -> {
 				// wrapp in column layout, popup window needs a layout controller

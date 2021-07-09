@@ -218,8 +218,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			}
 			controller = ProjectBrokerControllerFactory.createRunController(ureq, wControl, userCourseEnv, this);
 		}
-		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this,
-				"o_projectbroker_icon");
+		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_projectbroker_icon");
 		return new NodeRunConstructionResult(wrapperCtrl);
 	}
 

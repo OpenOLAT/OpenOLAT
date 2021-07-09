@@ -125,7 +125,7 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 			controller = new GoToMeetingRunController(ureq, wControl, courseEntry, getIdent(), null,
 					admin, moderator, userCourseEnv.isCourseReadOnly());
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_gotomeeting_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_gotomeeting_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 

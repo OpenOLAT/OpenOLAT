@@ -36,7 +36,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.course.editor.NodeConfigFormController;
+import org.olat.course.editor.NodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
@@ -79,7 +79,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 		setFormTitle("structurenode.configuration");
 		setFormDescription("structurenode.configuration.description");
 
-		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle", NodeConfigFormController.SHORT_TITLE_MAX_LENGTH, null, formLayout);
+		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle", NodeConfigController.SHORT_TITLE_MAX_LENGTH, null, formLayout);
 		shortTitleEl.setMandatory(true);
 		shortTitleEl.setCheckVisibleLength(true);
 		

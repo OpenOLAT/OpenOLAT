@@ -1,0 +1,34 @@
+<div class="o_cn_header #if($header.colorCategoryCss) $header.colorCategoryCss #end #if($r.isNotEmpty($teaserImageUrl)) o_$header.getTeaserImageStyle() #end">
+	<div class="panel panel-default panel-alert panel-bottomless" #if($cover) style="background-image:url($teaserImageUrl) #end">
+		<div class="panel-body o_text">
+			#if($r.isNotEmpty($header.title))
+				<div class="o_text_block">
+					<div>
+						<h2>
+							#if($header.iconCss) 
+								<i class="o_icon $header.iconCss"></i>
+							#end
+							<span>$header.title</span>
+						</h2>
+					</div>
+					<div></div>
+				</div>
+			#end
+			#if($expanded)
+				#if($r.isNotEmpty($header.objectives))
+					<div class="o_text_block">
+						<div>
+							<h5><i class="o_icon o_icon_objectives"></i> $r.translate("header.objectives")</h5>
+							<div>$header.objectives</div>
+						</div>
+						<div></div>
+					</div>
+				#end
+				
+			#end
+		</div>
+		#if($r.isNotEmpty($teaserImageUrl) && !$cover)
+			<div class="o_image" style="background-image:#if($gradient)linear-gradient(to right, rgba(255, 255, 255), rgba(255, 255, 255, 0) 10% ),#end url($teaserImageUrl);"></div>
+		#end
+	</div>
+</div>

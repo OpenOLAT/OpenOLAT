@@ -63,7 +63,7 @@ public class CalendarTypeClassRenderer implements FlexiCellRenderer {
 		} else if(CalendarManager.TYPE_COURSE.equals(type)) {
 			target.append("<i class='o_icon o_CourseModule_icon'> </i>");
 		} else {
-			target.append("<i class='o_cal_config_color ").append(type).append("'> </i>");
+			target.append("<i class='o_circle ").append(type).append("'> </i>");
 		}
 	}
 }

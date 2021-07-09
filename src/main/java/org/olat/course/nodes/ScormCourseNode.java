@@ -124,7 +124,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		Controller cuntCtrl = new ScormRunSegmentController(ureq, wControl, userCourseEnv, this);
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, cuntCtrl, this, "o_scorm_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, cuntCtrl, userCourseEnv, this, "o_scorm_icon");
 		// no inline-in-olat-menu integration possible: no display configuration option
 		return new NodeRunConstructionResult(ctrl);
 	}

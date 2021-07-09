@@ -55,6 +55,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
+import org.olat.course.style.ImageSource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -71,64 +72,33 @@ public interface CourseNode extends INode, ShortName {
 	public static final String DISPLAY_OPTS_TITLE_CONTENT = "title+content";
 	public static final String DISPLAY_OPTS_CONTENT = "content";
 
-	/**
-	 * @return String
-	 */
-	public String getLearningObjectives();
-
-	/**
-	 * @return String
-	 */
-	public String getLongTitle();
-
-	/**
-	 * @return String
-	 */
-	public String getShortTitle();
-	
-	/**
-	 * @return String
-	 */
-	public String getDisplayOption();
-
-	/**
-	 * @return String
-	 */
 	public String getType();
 
-	/**
-	 * Set this node's ident.
-	 * 
-	 * @param ident
-	 */
 	public void setIdent(String ident);
 
-	/**
-	 * Sets the learningObjectives.
-	 * 
-	 * @param learningObjectives The learningObjectives to set
-	 */
-	public void setLearningObjectives(String learningObjectives);
-
-	/**
-	 * Sets the longTitle.
-	 * 
-	 * @param longTitle The longTitle to set
-	 */
 	public void setLongTitle(String longTitle);
 
-	/**
-	 * Sets the shortTitle.
-	 * 
-	 * @param shortTitle The shortTitle to set
-	 */
-	public void setShortTitle(String shortTitle);
+	public String getShortTitle();
 	
-	/**
-	 * Set display option
-	 * @param displayOption
-	 */
+	public void setShortTitle(String shortTitle);
+
+	public String getLongTitle();
+
+	public String getLearningObjectives();
+
+	public void setLearningObjectives(String learningObjectives);
+
+	public String getDisplayOption();
+	
 	public void setDisplayOption(String displayOption);
+	
+	public ImageSource getTeaserImageSource();
+	
+	public void setTeaserImageSource(ImageSource imageSource);
+	
+	public String getColorCategoryIdentifier();
+	
+	public void setColorCategoryIdentifier(String colorCategoryIdentifier);
 
 	/**
 	 * Set the text that will show up when no access is granted to this node but

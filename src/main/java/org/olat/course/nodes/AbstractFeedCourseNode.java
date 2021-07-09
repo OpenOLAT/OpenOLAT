@@ -160,7 +160,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 				ureq, wControl, callback, courseId, getIdent());
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(nodecmd);
 		mainCtrl.activate(ureq, entries, null);
-		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, mainCtrl, this, geIconCssClass());
+		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, mainCtrl, userCourseEnv, this, geIconCssClass());
 		return new NodeRunConstructionResult(wrapperCtrl);
 	}
 	

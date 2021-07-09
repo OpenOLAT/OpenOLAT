@@ -35,7 +35,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.editor.EditorMainController;
-import org.olat.course.editor.NodeConfigFormController;
+import org.olat.course.editor.NodeConfigController;
 import org.olat.course.wizard.CourseNodeTitleContext;
 import org.olat.course.wizard.CourseWizardService;
 import org.olat.repository.wizard.ui.ReferencableEntriesStepController;
@@ -83,7 +83,7 @@ public class TitleAndEntryController extends StepFormBasicController {
 		formLayout.add(nodeCont);
 		
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle",
-				NodeConfigFormController.SHORT_TITLE_MAX_LENGTH, titleContext.getShortTitle(), nodeCont);
+				NodeConfigController.SHORT_TITLE_MAX_LENGTH, titleContext.getShortTitle(), nodeCont);
 		shortTitleEl.setMandatory(true);
 		shortTitleEl.setNotEmptyCheck("nodeConfigForm.menumust");
 		shortTitleEl.setCheckVisibleLength(true);
@@ -95,8 +95,8 @@ public class TitleAndEntryController extends StepFormBasicController {
 		nodeCont.setVisible(!referencableCtrl.isSearch());
 		if (updateTitle && !StringHelper.containsNonWhitespace(shortTitleEl.getValue()) && referencableCtrl.getEntry() != null) {
 			String displayname = referencableCtrl.getEntry().getDisplayname();
-			String shortTitle = NodeConfigFormController.SHORT_TITLE_MAX_LENGTH < displayname.length()
-					? displayname.substring(0, NodeConfigFormController.SHORT_TITLE_MAX_LENGTH)
+			String shortTitle = NodeConfigController.SHORT_TITLE_MAX_LENGTH < displayname.length()
+					? displayname.substring(0, NodeConfigController.SHORT_TITLE_MAX_LENGTH)
 					: displayname;
 			shortTitleEl.setValue(shortTitle);
 		}

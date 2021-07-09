@@ -1,0 +1,8 @@
+<div class="o_expand_ctrl #if(!$r.visible("expandButton")) o_unexpandable #end">
+	#if($r.available("expandable"))
+		$r.render("expandable")
+	#end
+	#if($r.visible("expandButton"))
+		<div class="o_button_group">$r.render("expandButton")</div>
+	#end
+</div>

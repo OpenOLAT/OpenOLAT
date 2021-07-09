@@ -64,6 +64,7 @@ import org.olat.course.nodes.VideoCourseNode;
 import org.olat.course.nodes.bc.CourseDocumentsFactory;
 import org.olat.course.nodes.cp.CPEditController;
 import org.olat.course.nodes.video.VideoEditController;
+import org.olat.course.style.CourseStyleService;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.glossary.GlossaryManager;
 import org.olat.modules.reminder.ReminderService;
@@ -207,6 +208,10 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 		File mediaDirectory = new File(fCourseBase, "media");
 		if(mediaDirectory.exists()) {
 			ZipUtil.addPathToZip("media", mediaDirectory.toPath(), zout);
+		}
+		File courseStylesDirectory = new File(fCourseBase, CourseStyleService.FOLDER_ROOT);
+		if(courseStylesDirectory.exists()) {
+			ZipUtil.addPathToZip(CourseStyleService.FOLDER_ROOT, courseStylesDirectory.toPath(), zout);
 		}
 		File documentsDirectory = new File(fCourseBase, CourseDocumentsFactory.FOLDER_NAME);
 		if(documentsDirectory.exists()) {

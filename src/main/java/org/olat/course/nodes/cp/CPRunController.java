@@ -258,7 +258,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 		NodeRunConstructionResult ncr;
 		if (isExternalMenuConfigured()) {
 			// integrate it into the olat menu
-			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, cpNode, "o_cp_icon");
+			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, userCourseEnv, cpNode, "o_cp_icon");
 			if(treeModel.getFlattedTree().size() == 1) {
 				selNodeId = cpNode.getIdent();
 			} else if(StringHelper.containsNonWhitespace(selectedNodeId) && treeModel.getNodeById(selectedNodeId) != null) {
@@ -266,7 +266,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 			}
 			ncr = new NodeRunConstructionResult(ctrl, treeModel, selNodeId, treeNodeClickListener);
 		} else { // no menu to integrate
-			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, cpNode, "o_cp_icon");
+			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, userCourseEnv, cpNode, "o_cp_icon");
 			ncr = new NodeRunConstructionResult(ctrl);
 		}
 		return ncr;

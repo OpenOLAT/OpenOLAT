@@ -84,6 +84,7 @@ public class VideoRunController extends BasicController {
 		// controllers auto-disposed
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -121,7 +122,7 @@ public class VideoRunController extends BasicController {
 	}
 
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq) {
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, videoNode, "o_icon_video");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, userCourseEnv, videoNode, "o_icon_video");
 		return new NodeRunConstructionResult(ctrl);
 	}
 }

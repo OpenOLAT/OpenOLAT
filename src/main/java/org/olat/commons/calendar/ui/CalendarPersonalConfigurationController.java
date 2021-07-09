@@ -149,7 +149,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	
 	private void initLinks(CalendarPersonalConfigurationRow row) {
 		FormLink colorLink = uifactory.addFormLink("col_" + (++counter), "color", "", null, null, Link.NONTRANSLATED);
-		colorLink.setIconLeftCSS("o_cal_config_color ".concat(row.getCssClass()));
+		colorLink.setIconLeftCSS("o_circle ".concat(row.getCssClass()));
 		colorLink.setUserObject(row);
 		row.setColorLink(colorLink);
 		
@@ -525,7 +525,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		KalendarRenderWrapper calendarWrapper = row.getWrapper();
 		calendarWrapper.setCssClass(cssColor);
 		calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
-		row.getColorLink().setIconLeftCSS("o_cal_config_color ".concat(row.getCssClass()));
+		row.getColorLink().setIconLeftCSS("o_circle ".concat(row.getCssClass()));
 		fireEvent(ureq, new CalendarGUISettingEvent(calendarWrapper));
 	}
 }

@@ -150,7 +150,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			controller = new MembersCourseNodeRunController(ureq, wControl, userCourseEnv, this.getModuleConfiguration());
 		}
-		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_cmembers_icon");
+		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_cmembers_icon");
 		return new NodeRunConstructionResult(titledCtrl);
 	}
 

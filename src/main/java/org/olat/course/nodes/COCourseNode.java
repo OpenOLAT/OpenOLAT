@@ -112,7 +112,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         } else {
             controller = new CORunController(getModuleConfiguration(), ureq, wControl, userCourseEnv);
         }
-        Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_co_icon");
+        Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_co_icon");
         return new NodeRunConstructionResult(ctrl);
     }
     

@@ -230,7 +230,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		checkController.addLoggingResourceable(LoggingResourceable.wrap(this));
 		
 		// Add title and descrition
-		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, checkController, this, "o_cl_icon");
+		Controller controller = TitledWrapperHelper.getWrapper(ureq, wControl, checkController, userCourseEnv, this, "o_cl_icon");
 		return new NodeRunConstructionResult(controller);
 	}
 	

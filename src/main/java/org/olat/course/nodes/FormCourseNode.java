@@ -171,7 +171,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			FormSecurityCallback secCallback = FormSecurityCallbackFactory.createSecurityCallback(userCourseEnv);
 			runCtrl = new FormRunCoachController(ureq, wControl, this, userCourseEnv, secCallback);
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, ICON_CSS);
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

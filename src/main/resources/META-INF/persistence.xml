@@ -115,6 +115,7 @@
 		<class>org.olat.course.statistic.dayofweek.DayOfWeekStat</class>
 		<class>org.olat.course.statistic.hourofday.HourOfDayStat</class>
 		<class>org.olat.course.statistic.weekly.WeeklyStat</class>
+		<class>org.olat.course.style.model.ColorCategoryImpl</class>
 		<class>org.olat.group.model.ContactView</class>
 		<class>org.olat.group.model.ContactViewExtended</class>
 		<class>org.olat.group.model.BusinessGroupShortImpl</class>

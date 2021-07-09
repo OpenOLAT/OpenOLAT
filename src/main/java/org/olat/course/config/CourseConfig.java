@@ -30,10 +30,14 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.style.ColorCategory;
+import org.olat.course.style.ImageSource;
+import org.olat.course.style.TeaserImageStyle;
 
 /**
  * Description: <br>
@@ -98,6 +102,9 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String MENU_ENABLED = "MENU_ENABLED";
 	public static final transient String TOOLBAR_ENABLED = "TOOLBAR_ENABLED";
 	public static final transient String BREADCRUMB_ENABLED = "BREADCRUMB_ENABLED";
+	public static final transient String NODE_TEASER_IMAGE_SOURCE = "NODE_TEASER_IMAGE_SOURCE";
+	public static final transient String NODE_TEASER_IMAGE_STYLE = "NODE_TEASER_IMAGE_STYLE";
+	public static final transient String NODE_COLOR_CATEGORY_IDENITFIER = "NODE_COLOR_CATEGORY_IDENITFIER";
 
 	public static final transient String COURSESEARCH_ENABLED = "COURSESEARCH_ENABLED";
 	public static final transient String KEY_CHAT_ENABLED = "COURSE_CHAT_ENABLED";
@@ -218,6 +225,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(DISCLAIMER_2_TERMS, "");
 		configuration.put(DISCLAIMER_2_LABEL_1, "");
 		configuration.put(DISCLAIMER_2_LABEL_2, "");
+		
+		configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, ColorCategory.IDENTIFIER_FALLBACK_COURSE);
 
 		this.version = CURRENTVERSION;
 	}
@@ -419,6 +428,9 @@ public class CourseConfig implements Serializable, Cloneable {
 				}
 				if (!configuration.containsKey(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING)) {
 					configuration.put(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING, Boolean.TRUE);
+				}
+				if (!configuration.containsKey(NODE_COLOR_CATEGORY_IDENITFIER)) {
+					configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, ColorCategory.IDENTIFIER_FALLBACK_COURSE);
 				}
 			}
 
@@ -948,6 +960,46 @@ public class CourseConfig implements Serializable, Cloneable {
 		
 		return null;
 	}
+	
+	public ImageSource getTeaserImageSource() {
+		Object imageSource = configuration.get(NODE_TEASER_IMAGE_SOURCE);
+		return imageSource != null ? (ImageSource) imageSource : null;
+	}
+	
+	public void setTeaserImageSource(ImageSource imageSource) {
+		if (imageSource != null) {
+			configuration.put(NODE_TEASER_IMAGE_SOURCE, imageSource);
+		} else {
+			configuration.remove(NODE_TEASER_IMAGE_SOURCE);
+		}
+	}
+	
+	public TeaserImageStyle getTeaserImageStyle() {
+		Object teaserImageStyle = configuration.get(NODE_TEASER_IMAGE_STYLE);
+		return teaserImageStyle != null ? (TeaserImageStyle) teaserImageStyle : null;
+	}
+	
+	public void setTeaserImageStyle(TeaserImageStyle teaserImageStyle) {
+		if (teaserImageStyle != null) {
+			configuration.put(NODE_TEASER_IMAGE_STYLE, teaserImageStyle);
+		} else {
+			configuration.remove(NODE_TEASER_IMAGE_STYLE);
+		}
+	}
+	
+	public void setColorCategoryIdentifier(String colorCategoryIdentifier) {
+		String identifier = colorCategoryIdentifier != null
+				? colorCategoryIdentifier
+				: ColorCategory.IDENTIFIER_FALLBACK_COURSE;
+		configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, identifier);
+	}
+
+	public String getColorCategoryIdentifier() {
+		Object colorCategoryIdentifier = configuration.get(NODE_COLOR_CATEGORY_IDENITFIER);
+		return colorCategoryIdentifier != null
+				? (String) colorCategoryIdentifier
+				: ColorCategory.IDENTIFIER_FALLBACK_COURSE;
+	}
 
 	@Override
 	public CourseConfig clone() {
@@ -998,6 +1050,13 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setDisclaimerLabel(1, 2, getDisclaimerLabel(1, 2));
 		clone.setDisclaimerLabel(2, 1, getDisclaimerLabel(2, 1));
 		clone.setDisclaimerLabel(2, 2, getDisclaimerLabel(2, 2));
+		ImageSource teaserImageSource = getTeaserImageSource();
+		if (teaserImageSource != null) {
+			ImageSource clonedTeaserImageSource = (ImageSource)XStreamHelper.xstreamClone(teaserImageSource);
+			clone.setTeaserImageSource(clonedTeaserImageSource);
+		}
+		clone.setTeaserImageStyle(getTeaserImageStyle());
+		clone.setColorCategoryIdentifier(getColorCategoryIdentifier());
 		return clone;
 	}
 

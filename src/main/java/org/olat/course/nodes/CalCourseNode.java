@@ -193,7 +193,7 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseNodeCallback(this, userCourseEnv,
 				nodeSecCallback.getNodeEvaluation());
 		CalRunController calCtlr = new CalRunController(wControl, ureq, this, userCourseEnv, secCallback);
-		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, calCtlr, this, "o_cal_icon");
+		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, calCtlr, userCourseEnv, this, "o_cal_icon");
 		return new NodeRunConstructionResult(wrapperCtrl);
 	}
 

@@ -249,8 +249,8 @@ public class MultiSPController extends FormBasicController {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode newNode = newNodeConfig.getInstance(parent);
 		String name = item.getName();
-		if (name.length() > NodeConfigFormController.SHORT_TITLE_MAX_LENGTH) {
-			String shortName = name.substring(0, NodeConfigFormController.SHORT_TITLE_MAX_LENGTH - 1);
+		if (name.length() > NodeConfigController.SHORT_TITLE_MAX_LENGTH) {
+			String shortName = name.substring(0, NodeConfigController.SHORT_TITLE_MAX_LENGTH - 1);
 			newNode.setShortTitle(shortName);
 			newNode.setLongTitle(name);
 		} else {

@@ -174,7 +174,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				controller = MessageUIFactory.createInfoMessage(ureq, wControl, "", transe.translate("error.qti12"));
 			}
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_iqtest_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_iqtest_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

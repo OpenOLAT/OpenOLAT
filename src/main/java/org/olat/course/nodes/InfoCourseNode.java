@@ -262,7 +262,7 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		InfoRunController infoCtrl = new InfoRunController(ureq, wControl, userCourseEnv, nodeSecCallback.getNodeEvaluation(), this);
-		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, infoCtrl, this, "o_infomsg_icon");
+		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, infoCtrl, userCourseEnv, this, "o_infomsg_icon");
 		return new NodeRunConstructionResult(titledCtrl);
 	}
 	

@@ -19,6 +19,8 @@
  */
 package org.olat.core.util.vfs;
 
+import java.io.File;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -32,21 +34,25 @@ import org.olat.core.gui.media.MediaResource;
  */
 public class VFSMediaMapper implements Mapper {
 	
-	private VFSLeaf file;
+	private VFSLeaf vfsLeaf;
 	
 	public VFSMediaMapper() {
 	}
 
-	public VFSMediaMapper(VFSLeaf file) {
-		this.file = file;
+	public VFSMediaMapper(VFSLeaf vfsLeaf) {
+		this.vfsLeaf = vfsLeaf;
+	}
+	
+	public VFSMediaMapper(File file) {
+		this.vfsLeaf = new LocalFileImpl(file);
 	}
 
-	public void setMediaFile(VFSLeaf file) {
-		this.file = file;
+	public void setMediaFile(VFSLeaf vfsLeaf) {
+		this.vfsLeaf = vfsLeaf;
 	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		return new VFSMediaResource(file);
+		return new VFSMediaResource(vfsLeaf);
 	}
 }

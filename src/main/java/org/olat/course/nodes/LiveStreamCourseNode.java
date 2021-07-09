@@ -108,7 +108,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 					.createSecurityCallback(userCourseEnv, this.getModuleConfiguration());
 			runCtrl = new LiveStreamRunController(ureq, wControl, this, userCourseEnv, secCallback, calendars);
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_livestream_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, "o_livestream_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

@@ -815,7 +815,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			controller = new GTARunController(ureq, wControl, this, userCourseEnv);
 		}
 		 
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_gta_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_gta_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 

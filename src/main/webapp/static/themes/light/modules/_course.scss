@@ -1,3 +1,124 @@
+/* Header color category */
+.o_colcat_nocolor.o_square {
+	background-image: repeating-linear-gradient(135deg, transparent 0%, transparent 47%, red, transparent 53%, transparent 100%);
+	border: solid 1px $btn-default-border;
+}
+
+.o_colcat_dark_blue.o_circle { background-color: $o-cn-header-cat-dark-blue-color; }
+.o_colcat_dark_blue.o_square { background-color: $o-cn-header-cat-dark-blue-color; }
+.o_colcat_dark_blue.o_cn_header > .panel { border-left-color: $o-cn-header-cat-dark-blue-color; }
+
+.o_colcat_light_blue.o_circle { background-color: $o-cn-header-cat-light-blue-color; }
+.o_colcat_light_blue.o_square { background-color: $o-cn-header-cat-light-blue-color; }
+.o_colcat_light_blue.o_cn_header > .panel { border-left-color: $o-cn-header-cat-light-blue-color; }
+
+.o_colcat_purple.o_circle { background-color: $o-cn-header-cat-purple-color; }
+.o_colcat_purple.o_square { background-color: $o-cn-header-cat-purple-color; }
+.o_colcat_purple.o_cn_header > .panel { border-left-color: $o-cn-header-cat-purple-color; }
+
+.o_colcat_red.o_circle { background-color: $o-cn-header-cat-red-color; }
+.o_colcat_red.o_square { background-color: $o-cn-header-cat-red-color; }
+.o_colcat_red.o_cn_header > .panel { border-left-color: $o-cn-header-cat-red-color; }
+
+.o_colcat_orange.o_circle { background-color: $o-cn-header-cat-orange-color; }
+.o_colcat_orange.o_square { background-color: $o-cn-header-cat-orange-color; }
+.o_colcat_orange.o_cn_header > .panel { border-left-color: $o-cn-header-cat-orange-color; }
+
+.o_colcat_yellow.o_circle { background-color: $o-cn-header-cat-yellow-color; }
+.o_colcat_yellow.o_square { background-color: $o-cn-header-cat-yellow-color; }
+.o_colcat_yellow.o_cn_header > .panel { border-left-color: $o-cn-header-cat-yellow-color; }
+
+.o_colcat_light_green.o_circle { background-color: $o-cn-header-cat-light-green-color; }
+.o_colcat_light_green.o_square { background-color: $o-cn-header-cat-light-green-color; }
+.o_colcat_light_green.o_cn_header > .panel { border-left-color: $o-cn-header-cat-light-green-color; }
+
+.o_colcat_dark_green.o_circle { background-color: $o-cn-header-cat-dark-green-color; }
+.o_colcat_dark_green.o_square { background-color: $o-cn-header-cat-dark-green-color; }
+.o_colcat_dark_green.o_cn_header > .panel { border-left-color: $o-cn-header-cat-dark-green-color; }
+
+.o_colcal_ele {
+	a {
+		i {
+			margin-bottom: -0.3em
+		}
+	}
+}
+
+.o_colcal_chooser {
+	.o_colcal_ele {
+		a {
+			i {
+				margin-right: 5px;
+			}
+		}
+	}
+	.o_colcal_ele:not(:first-child) {
+		a {
+			i {
+				margin-top: 5px;
+			}
+		}
+	}
+}
+
+/* Header teaser image */
+.o_cn_header {
+	// Always (preview, peekview) like in #o_main_wrapper
+	h2:first-child {
+		margin-top: 0;
+	}
+	.o_image, &.o_cover > .panel {
+		/* Transparent background. Works not for small images! */
+		background-color: $o-cn-header-image-bg;
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: cover;
+	}
+	&.o_cover {
+		/* The second empty div is to press the first div to left side.
+			Otherwise thise whe hole line has the background color.
+		*/
+		.o_text_block {
+			display: flex;
+			div:nth-child(1) > * {
+				background-color: $o-cn-header-cover-text-bg;
+			}
+			div::nth-child(2) {
+				width: 100%;
+			}
+		}
+	}
+	&.o_right, &.o_gradient {
+		.panel {
+			display: flex;
+			flex-wrap: nowrap;
+			
+			.o_text {
+				width: 66%;
+			}
+			.o_image {
+				width: 34%;
+			}
+		}
+	}
+	&.o_left {
+		.panel {
+			display: flex;
+			flex-wrap: nowrap;
+			flex-direction: row-reverse;
+			
+			.o_text {
+				width: 66%;
+			}
+			.o_image {
+				width: 34%;
+			}
+		}
+	}
+}
+
+
+/* Bages */
 .badge {
 	/* badge color */
 	&.o_midpub            { background-color: $o-course-node-published; }

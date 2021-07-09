@@ -141,7 +141,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		if (StringHelper.containsNonWhitespace(nodecmd)) {
 			bcCtrl.activatePath(ureq, nodecmd);
 		}
-		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, bcCtrl, this, "o_bc_icon");
+		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, bcCtrl, userCourseEnv, this, "o_bc_icon");
 		return new NodeRunConstructionResult(titledCtrl);
 	}
 

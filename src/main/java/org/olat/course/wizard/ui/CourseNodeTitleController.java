@@ -34,7 +34,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.editor.EditorMainController;
-import org.olat.course.editor.NodeConfigFormController;
+import org.olat.course.editor.NodeConfigController;
 import org.olat.course.wizard.CourseNodeTitleContext;
 
 /**
@@ -63,7 +63,7 @@ public class CourseNodeTitleController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle",
-				NodeConfigFormController.SHORT_TITLE_MAX_LENGTH, context.getShortTitle(), formLayout);
+				NodeConfigController.SHORT_TITLE_MAX_LENGTH, context.getShortTitle(), formLayout);
 		shortTitleEl.setMandatory(true);
 		shortTitleEl.setCheckVisibleLength(true);
 

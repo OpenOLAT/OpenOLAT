@@ -185,7 +185,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
 		Controller runCtrl = new SurveyRunController(ureq, wControl, userCourseEnv, this, secCallback);
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, SURVEY_ICON);
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, SURVEY_ICON);
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

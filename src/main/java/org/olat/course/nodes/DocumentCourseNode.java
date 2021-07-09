@@ -144,7 +144,7 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 		Controller controller = new DocumentRunController(ureq, wControl, this, securityCallback, courseFolderCont, "o_cnd_run");
 		
 		String iconCssClass = vfsLeaf != null? CSSHelper.createFiletypeIconCssClassFor(vfsLeaf.getName()): ICON_CSS;
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, iconCssClass);
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, iconCssClass);
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

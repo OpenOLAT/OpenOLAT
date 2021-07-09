@@ -166,7 +166,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			controller = new ENRunController(getModuleConfiguration(), ureq, wControl, userCourseEnv, this);
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_en_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_en_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

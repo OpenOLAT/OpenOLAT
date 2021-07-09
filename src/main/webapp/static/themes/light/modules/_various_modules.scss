@@ -737,6 +737,16 @@ div.o_reminder_custom_email {
 	}	
 }
 
+/* Expand controller */
+.o_expand_ctrl {
+	.o_button_group {
+		margin-top: -15px;
+	}
+	&.o_unexpandable {
+		margin-bottom: 0.5em;
+	}
+}
+
 /* the old toolbox */
 .o_toolboxes {
 	ul {

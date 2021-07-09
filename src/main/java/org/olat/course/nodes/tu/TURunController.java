@@ -92,6 +92,7 @@ public class TURunController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == showButton) {
 			doLaunch(ureq);				
@@ -130,8 +131,10 @@ public class TURunController extends BasicController {
 		
 		// create clone wrapper layout
 		CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
+			@Override
 			public ControllerCreator createLayoutControllerCreator(UserRequest ureq, final ControllerCreator contentControllerCreator) {
 				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
+					@Override
 					@SuppressWarnings("synthetic-access")
 					public Controller createController(UserRequest lureq, WindowControl lwControl) {
 						// wrapp in column layout, popup window needs a layout controller
@@ -159,6 +162,7 @@ public class TURunController extends BasicController {
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
     //child controller registered with listenTo gets disposed in BasicController
 	}

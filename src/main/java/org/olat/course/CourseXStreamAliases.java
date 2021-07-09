@@ -82,6 +82,7 @@ import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.model.SolutionList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
+import org.olat.course.style.model.ImageSourceImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.edubase.BookSection;
@@ -113,7 +114,7 @@ public class CourseXStreamAliases {
 	public static void courseSecurity(XStream xstream) {
 		Class<?>[] types = new Class[] {
 			// course structure
-			Structure.class, CourseEditorTreeModel.class, CourseEditorTreeNode.class,
+			Structure.class, CourseEditorTreeModel.class, CourseEditorTreeNode.class, ImageSourceImpl.class,
 			// course node permissions
 			NodeRight.class, NodeRightImpl.class, NodeRightGrant.class, NodeRightGrantImpl.class, NodeRightRole.class,
 			// course node permissions
@@ -151,6 +152,7 @@ public class CourseXStreamAliases {
 		//write XStream
 		writeXstream.alias("com.frentix.olat.course.nodes.ViteroCourseNode", ViteroCourseNode.class);
 		writeXstream.alias("BookSection", BookSectionImpl.class);
+		writeXstream.alias("ImageSource", ImageSourceImpl.class);
 		writeXstream.alias("NodeRight", NodeRightImpl.class);
 		writeXstream.alias("NodeRightGrant", NodeRightGrantImpl.class);
 		//end write XStream
@@ -192,6 +194,7 @@ public class CourseXStreamAliases {
 		readXstream.alias("WikiCourseNode", WikiCourseNode.class);
 		readXstream.alias("ExtendedCondition", ExtendedCondition.class);
 		readXstream.alias("Condition", Condition.class);
+		readXstream.alias("ImageSource", ImageSourceImpl.class);
 		readXstream.alias("NodeRight", NodeRightImpl.class);
 		readXstream.alias("NodeRightGrant", NodeRightGrantImpl.class);
 		

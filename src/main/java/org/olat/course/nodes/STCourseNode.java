@@ -210,14 +210,14 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
 							layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), userCourseEnv.getCourseEnvironment()));
 							
-							Controller wrappedCtrl = TitledWrapperHelper.getWrapper(lureq, lwControl, ctr, STCourseNode.this, ICON_CSS_CLASS);
+							Controller wrappedCtrl = TitledWrapperHelper.getWrapper(lureq, lwControl, ctr, userCourseEnv, STCourseNode.this, ICON_CSS_CLASS);
 							layoutCtr.addDisposableChildController(wrappedCtrl);
 							return layoutCtr;
 						}
 					});
 				}
 			};
-			Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, spCtr, this, ICON_CSS_CLASS);
+			Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, spCtr, userCourseEnv, this, ICON_CSS_CLASS);
 			if(wrappedCtrl instanceof CloneableController) {
 				cont = new CloneController(ureq, wControl, (CloneableController)wrappedCtrl, clccc);
 			} else {
@@ -227,7 +227,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			// evaluate the score accounting for this node. this uses the score accountings local
 			// cache hash map to reduce unnecessary calculations
 			ScoreEvaluation se = userCourseEnv.getScoreAccounting().evalCourseNode(this);
-			cont = TitledWrapperHelper.getWrapper(ureq, wControl, new STCourseNodeRunController(ureq, wControl, userCourseEnv, this, se), this, ICON_CSS_CLASS);
+			cont = TitledWrapperHelper.getWrapper(ureq, wControl, new STCourseNodeRunController(ureq, wControl, userCourseEnv, this, se), userCourseEnv, this, ICON_CSS_CLASS);
 		}
 
 		// access the current calculated score, if there is one, so that it can be

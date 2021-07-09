@@ -230,7 +230,7 @@ public class SPRunController extends BasicController implements Activateable2 {
 			}
 		};
 		
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), spCtr, courseNode, "o_sp_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), spCtr, userCourseEnv, courseNode, "o_sp_icon");
 		if(ctrl instanceof CloneableController) {
 			CloneController cloneC= new CloneController(ureq, getWindowControl(), (CloneableController)ctrl, clccc);
 			listenTo(cloneC);
