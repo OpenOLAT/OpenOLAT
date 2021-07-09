@@ -429,6 +429,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.QuestionPoolServiceTest.class,
 	org.olat.modules.qpool.manager.QuestionItemAuditLogDAOTest.class,
 	org.olat.login.oauth.OAuthDispatcherTest.class,
+	org.olat.login.oauth.ADFSProviderTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
 	org.olat.ldap.manager.LDAPLoginManagerTest.class,
 	org.olat.core.commons.services.mark.MarksTest.class,

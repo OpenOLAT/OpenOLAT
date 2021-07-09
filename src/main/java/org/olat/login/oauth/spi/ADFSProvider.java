@@ -57,6 +57,8 @@ public class ADFSProvider implements OAuthSPI {
 	private String emailAttributeName;
 	@Value("${adfs.attributename.institutionalUserIdentifier:SAMAccountName}")
 	private String institutionalUserIdentifierAttributeName;
+	@Value("${adfs.attributename.institutionalName}")
+	private String institutionalNameAttributeName;
 	
 	@Autowired
 	private OAuthLoginModule oauthModule;
@@ -116,6 +118,7 @@ public class ADFSProvider implements OAuthSPI {
 			if(!StringHelper.containsNonWhitespace(user.getId())) {
 				user.setId(user.getInstitutionalUserIdentifier());
 			}
+			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
@@ -123,8 +126,11 @@ public class ADFSProvider implements OAuthSPI {
 	}
 	
 	private String getValue(JSONObject obj, String property) {
-		String value = obj.optString(property);
-		return StringHelper.containsNonWhitespace(value) ? value : null;
+		if(StringHelper.containsNonWhitespace(property)) {
+			String value = obj.optString(property);
+			return StringHelper.containsNonWhitespace(value) ? value : null;
+		}
+		return null;
 	}
 	
 	@Override

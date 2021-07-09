@@ -68,6 +68,8 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	private String emailAttributeName;
 	@Value("${azure.adfs.attributename.institutionalUserIdentifier:userPrincipalName}")
 	private String institutionalUserIdentifierAttributeName;
+	@Value("${azure.adfs.attributename.institutionalName}")
+	private String institutionalNameAttributeName;
 	
 	@Autowired
 	private OAuthLoginModule oauthModule;
@@ -141,6 +143,7 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			if(!StringHelper.containsNonWhitespace(user.getId())) {
 				user.setId(user.getInstitutionalUserIdentifier());
 			}
+			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName, user.getInstitutionalName()));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
@@ -163,14 +166,18 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 			if(!StringHelper.containsNonWhitespace(user.getId())) {
 				user.setId(user.getInstitutionalUserIdentifier());
 			}
+			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName, user.getInstitutionalName()));
 		} catch (JSONException | InterruptedException | ExecutionException | IOException e) {
 			log.error("", e);
 		}
 	}
 	
 	private String getValue(JSONObject obj, String property, String currentValue) {
-		String value = obj.optString(property);
-		return StringHelper.containsNonWhitespace(value) ? value : currentValue;
+		if(StringHelper.containsNonWhitespace(property)) {
+			String value = obj.optString(property);
+			return StringHelper.containsNonWhitespace(value) ? value : currentValue;
+		}
+		return currentValue;
 	}
 	
 	@Override

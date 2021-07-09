@@ -240,6 +240,7 @@ public class CourseModule extends AbstractSpringModule {
 	
 	public void setCourseTypeDefault(String courseTypeDefault) {
 		this.courseTypeDefault = courseTypeDefault;
+		setStringProperty(COURSE_TYPE_DEFAULT, courseTypeDefault, true);
 	}
 
 	public boolean isArchiveLogTableOnDelete() {
