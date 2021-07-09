@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -300,13 +302,9 @@ public class ReminderServiceImpl implements ReminderService {
 	
 	private List<String> getCopyAdresses(Reminder reminder) {
 		if (reminder.getEmailCopy().contains(EmailCopy.custom)) {
-			List<String> copyAdresses = new ArrayList<>(2);
-			for (String email : reminder.getCustomEmailCopy().split(",")) {
-				if (!MailHelper.isValidEmailAddress(email.toLowerCase().trim())) {
-					copyAdresses.add(email);
-				}
-			}
-			return copyAdresses;
+			return Arrays.stream(reminder.getCustomEmailCopy().replaceAll("\\s", "").split(","))
+					.filter(MailHelper::isValidEmailAddress)
+					.collect(Collectors.toList());
 		}
 		return null;
 	}
