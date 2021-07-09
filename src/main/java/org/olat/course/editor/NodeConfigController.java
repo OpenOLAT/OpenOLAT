@@ -443,15 +443,17 @@ public class NodeConfigController extends FormBasicController {
 			}
 		} else {
 			ImageSource courseImageSource = course.getCourseConfig().getTeaserImageSource();
-			if (ImageSourceType.course == courseImageSource.getType()) {
-				VFSLeaf vfsLeaf = courseStyleService.getImage(course);
-				if (vfsLeaf != null) {
-					mapper = new VFSMediaMapper(vfsLeaf);
-				}
-			} else if (ImageSourceType.system == courseImageSource.getType()) {
-				File file = courseStyleService.getSystemTeaserImageFile(courseImageSource.getFilename());
-				if (file != null) {
-					mapper = new VFSMediaMapper(file);
+			if (courseImageSource != null) {
+				if (ImageSourceType.course == courseImageSource.getType()) {
+					VFSLeaf vfsLeaf = courseStyleService.getImage(course);
+					if (vfsLeaf != null) {
+						mapper = new VFSMediaMapper(vfsLeaf);
+					}
+				} else if (ImageSourceType.system == courseImageSource.getType()) {
+					File file = courseStyleService.getSystemTeaserImageFile(courseImageSource.getFilename());
+					if (file != null) {
+						mapper = new VFSMediaMapper(file);
+					}
 				}
 			}
 		}
