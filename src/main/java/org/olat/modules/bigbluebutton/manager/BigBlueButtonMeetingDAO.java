@@ -31,6 +31,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -102,6 +103,11 @@ public class BigBlueButtonMeetingDAO {
 		copy.setJoinPolicyEnum(meeting.getJoinPolicyEnum());
 		
 		copy.setMainPresenter(meeting.getMainPresenter());
+		
+		if(meeting.getTemplate().isExternalUsersAllowed() && StringHelper.containsNonWhitespace(meeting.getReadableIdentifier())) {
+			copy.setReadableIdentifier(Long.toString(CodeHelper.getForeverUniqueID()));
+			copy.setPassword(meeting.getPassword());
+		}
 		
 		copy.setRecordingsPublishingEnum(meeting.getRecordingsPublishingEnum());
 		copy.setRecord(meeting.getRecord());
