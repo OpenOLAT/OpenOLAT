@@ -50,6 +50,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -88,6 +89,8 @@ public class AssessmentModeEditController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	private static final String[] startModeKeys = new String[] { "automatic", "manual" };
+
+	private static final OLATResourceable ASSESSMENT_MODE_ORES = OresHelper.createOLATResourceableType(AssessmentMode.class);
 
 	private SingleSelection targetEl;
 	private SingleSelection startModeEl;
@@ -716,6 +719,10 @@ public class AssessmentModeEditController extends FormBasicController {
 
 		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		
+		ChangeAssessmentModeEvent changedEvent = new ChangeAssessmentModeEvent(assessmentMode);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(changedEvent, ASSESSMENT_MODE_ORES);
 	}
 	
 	private void updateCurriculumElementsRelations(Target target) {
