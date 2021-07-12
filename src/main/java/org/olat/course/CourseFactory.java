@@ -213,15 +213,14 @@ public class CourseFactory {
 	/**
 	 * Creates an empty course with a single root node. The course is linked to
 	 * the resourceable ores. The efficiency statment are enabled per default!
-	 *
-	 * @param ores
 	 * @param shortTitle Short title of root node
 	 * @param longTitle Long title of root node
-	 * @param learningObjectives Learning objectives of root node
+	 * @param ores
+	 *
 	 * @return An empty course with a single root node.
 	 */
 	public static ICourse createCourse(RepositoryEntry courseEntry,
-			String shortTitle, String longTitle, String learningObjectives) {
+			String shortTitle, String longTitle) {
 		OLATResource courseResource = courseEntry.getOlatResource();
 		PersistingCourseImpl newCourse = new PersistingCourseImpl(courseResource);
 		// Put new course in course cache
@@ -231,7 +230,6 @@ public class CourseFactory {
 		CourseNode runRootNode = new STCourseNode();
 		runRootNode.setShortTitle(shortTitle);
 		runRootNode.setLongTitle(longTitle);
-		runRootNode.setLearningObjectives(learningObjectives);
 		initialStructure.setRootNode(runRootNode);
 		newCourse.setRunStructure(initialStructure);
 		newCourse.saveRunStructure();

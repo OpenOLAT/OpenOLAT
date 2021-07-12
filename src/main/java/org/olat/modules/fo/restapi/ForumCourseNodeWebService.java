@@ -158,7 +158,10 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -177,14 +180,20 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachForumPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("moderatorExpertRules") String moderatorExpertRules, @FormParam("posterExpertRules") String posterExpertRules,
+	public Response attachForumPost(@PathParam("courseId") Long courseId,
+			@FormParam("parentNodeId") String parentNodeId, @FormParam("position") Integer position,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("moderatorExpertRules") String moderatorExpertRules,
+			@FormParam("posterExpertRules") String posterExpertRules,
 			@FormParam("readerExpertRules") String readerExpertRules, @Context HttpServletRequest request) {
-		return attachForum(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules,
-				moderatorExpertRules, posterExpertRules, readerExpertRules, request);
+		return attachForum(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, moderatorExpertRules,
+				posterExpertRules, readerExpertRules, request);
 	}
 	
 	/**
@@ -197,7 +206,13 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -215,14 +230,24 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachForum(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId")  @Parameter(description = "The node's id which will be the parent of this single page") String parentNodeId,
-			@QueryParam("position")  @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position, @QueryParam("shortTitle")  @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle")  @Parameter(description = "The node long title") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @Parameter(description = "The node learning objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules, @QueryParam("accessExpertRules") @Parameter(description = "The rules to access the node (optional)") String accessExpertRules,
-			@QueryParam("moderatorExpertRules") @Parameter(description = "The rules to moderate the node (optional)") String moderatorExpertRules, @QueryParam("posterExpertRules") @Parameter(description = "The rules to post the node (optional)") String posterExpertRules,
-			@QueryParam("readerExpertRules") @Parameter(description = "The rules to read the node (optional)") String readerExpertRules, @Context HttpServletRequest request) {
+	public Response attachForum(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this single page") String parentNodeId,
+			@QueryParam("position") @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position,
+			@QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") @Parameter(description = "The node long title") String longTitle,
+			@QueryParam("description") @Parameter(description = "The node description") String description,
+			@QueryParam("objectives") @Parameter(description = "The node learning instruction") String objectives,
+			@QueryParam("instruction") @Parameter(description = "The node learning objectives") String instruction,
+			@QueryParam("instructionalDesign") @Parameter(description = "The node instructional designs") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") @Parameter(description = "The rules to access the node (optional)") String accessExpertRules,
+			@QueryParam("moderatorExpertRules") @Parameter(description = "The rules to moderate the node (optional)") String moderatorExpertRules,
+			@QueryParam("posterExpertRules") @Parameter(description = "The rules to post the node (optional)") String posterExpertRules,
+			@QueryParam("readerExpertRules") @Parameter(description = "The rules to read the node (optional)") String readerExpertRules,
+			@Context HttpServletRequest request) {
 		ForumCustomConfig config = new ForumCustomConfig(moderatorExpertRules, posterExpertRules, readerExpertRules);
-		return attach(courseId, parentNodeId, "fo", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "fo", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**

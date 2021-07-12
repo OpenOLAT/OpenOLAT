@@ -100,8 +100,7 @@ public class CourseDisclaimerManagerTest extends OlatTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		repositoryEntry = repositoryService.create(null, "UnitTester", "-", "JUnit course disclaimer configuration course", "A JUnit course disclaimer test course",
 				resource, RepositoryEntryStatusEnum.trash, defOrganisation);
-		course = CourseFactory.createCourse(repositoryEntry, "Course Disclaimer Test", "Course Disclaimer Test Course",
-				"Test custom course disclaimer");
+		course = CourseFactory.createCourse(repositoryEntry, "Course Disclaimer Test", "Course Disclaimer Test Course");
 		
 		id1 = JunitTestHelper.createAndPersistIdentityAsUser("id1");
 		roles1 = baseSecurityManager.getRoles(id1);

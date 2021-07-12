@@ -109,7 +109,7 @@ public class HeaderContentController extends BasicController
 		removeAsListenerAndDispose(headerCtrl);
 		headerCtrl = null;
 		
-		Header header = courseStyleService.getHeader(userCourseEnv.getCourseEnvironment(), courseNode, iconCssClass);
+		Header header = courseStyleService.getHeader(userCourseEnv, courseNode, iconCssClass);
 		if (header != null && CourseStyleUIFactory.hasValues(header)) {
 			headerCtrl = new HeaderController(ureq, getWindowControl(), header);
 			listenTo(headerCtrl);

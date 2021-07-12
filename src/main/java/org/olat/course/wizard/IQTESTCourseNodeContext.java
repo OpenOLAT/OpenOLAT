@@ -35,7 +35,7 @@ public class IQTESTCourseNodeContext implements IQTESTCourseNodeDefaults, Assess
 
 	private String longTitle;
 	private String shortTitle;
-	private String objectives;
+	private String description;
 	private RepositoryEntry referencedEntry;
 	private ModuleConfiguration moduleConfig;
 	private boolean enabled = true;
@@ -66,13 +66,13 @@ public class IQTESTCourseNodeContext implements IQTESTCourseNodeDefaults, Assess
 	}
 
 	@Override
-	public String getObjectives() {
-		return objectives;
+	public String getDescription() {
+		return description;
 	}
 
 	@Override
-	public void setObjectives(String objectives) {
-		this.objectives = objectives;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@Override

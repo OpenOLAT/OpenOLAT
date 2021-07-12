@@ -54,6 +54,7 @@ import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.GenericCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ColorCategorySearchParams;
@@ -67,7 +68,6 @@ import org.olat.course.style.ui.ColorCategoryChooserController;
 import org.olat.course.style.ui.CourseStyleUIFactory;
 import org.olat.course.style.ui.HeaderController;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.modules.edusharing.EdusharingProvider;
 import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -91,7 +91,10 @@ public class NodeConfigController extends FormBasicController {
 	
 	private TextElement shortTitleEl;
 	private TextElement titleEl;
+	private RichTextElement descriptionEl;
 	private RichTextElement objectivesEl;
+	private RichTextElement instructionEl;
+	private RichTextElement instructionalDesignEl;
 	private SingleSelection displayOptionsEl;
 	private FormLayoutContainer styleCont;
 	private SingleSelection teaserImageTypeEl;
@@ -155,15 +158,41 @@ public class NodeConfigController extends FormBasicController {
 		titleEl.setPlaceholderText(longTitle);
 		titleEl.setElementCssClass("o_sel_node_editor_title");
 		
-		// add the learning objectives rich text input element
-		objectivesEl = uifactory.addRichTextElementForStringData("nodeConfigForm.learningobjectives",
-				"nodeConfigForm.learningobjectives", courseNode.getLearningObjectives(), 10, -1, false, null, null,
+		descriptionEl = uifactory.addRichTextElementForStringData("nodeConfigForm.description",
+				"nodeConfigForm.description", courseNode.getDescription(), 10, -1, false, null, null,
+				infoCont, ureq.getUserSession(), getWindowControl());
+		descriptionEl.setMaxLength(4000);
+		descriptionEl.getEditorConfiguration().enableEdusharing(getIdentity(),
+				new LazyRepositoryEdusharingProvider(
+						userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry().getKey(),
+						"course-learning-objectives-" + courseNode.getIdent()));
+		
+		objectivesEl = uifactory.addRichTextElementForStringData("nodeConfigForm.objectives",
+				"nodeConfigForm.objectives", courseNode.getObjectives(), 10, -1, false, null, null,
 				infoCont, ureq.getUserSession(), getWindowControl());
 		objectivesEl.setMaxLength(4000);
-		EdusharingProvider provider = new LazyRepositoryEdusharingProvider(
-				userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry().getKey(),
-				"course-learning-objectives-" + courseNode.getIdent());
-		objectivesEl.getEditorConfiguration().enableEdusharing(getIdentity(), provider);
+		objectivesEl.getEditorConfiguration().enableEdusharing(getIdentity(),
+				new LazyRepositoryEdusharingProvider(
+						userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry().getKey(),
+						"course-objectives-" + courseNode.getIdent()));
+		
+		instructionEl = uifactory.addRichTextElementForStringData("nodeConfigForm.instruction",
+				"nodeConfigForm.instruction", courseNode.getInstruction(), 10, -1, false, null, null,
+				infoCont, ureq.getUserSession(), getWindowControl());
+		instructionEl.setMaxLength(4000);
+		instructionEl.getEditorConfiguration().enableEdusharing(getIdentity(),
+				new LazyRepositoryEdusharingProvider(
+						userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry().getKey(),
+						"course-instruction-" + courseNode.getIdent()));
+		
+		instructionalDesignEl = uifactory.addRichTextElementForStringData("nodeConfigForm.instructional.design",
+				"nodeConfigForm.instructional.design", courseNode.getInstructionalDesign(), 10, -1, false, null, null,
+				infoCont, ureq.getUserSession(), getWindowControl());
+		instructionalDesignEl.setMaxLength(4000);
+		instructionalDesignEl.getEditorConfiguration().enableEdusharing(getIdentity(),
+				new LazyRepositoryEdusharingProvider(
+						userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry().getKey(),
+						"course-instructional-design-" + courseNode.getIdent()));
 		
 		String[] values = new String[]{
 				translate("nodeConfigForm.short_title_desc_content"),
@@ -310,7 +339,14 @@ public class NodeConfigController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		courseNode.setShortTitle(shortTitleEl.getValue());
 		courseNode.setLongTitle(titleEl.getValue());
-		courseNode.setLearningObjectives(objectivesEl.getValue());
+		if (courseNode instanceof GenericCourseNode) {
+			// Indicator that migration is done
+			((GenericCourseNode)courseNode).setLearningObjectives(null);
+		}
+		courseNode.setDescription(descriptionEl.getValue());
+		courseNode.setObjectives(objectivesEl.getValue());
+		courseNode.setInstruction(instructionEl.getValue());
+		courseNode.setInstructionalDesign(instructionalDesignEl.getValue());
 		courseNode.setDisplayOption(displayOptionsEl.getSelectedKey());
 		
 		ImageSourceType type =  teaserImageTypeEl.isOneSelected()
@@ -411,18 +447,19 @@ public class NodeConfigController extends FormBasicController {
 	private Header createPreviewHeader() {
 		Builder builder = Header.builder();
 		
-		Object displayOption = displayOptionsEl.getSelectedKey();
+		String displayOption = displayOptionsEl.getSelectedKey();
 		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getShortTitle());
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getLongTitle());
 		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getShortTitle());
-			builder.withObjectives(courseNode.getLearningObjectives());
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getLongTitle());
-			builder.withObjectives(courseNode.getLearningObjectives());
 		}
+		builder.withObjectives(objectivesEl.getValue());
+		builder.withInstruction(instructionEl.getValue());
+		builder.withInstrucionalDesign(instructionalDesignEl.getValue());
 		
 		String colorCategoryCss = ColorCategory.IDENTIFIER_INHERITED.equals(colorCategory.getIdentifier())
 					? getInheritedColorCategory().getCssClass()

@@ -378,7 +378,6 @@ public class NotificationsTest extends OlatRestTestCase {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("fo");
 		FOCourseNode forumNode = (FOCourseNode)newNodeConfig.getInstance(rootNode);
 		forumNode.setShortTitle("Forum");
-		forumNode.setLearningObjectives("forum objectives");
 		forumNode.setNoAccessExplanation("You don't have access");
 		Forum courseForum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
 		course.getEditorTreeModel().addCourseNode(forumNode, rootNode);
@@ -429,7 +428,6 @@ public class NotificationsTest extends OlatRestTestCase {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
 		BCCourseNode folderNode = (BCCourseNode)newNodeConfig.getInstance(rootNode);
 		folderNode.setShortTitle("Folder");
-		folderNode.setLearningObjectives("folder objectives");
 		folderNode.setNoAccessExplanation("You don't have access");
 		String relPath = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), folderNode);
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer(folderNode, course.getCourseEnvironment());

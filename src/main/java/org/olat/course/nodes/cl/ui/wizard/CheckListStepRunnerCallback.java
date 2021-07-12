@@ -90,7 +90,7 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		
 		CourseNode rootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode()).getCourseNode();
-		CourseNode structureNode = createCourseNode(rootNode, data.getStructureShortTitle(), data.getStructureTitle(), data.getStructureObjectives(), "st");
+		CourseNode structureNode = createCourseNode(rootNode, data.getStructureShortTitle(), data.getStructureTitle(), data.getStructureDescription(), "st");
 		course.getEditorTreeModel().addCourseNode(structureNode, rootNode);
 		
 		List<CheckListNode> nodes = data.getNodes();
@@ -180,12 +180,12 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		stNode.setScoreCalculator(sc);
 	}
 	
-	private CourseNode createCourseNode(CourseNode parent, String shortTitle, String title, String objectives, String type) {
+	private CourseNode createCourseNode(CourseNode parent, String shortTitle, String title, String description, String type) {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode newNode = newNodeConfig.getInstance(parent);
 		newNode.setShortTitle(shortTitle);
 		newNode.setLongTitle(title);
-		newNode.setLearningObjectives(objectives);
+		newNode.setDescription(description);
 		newNode.setNoAccessExplanation("You don't have access");
 		return newNode;
 	}

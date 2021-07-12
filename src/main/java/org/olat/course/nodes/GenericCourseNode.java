@@ -76,7 +76,15 @@ import org.olat.modules.ModuleConfiguration;
 public abstract class GenericCourseNode extends GenericNode implements CourseNode {
 	
 	private static final long serialVersionUID = -1093400247219150363L;
-	private String type, shortTitle, longTitle, learningObjectives, displayOption;
+	private String type;
+	private String shortTitle;
+	private String longTitle;
+	private String learningObjectives; // legacy
+	private String description;
+	private String objectives;
+	private String instruction;
+	private String instructionalDesign;
+	private String displayOption;
 	private ImageSource teaserImageSource;
 	private String colorCategoryIdentifier;
 	private ModuleConfiguration moduleConfiguration;
@@ -168,9 +176,12 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return false;
 	}
 
-	@Override
 	public String getLearningObjectives() {
 		return learningObjectives;
+	}
+
+	public void setLearningObjectives(String learningObjectives) {
+		this.learningObjectives = learningObjectives;
 	}
 
 	@Override
@@ -209,11 +220,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void setLearningObjectives(String learningObjectives) {
-		this.learningObjectives = learningObjectives;
-	}
-
-	@Override
 	public void setLongTitle(String longTitle) {
 		this.longTitle = longTitle;
 	}
@@ -228,6 +234,52 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		this.displayOption = displayOption;
 	}
 	
+	@Override
+	public String getDescription() {
+		if (StringHelper.containsNonWhitespace(learningObjectives)) {
+			return learningObjectives; // legacy fallback
+		}
+		return description;
+	}
+
+	@Override
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	@Override
+	public String getObjectives() {
+		if (StringHelper.containsNonWhitespace(learningObjectives)) {
+			return learningObjectives; // legacy fallback
+		}
+		return objectives;
+	}
+
+	@Override
+	public void setObjectives(String objectives) {
+		this.objectives = objectives;
+	}
+
+	@Override
+	public String getInstruction() {
+		return instruction;
+	}
+
+	@Override
+	public void setInstruction(String instruction) {
+		this.instruction = instruction;
+	}
+
+	@Override
+	public String getInstructionalDesign() {
+		return instructionalDesign;
+	}
+
+	@Override
+	public void setInstructionalDesign(String instructionalDesign) {
+		this.instructionalDesign = instructionalDesign;
+	}
+
 	@Override
 	public ImageSource getTeaserImageSource() {
 		return teaserImageSource;
@@ -480,10 +532,18 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		if(courseNode instanceof GenericCourseNode) {
 			GenericCourseNode newNode = (GenericCourseNode)courseNode;
 			newNode.setDisplayOption(getDisplayOption());
-			newNode.setLearningObjectives(getLearningObjectives());
+			if (StringHelper.containsNonWhitespace(getLearningObjectives())) {
+				newNode.setDescription(getLearningObjectives());
+				newNode.setObjectives(getLearningObjectives());
+			} else {
+				newNode.setDescription(getDescription());
+				newNode.setObjectives(getObjectives());
+			}
 			newNode.setLongTitle(getLongTitle());
 			newNode.setNoAccessExplanation(getNoAccessExplanation());
 			newNode.setShortTitle(getShortTitle());
+			newNode.setTeaserImageSource(getTeaserImageSource());
+			newNode.setColorCategoryIdentifier(getColorCategoryIdentifier());
 			
 			if(preConditionVisibility != null) {
 				newNode.setPreConditionVisibility(preConditionVisibility.clone());

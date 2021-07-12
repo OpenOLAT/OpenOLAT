@@ -67,17 +67,18 @@ public class CourseNodeDocument extends OlatDocument {
 			courseNodeDocument.setCssIcon("o_course_icon");
 		}
 		
-		if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
-			courseNodeDocument.setTitle(courseNode.getShortTitle());
-		} else if(StringHelper.containsNonWhitespace(courseNode.getLongTitle())) {
-			courseNodeDocument.setTitle(courseNode.getLongTitle());
-			courseNodeDocument.setDescription(courseNode.getLongTitle());
-		}
 		if(StringHelper.containsNonWhitespace(courseNode.getLongTitle())) {
-			courseNodeDocument.setDescription(courseNode.getLongTitle());
+			courseNodeDocument.setTitle(courseNode.getLongTitle());
+		} else if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
+			courseNodeDocument.setTitle(courseNode.getShortTitle());
 		}
-		if(StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
-			String objectives = courseNode.getLearningObjectives();
+		if(StringHelper.containsNonWhitespace(courseNode.getDescription())) {
+			String description = courseNode.getDescription();
+			description = FilterFactory.getHtmlTagsFilter().filter(description);
+			courseNodeDocument.setDescription(description);
+		}
+		if(StringHelper.containsNonWhitespace(courseNode.getObjectives())) {
+			String objectives = courseNode.getObjectives();
 			objectives = FilterFactory.getHtmlTagsFilter().filter(objectives);
 			courseNodeDocument.setContent(objectives);
 		}

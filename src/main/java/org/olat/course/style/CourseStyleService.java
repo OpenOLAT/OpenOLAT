@@ -27,7 +27,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -81,6 +81,6 @@ public interface CourseStyleService {
 	
 	public ColorCategoryResolver getColorCategoryResolver(ColorCategorySearchParams preloadParams);
 
-	public Header getHeader(CourseEnvironment courseEnv, CourseNode courseNode, String iconCssClass);
+	public Header getHeader(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String iconCssClass);
 
 }

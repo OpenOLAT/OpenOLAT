@@ -97,7 +97,10 @@ public class COWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param coaches Send to coaches (true/false)
@@ -123,17 +126,29 @@ public class COWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachContact(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this structure")String parentNodeId,
-			@QueryParam("position") @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position, @QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @Parameter(description = "The node long title") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @Parameter(description = "The node learning objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules, @QueryParam("accessExpertRules") @Parameter(description = "The rules to access the node (optional)") String accessExpertRules,
-			@QueryParam("coaches") @Parameter(description = "Send to coaches (true/false)") @DefaultValue("false") boolean coaches, @QueryParam("participants") @Parameter(description = "Send to participants (true/false)") @DefaultValue("false") boolean participants,
-			@QueryParam("groups") @Parameter(description = "A list of learning groups (list of keys)") String groups, @QueryParam("areas") @Parameter(description = "A list of learning areas (list of keys)") String areas, @QueryParam("to") String to,
-			@QueryParam("defaultSubject") @Parameter(description = "The default subject") String defaultSubject, @QueryParam("defaultBody") @Parameter(description = "The default body text") String defaultBody,
+	public Response attachContact(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this structure") String parentNodeId,
+			@QueryParam("position") @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position,
+			@QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") @Parameter(description = "The node long title") String longTitle,
+			@QueryParam("description") @Parameter(description = "The node description") String description,
+			@QueryParam("objectives") @Parameter(description = "The node learning instruction") String objectives,
+			@QueryParam("instruction") @Parameter(description = "The node learning objectives") String instruction,
+			@QueryParam("instructionalDesign") @Parameter(description = "The node instructional designs") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") @Parameter(description = "The rules to access the node (optional)") String accessExpertRules,
+			@QueryParam("coaches") @Parameter(description = "Send to coaches (true/false)") @DefaultValue("false") boolean coaches,
+			@QueryParam("participants") @Parameter(description = "Send to participants (true/false)") @DefaultValue("false") boolean participants,
+			@QueryParam("groups") @Parameter(description = "A list of learning groups (list of keys)") String groups,
+			@QueryParam("areas") @Parameter(description = "A list of learning areas (list of keys)") String areas,
+			@QueryParam("to") String to,
+			@QueryParam("defaultSubject") @Parameter(description = "The default subject") String defaultSubject,
+			@QueryParam("defaultBody") @Parameter(description = "The default body text") String defaultBody,
 			@Context HttpServletRequest request) {
 		
 		ContactConfigDelegate config = new ContactConfigDelegate(coaches, participants, groups, areas, to, defaultSubject, defaultBody);
-		return attach(courseId, parentNodeId, "co", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "co", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -146,7 +161,10 @@ public class COWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param coaches send the message to coaches
@@ -175,8 +193,11 @@ public class COWebService extends AbstractCourseNodeWebService {
 	public Response attachContactPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
 			@FormParam("position") Integer position, 
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, 
-			@FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("longTitle") String longTitle, 
+			@FormParam("description") String description,
+			@FormParam("objectives") String objectives,
+			@FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
 			@FormParam("accessExpertRules") String accessExpertRules,
 			@FormParam("coachesAll") @DefaultValue("false") boolean coachesAll,
@@ -193,7 +214,7 @@ public class COWebService extends AbstractCourseNodeWebService {
 			@FormParam("defaultBody") String defaultBody,
 			@Context HttpServletRequest request) {
 		ContactConfigDelegate config = new ContactConfigDelegate(coachesAll,coachesCourse, coachesAssigned, coachesGroups, coachesAreas, participantsAll, participantsCourse, participantsGroups, participantsAreas,to, defaultSubject, defaultBody);
-		return attach(courseId, parentNodeId, "co", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "co", position, shortTitle, longTitle, description, objectives, instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	private class ContactConfigDelegate implements CustomConfigDelegate {

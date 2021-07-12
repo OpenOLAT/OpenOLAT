@@ -72,8 +72,7 @@ public class CourseConfigManagerImplTest extends OlatTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry addedEntry = repositoryService.create(null, "Ayanami", "-", "JUnit course configuration course", "A JUnit course",
 				resource, RepositoryEntryStatusEnum.trash, defOrganisation);
-		ICourse course = CourseFactory.createCourse(addedEntry, "JUnitCourseConfig", "JUnitCourseConfig Long Title",
-				"objective 1 objective 2 objective 3");
+		ICourse course = CourseFactory.createCourse(addedEntry, "JUnitCourseConfig", "JUnitCourseConfig Long Title");
 		dbInstance.commitAndCloseSession();
 		
 		/*

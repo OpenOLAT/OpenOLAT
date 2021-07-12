@@ -86,7 +86,6 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("fo");
 		forumNode = newNodeConfig.getInstance(rootNode);
 		forumNode.setShortTitle("Forum");
-		forumNode.setLearningObjectives("forum objectives");
 		forumNode.setNoAccessExplanation("You don't have access");
 		course1.getEditorTreeModel().addCourseNode(forumNode, rootNode);
 		

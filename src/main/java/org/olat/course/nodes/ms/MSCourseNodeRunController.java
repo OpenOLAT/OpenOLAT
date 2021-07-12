@@ -53,7 +53,6 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
-import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -131,14 +130,6 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			// push title and learning objectives, only visible on intro page
 			myContent.contextPut("menuTitle", courseNode.getShortTitle());
 			myContent.contextPut("displayTitle", courseNode.getLongTitle());
-			
-			// Adding learning objectives
-			String learningObj = courseNode.getLearningObjectives();
-			if (learningObj != null) {
-				Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq); 
-				myContent.put("learningObjectives", learningObjectives);
-				myContent.contextPut("hasObjectives", learningObj); // dummy value, just an exists operator
-			}
 		} 
 		
 		//admin setting whether to show change log or not

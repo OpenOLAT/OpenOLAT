@@ -168,7 +168,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		RepositoryEntry addedEntry = repositoryService.create(null, "Ayanami", "-", "Enrollment test course 1", "A JUnit course",
 				resource, RepositoryEntryStatusEnum.trash, defOrganisation);
-		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test", "Test", "learningObjectives").getCourseEnvironment();
+		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test", "Test").getCourseEnvironment();
 		// 1. enroll wg1 user
 		IdentityEnvironment ienv = new IdentityEnvironment();
 		ienv.setIdentity(wg1);
@@ -267,7 +267,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase {
 		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("enroller");
 		RepositoryEntry addedEntry = JunitTestHelper.deployBasicCourse(author);
-		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test-Enroll", "Test", "Test enrollment with concurrent users").getCourseEnvironment();
+		CourseEnvironment cenv = CourseFactory.createCourse(addedEntry, "Test-Enroll", "Test").getCourseEnvironment();
 		BusinessGroup group = businessGroupService.createBusinessGroup(id1, "Enrollment", "Enroll", BusinessGroup.BUSINESS_TYPE,
 				Integer.valueOf(1), Integer.valueOf(10), true, false, null);
 		Assert.assertNotNull(group);

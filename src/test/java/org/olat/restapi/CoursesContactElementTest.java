@@ -83,7 +83,7 @@ public class CoursesContactElementTest extends OlatRestTestCase {
 	private DB dbInstance;
 	
 	@Before
-	public void setUp() throws Exception {;
+	public void setUp() throws Exception {
 		conn = new RestConnection();
 		
 		admin = JunitTestHelper.findIdentityByLogin("administrator");
@@ -116,7 +116,11 @@ public class CoursesContactElementTest extends OlatRestTestCase {
 			.queryParam("parentNodeId", rootNodeId)
 			.queryParam("position", "0").queryParam("shortTitle", "Contact-0")
 			.queryParam("longTitle", "Contact-long-0")
-			.queryParam("objectives", "Contact-objectives-0").build();
+			.queryParam("description", "Contact-description-0")
+			.queryParam("objectives", "Contact-objectives-0")
+			.queryParam("instruction", "Contact-instruction-0")
+			.queryParam("instructionalDesign", "Contact-instructionalDesign-0")
+			.build();
 		HttpPut method = conn.createPut(newContactUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		
@@ -126,7 +130,10 @@ public class CoursesContactElementTest extends OlatRestTestCase {
 		assertNotNull(contactNode.getId());
 		assertEquals(contactNode.getShortTitle(), "Contact-0");
 		assertEquals(contactNode.getLongTitle(), "Contact-long-0");
-		assertEquals(contactNode.getLearningObjectives(), "Contact-objectives-0");
+		assertEquals(contactNode.getDescription(), "Contact-description-0");
+		assertEquals(contactNode.getObjectives(), "Contact-objectives-0");
+		assertEquals(contactNode.getInstruction(), "Contact-instruction-0");
+		assertEquals(contactNode.getInstructionalDesign(), "Contact-instructionalDesign-0");
 		assertEquals(contactNode.getParentId(), rootNodeId);
 	}
 	

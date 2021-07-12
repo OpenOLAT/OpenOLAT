@@ -35,7 +35,7 @@ public class GeneratorData {
 	
 	private String structureTitle;
 	private String structureShortTitle;
-	private String structureObjectives;
+	private String structureDescription;
 	
 	private boolean points;
 	private boolean passed;
@@ -100,12 +100,12 @@ public class GeneratorData {
 		this.structureShortTitle = structureShortTitle;
 	}
 
-	public String getStructureObjectives() {
-		return structureObjectives;
+	public String getStructureDescription() {
+		return structureDescription;
 	}
 
-	public void setStructureObjectives(String structureObjectives) {
-		this.structureObjectives = structureObjectives;
+	public void setStructureDescription(String structureDescription) {
+		this.structureDescription = structureDescription;
 	}
 
 	public boolean isPoints() {

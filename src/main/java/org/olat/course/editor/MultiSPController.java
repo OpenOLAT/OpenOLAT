@@ -256,7 +256,6 @@ public class MultiSPController extends FormBasicController {
 		} else {
 			newNode.setShortTitle(name);
 		}
-		newNode.setLearningObjectives(item.getName());
 		newNode.setNoAccessExplanation("You don't have access");
 		return newNode;
 	}

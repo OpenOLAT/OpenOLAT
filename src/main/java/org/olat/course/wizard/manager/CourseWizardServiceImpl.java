@@ -250,14 +250,14 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		}
 	}
 	
-	private CourseNode createCourseNode(ICourse course, String nodeType, CourseNodeTitleContext description) {
+	private CourseNode createCourseNode(ICourse course, String nodeType, CourseNodeTitleContext context) {
 		CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		CourseNode rootNode = cetm.getCourseNode(cetm.getRootNode().getIdent());
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(nodeType);
 		CourseNode createdNode = nodeConfig.getInstance(cetm.getRootNode());
-		createdNode.setLongTitle(description.getLongTitle());
-		createdNode.setShortTitle(description.getShortTitle());
-		createdNode.setLearningObjectives(description.getObjectives());
+		createdNode.setLongTitle(context.getLongTitle());
+		createdNode.setShortTitle(context.getShortTitle());
+		createdNode.setDescription(context.getDescription());
 		cetm.addCourseNode(createdNode, rootNode);
 		log.debug("Course node '{}' of type {} created.", createdNode.getShortTitle(), nodeType);
 		return createdNode;

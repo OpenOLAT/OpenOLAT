@@ -84,9 +84,21 @@ public interface CourseNode extends INode, ShortName {
 
 	public String getLongTitle();
 
-	public String getLearningObjectives();
+	public String getDescription();
 
-	public void setLearningObjectives(String learningObjectives);
+	public void setDescription(String description);
+
+	public String getObjectives();
+	
+	public void setObjectives(String objectives);
+
+	public String getInstruction();
+
+	public void setInstruction(String instruction);
+
+	public String getInstructionalDesign();
+
+	public void setInstructionalDesign(String instructionalDesign);
 
 	public String getDisplayOption();
 	

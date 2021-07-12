@@ -55,7 +55,6 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -227,16 +226,6 @@ public class ScormRunController extends BasicController implements GenericEventL
 		// push title and learning objectives, only visible on intro page
 		startPage.contextPut("menuTitle", scormNode.getShortTitle());
 		startPage.contextPut("displayTitle", scormNode.getLongTitle());
-
-		// Adding learning objectives
-		String learningObj = scormNode.getLearningObjectives();
-		if (learningObj != null) {
-			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, getLocale());
-			startPage.put("learningObjectives", learningObjectives);
-			startPage.contextPut("hasObjectives", Boolean.TRUE);
-		} else {
-			startPage.contextPut("hasObjectives", Boolean.FALSE);
-		}
 
 		if (isAssessable) {
 			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);

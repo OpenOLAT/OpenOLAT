@@ -55,7 +55,6 @@ import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ENCourseNode;
-import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.en.EnrollmentTableModelWithMaxSize.Stats;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -181,14 +180,6 @@ public class ENRunController extends BasicController implements GenericEventList
 		// push title and learning objectives, only visible on intro page
 		enrollVC.contextPut("menuTitle", enNode.getShortTitle());
 		enrollVC.contextPut("displayTitle", enNode.getLongTitle());
-
-		// Adding learning objectives
-		String learningObj = enNode.getLearningObjectives();
-		if (learningObj != null) {
-			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq);
-			enrollVC.put("learningObjectives", learningObjectives);
-			enrollVC.contextPut("hasObjectives", learningObj); // dummy value, just an exists operator
-		}
 
 		putInitialPanel (enrollVC);
 	}

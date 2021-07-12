@@ -45,7 +45,6 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,14 +128,6 @@ public class DENRunController extends BasicController implements GenericEventLis
 			manageDatesBtn.setVisible(!userCourseEnv.isCourseReadOnly());
 			enrollmentListBtn = LinkFactory.createButton("run.enrollment.list", runVC, this);
 			enrollmentListBtn.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
-		}
-		
-  	// Adding learning objectives
-		String learningObj = denCourseNode.getLearningObjectives();
-		if (learningObj != null) {
-			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq);
-			runVC.put("learningObjectives", learningObjectives);
-			runVC.contextPut("hasObjectives", learningObj);				
 		}
 		
 		runVC.put("datesTable", runDENTable.getInitialComponent());

@@ -143,7 +143,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		columnsModel.addFlexiColumnModel(deletedModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.shortTitle));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.longTitle));
-		DefaultFlexiColumnModel learningObjectivesModel = new DefaultFlexiColumnModel(OverviewCols.learningObjectives);
+		DefaultFlexiColumnModel learningObjectivesModel = new DefaultFlexiColumnModel(OverviewCols.description);
 		learningObjectivesModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.none));
 		learningObjectivesModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(learningObjectivesModel);

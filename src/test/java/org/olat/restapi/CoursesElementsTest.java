@@ -129,7 +129,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				.addTextBody("position", "0")
 				.addTextBody("shortTitle", "Structure-0")
 				.addTextBody("longTitle", "Structure-long-0")
+				.addTextBody("description", "Structure-description-0")
 				.addTextBody("objectives", "Structure-objectives-0")
+				.addTextBody("instruction", "Structure-instruction-0")
+				.addTextBody("instructionalDesign", "Structure-instructionalDesign-0")
 				.build();
 		newStructureMethod.setEntity(newStructureEnttiy);
 
@@ -141,7 +144,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(structureNode.getId());
 		assertEquals(structureNode.getShortTitle(), "Structure-0");
 		assertEquals(structureNode.getLongTitle(), "Structure-long-0");
-		assertEquals(structureNode.getLearningObjectives(), "Structure-objectives-0");
+		assertEquals(structureNode.getDescription(), "Structure-description-0");
+		assertEquals(structureNode.getObjectives(), "Structure-objectives-0");
+		assertEquals(structureNode.getInstruction(), "Structure-instruction-0");
+		assertEquals(structureNode.getInstructionalDesign(), "Structure-instructionalDesign-0");
 		assertEquals(structureNode.getParentId(), course.getEditorRootNodeId());
 		
 		//create single page
@@ -159,7 +165,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				.addTextBody("position", "1")
 				.addTextBody("shortTitle","Single-Page-0")
 				.addTextBody("longTitle", "Single-Page-long-0")
+				.addTextBody("description", "Single-Page-description-0")
 				.addTextBody("objectives", "Single-Page-objectives-0")
+				.addTextBody("instruction", "Single-Page-instruction-0")
+				.addTextBody("instructionalDesign", "Single-Page-instructionalDesign-0")
 				.build();
 		newPageMethod.setEntity(entity);
 		
@@ -170,7 +179,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(pageNode.getId());
 		assertEquals(pageNode.getShortTitle(), "Single-Page-0");
 		assertEquals(pageNode.getLongTitle(), "Single-Page-long-0");
-		assertEquals(pageNode.getLearningObjectives(), "Single-Page-objectives-0");
+		assertEquals(pageNode.getDescription(), "Single-Page-description-0");
+		assertEquals(pageNode.getObjectives(), "Single-Page-objectives-0");
+		assertEquals(pageNode.getInstruction(), "Single-Page-instruction-0");
+		assertEquals(pageNode.getInstructionalDesign(), "Single-Page-instructionalDesign-0");
 		assertEquals(structureNode.getParentId(), course.getEditorRootNodeId());
 		
 		//create a folder node
@@ -182,7 +194,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				new BasicNameValuePair("position", "2"),
 				new BasicNameValuePair("shortTitle", "Folder-0"),
 				new BasicNameValuePair("longTitle", "Folder-long-0"),
+				new BasicNameValuePair("description", "Folder-description-0"),
 				new BasicNameValuePair("objectives", "Folder-objectives-0"),
+				new BasicNameValuePair("instruction", "Folder-instruction-0"),
+				new BasicNameValuePair("instructionalDesign", "Folder-instructionalDesign-0"),
 				new BasicNameValuePair("visibilityExpertRules", rule),
 				new BasicNameValuePair("downloadExpertRules", rule),
 				new BasicNameValuePair("uploadExpertRules", rule));
@@ -194,7 +209,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(folderNode.getId());
 		assertEquals(folderNode.getShortTitle(), "Folder-0");
 		assertEquals(folderNode.getLongTitle(), "Folder-long-0");
-		assertEquals(folderNode.getLearningObjectives(), "Folder-objectives-0");
+		assertEquals(folderNode.getDescription(), "Folder-description-0");
+		assertEquals(folderNode.getObjectives(), "Folder-objectives-0");
+		assertEquals(folderNode.getInstruction(), "Folder-instruction-0");
+		assertEquals(folderNode.getInstructionalDesign(), "Folder-instructionalDesign-0");
 		assertEquals(folderNode.getParentId(), course.getEditorRootNodeId());
 		
 		
@@ -205,7 +223,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				new BasicNameValuePair("position", "3"),
 				new BasicNameValuePair("shortTitle", "Forum-0"),
 				new BasicNameValuePair("longTitle", "Forum-long-0"),
-				new BasicNameValuePair("objectives", "Forum-objectives-0"));
+				new BasicNameValuePair("description", "Forum-description-0"),
+				new BasicNameValuePair("objectives", "Forum-objectives-0"),
+				new BasicNameValuePair("instruction", "Forum-instruction-0"),
+				new BasicNameValuePair("instructionalDesign", "Forum-instructionalDesign-0"));
 		HttpResponse newForumCode = conn.execute(newForumMethod);
 		assertTrue(newForumCode.getStatusLine().getStatusCode() == 200 || newForumCode.getStatusLine().getStatusCode() == 201);
 		CourseNodeVO forumNode = conn.parse(newForumCode, CourseNodeVO.class);
@@ -213,7 +234,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(forumNode.getId());
 		assertEquals(forumNode.getShortTitle(), "Forum-0");
 		assertEquals(forumNode.getLongTitle(), "Forum-long-0");
-		assertEquals(forumNode.getLearningObjectives(), "Forum-objectives-0");
+		assertEquals(forumNode.getDescription(), "Forum-description-0");
+		assertEquals(forumNode.getObjectives(), "Forum-objectives-0");
+		assertEquals(forumNode.getInstruction(), "Forum-instruction-0");
+		assertEquals(forumNode.getInstructionalDesign(), "Forum-instructionalDesign-0");
 		assertEquals(forumNode.getParentId(), course.getEditorRootNodeId());
 		
 		
@@ -224,7 +248,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				new BasicNameValuePair("position", "4"),
 				new BasicNameValuePair("shortTitle", "Task-0"),
 				new BasicNameValuePair("longTitle", "Task-long-0"),
+				new BasicNameValuePair("description", "Task-description-0"),
 				new BasicNameValuePair("objectives", "Task-objectives-0"),
+				new BasicNameValuePair("instruction", "Task-instruction-0"),
+				new BasicNameValuePair("instructionalDesign", "Task-instructionalDesign-0"),
 				new BasicNameValuePair("points", "25"),
 				new BasicNameValuePair("text", "A very difficult test"));
 		HttpResponse newTaskCode = conn.execute(newTaskMethod);
@@ -234,7 +261,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(taskNode.getId());
 		assertEquals(taskNode.getShortTitle(), "Task-0");
 		assertEquals(taskNode.getLongTitle(), "Task-long-0");
-		assertEquals(taskNode.getLearningObjectives(), "Task-objectives-0");
+		assertEquals(taskNode.getDescription(), "Task-description-0");
+		assertEquals(taskNode.getObjectives(), "Task-objectives-0");
+		assertEquals(taskNode.getInstruction(), "Task-instruction-0");
+		assertEquals(taskNode.getInstructionalDesign(), "Task-instructionalDesign-0");
 		assertEquals(taskNode.getParentId(), course.getEditorRootNodeId());
 		
 
@@ -246,7 +276,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				new BasicNameValuePair("position", "5"),
 				new BasicNameValuePair("shortTitle", "Test-0"),
 				new BasicNameValuePair("longTitle", "Test-long-0"),
-				new BasicNameValuePair("objectives", "Test-objectives-0"));
+				new BasicNameValuePair("description", "Test-description-0"),
+				new BasicNameValuePair("objectives", "Test-objectives-0"),
+				new BasicNameValuePair("instruction", "Test-instruction-0"),
+				new BasicNameValuePair("instructionalDesign", "Test-instructionalDesign-0"));
 		HttpResponse newTestCode = conn.execute(newTestMethod);
 		assertTrue(newTestCode.getStatusLine().getStatusCode() == 404);//must bind a real test
 		EntityUtils.consume(newTestCode.getEntity());
@@ -268,7 +301,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				new BasicNameValuePair("position", "5"),
 				new BasicNameValuePair("shortTitle", "Assessment-0"),
 				new BasicNameValuePair("longTitle", "Assessment-long-0"),
-				new BasicNameValuePair("objectives", "Assessment-objectives-0"));
+				new BasicNameValuePair("description", "Assessment-description-0"),
+				new BasicNameValuePair("objectives", "Assessment-objectives-0"),
+				new BasicNameValuePair("instruction", "Assessment-instruction-0"),
+				new BasicNameValuePair("instructionalDesign", "Assessment-instructionalDesign-0"));
 		HttpResponse newAssessmentCode = conn.execute(newAssessmentMethod);
 		assertTrue(newAssessmentCode.getStatusLine().getStatusCode() == 200 || newAssessmentCode.getStatusLine().getStatusCode() == 201);
 		CourseNodeVO assessmentNode = conn.parse(newAssessmentCode, CourseNodeVO.class);
@@ -276,7 +312,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(assessmentNode.getId());
 		assertEquals(assessmentNode.getShortTitle(), "Assessment-0");
 		assertEquals(assessmentNode.getLongTitle(), "Assessment-long-0");
-		assertEquals(assessmentNode.getLearningObjectives(), "Assessment-objectives-0");
+		assertEquals(assessmentNode.getDescription(), "Assessment-description-0");
+		assertEquals(assessmentNode.getObjectives(), "Assessment-objectives-0");
+		assertEquals(assessmentNode.getInstruction(), "Assessment-instruction-0");
+		assertEquals(assessmentNode.getInstructionalDesign(), "Assessment-instructionalDesign-0");
 		assertEquals(assessmentNode.getParentId(), course.getEditorRootNodeId());
 		
 		//create an contact node
@@ -286,7 +325,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				new BasicNameValuePair("position", "6"),
 				new BasicNameValuePair("shortTitle", "Contact-0"),
 				new BasicNameValuePair("longTitle", "Contact-long-0"),
-				new BasicNameValuePair("objectives", "Contact-objectives-0"));
+				new BasicNameValuePair("description", "Contact-description-0"),
+				new BasicNameValuePair("objectives", "Contact-objectives-0"),
+				new BasicNameValuePair("instruction", "Contact-instruction-0"),
+				new BasicNameValuePair("instructionalDesign", "Contact-instructionalDesign-0"));
 
 		HttpResponse newContactCode = conn.execute(newContactMethod);
 		assertEquals(200, newContactCode.getStatusLine().getStatusCode());
@@ -295,7 +337,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(contactNode.getId());
 		assertEquals(contactNode.getShortTitle(), "Contact-0");
 		assertEquals(contactNode.getLongTitle(), "Contact-long-0");
-		assertEquals(contactNode.getLearningObjectives(), "Contact-objectives-0");
+		assertEquals(contactNode.getDescription(), "Contact-description-0");
+		assertEquals(contactNode.getObjectives(), "Contact-objectives-0");
+		assertEquals(contactNode.getInstruction(), "Contact-instruction-0");
+		assertEquals(contactNode.getInstructionalDesign(), "Contact-instructionalDesign-0");
 		assertEquals(contactNode.getParentId(), course.getEditorRootNodeId());
 	}
 	
@@ -345,7 +390,11 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("parentNodeId", course.getEditorRootNodeId())
 			.queryParam("position", "0").queryParam("shortTitle", "Structure-0")
 			.queryParam("longTitle", "Structure-long-0")
-			.queryParam("objectives", "Structure-objectives-0").build();
+			.queryParam("description", "Structure-description-0")
+			.queryParam("objectives", "Structure-objectives-0")
+			.queryParam("instruction", "Structure-instruction-0")
+			.queryParam("instructionalDesign", "Structure-instructionalDesign-0")
+			.build();
 		HttpPut newStructureMethod = conn.createPut(newStructureUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newStructureCode = conn.execute(newStructureMethod);
 		assertTrue(newStructureCode.getStatusLine().getStatusCode() == 200 || newStructureCode.getStatusLine().getStatusCode() == 201);
@@ -354,7 +403,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(structureNode.getId());
 		assertEquals(structureNode.getShortTitle(), "Structure-0");
 		assertEquals(structureNode.getLongTitle(), "Structure-long-0");
-		assertEquals(structureNode.getLearningObjectives(), "Structure-objectives-0");
+		assertEquals(structureNode.getDescription(), "Structure-description-0");
+		assertEquals(structureNode.getObjectives(), "Structure-objectives-0");
+		assertEquals(structureNode.getInstruction(), "Structure-instruction-0");
+		assertEquals(structureNode.getInstructionalDesign(), "Structure-instructionalDesign-0");
 		assertEquals(structureNode.getParentId(), course.getEditorRootNodeId());
 		
 		
@@ -373,7 +425,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				.addTextBody("position", "1")
 				.addTextBody("shortTitle", "Single-Page-0")
 				.addTextBody("longTitle", "Single-Page-long-0")
+				.addTextBody("description", "Single-Page-description-0")
 				.addTextBody("objectives", "Single-Page-objectives-0")
+				.addTextBody("instruction", "Single-Page-instruction-0")
+				.addTextBody("instructionalDesign", "Single-Page-instructionalDesign-0")
 				.build();
 		newPageMethod.setEntity(newPageEntity);
 		
@@ -384,7 +439,11 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(pageNode.getId());
 		assertEquals(pageNode.getShortTitle(), "Single-Page-0");
 		assertEquals(pageNode.getLongTitle(), "Single-Page-long-0");
-		assertEquals(pageNode.getLearningObjectives(), "Single-Page-objectives-0");
+		assertEquals(pageNode.getObjectives(), "Single-Page-objectives-0");
+		assertEquals(pageNode.getDescription(), "Single-Page-description-0");
+		assertEquals(pageNode.getObjectives(), "Single-Page-objectives-0");
+		assertEquals(pageNode.getInstruction(), "Single-Page-instruction-0");
+		assertEquals(pageNode.getInstructionalDesign(), "Single-Page-instructionalDesign-0");
 		assertEquals(structureNode.getParentId(), course.getEditorRootNodeId());
 		
 		
@@ -393,7 +452,12 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("parentNodeId", course.getEditorRootNodeId())
 			.queryParam("position", "2").queryParam("shortTitle", "Folder-0")
 			.queryParam("longTitle", "Folder-long-0")
-			.queryParam("objectives", "Folder-objectives-0").build();
+			.queryParam("objectives", "Folder-objectives-0")
+			.queryParam("description", "Folder-description-0")
+			.queryParam("objectives", "Folder-objectives-0")
+			.queryParam("instruction", "Folder-instruction-0")
+			.queryParam("instructionalDesign", "Folder-instructionalDesign-0")
+			.build();
 		HttpPut newFolderMethod = conn.createPut(newFolderUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newFolderCode = conn.execute(newFolderMethod);
 		assertTrue(newFolderCode.getStatusLine().getStatusCode() == 200 || newFolderCode.getStatusLine().getStatusCode() == 201);
@@ -402,7 +466,11 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(folderNode.getId());
 		assertEquals(folderNode.getShortTitle(), "Folder-0");
 		assertEquals(folderNode.getLongTitle(), "Folder-long-0");
-		assertEquals(folderNode.getLearningObjectives(), "Folder-objectives-0");
+		assertEquals(folderNode.getObjectives(), "Folder-objectives-0");
+		assertEquals(folderNode.getDescription(), "Folder-description-0");
+		assertEquals(folderNode.getObjectives(), "Folder-objectives-0");
+		assertEquals(folderNode.getInstruction(), "Folder-instruction-0");
+		assertEquals(folderNode.getInstructionalDesign(), "Folder-instructionalDesign-0");
 		assertEquals(folderNode.getParentId(), course.getEditorRootNodeId());
 		
 		
@@ -411,7 +479,11 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("parentNodeId", course.getEditorRootNodeId())
 			.queryParam("position", "3").queryParam("shortTitle", "Forum-0")
 			.queryParam("longTitle", "Forum-long-0")
-			.queryParam("objectives", "Forum-objectives-0").build();
+			.queryParam("description", "Forum-description-0")
+			.queryParam("objectives", "Forum-objectives-0")
+			.queryParam("instruction", "Forum-instruction-0")
+			.queryParam("instructionalDesign", "Forum-instructionalDesign-0")
+			.build();
 		HttpPut newForumMethod = conn.createPut(newForumUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newForumCode = conn.execute(newForumMethod);
 		assertTrue(newForumCode.getStatusLine().getStatusCode() == 200 || newForumCode.getStatusLine().getStatusCode() == 201);
@@ -420,7 +492,11 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(forumNode.getId());
 		assertEquals(forumNode.getShortTitle(), "Forum-0");
 		assertEquals(forumNode.getLongTitle(), "Forum-long-0");
-		assertEquals(forumNode.getLearningObjectives(), "Forum-objectives-0");
+		assertEquals(forumNode.getObjectives(), "Forum-objectives-0");
+		assertEquals(forumNode.getDescription(), "Forum-description-0");
+		assertEquals(forumNode.getObjectives(), "Forum-objectives-0");
+		assertEquals(forumNode.getInstruction(), "Forum-instruction-0");
+		assertEquals(forumNode.getInstructionalDesign(), "Forum-instructionalDesign-0");
 		assertEquals(forumNode.getParentId(), course.getEditorRootNodeId());
 		
 		
@@ -429,7 +505,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("parentNodeId", course.getEditorRootNodeId())
 			.queryParam("position", "4").queryParam("shortTitle", "Task-0")
 			.queryParam("longTitle", "Task-long-0")
+			.queryParam("description", "Task-description-0")
 			.queryParam("objectives", "Task-objectives-0")
+			.queryParam("instruction", "Task-instruction-0")
+			.queryParam("instructionalDesign", "Task-instructionalDesign-0")
 			.queryParam("points", "25").queryParam("text", "A very difficult test").build();
 		HttpPut newTaskMethod = conn.createPut(newTaskUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newTaskCode = conn.execute(newTaskMethod);
@@ -439,7 +518,11 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(taskNode.getId());
 		assertEquals(taskNode.getShortTitle(), "Task-0");
 		assertEquals(taskNode.getLongTitle(), "Task-long-0");
-		assertEquals(taskNode.getLearningObjectives(), "Task-objectives-0");
+		assertEquals(taskNode.getObjectives(), "Task-objectives-0");
+		assertEquals(taskNode.getDescription(), "Task-description-0");
+		assertEquals(taskNode.getObjectives(), "Task-objectives-0");
+		assertEquals(taskNode.getInstruction(), "Task-instruction-0");
+		assertEquals(taskNode.getInstructionalDesign(), "Task-instructionalDesign-0");
 		assertEquals(taskNode.getParentId(), course.getEditorRootNodeId());
 		
 		//add task configuration
@@ -470,7 +553,11 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("parentNodeId", course.getEditorRootNodeId())
 			.queryParam("position", "5").queryParam("shortTitle", "Assessment-0")
 			.queryParam("longTitle", "Assessment-long-0")
-			.queryParam("objectives", "Assessment-objectives-0").build();
+			.queryParam("description", "Assessment-description-0")
+			.queryParam("objectives", "Assessment-objectives-0")
+			.queryParam("instruction", "Assessment-instruction-0")
+			.queryParam("instructionalDesign", "Assessment-instructionalDesign-0")
+			.build();
 		HttpPut newAssessmentMethod = conn.createPut(newAssessmentUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newAssessmentCode = conn.execute(newAssessmentMethod);
 		assertTrue(newAssessmentCode.getStatusLine().getStatusCode() == 200 || newAssessmentCode.getStatusLine().getStatusCode() == 201);
@@ -479,7 +566,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(assessmentNode.getId());
 		assertEquals(assessmentNode.getShortTitle(), "Assessment-0");
 		assertEquals(assessmentNode.getLongTitle(), "Assessment-long-0");
-		assertEquals(assessmentNode.getLearningObjectives(), "Assessment-objectives-0");
+		assertEquals(assessmentNode.getDescription(), "Assessment-description-0");
+		assertEquals(assessmentNode.getObjectives(), "Assessment-objectives-0");
+		assertEquals(assessmentNode.getInstruction(), "Assessment-instruction-0");
+		assertEquals(assessmentNode.getInstructionalDesign(), "Assessment-instructionalDesign-0");
 		assertEquals(assessmentNode.getParentId(), course.getEditorRootNodeId());
 		
 		//create an contact node
@@ -487,7 +577,11 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("parentNodeId", course.getEditorRootNodeId())
 			.queryParam("position", "6").queryParam("shortTitle", "Contact-0")
 			.queryParam("longTitle", "Contact-long-0")
-			.queryParam("objectives", "Contact-objectives-0").build();
+			.queryParam("description", "Contact-description-0")
+			.queryParam("objectives", "Contact-objectives-0")
+			.queryParam("instruction", "Contact-instruction-0")
+			.queryParam("instructionalDesign", "Contact-instructionalDesign-0")
+			.build();
 		HttpPut newContactMethod = conn.createPut(newContactUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newContactCode = conn.execute(newContactMethod);
 		assertEquals(200, newContactCode.getStatusLine().getStatusCode());
@@ -496,7 +590,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(contactNode.getId());
 		assertEquals(contactNode.getShortTitle(), "Contact-0");
 		assertEquals(contactNode.getLongTitle(), "Contact-long-0");
-		assertEquals(contactNode.getLearningObjectives(), "Contact-objectives-0");
+		assertEquals(contactNode.getDescription(), "Contact-description-0");
+		assertEquals(contactNode.getObjectives(), "Contact-objectives-0");
+		assertEquals(contactNode.getInstruction(), "Contact-instruction-0");
+		assertEquals(contactNode.getInstructionalDesign(), "Contact-instructionalDesign-0");
 		assertEquals(contactNode.getParentId(), course.getEditorRootNodeId());
 		
 		//try to create an invalid enrollment node
@@ -516,7 +613,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				.queryParam("position", "7")
 				.queryParam("shortTitle", "Enrollment-0")
 				.queryParam("longTitle", "Enrollment-long-0")
+				.queryParam("description", "Enrollment-description-0")
 				.queryParam("objectives", "Enrollment-objectives-0")
+				.queryParam("instruction", "Enrollment-instruction-0")
+				.queryParam("instructionalDesign", "Enrollment-instructionalDesign-0")
 				.queryParam("groups",group.getKey().toString())
 				.queryParam("cancelEnabled","true").build();
 		newENMethod = conn.createPut(newENUri, MediaType.APPLICATION_JSON, true);
@@ -528,7 +628,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(enNode.getId());
 		assertEquals(enNode.getShortTitle(), "Enrollment-0");
 		assertEquals(enNode.getLongTitle(), "Enrollment-long-0");
-		assertEquals(enNode.getLearningObjectives(), "Enrollment-objectives-0");
+		assertEquals(enNode.getDescription(), "Enrollment-description-0");
+		assertEquals(enNode.getObjectives(), "Enrollment-objectives-0");
+		assertEquals(enNode.getInstruction(), "Enrollment-instruction-0");
+		assertEquals(enNode.getInstructionalDesign(), "Enrollment-instructionalDesign-0");
 		assertEquals(enNode.getParentId(), course.getEditorRootNodeId());
 		
 		//create a test node
@@ -564,7 +667,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 			.queryParam("parentNodeId", course.getEditorRootNodeId())
 			.queryParam("position", "8").queryParam("shortTitle", "Test-0")
 			.queryParam("longTitle", "Test-long-0")
+			.queryParam("description", "Test-description-0")
 			.queryParam("objectives", "Test-objectives-0")
+			.queryParam("instruction", "Test-instruction-0")
+			.queryParam("instructionalDesign", "Test-instructionalDesign-0")
 			.queryParam("testResourceableId", key).build();
 		HttpPut newTestMethod = conn.createPut(newTestUri, MediaType.APPLICATION_JSON, true);
 		HttpResponse newTestCode = conn.execute(newTestMethod);
@@ -613,7 +719,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 				.queryParam("position", "10")
 				.queryParam("shortTitle", "ExternalPage-0")
 				.queryParam("longTitle", "ExternalPage-long-0")
+				.queryParam("description", "ExternalPage-description-0")
 				.queryParam("objectives", "ExternalPage-objectives-0")
+				.queryParam("instruction", "ExternalPage-instruction-0")
+				.queryParam("instructionalDesign", "ExternalPage-instructionalDesign-0")
 				.queryParam("url","http://www.olat.org").build();
 		HttpPut newTUMethod = conn.createPut(newTUUri, MediaType.APPLICATION_JSON, true);
 
@@ -624,7 +733,10 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(tuNode.getId());
 		assertEquals(tuNode.getShortTitle(), "ExternalPage-0");
 		assertEquals(tuNode.getLongTitle(), "ExternalPage-long-0");
-		assertEquals(tuNode.getLearningObjectives(), "ExternalPage-objectives-0");
+		assertEquals(tuNode.getDescription(), "ExternalPage-description-0");
+		assertEquals(tuNode.getObjectives(), "ExternalPage-objectives-0");
+		assertEquals(tuNode.getInstruction(), "ExternalPage-instruction-0");
+		assertEquals(tuNode.getInstructionalDesign(), "ExternalPage-instructionalDesign-0");
 		assertEquals(tuNode.getParentId(), course.getEditorRootNodeId());
 		
 		//summary check
@@ -732,7 +844,7 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(structureNode.getId());
 		assertEquals(structureNode.getShortTitle(), "Structure-0b");
 		assertEquals(structureNode.getLongTitle(), "Structure-long-0b");
-		assertEquals(structureNode.getLearningObjectives(), "Structure-objectives-0b");
+		assertEquals(structureNode.getObjectives(), "Structure-objectives-0b");
 		assertEquals(structureNode.getId(), course.getEditorRootNodeId());
 		
 		//check the real node
@@ -744,7 +856,7 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(rootNode.getCourseNode());
 		assertEquals(rootNode.getCourseNode().getShortTitle(), "Structure-0b");
 		assertEquals(rootNode.getCourseNode().getLongTitle(), "Structure-long-0b");
-		assertEquals(rootNode.getCourseNode().getLearningObjectives(), "Structure-objectives-0b");
+		assertEquals(rootNode.getCourseNode().getObjectives(), "Structure-objectives-0b");
 	}
 	
 	@Test
@@ -792,7 +904,7 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(structureNode.getId());
 		assertEquals(structureNode.getShortTitle(), "Structure-0-with-file");
 		assertEquals(structureNode.getLongTitle(), "Structure-long-0-with-file");
-		assertEquals(structureNode.getLearningObjectives(), "Structure-objectives-0-with-file");
+		assertEquals(structureNode.getObjectives(), "Structure-objectives-0-with-file");
 		assertEquals(structureNode.getId(), course.getEditorRootNodeId());
 		
 		//check the real node
@@ -804,7 +916,7 @@ public class CoursesElementsTest extends OlatRestTestCase {
 		assertNotNull(rootNode.getCourseNode());
 		assertEquals(rootNode.getCourseNode().getShortTitle(), "Structure-0-with-file");
 		assertEquals(rootNode.getCourseNode().getLongTitle(), "Structure-long-0-with-file");
-		assertEquals(rootNode.getCourseNode().getLearningObjectives(), "Structure-objectives-0-with-file");
+		assertEquals(rootNode.getCourseNode().getObjectives(), "Structure-objectives-0-with-file");
 	}
 	
 	private UriBuilder getCoursesUri() {

@@ -66,7 +66,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case deleted: return Boolean.valueOf(row.getEditorNode().isDeleted());
 			case shortTitle: return row.getCourseNode().getShortTitle();
 			case longTitle: return row.getCourseNode().getLongTitle();
-			case learningObjectives: return row.getCourseNode().getLearningObjectives();
+			case description: return row.getCourseNode().getDescription();
 			case display: return row.getTranslatedDisplayOption();
 			case duration: return row.getDuration();
 			case obligation: return row.getTranslatedObligation();
@@ -118,7 +118,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		deleted("table.header.deleted"),
 		shortTitle("table.header.short.title"),
 		longTitle("table.header.long.title"),
-		learningObjectives("table.header.learning.objectives"),
+		description("table.header.description"),
 		display("table.header.display"),
 		duration("table.header.duration"),
 		obligation("table.header.obligation"),

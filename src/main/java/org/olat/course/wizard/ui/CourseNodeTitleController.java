@@ -47,7 +47,7 @@ public class CourseNodeTitleController extends StepFormBasicController {
 	
 	private TextElement longTitleEl;
 	private TextElement shortTitleEl;
-	private RichTextElement objectivesEl;
+	private RichTextElement descriptionEl;
 	
 	private final CourseNodeTitleContext context;
 
@@ -70,10 +70,10 @@ public class CourseNodeTitleController extends StepFormBasicController {
 		longTitleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255,
 				context.getLongTitle(), formLayout);
 
-		objectivesEl = uifactory.addRichTextElementForStringData("nodeConfigForm.learningobjectives",
-				"nodeConfigForm.learningobjectives", context.getObjectives(), 10, -1, false, null, null, formLayout,
+		descriptionEl = uifactory.addRichTextElementForStringData("nodeConfigForm.description",
+				"nodeConfigForm.description", context.getDescription(), 10, -1, false, null, null, formLayout,
 				ureq.getUserSession(), getWindowControl());
-		objectivesEl.setMaxLength(4000);
+		descriptionEl.setMaxLength(4000);
 	}
 	
 	@Override
@@ -97,8 +97,8 @@ public class CourseNodeTitleController extends StepFormBasicController {
 		String longTitle = longTitleEl.getValue();
 		context.setLongTitle(longTitle);
 		
-		String objectives = objectivesEl.getValue();
-		context.setObjectives(objectives);
+		String description = descriptionEl.getValue();
+		context.setDescription(description);
 
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

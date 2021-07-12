@@ -37,7 +37,7 @@ import org.olat.course.style.TeaserImageStyle;
  */
 public class CourseStyleUIFactory {
 	
-	public static final Event HEADER_CHANGED_EVENT = new Event("header-cahnged");
+	public static final Event HEADER_CHANGED_EVENT = new Event("header-changed");
 	
 	public static Translator getTranslator(Locale locale) {
 		return Util.createPackageTranslator(CourseStyleUIFactory.class, locale);
@@ -76,7 +76,10 @@ public class CourseStyleUIFactory {
 	
 	public static boolean hasValues(Header header) {
 		return StringHelper.containsNonWhitespace(header.getTitle())
-				|| StringHelper.containsNonWhitespace(header.getObjectives());
+				|| StringHelper.containsNonWhitespace(header.getDescription())
+				|| StringHelper.containsNonWhitespace(header.getObjectives())
+				|| StringHelper.containsNonWhitespace(header.getInstruction())
+				|| StringHelper.containsNonWhitespace(header.getInstructionalDesign());
 	}
 
 }

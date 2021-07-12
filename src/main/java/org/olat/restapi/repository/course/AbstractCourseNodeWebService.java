@@ -72,18 +72,25 @@ public abstract class AbstractCourseNodeWebService {
 		return new CourseEditSession(course, lock);
 	}
 	
-	protected Response update(Long courseId, String nodeId, String shortTitle, String longTitle, String objectives,
-			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
-		return attach(courseId, null, nodeId, null, null, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	protected Response update(Long courseId, String nodeId, String shortTitle, String longTitle, String description,
+			String objectives, String instruction, String instructionalDesign, String visibilityExpertRules,
+			String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
+		return attach(courseId, null, nodeId, null, null, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
-	protected Response attach(Long courseId, String parentNodeId, String type, Integer position, String shortTitle, String longTitle, 
-			String objectives, String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
-		return attach(courseId, parentNodeId, null, type, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+	protected Response attach(Long courseId, String parentNodeId, String type, Integer position, String shortTitle,
+			String longTitle, String description, String objectives, String instruction, String instructionalDesign,
+			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config,
+			HttpServletRequest request) {
+		return attach(courseId, parentNodeId, null, type, position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
-	
-	protected Response attach(Long courseId, String parentNodeId, String nodeId, String type, Integer position, String shortTitle, String longTitle, 
-			String objectives, String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate config, HttpServletRequest request) {
+
+	protected Response attach(Long courseId, String parentNodeId, String nodeId, String type, Integer position,
+			String shortTitle, String longTitle, String description, String objectives, String instruction,
+			String instructionalDesign, String visibilityExpertRules, String accessExpertRules,
+			CustomConfigDelegate config, HttpServletRequest request) {
 		if(config != null && !config.isValid()) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
@@ -104,13 +111,15 @@ public abstract class AbstractCourseNodeWebService {
 			
 			CourseNodeVO node;
 			if(nodeId != null) {
-				node = updateCourseNode(nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, editSession);
+				node = updateCourseNode(nodeId, shortTitle, longTitle, description, objectives, instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, editSession);
 			} else {
 				CourseEditorTreeNode parentNode = getParentNode(course, parentNodeId);
 				if(parentNode == null) {
 					return Response.serverError().status(Status.NOT_FOUND).build();
 				}
-				node = createCourseNode(type, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, editSession, parentNode, position);
+				node = createCourseNode(type, shortTitle, longTitle, description, objectives, instruction,
+						instructionalDesign, visibilityExpertRules, accessExpertRules, config, editSession, parentNode,
+						position);
 			}
 			return Response.ok(node).build();
 		} catch(Exception ex) {
@@ -163,15 +172,19 @@ public abstract class AbstractCourseNodeWebService {
 		}
 	}
 	
-	private CourseNodeVO createCourseNode(String type, String shortTitle, String longTitle, String learningObjectives,
-			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate delegateConfig,
-			CourseEditSession editSession, CourseEditorTreeNode parentNode, Integer position) {
-
+	private CourseNodeVO createCourseNode(String type, String shortTitle, String longTitle, String description,
+			String objectives, String instruction, String instructionalDesign, String visibilityExpertRules,
+			String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession,
+			CourseEditorTreeNode parentNode, Integer position) {
+		
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode insertedNode = newNodeConfig.getInstance(parentNode);
 		insertedNode.setShortTitle(shortTitle);
 		insertedNode.setLongTitle(longTitle);
-		insertedNode.setLearningObjectives(learningObjectives);
+		insertedNode.setDescription(description);
+		insertedNode.setObjectives(objectives);
+		insertedNode.setInstruction(instruction);
+		insertedNode.setInstructionalDesign(instructionalDesign);
 		insertedNode.setNoAccessExplanation("You don't have access");
 		
 		if(StringHelper.containsNonWhitespace(visibilityExpertRules)) {
@@ -202,8 +215,9 @@ public abstract class AbstractCourseNodeWebService {
 		return vo;
 	}
 	
-	private CourseNodeVO updateCourseNode(String nodeId, String shortTitle, String longTitle, String learningObjectives,
-			String visibilityExpertRules, String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession) {
+	private CourseNodeVO updateCourseNode(String nodeId, String shortTitle, String longTitle, String description,
+			String objectives, String instruction, String instructionalDesign, String visibilityExpertRules,
+			String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession) {
 
 		ICourse course = editSession.getCourse();
 		
@@ -215,8 +229,17 @@ public abstract class AbstractCourseNodeWebService {
 		if(StringHelper.containsNonWhitespace(longTitle)) {
 			updatedNode.setLongTitle(longTitle);
 		}
-		if(StringHelper.containsNonWhitespace(learningObjectives)) {
-			updatedNode.setLearningObjectives(learningObjectives);
+		if(StringHelper.containsNonWhitespace(description)) {
+			updatedNode.setDescription(description);
+		}
+		if(StringHelper.containsNonWhitespace(objectives)) {
+			updatedNode.setObjectives(objectives);
+		}
+		if(StringHelper.containsNonWhitespace(instruction)) {
+			updatedNode.setInstruction(instruction);
+		}
+		if(StringHelper.containsNonWhitespace(instructionalDesign)) {
+			updatedNode.setInstructionalDesign(instructionalDesign);
 		}
 		
 		if(visibilityExpertRules != null) {

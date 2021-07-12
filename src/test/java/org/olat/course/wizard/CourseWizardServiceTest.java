@@ -186,8 +186,8 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		defaults.setShortTitle(shortTitle);
 		String longTitle = random();
 		defaults.setLongTitle(longTitle);
-		String objectives = random();
-		defaults.setObjectives(objectives);
+		String description = random();
+		defaults.setDescription(description);
 		ModuleConfiguration defaultModuleConfig = new ModuleConfiguration();
 		String modulConfigValue = random();
 		defaultModuleConfig.setStringValue("configKey", modulConfigValue);
@@ -203,7 +203,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(courseNode.getShortTitle()).isEqualTo(shortTitle);
 		softly.assertThat(courseNode.getLongTitle()).isEqualTo(longTitle);
-		softly.assertThat(courseNode.getLearningObjectives()).isEqualTo(objectives);
+		softly.assertThat(courseNode.getDescription()).isEqualTo(description);
 		softly.assertThat(moduleConfig.getStringValue(IQEditController.CONFIG_KEY_TYPE_QTI)).isEqualTo(IQEditController.CONFIG_VALUE_QTI21);
 		softly.assertThat(IQEditController.getIQReference(moduleConfig, true)).isEqualTo(testEntry);
 		softly.assertThat(moduleConfig.getStringValue("configKey")).isEqualTo(modulConfigValue);

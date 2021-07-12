@@ -54,7 +54,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 	private static final String[] outputKeys = new String[]{ "cutvalue", "sum"};
 	
 	private SingleSelection outputEl;
-	private RichTextElement objectivesEl;
+	private RichTextElement descriptionEl;
 	private TextElement shortTitleEl, titleEl, cutValueEl;
 	private MultipleSelectionElement pointsEl, passedEl;
 	private SpacerElement spacer;
@@ -87,8 +87,8 @@ public class StructureNodeStepController extends StepFormBasicController {
 		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, null, formLayout);
 		
 		// add the learning objectives rich text input element
-		objectivesEl = uifactory.addRichTextElementForStringData("nodeConfigForm.learningobjectives", "nodeConfigForm.learningobjectives", null, 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-		objectivesEl.setMaxLength(4000);
+		descriptionEl = uifactory.addRichTextElementForStringData("nodeConfigForm.description", "nodeConfigForm.description", null, 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl.setMaxLength(4000);
 		
 		spacer = uifactory.addSpacerElement("spaceman", formLayout, false);
 		
@@ -177,7 +177,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		data.setStructureTitle(titleEl.getValue());
 		data.setStructureShortTitle(shortTitleEl.getValue());
-		data.setStructureObjectives(objectivesEl.getValue());
+		data.setStructureDescription(descriptionEl.getValue());
 		
 		if (scoreCalculatorSupported) {
 			data.setPoints(pointsEl.isAtLeastSelected(1));

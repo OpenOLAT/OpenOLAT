@@ -35,7 +35,7 @@ public interface CourseNodeTitleContext {
 	
 	public void setShortTitle(String shortTitle);
 	
-	public String getObjectives();
+	public String getDescription();
 	
-	public void setObjectives(String objectives);
+	public void setDescription(String description);
 }

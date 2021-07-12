@@ -176,7 +176,10 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional designs
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param downloadExpertRules The rules to download files (optional)
 	 * @param uploadExpertRules The rules to upload files (optional)
@@ -197,14 +200,23 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachFolder(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this folder") String parentNodeId,
-			@QueryParam("position") @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position, @QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @Parameter(description = "The node long title") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @Parameter(description = "The node learning objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules, @QueryParam("downloadExpertRules") @Parameter(description = "The rules to download files (optional)") String downloadExpertRules,
-			@QueryParam("uploadExpertRules") @Parameter(description = "The rules to upload files (optional)") String uploadExpertRules, @Context HttpServletRequest request) {
+	public Response attachFolder(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this folder") String parentNodeId,
+			@QueryParam("position") @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position,
+			@QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") @Parameter(description = "The node long title") String longTitle,
+			@QueryParam("description") @Parameter(description = "The node description") String description,
+			@QueryParam("objectives") @Parameter(description = "The node learning instruction") String objectives,
+			@QueryParam("instruction") @Parameter(description = "The node learning objectives") String instruction,
+			@QueryParam("instructionalDesign") @Parameter(description = "The node instructional designs") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules,
+			@QueryParam("downloadExpertRules") @Parameter(description = "The rules to download files (optional)") String downloadExpertRules,
+			@QueryParam("uploadExpertRules") @Parameter(description = "The rules to upload files (optional)") String uploadExpertRules,
+			@Context HttpServletRequest request) {
 		
 		FolderCustomConfig config = new FolderCustomConfig(downloadExpertRules, uploadExpertRules);
-		return attach(courseId, parentNodeId, "bc", position, shortTitle, longTitle, objectives, visibilityExpertRules, null, config, request);
+		return attach(courseId, parentNodeId, "bc", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, null, config, request);
 	}
 	
 	/**
@@ -215,7 +227,10 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional designs
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param downloadExpertRules The rules to download files (optional)
 	 * @param uploadExpertRules The rules to upload files (optional)
@@ -236,12 +251,17 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachFolderPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("downloadExpertRules") String downloadExpertRules,
+	public Response attachFolderPost(@PathParam("courseId") Long courseId,
+			@FormParam("parentNodeId") String parentNodeId, @FormParam("position") Integer position,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("downloadExpertRules") String downloadExpertRules,
 			@FormParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
-		return attachFolder(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, downloadExpertRules, uploadExpertRules, request);
+		return attachFolder(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, downloadExpertRules, uploadExpertRules, request);
 	}
 	
 	/**
@@ -250,7 +270,10 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @param nodeId The node's id of this folder
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional designs
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param downloadExpertRules The rules to download files (optional)
 	 * @param uploadExpertRules The rules to upload files (optional)
@@ -273,11 +296,15 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("downloadExpertRules") String downloadExpertRules,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("downloadExpertRules") String downloadExpertRules,
 			@FormParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
 		FolderCustomConfig config = new FolderCustomConfig(downloadExpertRules, uploadExpertRules);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, null, config, request);
+		return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, null, config, request);
 	}
 	
 	/**

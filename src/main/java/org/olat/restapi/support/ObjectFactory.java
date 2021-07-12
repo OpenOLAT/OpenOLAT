@@ -205,7 +205,10 @@ public class ObjectFactory {
 		vo.setShortTitle(node.getShortTitle());
 		vo.setShortName(node.getShortName());
 		vo.setLongTitle(node.getLongTitle());
-		vo.setLearningObjectives(node.getLearningObjectives());
+		vo.setDescription(node.getDescription());
+		vo.setObjectives(node.getObjectives());
+		vo.setInstruction(node.getInstruction());
+		vo.setInstructionalDesign(node.getInstructionalDesign());
 
 		return vo;
 	}

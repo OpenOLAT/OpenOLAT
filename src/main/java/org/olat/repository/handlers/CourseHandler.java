@@ -146,7 +146,7 @@ public class CourseHandler implements RepositoryHandler {
 		DBFactory.getInstance().commit();
 
 		String shortDisplayname = Formatter.truncateOnly(displayname, 25);
-		ICourse course = CourseFactory.createCourse(re, shortDisplayname, displayname, "");
+		ICourse course = CourseFactory.createCourse(re, shortDisplayname, displayname);
 		log.info(Tracing.M_AUDIT, "Course created: {}", course.getCourseTitle());
 		return re;
 	}

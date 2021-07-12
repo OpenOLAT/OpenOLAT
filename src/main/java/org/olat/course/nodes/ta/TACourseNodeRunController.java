@@ -31,7 +31,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -60,13 +59,6 @@ public class TACourseNodeRunController extends BasicController {
 	private SolutionController solutionController;
 	private MSCourseNodeRunController scoringController;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param userCourseEnv
-	 * @param ne
-	 * @param previewMode
-	 */
 	public TACourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, TACourseNode courseNode, NodeEvaluation ne, boolean previewMode) { 
 		super(ureq, wControl);
 		this.config = courseNode.getModuleConfiguration();
@@ -117,14 +109,6 @@ public class TACourseNodeRunController extends BasicController {
 		content.contextPut("menuTitle", courseNode.getShortTitle());
 		content.contextPut("displayTitle", courseNode.getLongTitle());
 
-		// Adding learning objectives
-		String learningObj = courseNode.getLearningObjectives();
-		if (learningObj != null) {
-			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq);
-			content.put("learningObjectives", learningObjectives);
-			content.contextPut("hasObjectives", learningObj); // dummy value, just an exists operator					
-		}
-
 		putInitialPanel(content);
 	}
 	
@@ -141,16 +125,11 @@ public class TACourseNodeRunController extends BasicController {
 		hasReturnbox = (bValue != null) ? bValue.booleanValue() : hasDropbox;
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		if (taskController != null) {
 			taskController.dispose();

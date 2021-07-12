@@ -20,6 +20,7 @@
  */
 package org.olat.restapi.repository.course;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -166,7 +167,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param nodeId The node's id of this structure
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param displayType The type of display (file, toc...)
@@ -195,7 +199,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			reader = new MultipartReader(request);
 			String shortTitle = reader.getValue("shortTitle");
 			String longTitle = reader.getValue("longTitle");
+			String description = reader.getValue("description");
 			String objectives = reader.getValue("objectives");
+			String instruction = reader.getValue("instruction");
+			String instructionalDesign = reader.getValue("instructionalDesign");
 			String visibilityExpertRules = reader.getValue("visibilityExpertRules");
 			String accessExpertRules = reader.getValue("accessExpertRules");
 			String displayType = reader.getValue("displayType", STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC);
@@ -204,7 +211,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 				in = new FileInputStream(reader.getFile());
 			}
 			CustomConfigDelegate config = new StructureFullConfig(displayType, in, filename);
-			return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+			return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+					instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 		} catch (Exception e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -224,7 +232,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -252,7 +263,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			Integer position = reader.getIntegerValue("position");
 			String shortTitle = reader.getValue("shortTitle");
 			String longTitle = reader.getValue("longTitle");
+			String description = reader.getValue("description");
 			String objectives = reader.getValue("objectives");
+			String instruction = reader.getValue("instruction");
+			String instructionalDesign = reader.getValue("instructionalDesign");
 			String visibilityExpertRules = reader.getValue("visibilityExpertRules");
 			String displayType = reader.getValue("displayType", STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC);
 			String filename = reader.getValue("filename", "attachment");
@@ -261,7 +275,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 				in = new FileInputStream(reader.getFile());
 			}
 			CustomConfigDelegate config = new StructureFullConfig(displayType, in, filename);
-			return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+			return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, description, objectives,
+					instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 		} catch (Exception e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -281,7 +296,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional desigs
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -298,14 +316,19 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachStructure(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
+	public Response attachStructure(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules,
 			@QueryParam("displayType") @DefaultValue(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC) String displayType,
 			@Context HttpServletRequest request) {
 		CustomConfigDelegate config = new StructureFullConfig(displayType, null, null);
-		return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "st", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -316,7 +339,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param filename The single page file name
@@ -343,13 +369,17 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			reader = new MultipartReader(request);
 			String shortTitle = reader.getValue("shortTitle");
 			String longTitle = reader.getValue("longTitle");
+			String description = reader.getValue("description");
 			String objectives = reader.getValue("objectives");
+			String instruction = reader.getValue("instruction");
+			String instructionalDesign = reader.getValue("instructionalDesign");
 			String visibilityExpertRules = reader.getValue("visibilityExpertRules");
 			String filename = reader.getValue("filename", "attachment");
 			String accessExpertRules = reader.getValue("accessExpertRules");
 			in = new FileInputStream(reader.getFile());
 			SinglePageCustomConfig config = new SinglePageCustomConfig(in, filename);
-			return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+			return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+					instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 		} catch (Exception e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -369,7 +399,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param filename The single page file name
@@ -402,7 +435,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param filename The single page file name
@@ -430,13 +466,17 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			Integer position = reader.getIntegerValue("position");
 			String shortTitle = reader.getValue("shortTitle");
 			String longTitle = reader.getValue("longTitle");
+			String description = reader.getValue("description");
 			String objectives = reader.getValue("objectives");
+			String instruction = reader.getValue("instruction");
+			String instructionalDesign = reader.getValue("instructionalDesign");
 			String visibilityExpertRules = reader.getValue("visibilityExpertRules");
 			String accessExpertRules = reader.getValue("accessExpertRules");
 			String filename = reader.getValue("filename", "attachment");
 			in = new FileInputStream(reader.getFile());
 			SinglePageCustomConfig config = new SinglePageCustomConfig(in, filename);
-			return attach(courseId, parentNodeId, "sp", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+			return attach(courseId, parentNodeId, "sp", position, shortTitle, longTitle, description, objectives,
+					instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 		} catch (Exception e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
@@ -457,7 +497,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param filename The single page file name
@@ -476,12 +519,17 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachSinglePagePost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("filename") String filename, @FormParam("path") String path, @Context HttpServletRequest request) {
-		return attachSinglePage(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, filename, path, request);
+	public Response attachSinglePagePost(@PathParam("courseId") Long courseId,
+			@FormParam("parentNodeId") String parentNodeId, @FormParam("position") Integer position,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules, @FormParam("filename") String filename,
+			@FormParam("path") String path, @Context HttpServletRequest request) {
+		return attachSinglePage(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, filename, path, request);
 	}
 	
 	/**
@@ -495,7 +543,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param filename The single page file name
@@ -515,13 +566,18 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachSinglePage(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("filename") String filename, @QueryParam("path") String path, @Context HttpServletRequest request) {	
+	public Response attachSinglePage(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules, @QueryParam("filename") String filename,
+			@QueryParam("path") String path, @Context HttpServletRequest request) {
 		SinglePageCustomConfig config = new SinglePageCustomConfig(path, filename);
-		return attach(courseId, parentNodeId, "sp", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "sp", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -531,7 +587,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param nodeId The node's id of this task
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param text The task node text
@@ -550,13 +609,16 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateTask(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("text") String text, @FormParam("points") Float points,
-			@Context HttpServletRequest request) {
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules, @FormParam("text") String text,
+			@FormParam("points") Float points, @Context HttpServletRequest request) {
 		TaskCustomConfig config = new TaskCustomConfig(points, text);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -568,7 +630,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param text The task node text
@@ -589,11 +654,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTaskPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
 			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
 			@FormParam("text") String text, @FormParam("points") Float points,
 			@Context HttpServletRequest request) {
-		return attachTask(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, text, points, request);
+		return attachTask(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, text, points, request);
 	}
 
 	/**
@@ -605,7 +673,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param text The task node text
@@ -625,13 +696,17 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTask(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("text") String text, @QueryParam("points") Float points, 
-			@Context HttpServletRequest request) {
+			@QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules, @QueryParam("text") String text,
+			@QueryParam("points") Float points, @Context HttpServletRequest request) {
 		TaskCustomConfig config = new TaskCustomConfig(points, text);
-		return attach(courseId, parentNodeId, "ta", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "ta", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -644,7 +719,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param testResourceableId The repository entry key of the test
@@ -662,17 +740,21 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateTest(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("testResourceableId") Long testResourceableId,  @Context HttpServletRequest request) {
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("testResourceableId") Long testResourceableId, @Context HttpServletRequest request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry testRepoEntry = rm.lookupRepositoryEntry(testResourceableId);
 		if(testRepoEntry == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		CustomConfigDelegate config = CustomConfigFactory.getTestCustomConfig(testRepoEntry);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -686,7 +768,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -704,11 +789,15 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTestPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, @FormParam("position") Integer position,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("testResourceableId") Long testResourceableId,  @Context HttpServletRequest request) {
-		return attachTest(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, testResourceableId, request);
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("position") Integer position, @FormParam("longTitle") String longTitle,
+			@FormParam("description") String description, @FormParam("objectives") String objectives,
+			@FormParam("instruction") String instruction, @FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("testResourceableId") Long testResourceableId, @Context HttpServletRequest request) {
+		return attachTest(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, testResourceableId, request);
 	}
 
 	/**
@@ -722,7 +811,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -740,9 +832,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTest(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
+			@QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules,
 			@QueryParam("testResourceableId") Long testResourceableId, @Context HttpServletRequest request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry testRepoEntry = rm.lookupRepositoryEntry(testResourceableId);
@@ -751,7 +847,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 
 		CustomConfigDelegate config = CustomConfigFactory.getTestCustomConfig(testRepoEntry);
-		return attach(courseId, parentNodeId, "iqtest", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "iqtest", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -761,7 +858,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param nodeId The node's id of this assessment
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -779,11 +879,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateAssessment(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@Context HttpServletRequest request) {
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules, @Context HttpServletRequest request) {
 		AssessmentCustomConfig config = new AssessmentCustomConfig();
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -794,7 +897,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -810,12 +916,16 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachAssessmentPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@Context HttpServletRequest request) {
-		return attachAssessment(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, request);
+	public Response attachAssessmentPost(@PathParam("courseId") Long courseId,
+			@FormParam("parentNodeId") String parentNodeId, @FormParam("position") Integer position,
+			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules, @Context HttpServletRequest request) {
+		return attachAssessment(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, request);
 	}
 	
 	/**
@@ -826,7 +936,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -844,11 +957,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachAssessment(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
 			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
 			@Context HttpServletRequest request) {
 		AssessmentCustomConfig config = new AssessmentCustomConfig();
-		return attach(courseId, parentNodeId, "ms", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "ms", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -858,7 +974,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param nodeId The node's id which of this wiki
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param wikiResourceableId The repository entry key of the wiki
@@ -877,8 +996,11 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateWiki(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules,
 			@FormParam("wikiResourceableId") Long wikiResourceableId, @Context HttpServletRequest request) {
 		RepositoryEntry wikiRepoEntry = null;
 		if(wikiResourceableId != null) {
@@ -889,7 +1011,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			}
 		}
 		WikiCustomConfig config = new WikiCustomConfig(wikiRepoEntry);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -900,7 +1023,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -916,12 +1042,17 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachWikiPost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
+	public Response attachWikiPost(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules,
 			@QueryParam("wikiResourceableId") Long wikiResourceableId, @Context HttpServletRequest request) {
-		return attachWiki(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, wikiResourceableId, request);
+		return attachWiki(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, wikiResourceableId, request);
 	}
 	
 	/**
@@ -932,7 +1063,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param request The HTTP request
@@ -949,9 +1083,13 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachWiki(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
+			@QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules,
 			@QueryParam("wikiResourceableId") Long wikiResourceableId, @Context HttpServletRequest request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry wikiRepoEntry = rm.lookupRepositoryEntry(wikiResourceableId);
@@ -959,7 +1097,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		WikiCustomConfig config = new WikiCustomConfig(wikiRepoEntry);
-		return attach(courseId, parentNodeId, "wiki", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "wiki", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -969,7 +1108,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param nodeId The node's id of this blog
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param blogResourceableId The softkey of the blog resourceable (optional)
@@ -988,9 +1130,12 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateBlog(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("repoEntry") Long blogResourceableId, @Context HttpServletRequest request) {
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules, @FormParam("repoEntry") Long blogResourceableId,
+			@Context HttpServletRequest request) {
 		RepositoryEntry blogRepoEntry = null;
 		if(blogResourceableId != null) {
 			RepositoryManager rm = RepositoryManager.getInstance();
@@ -1000,7 +1145,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			}
 		}
 		BlogCustomConfig config = new BlogCustomConfig(blogRepoEntry);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -1011,7 +1157,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param blogResourceableId The softkey of the blog resourceable (optional)
@@ -1028,14 +1177,19 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachBlogPost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("repoEntry") Long blogResourceableId, @Context HttpServletRequest request) {
-		return attachBlog(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, blogResourceableId, request);
+	public Response attachBlogPost(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules, @QueryParam("repoEntry") Long blogResourceableId,
+			@Context HttpServletRequest request) {
+		return attachBlog(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, blogResourceableId, request);
 	}
-	
+
 	/**
 	 * Attaches an blog building block.
 	 * 
@@ -1044,7 +1198,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param blogResourceableId The softkey of the blog resourceable (optional)
@@ -1062,10 +1219,14 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachBlog(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("repoEntry") Long blogResourceableId, @Context HttpServletRequest request) {
+			@QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules, @QueryParam("repoEntry") Long blogResourceableId,
+			@Context HttpServletRequest request) {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry blogRepoEntry = rm.lookupRepositoryEntry(blogResourceableId);
 		if(blogRepoEntry == null) {
@@ -1073,7 +1234,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 		BlogCustomConfig config = new BlogCustomConfig(blogRepoEntry);
 		
-		return attach(courseId, parentNodeId, "blog", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "blog", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -1083,7 +1245,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param nodeId The node's id of this external page
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param url The URL of the external page
@@ -1102,9 +1267,12 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateExternalPage(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
-			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
-			@FormParam("url") String url, @Context HttpServletRequest request) {
+			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
+			@FormParam("instructionalDesign") String instructionalDesign,
+			@FormParam("visibilityExpertRules") String visibilityExpertRules,
+			@FormParam("accessExpertRules") String accessExpertRules, @FormParam("url") String url,
+			@Context HttpServletRequest request) {
 		URL externalUrl = null;
 		if(url != null) {
 			try {
@@ -1114,7 +1282,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			}
 		}
 		ExternalPageCustomConfig config = new ExternalPageCustomConfig(externalUrl);
-		return update(courseId, nodeId, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return update(courseId, nodeId, shortTitle, longTitle, description, objectives, instruction,
+				instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**
@@ -1125,7 +1294,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional design
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param url The URL of the external page
@@ -1142,12 +1314,17 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachExternalPagePost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("url") String url, @Context HttpServletRequest request) {
-		return attachExternalPage(courseId, parentNodeId, position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, url, request);
+	public Response attachExternalPagePost(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules, @QueryParam("url") String url,
+			@Context HttpServletRequest request) {
+		return attachExternalPage(courseId, parentNodeId, position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, url, request);
 	}
 	
 	/**
@@ -1158,7 +1335,10 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 * @param position The node's position relative to its sibling nodes (optional)
 	 * @param shortTitle The node short title
 	 * @param longTitle The node long title
+	 * @param description The node description
 	 * @param objectives The node learning objectives
+	 * @param instruction The node instruction
+	 * @param instructionalDesign The node instructional designs
 	 * @param visibilityExpertRules The rules to view the node (optional)
 	 * @param accessExpertRules The rules to access the node (optional)
 	 * @param url The URL of the external page
@@ -1175,11 +1355,15 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@ApiResponse(responseCode = "404", description = "The course or parentNode not found")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachExternalPage(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("url") String url, @Context HttpServletRequest request) {
+	public Response attachExternalPage(@PathParam("courseId") Long courseId,
+			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
+			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
+			@QueryParam("instructionalDesign") String instructionalDesign,
+			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
+			@QueryParam("accessExpertRules") String accessExpertRules, @QueryParam("url") String url,
+			@Context HttpServletRequest request) {
 		URL externalUrl = null;
 		try {
 			externalUrl = new URL(url);
@@ -1188,7 +1372,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		}
 		ExternalPageCustomConfig config = new ExternalPageCustomConfig(externalUrl);
 		
-		return attach(courseId, parentNodeId, "tu", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
+		return attach(courseId, parentNodeId, "tu", position, shortTitle, longTitle, description, objectives,
+				instruction, instructionalDesign, visibilityExpertRules, accessExpertRules, config, request);
 	}
 	
 	/**

@@ -30,6 +30,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ColorCategoryRef;
 import org.olat.course.style.ColorCategoryResolver;
@@ -175,7 +176,7 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	}
 
 	@Override
-	public Header getHeader(CourseEnvironment courseEnv, CourseNode courseNode, String iconCssClass) {
+	public Header getHeader(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String iconCssClass) {
 		String displayOption = courseNode.getDisplayOption();
 		if (CourseNode.DISPLAY_OPTS_CONTENT.equals(displayOption)) {
 			return null;
@@ -189,14 +190,14 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 			builder.withTitle(courseNode.getLongTitle());
 		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getShortTitle());
-			builder.withObjectives(courseNode.getLearningObjectives());
+			addExtendedHeader(builder, courseNode, userCourseEnv);
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getLongTitle());
-			builder.withObjectives(courseNode.getLearningObjectives());
+			addExtendedHeader(builder, courseNode, userCourseEnv);
 		}
 		
-		CourseConfig courseConfig = courseEnv.getCourseConfig();
-		Mapper teaserImageMapper = getTeaserImageMapper(courseEnv, courseNode);
+		CourseConfig courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
+		Mapper teaserImageMapper = getTeaserImageMapper(userCourseEnv.getCourseEnvironment(), courseNode);
 		if (teaserImageMapper != null) {
 			TeaserImageStyle teaserImageStyle = courseConfig.getTeaserImageStyle() != null
 					? courseConfig.getTeaserImageStyle()
@@ -209,6 +210,14 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 		builder.withIconCss(iconCssClass);
 		
 		return builder.build();
+	}
+
+	private void addExtendedHeader(Builder builder, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		builder.withObjectives(courseNode.getObjectives());
+		builder.withInstruction(courseNode.getInstruction());
+		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
+			builder.withInstrucionalDesign(courseNode.getInstructionalDesign());
+		}
 	}
 
 	private Mapper getTeaserImageMapper(CourseEnvironment courseEnv, CourseNode courseNode) {

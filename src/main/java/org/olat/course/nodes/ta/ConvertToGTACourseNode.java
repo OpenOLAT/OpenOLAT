@@ -93,7 +93,8 @@ public class ConvertToGTACourseNode {
 		gtaNode.setShortTitle("New_ " + sourceNode.getShortTitle());
 		gtaNode.setLongTitle("New_ " + sourceNode.getLongTitle());
 		gtaNode.setDisplayOption(sourceNode.getDisplayOption());
-		gtaNode.setLearningObjectives(sourceNode.getLearningObjectives());
+		gtaNode.setDescription(sourceNode.getLearningObjectives());
+		gtaNode.setObjectives(sourceNode.getLearningObjectives());
 		
 		TaskList taskList = gtaManager.createIfNotExists(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
 		DBFactory.getInstance().commit();

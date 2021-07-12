@@ -67,9 +67,9 @@ public class TitledWrapperHelper {
 		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 			String title = courseNode.getShortTitle();
 			String description = null;
-			if (StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
+			if (StringHelper.containsNonWhitespace(courseNode.getDescription())) {
 				if (StringHelper.containsNonWhitespace(title)) {
-					description = courseNode.getLearningObjectives();
+					description = courseNode.getDescription();
 				}
 			}
 
@@ -85,8 +85,8 @@ public class TitledWrapperHelper {
 
 			String title = courseNode.getLongTitle();
 			String description = null;
-			if (StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
-				description = courseNode.getLearningObjectives();
+			if (StringHelper.containsNonWhitespace(courseNode.getDescription())) {
+				description = courseNode.getDescription();
 			}
 
 			if(StringHelper.containsNonWhitespace(title) || StringHelper.containsNonWhitespace(description)) {

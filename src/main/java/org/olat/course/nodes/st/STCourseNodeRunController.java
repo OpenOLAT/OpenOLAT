@@ -55,7 +55,6 @@ import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseTreeNode;
@@ -210,15 +209,6 @@ public class STCourseNodeRunController extends BasicController {
 			} else {
 				myContent.contextPut("hasPassedValue", Boolean.FALSE);
 			}
-		}
-
-		// Adding learning objectives
-		String learningObj = stCourseNode.getLearningObjectives();
-		if (learningObj != null) {
-			Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq);
-			myContent.put("learningObjectives", learningObjectives);
-			myContent.contextPut("hasObjectives", learningObj); // dummy value, just
-																													// an exists operator
 		}
 
 		putInitialPanel(myContent);

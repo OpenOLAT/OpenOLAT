@@ -299,7 +299,6 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
 		CourseNode bcNode = newNodeConfig.getInstance(rootNode);
 		bcNode.setShortTitle("Folder");
-		bcNode.setLearningObjectives("Folder objectives");
 		bcNode.setNoAccessExplanation("You don't have access");
 		course.getEditorTreeModel().addCourseNode(bcNode, rootNode);
 

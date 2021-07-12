@@ -39,7 +39,10 @@ public class CourseNodeVO {
 	private String shortTitle;
 	private String shortName;
 	private String longTitle;
-	private String learningObjectives;
+	private String description;
+	private String objectives;
+	private String instruction;
+	private String instructionalDesign;
 	
 	
 	public CourseNodeVO() {
@@ -94,14 +97,38 @@ public class CourseNodeVO {
 		this.longTitle = longTitle;
 	}
 
-	public String getLearningObjectives() {
-		return learningObjectives;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setLearningObjectives(String learningObjectives) {
-		this.learningObjectives = learningObjectives;
+	public void setDescription(String description) {
+		this.description = description;
 	}
-	
+
+	public String getObjectives() {
+		return objectives;
+	}
+
+	public void setObjectives(String objectives) {
+		this.objectives = objectives;
+	}
+
+	public String getInstruction() {
+		return instruction;
+	}
+
+	public void setInstruction(String instruction) {
+		this.instruction = instruction;
+	}
+
+	public String getInstructionalDesign() {
+		return instructionalDesign;
+	}
+
+	public void setInstructionalDesign(String instructionalDesign) {
+		this.instructionalDesign = instructionalDesign;
+	}
+
 	@Override
 	public int hashCode() {
 		return id == null ? 623576 : id.hashCode();
