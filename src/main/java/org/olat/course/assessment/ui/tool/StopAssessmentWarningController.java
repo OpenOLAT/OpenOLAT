@@ -36,13 +36,18 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.lecture.LectureService;
@@ -55,7 +60,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StopAssessmentWarningController extends BasicController {
+public class StopAssessmentWarningController extends BasicController implements GenericEventListener {
+
+	private static final OLATResourceable ASSESSMENT_MODE_ORES = OresHelper.createOLATResourceableType(AssessmentMode.class);
 	
 	private Link stopAssessmentMode;
 	private final VelocityContainer mainVC;
@@ -63,10 +70,11 @@ public class StopAssessmentWarningController extends BasicController {
 
 	private final RepositoryEntry courseEntry;
 	private final AssessmentToolSecurityCallback assessmentCallback;
+	private List<AssessmentMode> assessmentModes;
 	
 	private CloseableModalController cmc;
 	private ConfirmStopAssessmentModeController stopCtrl;
-
+	
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -81,17 +89,21 @@ public class StopAssessmentWarningController extends BasicController {
 		this.courseEntry = courseEntry;
 		this.assessmentCallback = assessmentCallback;
 		mainVC = createVelocityContainer("assessment_mode_warn");
+		assessmentModes = modes;
 		assessmentModeMessage(modes);
 		putInitialPanel(mainVC);
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), ASSESSMENT_MODE_ORES);
 	}
 
 	@Override
 	protected void doDispose() {
-		//
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ASSESSMENT_MODE_ORES);
 	}
+	
 	private void reloadAssessmentModeMessage() {
-		List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
-		assessmentModeMessage(modes);
+		assessmentModes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
+		assessmentModeMessage(assessmentModes);
 	}
 	
 	private void assessmentModeMessage(List<AssessmentMode> modes) {
@@ -122,6 +134,30 @@ public class StopAssessmentWarningController extends BasicController {
 		}
 	}
 	
+	@Override
+	public void event(Event event) {
+		if(event instanceof ChangeAssessmentModeEvent) {
+			processChangeAssessmentModeEvents((ChangeAssessmentModeEvent)event);
+		}
+	}
+	
+	private void processChangeAssessmentModeEvents(ChangeAssessmentModeEvent event) {
+		try {
+			Long assessmentModeKey = event.getAssessmentModeKey();
+			List<AssessmentMode> currentModes = assessmentModes;
+			if(currentModes != null && !currentModes.isEmpty()) {
+				for(AssessmentMode currentMode:currentModes) {
+					if(assessmentModeKey.equals(currentMode.getKey())) {
+						reloadAssessmentModeMessage();
+						break;
+					}
+				}	
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(stopAssessmentMode == source) {
