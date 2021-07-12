@@ -109,9 +109,14 @@
 		}
 		
 		function sendFreeDrawingsToBack() {
-			var objects = canvas.getObjects("path");
+			var objects = canvas.getObjects();
 			for(var i=objects.length; i-->0; ) {
-				canvas.sendToBack(objects[i]);
+				var type = objects[i].type;
+				if(type === "path" || type === "line") {
+					canvas.sendToBack(objects[i]);
+				} else {
+					canvas.bringToFront(objects[i]);
+				}
 			}
 			canvas.renderAll();
 		}
@@ -156,7 +161,7 @@
 				var width = getBrushWidth();
 				
 				var textbox = new fabric.Textbox('Hello', {
-					left: 350, top: 100,
+					left: 35, top: 20,
 					fill: color,
 					fontFamily: 'helvetica',
 					fontSize: '' + width,
@@ -179,7 +184,7 @@
 				var width = getBrushWidth();
 				
 				var circle = new fabric.Circle({
-					left: 350, top: 100, radius: 65,
+					left: 45, top: 25, radius: 65,
 					originX: 'left',
 					fill: 'rgba(255,255,255,0.0)',
 					strokeWidth: width, stroke: color,
@@ -202,7 +207,7 @@
 				var width = getBrushWidth();
 	
 				var rect = new fabric.Rect({
-					left: 350, top: 100, width: 50, height: 50,
+					left: 50, top: 30, width: 50, height: 50,
 					originX: 'left',
 					fill: 'rgba(255,255,255,0.0)',
 					strokeWidth: width,
@@ -226,7 +231,7 @@
 				var width = getBrushWidth();
 	
 				var ellipse = new fabric.Ellipse({
-					left: 350, top: 100, rx: 65, ry: 35,
+					left: 15, top: 10, rx: 65, ry: 35,
 					fill: 'rgba(255,255,255,0.0)',
 					strokeWidth: width, stroke: color,
 					hasRotatingPoint: false,
