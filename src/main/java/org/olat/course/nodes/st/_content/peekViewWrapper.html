@@ -11,8 +11,8 @@
 	#if ($coursenode.getLongTitle() &&  $coursenode.getLongTitle() != "")
 		<div class="o_displaytitle">$r.escapeHtml($coursenode.getLongTitle())</div>
 	#end
-	#if ($coursenode.getLearningObjectives() &&  $coursenode.getLearningObjectives() != "")
-		<div class="o_objectives o_user_content_block">$r.formatLatexFormulas("$coursenode.getLearningObjectives()")</div>
+	#if ($r.isNotEmpty($coursenode.getDescription()))
+		<div class="o_description o_user_content_block">$r.formatLatexFormulas("$coursenode.getDescription()")</div>
 	#end
 	#if ($r.available("peekViewController"))
 		<div class="o_peekview">$r.render("peekViewController")</div>

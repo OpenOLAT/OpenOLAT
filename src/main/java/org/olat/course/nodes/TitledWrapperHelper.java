@@ -49,7 +49,7 @@ public class TitledWrapperHelper {
 		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
 			if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
 				TitleInfo titleInfo = new TitleInfo(null, courseNode.getShortTitle(), null, courseNode.getIdent());
-				titleInfo.setDescriptionCssClass("o_objectives o_user_content_block");
+				titleInfo.setDescriptionCssClass("o_description o_user_content_block");
 				if (StringHelper.containsNonWhitespace(iconCssClass)) {
 					titleInfo.setIconCssClass(iconCssClass);
 				}
@@ -58,7 +58,7 @@ public class TitledWrapperHelper {
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
 			if(StringHelper.containsNonWhitespace(courseNode.getLongTitle())) {
 				TitleInfo titleInfo = new TitleInfo(null, courseNode.getLongTitle(), null, courseNode.getIdent());
-				titleInfo.setDescriptionCssClass("o_objectives o_user_content_block");
+				titleInfo.setDescriptionCssClass("o_description o_user_content_block");
 				if (StringHelper.containsNonWhitespace(iconCssClass)) {
 					titleInfo.setIconCssClass(iconCssClass);
 				}
@@ -75,7 +75,7 @@ public class TitledWrapperHelper {
 
 			if(StringHelper.containsNonWhitespace(title) || StringHelper.containsNonWhitespace(description)) {
 				TitleInfo titleInfo = new TitleInfo(null, title, description, courseNode.getIdent());
-				titleInfo.setDescriptionCssClass("o_objectives o_user_content_block");
+				titleInfo.setDescriptionCssClass("o_description o_user_content_block");
 				if (StringHelper.containsNonWhitespace(iconCssClass)) {
 					titleInfo.setIconCssClass(iconCssClass);
 				}
@@ -91,7 +91,7 @@ public class TitledWrapperHelper {
 
 			if(StringHelper.containsNonWhitespace(title) || StringHelper.containsNonWhitespace(description)) {
 				TitleInfo titleInfo = new TitleInfo(null, title, description, courseNode.getIdent());
-				titleInfo.setDescriptionCssClass("o_objectives o_user_content_block");
+				titleInfo.setDescriptionCssClass("o_description o_user_content_block");
 				if (StringHelper.containsNonWhitespace(iconCssClass)) {
 					titleInfo.setIconCssClass(iconCssClass);
 				}
