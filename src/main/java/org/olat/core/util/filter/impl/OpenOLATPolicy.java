@@ -181,7 +181,7 @@ public class OpenOLATPolicy {
 		.allowAttributes("data-es_mediatype")
 			.matching(Pattern.compile("[a-zA-Z0-9_\\-\\:]+")).onElements("a")
 		.allowAttributes("data-es_objecturl")
-			.matching(Pattern.compile("[a-zA-Z0-9_\\-\\:\\/]+")).onElements("a")
+			.matching(Pattern.compile("[a-zA-Z0-9_\\-\\:\\/\\.]+")).onElements("a")
 		.allowAttributes("data-es_mimetype")
 			.matching(Pattern.compile("[a-zA-Z0-9_\\-\\:\\/]+")).onElements("a")
 	    .allowAttributes("data-es_height")

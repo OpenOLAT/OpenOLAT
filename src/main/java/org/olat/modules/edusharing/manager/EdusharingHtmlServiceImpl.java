@@ -38,11 +38,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class EdusharingHtmlServiceImpl implements EdusharingHtmlService {
 
-	// The attribute names have to be registered in antisamy-tinymce.xml (tags img and a).
+	// The attribute names have to be registered in OpenOLATPolicy (tags img and a).
 	private static final Pattern ES_PATTERN_NODE = Pattern.compile("<([^<]*?)es_identifier(.*?)>");
 	private static final String ATTRIBUTE_VALUE_REGEX = "\\s*=\\s*['|\"](.+?)['|\"]";
 	private static final Pattern ES_PATTERN_IDENTIFIER = Pattern.compile("es_identifier" + ATTRIBUTE_VALUE_REGEX);
 	private static final Pattern ES_PATTERN_OBJECT_URL = Pattern.compile("es_objecturl" + ATTRIBUTE_VALUE_REGEX);
+	private static final Pattern ES6_PATTERN_OBJECT_URL = Pattern.compile("objectUrl" + "\\s*&#61;\\s*(.+?)&amp");
 	private static final Pattern ES_PATTERN_VERSION = Pattern.compile("es_version" + ATTRIBUTE_VALUE_REGEX);
 	private static final Pattern ES_PATTERN_MIME_TYPE = Pattern.compile("es_mimetype" + ATTRIBUTE_VALUE_REGEX);
 	private static final Pattern ES_PATTERN_MEDIA_TYPE = Pattern.compile("es_mediatype" + ATTRIBUTE_VALUE_REGEX);
@@ -53,7 +54,7 @@ public class EdusharingHtmlServiceImpl implements EdusharingHtmlService {
 	public List<EdusharingHtmlElement> parse(String html) {
 		return getNodes(html)
 				.stream()
-				.map(node -> this.getHtmlElement(node))
+				.map(this::getHtmlElement)
 				.collect(Collectors.toList());
 	}
 	
@@ -69,6 +70,9 @@ public class EdusharingHtmlServiceImpl implements EdusharingHtmlService {
 	EdusharingHtmlElement getHtmlElement(String node) {
 		String identifier = getAttributeValue(node, ES_PATTERN_IDENTIFIER);
 		String objectUrl = getAttributeValue(node, ES_PATTERN_OBJECT_URL);
+		if (objectUrl == null) {
+			objectUrl = getAttributeValue(node, ES6_PATTERN_OBJECT_URL);
+		}
 		if (identifier == null || objectUrl == null) return null;
 		
 		EdusharingHtmlElement element = new EdusharingHtmlElement(identifier , objectUrl);
