@@ -629,19 +629,22 @@ public class CourseFactory {
 					selectionIt.remove();
 				}
 			 }
-
-			 publishProcess.createPublishSetFor(nodeToPublish);
-			 PublishSetInformations set = publishProcess.testPublishSet(locale);
-			 StatusDescription[] status = set.getWarnings();
-			 //publish not possible when there are errors
-			 for(int i = 0; i < status.length; i++) {
-				 if(status[i].isError()) {
-					 log.error("Status error by publish: {}", status[i].getLongDescription(locale));
-					 return;
-				 }
-			 }
-
 			 try {
+				 publishProcess.createPublishSetFor(nodeToPublish);
+
+				 course = CourseFactory.openCourseEditSession(course.getResourceableId());
+				 PublishSetInformations set = publishProcess.testPublishSet(locale);
+				 CourseFactory.closeCourseEditSession(course.getResourceableId(), false);
+				 
+				 StatusDescription[] status = set.getWarnings();
+				 //publish not possible when there are errors
+				 for(int i = 0; i < status.length; i++) {
+					 if(status[i].isError()) {
+						 log.error("Status error by publish: {}", status[i].getLongDescription(locale));
+						 return;
+					 }
+				 }
+
 				 course = CourseFactory.openCourseEditSession(course.getResourceableId());
 				 publishProcess.applyPublishSet(identity, locale, false);
 			 } catch(Exception e) {
