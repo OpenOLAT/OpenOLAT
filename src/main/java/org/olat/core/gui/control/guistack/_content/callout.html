@@ -55,7 +55,7 @@ jQuery(function() {
 					## add 15px for button size
 					## add 10px for a bit space at left side
 					callout.offset({
-						top: Math.round(targetOffset.top + targetEl.height() +  15) ,
+						top: Math.round(targetOffset.top + targetEl.height() +  (arrow ? 25 : 15)) ,
 						left: '10'
 					});
 					var percent = (targetOffset.left + targetEl.outerWidth()/2 + 15 + 10/2) / callout.outerWidth() * 100; 
@@ -65,7 +65,7 @@ jQuery(function() {
 					## add 15px for button size
 					## add 10px for a bit space at right side
 					callout.offset({
-						top: Math.round(targetOffset.top + targetEl.height() + 15) ,
+						top: Math.round(targetOffset.top + targetEl.height() + (arrow ? 25 : 15)) ,
 						left: Math.round(docWidth - callout.outerWidth() - 10)
 					});
 					var percent = (1 - ((docWidth - targetOffset.left - targetEl.outerWidth()/2 - 15 - 10/2 ) / callout.outerWidth() )) * 100; 
