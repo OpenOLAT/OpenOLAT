@@ -71,10 +71,10 @@
 		<org.slf4j>1.7.31</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
 		<io.undertow>2.2.8.Final</io.undertow>
-		<jackson.version>2.12.3</jackson.version>
+		<jackson.version>2.12.4</jackson.version>
 		<org.mysql.version>8.0.25</org.mysql.version>
-		<org.postgresql.version>42.2.22</org.postgresql.version>
-		<org.infinispan.version>12.1.4.Final</org.infinispan.version>
+		<org.postgresql.version>42.2.23</org.postgresql.version>
+		<org.infinispan.version>12.1.6.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.2</version.drone>
@@ -443,7 +443,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.50.0</version>
+				    <version>3.51.1</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1833,7 +1833,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.0.27</version>
+			<version>3.0.28</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
