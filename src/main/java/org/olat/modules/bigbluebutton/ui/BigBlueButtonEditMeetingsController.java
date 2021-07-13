@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -59,6 +58,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
@@ -108,8 +108,6 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final BusinessGroup businessGroup;
 
-	@Autowired
-	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -505,6 +503,15 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
 				copiedMeeting, permissions);
 		editMeetingCtlr.validateFormLogic(ureq);
+		
+		// slides
+		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
+			VFSContainer slides = bigBlueButtonManager.getSlidesContainer(meeting);
+			if(slides != null && slides.exists()) {
+				editMeetingCtlr.copySlides(slides);
+			}	
+		}
+
 		listenTo(editMeetingCtlr);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),

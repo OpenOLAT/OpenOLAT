@@ -59,11 +59,12 @@ public class BigBlueButtonMeetingDAO {
 	
 	public BigBlueButtonMeeting createAndPersistMeeting(String name,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator) {
-		return createAndPersistMeeting(name, entry, subIdent, businessGroup, creator, true);
+		BigBlueButtonMeeting meeting = createMeeting(name, entry, subIdent, businessGroup, creator);
+		return persistMeeting(meeting);
 	}
 	
-	private BigBlueButtonMeeting createAndPersistMeeting(String name,
-			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator, boolean persist) {
+	private BigBlueButtonMeeting createMeeting(String name,
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator) {
 		BigBlueButtonMeetingImpl meeting = new BigBlueButtonMeetingImpl();
 		meeting.setCreationDate(new Date());
 		meeting.setLastModified(meeting.getCreationDate());
@@ -85,16 +86,17 @@ public class BigBlueButtonMeetingDAO {
 		meeting.setBusinessGroup(businessGroup);
 		
 		meeting.setCreator(creator);
-		
-		if(persist) {
-			dbInstance.getCurrentEntityManager().persist(meeting);
-		}
 		return meeting;
 	}
 	
-	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Date start, Date end, Identity creator, boolean persist) {
-		BigBlueButtonMeetingImpl copy = (BigBlueButtonMeetingImpl)createAndPersistMeeting(name,
-				meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), creator, persist);
+	public BigBlueButtonMeeting persistMeeting(BigBlueButtonMeeting meeting) {
+		dbInstance.getCurrentEntityManager().persist(meeting);
+		return meeting;
+	}
+	
+	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Date start, Date end, Identity creator) {
+		BigBlueButtonMeetingImpl copy = (BigBlueButtonMeetingImpl)createMeeting(name,
+				meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), creator);
 
 		copy.setDescription(meeting.getDescription());
 		copy.setWelcome(meeting.getWelcome());
@@ -121,9 +123,6 @@ public class BigBlueButtonMeetingDAO {
 		copy.setTemplate(meeting.getTemplate());
 		copy.setServer(meeting.getServer());
 
-		if(persist) {
-			return dbInstance.getCurrentEntityManager().merge(copy);
-		}
 		return copy;
 	}
 	

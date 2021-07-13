@@ -92,6 +92,8 @@ public interface BigBlueButtonManager {
 	public BigBlueButtonMeeting createAndPersistMeeting(String name, RepositoryEntry entry, String subIdent,
 			BusinessGroup businessGroup, Identity creator);
 	
+	public BigBlueButtonMeeting persistMeeting(BigBlueButtonMeeting meeting);
+	
 	/**
 	 * Is there a server available.
 	 * 

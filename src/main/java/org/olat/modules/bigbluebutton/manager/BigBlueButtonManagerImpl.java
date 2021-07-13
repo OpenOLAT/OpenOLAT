@@ -72,7 +72,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -396,6 +395,11 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	}
 	
 	@Override
+	public BigBlueButtonMeeting persistMeeting(BigBlueButtonMeeting meeting) {
+		return bigBlueButtonMeetingDao.persistMeeting(meeting);
+	}
+
+	@Override
 	public boolean isSlotAvailable(BigBlueButtonMeeting meeting, BigBlueButtonMeetingTemplate template, Date startDate, long leadTime, Date endDate, long followupTime) {
 		if(template == null) return false; // template are mandatory
 		if(template.getMaxConcurrentMeetings() == null) {
@@ -429,8 +433,10 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		VFSContainer container;
 		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
 			container = bigBlueButtonSlidesStorage.getStorage(meeting);
-		} else {
+		} else if(meeting.getKey() != null) {
 			container = bigBlueButtonSlidesStorage.createStorage(meeting);
+		} else {
+			container = null;
 		}
 		return container;
 	}
@@ -514,21 +520,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		}
 		
 		// copy the meeting with new dates
-		BigBlueButtonMeeting copy = bigBlueButtonMeetingDao.copyMeeting(name, meeting, start, end, creator, false);
-		
-		// slides
-		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
-			List<VFSLeaf> slides = getSlides(meeting);
-			if(!slides.isEmpty()) {
-				VFSContainer copyContainer = bigBlueButtonSlidesStorage.createStorage(copy);
-				for(VFSLeaf slide:slides) {
-					VFSLeaf copySlide = copyContainer.createChildLeaf(slide.getName());
-					VFSManager.copyContent(slide, copySlide, true, creator);
-				}
-			}	
-		}
-		
-		return copy;
+		return bigBlueButtonMeetingDao.copyMeeting(name, meeting, start, end, creator);
 	}
 
 	@Override

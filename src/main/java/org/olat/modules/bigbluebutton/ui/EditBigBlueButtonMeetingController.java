@@ -59,6 +59,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonDispatcher;
@@ -448,6 +449,24 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		listenTo(cmc);
 	}
 	
+	/**
+	 * Copy the slides from the container of an other meeting to
+	 * the temporary folder of the editor.
+	 * 
+	 * @param originalContainer The original container
+	 */
+	public void copySlides(VFSContainer originalContainer) {
+		List<VFSItem> items = originalContainer.getItems(new VFSLeafButSystemFilter());
+		for(VFSItem item:items) {
+			if(item instanceof VFSLeaf) {
+				VFSLeaf slide = (VFSLeaf)item;
+				VFSLeaf newSlide = VFSManager.resolveOrCreateLeafFromPath(temporaryContainer, slide.getName());
+				VFSManager.copyContent(slide, newSlide, true, getIdentity());
+			}
+		}
+		reloadSlides();
+	}
+	
 	private void reloadSlides() {
 		Map<String,SlideWrapper> docsMap = documentWrappers.stream()
 				.collect(Collectors.toMap(SlideWrapper::getFilename, doc -> doc));
@@ -749,7 +768,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		}
 		
 		// copy the slides, eventually update the directory field
-		doCopySlides(ureq.getIdentity());
+		doCopySlides(getIdentity());
 
 		meeting = bigBlueButtonManager.updateMeeting(meeting);
 
@@ -758,6 +777,11 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	
 	private void doCopySlides(Identity savedBy) {
 		if(documentWrappers.isEmpty()) return;
+		
+		// storage need a primary key
+		if(meeting.getKey() == null) {
+			meeting = bigBlueButtonManager.persistMeeting(meeting);
+		}
 
 		VFSContainer storage = bigBlueButtonManager.getSlidesContainer(meeting);
 		for(SlideWrapper doc:documentWrappers) {
