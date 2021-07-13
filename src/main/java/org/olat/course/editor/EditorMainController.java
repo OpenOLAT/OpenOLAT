@@ -355,10 +355,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	public boolean requestForClose(UserRequest ureq) {
 		boolean immediateClose = true;
 		try {
-			ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
-			if(hasPublishableChanges(course)) {
-				doQuickPublish(ureq, course);
-				immediateClose = false;
+			if(CourseFactory.isCourseEditSessionOpen(ores.getResourceableId())) {
+				ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
+				if(hasPublishableChanges(course)) {
+					doQuickPublish(ureq, course);
+					immediateClose = false;
+				}
 			}
 		} catch (AssertException | NullPointerException e) {
 			logError("Error request on close: " + ores, e);
