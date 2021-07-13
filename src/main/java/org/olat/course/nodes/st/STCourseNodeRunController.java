@@ -134,6 +134,9 @@ public class STCourseNodeRunController extends BasicController {
 				if (childCourseTreeNode.isVisible()) {
 					// Build and add child generic or specific peek view
 					CourseNode child = childCourseTreeNode.getCourseNode();
+					if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES) && !(child instanceof STCourseNode)) {
+						continue;
+					}
 					Controller childViewController = null;
 					Controller childPeekViewController = null;
 					boolean accessible = childCourseTreeNode.isAccessible();
@@ -164,6 +167,12 @@ public class STCourseNodeRunController extends BasicController {
 								// Skip this child - not configured
 								continue;
 							}
+						}
+					} else if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES)) {
+						if(accessible) {
+							CourseNode parent = child.getParent() instanceof CourseNode? (CourseNode)child.getParent(): null;
+							child.updateModuleConfigDefaults(false, parent);
+							childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, childCourseTreeNode);
 						}
 					}
 					// Add child to list

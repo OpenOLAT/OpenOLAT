@@ -2382,6 +2382,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			
 			if(displayType != null && (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC.equals(displayType)
 					|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(displayType)
+					|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES.equals(displayType)
 					|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(displayType))) {
 				moduleConfig.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, displayType);
 			}

@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.st;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -29,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -58,8 +61,9 @@ import org.olat.modules.ModuleConfiguration;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class STCourseNodeDisplayConfigFormController extends FormBasicController {
-	private static final String[] displayTypeKeys = new String[] { "system", "peekview", "file", "delegate" };
 
+	private static final String DISPLAY_SYSTEM = "system";
+	
 	private SpacerElement spacerCols;
 	private SingleSelection displayTypeRadios;
 	private MultipleSelectionElement displayTwoColumns;
@@ -123,19 +127,19 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		formLayout.setElementCssClass("o_sel_st_overview_settings");
 	
 		// Display type
-		String[] displayTypeValues = new String[] { translate("form.system"), translate("form.peekview"), translate("form.self"),
-				translate("form.delegate") };
-		displayTypeRadios = uifactory.addRadiosVertical("selforsystemoverview", formLayout, displayTypeKeys, displayTypeValues);
+		SelectionValues typesKV = new SelectionValues();
+		typesKV.add(entry(DISPLAY_SYSTEM, translate("form.system")));
+		typesKV.add(entry(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW, translate("form.peekview")));
+		typesKV.add(entry(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES, translate("form.structures")));
+		typesKV.add(entry(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE, translate("form.self")));
+		typesKV.add(entry(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE, translate("form.delegate")));
+		displayTypeRadios = uifactory.addRadiosVertical("selforsystemoverview", formLayout, typesKV.keys(), typesKV.values());
 		displayTypeRadios.addActionListener(FormEvent.ONCLICK);
 		displayTypeRadios.setElementCssClass("o_sel_st_display_type");
-		if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
-			displayTypeRadios.select("file", true);
-		} else if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
-			displayTypeRadios.select("peekview", true);
-		} else if (displayConfig.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE)) {
-			displayTypeRadios.select("delegate", true);
+		if (displayTypeRadios.containsKey(displayConfig)) {
+			displayTypeRadios.select(displayConfig, true);
 		} else {
-			displayTypeRadios.select("system", true);
+			displayTypeRadios.select(DISPLAY_SYSTEM, true);
 		}
 		// Peekview details configuration - allow only MAX_PEEKVIEW_CHILD_NODES
 		// peekviews to be selected
@@ -161,10 +165,10 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 	
 	private void updateUI() {
 		String selectedKey = displayTypeRadios.getSelectedKey();
-		displayTwoColumns.setVisible("peekview".equals(selectedKey) || "system".equals(selectedKey));
-		spacerCols.setVisible("peekview".equals(selectedKey) || "system".equals(selectedKey));
+		displayTwoColumns.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) || DISPLAY_SYSTEM.equals(selectedKey));
+		spacerCols.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) || DISPLAY_SYSTEM.equals(selectedKey));
 		if(selectedPeekviewChildren != null) {
-			selectedPeekviewChildren.setVisible("peekview".equals(selectedKey));
+			selectedPeekviewChildren.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey));
 		}
 		if (columnsConfig == 2) {
 			displayTwoColumns.select("on", true);
@@ -274,6 +278,9 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 					selectedPeekviewChildNodesConfig = selectedPeekviewChildren.getSelectedKeys().stream().collect(Collectors.joining(","));
 					moduleConfig.set(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, selectedPeekviewChildNodesConfig);
 				}
+			} else if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES.equals(displayType)) {
+					moduleConfig.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE,
+						STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES);
 			} else if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE.equals(displayType)) {
 					moduleConfig.setStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE,
 						STCourseNodeEditController.CONFIG_VALUE_DISPLAY_DELEGATE);
