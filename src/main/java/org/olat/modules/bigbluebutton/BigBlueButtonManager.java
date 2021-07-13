@@ -133,6 +133,13 @@ public interface BigBlueButtonManager {
 	
 	public boolean deleteMeeting(BigBlueButtonMeeting meeting, BigBlueButtonErrors errors);
 	
+	/**
+	 * Delete the slides, can be useful to delete slides of transient meetings.
+	 * 
+	 * @param meeting The meeting (can be transient)
+	 */
+	public void deleteSlides(BigBlueButtonMeeting meeting);
+	
 	public BigBlueButtonMeetingTemplate createAndPersistTemplate(String name);
 	
 	public boolean isIdentifierInUse(String identifier, BigBlueButtonMeeting reference);

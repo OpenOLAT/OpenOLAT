@@ -496,11 +496,21 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		}
 	}
 	
-	private void doCopy(BigBlueButtonMeeting meeting) {
+	private void doCopy(UserRequest ureq, BigBlueButtonMeeting meeting) {
 		String newName = translate("copy.name", new String[] { meeting.getName() });
-		bigBlueButtonManager.copyMeeting(newName, meeting, getIdentity());
-		dbInstance.commit();
-		updateModel();
+		BigBlueButtonMeeting copiedMeeting = bigBlueButtonManager.copyMeeting(newName, meeting, getIdentity());
+
+		List<BigBlueButtonTemplatePermissions> permissions = bigBlueButtonManager
+				.calculatePermissions(entry, businessGroup, getIdentity(), ureq.getUserSession().getRoles());
+		editMeetingCtlr = new EditBigBlueButtonMeetingController(ureq, getWindowControl(),
+				copiedMeeting, permissions);
+		editMeetingCtlr.validateFormLogic(ureq);
+		listenTo(editMeetingCtlr);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+				true, translate("edit.meeting"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 	
 	private void doOpenTools(UserRequest ureq, BigBlueButtonMeetingRow row, FormLink link) {
@@ -553,7 +563,7 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
 			if(copyLink == source) {
-				doCopy(meeting);
+				doCopy(ureq, meeting);
 			} else if(deleteLink == source) {
 				doConfirmDelete(ureq, meeting);
 			}

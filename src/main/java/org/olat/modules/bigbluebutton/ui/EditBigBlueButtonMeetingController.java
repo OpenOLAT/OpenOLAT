@@ -501,6 +501,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(temporaryContainer != null) {
 			temporaryContainer.deleteSilently();
 		}
+		if(meeting != null && meeting.getKey() == null) {
+			bigBlueButtonManager.deleteSlides(meeting);
+		}
 	}
 
 	@Override
@@ -671,7 +674,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			meeting = bigBlueButtonManager
 					.createAndPersistMeeting(nameEl.getValue(), entry, subIdent, businessGroup, getIdentity());
 		} else {
-			meeting = bigBlueButtonManager.getMeeting(meeting);
+			if(meeting.getKey() != null) {
+				meeting = bigBlueButtonManager.getMeeting(meeting);
+			}
 			meeting.setName(nameEl.getValue());
 		}
 		
@@ -787,6 +792,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
+		if(meeting != null && meeting.getKey() == null) {
+			bigBlueButtonManager.deleteSlides(meeting);
+		}
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	

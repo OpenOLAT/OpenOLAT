@@ -470,8 +470,8 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 
 	@Override
 	public BigBlueButtonMeeting updateMeeting(BigBlueButtonMeeting meeting) {
-		updateCalendarEvent(meeting);
 		meeting = bigBlueButtonMeetingDao.updateMeeting(meeting);
+		updateCalendarEvent(meeting);
 		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
 			OLATResource resource = resourceManager.findResourceable(meeting.getKey(), TASK_MEETING_RESNAME);
 			if(resource == null) {
@@ -514,8 +514,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		}
 		
 		// copy the meeting with new dates
-		BigBlueButtonMeeting copy = bigBlueButtonMeetingDao.copyMeeting(name, meeting, start, end, creator);
-		dbInstance.commit();
+		BigBlueButtonMeeting copy = bigBlueButtonMeetingDao.copyMeeting(name, meeting, start, end, creator, false);
 		
 		// slides
 		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
@@ -526,8 +525,6 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 					VFSLeaf copySlide = copyContainer.createChildLeaf(slide.getName());
 					VFSManager.copyContent(slide, copySlide, true, creator);
 				}
-				copy = bigBlueButtonMeetingDao.updateMeeting(copy);
-				dbInstance.commit();
 			}	
 		}
 		
@@ -616,17 +613,20 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		return false;
 	}
 	
-	private void deleteSlides(BigBlueButtonMeeting meeting) {
+	@Override
+	public void deleteSlides(BigBlueButtonMeeting meeting) {
 		if(StringHelper.containsNonWhitespace(meeting.getDirectory())) {
 			VFSContainer slidesContainer = bigBlueButtonSlidesStorage.getStorage(meeting);
 			if(slidesContainer != null && slidesContainer.exists()) {
 				slidesContainer.deleteSilently();
 			}
 			
-			OLATResource resource = resourceManager.findResourceable(meeting.getKey(), TASK_MEETING_RESNAME);
-			if(resource != null) {
-				taskManager.delete(resource);
-				resourceManager.deleteOLATResource(resource);
+			if(meeting.getKey() != null) {
+				OLATResource resource = resourceManager.findResourceable(meeting.getKey(), TASK_MEETING_RESNAME);
+				if(resource != null) {
+					taskManager.delete(resource);
+					resourceManager.deleteOLATResource(resource);
+				}
 			}
 		}
 	}

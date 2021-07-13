@@ -59,6 +59,11 @@ public class BigBlueButtonMeetingDAO {
 	
 	public BigBlueButtonMeeting createAndPersistMeeting(String name,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator) {
+		return createAndPersistMeeting(name, entry, subIdent, businessGroup, creator, true);
+	}
+	
+	private BigBlueButtonMeeting createAndPersistMeeting(String name,
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup, Identity creator, boolean persist) {
 		BigBlueButtonMeetingImpl meeting = new BigBlueButtonMeetingImpl();
 		meeting.setCreationDate(new Date());
 		meeting.setLastModified(meeting.getCreationDate());
@@ -81,14 +86,15 @@ public class BigBlueButtonMeetingDAO {
 		
 		meeting.setCreator(creator);
 		
-		dbInstance.getCurrentEntityManager().persist(meeting);
-		
+		if(persist) {
+			dbInstance.getCurrentEntityManager().persist(meeting);
+		}
 		return meeting;
 	}
 	
-	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Date start, Date end, Identity creator) {
+	public BigBlueButtonMeeting copyMeeting(String name, BigBlueButtonMeeting meeting, Date start, Date end, Identity creator, boolean persist) {
 		BigBlueButtonMeetingImpl copy = (BigBlueButtonMeetingImpl)createAndPersistMeeting(name,
-				meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), creator);
+				meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), creator, persist);
 
 		copy.setDescription(meeting.getDescription());
 		copy.setWelcome(meeting.getWelcome());
@@ -115,7 +121,10 @@ public class BigBlueButtonMeetingDAO {
 		copy.setTemplate(meeting.getTemplate());
 		copy.setServer(meeting.getServer());
 
-		return dbInstance.getCurrentEntityManager().merge(copy);
+		if(persist) {
+			return dbInstance.getCurrentEntityManager().merge(copy);
+		}
+		return copy;
 	}
 	
 	public BigBlueButtonMeeting loadByKey(Long key) {
@@ -247,7 +256,11 @@ public class BigBlueButtonMeetingDAO {
 		}
 		updateDates((BigBlueButtonMeetingImpl)meeting,
 				meeting.getStartDate(), meeting.getLeadTime(), meeting.getEndDate(), meeting.getFollowupTime());
-		return dbInstance.getCurrentEntityManager().merge(meeting);
+		if(meeting.getKey() != null) {
+			return dbInstance.getCurrentEntityManager().merge(meeting);
+		}
+		dbInstance.getCurrentEntityManager().persist(meeting);
+		return meeting;
 	}
 	
 	public void deleteMeeting(BigBlueButtonMeeting meeting) {
