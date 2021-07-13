@@ -19,64 +19,63 @@ jQuery(function() {
 			var arrow = $arrow;
 			var docWidth = jQuery(document).width();
 			if(orientation == 'top') {
-				if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left <= (callout.width() / 2)) {
+				if(targetOffset.left >= 0 && callout.outerWidth() > 50 && targetOffset.left <= ((callout.outerWidth() - targetEl.outerWidth()) / 2)) {
 					## left edge case: show at left border
 					## add 15px for button size
 					## add 10px for a bit space at left side
 					callout.offset({
-						top: (targetOffset.top - targetEl.height() - 25) ,
-						left: '10px'
+						top: Math.round(targetOffset.top - targetEl.height() - 25) ,
+						left: '10'
 					});
-					var percent = (targetOffset.left + targetEl.width()/2 + 15 + 10/2) / callout.width() * 100; 
+					var percent = (targetOffset.left + targetEl.outerWidth()/2 + 15 + 10/2) / callout.outerWidth() * 100; 
 					callout.find('.arrow').css({'left' : percent + '%'});
 					
-				} else if(targetOffset.left >= 0 && callout.width() > 50 && ((targetOffset.left + (callout.width() / 2)) >= docWidth)) {
+				} else if(targetOffset.left >= 0 && callout.outerWidth() > 50 && callout.outerWidth() > targetEl.outerWidth() && (targetOffset.left + (callout.outerWidth() - targetEl.outerWidth() / 2)) >= docWidth) {
 					## right edge case: show at right border
 					## add 15px for button size
 					## add 10px for a bit space at right side
 					callout.offset({
-						top: (targetOffset.top - targetEl.height() - 25) ,
-						left: (docWidth - callout.width() - 10)
+						top: Math.round(targetOffset.top - targetEl.height() - 25) ,
+						left: Math.round(docWidth - callout.outerWidth() - 10)
 					});
-					var percent = (1 - ((docWidth - targetOffset.left - targetEl.width()/2 - 15 - 10/2 ) / callout.width() )) * 100; 
+					var percent = (1 - ((docWidth - targetOffset.left - targetEl.outerWidth()/2 - 15 - 10/2 ) / callout.outerWidth() )) * 100; 
 					callout.find('.arrow').css({'left' : percent + '%'});
 	
 				} else {
-					## standard case: show centered below element
+					## standard case: show centered below element.  -1 to compensate for the center of the triangle, best visual effort
 					callout.offset({
-						top: (targetOffset.top - targetEl.height() - 25),
-						left: (targetOffset.left + targetEl.width()) - callout.width()/2 
+						top: Math.round(targetOffset.top - targetEl.height() - 25),
+						left: Math.round((targetOffset.left + targetEl.outerWidth()) - callout.outerWidth()/2 -1)
 					});
 				}
 				
 			} else {
-				if(targetOffset.left >= 0 && callout.width() > 50 && targetOffset.left <= (callout.width() / 2)) {
+				if(targetOffset.left >= 0 && callout.outerWidth() > 50 && targetOffset.left <= ((callout.outerWidth() - targetEl.outerWidth()) / 2)) {
 					## left edge case: show at left border
 					## add 15px for button size
 					## add 10px for a bit space at left side
 					callout.offset({
-						top: (targetOffset.top + targetEl.height() +  15) ,
-						left: '10px'
+						top: Math.round(targetOffset.top + targetEl.height() +  15) ,
+						left: '10'
 					});
-					var percent = (targetOffset.left + targetEl.width()/2 + 15 + 10/2) / callout.width() * 100; 
+					var percent = (targetOffset.left + targetEl.outerWidth()/2 + 15 + 10/2) / callout.outerWidth() * 100; 
 					callout.find('.arrow').css({'left' : percent + '%'});
-					
-				} else if(targetOffset.left >= 0 && callout.width() > 50 && ((targetOffset.left + (callout.width() / 2)) >= docWidth)) {
+				} else if(targetOffset.left >= 0 && callout.outerWidth() > 50 && callout.outerWidth() > targetEl.outerWidth() && (targetOffset.left + (callout.outerWidth() - targetEl.outerWidth() / 2)) >= docWidth) {
 					## right edge case: show at right border
 					## add 15px for button size
 					## add 10px for a bit space at right side
 					callout.offset({
-						top: (targetOffset.top + targetEl.height() + 15) ,
-						left: (docWidth - callout.width() - 10)
+						top: Math.round(targetOffset.top + targetEl.height() + 15) ,
+						left: Math.round(docWidth - callout.outerWidth() - 10)
 					});
-					var percent = (1 - ((docWidth - targetOffset.left - targetEl.width()/2 - 15 - 10/2 ) / callout.width() )) * 100; 
+					var percent = (1 - ((docWidth - targetOffset.left - targetEl.outerWidth()/2 - 15 - 10/2 ) / callout.outerWidth() )) * 100; 
 					callout.find('.arrow').css({'left' : percent + '%'});
 	
 				} else {
-					## standard case: show centered below element
+					## standard case: show centered below element. -1 to compensate for the center of the triangle, best visual effort
 					callout.offset({
-						top: (targetOffset.top + targetEl.height() + (arrow ? 25 : 15)),
-						left: (targetOffset.left + targetEl.width()) - callout.width()/2 
+						top: Math.round(targetOffset.top + targetEl.height() + (arrow ? 25 : 15)),
+						left: Math.round((targetOffset.left + (targetEl.outerWidth() / 2)) - callout.outerWidth()/2 -1)
 					});
 				}
 			}
