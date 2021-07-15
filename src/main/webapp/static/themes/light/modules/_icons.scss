@@ -570,6 +570,21 @@ $fa-css-prefix: "o_icon" !default;
 .o_forum_marked_icon:before { content: $fa-var-bookmark; }
 .o_forum_new_icon:before { content: $fa-var-asterisk; }
 
+/* drawing tool */
+.o_icon_draw_align-bottom:before { content: '\E805'; font-family: openolat; }
+.o_icon_draw_align-left:before { content: '\E806'; font-family: openolat; }
+.o_icon_draw_align-right:before { content: '\E807'; font-family: openolat; }
+.o_icon_draw_align-top:before { content: '\E808'; font-family: openolat; }
+.o_icon_draw_distribute-h:before { content: '\E809'; font-family: openolat; }
+.o_icon_draw_distribute-v:before { content: '\E80a'; font-family: openolat; }
+.o_icon_draw_equal-size:before { content: '\E80b'; font-family: openolat; }
+.o_icon_draw_equal-size-width:before { content: '\e80c'; font-family: openolat; }
+.o_icon_draw_equal-size-height:before { content: '\e80d'; font-family: openolat; } 
+.o_icon_draw_front:before { content: '\E900'; font-family: openolat; }
+.o_icon_draw_back:before { content: '\E901'; font-family: openolat; }
+.o_icon_draw_ellipse:before { content: $fa-var-circle; }
+
+
 /* tests icons */
 .o_mi_qpool_import:before { content: $fa-var-database; }
 .o_mi_qtidrawing:before { content: $fa-var-paint-brush; }

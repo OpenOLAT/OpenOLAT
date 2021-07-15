@@ -16,13 +16,17 @@
 	<div class="btn-toolbar clearfix o_block" role="toolbar">
 		<div class="o_group_tools btn-group">
 			<a href="javascript:;" class="btn btn-default" data-tool="select" title='$r.translate("paint.select")'><i class="o_icon o_icon_pointer"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="front"  title='$r.translate("paint.move.front")'><i class="o_icon o_icon_move_up"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="back" title='$r.translate("paint.move.back")'><i class="o_icon o_icon_move_down"> </i></a>
+			<a href="javascript:;" class="btn btn-default" data-tool="front"  title='$r.translate("paint.move.front")'><i class="o_icon o_icon_draw_front"> </i></a>
+			<a href="javascript:;" class="btn btn-default" data-tool="back" title='$r.translate("paint.move.back")'><i class="o_icon o_icon_draw_back"> </i></a>
 		</div>
+		<div class="btn-group">
+			<a href="javascript:;" id="clear" class="clear btn btn-default" title='$r.translate("paint.delete")'><i class="o_icon o_icon_clear_all"> </i></a>
+			<a href="javascript:;" id="clearall" class="clearall btn btn-default" title='$r.translate("paint.clear.all")'><i class="o_icon o_icon_delete_item"> </i> $r.translate("paint.clear.all")</a>
+		</div> 
 		<div class="o_group_tools btn-group">
 			<a href="javascript:;" class="btn btn-default" data-tool="circle" title='$r.translate("paint.circle")'><i class="o_icon o_icon_circle"> </i></a>
+			<a href="javascript:;" class="btn btn-default" data-tool="ellipse" title='$r.translate("paint.ellipse")'><i class="o_icon o_icon_draw_ellipse"> </i></a>
 			<a href="javascript:;" class="btn btn-default" data-tool="rectangle" title='$r.translate("paint.rectangle")'><i class="o_icon o_icon_rectangle"> </i></a>
-			<a href="javascript:;" class="btn btn-default" data-tool="ellipse" title='$r.translate("paint.ellipse")'>$r.translate("paint.ellipse")</a>
 			<a href="javascript:;" class="btn btn-default" data-tool="text" title='$r.translate("paint.text")'><i class="o_icon o_icon_text"> </i></a>
 		</div>
 		<div class="o_group_tools btn-group">
@@ -39,10 +43,6 @@
 			<a href="javascript:;" class="green btn btn-default" data-color="rgba(0,128,0,1.0)" id='#008000'><i class="o_icon o_icon_circle_color"> </i></a>
 			<a href="javascript:;" class="purple btn btn-default" data-color="rgba(128,0,128,1.0)"><i class="o_icon o_icon_circle_color"> </i></a> 
 		</div>
-		<div class="btn-group">
-			<a href="javascript:;" id="clear" class="clear btn btn-default" title='$r.translate("paint.delete")'><i class="o_icon o_icon_clear_all"> </i></a>
-			<a href="javascript:;" id="clearall" class="clearall btn btn-default" title='$r.translate("paint.clear.all")'><i class="o_icon o_icon_delete_item"> </i> $r.translate("paint.clear.all")</a>
-		</div> 
 	</div>
 	<div class="btn-toolbar clearfix">
 		<div class="btn-group">
