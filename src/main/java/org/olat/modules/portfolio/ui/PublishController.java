@@ -91,6 +91,7 @@ public class PublishController extends BasicController implements TooledControll
 	private Link addInvitationLink;
 	private Link addAccessRightsLink;
 	private Link addCoachAccessRightsLink;
+	private Link addOwnerAccessRightsLink;
 	private Link addParticipantAccessRightsLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -149,6 +150,11 @@ public class PublishController extends BasicController implements TooledControll
 			accessDropdown.setOrientation(DropdownOrientation.right);
 			
 			if(entry != null) {
+				addOwnerAccessRightsLink= LinkFactory.createToolLink("add.course.owner", translate("add.course.owner"), this);
+				addOwnerAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user_vip");
+				addOwnerAccessRightsLink.setElementCssClass("o_sel_pf_access_course_owner");
+				accessDropdown.addComponent(addOwnerAccessRightsLink);
+				
 				addCoachAccessRightsLink = LinkFactory.createToolLink("add.course.coach", translate("add.course.coach"), this);
 				addCoachAccessRightsLink.setIconLeftCSS("o_icon o_icon-fw o_icon-lg o_icon_user_vip");
 				addCoachAccessRightsLink.setElementCssClass("o_sel_pf_access_course_coach");
@@ -272,10 +278,12 @@ public class PublishController extends BasicController implements TooledControll
 			doAddAccessRights(ureq);
 		} else if(addInvitationLink == source) {
 			doAddInvitationEmail(ureq);
-		} else if(addCoachAccessRightsLink == source) {
-			doAddCoachAccessRights(ureq);
+		} else if(addOwnerAccessRightsLink == source) {
+			doAddAccessRights(ureq, GroupRoles.owner, "add.course.owner");
+		}  else if(addCoachAccessRightsLink == source) {
+			doAddAccessRights(ureq, GroupRoles.coach, "add.course.coach");
 		} else if(addParticipantAccessRightsLink == source) {
-			doAddParticipantAccessRights(ureq);
+			doAddAccessRights(ureq, GroupRoles.participant, "add.course.participant");
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -415,10 +423,10 @@ public class PublishController extends BasicController implements TooledControll
 		cmc.activate();
 	}
 	
-	private void doAddCoachAccessRights(UserRequest ureq) {
+	private void doAddAccessRights(UserRequest ureq, GroupRoles role, String titleKey) {
 		removeAsListenerAndDispose(addMembersWizard);
 
-		Step start = new AddMember_1_CourseMemberChoiceStep(ureq, binder, entry, GroupRoles.coach);
+		Step start = new AddMember_1_CourseMemberChoiceStep(ureq, binder, entry, role);
 		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
 			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
 			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
@@ -427,24 +435,7 @@ public class PublishController extends BasicController implements TooledControll
 		};
 		
 		addMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("add.course.coach"), "o_sel_course_member_import_1_wizard");
-		listenTo(addMembersWizard);
-		getWindowControl().pushAsModalDialog(addMembersWizard.getInitialComponent());
-	}
-	
-	private void doAddParticipantAccessRights(UserRequest ureq) {
-		removeAsListenerAndDispose(addMembersWizard);
-
-		Step start = new AddMember_1_CourseMemberChoiceStep(ureq, binder, entry, GroupRoles.participant);
-		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
-			AccessRightsContext rightsContext = (AccessRightsContext)runContext.get("rightsContext");
-			MailTemplate mailTemplate = (MailTemplate)runContext.get("mailTemplate");
-			addMembers(rightsContext, mailTemplate);
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		
-		addMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("add.course.participant"), "o_sel_course_member_import_1_wizard");
+				translate(titleKey), "o_sel_course_member_import_1_wizard");
 		listenTo(addMembersWizard);
 		getWindowControl().pushAsModalDialog(addMembersWizard.getInitialComponent());
 	}
