@@ -28,9 +28,11 @@
 			isDrawingMode: false,
 			preserveObjectStacking: true
 		});
-		fabric.Object.prototype.selectable = false;
 		fabric.Object.prototype.erasable = true;
-		
+		fabric.Object.prototype.transparentCorners = false;
+		fabric.Object.prototype.cornerColor = '#2980b9';
+		fabric.Object.prototype.borderColor = '#2980b9';
+
 		var brushCanvas = document.querySelector('#' + wrapperId + ' canvas.brush_size');
 		var brushContext = brushCanvas.getContext('2d');
 		
@@ -41,7 +43,6 @@
 		initBrushSettings();
 		initColors();
 		initClear();
-		drawBrush();
 		
 		{ // starts with a blue brush
 			selectTool(jQuery("#" + wrapperId + " div.o_group_tools a[data-tool=brush]")[0]);
@@ -50,6 +51,8 @@
 			canvas.freeDrawingBrush.width = getBrushWidth();
 			canvas.freeDrawingBrush.color = getBrushColor();
 		}
+		
+		drawBrush();
 		
 		var selectionChanged = function(e) {
 			var obj = e.target;
@@ -98,33 +101,15 @@
 			canvas.loadFromJSON(json, function() {
 				canvas.renderAll(); 
 			}, function(o, object) {
-				if("circle" === object.type || "rect" === object.type || "ellipse" === object.type || "textbox" === object.type) {
-					object.set({ selectable: true });
-				}
-				if("circle" === object.type) {
+				if(object.isType("circle")) {
 					object.setControlsVisibility({ ml: false, mb: false, mr: false, mt: false, mtr: false });
 				}
 			});
-			sendFreeDrawingsToBack();
-		}
-		
-		function sendFreeDrawingsToBack() {
-			var objects = canvas.getObjects();
-			for(var i=objects.length; i-->0; ) {
-				var type = objects[i].type;
-				if(type === "path" || type === "line") {
-					canvas.sendToBack(objects[i]);
-				} else {
-					canvas.bringToFront(objects[i]);
-				}
-			}
-			canvas.renderAll();
 		}
 		
 		// select, stack up / down
 		function initSelectTools() {
 			jQuery("#" + wrapperId + " div.o_group_tools a[data-tool=select]").on('click', function() {
-				sendFreeDrawingsToBack();
 				selectTool(this);
 				canvas.isDrawingMode = false;
 				save();
@@ -168,8 +153,7 @@
 					originX: 'left',
 					hasRotatingPoint: false,
 					centerTransform: true,
-					strokeUniform: true,
-					selectable: true
+					strokeUniform: true
 			    });
 				canvas.add(textbox);
 				textbox.bringToFront();
@@ -190,8 +174,7 @@
 					strokeWidth: width, stroke: color,
 					hasRotatingPoint: false,
 					centerTransform: true,
-					strokeUniform: true,
-					selectable: true
+					strokeUniform: true
 			    });
 				circle.setControlsVisibility({ ml: false, mb: false, mr: false, mt: false, mtr: false });
 				canvas.add(circle);
@@ -215,8 +198,7 @@
 					originX: 'left',
 					hasRotatingPoint: false,
 					centerTransform: true,
-					strokeUniform: true,
-					selectable: true
+					strokeUniform: true
 			    });
 				canvas.add(rect);
 				rect.bringToFront();
@@ -236,8 +218,7 @@
 					strokeWidth: width, stroke: color,
 					hasRotatingPoint: false,
 					centerTransform: true,
-					strokeUniform: true,
-					selectable: true
+					strokeUniform: true
 			    });
 				canvas.add(ellipse);
 				ellipse.bringToFront();
@@ -404,8 +385,7 @@
 		function initClear() {
 			jQuery('#' + wrapperId + ' a.clear').on('click', function() {
 				var obj = canvas.getActiveObject();
-				if(obj != null || ("circle" === obj.type || "rect" === obj.type
-						|| "ellipse" === obj.type || "textbox" === obj.type)) {
+				if(obj != null) {
 					canvas.remove(obj);
 					canvas.renderAll();
 				}
@@ -534,6 +514,11 @@
 			brushContext.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
 			brushContext.fillStyle = color;
 			brushContext.fill();
+			if(color.startsWith("rgba(255,255,255,") || color.startsWith("#ff0000")) {
+				brushContext.strokeStyle = "#000000";
+				brushContext.lineWidth = "1";
+				brushContext.stroke();
+			}
 		}
 	}
 }(jQuery));
