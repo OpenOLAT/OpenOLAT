@@ -140,7 +140,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new AppointmentsPeekViewController(ureq, wControl, userCourseEnv, this);
 	}
 

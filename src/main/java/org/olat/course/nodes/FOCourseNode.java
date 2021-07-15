@@ -360,7 +360,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			// Create a forum peekview controller that shows the latest two messages
 			Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
@@ -368,7 +368,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 			return new FOPeekviewController(ureq, wControl, courseEntry, theForum, getIdent(), 3);
 		}
 		// use standard peekview
-		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 	}
 
 	/**

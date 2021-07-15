@@ -25,8 +25,10 @@ import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -62,6 +64,14 @@ public interface CourseStyleService {
 	public VFSLeaf getImage(ICourse course, CourseNode courseNode);
 
 	public void deleteImage(ICourse course, CourseNode courseNode);
+	
+	/**
+	 *
+	 * @param courseEnv
+	 * @param courseNode
+	 * @return the effective image of the course node
+	 */
+	public VFSMediaMapper getTeaserImageMapper(CourseEnvironment courseEnv, CourseNode courseNode);
 
 	public ColorCategory createColorCategory(String identifier);
 
@@ -79,7 +89,7 @@ public interface CourseStyleService {
 
 	public void deleteColorCategory(ColorCategory colorCategory);
 	
-	public ColorCategoryResolver getColorCategoryResolver(ColorCategorySearchParams preloadParams);
+	public ColorCategoryResolver getColorCategoryResolver(ColorCategorySearchParams preloadParams, String courseColorCategoryIdentifier);
 
 	public Header getHeader(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String iconCssClass);
 

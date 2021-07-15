@@ -116,6 +116,33 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	}
 
 	@Override
+	public VFSMediaMapper getTeaserImageMapper(CourseEnvironment courseEnv, CourseNode courseNode) {
+		ImageSource teaserImageSource = courseNode.getTeaserImageSource() != null
+				? courseNode.getTeaserImageSource()
+				: courseEnv.getCourseConfig().getTeaserImageSource();
+		if (teaserImageSource == null) return null;
+		
+		VFSMediaMapper mapper = null;
+		if (ImageSourceType.course == teaserImageSource.getType()) {
+			VFSLeaf vfsLeaf = courseImageStorage.load(courseEnv.getCourseBaseContainer());
+			if (vfsLeaf != null) {
+				mapper = new VFSMediaMapper(vfsLeaf);
+			}
+		} else if (ImageSourceType.courseNode == teaserImageSource.getType()) {
+			VFSLeaf vfsLeaf = courseImageStorage.load(courseEnv.getCourseBaseContainer(), courseNode);
+			if (vfsLeaf != null) {
+				mapper = new VFSMediaMapper(vfsLeaf);
+			}
+		} else if (ImageSourceType.system == teaserImageSource.getType()) {
+			File file = systemImageStorage.load(teaserImageSource.getFilename());
+			if (file != null) {
+				mapper = new VFSMediaMapper(file);
+			}
+		}
+		return mapper;
+	}
+
+	@Override
 	public ColorCategory createColorCategory(String identifier) {
 		ColorCategory colorCategory = colorCategoryDao.loadByIdentifier(identifier);
 		return colorCategory != null? colorCategory: colorCategoryDao.create(identifier);
@@ -205,8 +232,8 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 			builder.withTeaserImage(teaserImageMapper, teaserImageStyle);
 		}
 		
-		ColorCategoryResolver colorCategoryResolver = getColorCategoryResolver(null);
-		builder.withColorCategoryCss(colorCategoryResolver.getColorCategoryCss(courseNode, courseConfig.getColorCategoryIdentifier()));
+		ColorCategoryResolver colorCategoryResolver = getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());
+		builder.withColorCategoryCss(colorCategoryResolver.getColorCategoryCss(courseNode));
 		builder.withIconCss(iconCssClass);
 		
 		return builder.build();
@@ -220,35 +247,9 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 		}
 	}
 
-	private Mapper getTeaserImageMapper(CourseEnvironment courseEnv, CourseNode courseNode) {
-		ImageSource teaserImageSource = courseNode.getTeaserImageSource() != null
-				? courseNode.getTeaserImageSource()
-				: courseEnv.getCourseConfig().getTeaserImageSource();
-		if (teaserImageSource == null) return null;
-		
-		Mapper mapper = null;
-		if (ImageSourceType.course == teaserImageSource.getType()) {
-			VFSLeaf vfsLeaf = courseImageStorage.load(courseEnv.getCourseBaseContainer());
-			if (vfsLeaf != null) {
-				mapper = new VFSMediaMapper(vfsLeaf);
-			}
-		} else if (ImageSourceType.courseNode == teaserImageSource.getType()) {
-			VFSLeaf vfsLeaf = courseImageStorage.load(courseEnv.getCourseBaseContainer(), courseNode);
-			if (vfsLeaf != null) {
-				mapper = new VFSMediaMapper(vfsLeaf);
-			}
-		} else if (ImageSourceType.system == teaserImageSource.getType()) {
-			File file = systemImageStorage.load(teaserImageSource.getFilename());
-			if (file != null) {
-				mapper = new VFSMediaMapper(file);
-			}
-		}
-		return mapper;
-	}
-
 	@Override
-	public ColorCategoryResolver getColorCategoryResolver(ColorCategorySearchParams preloadParams) {
-		return new CachingColorCategoryResolver(colorCategoryDao, preloadParams);
+	public ColorCategoryResolver getColorCategoryResolver(ColorCategorySearchParams preloadParams, String courseColorCategoryIdentifier) {
+		return new CachingColorCategoryResolver(colorCategoryDao, preloadParams, courseColorCategoryIdentifier);
 	}
 
 }

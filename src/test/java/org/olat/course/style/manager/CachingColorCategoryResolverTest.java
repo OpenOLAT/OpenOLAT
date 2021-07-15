@@ -88,8 +88,8 @@ public class CachingColorCategoryResolverTest {
 		CourseNode courseNode = new STCourseNode();
 		courseNode.setColorCategoryIdentifier(identifier1);
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		String colorCategoryCss = sut.getColorCategoryCss(courseNode, identifierCourse);
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode);
 		
 		assertThat(colorCategoryCss).isEqualTo(css1);
 	}
@@ -102,8 +102,8 @@ public class CachingColorCategoryResolverTest {
 		courseNode2.setParent(courseNode1);
 		courseNode2.setColorCategoryIdentifier(random()); // ColorCategory does not exists => inherit
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		String colorCategoryCss = sut.getColorCategoryCss(courseNode2, identifierCourse);
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode2);
 		
 		assertThat(colorCategoryCss).isEqualTo(css1);
 	}
@@ -116,8 +116,8 @@ public class CachingColorCategoryResolverTest {
 		courseNode2.setParent(courseNode1);
 		courseNode2.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		String colorCategoryCss = sut.getColorCategoryCss(courseNode2, identifierCourse);
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode2);
 		
 		assertThat(colorCategoryCss).isEqualTo(css1);
 	}
@@ -127,8 +127,8 @@ public class CachingColorCategoryResolverTest {
 		CourseNode courseNode = new STCourseNode();
 		courseNode.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		String colorCategoryCss = sut.getColorCategoryCss(courseNode, identifierCourse);
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode);
 		
 		assertThat(colorCategoryCss).isEqualTo(cssCourse);
 	}
@@ -138,8 +138,8 @@ public class CachingColorCategoryResolverTest {
 		CourseNode courseNode = new STCourseNode();
 		courseNode.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		String colorCategoryCss = sut.getColorCategoryCss(courseNode, random());
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, random());
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode);
 		
 		assertThat(colorCategoryCss).isEqualTo(cssNoColor);
 	}
@@ -149,8 +149,8 @@ public class CachingColorCategoryResolverTest {
 		CourseNode courseNode = new STCourseNode();
 		courseNode.setColorCategoryIdentifier(identifierDisabled);
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		String colorCategoryCss = sut.getColorCategoryCss(courseNode, identifierCourse);
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode);
 		
 		assertThat(colorCategoryCss).isEqualTo(cssNoColor);
 	}
@@ -160,8 +160,8 @@ public class CachingColorCategoryResolverTest {
 		CourseNode courseNode = new STCourseNode();
 		courseNode.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		String colorCategoryCss = sut.getColorCategoryCss(courseNode, identifierDisabled);
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierDisabled);
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode);
 		
 		assertThat(colorCategoryCss).isEqualTo(cssNoColor);
 	}
@@ -177,8 +177,8 @@ public class CachingColorCategoryResolverTest {
 		courseNode3.setParent(courseNode2);
 		courseNode3.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		ColorCategory inheritedColorCategory = sut.getInheritedColorCategory(courseNode3, identifierCourse);
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		ColorCategory inheritedColorCategory = sut.getInheritedColorCategory(courseNode3);
 		
 		assertThat(inheritedColorCategory.getCssClass()).isEqualTo(css1);
 	}
@@ -194,8 +194,8 @@ public class CachingColorCategoryResolverTest {
 		courseNode3.setParent(courseNode2);
 		courseNode3.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
 		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao);
-		ColorCategory inheritedColorCategory = sut.getInheritedColorCategory(courseNode3, identifierCourse);
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		ColorCategory inheritedColorCategory = sut.getInheritedColorCategory(courseNode3);
 		
 		assertThat(inheritedColorCategory.getCssClass()).isEqualTo(cssCourse);
 	}

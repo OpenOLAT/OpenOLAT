@@ -114,7 +114,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
 		CourseCalendars calendars = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, userCourseEnv,
 				secCallback);

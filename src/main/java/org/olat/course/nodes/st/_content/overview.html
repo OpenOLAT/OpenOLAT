@@ -1,0 +1,43 @@
+<div class="o_cn_styled o_cn_peekview o_colcat_top #if($item.colorCategoryCss) $item.colorCategoryCss #end #if($r.isNotEmpty($teaserImageUrl)) o_$item.getTeaserImageStyle() #end" data-nodeid="$item.nodeIdent">
+	<div class="o_top #if($cover) o_colcat_bg #end #if($item.colorCategoryCss) $item.colorCategoryCss #end" #if($cover) style="background-image:url($teaserImageUrl) #end">
+		<div class="o_text">
+			<div class="o_text_block">
+				<div class="o_title">
+					<h4>$r.render("nodeLink")</h4>
+				</div>
+				<div></div>
+			</div>
+			#if($r.isNotEmpty($item.subTitle))
+				<div class="o_text_block">
+					<div>
+						<div><h5>$r.escapeHtml($item.subTitle)</h5></div>
+					</div>
+					<div></div>
+				</div>
+			#end
+			#if($r.isNotEmpty($item.description))
+				<div class="o_text_block">
+					<div>
+						<div>$r.formatLatexFormulas($item.description)</div>
+					</div>
+					<div></div>
+				</div>
+			#end
+			#if($r.isNotEmpty($item.noAccessMessage))
+				<div class="o_text_block o_no_access">
+					<div>
+						<h5>$r.translate("info.header")</h5>
+						<div>$item.noAccessMessage</div>
+					</div>
+					<div></div>
+				</div>
+			#end
+		</div>
+		#if($r.isNotEmpty($teaserImageUrl) && !$cover)
+			<div class="o_image o_colcat_bg $item.colorCategoryCss" style="background-image:#if($gradient)linear-gradient(to right, rgba(255, 255, 255), rgba(255, 255, 255, 0) 10% ),#end url($teaserImageUrl);"></div>
+		#end
+	</div>
+	#if ($r.available("peekView"))
+		<div class="o_peekview">$r.render("peekView")</div>
+	#end
+</div>

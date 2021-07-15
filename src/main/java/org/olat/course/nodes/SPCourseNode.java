@@ -99,7 +99,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class,
 					userCourseEnv.getCourseEnvironment().getCourseResourceableId());
@@ -107,7 +107,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 			return new SPPeekviewController(ureq, wControl, userCourseEnv, config, ores);
 		} else {
 			// use standard peekview
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 		}
 	}
 

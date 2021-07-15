@@ -228,12 +228,14 @@ public interface CourseNode extends INode, ShortName {
 	 * newest files.
 	 * 
 	 * @param ureq
-	 * @param wContro
 	 * @param userCourseEnv
 	 * @param nodeSecCallback
+	 * @param small TODO
+	 * @param wContro
+	 * @param smallPeekview Hint is the peekview should be small (in two columns)
 	 * @return 
 	 */
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback);
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small);
 	
 	/**
 	 * Return a construct with all the informations needed to build the statistics of

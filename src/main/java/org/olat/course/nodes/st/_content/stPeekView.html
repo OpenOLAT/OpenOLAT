@@ -1,16 +1,37 @@
-#if($childNodes && $childNodes.size() > 0)
+#if($r.isNotEmpty($items))
 <div class="o_st_peekview">
-	<ul class="list-unstyled">
-	#foreach ($coursenode in $childNodes)
-		<li>$r.render("nodeLink_${coursenode.getIdent()}")
-		#if ($coursenode.getLongTitle() &&  $coursenode.getLongTitle() != "")
-			<div class="o_displaytitle">	
-				$r.escapeHtml("$coursenode.getLongTitle()")
+	#set ($i = 0)
+	<div class="row #if ($large) o_two_columns #end">
+		#foreach ($item in $items)
+			<div class="col-sm-12 #if ($large) col-md-6 #end">
+				<div class="o_cn_styled o_st_item o_colcat_left #if($item.colorCategoryCss) $item.colorCategoryCss #end">
+					<div class="o_text">
+						<div class="o_text_block">
+							<div class="o_title">
+								<h5>$r.render($item.nodeLinkName)</h5>
+							</div>
+							<div></div>
+						</div>
+						#if($r.isNotEmpty($item.description))
+							<div class="o_text_block">
+								<div>
+									<div>$r.formatLatexFormulas($item.description)</div>
+								</div>
+								<div></div>
+							</div>
+						#end
+					</div>
+				</div>
 			</div>
-		#end	
-		</li>	
-	#end
-	</ul>
+			#set ($i = $i + 1)
+			#if($i%2 == 0)
+				</div><div class="row #if ($large) o_two_columns #end">
+			#end
+		#end
+	</div>
 </div>
 #end
+
+
+
 

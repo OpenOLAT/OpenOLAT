@@ -147,7 +147,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			// Create a folder peekview controller that shows the latest two entries
 			VFSContainer rootFolder = null;
@@ -162,13 +162,13 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			}
 			
 			if(rootFolder == null) {
-				return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+				return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 			}
 			rootFolder.setDefaultItemFilter(new VFSSystemItemFilter());
 			return new BCPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 		} else {
 			// use standard peekview
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 		}
 	}
 

@@ -166,7 +166,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			RepositoryEntry entry = getReferencedRepositoryEntry();
 			FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, nodeSecCallback);
@@ -177,7 +177,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			return new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, getIdent(),
 					uiFactory, 2, peekviewWrapperCssClass);
 		}
-		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 	}
 	
 	private FeedSecurityCallback getFeedSecurityCallback(UserRequest ureq, RepositoryEntry entry,

@@ -254,7 +254,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		
@@ -277,7 +277,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		if (rootFolder.isEmpty()) {
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 		}
 		return new PFPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 	}

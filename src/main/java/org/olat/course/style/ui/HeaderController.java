@@ -47,7 +47,7 @@ public class HeaderController extends BasicController implements ExpandableContr
 		this.header = header;
 		mainVC = createVelocityContainer("header");
 		
-		mainVC.contextPut("header", header);
+		mainVC.contextPut("item", header);
 		
 		if (header.getTeaserImageMapper() != null) {
 			String teaserImageUrl = registerCacheableMapper(ureq, "teaserimage-" + CodeHelper.getRAMUniqueID(), header.getTeaserImageMapper());

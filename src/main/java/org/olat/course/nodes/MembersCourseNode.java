@@ -155,7 +155,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new MembersPeekViewController(ureq, wControl, userCourseEnv, getModuleConfiguration());
 	}
 	

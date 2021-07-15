@@ -17,50 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.vfs;
+package org.olat.course.nodes.st;
 
-import java.io.File;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.olat.core.dispatcher.mapper.Mapper;
-import org.olat.core.gui.media.MediaResource;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.OverviewFactory.CourseNodeFilter;
 
 /**
  * 
- * Initial date: 06.02.2018<br>
+ * Initial date: 13 Jul 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class VFSMediaMapper implements Mapper {
-	
-	private VFSLeaf vfsLeaf;
-	
-	public VFSMediaMapper() {
-	}
-
-	public VFSMediaMapper(VFSLeaf vfsLeaf) {
-		this.vfsLeaf = vfsLeaf;
-	}
-	
-	public VFSMediaMapper(File file) {
-		this.vfsLeaf = new LocalFileImpl(file);
-	}
-
-	public void setMediaFile(VFSLeaf vfsLeaf) {
-		this.vfsLeaf = vfsLeaf;
-	}
-
-	public VFSLeaf getVfsLeaf() {
-		return vfsLeaf;
-	}
-
-	public void setVfsLeaf(VFSLeaf vfsLeaf) {
-		this.vfsLeaf = vfsLeaf;
-	}
+public class StructureCourseNodeFilter implements CourseNodeFilter {
 
 	@Override
-	public MediaResource handle(String relPath, HttpServletRequest request) {
-		return new VFSMediaResource(vfsLeaf);
+	public boolean accept(CourseNode courseNode) {
+		return courseNode instanceof STCourseNode;
 	}
+
 }

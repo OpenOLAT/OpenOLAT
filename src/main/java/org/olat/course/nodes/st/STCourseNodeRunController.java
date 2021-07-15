@@ -53,9 +53,8 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodeaccess.NodeAccessService;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.OverviewFactory.CourseNodeFilter;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -113,81 +112,16 @@ public class STCourseNodeRunController extends BasicController {
 		// configure number of display rows
 		int rows = config.getIntegerSafe(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 1);
 		myContent.contextPut("layoutType", rows);
-		// the display type: toc or peekview
-		String displayType = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW);
 
-		// Build list of child nodes and peek views if necessary
-		List<CourseNode> children = new ArrayList<>();
-
-		// Build up a overview of all visible children (direct children only, no
-		// grandchildren)
-		String peekviewChildNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, null);
-		List<String> peekviewChildNodes =  (peekviewChildNodesConfig == null ? new ArrayList<>() : Arrays.asList(peekviewChildNodesConfig.split(",")));
+		// Build up a overview of all visible children (direct children only, no grandchildren)
 		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
 				.build()
 				.getNodeById(stCourseNode.getIdent());
-		int chdCnt = courseTreeNode == null ? 0 : courseTreeNode.getChildCount();
-		for (int i = 0; i < chdCnt; i++) {
-			INode childNode = courseTreeNode.getChildAt(i);
-			if (childNode instanceof CourseTreeNode) {
-				CourseTreeNode childCourseTreeNode = (CourseTreeNode)childNode;
-				if (childCourseTreeNode.isVisible()) {
-					// Build and add child generic or specific peek view
-					CourseNode child = childCourseTreeNode.getCourseNode();
-					if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES) && !(child instanceof STCourseNode)) {
-						continue;
-					}
-					Controller childViewController = null;
-					Controller childPeekViewController = null;
-					boolean accessible = childCourseTreeNode.isAccessible();
-					if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
-						if (peekviewChildNodes.isEmpty()) {
-							// Special case: no child nodes configured. This is the case when
-							// the node has been configured before it had any children. We just
-							// use the first children as they appear in the list
-							if (i < STCourseNodeConfiguration.MAX_PEEKVIEW_CHILD_NODES) {
-								if(accessible) {
-									CourseNode parent = child.getParent() instanceof CourseNode? (CourseNode)child.getParent(): null;
-									child.updateModuleConfigDefaults(false, parent);
-									childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, childCourseTreeNode);
-								}
-							} else {
-								// Stop, we already reached the max count
-								break;
-							}
-						} else {
-							// Only add configured children
-							if (peekviewChildNodes.contains(child.getIdent())) {
-								if(accessible) {
-									CourseNode parent = child.getParent() instanceof CourseNode? (CourseNode)child.getParent(): null;
-									child.updateModuleConfigDefaults(false, parent);
-									childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, childCourseTreeNode);
-								}
-							} else {
-								// Skip this child - not configured
-								continue;
-							}
-						}
-					} else if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES)) {
-						if(accessible) {
-							CourseNode parent = child.getParent() instanceof CourseNode? (CourseNode)child.getParent(): null;
-							child.updateModuleConfigDefaults(false, parent);
-							childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, childCourseTreeNode);
-						}
-					}
-					// Add child to list
-					children.add(child);
-					childViewController = new PeekViewWrapperController(ureq, wControl, child, childPeekViewController, accessible);
-					listenTo(childViewController); // auto-dispose controller
-					myContent.put("childView_".concat(child.getIdent()), childViewController.getInitialComponent());
-				}
-			}
-		}
-
-		myContent.contextPut("children", children);
-		myContent.contextPut("nodeFactory", CourseNodeFactory.getInstance());
 		
-		// push title and learning objectives, only visible on intro page
+		if (courseTreeNode != null) {
+			createChildViews(ureq, userCourseEnv, config, courseTreeNode, rows > 1);
+		}
+		
 		myContent.contextPut("menuTitle", stCourseNode.getShortTitle());
 		myContent.contextPut("displayTitle", stCourseNode.getLongTitle());
 		if(ureq.getUserSession().getRoles().isGuestOnly() || !userCourseEnv.isParticipant()) {
@@ -223,6 +157,53 @@ public class STCourseNodeRunController extends BasicController {
 		putInitialPanel(myContent);
 	}
 
+	private void createChildViews(UserRequest ureq, UserCourseEnvironment userCourseEnv, ModuleConfiguration config,
+			CourseTreeNode courseTreeNode, boolean smallPeekview) {
+		List<String> childViewNames = new ArrayList<>();
+		
+		String displayType = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW);
+		CourseNodeFilter filter = null;
+		if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES)) {
+			filter = new StructureCourseNodeFilter();
+		} else if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
+			String childNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, "");
+			List<String> childNodes = Arrays.asList(childNodesConfig.split(","));
+			// Special case: no child nodes configured. This is the case when
+			// the node has been configured before it had any children. We just
+			// use the first children as they appear in the list.
+			filter = childNodes.isEmpty()
+					? new LimitCourseNodeFilter(STCourseNodeConfiguration.MAX_PEEKVIEW_CHILD_NODES)
+					: new IdentCourseNodeFilter(childNodes);
+		}
+		
+		boolean showPeekView = displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)
+				|| displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES);
+		OverviewFactory overviewFactory = new OverviewFactory(userCourseEnv, filter, showPeekView, smallPeekview);
+		
+		for (int i = 0; i < courseTreeNode.getChildCount(); i++) {
+			INode childNode = courseTreeNode.getChildAt(i);
+			createChildView(ureq, childViewNames, overviewFactory, childNode);
+		}
+		
+		myContent.contextPut("childViewNames", childViewNames);
+	}
+
+	private void createChildView(UserRequest ureq, List<String> childViewNames, OverviewFactory overviewFactory,
+			INode courseNode) {
+		if (courseNode instanceof CourseTreeNode) {
+			CourseTreeNode childCourseTreeNode = (CourseTreeNode)courseNode;
+			if (childCourseTreeNode.isVisible()) {
+				Controller childViewController = overviewFactory.create(ureq, getWindowControl(), childCourseTreeNode);
+				if (childViewController != null) {
+					listenTo(childViewController);
+					String childViewName = "childView_".concat(childCourseTreeNode.getIdent());
+					myContent.put(childViewName, childViewController.getInitialComponent());
+					childViewNames.add(childViewName);
+				}
+			}
+		}
+	}
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(certificationLink == source) {
@@ -256,7 +237,7 @@ public class STCourseNodeRunController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-	// nothing to do yet
+		//
 	}
 
 }

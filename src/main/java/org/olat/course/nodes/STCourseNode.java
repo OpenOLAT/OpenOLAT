@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -65,6 +66,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.sp.SPPeekviewController;
 import org.olat.course.nodes.st.STCourseNodeEditController;
@@ -77,7 +79,9 @@ import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.tools.CourseToolLinkTreeModel;
+import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
+import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
@@ -258,21 +262,24 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			ModuleConfiguration config = getModuleConfiguration();
 			if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))) {
 				// use single page preview if a file is configured
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 				return new SPPeekviewController(ureq, wControl, userCourseEnv, config, ores);				
-			} else {
-				// a peekview controller that displays the listing of the next ST level
-				return new STPeekViewController(ureq, wControl, this, userCourseEnv);
 			}
-		} else {
-			// use standard peekview without content
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+			CourseTreeNode courseTreeNode = (CourseTreeNode)CoreSpringFactory.getImpl(NodeAccessService.class)
+					.getCourseTreeModelBuilder(userCourseEnv)
+					.withFilter(AccessibleFilter.create())
+					.build()
+					.getNodeById(this.getIdent());
+			if (courseTreeNode != null && courseTreeNode.getChildCount() > 0) {
+				return new STPeekViewController(ureq, wControl, courseTreeNode, userCourseEnv.getCourseEnvironment().getCourseConfig(), !small);
+			}
 		}
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 	}
 
 	@Override

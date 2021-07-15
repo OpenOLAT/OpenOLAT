@@ -47,14 +47,14 @@
 	$r.render("highScore")
 #end
 
-#if ($children && $children.size() > 0)
+#if ($r.isNotEmpty($childViewNames))
 	#set ($i = 0)
-	<div class="o_toc #if ($layoutType == 1) o_one_column #else o_two_column #end">
+	<div class="o_toc">
 		<div class="row">
-			#foreach($coursenode in $children)
+			#foreach($childViewName in $childViewNames)
 				## display in two rows when screen is larger than 992px and two columns layout selected
-				<div class="col-sm-12 #if ($layoutType == 2) col-md-6 o_column #end">
-					$r.render("childView_${coursenode.getIdent()}")
+				<div class="o_row col-sm-12 #if ($layoutType == 2) col-md-6 #end">
+					$r.render($childViewName)
 				</div>
 				#set ($i = $i + 1)
 				#if($i%2 == 0)
@@ -72,40 +72,6 @@ jQuery(function() {
 	jQuery('.o_course_run .o_toc a.o_gotoNode').each(function(n,m) {
 		jQuery(m).on('keydown click', function(){o_scrollToElement('#o_top');});
 	});
-
-	## resize items to match height on each row, not possible via CSS 
-	#if ($layoutType == 2)
-	if (jQuery(window).width() > 992) {
-		jQuery(function() {
-		    var maxHeight = 0;
-			var lastElem = null;
-			## find hightest element for each pair
-			jQuery('.o_course_run .o_toc .o_entry').each(function(pos, child) {
-				try {
-					if (pos % 2 == 0) {
-						## save for next iteration
-						maxHeight = jQuery(child).innerHeight();
-						lastElem = child;
-					} else {
-				    	var height = jQuery(child).innerHeight();
-				    	if(height > maxHeight) {
-				    		## second is larger than first, update first
-				    		maxHeight = height; 
-					    	var el = jQuery(lastElem);
-					   		var padding = parseInt(el.css('padding-top')) + parseInt(el.css('padding-bottom'));
-					  		el.height((maxHeight - padding) + 'px');
-				    	} else {
-				    		## first is larger than second, update second
-					    	var el = jQuery(child);
-					   		var padding = parseInt(el.css('padding-top')) + parseInt(el.css('padding-bottom'));
-					  		el.height((maxHeight - padding) + 'px');			    		
-				    	}
-					}
-				} catch (e) { if(window.console) console.log(e) }
-			});
-		});
-	}
-	#end
 });
 /* ]]> */
 </script>

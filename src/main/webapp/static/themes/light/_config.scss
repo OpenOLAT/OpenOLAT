@@ -395,16 +395,23 @@ $o-course-node-warning			: $state-warning-text !default;
 $o-course-node-locked			: $state-info-text !default;
 $o-course-node-error			: $state-danger-text !default;
 $o-course-node-deleted			: $badge-bg !default;
-$o-cn-header-image-bg			: $brand-primary !default;
-$o-cn-header-cover-text-bg		: rgba(255, 255, 255, 0.6) !default;
-$o-cn-header-cat-dark-blue-color	: #000080 !default;
-$o-cn-header-cat-light-blue-color	: #4169E1 !default;
-$o-cn-header-cat-purple-color		: #800080 !default;
-$o-cn-header-cat-red-color			: #DC143C !default;
-$o-cn-header-cat-orange-color		: #FF8C00 !default;
-$o-cn-header-cat-yellow-color		: #FFD700 !default;
-$o-cn-header-cat-light-green-color	: #32CD32 !default;
-$o-cn-header-cat-dark-green-color	: #228B22 !default;
+$o-cn-style-border					: 1px solid #e7e7e7 !default;
+$o-cn-style-border-radius			: $panel-border-radius !default;
+$o-cn-style-border-width			: 5px !default;
+$o-cn-style-text-pading				: $panel-body-padding !default;
+$o-cn-style-image-bg				: $brand-primary !default;
+$o-cn-style-cover-text-bg			: rgba(255, 255, 255, 0.6) !default;
+$o-cn-style-cat-dark-blue-color		: #000080 !default;
+$o-cn-style-cat-light-blue-color	: #4169E1 !default;
+$o-cn-style-cat-purple-color		: #800080 !default;
+$o-cn-style-cat-red-color			: #DC143C !default;
+$o-cn-style-cat-orange-color		: #FF8C00 !default;
+$o-cn-style-cat-yellow-color		: #FFD700 !default;
+$o-cn-style-cat-light-green-color	: #32CD32 !default;
+$o-cn-style-cat-dark-green-color	: #228B22 !default;
+$o-cn-style-peekview-bg				: rgba(0,0,0,0.025) !default;
+$o-st-peekview-bg					: $body-bg !default;
+$o-st-peekview-text-padding			: 2px 15px !default;
 
 /* Learning path */
 $o-lp-not-accessible			: lighten($text-muted,10%) !default;
@@ -888,10 +895,6 @@ $o-panel-placeholder-border-active-color	: $brand-primary !default;
 $o-panel-placeholder-bg						: #fcfcfc !default;
 $o-panel-placeholder-bg-active				: #f7f7f7 !default;
 $o-panel-placeholder-padding				: 10px !default;
-
-/* Alert panels */
-$o-panel-alert-bg							: $body-bg !default;
-$o-panel-alert-border-width		 			: 5px !default;
 
 /* Citations */
 $o-cit-quote-font-size			: $font-size-large !default;

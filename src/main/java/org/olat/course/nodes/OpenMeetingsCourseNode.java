@@ -121,7 +121,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new OpenMeetingsPeekViewController(ureq, wControl);
 	}
 

@@ -165,7 +165,9 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 	
 	private void updateUI() {
 		String selectedKey = displayTypeRadios.getSelectedKey();
-		displayTwoColumns.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) || DISPLAY_SYSTEM.equals(selectedKey));
+		displayTwoColumns.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) 
+				|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES.equals(selectedKey) 
+				|| DISPLAY_SYSTEM.equals(selectedKey));
 		spacerCols.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) || DISPLAY_SYSTEM.equals(selectedKey));
 		if(selectedPeekviewChildren != null) {
 			selectedPeekviewChildren.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey));

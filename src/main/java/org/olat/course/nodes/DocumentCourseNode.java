@@ -156,13 +156,13 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			Long courseRepoKey = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey();
 			VFSContainer courseFolderCont = userCourseEnv.getCourseEnvironment().getCourseFolderContainer(CourseContainerOptions.withoutElements());
 			return new DocumentPeekviewController(ureq, wControl, this, courseRepoKey, courseFolderCont);
 		}
-		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 	}
 
 	@Override

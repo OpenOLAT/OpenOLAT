@@ -141,11 +141,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * Override this method with a specific implementation if you have
 	 * something interesting to show in the peekview
 	 * 
-	 * @see org.olat.course.nodes.CourseNode#createPeekViewRunController(UserRequest, WindowControl, UserCourseEnvironment, CourseNodeSecurityCallback)
+	 * @see org.olat.course.nodes.CourseNode#createPeekViewRunController(UserRequest, WindowControl, UserCourseEnvironment, CourseNodeSecurityCallback, boolean)
 	 */
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return null;
 	}
 	

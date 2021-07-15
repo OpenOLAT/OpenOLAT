@@ -123,7 +123,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new ViteroPeekViewController(ureq, wControl, userCourseEnv, getIdent());
 	}
 

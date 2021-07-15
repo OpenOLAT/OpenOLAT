@@ -128,7 +128,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		// Use normal view as peekview
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, false);
 		return controller;

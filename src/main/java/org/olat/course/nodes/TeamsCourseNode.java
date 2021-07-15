@@ -110,7 +110,7 @@ public class TeamsCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new TeamsPeekViewController(ureq, wControl, userCourseEnv.getCourseEnvironment(), this);
 	}
 

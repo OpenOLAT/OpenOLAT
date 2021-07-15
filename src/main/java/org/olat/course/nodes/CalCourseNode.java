@@ -199,7 +199,7 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseNodeCallback(this, userCourseEnv,
 				nodeSecCallback.getNodeEvaluation());
 		CourseCalendarPeekViewController peekViewCtrl = new CourseCalendarPeekViewController(ureq, wControl,

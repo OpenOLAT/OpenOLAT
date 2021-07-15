@@ -250,12 +250,12 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			InfoPeekViewController ctrl = new InfoPeekViewController(ureq, wControl, userCourseEnv, this);
 			return ctrl;
 		}
-		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 	}
 
 	@Override

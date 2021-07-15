@@ -41,14 +41,16 @@ import com.google.common.base.Functions;
 public class CachingColorCategoryResolver implements ColorCategoryResolver {
 	
 	private final ColorCategoryDAO colorCategoryDao;
+	private final String courseColorCategoryIdentifier;
 	private Map<String, ColorCategory> idenitiferToCategory;
 	
-	public CachingColorCategoryResolver(ColorCategoryDAO colorCategoryDao) {
-		this(colorCategoryDao, null);
+	public CachingColorCategoryResolver(ColorCategoryDAO colorCategoryDao, String courseColorCategoryIdentifier) {
+		this(colorCategoryDao, null, courseColorCategoryIdentifier);
 	}
 	
-	public CachingColorCategoryResolver(ColorCategoryDAO colorCategoryDao, ColorCategorySearchParams preloadParams) {
+	public CachingColorCategoryResolver(ColorCategoryDAO colorCategoryDao, ColorCategorySearchParams preloadParams, String courseColorCategoryIdentifier) {
 		this.colorCategoryDao = colorCategoryDao;
+		this.courseColorCategoryIdentifier = courseColorCategoryIdentifier;
 		if (preloadParams != null) {
 			idenitiferToCategory = colorCategoryDao.load(preloadParams).stream()
 					.collect(Collectors.toMap(ColorCategory::getIdentifier, Functions.identity()));
@@ -58,23 +60,23 @@ public class CachingColorCategoryResolver implements ColorCategoryResolver {
 	}
 	
 	@Override
-	public String getColorCategoryCss(INode iNode, String courseColorCategoryIdentifier) {
-		ColorCategory colorCategory = getColorCategory(iNode, courseColorCategoryIdentifier);
+	public String getColorCategoryCss(INode iNode) {
+		ColorCategory colorCategory = getNodeOrCourseColorCategory(iNode);
 		return colorCategory.isEnabled()
 				? colorCategory.getCssClass()
 				: getCachedOrLoad(ColorCategory.IDENTIFIER_NO_COLOR).getCssClass();
 	}
 
 	@Override
-	public ColorCategory getInheritedColorCategory(INode iNode, String courseColorCategoryIdentifier) {
+	public ColorCategory getInheritedColorCategory(INode iNode) {
 		INode parent = iNode.getParent();
 		if (parent != null) {
-			return getColorCategory(parent, courseColorCategoryIdentifier);
+			return getNodeOrCourseColorCategory(parent);
 		}
 		return getCachedOrLoad(ColorCategory.IDENTIFIER_NO_COLOR);
 	}
 	
-	private ColorCategory getColorCategory(INode iNode, String courseColorCategoryIdentifier) {
+	private ColorCategory getNodeOrCourseColorCategory(INode iNode) {
 		ColorCategory colorCategory = getColorCategory(iNode);
 		if (ColorCategory.IDENTIFIER_INHERITED.equals(colorCategory.getIdentifier())) {
 			colorCategory = getColorCategory(courseColorCategoryIdentifier, ColorCategory.IDENTIFIER_FALLBACK_COURSE);

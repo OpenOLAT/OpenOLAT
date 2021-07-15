@@ -104,7 +104,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new EdubasePeekViewController(ureq, wControl, getModuleConfiguration(), this.getIdent());
 	}
 

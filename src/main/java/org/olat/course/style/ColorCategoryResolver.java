@@ -33,19 +33,17 @@ public interface ColorCategoryResolver {
 	 * Returns the effective CSS class of the course node.
 	 * 
 	 * @param iNode CourseNode or CourseEditorTreeNode
-	 * @param courseColorCategoryIdentifier
 	 * @return
 	 */
-	String getColorCategoryCss(INode iNode, String courseColorCategoryIdentifier);
+	String getColorCategoryCss(INode iNode);
 	
 	/**
 	 * Returns the inherited ColorCategory of the course node.
 	 * The current ColorCategory of the course is ignored.
 	 * 
 	 * @param iNode CourseNode or CourseEditorTreeNode
-	 * @param courseColorCategoryIdentifier
 	 * @return
 	 */
-	ColorCategory getInheritedColorCategory(INode iNode, String courseColorCategoryIdentifier);
+	ColorCategory getInheritedColorCategory(INode iNode);
 	
 }

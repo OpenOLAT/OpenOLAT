@@ -180,7 +180,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new VideoPeekviewController(ureq, wControl,
 				getReferencedRepositoryEntry().getOlatResource(),
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(),

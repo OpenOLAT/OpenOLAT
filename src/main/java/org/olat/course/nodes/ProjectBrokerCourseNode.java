@@ -224,12 +224,12 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			return ProjectBrokerControllerFactory.createPeekViewRunController(ureq, wControl, userCourseEnv, this);
 		}
 		// use standard peekview
-		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback, small);
 	}
 
 	@Override

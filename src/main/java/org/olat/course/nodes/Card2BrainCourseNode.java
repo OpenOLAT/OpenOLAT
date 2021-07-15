@@ -111,7 +111,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new Card2BrainPeekViewController(ureq, wControl, 
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(), 
 				getIdent(),

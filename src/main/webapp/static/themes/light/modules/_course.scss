@@ -4,29 +4,37 @@
 	border: solid 1px $btn-default-border;
 }
 
-.o_colcat_dark_blue.o_colcat_bg { background-color: $o-cn-header-cat-dark-blue-color; }
-.o_colcat_dark_blue.o_cn_header > .panel { border-left-color: $o-cn-header-cat-dark-blue-color; }
+.o_colcat_dark_blue.o_colcat_bg { background-color: $o-cn-style-cat-dark-blue-color; }
+.o_colcat_dark_blue.o_colcat_left { border-left-color: $o-cn-style-cat-dark-blue-color; }
+.o_colcat_dark_blue.o_colcat_top { border-top-color: $o-cn-style-cat-dark-blue-color; }
 
-.o_colcat_light_blue.o_colcat_bg { background-color: $o-cn-header-cat-light-blue-color; }
-.o_colcat_light_blue.o_cn_header > .panel { border-left-color: $o-cn-header-cat-light-blue-color; }
+.o_colcat_light_blue.o_colcat_bg { background-color: $o-cn-style-cat-light-blue-color; }
+.o_colcat_light_blue.o_colcat_left { border-left-color: $o-cn-style-cat-light-blue-color; }
+.o_colcat_light_blue.o_colcat_top { border-top-color: $o-cn-style-cat-light-blue-color; }
 
-.o_colcat_purple.o_colcat_bg { background-color: $o-cn-header-cat-purple-color; }
-.o_colcat_purple.o_cn_header > .panel { border-left-color: $o-cn-header-cat-purple-color; }
+.o_colcat_purple.o_colcat_bg { background-color: $o-cn-style-cat-purple-color; }
+.o_colcat_purple.o_colcat_left { border-left-color: $o-cn-style-cat-purple-color; }
+.o_colcat_purple.o_colcat_top { border-top-color: $o-cn-style-cat-purple-color; }
 
-.o_colcat_red.o_colcat_bg { background-color: $o-cn-header-cat-red-color; }
-.o_colcat_red.o_cn_header > .panel { border-left-color: $o-cn-header-cat-red-color; }
+.o_colcat_red.o_colcat_bg { background-color: $o-cn-style-cat-red-color; }
+.o_colcat_red.o_colcat_left { border-left-color: $o-cn-style-cat-red-color; }
+.o_colcat_red.o_colcat_top { border-top-color: $o-cn-style-cat-red-color; }
 
-.o_colcat_orange.o_colcat_bg { background-color: $o-cn-header-cat-orange-color; }
-.o_colcat_orange.o_cn_header > .panel { border-left-color: $o-cn-header-cat-orange-color; }
+.o_colcat_orange.o_colcat_bg { background-color: $o-cn-style-cat-orange-color; }
+.o_colcat_orange.o_colcat_left { border-left-color: $o-cn-style-cat-orange-color; }
+.o_colcat_orange.o_colcat_top { border-top-color: $o-cn-style-cat-orange-color; }
 
-.o_colcat_yellow.o_cn_header > .panel { border-left-color: $o-cn-header-cat-yellow-color; }
-.o_colcat_yellow.o_colcat_bg { background-color: $o-cn-header-cat-yellow-color; }
+.o_colcat_yellow.o_colcat_bg { background-color: $o-cn-style-cat-yellow-color; }
+.o_colcat_yellow.o_colcat_left { border-left-color: $o-cn-style-cat-yellow-color; }
+.o_colcat_yellow.o_colcat_top { border-top-color: $o-cn-style-cat-yellow-color; }
 
-.o_colcat_light_green.o_colcat_bg { background-color: $o-cn-header-cat-light-green-color; }
-.o_colcat_light_green.o_cn_header > .panel { border-left-color: $o-cn-header-cat-light-green-color; }
+.o_colcat_light_green.o_colcat_bg { background-color: $o-cn-style-cat-light-green-color; }
+.o_colcat_light_green.o_colcat_left  { border-left-color: $o-cn-style-cat-light-green-color; }
+.o_colcat_light_green.o_colcat_top  { border-top-color: $o-cn-style-cat-light-green-color; }
 
-.o_colcat_dark_green.o_colcat_bg { background-color: $o-cn-header-cat-dark-green-color; }
-.o_colcat_dark_green.o_cn_header > .panel { border-left-color: $o-cn-header-cat-dark-green-color; }
+.o_colcat_dark_green.o_colcat_bg { background-color: $o-cn-style-cat-dark-green-color; }
+.o_colcat_dark_green.o_colcat_left { border-left-color: $o-cn-style-cat-dark-green-color; }
+.o_colcat_dark_green.o_colcat_top { border-top-color: $o-cn-style-cat-dark-green-color; }
 
 .o_colcal_ele {
 	a {
@@ -54,29 +62,39 @@
 }
 
 /* Header teaser image */
-.o_cn_header {
-	// Always (preview, peekview) like in #o_main_wrapper
-	h2:first-child {
-		margin-top: 0;
+.o_cn_styled {
+	border: $o-cn-style-border;
+	border-radius: $o-cn-style-border-radius;
+	
+	&.o_colcat_left {
+		border-left-width: $o-cn-style-border-width;
 	}
+	&.o_colcat_top {
+		border-top-width: $o-cn-style-border-width;
+	}
+	
+	.o_text {
+		padding: $o-cn-style-text-pading;
+	}
+
 	.o_image,
-	&.o_cover > .panel {
+	&.o_cover > .o_top {
 		background-repeat: no-repeat;
 		background-position: center;
 		background-size: cover;
 	}
 	.o_image.o_colcat_nocolor,
-	&.o_cover > .panel.o_colcat_nocolor {
-		background-color: $o-cn-header-image-bg;
+	&.o_cover > .o_top.o_colcat_nocolor {
+		background-color: $o-cn-style-image-bg;
 	}
 	&.o_cover {
 		/* The second empty div is to press the first div to left side.
-			Otherwise thise whe hole line has the background color.
+			Otherwise the hole line has the background color.
 		*/
 		.o_text_block {
 			display: flex;
 			div:nth-child(1) > * {
-				background-color: $o-cn-header-cover-text-bg;
+				background-color: $o-cn-style-cover-text-bg;
 			}
 			div::nth-child(2) {
 				width: 100%;
@@ -84,7 +102,7 @@
 		}
 	}
 	&.o_right, &.o_gradient {
-		.panel {
+		.o_top {
 			display: flex;
 			flex-wrap: nowrap;
 			
@@ -97,7 +115,7 @@
 		}
 	}
 	&.o_left {
-		.panel {
+		.o_top {
 			display: flex;
 			flex-wrap: nowrap;
 			flex-direction: row-reverse;
@@ -111,9 +129,59 @@
 		}
 	}
 	
-	.o_instructional_design {
-		background-color: rgba(122, 15, 124, 0.15);
-		padding: 1px 6px;
+	&.o_cn_header {
+		.o_text {
+			padding-bottom: 10px;
+		}
+	
+		// Always (settings, etc.) like in #o_main_wrapper
+		h2:first-child {
+			margin-top: 0;
+		}
+		.o_instructional_design {
+			background-color: rgba(122, 15, 124, 0.15);
+			padding: 1px 6px;
+		}
+	}
+	
+	&.o_cn_peekview {
+		.o_text {
+			padding-bottom: 5px;
+		}
+		
+		h4:first-child {
+			margin-top: 0;
+		}
+		.o_no_access {
+			background-color: rgba(122, 15, 124, 0.15);
+			padding: 1px 6px;
+			h5 {
+				margin-top: 3px;
+			}
+		}
+		.o_peekview {
+			padding: 15px 15px 10px 15px;
+			background: $o-cn-style-peekview-bg;
+		}
+		.o_st_peekview {
+			.o_st_item {
+				margin-bottom: 5px;
+				background: $o-st-peekview-bg;
+				.o_text {
+					padding: $o-st-peekview-text-padding;
+				}
+			}
+			@media (min-width: $screen-sm-max) { 
+				.row.o_two_columns {
+					> :nth-child(1) {
+						padding-right: 7px;
+					}
+					> :nth-child(2) {
+						padding-left: 8px;
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -367,24 +435,12 @@
 /* general course run classes */
 .o_course_run {
 	.o_toc {
-		.o_entry {
-			@extend %o_small;
-			@extend %o_block;
-			.o_shorttitle {
-				border-bottom: 1px solid $gray-light;
-			}
-			.o_displaytitle {
-				margin-top: $padding-small-vertical;
-				color: $text-muted;	
-			}
-			.o_description {
-				margin-top: $padding-large-vertical;
-				font-style: italic; 
-			}
+		.row > .o_row {
+			margin-bottom: 15px;
 		}
 		@if not $o-course-show-icon-toc {
 			// hide icons in peekview title
-			.o_shorttitle > h4 > a > i{
+			.o_title > h4 > a > i{
 				display: none;
 			}
 		}
@@ -410,10 +466,6 @@
 	.o_cal_toptoolbar {
 		margin-right: 26px;
 	}
-	
-	.o_titled_wrapper .o_cal_toptoolbar {
-		margin-right: 0px;
-	}
 }
 
 @if not $o-course-show-icon-menu {
@@ -427,15 +479,6 @@
 .o_tree.o_course_menu {
 	div.o_tree_l0 > a:first-child {
 		background-color: $o-tree-link-bg;
-	}
-}
-
-/* structure course element */
-.o_st_peekview {
-	ul {
-		li {
-			margin-bottom: 0.5em;
-		}
 	}
 }
 

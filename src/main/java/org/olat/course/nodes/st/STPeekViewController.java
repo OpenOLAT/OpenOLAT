@@ -33,12 +33,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
-import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.style.ColorCategoryResolver;
+import org.olat.course.style.CourseStyleService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,61 +59,91 @@ public class STPeekViewController extends BasicController {
 	private VelocityContainer genericPeekViewVC;
 	
 	@Autowired
-	private NodeAccessService nodeAccessService;
+	private CourseStyleService courseStyleService;
 	
-	public STPeekViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+	public STPeekViewController(UserRequest ureq, WindowControl wControl, CourseTreeNode courseTreeNode, CourseConfig courseConfig, boolean large) {
 		super(ureq, wControl);
-
+		ColorCategoryResolver colorCategoryResolver = courseStyleService.getColorCategoryResolver(null,
+				courseConfig.getColorCategoryIdentifier());
+		
 		genericPeekViewVC = createVelocityContainer("stPeekView");
 		
-		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-				.withFilter(AccessibleFilter.create())
-				.build()
-				.getNodeById(courseNode.getIdent());
-		List<CourseNode> childNodes = new ArrayList<>();
-		// Loop over node evaluations of visible nodes
-		int chdCnt = courseTreeNode.getChildCount();
-		for (int i = 0; i < chdCnt; i++) {
+		List<CourseNodeWrapper> wrappers = new ArrayList<>();
+		for (int i = 0; i < courseTreeNode.getChildCount(); i++) {
 			INode childNode = courseTreeNode.getChildAt(i);
 			if (childNode instanceof CourseTreeNode) {
 				CourseTreeNode childTreeNode = (CourseTreeNode) childNode;
 				if (childTreeNode.isVisible() && childTreeNode.isAccessible()) {
-					// Build and add child generic or specific peek view
 					CourseNode child = childTreeNode.getCourseNode();
-					childNodes.add(child);
-					// Add link to jump to course node
+					CourseNodeWrapper wrapper = new CourseNodeWrapper();
+					
 					Link nodeLink = LinkFactory.createLink("nodeLink_" + child.getIdent(), genericPeekViewVC, this);
 					nodeLink.setCustomDisplayText(StringHelper.escapeHtml(child.getShortTitle()));
-					// Add css class for course node type
 					String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(child.getType()).getIconCSSClass();
 					nodeLink.setIconLeftCSS("o_icon o_icon-fw " + iconCSSClass);
 					nodeLink.setUserObject(child.getIdent());
 					nodeLink.setElementCssClass("o_gotoNode");
-				}
+					wrapper.setNodeLinkName(nodeLink.getComponentName());
+					
+					wrapper.setDescription(child.getDescription());
+					
+					String colorCategoryCss = colorCategoryResolver.getColorCategoryCss(child);
+					wrapper.setColorCategoryCss(colorCategoryCss);
+					
+					wrappers.add(wrapper)
+;				}
 			}
 		}
-		// Add course node to get title etc
-		genericPeekViewVC.contextPut("childNodes", childNodes);
-		// Add css class for course node type
-		CourseNodeFactory courseNodeFactory = CourseNodeFactory.getInstance();
-		genericPeekViewVC.contextPut("courseNodeFactory", courseNodeFactory);
-		//
+		genericPeekViewVC.contextPut("items", wrappers);
+		genericPeekViewVC.contextPut("large", Boolean.valueOf(large));
+		
 		putInitialPanel(genericPeekViewVC);
 	}
 
 	@Override
 	protected void doDispose() {
-		// nothing to dispose
+		//
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
 			Link nodeLink = (Link) source;
-			// get node ID and fire activation event
 			String nodeId = (String) nodeLink.getUserObject();
 			fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, nodeId));
 		}
+	}
+	
+	public static final class CourseNodeWrapper {
+		
+		private String nodeLinkName;
+		private String description;
+		private String colorCategoryCss;
+		
+		public String getNodeLinkName() {
+			return nodeLinkName;
+		}
+		
+		public void setNodeLinkName(String nodeLinkName) {
+			this.nodeLinkName = nodeLinkName;
+		}
+		
+		public String getDescription() {
+			return description;
+		}
+		
+		public void setDescription(String description) {
+			this.description = description;
+		}
+		
+		public String getColorCategoryCss() {
+			return colorCategoryCss;
+		}
+		
+		public void setColorCategoryCss(String colorCategoryCss) {
+			this.colorCategoryCss = colorCategoryCss;
+		}
+		
 	}
 
 }

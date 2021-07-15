@@ -421,8 +421,8 @@ public class NodeConfigController extends FormBasicController {
 	private ColorCategory getInheritedColorCategory() {
 		if (inheritedColorCategory == null) {
 			CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
-			inheritedColorCategory = courseStyleService.getColorCategoryResolver(null)
-					.getInheritedColorCategory(editorTreeNode, course.getCourseConfig().getColorCategoryIdentifier());
+			inheritedColorCategory = courseStyleService.getColorCategoryResolver(null, course.getCourseConfig().getColorCategoryIdentifier())
+					.getInheritedColorCategory(editorTreeNode);
 		}
 		return inheritedColorCategory;
 	}

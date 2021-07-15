@@ -114,7 +114,7 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNodeSecurityCallback nodeSecCallback) {
+			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		return new BigBlueButtonPeekViewController(ureq, wControl, userCourseEnv.getCourseEnvironment(), this);
 	}
 
