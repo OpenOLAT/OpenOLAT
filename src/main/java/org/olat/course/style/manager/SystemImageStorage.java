@@ -65,7 +65,7 @@ public class SystemImageStorage {
 	public void initProvidedSystemImages() throws Exception {
 		URL providedUrl = SystemImageStorage.class.getResource("_system_images/");
 		File providedDir = new File(providedUrl.toURI());
-		FileUtils.copyDirToDir(providedDir, ROOT_PATH.toFile(), "");
+		FileUtils.copyDirContentsToDir(providedDir, ROOT_PATH.toFile(), false, "");
 	}
 
 	public void store(File file) {
@@ -73,7 +73,7 @@ public class SystemImageStorage {
 	}
 	
 	public File load(String filename) {
-		try (Stream<Path> stream = Files.walk(ROOT_PATH, 2)) {
+		try (Stream<Path> stream = Files.walk(ROOT_PATH, 1)) {
 			Optional<File> file = stream
 				.filter(path -> path.getFileName().toString().equalsIgnoreCase(filename))
 				.filter(path -> !Files.isDirectory(path))
@@ -89,7 +89,7 @@ public class SystemImageStorage {
 	}
 	
 	public List<ImageSource> loadAll() {
-		try (Stream<Path> stream = Files.walk(ROOT_PATH, 2)) {
+		try (Stream<Path> stream = Files.walk(ROOT_PATH, 1)) {
 			return stream.filter(file -> !Files.isDirectory(file)).map(this::createImageSource).collect(Collectors.toList());
 		} catch (Exception e) {
 			log.error("", e);
