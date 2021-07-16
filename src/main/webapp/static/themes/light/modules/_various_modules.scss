@@ -740,7 +740,15 @@ div.o_reminder_custom_email {
 /* Expand controller */
 .o_expand_ctrl {
 	.o_button_group {
-		margin-top: -15px;
+		margin-top: -1px;
+		.o_button_details {
+			height: 20px;
+			width: 32px;
+			padding: 0px 8px;
+			border: $o-cn-style-border;
+			border-top-left-radius: 0px;
+			border-top-right-radius: 0px;
+		}
 	}
 	&.o_unexpandable {
 		margin-bottom: 0.5em;

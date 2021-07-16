@@ -21,6 +21,7 @@ package org.olat.course.style.ui;
 
 import java.util.List;
 
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.stack.TooledController;
@@ -36,10 +37,14 @@ import org.olat.core.gui.control.generic.spacesaver.ExpandController;
 import org.olat.core.gui.control.generic.spacesaver.ExpandableController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.style.ColorCategoryResolver;
 import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.Header;
+import org.olat.course.style.Header.Builder;
+import org.olat.course.style.TeaserImageStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -109,7 +114,7 @@ public class HeaderContentController extends BasicController
 		removeAsListenerAndDispose(headerCtrl);
 		headerCtrl = null;
 		
-		Header header = courseStyleService.getHeader(userCourseEnv, courseNode, iconCssClass);
+		Header header = createHeader(userCourseEnv, courseNode, iconCssClass);
 		if (header != null && CourseStyleUIFactory.hasValues(header)) {
 			headerCtrl = new HeaderController(ureq, getWindowControl(), header);
 			listenTo(headerCtrl);
@@ -117,6 +122,50 @@ public class HeaderContentController extends BasicController
 			mainVC.put("header", collapseCtrl.getInitialComponent());
 		} else {
 			mainVC.remove("header");
+		}
+	}
+	
+	public Header createHeader(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String iconCssClass) {
+		String displayOption = courseNode.getDisplayOption();
+		if (CourseNode.DISPLAY_OPTS_CONTENT.equals(displayOption)) {
+			return null;
+		}
+		
+		Builder builder = Header.builder();
+		
+		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
+			builder.withTitle(courseNode.getShortTitle());
+		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
+			builder.withTitle(courseNode.getLongTitle());
+		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
+			builder.withTitle(courseNode.getShortTitle());
+			addExtendedHeader(builder, courseNode, userCourseEnv);
+		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
+			builder.withTitle(courseNode.getLongTitle());
+			addExtendedHeader(builder, courseNode, userCourseEnv);
+		}
+		
+		CourseConfig courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
+		Mapper teaserImageMapper = courseStyleService.getTeaserImageMapper(userCourseEnv.getCourseEnvironment(), courseNode);
+		if (teaserImageMapper != null) {
+			TeaserImageStyle teaserImageStyle = courseConfig.getTeaserImageStyle() != null
+					? courseConfig.getTeaserImageStyle()
+					: TeaserImageStyle.gradient;
+			builder.withTeaserImage(teaserImageMapper, teaserImageStyle);
+		}
+		
+		ColorCategoryResolver colorCategoryResolver = courseStyleService.getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());
+		builder.withColorCategoryCss(colorCategoryResolver.getColorCategoryCss(courseNode));
+		builder.withIconCss(iconCssClass);
+		
+		return builder.build();
+	}
+
+	private void addExtendedHeader(Builder builder, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		builder.withObjectives(courseNode.getObjectives());
+		builder.withInstruction(courseNode.getInstruction());
+		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
+			builder.withInstrucionalDesign(courseNode.getInstructionalDesign());
 		}
 	}
 

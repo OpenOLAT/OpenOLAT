@@ -28,6 +28,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.spacesaver.ExpandableController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.course.style.ColorCategory;
 import org.olat.course.style.Header;
 import org.olat.course.style.TeaserImageStyle;
 
@@ -45,7 +46,7 @@ public class HeaderController extends BasicController implements ExpandableContr
 	public HeaderController(UserRequest ureq, WindowControl wControl, Header header) {
 		super(ureq, wControl);
 		this.header = header;
-		mainVC = createVelocityContainer("header");
+		mainVC = isStyled()? createVelocityContainer("header"): createVelocityContainer("header_plain");
 		
 		mainVC.contextPut("item", header);
 		
@@ -58,11 +59,17 @@ public class HeaderController extends BasicController implements ExpandableContr
 		
 		putInitialPanel(mainVC);
 	}
+	
+	private boolean isStyled() {
+		return isExpandable()
+				|| header.getTeaserImageMapper() != null
+				|| ColorCategory.IDENTIFIER_NO_COLOR.equals(header.getColorCategoryCss());
+		
+	}
 
 	@Override
 	public boolean isExpandable() {
-		return StringHelper.containsNonWhitespace(header.getDescription())
-				|| StringHelper.containsNonWhitespace(header.getObjectives())
+		return StringHelper.containsNonWhitespace(header.getObjectives())
 				|| StringHelper.containsNonWhitespace(header.getInstruction())
 				|| StringHelper.containsNonWhitespace(header.getInstructionalDesign());
 	}

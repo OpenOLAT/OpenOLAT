@@ -66,10 +66,10 @@
 	border: $o-cn-style-border;
 	border-radius: $o-cn-style-border-radius;
 	
-	&.o_colcat_left {
+	&.o_colcat_left:not(.o_colcat_nocolor) {
 		border-left-width: $o-cn-style-border-width;
 	}
-	&.o_colcat_top {
+	&.o_colcat_top:not(.o_colcat_nocolor) {
 		border-top-width: $o-cn-style-border-width;
 	}
 	
@@ -98,36 +98,28 @@
 			div:nth-child(1) > * {
 				background-color: $o-cn-style-cover-text-bg;
 			}
-			div::nth-child(2) {
-				width: 100%;
+			> div > h5 {
+				padding-bottom: 10px;
+				margin-bottom: 0px;
 			}
 		}
 	}
-	&.o_right, &.o_gradient {
+	&.o_right, &.o_left, &.o_gradient {
 		.o_top {
 			display: flex;
 			flex-wrap: nowrap;
 			
 			.o_text {
-				width: 66%;
+				width: 74%;
 			}
 			.o_image {
-				width: 34%;
+				width: 26%;
 			}
 		}
 	}
 	&.o_left {
 		.o_top {
-			display: flex;
-			flex-wrap: nowrap;
 			flex-direction: row-reverse;
-			
-			.o_text {
-				width: 66%;
-			}
-			.o_image {
-				width: 34%;
-			}
 		}
 	}
 	
@@ -147,10 +139,12 @@
 	}
 	
 	&.o_cn_peekview {
+		.o_image {
+			min-height: $o-cn-style-peekview-height;
+		}
 		.o_text {
 			padding-bottom: 5px;
 		}
-		
 		h4:first-child {
 			margin-top: 0;
 		}

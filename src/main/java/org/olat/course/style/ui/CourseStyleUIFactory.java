@@ -76,7 +76,6 @@ public class CourseStyleUIFactory {
 	
 	public static boolean hasValues(Header header) {
 		return StringHelper.containsNonWhitespace(header.getTitle())
-				|| StringHelper.containsNonWhitespace(header.getDescription())
 				|| StringHelper.containsNonWhitespace(header.getObjectives())
 				|| StringHelper.containsNonWhitespace(header.getInstruction())
 				|| StringHelper.containsNonWhitespace(header.getInstructionalDesign());

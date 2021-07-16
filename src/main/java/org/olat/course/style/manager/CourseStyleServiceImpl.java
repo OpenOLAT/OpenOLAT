@@ -22,25 +22,19 @@ package org.olat.course.style.manager;
 import java.io.File;
 import java.util.List;
 
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.ICourse;
-import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ColorCategoryRef;
 import org.olat.course.style.ColorCategoryResolver;
 import org.olat.course.style.ColorCategorySearchParams;
 import org.olat.course.style.CourseStyleService;
-import org.olat.course.style.Header;
-import org.olat.course.style.Header.Builder;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
-import org.olat.course.style.TeaserImageStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -200,51 +194,6 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	@Override
 	public void deleteColorCategory(ColorCategory colorCategory) {
 		colorCategoryDao.delete(colorCategory);
-	}
-
-	@Override
-	public Header getHeader(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String iconCssClass) {
-		String displayOption = courseNode.getDisplayOption();
-		if (CourseNode.DISPLAY_OPTS_CONTENT.equals(displayOption)) {
-			return null;
-		}
-		
-		Builder builder = Header.builder();
-		
-		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getShortTitle());
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getLongTitle());
-		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getShortTitle());
-			addExtendedHeader(builder, courseNode, userCourseEnv);
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getLongTitle());
-			addExtendedHeader(builder, courseNode, userCourseEnv);
-		}
-		
-		CourseConfig courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
-		Mapper teaserImageMapper = getTeaserImageMapper(userCourseEnv.getCourseEnvironment(), courseNode);
-		if (teaserImageMapper != null) {
-			TeaserImageStyle teaserImageStyle = courseConfig.getTeaserImageStyle() != null
-					? courseConfig.getTeaserImageStyle()
-					: TeaserImageStyle.gradient;
-			builder.withTeaserImage(teaserImageMapper, teaserImageStyle);
-		}
-		
-		ColorCategoryResolver colorCategoryResolver = getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());
-		builder.withColorCategoryCss(colorCategoryResolver.getColorCategoryCss(courseNode));
-		builder.withIconCss(iconCssClass);
-		
-		return builder.build();
-	}
-
-	private void addExtendedHeader(Builder builder, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		builder.withObjectives(courseNode.getObjectives());
-		builder.withInstruction(courseNode.getInstruction());
-		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
-			builder.withInstrucionalDesign(courseNode.getInstructionalDesign());
-		}
 	}
 
 	@Override

@@ -29,7 +29,6 @@ import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -90,7 +89,5 @@ public interface CourseStyleService {
 	public void deleteColorCategory(ColorCategory colorCategory);
 	
 	public ColorCategoryResolver getColorCategoryResolver(ColorCategorySearchParams preloadParams, String courseColorCategoryIdentifier);
-
-	public Header getHeader(UserCourseEnvironment userCourseEnv, CourseNode courseNode, String iconCssClass);
 
 }

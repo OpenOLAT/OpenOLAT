@@ -50,7 +50,7 @@ public class ExpandController extends BasicController {
 		this.guiPrefsKey = guiPrefsKey;
 		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
-		expand = (Boolean) prefs.get(this.getClass(), guiPrefsKey, Boolean.FALSE);
+		expand = (Boolean) prefs.get(ToggleBoxController.class, guiPrefsKey, Boolean.TRUE);
 		
 		mainVC = createVelocityContainer("expand");
 		
@@ -65,6 +65,7 @@ public class ExpandController extends BasicController {
 	private void updateUI() {
 		String expandIcon = expand.booleanValue()? "o_icon_details_collaps": "o_icon_details_expand";
 		expandButton.setIconLeftCSS("o_icon o_icon_lg " + expandIcon);
+		expandButton.setElementCssClass("o_button_details");
 		
 		if (expandableCtrl != null) {
 			expandableCtrl.setExpanded(getExpandSwitch(expand));
@@ -101,7 +102,7 @@ public class ExpandController extends BasicController {
 		expand = Boolean.valueOf(!expand.booleanValue());
 		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
-		prefs.putAndSave(this.getClass(), guiPrefsKey, expand);
+		prefs.putAndSave(ToggleBoxController.class, guiPrefsKey, expand);
 		
 		updateUI();
 	}
