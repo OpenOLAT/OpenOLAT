@@ -1100,14 +1100,6 @@ public class CourseElementTest extends Deployments {
 			.edit();
 		
 		courseEditor
-			.selectRoot();
-		
-		STConfigurationPage stConfig = new STConfigurationPage(browser);
-		stConfig
-			.selectOverview()
-			.setDisplay(DisplayType.peekview);
-		
-		courseEditor
 			.createNode("cmembers")
 			.nodeTitle(nodeTitle);
 		
@@ -1119,9 +1111,17 @@ public class CourseElementTest extends Deployments {
 				.setParticipants(Boolean.TRUE)
 				.save();
 		
+		courseEditor
+			.selectRoot();
+		
+		STConfigurationPage stConfig = new STConfigurationPage(browser);
+		stConfig
+			.selectOverview()
+			.setDisplay(DisplayType.peekview);
+		
 		//go check that we see only the coaches results
 		courseRuntime = courseEditor
-			.autoPublish();
+			.autoPublish();		
 		MenuTreePageFragment menuTree = courseRuntime
 			.clickTree();
 
@@ -1165,6 +1165,7 @@ public class CourseElementTest extends Deployments {
 		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
 		Assert.assertEquals(1, messages.size());
 	}
+	
 	
 	/**
 	 * An author create a course with a participant folder course
@@ -1432,16 +1433,22 @@ public class CourseElementTest extends Deployments {
 		String foTitle = "FO - " + UUID.randomUUID();
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
+		
+		// create forum
+		courseEditor
+			.createNode("fo")
+			.nodeTitle(foTitle);
+		
 		// setup peekview
+		courseEditor
+			.selectRoot();
 		STConfigurationPage stConfig = new STConfigurationPage(browser);
 		stConfig
 			.selectOverview()
 			.setDisplay(DisplayType.peekview);
-		// create forum
-		courseEditor
-			.createNode("fo")
-			.nodeTitle(foTitle)
+		
 		// publish the course
+		courseEditor
 			.publish()
 			.quickPublish(UserAccess.membersOnly);
 	
