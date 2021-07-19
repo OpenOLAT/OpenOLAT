@@ -60,6 +60,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	private static final String PANE_TAB_VISIBILITY = "pane.tab.visibility";
 	private static final String PANE_TAB_GENERAL = "pane.tab.general";
+	private static final String PANE_TAB_LAYOUT = "pane.tab.layout";
 	private static final String PANE_TAB_REMINDER = "pane.tab.reminder";
 	
   /** Configuration key: use spash-scree start page when accessing a course node. Values: true, false **/
@@ -82,6 +83,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	private NodeConfigController nodeConfigController;
 
 	private TabbedPane myTabbedPane;
+	private NodeLayoutController layoutCtrl;
 	private VisibilityEditController visibilityEditCtrl;
 	private TabbableController nodeAccessCtrl;
 	private TabbableController childTabsCntrllr;
@@ -133,6 +135,9 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		listenTo(nodeConfigController);
 		descriptionVc.put("nodeConfigForm", nodeConfigController.getInitialComponent());
 		
+		layoutCtrl = new NodeLayoutController(ureq, wControl, courseNode, userCourseEnvironment);
+		listenTo(layoutCtrl);
+		
 		NodeAccessType nodeAccessType = course.getCourseConfig().getNodeAccessType();
 		if (nodeAccessService.isSupported(nodeAccessType, courseNode)) {
 			TabbableController nodeAccessCtrl = nodeAccessService.createEditController(ureq, getWindowControl(),
@@ -168,7 +173,11 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if (source == visibilityEditCtrl) {
+		if (source == layoutCtrl) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if (source == visibilityEditCtrl) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -216,6 +225,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_GENERAL), descriptionVc);
+		tabbedPane.addTab(translate(PANE_TAB_LAYOUT), layoutCtrl.getInitialComponent());
 		if (nodeAccessCtrl != null) {
 			nodeAccessCtrl.addTabs(tabbedPane);
 		}
