@@ -77,13 +77,15 @@
 		padding: $o-cn-style-text-pading;
 	}
 
-	.o_image,
+	&.o_right > .o_top > .o_image,
+	&.o_gradient > .o_top > .o_image {
+		background-repeat: no-repeat;
+		background-position: left top;
+	}
+	&.o_left > .o_top > .o_image,
 	&.o_cover > .o_top {
 		background-repeat: no-repeat;
-		background-position: center;
-	}
-	&.o_cover > .o_top {
-		background-size: cover;
+		background-position: left top;
 	}
 	.o_image.o_colcat_nocolor,
 	&.o_cover > .o_top.o_colcat_nocolor {
