@@ -31,7 +31,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.course.learningpath.ui.LearningPathListController;
 import org.olat.course.style.TeaserImageStyle;
+import org.olat.modules.assessment.ui.AssessmentForm;
 
 /**
  * 
@@ -46,6 +49,8 @@ public class OverviewController extends BasicController {
 
 	public OverviewController(UserRequest ureq, WindowControl wControl, Overview overview, Controller peekViewCtrl) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(LearningPathListController.class, getLocale(), getTranslator()));
 		this.peekViewCtrl = peekViewCtrl;
 		
 		VelocityContainer mainVC = createVelocityContainer("overview");
@@ -67,6 +72,7 @@ public class OverviewController extends BasicController {
 		nodeLink.setIconLeftCSS("o_icon o_icon-fw " + overview.getIconCss());
 		nodeLink.setUserObject(overview.getNodeIdent());
 		nodeLink.setElementCssClass("o_gotoNode");
+		nodeLink.setEnabled(overview.getNoAccessMessage() == null);
 		
 		if (peekViewCtrl != null) {
 			mainVC.put("peekView", this.peekViewCtrl.getInitialComponent());

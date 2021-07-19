@@ -21,6 +21,7 @@ package org.olat.course.learningpath.manager;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.SequenceConfig;
 import org.olat.course.learningpath.evaluation.AccessEvaluator;
 import org.olat.course.learningpath.evaluation.LinearAccessEvaluator;
@@ -30,7 +31,6 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,33 +73,8 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 
 	private String getIconDecorator1CssClass(SequenceConfig sequenceConfig, AssessmentEvaluation assessmentEvaluation, UserCourseEnvironment userCourseEnv) {
 		if (assessmentEvaluation == null || userCourseEnv.isAdmin() || userCourseEnv.isCoach()) return null;
-		String cssClasses = "";
-
-		if (assessmentEvaluation.getFullyAssessed() != null && assessmentEvaluation.getFullyAssessed().booleanValue()) {
-			cssClasses += "o_lp_done";
-		} else {
-			AssessmentEntryStatus status = assessmentEvaluation.getAssessmentStatus();
-			if (status != null) {
-				switch(status) {
-				case notReady: 
-					cssClasses += "o_lp_not_accessible"; 
-					break;
-				case notStarted: 
-					cssClasses += "o_lp_ready"; 
-					break;
-				case inProgress: 
-					cssClasses += "o_lp_in_progress";
-					break;
-				case inReview: 
-					cssClasses += "o_lp_in_progress";
-					break;
-				case done: 
-					cssClasses += "o_lp_in_progress";
-					break;
-				default:
-				}
-			}			
-		}
+		
+		String cssClasses = LearningPathStatus.of(assessmentEvaluation).getCssClass();
 		
 		if (sequenceConfig.isInSequence()) {
 			// nodes that take part in a linear sequence

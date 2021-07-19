@@ -15,6 +15,25 @@
 					<div></div>
 				</div>
 			#end
+			#if($r.isNotEmpty($item.learningPathStatus) || $r.isNotEmpty($item.startDate) || $r.isNotEmpty($item.startEnd))
+				<div class="o_text_block o_assessment">
+					<div>
+						<div>
+							#if($r.isNotEmpty($item.learningPathStatus))
+								<span class='o_labeled $item.learningPathStatus.cssClass'><i class='o_icon $item.learningPathStatus.cssClass'> </i> $r.translate("$item.learningPathStatus.i18nKey")</span>
+							#end
+							#if($r.isNotEmpty($item.startDate) && $r.isNotEmpty($item.endDate))
+								<span>$r.translate("table.header.start"): $r.formatDateAndTime($item.startDate) | $r.translate("table.header.end"): $r.formatDateAndTime($item.endDate)</span>
+							#elseif($r.isNotEmpty($item.startDate))
+								<span>$r.translate("table.header.start"): $r.formatDateAndTime($item.startDate)</span>
+							#elseif($r.isNotEmpty($item.endDate))
+								<span>$r.translate("table.header.end"): $r.formatDateAndTime($item.endDate)</span>
+							#end
+						</div>
+					</div>
+					<div></div>
+				</div>
+			#end
 			#if($r.isNotEmpty($item.description))
 				<div class="o_text_block">
 					<div>

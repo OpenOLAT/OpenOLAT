@@ -19,7 +19,10 @@
  */
 package org.olat.course.nodes.st;
 
+import java.util.Date;
+
 import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.style.TeaserImageStyle;
 
 /**
@@ -40,6 +43,9 @@ public class Overview {
 	private final TeaserImageStyle teaserImageStyle;
 	private final String colorCategoryCss;
 	private final String noAccessMessage;
+	private final LearningPathStatus learningPathStatus;
+	private final Date startDate;
+	private final Date endDate;
 
 	private Overview(Builder builder) {
 		this.nodeIdent = builder.nodeIdent;
@@ -52,6 +58,9 @@ public class Overview {
 		this.teaserImageStyle = builder.teaserImageStyle;
 		this.colorCategoryCss = builder.colorCategoryCss;
 		this.noAccessMessage = builder.noAccessMessage;
+		this.learningPathStatus = builder.learningPathStatus;
+		this.startDate = builder.startDate;
+		this.endDate = builder.endDate;
 	}
 	
 	public String getNodeIdent() {
@@ -94,6 +103,18 @@ public class Overview {
 		return noAccessMessage;
 	}
 
+	public LearningPathStatus getLearningPathStatus() {
+		return learningPathStatus;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -109,6 +130,9 @@ public class Overview {
 		private TeaserImageStyle teaserImageStyle;
 		private String colorCategoryCss;
 		private String noAccessMessage;
+		private LearningPathStatus learningPathStatus;
+		private Date startDate;
+		private Date endDate;
 
 		private Builder() {
 		}
@@ -156,6 +180,21 @@ public class Overview {
 
 		public Builder withNoAccessMessage(String noAccessMessage) {
 			this.noAccessMessage = noAccessMessage;
+			return this;
+		}
+
+		public Builder withLearningPathStatus(LearningPathStatus learningPathStatus) {
+			this.learningPathStatus = learningPathStatus;
+			return this;
+		}
+
+		public Builder withStartDate(Date startDate) {
+			this.startDate = startDate;
+			return this;
+		}
+
+		public Builder withEndDate(Date endDate) {
+			this.endDate = endDate;
 			return this;
 		}
 

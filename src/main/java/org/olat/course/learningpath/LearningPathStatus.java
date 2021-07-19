@@ -19,6 +19,9 @@
  */
 package org.olat.course.learningpath;
 
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+
 /**
  * 
  * Initial date: 26 Aug 2019<br>
@@ -27,10 +30,50 @@ package org.olat.course.learningpath;
  */
 public enum LearningPathStatus {
 	
-	notAccessible,
-	ready,
-	inProgress,
-	done;
+	notAccessible("o_lp_not_accessible", "assessment.status.notReady"),
+	ready("o_lp_ready", "assessment.status.notStart"),
+	inProgress("o_lp_in_progress", "assessment.status.inProgress"),
+	done("o_lp_done", "fully.assessed");
+
+	private final String cssClass;
+	private final String i18nKey;
+
+	private LearningPathStatus(String cssClass, String i18nKey) {
+		this.cssClass = cssClass;
+		this.i18nKey = i18nKey;
+	}
+	
+	public String getCssClass() {
+		return cssClass;
+	}
+
+	public String getI18nKey() {
+		return i18nKey;
+	}
+
+	public static LearningPathStatus of(AssessmentEvaluation evaluation) {
+		if (evaluation == null) {
+			return notAccessible;
+		}
+		
+		if (evaluation.getFullyAssessed() != null && evaluation.getFullyAssessed().booleanValue()) {
+			return done;
+		}
+		
+		AssessmentEntryStatus status = evaluation.getAssessmentStatus();
+		if (status != null) {
+			switch(status) {
+			case notReady: return notAccessible;
+			case notStarted: return ready;
+			case inProgress: return inProgress;
+			case inReview: return inProgress;
+			case done: return inProgress;
+			default: return notAccessible;
+			}
+		}
+		
+		return notAccessible;
+	}
 	
 	public static boolean isAccessible(LearningPathStatus status) {
 		return status == ready

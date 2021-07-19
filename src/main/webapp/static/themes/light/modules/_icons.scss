@@ -715,9 +715,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_miderr:before { content: $fa-var-exclamation-circle;}
 .o_middel:before { content: $fa-var-eraser;}
 i.o_lp_not_accessible:before { content: $fa-var-ban;}
-i.o_lp_ready:before { content: $fa-var-ban;}
-i.o_lp_in_progress:before { content: $fa-var-play;}
-i.o_lp_done:before { content: $fa-var-check;}
+i.o_lp_ready:before { content: $fa-var-circle-o;}
+i.o_lp_in_progress:before { content: $fa-var-play-circle-o;}
+i.o_lp_done:before { content: $fa-var-check-circle;}
 
 
 /* File type icons */

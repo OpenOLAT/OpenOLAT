@@ -30,7 +30,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.course.learningpath.LearningPathStatus;
 
 /**
  * 
@@ -84,49 +84,15 @@ public class LearningPathStatusCellRenderer implements FlexiCellRenderer, Custom
 	}
 	
 	private String getIconCss(LearningPathTreeNode lpTreeNode) {
-		if (lpTreeNode.getFullyAssessed() != null && lpTreeNode.getFullyAssessed().booleanValue()) {
-			return "o_lp_done";
-		}
-		AssessmentEntryStatus status = lpTreeNode.getAssessmentStatus();
-		if (status != null) {
-			switch(status) {
-			case notReady: 
-				return "o_lp_not_accessible";
-			case notStarted: 
-				return"o_lp_ready";
-			case inProgress: 
-				return "o_lp_in_progress";
-			case inReview: 
-				return "o_lp_in_progress";
-			case done: 
-				return "o_lp_in_progress";
-			default:
-			}
-		}
-		return "";
+		if (lpTreeNode == null || lpTreeNode.getAssessmentEvaluation() == null) return "";
+		
+		return LearningPathStatus.of(lpTreeNode.getAssessmentEvaluation()).getCssClass();
 	}
 	
 	private String getI18nKey(LearningPathTreeNode lpTreeNode) {
-		if (lpTreeNode.getFullyAssessed() != null && lpTreeNode.getFullyAssessed().booleanValue()) {
-			return "fully.assessed";
-		}
-		AssessmentEntryStatus status = lpTreeNode.getAssessmentStatus();
-		if (status != null) {
-			switch(status) {
-			case notReady: 
-				return "assessment.status.notReady";
-			case notStarted: 
-				return"ssessment.status.notStart";
-			case inProgress: 
-				return "assessment.status.inProgress";
-			case inReview: 
-				return "assessment.status.inProgress";
-			case done: 
-				return "assessment.status.inProgress";
-			default:
-			}
-		}
-		return null;
+		if (lpTreeNode == null || lpTreeNode.getAssessmentEvaluation() == null) return null;
+		
+		return LearningPathStatus.of(lpTreeNode.getAssessmentEvaluation()).getI18nKey();
 	}
 	
 }

@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.st;
 
+import java.util.Date;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -26,9 +28,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.st.Overview.Builder;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.style.ColorCategoryResolver;
@@ -50,6 +55,8 @@ public class OverviewFactory {
 	private final boolean smallPeekview;
 	private final ColorCategoryResolver colorCategoryResolver;
 	private final String mapperPrefix;
+	private final ScoreAccounting scoreAccounting;
+	private final Date now;
 	
 	private final CourseStyleService courseStyleService;
 	
@@ -63,6 +70,10 @@ public class OverviewFactory {
 		courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		colorCategoryResolver = courseStyleService.getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());
 		mapperPrefix = CodeHelper.getUniqueID();
+		
+		scoreAccounting = userCourseEnv.getScoreAccounting();
+		scoreAccounting.evaluateAll();
+		now = new Date();
 	}
 
 	public Controller create(UserRequest ureq, WindowControl wControl, CourseTreeNode courseTreeNode) {
@@ -89,6 +100,22 @@ public class OverviewFactory {
 		
 		builder.withIconCss(CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 		builder.withTitle(courseNode.getShortTitle());
+		
+		AssessmentEvaluation evaluation = scoreAccounting.getScoreEvaluation(courseNode);
+		if (evaluation != AssessmentEvaluation.EMPTY_EVAL) {
+			LearningPathStatus learningPathStatus = LearningPathStatus.of(evaluation);
+			builder.withLearningPathStatus(learningPathStatus);
+			
+			Date startDate = evaluation.getStartDate();
+			if (startDate != null && startDate.after(now) && LearningPathStatus.done != learningPathStatus) {
+				builder.withStartDate(startDate);
+			}
+			
+			Date currentEndDate = evaluation.getEndDate().getCurrent();
+			if (currentEndDate != null && currentEndDate.after(now) && LearningPathStatus.done != learningPathStatus) {
+				builder.withEndDate(currentEndDate);
+			}
+		}
 		
 		Controller peekViewCtrl = null;
 		if (courseTreeNode.isAccessible()) {

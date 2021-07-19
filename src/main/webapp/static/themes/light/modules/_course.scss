@@ -161,6 +161,12 @@
 			padding: 15px 15px 10px 15px;
 			background: $o-cn-style-peekview-bg;
 		}
+		.o_assessment {
+			margin-bottom: 7px;
+			.o_labeled {
+				margin-bottom: 3px;
+			}
+		}
 		.o_st_peekview {
 			.o_st_item {
 				margin-bottom: 5px;
@@ -333,6 +339,11 @@
 		margin-top: 20px;
 	}
 }
+
+.o_labeled.o_lp_not_accessible { background-color: $o-lp-not-accessible; border-color: $o-lp-not-accessible; }
+.o_labeled.o_lp_ready { background-color: $o-lp-ready; border-color: $o-lp-ready; }
+.o_labeled.o_lp_in_progress { background-color: $o-lp-in-progress; border-color: $o-lp-in-progress; }
+.o_labeled.o_lp_done { background-color: $o-lp-done; border-color: $o-lp-done; }
 
 /* progress bar in tools */
 .o_course_progress {
@@ -763,6 +774,12 @@ div.o_correction_navigation {
 	
 	.o_paella_error {
 		display: none;
+	}
+}
+
+.o_livestream_peekview {
+	.o_instruction {
+		margin-bottom: 0px;
 	}
 }
 
