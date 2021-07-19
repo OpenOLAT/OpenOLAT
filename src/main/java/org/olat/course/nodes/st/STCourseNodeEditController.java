@@ -103,11 +103,18 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	public static final String CONFIG_VALUE_DISPLAY_TOC = "toc";
 	// display a detailed peek view
 	public static final String CONFIG_VALUE_DISPLAY_PEEKVIEW = "peekview";
-	public static final String CONFIG_VALUE_DISPLAY_STRUCTURES = "structures";
 	//do not display peek view, delegate to first child CourseNode
 	public static final String CONFIG_VALUE_DISPLAY_DELEGATE = "delegate";
+	/* Key to set the peekview filter*/
+	public static final String CONFIG_KEY_PEEKVIEW_FILTER = "peekview.filter";
+	public static final String CONFIG_VALUE_PEEKVIEW_ALL = "all";
+	public static final String CONFIG_VALUE_PEEKVIEW_STRUCTURES = "structures";
+	// key to enable the peekview course node selection */
+	public static final String CONFIG_KEY_CHILDREN_FILTER = "children.filter";
+	public static final String CONFIG_VALUE_CHILDREN_ALL = "all";
+	public static final String CONFIG_VALUE_CHILDREN_SELECTION = "children.selection";
 	// key to display the enabled child node peek views
-	public static final String CONFIG_KEY_PEEKVIEW_CHILD_NODES = "peekviewChildNodes";
+	public static final String CONFIG_KEY_CHILDREN_IDENTS = "peekviewChildNodes";
 	// key to store the number of columns
 	public static final String CONFIG_KEY_COLUMNS = "columns";	
 	

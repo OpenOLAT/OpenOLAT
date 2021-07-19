@@ -30,6 +30,16 @@ import org.olat.course.nodes.st.OverviewFactory.CourseNodeFilter;
  *
  */
 public class StructureCourseNodeFilter implements CourseNodeFilter {
+	
+	private final static CourseNodeFilter FILTER = new StructureCourseNodeFilter();
+
+	public static CourseNodeFilter filter() {
+		return FILTER;
+	}
+	
+	private StructureCourseNodeFilter() {
+		//
+	}
 
 	@Override
 	public boolean accept(CourseNode courseNode) {

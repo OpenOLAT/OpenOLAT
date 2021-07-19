@@ -45,18 +45,18 @@ public class OverviewFactory {
 	
 	private final UserCourseEnvironment userCourseEnv;
 	private final CourseConfig courseConfig;
-	private final CourseNodeFilter filter;
-	private final boolean showPeekView;
+	private final CourseNodeFilter courseNodeFilter;
+	private final CourseNodeFilter peekViewFilter;
 	private final boolean smallPeekview;
 	private final ColorCategoryResolver colorCategoryResolver;
 	private final String mapperPrefix;
 	
 	private final CourseStyleService courseStyleService;
 	
-	public OverviewFactory(UserCourseEnvironment userCourseEnv, CourseNodeFilter filter, boolean showPeekView, boolean smallPeekview) {
+	public OverviewFactory(UserCourseEnvironment userCourseEnv, CourseNodeFilter courseNodeFilter, CourseNodeFilter peekViewFilter, boolean smallPeekview) {
 		this.userCourseEnv = userCourseEnv;
-		this.showPeekView = showPeekView;
-		this.filter = filter;
+		this.courseNodeFilter = courseNodeFilter;
+		this.peekViewFilter = peekViewFilter;
 		this.smallPeekview = smallPeekview;
 		
 		courseStyleService = CoreSpringFactory.getImpl(CourseStyleService.class);
@@ -67,7 +67,7 @@ public class OverviewFactory {
 
 	public Controller create(UserRequest ureq, WindowControl wControl, CourseTreeNode courseTreeNode) {
 		CourseNode courseNode = courseTreeNode.getCourseNode();
-		if (filter != null && !filter.accept(courseNode)) return null;
+		if (!courseNodeFilter.accept(courseNode)) return null;
 		
 		Builder builder = Overview.builder();
 		builder.withNodeIdent(courseNode.getIdent());
@@ -95,7 +95,7 @@ public class OverviewFactory {
 			builder.withSubTitle(courseNode.getLongTitle());
 			builder.withDescription(courseNode.getDescription());
 			
-			if (showPeekView) {
+			if (peekViewFilter.accept(courseNode)) {
 				peekViewCtrl = courseNode.createPeekViewRunController(ureq, wControl, userCourseEnv, courseTreeNode, smallPeekview);
 			}
 		} else {

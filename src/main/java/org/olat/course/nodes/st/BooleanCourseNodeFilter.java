@@ -24,22 +24,32 @@ import org.olat.course.nodes.st.OverviewFactory.CourseNodeFilter;
 
 /**
  * 
- * Initial date: 13 Jul 2021<br>
+ * Initial date: 19 Jul 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LimitCourseNodeFilter implements CourseNodeFilter {
-
-	private final int limit;
-	private int counter = 0;
-
-	public LimitCourseNodeFilter(int limit) {
-		this.limit = limit;
+public class BooleanCourseNodeFilter implements CourseNodeFilter {
+	
+	private static final CourseNodeFilter TRUE_FILTER = new BooleanCourseNodeFilter(true);
+	private static final CourseNodeFilter FALSE_FILTER = new BooleanCourseNodeFilter(false);
+	
+	public static final CourseNodeFilter trueFilter() {
+		return TRUE_FILTER;
+	}
+	
+	public static final CourseNodeFilter falseFilter() {
+		return FALSE_FILTER;
+	}
+	
+	private final boolean bool;
+	
+	private BooleanCourseNodeFilter(boolean bool) {
+		this.bool = bool;
 	}
 
 	@Override
 	public boolean accept(CourseNode courseNode) {
-		return limit < counter++;
+		return bool;
 	}
 
 }

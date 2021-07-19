@@ -107,9 +107,8 @@ public class STCourseNodeRunController extends BasicController {
 				myContent.put("highScore", highScoreComponent);							
 			}
 		}
-		// read display configuration
+		
 		ModuleConfiguration config = stCourseNode.getModuleConfiguration();
-		// configure number of display rows
 		int rows = config.getIntegerSafe(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 1);
 		myContent.contextPut("layoutType", rows);
 
@@ -159,27 +158,29 @@ public class STCourseNodeRunController extends BasicController {
 
 	private void createChildViews(UserRequest ureq, UserCourseEnvironment userCourseEnv, ModuleConfiguration config,
 			CourseTreeNode courseTreeNode, boolean smallPeekview) {
-		List<String> childViewNames = new ArrayList<>();
+		String displayType = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC);
 		
-		String displayType = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW);
-		CourseNodeFilter filter = null;
-		if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES)) {
-			filter = new StructureCourseNodeFilter();
-		} else if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
-			String childNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, "");
-			List<String> childNodes = Arrays.asList(childNodesConfig.split(","));
-			// Special case: no child nodes configured. This is the case when
-			// the node has been configured before it had any children. We just
-			// use the first children as they appear in the list.
-			filter = childNodes.isEmpty()
-					? new LimitCourseNodeFilter(STCourseNodeConfiguration.MAX_PEEKVIEW_CHILD_NODES)
-					: new IdentCourseNodeFilter(childNodes);
+		CourseNodeFilter courseNodeFilter = BooleanCourseNodeFilter.trueFilter();
+		if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC) || displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
+			String childrenFilterConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_FILTER, STCourseNodeEditController.CONFIG_VALUE_CHILDREN_ALL);
+			if (STCourseNodeEditController.CONFIG_VALUE_CHILDREN_SELECTION.equals(childrenFilterConfig)) {
+				String childNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_IDENTS, "");
+				List<String> childNodes = Arrays.asList(childNodesConfig.split(","));
+				courseNodeFilter = new IdentCourseNodeFilter(childNodes);
+			}
 		}
 		
-		boolean showPeekView = displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)
-				|| displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_STRUCTURES);
-		OverviewFactory overviewFactory = new OverviewFactory(userCourseEnv, filter, showPeekView, smallPeekview);
+		CourseNodeFilter peekViewFilter = BooleanCourseNodeFilter.falseFilter();
+		if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
+			String peekViewFilterConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_FILTER, STCourseNodeEditController.CONFIG_VALUE_PEEKVIEW_ALL);
+			peekViewFilter = STCourseNodeEditController.CONFIG_VALUE_PEEKVIEW_STRUCTURES.equals(peekViewFilterConfig)
+					? StructureCourseNodeFilter.filter()
+					: BooleanCourseNodeFilter.trueFilter();
+		}
 		
+		OverviewFactory overviewFactory = new OverviewFactory(userCourseEnv, courseNodeFilter, peekViewFilter, smallPeekview);
+		
+		List<String> childViewNames = new ArrayList<>();
 		for (int i = 0; i < courseTreeNode.getChildCount(); i++) {
 			INode childNode = courseTreeNode.getChildAt(i);
 			createChildView(ureq, childViewNames, overviewFactory, childNode);
@@ -188,8 +189,7 @@ public class STCourseNodeRunController extends BasicController {
 		myContent.contextPut("childViewNames", childViewNames);
 	}
 
-	private void createChildView(UserRequest ureq, List<String> childViewNames, OverviewFactory overviewFactory,
-			INode courseNode) {
+	private void createChildView(UserRequest ureq, List<String> childViewNames, OverviewFactory overviewFactory, INode courseNode) {
 		if (courseNode instanceof CourseTreeNode) {
 			CourseTreeNode childCourseTreeNode = (CourseTreeNode)courseNode;
 			if (childCourseTreeNode.isVisible()) {

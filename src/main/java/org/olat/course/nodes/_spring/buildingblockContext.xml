@@ -25,12 +25,6 @@
 
 	<bean id="st" class="org.olat.course.nodes.st.STCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="1" />
-		<!--
-			Optional configuration to define how many child nodes can be selected
-			in the ST node for the automated overview page with preview (peekview)
-			function. Define an integer value > 0.
-		-->
-		<property name="maxPeekviewChildNodes" value="10" /> 
 	</bean>
 
 	<bean id="sp" class="org.olat.course.nodes.sp.SPCourseNodeConfiguration" scope="prototype">

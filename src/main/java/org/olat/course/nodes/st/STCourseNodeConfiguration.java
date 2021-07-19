@@ -28,7 +28,6 @@ package org.olat.course.nodes.st;
 import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -39,7 +38,6 @@ import org.olat.course.nodes.STCourseNode;
 
 
 public class STCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
-	transient public static int MAX_PEEKVIEW_CHILD_NODES = 10; // default 10
 	
 	private STCourseNodeConfiguration() {
 		super();
@@ -71,19 +69,5 @@ public class STCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	public String getGroup() {
 		return CourseNodeGroup.content.name();
 	}
-
-	/**
-	 * Spring setter method to configure the maximum number of selectable child
-	 * nodes for peekview rendering.
-	 * 
-	 * @param maxPeekviewChildNodes
-	 */
-	public void setMaxPeekviewChildNodes(int maxPeekviewChildNodes) {
-		if (maxPeekviewChildNodes > 0) {
-			MAX_PEEKVIEW_CHILD_NODES = maxPeekviewChildNodes;
-		} else {
-			Tracing.createLoggerFor(STCourseNode.class).warn(
-					"invalid configuration for maxPeekviewChildNodes: must be greater than 0. check your olat_buildingblocks.xml config files");
-		}
-	}
+	
 }

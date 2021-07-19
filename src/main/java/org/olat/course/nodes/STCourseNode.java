@@ -112,7 +112,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "st";
 	private static final String ICON_CSS_CLASS = "o_st_icon";
 	
-	private static final int CURRENT_VERSION = 5;
+	private static final int CURRENT_VERSION = 6;
 	public static final String CONFIG_LP_SEQUENCE_KEY = "learning.path.sequence";
 	public static final String CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL = "learning.path.sequence.sequential";
 	public static final String CONFIG_LP_SEQUENCE_VALUE_WITHOUT = "learning.path.sequence.without";
@@ -394,6 +394,9 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			DeliveryOptions defaultOptions = DeliveryOptions.defaultWithGlossary();
 			config.set(SPEditController.CONFIG_KEY_DELIVERYOPTIONS, defaultOptions);
 			
+			config.set(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_FILTER, STCourseNodeEditController.CONFIG_VALUE_PEEKVIEW_ALL);
+			config.setStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_FILTER, STCourseNodeEditController.CONFIG_VALUE_CHILDREN_ALL);
+			
 			config.setConfigurationVersion(3);
 			
 			STCourseNode stParent = getFirstSTParent(parent);
@@ -446,6 +449,13 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 					? stParent.getModuleConfiguration().getStringValue(CONFIG_LP_SEQUENCE_KEY, CONFIG_LP_SEQUENCE_DEFAULT)
 					: CONFIG_LP_SEQUENCE_DEFAULT;
 			config.setStringValue(CONFIG_LP_SEQUENCE_KEY, sequence);
+		}
+		if (config.getConfigurationVersion() < 6) {
+			config.set(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_FILTER, STCourseNodeEditController.CONFIG_VALUE_PEEKVIEW_ALL);
+			String childrenFilter = StringHelper.containsNonWhitespace(config.getStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_IDENTS, ""))
+					? STCourseNodeEditController.CONFIG_VALUE_CHILDREN_SELECTION
+					: STCourseNodeEditController.CONFIG_VALUE_CHILDREN_ALL;
+			config.setStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_FILTER, childrenFilter);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);
