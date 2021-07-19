@@ -84,7 +84,7 @@ public class PublicationController extends StepFormBasicController {
 		statusKV.add(KeyValues.entry(RepositoryEntryStatusEnum.review.name(), translate("cif.status.review")));
 		statusKV.add(KeyValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate("cif.status.coachpublished")));
 		statusKV.add(KeyValues.entry(RepositoryEntryStatusEnum.published.name(), translate("cif.status.published")));
-		statusEl = uifactory.addDropdownSingleselect("publishedStatus", "cif.publish", formLayout, statusKV.keys(), statusKV.values());
+		statusEl = uifactory.addDropdownSingleselect("publishedStatus", "details.label.status", formLayout, statusKV.keys(), statusKV.values());
 		statusEl.select(context.getStatus().name(), true);
 		
 		publishEl = uifactory.addRadiosHorizontal("publish.course.elements", formLayout, YES_NO_KEYS,
