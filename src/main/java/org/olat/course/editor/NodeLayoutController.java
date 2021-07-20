@@ -51,6 +51,10 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
@@ -110,6 +114,8 @@ public class NodeLayoutController extends FormBasicController {
 	
 	@Autowired
 	private CourseStyleService courseStyleService;
+	@Autowired
+	private LearningPathService learningPathService;
 
 	public NodeLayoutController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
@@ -375,6 +381,12 @@ public class NodeLayoutController extends FormBasicController {
 			overviewBuilder.withColorCategoryCss(colorCategoryCss);
 			if (mapper != null) {
 				overviewBuilder.withTeaserImage(mapper, teaserImageStyle);
+			}
+			if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+				LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+				overviewBuilder.withDuration(learningPathConfigs.getDuration());
+				overviewBuilder.withStartDate(learningPathConfigs.getStartDate());
+				overviewBuilder.withEndDate(learningPathConfigs.getEndDate());
 			}
 			overview = overviewBuilder.build();
 		}

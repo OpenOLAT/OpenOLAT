@@ -183,6 +183,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			}
 		} else if (source == nodeAccessCtrl) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				layoutCtrl.updatePreviewUI(urequest);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == childTabsCntrllr) {

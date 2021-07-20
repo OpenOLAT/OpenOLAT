@@ -28,7 +28,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.LearningPathStatus;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.st.Overview.Builder;
@@ -55,10 +58,11 @@ public class OverviewFactory {
 	private final boolean smallPeekview;
 	private final ColorCategoryResolver colorCategoryResolver;
 	private final String mapperPrefix;
-	private final ScoreAccounting scoreAccounting;
 	private final Date now;
+	private ScoreAccounting scoreAccounting;
 	
 	private final CourseStyleService courseStyleService;
+	private LearningPathService learningPathService;
 	
 	public OverviewFactory(UserCourseEnvironment userCourseEnv, CourseNodeFilter courseNodeFilter, CourseNodeFilter peekViewFilter, boolean smallPeekview) {
 		this.userCourseEnv = userCourseEnv;
@@ -71,9 +75,13 @@ public class OverviewFactory {
 		colorCategoryResolver = courseStyleService.getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());
 		mapperPrefix = CodeHelper.getUniqueID();
 		
-		scoreAccounting = userCourseEnv.getScoreAccounting();
-		scoreAccounting.evaluateAll();
 		now = new Date();
+		if (userCourseEnv.isParticipant()) {
+			scoreAccounting = userCourseEnv.getScoreAccounting();
+			scoreAccounting.evaluateAll();
+		} else if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
+			learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		}
 	}
 
 	public Controller create(UserRequest ureq, WindowControl wControl, CourseTreeNode courseTreeNode) {
@@ -101,20 +109,29 @@ public class OverviewFactory {
 		builder.withIconCss(CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 		builder.withTitle(courseNode.getShortTitle());
 		
-		AssessmentEvaluation evaluation = scoreAccounting.getScoreEvaluation(courseNode);
-		if (evaluation != AssessmentEvaluation.EMPTY_EVAL) {
+		if (scoreAccounting != null) {
+			AssessmentEvaluation evaluation = scoreAccounting.getScoreEvaluation(courseNode);
 			LearningPathStatus learningPathStatus = LearningPathStatus.of(evaluation);
 			builder.withLearningPathStatus(learningPathStatus);
 			
-			Date startDate = evaluation.getStartDate();
-			if (startDate != null && startDate.after(now) && LearningPathStatus.done != learningPathStatus) {
-				builder.withStartDate(startDate);
+			if (LearningPathStatus.done != learningPathStatus) {
+				builder.withDuration(evaluation.getDuration());
+				
+				Date startDate = evaluation.getStartDate();
+				if (startDate != null && startDate.after(now)) {
+					builder.withStartDate(startDate);
+				} else {
+					Date currentEndDate = evaluation.getEndDate().getCurrent();
+					if (currentEndDate != null && currentEndDate.after(now)) {
+						builder.withEndDate(currentEndDate);
+					}
+				}
 			}
-			
-			Date currentEndDate = evaluation.getEndDate().getCurrent();
-			if (currentEndDate != null && currentEndDate.after(now) && LearningPathStatus.done != learningPathStatus) {
-				builder.withEndDate(currentEndDate);
-			}
+		} else if (learningPathService != null) {
+			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+			builder.withDuration(learningPathConfigs.getDuration());
+			builder.withStartDate(learningPathConfigs.getStartDate());
+			builder.withEndDate(learningPathConfigs.getEndDate());
 		}
 		
 		Controller peekViewCtrl = null;

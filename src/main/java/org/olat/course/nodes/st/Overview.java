@@ -46,6 +46,7 @@ public class Overview {
 	private final LearningPathStatus learningPathStatus;
 	private final Date startDate;
 	private final Date endDate;
+	private final Integer duration;
 
 	private Overview(Builder builder) {
 		this.nodeIdent = builder.nodeIdent;
@@ -61,6 +62,7 @@ public class Overview {
 		this.learningPathStatus = builder.learningPathStatus;
 		this.startDate = builder.startDate;
 		this.endDate = builder.endDate;
+		this.duration = builder.duration;
 	}
 	
 	public String getNodeIdent() {
@@ -115,6 +117,10 @@ public class Overview {
 		return endDate;
 	}
 
+	public Integer getDuration() {
+		return duration;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -133,6 +139,7 @@ public class Overview {
 		private LearningPathStatus learningPathStatus;
 		private Date startDate;
 		private Date endDate;
+		private Integer duration;
 
 		private Builder() {
 		}
@@ -195,6 +202,11 @@ public class Overview {
 
 		public Builder withEndDate(Date endDate) {
 			this.endDate = endDate;
+			return this;
+		}
+
+		public Builder withDuration(Integer duration) {
+			this.duration = duration;
 			return this;
 		}
 

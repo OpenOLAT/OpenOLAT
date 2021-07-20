@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.learningpath.ui.LearningPathListController;
@@ -74,12 +75,40 @@ public class OverviewController extends BasicController {
 		nodeLink.setElementCssClass("o_gotoNode");
 		nodeLink.setEnabled(overview.getNoAccessMessage() == null);
 		
+		mainVC.contextPut("assessmentInfos", getAssessmentInfos(overview));
+		
 		if (peekViewCtrl != null) {
 			mainVC.put("peekView", this.peekViewCtrl.getInitialComponent());
 			listenTo(peekViewCtrl);
 		}
 		
 		putInitialPanel(mainVC);
+	}
+
+	private String getAssessmentInfos(Overview overview) {
+		Formatter formatter = Formatter.getInstance(getLocale());
+		boolean separator = false;
+		StringBuilder sb = new StringBuilder();
+		if (overview.getStartDate() != null) {
+			sb.append(translate("table.header.start")).append(": ").append(formatter.formatDateAndTime(overview.getStartDate()));
+			separator = true;
+		}
+		if (overview.getEndDate() != null) {
+			if (separator) {
+				sb.append(" | ");
+			}
+			sb.append(translate("table.header.end")).append(": ").append(formatter.formatDateAndTime(overview.getEndDate()));
+			separator = true;
+		}
+		if (overview.getDuration() != null) {
+			if (separator) {
+				sb.append(" | ");
+			}
+			sb.append(translate("table.header.duration")).append(": ").append(translate("minutes", new String[] {overview.getDuration().toString()}));
+			separator = true;
+		}
+		
+		return sb.toString();
 	}
 
 	@Override
