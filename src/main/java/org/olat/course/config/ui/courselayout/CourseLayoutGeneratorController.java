@@ -753,6 +753,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	
 	private Header createPreviewHeader() {
 		Builder builder = Header.builder();
+		builder.withIconCss("o_CourseModule_icon");
 		builder.withTitle(translate("preview.header.title"));
 		builder.withColorCategoryCss(colorCategory.getCssClass());
 		Mapper mapper = null;

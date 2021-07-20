@@ -199,6 +199,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			}
 		} else if (source == nodeConfigController) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				layoutCtrl.updatePreviewUI(urequest);
 				fireEvent(urequest, event);
 			}
 		}

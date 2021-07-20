@@ -25,6 +25,8 @@ import static org.olat.course.style.CourseStyleService.IMAGE_LIMIT_KB;
 import static org.olat.course.style.CourseStyleService.IMAGE_MIME_TYPES;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -33,11 +35,11 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -50,19 +52,22 @@ import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.Overview;
+import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ColorCategorySearchParams;
 import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.Header;
-import org.olat.course.style.Header.Builder;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.course.style.ui.ColorCategoryChooserController;
 import org.olat.course.style.ui.CourseStyleUIFactory;
-import org.olat.course.style.ui.HeaderController;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -87,16 +92,16 @@ public class NodeLayoutController extends FormBasicController {
 	private SingleSelection teaserImageSystemEl;
 	private FileElement teaserImageUploadEl;
 	private FormLink colorCategoryEl;
-	private FormLayoutContainer headerPreviewCont;
-	private StaticTextElement noHeaderPreviewEl;
+	private FormLayoutContainer previewCont;
 	
 	private CloseableCalloutWindowController calloutCtrl;
 	private ColorCategoryChooserController colorCategoryChooserCtrl;
-	private HeaderController headerCtrl;
+	private NodeLayoutPreviewController previewCtrl;
 	
 	private final ICourse course;
 	private final CourseNode courseNode;
 	private final UserCourseEnvironment userCourseEnv;
+	private final boolean inSTOverview;
 	private ImageSource teaserImageSource;
 	private ColorCategory colorCategory;
 	private ColorCategory inheritedColorCategory;
@@ -117,11 +122,12 @@ public class NodeLayoutController extends FormBasicController {
 		if (teaserImageStyle == null) {
 			teaserImageStyle = TeaserImageStyle.gradient;
 		}
+		inSTOverview = isInSTOverview();
 		
 		initForm(ureq);
 		updateTeaserImageUI();
 		doSetColorCategory(courseNode.getColorCategoryIdentifier());
-		updateHeaderPreviewUI(ureq);
+		updatePreviewUI(ureq);
 	}
 
 	@Override
@@ -183,13 +189,10 @@ public class NodeLayoutController extends FormBasicController {
 				formLayout, Link.NONTRANSLATED);
 		colorCategoryEl.setElementCssClass("o_colcal_ele");
 		
-		String page = Util.getPackageVelocityRoot(HeaderController.class) + "/header_preview.html"; 
-		headerPreviewCont = FormLayoutContainer.createCustomFormLayout("preview.header", getTranslator(), page);
-		headerPreviewCont.setLabel("preview.header", null);
-		formLayout.add(headerPreviewCont);
-		
-		noHeaderPreviewEl = uifactory.addStaticTextElement("no.header.preview", "preview.header",
-				translate("preview.header.no.header"), formLayout);
+		String page = Util.getPackageVelocityRoot(NodeLayoutController.class) + "/layout_preview_cont.html"; 
+		previewCont = FormLayoutContainer.createCustomFormLayout("layout.preview", getTranslator(), page);
+		previewCont.setLabel("layout.preview", null);
+		formLayout.add(previewCont);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -200,17 +203,17 @@ public class NodeLayoutController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == displayOptionsEl) {
-			updateHeaderPreviewUI(ureq);
+			updatePreviewUI(ureq);
 		} else if (source == teaserImageTypeEl) {
 			updateTeaserImageUI();
-			updateHeaderPreviewUI(ureq);
+			updatePreviewUI(ureq);
 		} else if (source == teaserImageSystemEl) {
-			updateHeaderPreviewUI(ureq);
+			updatePreviewUI(ureq);
 		} else if (source == teaserImageUploadEl) {
-			updateHeaderPreviewUI(ureq);
+			updatePreviewUI(ureq);
 		} else if (source == colorCategoryEl) {
 			doChooseColorCategory(ureq);
-			updateHeaderPreviewUI(ureq);
+			updatePreviewUI(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -220,7 +223,7 @@ public class NodeLayoutController extends FormBasicController {
 		if (colorCategoryChooserCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				doSetColorCategory(colorCategoryChooserCtrl.getColorCategory().getIdentifier());
-				updateHeaderPreviewUI(ureq);
+				updatePreviewUI(ureq);
 			}
 			calloutCtrl.deactivate();
 			cleanUp();
@@ -338,45 +341,48 @@ public class NodeLayoutController extends FormBasicController {
 		return inheritedColorCategory;
 	}
 	
-	private void updateHeaderPreviewUI(UserRequest ureq) {
-		removeAsListenerAndDispose(headerCtrl);
-		headerCtrl = null;
-		
-		Header header = createPreviewHeader();
-		if (CourseStyleUIFactory.hasValues(header)) {
-			headerCtrl = new HeaderController(ureq, getWindowControl(), header);
-			listenTo(headerCtrl);
-			headerPreviewCont.put("header", headerCtrl.getInitialComponent());
-			headerPreviewCont.setVisible(true);
-			noHeaderPreviewEl.setVisible(false);
-		} else {
-			headerPreviewCont.setVisible(false);
-			noHeaderPreviewEl.setVisible(true);
+	public void updatePreviewUI(UserRequest ureq) {
+		if (previewCtrl == null) {
+			previewCtrl = new NodeLayoutPreviewController(ureq, getWindowControl(), courseNode);
+			listenTo(previewCtrl);
+			previewCont.put("preview", previewCtrl.getInitialComponent());
 		}
-	}
-	
-	private Header createPreviewHeader() {
-		Builder builder = Header.builder();
 		
-		String displayOption = displayOptionsEl.getSelectedKey();
-		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getShortTitle());
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getLongTitle());
-		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getShortTitle());
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getLongTitle());
-		}
-		builder.withObjectives(courseNode.getObjectives());
-		builder.withInstruction(courseNode.getInstruction());
-		builder.withInstrucionalDesign(courseNode.getInstructionalDesign());
-		
+		String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
 		String colorCategoryCss = ColorCategory.IDENTIFIER_INHERITED.equals(colorCategory.getIdentifier())
 					? getInheritedColorCategory().getCssClass()
 					: colorCategory.getCssClass();
-		builder.withColorCategoryCss(colorCategoryCss);
+		Mapper mapper = createPreviewImageMapper();
+
+		org.olat.course.style.Header.Builder headerBuilder = Header.builder();
+		headerBuilder.withIconCss(iconCSSClass);
+		String displayOption = displayOptionsEl.getSelectedKey();
+		CourseStyleUIFactory.addMetadata(headerBuilder, courseNode, displayOption, true);
+		headerBuilder.withColorCategoryCss(colorCategoryCss);
+		if (mapper != null) {
+			headerBuilder.withTeaserImage(mapper, teaserImageStyle);
+		}
+		Header header = headerBuilder.build();
 		
+		Overview overview = null;
+		if (inSTOverview) {
+			org.olat.course.nodes.st.Overview.Builder overviewBuilder = Overview.builder();
+			overviewBuilder.withNodeIdent(courseNode.getIdent());
+			overviewBuilder.withIconCss(iconCSSClass);
+			overviewBuilder.withTitle(courseNode.getShortTitle());
+			overviewBuilder.withSubTitle(courseNode.getLongTitle());
+			overviewBuilder.withDescription(courseNode.getDescription());
+			overviewBuilder.withColorCategoryCss(colorCategoryCss);
+			if (mapper != null) {
+				overviewBuilder.withTeaserImage(mapper, teaserImageStyle);
+			}
+			overview = overviewBuilder.build();
+		}
+		
+		previewCtrl.update(ureq, header, overview);
+	}
+
+	private Mapper createPreviewImageMapper() {
 		Mapper mapper = null;
 		if (teaserImageUploadEl.isVisible()) {
 			if (teaserImageUploadEl.getUploadFile() != null) {
@@ -405,11 +411,34 @@ public class NodeLayoutController extends FormBasicController {
 				}
 			}
 		}
-		if (mapper != null) {
-			builder.withTeaserImage(mapper, teaserImageStyle);
-		}
-		
-		return builder.build();
+		return mapper;
 	}
+
+	private boolean isInSTOverview() {
+		TreeNode treeNode = course.getEditorTreeModel().getNodeById(courseNode.getIdent());
+		if (treeNode != null && treeNode.getParent() instanceof CourseEditorTreeNode) {
+			CourseEditorTreeNode parent = (CourseEditorTreeNode)treeNode.getParent();
+			if (parent.getCourseNode() instanceof STCourseNode) {
+				STCourseNode stCourseNode = (STCourseNode)parent.getCourseNode();
+				ModuleConfiguration stConfig = stCourseNode.getModuleConfiguration();
+				String displayType = stConfig.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC);
+				if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_TOC.equals(displayType) 
+						|| STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(displayType)) {
+					String childrenFilterConfig = stConfig.getStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_FILTER, STCourseNodeEditController.CONFIG_VALUE_CHILDREN_ALL);
+					if (STCourseNodeEditController.CONFIG_VALUE_CHILDREN_SELECTION.equals(childrenFilterConfig)) {
+						String childNodesConfig = stConfig.getStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_IDENTS, "");
+						List<String> childNodes = Arrays.asList(childNodesConfig.split(","));
+						if (childNodes.contains(courseNode.getIdent())) {
+							return true;
+						}
+					} else {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 
 }

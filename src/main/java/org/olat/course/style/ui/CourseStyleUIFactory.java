@@ -25,8 +25,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.Header;
+import org.olat.course.style.Header.Builder;
 import org.olat.course.style.TeaserImageStyle;
 
 /**
@@ -72,6 +74,28 @@ public class CourseStyleUIFactory {
 	
 	public static String getI18nKey(TeaserImageStyle style) {
 		return "teaser.image.style." + style.name();
+	}
+	
+	public static void addMetadata(Header.Builder builder, CourseNode courseNode, String displayOption, boolean coach) {
+		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
+			builder.withTitle(courseNode.getShortTitle());
+		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
+			builder.withTitle(courseNode.getLongTitle());
+		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
+			builder.withTitle(courseNode.getShortTitle());
+			addExtendedHeader(builder, courseNode, coach);
+		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
+			builder.withTitle(courseNode.getLongTitle());
+			addExtendedHeader(builder, courseNode, coach);
+		}
+	}
+	
+	private static void addExtendedHeader(Builder builder, CourseNode courseNode, boolean coach) {
+		builder.withObjectives(courseNode.getObjectives());
+		builder.withInstruction(courseNode.getInstruction());
+		if (coach) {
+			builder.withInstrucionalDesign(courseNode.getInstructionalDesign());
+		}
 	}
 	
 	public static boolean hasValues(Header header) {

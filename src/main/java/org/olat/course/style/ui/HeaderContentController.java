@@ -132,18 +132,8 @@ public class HeaderContentController extends BasicController
 		}
 		
 		Builder builder = Header.builder();
-		
-		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getShortTitle());
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getLongTitle());
-		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getShortTitle());
-			addExtendedHeader(builder, courseNode, userCourseEnv);
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getLongTitle());
-			addExtendedHeader(builder, courseNode, userCourseEnv);
-		}
+		boolean coach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+		CourseStyleUIFactory.addMetadata(builder, courseNode, displayOption, coach);
 		
 		CourseConfig courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		Mapper teaserImageMapper = courseStyleService.getTeaserImageMapper(userCourseEnv.getCourseEnvironment(), courseNode);
@@ -159,14 +149,6 @@ public class HeaderContentController extends BasicController
 		builder.withIconCss(iconCssClass);
 		
 		return builder.build();
-	}
-
-	private void addExtendedHeader(Builder builder, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		builder.withObjectives(courseNode.getObjectives());
-		builder.withInstruction(courseNode.getInstruction());
-		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
-			builder.withInstrucionalDesign(courseNode.getInstructionalDesign());
-		}
 	}
 
 	@Override
