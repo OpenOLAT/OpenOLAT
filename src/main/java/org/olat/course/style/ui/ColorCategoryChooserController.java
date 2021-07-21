@@ -51,16 +51,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ColorCategoryChooserController extends BasicController {
 	
-	private final ColorCategory inheritedColorCategory;
 	private ColorCategory colorCategory;
 	
 	@Autowired
 	private CourseStyleService courseStyleService;
 
-	public ColorCategoryChooserController(UserRequest ureq, WindowControl wControl,
-			ColorCategorySearchParams searchParams, ColorCategory inheritedColorCategory) {
+	public ColorCategoryChooserController(UserRequest ureq, WindowControl wControl, ColorCategorySearchParams searchParams) {
 		super(ureq, wControl);
-		this.inheritedColorCategory = inheritedColorCategory;
 		VelocityContainer mainVC = createVelocityContainer("color_category_chooser");
 		
 		List<ColorCategory> colorCategories = courseStyleService.getColorCategories(searchParams);
@@ -75,17 +72,8 @@ public class ColorCategoryChooserController extends BasicController {
 	}
 	
 	private void addColor(VelocityContainer colorVC, List<String> cmpNames, ColorCategory colorCategory) {
-		String categoryName = ColorCategory.IDENTIFIER_INHERITED.equals(colorCategory.getIdentifier())
-				? CourseStyleUIFactory.translateInherited(getTranslator(), inheritedColorCategory)
-				: CourseStyleUIFactory.translate(getTranslator(), colorCategory);
-		String iconLeftCss = ColorCategory.IDENTIFIER_INHERITED.equals(colorCategory.getIdentifier())
-				? CourseStyleUIFactory.getIconLeftCss(inheritedColorCategory)
-				: CourseStyleUIFactory.getIconLeftCss(colorCategory);
-		extracted(colorVC, cmpNames, colorCategory, categoryName, iconLeftCss);
-	}
-
-	private void extracted(VelocityContainer colorVC, List<String> cmpNames, ColorCategory colorCategory,
-			String categoryName, String iconLeftCss) {
+		String categoryName =  CourseStyleUIFactory.translate(getTranslator(), colorCategory);
+		String iconLeftCss = CourseStyleUIFactory.getIconLeftCss(colorCategory);
 		String name = "o_colcat_" + colorCategory.getIdentifier();
 		cmpNames.add(name);
 		Link colorCategoryEl = LinkFactory.createCustomLink(name, "select", categoryName,

@@ -60,37 +60,42 @@ public class CachingColorCategoryResolver implements ColorCategoryResolver {
 	}
 	
 	@Override
-	public String getColorCategoryCss(INode iNode) {
-		ColorCategory colorCategory = getNodeOrCourseColorCategory(iNode);
-		return colorCategory.isEnabled()
+	public String getCss(ColorCategory colorCategory) {
+		return colorCategory != null && colorCategory.isEnabled()
 				? colorCategory.getCssClass()
 				: getCachedOrLoad(ColorCategory.IDENTIFIER_NO_COLOR).getCssClass();
 	}
-
+	
 	@Override
-	public ColorCategory getInheritedColorCategory(INode iNode) {
-		INode parent = iNode.getParent();
-		if (parent != null) {
-			return getNodeOrCourseColorCategory(parent);
-		}
-		return getCachedOrLoad(ColorCategory.IDENTIFIER_NO_COLOR);
+	public String getColorCategoryCss(INode iNode) {
+		ColorCategory colorCategory = getNodeColorCategory(iNode);
+		return getCss(colorCategory);
 	}
 	
-	private ColorCategory getNodeOrCourseColorCategory(INode iNode) {
-		ColorCategory colorCategory = getColorCategory(iNode);
-		if (ColorCategory.IDENTIFIER_INHERITED.equals(colorCategory.getIdentifier())) {
-			colorCategory = getColorCategory(courseColorCategoryIdentifier, ColorCategory.IDENTIFIER_FALLBACK_COURSE);
-		}
-		return colorCategory;
+	@Override
+	public ColorCategory getColorCategory(INode iNode) {
+		return getNodeColorCategory(iNode);
 	}
 
-	private ColorCategory getColorCategory(INode iNode) {
+	private ColorCategory getNodeColorCategory(INode iNode) {
 		String colorCategoryIdentifier = getCourseNode(iNode).getColorCategoryIdentifier();
-		ColorCategory colorCategory = getColorCategory(colorCategoryIdentifier, ColorCategory.IDENTIFIER_FALLBACK_COURSE_NODE);
+		return getColorCategory(colorCategoryIdentifier, iNode);
+	}
+
+	@Override
+	public ColorCategory getColorCategory(String colorCategoryIdentifier, INode iNode) {
+		if (ColorCategory.IDENTIFIER_COURSE.equals(colorCategoryIdentifier)) {
+			return getCachedOrLoad(courseColorCategoryIdentifier);
+		}
+		
+		String fallbackIdentifier = iNode != null? ColorCategory.IDENTIFIER_FALLBACK_COURSE_NODE: ColorCategory.IDENTIFIER_FALLBACK_COURSE;
+		ColorCategory colorCategory = getColorCategory(colorCategoryIdentifier, fallbackIdentifier);
 		if (ColorCategory.IDENTIFIER_INHERITED.equals(colorCategory.getIdentifier())) {
-			INode parent = iNode.getParent();
+			INode parent = iNode != null? iNode.getParent(): null;
 			if (parent != null) {
-				colorCategory = getColorCategory(parent);
+				colorCategory = getNodeColorCategory(parent);
+			} else {
+				colorCategory = getCachedOrLoad(courseColorCategoryIdentifier);
 			}
 		}
 		return colorCategory;

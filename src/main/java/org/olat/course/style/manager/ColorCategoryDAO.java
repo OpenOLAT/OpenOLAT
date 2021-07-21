@@ -49,8 +49,9 @@ public class ColorCategoryDAO {
 	
 	@PostConstruct
 	public void init() {
-		createPredefined(ColorCategory.IDENTIFIER_NO_COLOR, ColorCategory.Type.technical, -20, "o_colcat_nocolor");
+		createPredefined(ColorCategory.IDENTIFIER_NO_COLOR, ColorCategory.Type.technical, -20, ColorCategory.CSS_NO_COLOR);
 		createPredefined(ColorCategory.IDENTIFIER_INHERITED, ColorCategory.Type.technical, -10, "o_colcat_inherited");
+		createPredefined(ColorCategory.IDENTIFIER_COURSE, ColorCategory.Type.technical, -5, "o_colcat_course");
 		createPredefined("dark.blue", ColorCategory.Type.predefined, 1, "o_colcat_dark_blue");
 		createPredefined("light.blue", ColorCategory.Type.predefined, 2, "o_colcat_light_blue");
 		createPredefined("purple", ColorCategory.Type.predefined, 3, "o_colcat_purple");

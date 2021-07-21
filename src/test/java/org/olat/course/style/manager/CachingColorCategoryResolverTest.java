@@ -95,20 +95,6 @@ public class CachingColorCategoryResolverTest {
 	}
 	
 	@Test
-	public void shouldGetFallbackCssOfCourseNodeIfCategoryNotExists() {
-		CourseNode courseNode1 = new STCourseNode();
-		courseNode1.setColorCategoryIdentifier(identifier1);
-		CourseNode courseNode2 = new STCourseNode();
-		courseNode2.setParent(courseNode1);
-		courseNode2.setColorCategoryIdentifier(random()); // ColorCategory does not exists => inherit
-		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
-		String colorCategoryCss = sut.getColorCategoryCss(courseNode2);
-		
-		assertThat(colorCategoryCss).isEqualTo(css1);
-	}
-	
-	@Test
 	public void shouldGetCssOfInheritedCourseNode() {
 		CourseNode courseNode1 = new STCourseNode();
 		courseNode1.setColorCategoryIdentifier(identifier1);
@@ -132,9 +118,40 @@ public class CachingColorCategoryResolverTest {
 		
 		assertThat(colorCategoryCss).isEqualTo(cssCourse);
 	}
+	
+	@Test
+	public void shouldGetCssOfCourse() {
+		CourseNode courseNode1 = new STCourseNode();
+		courseNode1.setColorCategoryIdentifier(identifier1);
+		CourseNode courseNode2 = new STCourseNode();
+		courseNode2.setParent(courseNode1);
+		courseNode2.setColorCategoryIdentifier(identifier1);
+		CourseNode courseNode3 = new STCourseNode();
+		courseNode3.setParent(courseNode2);
+		courseNode3.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_COURSE);
+		
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode3);
+		
+		assertThat(colorCategoryCss).isEqualTo(cssCourse);
+	}
+	
+	@Test
+	public void shouldGetFallbackCssOfCourseNodeIfCategoryNotExists() {
+		CourseNode courseNode1 = new STCourseNode();
+		courseNode1.setColorCategoryIdentifier(identifier1);
+		CourseNode courseNode2 = new STCourseNode();
+		courseNode2.setParent(courseNode1);
+		courseNode2.setColorCategoryIdentifier(random()); // ColorCategory does not exists => inherit
+		
+		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
+		String colorCategoryCss = sut.getColorCategoryCss(courseNode2);
+		
+		assertThat(colorCategoryCss).isEqualTo(css1);
+	}
 
 	@Test
-	public void shouldGetFallbackCssOfCourse() {
+	public void shouldGetFallbackCssOfCourseIfCategoryNotExists() {
 		CourseNode courseNode = new STCourseNode();
 		courseNode.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
 		
@@ -164,40 +181,6 @@ public class CachingColorCategoryResolverTest {
 		String colorCategoryCss = sut.getColorCategoryCss(courseNode);
 		
 		assertThat(colorCategoryCss).isEqualTo(cssNoColor);
-	}
-	
-	@Test
-	public void shouldGetInheritedColorCategory() {
-		CourseNode courseNode1 = new STCourseNode();
-		courseNode1.setColorCategoryIdentifier(identifier1);
-		CourseNode courseNode2 = new STCourseNode();
-		courseNode2.setParent(courseNode1);
-		courseNode2.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
-		CourseNode courseNode3 = new STCourseNode();
-		courseNode3.setParent(courseNode2);
-		courseNode3.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
-		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
-		ColorCategory inheritedColorCategory = sut.getInheritedColorCategory(courseNode3);
-		
-		assertThat(inheritedColorCategory.getCssClass()).isEqualTo(css1);
-	}
-	
-	@Test
-	public void shouldGetInheritedColorCategoryUpToCourse() {
-		CourseNode courseNode1 = new STCourseNode();
-		courseNode1.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
-		CourseNode courseNode2 = new STCourseNode();
-		courseNode2.setParent(courseNode1);
-		courseNode2.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
-		CourseNode courseNode3 = new STCourseNode();
-		courseNode3.setParent(courseNode2);
-		courseNode3.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_INHERITED);
-		
-		CachingColorCategoryResolver sut = new CachingColorCategoryResolver(colorCategoryDao, identifierCourse);
-		ColorCategory inheritedColorCategory = sut.getInheritedColorCategory(courseNode3);
-		
-		assertThat(inheritedColorCategory.getCssClass()).isEqualTo(cssCourse);
 	}
 
 }

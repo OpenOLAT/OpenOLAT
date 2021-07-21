@@ -62,6 +62,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -84,6 +85,7 @@ import org.olat.course.config.ui.courselayout.elements.AbstractLayoutElement;
 import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.style.ColorCategory;
+import org.olat.course.style.ColorCategoryResolver;
 import org.olat.course.style.ColorCategorySearchParams;
 import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.Header;
@@ -109,9 +111,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseLayoutGeneratorController extends FormBasicController {
 
+	private static final String COLOR_CATEGORY_CUSTOM = "custom";
 	private static final ColorCategorySearchParams SEARCH_PARAMS = ColorCategorySearchParams.builder()
+			.addColorTypes()
 			.withEnabled(Boolean.TRUE)
-			.excludeInherited()
 			.build();
 	private static final String ELEMENT_ATTRIBUTE_DELIM = "__";
 	private static final String PREVIEW_IMAGE_NAME = "preview.png";
@@ -134,7 +137,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private SingleSelection teaserImageSystemEl;
 	private FileElement teaserImageUploadEl;
 	private SingleSelection teaserImageStyleEl;
-	private FormLink colorCategoryEl;
+	private SingleSelection colorCategoryEl;
+	private FormLink colorCategorySelectionEl;
 	private FormLayoutContainer headerPreviewCont;
 	
 	private CloseableCalloutWindowController calloutCtrl;
@@ -149,9 +153,10 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private CourseConfig courseConfig;
 	private final RepositoryEntry courseEntry;
 	private CourseEnvironment courseEnvironment;
+	private final ColorCategoryResolver colorCategoryResolver;
 	private ImageSource teaserImageSource;
 	private TeaserImageStyle teaserImageStyle;
-	private ColorCategory colorCategory;
+	private String colorCategoryIdentifier;
 	
 	@Autowired
 	private UserManager userManager;
@@ -169,11 +174,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		this.courseEntry = entry;
 		this.courseConfig = courseConfig;
 		this.courseEnvironment = courseEnvironment;
+		colorCategoryResolver = courseStyleService.getColorCategoryResolver(SEARCH_PARAMS, courseConfig.getColorCategoryIdentifier());
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
 		this.editable = (lockEntry != null && lockEntry.isSuccess()) && editable && !readOnly;
 		this.readOnly = readOnly;
 		this.onValues = new String[] {translate("on")};
+		colorCategoryIdentifier = courseConfig.getColorCategoryIdentifier();
 		
 		// stack the translator to get attribs/elements
 		Translator pt = Util.createPackageTranslator(AbstractLayoutAttribute.class, getLocale(), getTranslator());
@@ -187,7 +194,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		teaserImageStyle = courseConfig.getTeaserImageStyle();
 		initForm(ureq);
 		updateTeaserImageUI();
-		doSetColorCategory(courseConfig.getColorCategoryIdentifier());
+		updateColorCategoryUI();
 		updateHeaderPreviewUI(ureq);
 		
 		if(lockEntry != null && !lockEntry.isSuccess()) {
@@ -372,16 +379,31 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		SelectionValues teaserImageStyleKV = new SelectionValues();
 		Arrays.stream(TeaserImageStyle.values()).forEach(
 				style -> teaserImageStyleKV.add(entry(style.name(), translate(CourseStyleUIFactory.getI18nKey(style)))));
-		teaserImageStyleEl = uifactory.addCardSingleSelectHorizontal("teaser.image.style", styleCont, teaserImageStyleKV.keys(), teaserImageStyleKV.values(), null, null);
+		teaserImageStyleEl = uifactory.addRadiosHorizontal("teaser.image.style", styleCont, teaserImageStyleKV.keys(), teaserImageStyleKV.values());
 		teaserImageStyleEl.addActionListener(FormEvent.ONCHANGE);
 		if (teaserImageStyle == null || !teaserImageStyleEl.containsKey(teaserImageStyle.name())) {
 			teaserImageStyle = TeaserImageStyle.gradient;
 		}
 		teaserImageStyleEl.select(teaserImageStyle.name(), true);
 		
-		colorCategoryEl = uifactory.addFormLink("color.category", "color.category", "", translate("color.category"), styleCont, Link.NONTRANSLATED);
-		colorCategoryEl.setElementCssClass("o_colcal_ele");
+		SelectionValues colorCategoryKV = new SelectionValues();
+		colorCategoryKV.add(entry(COLOR_CATEGORY_CUSTOM, translate("color.category.type.custom")));
+		colorCategoryKV.add(entry(ColorCategory.IDENTIFIER_NO_COLOR, translate("color.category.type.none")));
+		colorCategoryEl = uifactory.addRadiosHorizontal("color.category", styleCont, colorCategoryKV.keys(), colorCategoryKV.values());
+		colorCategoryEl.addActionListener(FormEvent.ONCHANGE);
 		colorCategoryEl.setEnabled(editable);
+		if (colorCategoryEl.containsKey(colorCategoryIdentifier)) {
+			colorCategoryEl.select(colorCategoryIdentifier, true);
+		} else if (StringHelper.containsNonWhitespace(colorCategoryIdentifier)) {
+			colorCategoryEl.select(COLOR_CATEGORY_CUSTOM, true);
+		} else {
+			colorCategoryEl.select(ColorCategory.IDENTIFIER_NO_COLOR, true);
+		}
+		
+		colorCategorySelectionEl = uifactory.addFormLink("color.category.selection", "color.category.selection", "",
+				translate("color.category.selection"), styleCont, Link.NONTRANSLATED);
+		colorCategorySelectionEl.setElementCssClass("o_colcal_ele");
+		colorCategorySelectionEl.setEnabled(editable);
 		
 		String page = Util.getPackageVelocityRoot(HeaderController.class) + "/header_preview.html"; 
 		headerPreviewCont = FormLayoutContainer.createCustomFormLayout("preview.header", getTranslator(), page);
@@ -447,6 +469,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			updateTeaserImageUI();
 			updateHeaderPreviewUI(ureq);
 		} else if (source == colorCategoryEl) {
+			updateColorCategorySelectionUI();
+			updateHeaderPreviewUI(ureq);
+		} else if (source == colorCategorySelectionEl) {
 			doChooseColorCategory(ureq);
 			updateHeaderPreviewUI(ureq);
 		} 
@@ -456,7 +481,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (colorCategoryChooserCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				doSetColorCategory(colorCategoryChooserCtrl.getColorCategory().getIdentifier());
+				colorCategoryIdentifier = colorCategoryChooserCtrl.getColorCategory().getIdentifier();
+				updateColorCategoryUI();
 				updateHeaderPreviewUI(ureq);
 			}
 			calloutCtrl.deactivate();
@@ -635,7 +661,6 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			
 		courseConfig.setTeaserImageStyle(teaserImageStyle);
 		
-		String colorCategoryIdentifier = colorCategory != null? colorCategory.getIdentifier(): null;
 		courseConfig.setColorCategoryIdentifier(colorCategoryIdentifier);
 		
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
@@ -719,26 +744,41 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		teaserImageSystemEl.setVisible(ImageSourceType.system == type);
 		teaserImageStyleEl.setVisible(ImageSourceType.none != type);
 	}
+
+	private void updateColorCategorySelectionUI() {
+		if (colorCategoryEl.isOneSelected()) {
+			String selectedKey = colorCategoryEl.getSelectedKey();
+			if (!COLOR_CATEGORY_CUSTOM.equals(selectedKey)) {
+				colorCategoryIdentifier = selectedKey;
+			}
+			updateColorCategoryUI();
+		}
+	}
 	
 	private void doChooseColorCategory(UserRequest ureq) {
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(colorCategoryChooserCtrl);
 		
-		colorCategoryChooserCtrl = new ColorCategoryChooserController(ureq, getWindowControl(), SEARCH_PARAMS, null);
+		colorCategoryChooserCtrl = new ColorCategoryChooserController(ureq, getWindowControl(), SEARCH_PARAMS);
 		listenTo(colorCategoryChooserCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				colorCategoryChooserCtrl.getInitialComponent(), colorCategoryEl.getFormDispatchId(), "", true, "");
+				colorCategoryChooserCtrl.getInitialComponent(), colorCategorySelectionEl.getFormDispatchId(), "", true, "");
 		listenTo(calloutCtrl);
 		calloutCtrl.activate();
 	}
 	
-	private void doSetColorCategory(String identifier) {
-		colorCategory = courseStyleService.getColorCategory(identifier, ColorCategory.IDENTIFIER_FALLBACK_COURSE);
-		String categoryName = CourseStyleUIFactory.translate(getTranslator(), colorCategory);
-		colorCategoryEl.setI18nKey(categoryName);
-		String iconLeftCss = CourseStyleUIFactory.getIconLeftCss(colorCategory);
-		colorCategoryEl.setIconLeftCSS(iconLeftCss);
+	private void updateColorCategoryUI() {
+		boolean custom = colorCategoryEl.isOneSelected() && COLOR_CATEGORY_CUSTOM.equals(colorCategoryEl.getSelectedKey());
+		if (custom) {
+			ColorCategory colorCategory = colorCategoryResolver.getColorCategory(colorCategoryIdentifier, null);
+			colorCategoryIdentifier = colorCategory.getIdentifier();
+			String categoryName = CourseStyleUIFactory.translate(getTranslator(), colorCategory);
+			String iconLeftCss = CourseStyleUIFactory.getIconLeftCss(colorCategory);
+			colorCategorySelectionEl.setI18nKey(categoryName);
+			colorCategorySelectionEl.setIconLeftCSS(iconLeftCss);
+		}
+		colorCategorySelectionEl.setVisible(custom);
 	}
 
 	private void updateHeaderPreviewUI(UserRequest ureq) {
@@ -755,7 +795,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		Builder builder = Header.builder();
 		builder.withIconCss("o_CourseModule_icon");
 		builder.withTitle(translate("preview.header.title"));
-		builder.withColorCategoryCss(colorCategory.getCssClass());
+		ColorCategory colorCategory = colorCategoryResolver.getColorCategory(colorCategoryIdentifier, null);
+		String colorCategoryCss = colorCategoryResolver.getCss(colorCategory);
+		builder.withColorCategoryCss(colorCategoryCss);
 		Mapper mapper = null;
 		if (teaserImageUploadEl.isVisible()) {
 			if (teaserImageUploadEl.getUploadFile() != null) {

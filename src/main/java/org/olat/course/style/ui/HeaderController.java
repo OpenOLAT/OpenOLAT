@@ -63,7 +63,7 @@ public class HeaderController extends BasicController implements ExpandableContr
 	private boolean isStyled() {
 		return isExpandable()
 				|| header.getTeaserImageMapper() != null
-				|| ColorCategory.IDENTIFIER_NO_COLOR.equals(header.getColorCategoryCss());
+				|| !ColorCategory.CSS_NO_COLOR.equals(header.getColorCategoryCss());
 		
 	}
 

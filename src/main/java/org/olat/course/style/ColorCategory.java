@@ -28,7 +28,9 @@ package org.olat.course.style;
 public interface ColorCategory extends ColorCategoryRef, Comparable<ColorCategory> {
 	
 	public final static String IDENTIFIER_NO_COLOR = "no.color";
+	public final static String CSS_NO_COLOR = "o_colcat_nocolor";
 	public final static String IDENTIFIER_INHERITED = "inherited";
+	public final static String IDENTIFIER_COURSE = "course";
 	public final static String IDENTIFIER_FALLBACK_COURSE = IDENTIFIER_NO_COLOR;
 	public final static String IDENTIFIER_FALLBACK_COURSE_NODE = IDENTIFIER_INHERITED;
 	

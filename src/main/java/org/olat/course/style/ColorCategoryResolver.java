@@ -28,6 +28,15 @@ import org.olat.core.util.nodes.INode;
  *
  */
 public interface ColorCategoryResolver {
+	
+	/** 
+	 * Get the CSS of a ColorCategory.
+	 * This method handles disabled ColorCategory.
+	 *
+	 * @param colorCategory
+	 * @return
+	 */
+	String getCss(ColorCategory colorCategory);
 
 	/**
 	 * Returns the effective CSS class of the course node.
@@ -38,12 +47,20 @@ public interface ColorCategoryResolver {
 	String getColorCategoryCss(INode iNode);
 	
 	/**
-	 * Returns the inherited ColorCategory of the course node.
-	 * The current ColorCategory of the course is ignored.
+	 * Returns the effective ColorCategory for the the identifier.
+	 *
+	 * @param iNode
+	 * @return
+	 */
+	ColorCategory getColorCategory(INode iNode);
+	
+	/**
+	 * Returns the effective ColorCategory for the the identifier.
+	 * The iNode is used to get the inherited ColorCategory.
 	 * 
 	 * @param iNode CourseNode or CourseEditorTreeNode
 	 * @return
 	 */
-	ColorCategory getInheritedColorCategory(INode iNode);
+	ColorCategory getColorCategory(String colorCategoryIdentifier, INode iNode);
 	
 }
