@@ -182,7 +182,7 @@ public class ColorCategoryDAOTest extends OlatTestCase {
 				.build();
 		List<ColorCategory> colorCategories = sut.load(searchParams);
 		
-		assertThat(colorCategories).hasSize(2);
+		assertThat(colorCategories).hasSize(3);
 	}
 	
 	@Test
