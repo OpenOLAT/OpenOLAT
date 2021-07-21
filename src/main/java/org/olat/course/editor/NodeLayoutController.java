@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -82,6 +83,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeLayoutController extends FormBasicController {
 	
+	private static final String KEY_TITLE_SHORT = "short";
+	private static final String KEY_TITLE_LONG = "long";
+	private static final String KEY_TITLE_NONE = "none";
+	private static final String KEY_METADATA = "metadata";
 	private static final String COLOR_CATEGORY_CUSTOM = "custom";
 	private static final ColorCategorySearchParams SEARCH_PARAMS_RESOLVER = ColorCategorySearchParams.builder()
 			.addType(Type.technical)
@@ -91,14 +96,9 @@ public class NodeLayoutController extends FormBasicController {
 			.withEnabled(Boolean.TRUE)
 			.build();
 	
-	private static final String[] displayOptionsKeys = new String[]{
-		CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT,
-		CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT,
-		CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT,
-		CourseNode.DISPLAY_OPTS_TITLE_CONTENT,
-		CourseNode.DISPLAY_OPTS_CONTENT};
-	
-	private SingleSelection displayOptionsEl;
+	private FormLayoutContainer displayCont;
+	private SingleSelection displayTitleEl;
+	private MultipleSelectionElement displayMetadataEl;
 	private SingleSelection teaserImageTypeEl;
 	private SingleSelection teaserImageSystemEl;
 	private FileElement teaserImageUploadEl;
@@ -151,19 +151,37 @@ public class NodeLayoutController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.layout");
 		
-		String[] values = new String[]{
-				translate("nodeConfigForm.short_title_desc_content"),
-				translate("nodeConfigForm.title_desc_content"),
-				translate("nodeConfigForm.short_title_content"),
-				translate("nodeConfigForm.title_content"),
-				translate("nodeConfigForm.content_only")};
-		displayOptionsEl = uifactory.addDropdownSingleselect("displayOptions", "nodeConfigForm.display_options",
-				formLayout, displayOptionsKeys, values, null);
-		displayOptionsEl.addActionListener(FormEvent.ONCHANGE);
-		for(String displayOptionsKey:displayOptionsKeys) {
-			if(displayOptionsKey.equals(courseNode.getDisplayOption())) {
-				displayOptionsEl.select(displayOptionsKey, true);
-			}
+		displayCont = FormLayoutContainer.createBareBoneFormLayout("nodeConfigForm.display_options", getTranslator());
+		displayCont.setLabel("nodeConfigForm.display_options", null);
+		displayCont.setRootForm(mainForm);
+		formLayout.add(displayCont);
+		
+		SelectionValues titleKV = new SelectionValues();
+		titleKV.add(entry(KEY_TITLE_SHORT, translate("nodeConfigForm.title.short")));
+		titleKV.add(entry(KEY_TITLE_LONG, translate("nodeConfigForm.title.long")));
+		titleKV.add(entry(KEY_TITLE_NONE, translate("nodeConfigForm.title.none")));
+		displayTitleEl = uifactory.addRadiosHorizontal("nodeConfigForm.display_options", displayCont, titleKV.keys(), titleKV.values());
+		displayTitleEl.addActionListener(FormEvent.ONCHANGE);
+		
+		SelectionValues metadataKV = new SelectionValues();
+		metadataKV.add(entry(KEY_METADATA, translate("nodeConfigForm.metadata.all")));
+		displayMetadataEl = uifactory.addCheckboxesVertical("nodeConfigForm.metadata", displayCont, metadataKV.keys(), metadataKV.values(), 1);
+		displayMetadataEl.addActionListener(FormEvent.ONCHANGE);
+		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(courseNode.getDisplayOption())) {
+			displayTitleEl.select(KEY_TITLE_SHORT, true);
+			displayMetadataEl.select(KEY_METADATA, true);
+		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(courseNode.getDisplayOption())) {
+			displayTitleEl.select(KEY_TITLE_LONG, true);
+			displayMetadataEl.select(KEY_METADATA, true);
+		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(courseNode.getDisplayOption())) {
+			displayTitleEl.select(KEY_TITLE_SHORT, true);
+		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(courseNode.getDisplayOption())) {
+			displayTitleEl.select(KEY_TITLE_LONG, true);
+		} else if (CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT.equals(courseNode.getDisplayOption())) {
+			displayTitleEl.select(KEY_TITLE_NONE, true);
+			displayMetadataEl.select(KEY_METADATA, true);
+		} else if (CourseNode.DISPLAY_OPTS_CONTENT.equals(courseNode.getDisplayOption())) {
+			displayTitleEl.select(KEY_TITLE_NONE, true);
 		}
 		
 		SelectionValues teaserImageTypeKV = new SelectionValues();
@@ -237,7 +255,9 @@ public class NodeLayoutController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == displayOptionsEl) {
+		if (source == displayTitleEl) {
+			updatePreviewUI(ureq);
+		} else if (source == displayMetadataEl) {
 			updatePreviewUI(ureq);
 		} else if (source == teaserImageTypeEl) {
 			updateTeaserImageUI();
@@ -282,8 +302,8 @@ public class NodeLayoutController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		if(!displayOptionsEl.isOneSelected()) {
-			displayOptionsEl.setErrorKey("form.legende.mandatory", null);
+		if(!displayTitleEl.isOneSelected()) {
+			displayCont.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
@@ -300,7 +320,8 @@ public class NodeLayoutController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		courseNode.setDisplayOption(displayOptionsEl.getSelectedKey());
+		String displayOption = getDisplayOption();
+		courseNode.setDisplayOption(displayOption);
 		
 		ImageSourceType type =  teaserImageTypeEl.isOneSelected()
 				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
@@ -325,6 +346,27 @@ public class NodeLayoutController extends FormBasicController {
 		courseNode.setColorCategoryIdentifier(colorCategoryIdentifier);
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+	}
+
+	private String getDisplayOption() {
+		String titleKey = displayTitleEl.isOneSelected()? displayTitleEl.getSelectedKey(): KEY_TITLE_LONG;
+		String displayOption = CourseNode.DISPLAY_OPTS_CONTENT;
+		if (displayMetadataEl.isAtLeastSelected(1)) {
+			if (KEY_TITLE_SHORT.equals(titleKey)) {
+				displayOption = CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT;
+			} else if (KEY_TITLE_LONG.equals(titleKey)) {
+				displayOption = CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT;
+			} else {
+				displayOption = CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT;
+			}
+		} else {
+			if (KEY_TITLE_SHORT.equals(titleKey)) {
+				displayOption = CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT;
+			} else if (KEY_TITLE_LONG.equals(titleKey)) {
+				displayOption = CourseNode.DISPLAY_OPTS_TITLE_CONTENT;
+			}
+		}
+		return displayOption;
 	}
 	
 	@Override
@@ -390,7 +432,7 @@ public class NodeLayoutController extends FormBasicController {
 
 		org.olat.course.style.Header.Builder headerBuilder = Header.builder();
 		headerBuilder.withIconCss(iconCSSClass);
-		String displayOption = displayOptionsEl.getSelectedKey();
+		String displayOption = getDisplayOption();
 		CourseStyleUIFactory.addMetadata(headerBuilder, courseNode, displayOption, true);
 		headerBuilder.withColorCategoryCss(colorCategoryCss);
 		if (mapper != null) {

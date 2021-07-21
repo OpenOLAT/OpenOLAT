@@ -212,6 +212,7 @@ public class CopyCourseWizardController extends BasicController {
 		case CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT: return translate("nodeConfigForm.title_desc_content");
 		case CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT: return translate("nodeConfigForm.short_title_content");
 		case CourseNode.DISPLAY_OPTS_TITLE_CONTENT: return translate("nodeConfigForm.title_content");
+		case CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT: return translate("nodeConfigForm.description_content");
 		case CourseNode.DISPLAY_OPTS_CONTENT: return translate("nodeConfigForm.content_only");
 		default:
 			// nothing

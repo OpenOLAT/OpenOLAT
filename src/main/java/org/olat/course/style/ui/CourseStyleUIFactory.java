@@ -87,6 +87,8 @@ public class CourseStyleUIFactory {
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getLongTitle());
 			addExtendedHeader(builder, courseNode, coach);
+		} else if (CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT.equals(displayOption)) {
+			addExtendedHeader(builder, courseNode, coach);
 		}
 	}
 	

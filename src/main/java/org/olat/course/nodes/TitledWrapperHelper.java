@@ -64,6 +64,14 @@ public class TitledWrapperHelper {
 				}
 				controller = new TitledWrapperController(ureq, wControl, controller, null, titleInfo);
 			}
+		} else if (CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT.equals(displayOption)) {
+			String description = null;
+			if (StringHelper.containsNonWhitespace(courseNode.getDescription())) {
+				description = courseNode.getDescription();
+				TitleInfo titleInfo = new TitleInfo(null, null, description, courseNode.getIdent());
+				titleInfo.setDescriptionCssClass("o_description o_user_content_block");
+				controller = new TitledWrapperController(ureq, wControl, controller, null, titleInfo);
+			}
 		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 			String title = courseNode.getShortTitle();
 			String description = null;

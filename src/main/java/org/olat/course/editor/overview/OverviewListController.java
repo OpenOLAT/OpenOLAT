@@ -255,6 +255,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		case CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT: return translate("nodeConfigForm.title_desc_content");
 		case CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT: return translate("nodeConfigForm.short_title_content");
 		case CourseNode.DISPLAY_OPTS_TITLE_CONTENT: return translate("nodeConfigForm.title_content");
+		case CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT: return translate("nodeConfigForm.desc_content");
 		case CourseNode.DISPLAY_OPTS_CONTENT: return translate("nodeConfigForm.content_only");
 		default:
 			// nothing
