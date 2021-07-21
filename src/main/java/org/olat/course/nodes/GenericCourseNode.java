@@ -79,7 +79,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	private String type;
 	private String shortTitle;
 	private String longTitle;
-	private String learningObjectives; // legacy
+	private String learningObjectives; // legacy, replaced by description
 	private String description;
 	private String objectives;
 	private String instruction;
@@ -249,9 +249,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 
 	@Override
 	public String getObjectives() {
-		if (StringHelper.containsNonWhitespace(learningObjectives)) {
-			return learningObjectives; // legacy fallback
-		}
 		return objectives;
 	}
 
@@ -534,10 +531,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			newNode.setDisplayOption(getDisplayOption());
 			if (StringHelper.containsNonWhitespace(getLearningObjectives())) {
 				newNode.setDescription(getLearningObjectives());
-				newNode.setObjectives(getLearningObjectives());
 			} else {
 				newNode.setDescription(getDescription());
-				newNode.setObjectives(getObjectives());
 			}
 			newNode.setLongTitle(getLongTitle());
 			newNode.setNoAccessExplanation(getNoAccessExplanation());

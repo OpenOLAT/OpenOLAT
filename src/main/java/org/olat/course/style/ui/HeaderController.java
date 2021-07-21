@@ -69,7 +69,8 @@ public class HeaderController extends BasicController implements ExpandableContr
 
 	@Override
 	public boolean isExpandable() {
-		return StringHelper.containsNonWhitespace(header.getObjectives())
+		return StringHelper.containsNonWhitespace(header.getDescription())
+				|| StringHelper.containsNonWhitespace(header.getObjectives())
 				|| StringHelper.containsNonWhitespace(header.getInstruction())
 				|| StringHelper.containsNonWhitespace(header.getInstructionalDesign());
 	}

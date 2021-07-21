@@ -30,6 +30,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 public class Header {
 	
 	private final String title;
+	private final String description;
 	private final String objectives;
 	private final String instruction;
 	private final String instructionalDesign;
@@ -40,6 +41,7 @@ public class Header {
 
 	private Header(Builder builder) {
 		this.title = builder.title;
+		this.description = builder.description;
 		this.objectives = builder.objectives;
 		this.instruction = builder.instruction;
 		this.instructionalDesign = builder.instructionalDesign;
@@ -51,6 +53,10 @@ public class Header {
 	
 	public String getTitle() {
 		return title;
+	}
+
+	public String getDescription() {
+		return description;
 	}
 
 	public String getObjectives() {
@@ -87,6 +93,7 @@ public class Header {
 
 	public static final class Builder {
 		private String title;
+		private String description;
 		private String objectives;
 		private String instruction;
 		private String instructionalDesign;
@@ -100,6 +107,11 @@ public class Header {
 
 		public Builder withTitle(String title) {
 			this.title = title;
+			return this;
+		}
+
+		public Builder withDescription(String description) {
+			this.description = description;
 			return this;
 		}
 
