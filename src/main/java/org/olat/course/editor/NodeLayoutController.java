@@ -212,6 +212,8 @@ public class NodeLayoutController extends FormBasicController {
 		
 		teaserImageUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "teaser.image.upload", formLayout);
 		teaserImageUploadEl.setMaxUploadSizeKB(IMAGE_LIMIT_KB, null, null);
+		teaserImageUploadEl.setExampleKey("teaser.image.upload.example", null);
+		teaserImageUploadEl.setHelpTextKey("teaser.image.upload.help", null);
 		teaserImageUploadEl.addActionListener(FormEvent.ONCHANGE);
 		teaserImageUploadEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
 		if (ImageSourceType.custom.name().equals(teaserImageTypeEl.getSelectedKey())) {
