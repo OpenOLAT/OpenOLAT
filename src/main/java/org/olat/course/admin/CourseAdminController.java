@@ -41,6 +41,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessableCourseNodeAdminController;
 import org.olat.course.style.ui.ColorCategoryAdminController;
+import org.olat.course.style.ui.SystemImageAdminController;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.admin.EducationalTypeAdminController;
 
@@ -55,16 +56,19 @@ public class CourseAdminController extends BasicController implements Activateab
 	private static final String ORES_TYPE_SETTINGS = "Settings";
 	private static final String ORES_TYPE_EDUCATIONAL = "EducationalTypes";
 	private static final String ORES_TYPE_COLOR_CATEGORIES = "ColorCategory";
+	private static final String ORES_TYPE_SYSTEM_IMAGES = "Images";
 	
 	private final Link settingsLink;
 	private final Link educationalTypesLink;
 	private final Link colorCategoriesLink;
+	private final Link systemImagesLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
 	private Controller settingsCtrl;
 	private Controller educationalTypesCtrl;
 	private Controller colorCategoriesCtrl;
+	private Controller systemImagesCtrl;
 	
 	public CourseAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -82,6 +86,9 @@ public class CourseAdminController extends BasicController implements Activateab
 		
 		colorCategoriesLink = LinkFactory.createLink("color.categories", mainVC, this);
 		segmentView.addSegment(colorCategoriesLink, false);
+
+		systemImagesLink = LinkFactory.createLink("system.images", mainVC, this);
+		segmentView.addSegment(systemImagesLink, false);
 
 		doOpenSettings(ureq);
 		
@@ -107,6 +114,9 @@ public class CourseAdminController extends BasicController implements Activateab
 		} else if(ORES_TYPE_COLOR_CATEGORIES.equalsIgnoreCase(type)) {
 			doOpenColorCategories(ureq);
 			segmentView.select(colorCategoriesLink);
+		} else if(ORES_TYPE_SYSTEM_IMAGES.equalsIgnoreCase(type)) {
+			doOpenSystemImages(ureq);
+			segmentView.select(systemImagesLink);
 		}
 	}
 
@@ -123,6 +133,8 @@ public class CourseAdminController extends BasicController implements Activateab
 					doOpenEducationalTypes(ureq);
 				} else if (clickedLink == colorCategoriesLink) {
 					doOpenColorCategories(ureq);
+				} else if (clickedLink == systemImagesLink) {
+					doOpenSystemImages(ureq);
 				}
 			}
 		}
@@ -159,6 +171,17 @@ public class CourseAdminController extends BasicController implements Activateab
 			addToHistory(ureq, colorCategoriesCtrl);
 		}
 		mainVC.put("segmentCmp", colorCategoriesCtrl.getInitialComponent());
+	}
+	
+	private void doOpenSystemImages(UserRequest ureq) {
+		if(systemImagesCtrl == null) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ORES_TYPE_SYSTEM_IMAGES, 0l), null);
+			systemImagesCtrl = new SystemImageAdminController(ureq, bwControl);
+			listenTo(systemImagesCtrl);
+		} else {
+			addToHistory(ureq, systemImagesCtrl);
+		}
+		mainVC.put("segmentCmp", systemImagesCtrl.getInitialComponent());
 	}
 	
 }

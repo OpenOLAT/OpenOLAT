@@ -68,8 +68,8 @@ public class SystemImageStorage {
 		FileUtils.copyDirContentsToDir(providedDir, ROOT_PATH.toFile(), false, "");
 	}
 
-	public void store(File file) {
-		FileUtils.copyFileToDir(file, ROOT_PATH.toFile(), "");
+	public void store(File file, String filename) {
+		FileUtils.copyFileToFile(file, ROOT_PATH.resolve(filename).toFile(), false);
 	}
 	
 	public File load(String filename) {
@@ -90,7 +90,11 @@ public class SystemImageStorage {
 	
 	public List<ImageSource> loadAll() {
 		try (Stream<Path> stream = Files.walk(ROOT_PATH, 1)) {
-			return stream.filter(file -> !Files.isDirectory(file)).map(this::createImageSource).collect(Collectors.toList());
+			return stream
+					.filter(file -> !Files.isDirectory(file))
+					.filter(file -> !FileUtils.isMetaFilename(file.toFile().getName()))
+					.map(this::createImageSource)
+					.collect(Collectors.toList());
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -106,6 +110,18 @@ public class SystemImageStorage {
 		imageSource.setType(ImageSourceType.system);
 		imageSource.setFilename(filename);
 		return imageSource;
+	}
+
+	public boolean exists(String filename) {
+		return Files.exists(ROOT_PATH.resolve(filename));
+	}
+
+	public void delete(String filename) {
+		try {
+			Files.deleteIfExists(ROOT_PATH.resolve(filename));
+		} catch (IOException e) {
+			log.error("", e);
+		}
 	}
 
 }

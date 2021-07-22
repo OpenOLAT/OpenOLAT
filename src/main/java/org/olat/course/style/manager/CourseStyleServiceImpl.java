@@ -62,8 +62,8 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	}
 	
 	@Override
-	public void storeSystemImage(File file) {
-		systemImageStorage.store(file);
+	public void storeSystemImage(File file, String filename) {
+		systemImageStorage.store(file, filename);
 	}
 	
 	@Override
@@ -79,6 +79,16 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	@Override
 	public ImageSource getSystemTeaserImageSource(String filename) {
 		return systemImageStorage.createImageSource(filename);
+	}
+	
+	@Override
+	public boolean existsSystemImage(String filename) {
+		return systemImageStorage.exists(filename);
+	}
+	
+	@Override
+	public void deleteSystemImage(String filename) {
+		systemImageStorage.delete(filename);
 	}
 
 	@Override

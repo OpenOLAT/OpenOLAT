@@ -349,7 +349,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		SelectionValues teaserImageKV = new SelectionValues();
 		courseStyleService.getSystemTeaserImageSources().stream().forEach(
-				source -> teaserImageKV.add(entry(source.getFilename(), source.getFilename())));
+				source -> teaserImageKV.add(entry(
+						source.getFilename(),
+						CourseStyleUIFactory.translateSystemImage(getTranslator(), source.getFilename()))));
 		teaserImageKV.sort(SelectionValues.VALUE_ASC);
 		teaserImageSystemEl = uifactory.addDropdownSingleselect("teaser.image.system", styleCont, teaserImageKV.keys(), teaserImageKV.values());
 		teaserImageSystemEl.addActionListener(FormEvent.ONCHANGE);

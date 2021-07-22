@@ -52,20 +52,29 @@ public class CourseStyleUIFactory {
 	 * @param colorCategory
 	 * @return
 	 */
-	public static String translate(Translator translator, ColorCategory colorCategory) {
-		String name = translator.translate(getI18nKey(colorCategory));
+	public static String translateDisabled(Translator translator, ColorCategory colorCategory) {
+		String name = translate(translator, colorCategory);
 		return colorCategory.isEnabled()
 				? name
 				: translator.translate("color.category.name.disabled", new String[] {name});
 	}
 
 	public static String translateInherited(Translator translator, ColorCategory colorCategory) {
-		String name = translate(translator, colorCategory);
+		String name = translateDisabled(translator, colorCategory);
 		return translator.translate("color.category.inherited", new String[] {name});
 	}
 	
 	public static String getI18nKey(ColorCategory colorCategory) {
 		return "color.category.id." + colorCategory.getIdentifier();
+	}
+	
+	public static String translate(Translator translator, ColorCategory colorCategory) {
+		String i18nKey = getI18nKey(colorCategory);
+		String translation = translator.translate(i18nKey);
+		if(i18nKey.equals(translation) || translation.length() > 256) {
+			translation = colorCategory.getIdentifier();
+		}
+		return translation;
 	}
 
 	public static String getIconLeftCss(ColorCategory colorCategory) {
@@ -74,6 +83,19 @@ public class CourseStyleUIFactory {
 	
 	public static String getI18nKey(TeaserImageStyle style) {
 		return "teaser.image.style." + style.name();
+	}
+	
+	public static String getSystemImageI18nKey(String filename) {
+		return "system.image.id." + filename;
+	}
+	
+	public static String translateSystemImage(Translator translator, String filename) {
+		String i18nKey = getSystemImageI18nKey(filename);
+		String translation = translator.translate(i18nKey);
+		if(i18nKey.equals(translation) || translation.length() > 256) {
+			translation = filename;
+		}
+		return translation;
 	}
 	
 	public static void addMetadata(Header.Builder builder, CourseNode courseNode, String displayOption, boolean coach) {

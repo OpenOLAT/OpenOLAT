@@ -44,13 +44,17 @@ public interface CourseStyleService {
 	
 	public void initProvidedSystemImages() throws Exception;
 	
-	public void storeSystemImage(File file);
+	public void storeSystemImage(File file, String filename);
 	
 	public List<ImageSource> getSystemTeaserImageSources();
 
 	public File getSystemTeaserImageFile(String filename);
 
 	public ImageSource getSystemTeaserImageSource(String filename);
+
+	public boolean existsSystemImage(String filename);
+
+	public void deleteSystemImage(String filename);
 	
 	public ImageSource createEmptyImageSource(ImageSourceType type);
 	
