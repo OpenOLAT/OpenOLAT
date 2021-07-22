@@ -195,6 +195,14 @@
 			}
 		}
 	}
+	&.o_system_image {
+		height: 140px;
+		width: 140px;
+		.o_top {
+			height: 140px;
+			width: 140px;
+		}
+	}
 }
 
 

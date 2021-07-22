@@ -19,6 +19,7 @@
  */
 package org.olat.course.style.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ui.SystemImageDataModel.SystemImageCols;
@@ -77,7 +79,7 @@ public class SystemImageAdminController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
-		loadModel();
+		loadModel(ureq);
 	}
 
 	@Override
@@ -91,7 +93,7 @@ public class SystemImageAdminController extends FormBasicController {
 		addSystemImageLink.setIconLeftCSS("o_icon o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-//		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemImageCols.preview));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemImageCols.preview, new SystemImagePreviewRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemImageCols.filename));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SystemImageCols.translaton));
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(SystemImageCols.edit.i18nHeaderKey(),
@@ -108,16 +110,22 @@ public class SystemImageAdminController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-system-image");
 	}
 	
-	private void loadModel() {
+	private void loadModel(UserRequest ureq) {
 		List<ImageSource> systemImageSources = courseStyleService.getSystemTeaserImageSources();
 		systemImageSources.sort((i1, i2) -> i1.getFilename().compareToIgnoreCase(i2.getFilename()));
 		List<SystemImageRow> rows = new ArrayList<>(systemImageSources.size());
 		for (ImageSource systemImageSource: systemImageSources) {
 			SystemImageRow row = new SystemImageRow();
 			
-			row.setFilename(systemImageSource.getFilename());
-			String translation = CourseStyleUIFactory.translateSystemImage(getTranslator(), systemImageSource.getFilename());
+			String filename = systemImageSource.getFilename();
+			row.setFilename(filename);
+			String translation = CourseStyleUIFactory.translateSystemImage(getTranslator(), filename);
 			row.setTranslation(translation);
+			
+			File file = courseStyleService.getSystemTeaserImageFile(filename);
+			VFSMediaMapper mapper = new VFSMediaMapper(file);
+			String mapperUrl = registerMapper(ureq, mapper);
+			row.setMapperUrl(mapperUrl);
 			
 			rows.add(row);
 		}
@@ -148,7 +156,7 @@ public class SystemImageAdminController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (editCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -156,7 +164,7 @@ public class SystemImageAdminController extends FormBasicController {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				String filename = (String)deleteDialogCtrl.getUserObject();
 				doDelete(filename);
-				loadModel();
+				loadModel(ureq);
 			}
 		} else if(cmc == source) {
 			cleanUp();
