@@ -1,5 +1,5 @@
 <div class="o_cn_styled o_cn_header o_colcat_left #if($item.colorCategoryCss) $item.colorCategoryCss #end #if($r.isNotEmpty($teaserImageUrl)) o_$item.getTeaserImageStyle() #end">
-	<div class="o_top #if($cover) o_colcat_bg #end #if($item.colorCategoryCss) $item.colorCategoryCss #end" #if($cover) style="background-image:url($teaserImageUrl)" #end>
+	<div class="o_top #if($item.colorCategoryCss) $item.colorCategoryCss #end" #if($cover) style="background-image:url($teaserImageUrl)" #end>
 		<div class="o_text">
 			#if($r.isNotEmpty($item.title))
 				<div class="o_text_block">
@@ -53,7 +53,7 @@
 			#end
 		</div>
 		#if($r.isNotEmpty($teaserImageUrl) && !$cover)
-			<div class="o_image o_colcat_bg $item.colorCategoryCss" style="background-image:#if($gradient)linear-gradient(to right, rgba(255, 255, 255), rgba(255, 255, 255, 0) 10% ),#end url($teaserImageUrl);"></div>
+			<div class="o_image $item.colorCategoryCss" style="background-image:#if($gradient)linear-gradient(to right, rgba(255, 255, 255), rgba(255, 255, 255, 0) 10% ),#end url($teaserImageUrl);"></div>
 		#end
 	</div>
 </div>

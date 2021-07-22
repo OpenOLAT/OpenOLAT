@@ -481,4 +481,7 @@
 	display: inline-block;
 	width: 20px;
 	height: 20px;
+	&.o_square_border {
+		border: solid 1px $btn-default-border;
+	}
 }

@@ -1,40 +1,48 @@
-/* Header color category */
+/* Course styles */
 .o_colcat_nocolor.o_square {
 	background-image: repeating-linear-gradient(135deg, transparent 0%, transparent 47%, red, transparent 53%, transparent 100%);
-	border: solid 1px $btn-default-border;
 }
 
+// See below in o_cn_styled as well
 .o_colcat_dark_blue.o_colcat_bg { background-color: $o-cn-style-cat-dark-blue-color; }
-.o_colcat_dark_blue.o_colcat_left { border-left-color: $o-cn-style-cat-dark-blue-color; }
-.o_colcat_dark_blue.o_colcat_top { border-top-color: $o-cn-style-cat-dark-blue-color; }
+.o_colcat_dark_blue.o_colcat_left { border-left-color: $o-cn-style-cat-dark-blue-color; border-left-width: $o-cn-style-border-width; }
+.o_colcat_dark_blue.o_colcat_top { border-top-color: $o-cn-style-cat-dark-blue-color; border-top-width: $o-cn-style-border-width; }
+.o_colcat_dark_blue.o_square { border-color: $o-cn-style-cat-dark-blue-color; }
 
 .o_colcat_light_blue.o_colcat_bg { background-color: $o-cn-style-cat-light-blue-color; }
-.o_colcat_light_blue.o_colcat_left { border-left-color: $o-cn-style-cat-light-blue-color; }
-.o_colcat_light_blue.o_colcat_top { border-top-color: $o-cn-style-cat-light-blue-color; }
+.o_colcat_light_blue.o_colcat_left { border-left-color: $o-cn-style-cat-light-blue-color; border-left-width: $o-cn-style-border-width; }
+.o_colcat_light_blue.o_colcat_top { border-top-color: $o-cn-style-cat-light-blue-color; border-top-width: $o-cn-style-border-width; }
+.o_colcat_light_blue.o_square { border-color: $o-cn-style-cat-light-blue-color; }
 
 .o_colcat_purple.o_colcat_bg { background-color: $o-cn-style-cat-purple-color; }
-.o_colcat_purple.o_colcat_left { border-left-color: $o-cn-style-cat-purple-color; }
-.o_colcat_purple.o_colcat_top { border-top-color: $o-cn-style-cat-purple-color; }
+.o_colcat_purple.o_colcat_left { border-left-color: $o-cn-style-cat-purple-color; border-left-width: $o-cn-style-border-width; }
+.o_colcat_purple.o_colcat_top { border-top-color: $o-cn-style-cat-purple-color; border-top-width: $o-cn-style-border-width; }
+.o_colcat_purple.o_square { border-color: $o-cn-style-cat-purple-color; }
 
 .o_colcat_red.o_colcat_bg { background-color: $o-cn-style-cat-red-color; }
-.o_colcat_red.o_colcat_left { border-left-color: $o-cn-style-cat-red-color; }
-.o_colcat_red.o_colcat_top { border-top-color: $o-cn-style-cat-red-color; }
+.o_colcat_red.o_colcat_left { border-left-color: $o-cn-style-cat-red-color; border-left-width: $o-cn-style-border-width; }
+.o_colcat_red.o_colcat_top { border-top-color: $o-cn-style-cat-red-color; border-top-width: $o-cn-style-border-width; }
+.o_colcat_red.o_square { border-color: $o-cn-style-cat-red-color; }
 
 .o_colcat_orange.o_colcat_bg { background-color: $o-cn-style-cat-orange-color; }
-.o_colcat_orange.o_colcat_left { border-left-color: $o-cn-style-cat-orange-color; }
-.o_colcat_orange.o_colcat_top { border-top-color: $o-cn-style-cat-orange-color; }
+.o_colcat_orange.o_colcat_left { border-left-color: $o-cn-style-cat-orange-color; border-left-width: $o-cn-style-border-width; }
+.o_colcat_orange.o_colcat_top { border-top-color: $o-cn-style-cat-orange-color; border-top-width: $o-cn-style-border-width; }
+.o_colcat_orange.o_square { border-color: $o-cn-style-cat-orange-color; }
 
 .o_colcat_yellow.o_colcat_bg { background-color: $o-cn-style-cat-yellow-color; }
-.o_colcat_yellow.o_colcat_left { border-left-color: $o-cn-style-cat-yellow-color; }
-.o_colcat_yellow.o_colcat_top { border-top-color: $o-cn-style-cat-yellow-color; }
+.o_colcat_yellow.o_colcat_left { border-left-color: $o-cn-style-cat-yellow-color; border-left-width: $o-cn-style-border-width; }
+.o_colcat_yellow.o_colcat_top { border-top-color: $o-cn-style-cat-yellow-color; border-top-width: $o-cn-style-border-width; }
+.o_colcat_yellow.o_square { border-color: $o-cn-style-cat-yellow-color; }
 
 .o_colcat_light_green.o_colcat_bg { background-color: $o-cn-style-cat-light-green-color; }
-.o_colcat_light_green.o_colcat_left  { border-left-color: $o-cn-style-cat-light-green-color; }
-.o_colcat_light_green.o_colcat_top  { border-top-color: $o-cn-style-cat-light-green-color; }
+.o_colcat_light_green.o_colcat_left  { border-left-color: $o-cn-style-cat-light-green-color; border-left-width: $o-cn-style-border-width; }
+.o_colcat_light_green.o_colcat_top  { border-top-color: $o-cn-style-cat-light-green-color; border-top-width: $o-cn-style-border-width; }
+.o_colcat_light_green.o_square { border-color: $o-cn-style-cat-light-green-color; }
 
 .o_colcat_dark_green.o_colcat_bg { background-color: $o-cn-style-cat-dark-green-color; }
-.o_colcat_dark_green.o_colcat_left { border-left-color: $o-cn-style-cat-dark-green-color; }
-.o_colcat_dark_green.o_colcat_top { border-top-color: $o-cn-style-cat-dark-green-color; }
+.o_colcat_dark_green.o_colcat_left { border-left-color: $o-cn-style-cat-dark-green-color; border-left-width: $o-cn-style-border-width; }
+.o_colcat_dark_green.o_colcat_top { border-top-color: $o-cn-style-cat-dark-green-color; border-top-width: $o-cn-style-border-width; }
+.o_colcat_dark_green.o_square { border-color: $o-cn-style-cat-dark-green-color; }
 
 .o_colcal_ele {
 	a {
@@ -61,17 +69,9 @@
 	}
 }
 
-/* Header teaser image */
 .o_cn_styled {
 	border: $o-cn-style-border;
 	border-radius: $o-cn-style-border-radius;
-	
-	&.o_colcat_left:not(.o_colcat_nocolor) {
-		border-left-width: $o-cn-style-border-width;
-	}
-	&.o_colcat_top:not(.o_colcat_nocolor) {
-		border-top-width: $o-cn-style-border-width;
-	}
 	
 	.o_text {
 		padding: $o-cn-style-text-pading;
@@ -87,9 +87,17 @@
 		background-repeat: no-repeat;
 		background-position: left top;
 	}
-	.o_image.o_colcat_nocolor,
-	&.o_cover > .o_top.o_colcat_nocolor {
+	.o_image,
+	&.o_cover > .o_top {
 		background-color: $o-cn-style-image-bg;
+		&.o_colcat_dark_blue { background-color: $o-cn-style-cat-dark-blue-color; }
+		&.o_colcat_light_blue { background-color: $o-cn-style-cat-light-blue-color; }
+		&.o_colcat_purple { background-color: $o-cn-style-cat-purple-color; }
+		&.o_colcat_red { background-color: $o-cn-style-cat-red-color; }
+		&.o_colcat_orange { background-color: $o-cn-style-cat-orange-color; }
+		&.o_colcat_yellow { background-color: $o-cn-style-cat-yellow-color; }
+		&.o_colcat_light_green { background-color: $o-cn-style-cat-light-green-color; }
+		&.o_colcat_dark_green { background-color: $o-cn-style-cat-dark-green-color; }
 	}
 	&.o_cover {
 		/* The second empty div is to press the first div to left side.
