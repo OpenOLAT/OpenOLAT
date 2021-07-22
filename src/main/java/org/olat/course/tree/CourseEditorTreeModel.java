@@ -151,6 +151,7 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 	 *             also not found in velocity *.html
 	 * @param courseNode
 	 */
+	@Deprecated
 	public void removeCourseNode(CourseNode courseNode) {
 		CourseEditorTreeNode cetNode = (CourseEditorTreeNode) getNodeById(courseNode.getIdent());
 		if (cetNode == null) throw new AssertException("Corrupt CourseEditorTreeModel.");

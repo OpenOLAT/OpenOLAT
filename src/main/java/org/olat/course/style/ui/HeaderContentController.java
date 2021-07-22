@@ -37,6 +37,8 @@ import org.olat.core.gui.control.generic.spacesaver.ExpandController;
 import org.olat.core.gui.control.generic.spacesaver.ExpandableController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -62,6 +64,7 @@ public class HeaderContentController extends BasicController
 	private final Controller contentCtrl;
 	
 	private final UserCourseEnvironment userCourseEnv;
+	private final ICourse course;
 	private final CourseNode courseNode;
 	private final String iconCssClass;
 	
@@ -76,6 +79,7 @@ public class HeaderContentController extends BasicController
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
 		this.iconCssClass = iconCssClass;
+		course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		
 		mainVC = createVelocityContainer("header_content");
 		
@@ -136,7 +140,7 @@ public class HeaderContentController extends BasicController
 		CourseStyleUIFactory.addMetadata(builder, courseNode, displayOption, coach);
 		
 		CourseConfig courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
-		Mapper teaserImageMapper = courseStyleService.getTeaserImageMapper(userCourseEnv.getCourseEnvironment(), courseNode);
+		Mapper teaserImageMapper = courseStyleService.getTeaserImageMapper(course, courseNode);
 		if (teaserImageMapper != null) {
 			TeaserImageStyle teaserImageStyle = courseConfig.getTeaserImageStyle() != null
 					? courseConfig.getTeaserImageStyle()

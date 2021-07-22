@@ -17,34 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.style;
+package org.olat.course.nodes;
 
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.nodes.INode;
+import org.olat.course.tree.CourseEditorTreeNode;
 
 /**
  * 
- * Initial date: 3 Jul 2021<br>
+ * Initial date: 22 Jul 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum ImageSourceType {
+public class CourseNodeHelper {
 	
-	none,
-	system,
-	course,
-	inherited,
-	custom;
-	
-	private final static ImageSourceType[] VAULES = ImageSourceType.values();
-	
-	public static ImageSourceType toEnum(String value) {
-		if (StringHelper.containsNonWhitespace(value)) {
-			for (ImageSourceType imageSourceType : VAULES) {
-				if (imageSourceType.name().equals(value)) {
-					return imageSourceType;
-				}
-			}
+	/**
+	 * Gets the CourseNode from an iNode. If the iNode is a CourseNode, the node is
+	 * casted to the CourseNode. If the node is a CourseEditorTreeNode, the node
+	 * is casted to the CourseEditorTreeNode an the CourseNode of the
+	 * CourseEditorTreeNode is returned.
+	 *
+	 * @param node a CourseNode or CourseEditorTreeNode
+	 * @return
+	 */
+	public static CourseNode getCourseNode(INode node) {
+		if (node instanceof CourseNode) {
+			return (CourseNode)node;
+		} else if (node instanceof CourseEditorTreeNode) {
+			return ((CourseEditorTreeNode)node).getCourseNode();
 		}
-		return none;
+		return null;
 	}
+
 }

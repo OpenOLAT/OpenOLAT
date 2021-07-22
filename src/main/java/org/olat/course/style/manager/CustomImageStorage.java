@@ -45,9 +45,9 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class CourseImageStorage {
+public class CustomImageStorage {
 	
-	private static final Logger log = Tracing.createLoggerFor(CourseImageStorage.class);
+	private static final Logger log = Tracing.createLoggerFor(CustomImageStorage.class);
 	
 	private static final String BASE_IMAGE_DIR = CourseStyleService.FOLDER_ROOT + "/courseheader";
 	private static final String COURSE_IMAGE_DIR = "course";
@@ -67,7 +67,7 @@ public class CourseImageStorage {
 		}
 		
 		ImageSourceImpl imageSource = new ImageSourceImpl();
-		imageSource.setType(ImageSourceType.course);
+		imageSource.setType(ImageSourceType.custom);
 		imageSource.setFilename(cleanedFilename);
 		imageSource.setPath(COURSE_IMAGE_DIR);
 		return imageSource;
@@ -88,7 +88,7 @@ public class CourseImageStorage {
 		}
 		
 		ImageSourceImpl imageSource = new ImageSourceImpl();
-		imageSource.setType(ImageSourceType.courseNode);
+		imageSource.setType(ImageSourceType.custom);
 		imageSource.setFilename(cleanedFilename);
 		imageSource.setPath(courseNode.getIdent());
 		return imageSource;

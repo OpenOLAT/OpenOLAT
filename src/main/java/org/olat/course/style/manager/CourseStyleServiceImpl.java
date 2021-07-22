@@ -23,11 +23,12 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ColorCategoryRef;
 import org.olat.course.style.ColorCategoryResolver;
@@ -35,6 +36,7 @@ import org.olat.course.style.ColorCategorySearchParams;
 import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
+import org.olat.course.style.model.ImageSourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +52,7 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	@Autowired
 	private SystemImageStorage systemImageStorage;
 	@Autowired
-	private CourseImageStorage courseImageStorage;
+	private CustomImageStorage customImageStorage;
 	@Autowired
 	private ColorCategoryDAO colorCategoryDao;
 	
@@ -80,55 +82,56 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	}
 
 	@Override
+	public ImageSource createEmptyImageSource(ImageSourceType type) {
+		ImageSourceImpl imageSource = new ImageSourceImpl();
+		imageSource.setType(type);
+		return imageSource;
+	}
+
+	@Override
 	public ImageSource storeImage(ICourse course, Identity savedBy, File file, String filename) {
-		return courseImageStorage.store(course.getCourseBaseContainer(), savedBy, file, filename);
+		return customImageStorage.store(course.getCourseBaseContainer(), savedBy, file, filename);
 	}
 	
 	@Override
 	public VFSLeaf getImage(ICourse course) {
-		return courseImageStorage.load(course.getCourseBaseContainer());
+		return customImageStorage.load(course.getCourseBaseContainer());
 	}
 	
 	@Override
 	public void deleteImage(ICourse course) {
-		courseImageStorage.delete(course.getCourseBaseContainer());
+		customImageStorage.delete(course.getCourseBaseContainer());
 	}
 
 	@Override
 	public ImageSource storeImage(ICourse course, CourseNode courseNode, Identity savedBy, File file, String filename) {
-		return courseImageStorage.store(course.getCourseBaseContainer(), courseNode, savedBy, file, filename);
+		return customImageStorage.store(course.getCourseBaseContainer(), courseNode, savedBy, file, filename);
 	}
 
 	@Override
 	public VFSLeaf getImage(ICourse course, CourseNode courseNode) {
-		return courseImageStorage.load(course.getCourseBaseContainer(), courseNode);
+		return customImageStorage.load(course.getCourseBaseContainer(), courseNode);
 	}
 
 	@Override
 	public void deleteImage(ICourse course, CourseNode courseNode) {
-		courseImageStorage.delete(course.getCourseBaseContainer(), courseNode);
+		customImageStorage.delete(course.getCourseBaseContainer(), courseNode);
 	}
-
+	
 	@Override
-	public VFSMediaMapper getTeaserImageMapper(CourseEnvironment courseEnv, CourseNode courseNode) {
-		ImageSource teaserImageSource = courseNode.getTeaserImageSource() != null
-				? courseNode.getTeaserImageSource()
-				: courseEnv.getCourseConfig().getTeaserImageSource();
-		if (teaserImageSource == null) return null;
+	public VFSMediaMapper getTeaserImageMapper(ICourse course) {
+		ImageSourceType type = course.getCourseConfig().getTeaserImageSource() != null
+				? course.getCourseConfig().getTeaserImageSource().getType()
+				: ImageSourceType.none;
 		
 		VFSMediaMapper mapper = null;
-		if (ImageSourceType.course == teaserImageSource.getType()) {
-			VFSLeaf vfsLeaf = courseImageStorage.load(courseEnv.getCourseBaseContainer());
+		if (ImageSourceType.custom == type) {
+			VFSLeaf vfsLeaf = customImageStorage.load(course.getCourseBaseContainer());
 			if (vfsLeaf != null) {
 				mapper = new VFSMediaMapper(vfsLeaf);
 			}
-		} else if (ImageSourceType.courseNode == teaserImageSource.getType()) {
-			VFSLeaf vfsLeaf = courseImageStorage.load(courseEnv.getCourseBaseContainer(), courseNode);
-			if (vfsLeaf != null) {
-				mapper = new VFSMediaMapper(vfsLeaf);
-			}
-		} else if (ImageSourceType.system == teaserImageSource.getType()) {
-			File file = systemImageStorage.load(teaserImageSource.getFilename());
+		} else if (ImageSourceType.system == type) {
+			File file = systemImageStorage.load(course.getCourseConfig().getTeaserImageSource().getFilename());
 			if (file != null) {
 				mapper = new VFSMediaMapper(file);
 			}
@@ -136,6 +139,37 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 		return mapper;
 	}
 
+	@Override
+	public VFSMediaMapper getTeaserImageMapper(ICourse course, INode node) {
+		CourseNode courseNode = CourseNodeHelper.getCourseNode(node);
+		ImageSourceType type = courseNode.getTeaserImageSource() != null
+				? courseNode.getTeaserImageSource().getType()
+				: ImageSourceType.inherited;
+		
+		VFSMediaMapper mapper = null;
+		if (ImageSourceType.course == type) {
+			mapper = getTeaserImageMapper(course);
+		} else if (ImageSourceType.custom == type) {
+			VFSLeaf vfsLeaf = customImageStorage.load(course.getCourseBaseContainer(), courseNode);
+			if (vfsLeaf != null) {
+				mapper = new VFSMediaMapper(vfsLeaf);
+			}
+		} else if (ImageSourceType.system == type) {
+			File file = systemImageStorage.load(courseNode.getTeaserImageSource().getFilename());
+			if (file != null) {
+				mapper = new VFSMediaMapper(file);
+			}
+		} else if (ImageSourceType.inherited == type) {
+			if (node.getParent() != null) {
+				mapper = getTeaserImageMapper(course, node.getParent());
+			} else {
+				//No parent = root. On top of the root is the course.
+				mapper = getTeaserImageMapper(course);
+			}
+		}
+		return mapper;
+	}
+	
 	@Override
 	public ColorCategory createColorCategory(String identifier) {
 		ColorCategory colorCategory = colorCategoryDao.loadByIdentifier(identifier);

@@ -27,6 +27,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
@@ -55,6 +57,7 @@ public class OverviewFactory {
 	private final CourseConfig courseConfig;
 	private final CourseNodeFilter courseNodeFilter;
 	private final CourseNodeFilter peekViewFilter;
+	private final ICourse course;
 	private final boolean smallPeekview;
 	private final ColorCategoryResolver colorCategoryResolver;
 	private final String mapperPrefix;
@@ -70,6 +73,7 @@ public class OverviewFactory {
 		this.peekViewFilter = peekViewFilter;
 		this.smallPeekview = smallPeekview;
 		
+		course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		courseStyleService = CoreSpringFactory.getImpl(CourseStyleService.class);
 		courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		colorCategoryResolver = courseStyleService.getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());
@@ -94,7 +98,7 @@ public class OverviewFactory {
 		String colorCategoryCss = colorCategoryResolver.getColorCategoryCss(courseNode);
 		builder.withColorCategoryCss(colorCategoryCss);
 		
-		VFSMediaMapper mapper = courseStyleService.getTeaserImageMapper(userCourseEnv.getCourseEnvironment(), courseNode);
+		VFSMediaMapper mapper = courseStyleService.getTeaserImageMapper(course, courseNode);
 		if (mapper != null) {
 			TeaserImageStyle teaserImageStyle = courseConfig.getTeaserImageStyle() != null
 					? courseConfig.getTeaserImageStyle()

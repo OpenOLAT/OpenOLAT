@@ -50,10 +50,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CourseImageStorageTest extends OlatTestCase {
+public class CustomImageStorageTest extends OlatTestCase {
 	
 	@Autowired
-	private CourseImageStorage sut;
+	private CustomImageStorage sut;
 
 	@Test
 	public void shouldStoreCourseImage() {
@@ -65,7 +65,7 @@ public class CourseImageStorageTest extends OlatTestCase {
 		
 		ImageSource imageSource = sut.store(course.getCourseBaseContainer(), identity, file, filename);
 		
-		assertThat(imageSource.getType()).isEqualTo(ImageSourceType.course);
+		assertThat(imageSource.getType()).isEqualTo(ImageSourceType.custom);
 		assertThat(imageSource.getFilename()).isEqualTo(FileUtils.cleanFilename(filename));
 		assertThat(imageSource.getPath()).isNotNull();
 	}
@@ -128,7 +128,7 @@ public class CourseImageStorageTest extends OlatTestCase {
 		
 		ImageSource imageSource = sut.store(course.getCourseBaseContainer(), courseNode, identity, file, filename);
 		
-		assertThat(imageSource.getType()).isEqualTo(ImageSourceType.courseNode);
+		assertThat(imageSource.getType()).isEqualTo(ImageSourceType.custom);
 		assertThat(imageSource.getFilename()).isEqualTo(FileUtils.cleanFilename(filename));
 		assertThat(imageSource.getPath()).isEqualTo(courseNode.getIdent());
 	}

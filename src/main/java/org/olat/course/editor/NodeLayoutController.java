@@ -186,11 +186,13 @@ public class NodeLayoutController extends FormBasicController {
 		
 		SelectionValues teaserImageTypeKV = new SelectionValues();
 		teaserImageTypeKV.add(entry(ImageSourceType.course.name(), translate("teaser.image.type.course")));
-		teaserImageTypeKV.add(entry(ImageSourceType.courseNode.name(), translate("teaser.image.type.upload")));
+		teaserImageTypeKV.add(entry(ImageSourceType.inherited.name(), translate("teaser.image.type.inherited")));
+		teaserImageTypeKV.add(entry(ImageSourceType.custom.name(), translate("teaser.image.type.upload")));
 		teaserImageTypeKV.add(entry(ImageSourceType.system.name(), translate("teaser.image.type.system")));
+		teaserImageTypeKV.add(entry(ImageSourceType.none.name(), translate("teaser.image.type.none")));
 		teaserImageTypeEl = uifactory.addRadiosHorizontal("teaser.image.type", formLayout, teaserImageTypeKV.keys(), teaserImageTypeKV.values());
 		teaserImageTypeEl.addActionListener(FormEvent.ONCHANGE);
-		ImageSourceType type = teaserImageSource != null ? teaserImageSource.getType() : ImageSourceType.course;
+		ImageSourceType type = teaserImageSource != null ? teaserImageSource.getType() : ImageSourceType.inherited;
 		teaserImageTypeEl.select(type.name(), true);
 		
 		SelectionValues teaserImageKV = new SelectionValues();
@@ -212,7 +214,7 @@ public class NodeLayoutController extends FormBasicController {
 		teaserImageUploadEl.setMaxUploadSizeKB(IMAGE_LIMIT_KB, null, null);
 		teaserImageUploadEl.addActionListener(FormEvent.ONCHANGE);
 		teaserImageUploadEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
-		if (ImageSourceType.courseNode.name().equals(teaserImageTypeEl.getSelectedKey())) {
+		if (ImageSourceType.custom.name().equals(teaserImageTypeEl.getSelectedKey())) {
 			ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry());
 			VFSLeaf image = courseStyleService.getImage(course, courseNode);
 			if (image instanceof LocalFileImpl) {
@@ -325,21 +327,20 @@ public class NodeLayoutController extends FormBasicController {
 		
 		ImageSourceType type =  teaserImageTypeEl.isOneSelected()
 				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
-				: ImageSourceType.course;
-		if (ImageSourceType.course == type) {
-			teaserImageSource = null;
-		} else if (ImageSourceType.system == type && teaserImageSystemEl.isOneSelected()) {
+				: ImageSourceType.inherited;
+		if (ImageSourceType.system == type && teaserImageSystemEl.isOneSelected()) {
 			teaserImageSource = courseStyleService.getSystemTeaserImageSource(teaserImageSystemEl.getSelectedKey());
-		} else if (ImageSourceType.courseNode == type) {
+		} else if (ImageSourceType.custom == type) {
 			if (teaserImageUploadEl.getUploadFile() != null) {
 				teaserImageSource = courseStyleService.storeImage(course, courseNode, getIdentity(),
 						teaserImageUploadEl.getUploadFile(), teaserImageUploadEl.getUploadFileName());
 			}
+		} else {
+			teaserImageSource = courseStyleService.createEmptyImageSource(type);
 		}
 		courseNode.setTeaserImageSource(teaserImageSource);
 		
-		if (ImageSourceType.courseNode != type) {
-			ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry());
+		if (ImageSourceType.custom != type) {
 			courseStyleService.deleteImage(course, courseNode);
 		}
 		
@@ -377,8 +378,8 @@ public class NodeLayoutController extends FormBasicController {
 	private void updateTeaserImageUI() {
 		ImageSourceType type = teaserImageTypeEl.isOneSelected()
 				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
-				: ImageSourceType.course;
-		teaserImageUploadEl.setVisible(ImageSourceType.courseNode == type);
+				: ImageSourceType.inherited;
+		teaserImageUploadEl.setVisible(ImageSourceType.custom == type);
 		teaserImageSystemEl.setVisible(ImageSourceType.system == type);
 	}
 
@@ -478,18 +479,16 @@ public class NodeLayoutController extends FormBasicController {
 				mapper = new VFSMediaMapper(file);
 			}
 		} else {
-			ImageSource courseImageSource = course.getCourseConfig().getTeaserImageSource();
-			if (courseImageSource != null) {
-				if (ImageSourceType.course == courseImageSource.getType()) {
-					VFSLeaf vfsLeaf = courseStyleService.getImage(course);
-					if (vfsLeaf != null) {
-						mapper = new VFSMediaMapper(vfsLeaf);
-					}
-				} else if (ImageSourceType.system == courseImageSource.getType()) {
-					File file = courseStyleService.getSystemTeaserImageFile(courseImageSource.getFilename());
-					if (file != null) {
-						mapper = new VFSMediaMapper(file);
-					}
+			ImageSourceType type = teaserImageTypeEl.isOneSelected()
+					? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
+					: ImageSourceType.inherited;
+			if (ImageSourceType.course == type) {
+				mapper = courseStyleService.getTeaserImageMapper(course);
+			} else if (ImageSourceType.inherited == type) {
+				if (editorTreeNode.getParent() != null) {
+					mapper = courseStyleService.getTeaserImageMapper(course, editorTreeNode.getParent());
+				} else {
+					mapper = courseStyleService.getTeaserImageMapper(course);
 				}
 			}
 		}

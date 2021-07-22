@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 
 import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ColorCategoryResolver;
 import org.olat.course.style.ColorCategorySearchParams;
-import org.olat.course.tree.CourseEditorTreeNode;
 
 import com.google.common.base.Functions;
 
@@ -78,7 +78,8 @@ public class CachingColorCategoryResolver implements ColorCategoryResolver {
 	}
 
 	private ColorCategory getNodeColorCategory(INode iNode) {
-		String colorCategoryIdentifier = getCourseNode(iNode).getColorCategoryIdentifier();
+		CourseNode courseNode = CourseNodeHelper.getCourseNode(iNode);
+		String colorCategoryIdentifier = courseNode != null? courseNode.getColorCategoryIdentifier(): null;
 		return getColorCategory(colorCategoryIdentifier, iNode);
 	}
 
@@ -113,13 +114,6 @@ public class CachingColorCategoryResolver implements ColorCategoryResolver {
 		return idenitiferToCategory.computeIfAbsent(identifier, colorCategoryDao::loadByIdentifier);
 	}
 	
-	private CourseNode getCourseNode(INode iNode) {
-		if (iNode instanceof CourseNode) {
-			return (CourseNode)iNode;
-		} else if (iNode instanceof CourseEditorTreeNode) {
-			return ((CourseEditorTreeNode)iNode).getCourseNode();
-		}
-		return null;
-	}
+
 
 }
