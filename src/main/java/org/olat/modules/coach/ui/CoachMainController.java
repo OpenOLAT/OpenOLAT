@@ -144,7 +144,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		boolean hideCol1 = menu.getTreeModel().getRootNode().getChildCount() == 1;
 		if (hideCol1) {
 			// Check if the menu item has subitems
-			hideCol1 = menu.getTreeModel().getRootNode().getChildAt(0).getChildCount() == 1;
+			hideCol1 = menu.getTreeModel().getRootNode().getChildAt(0).getChildCount() < 1;
 		}
 
 		content = new TooledStackedPanel("coaching-stack", getTranslator(), this);
@@ -323,7 +323,10 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(gradingCtrl);
 			}
 			selectedCtrl = gradingCtrl;
+		} else if (userRelationRolesMap.keySet().contains(cmd)) {
+			selectMenuItem(ureq, userRelationRolesMap.get(cmd));
 		}
+		
 		if(selectedCtrl != null) {
 			String title = "Root";
 			TreeNode selTreeNode = TreeHelper.findNodeByUserObject(cmd, menu.getTreeModel().getRootNode());
