@@ -95,8 +95,16 @@ public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator
 	}
 	
 	private int compareCurriculumElements(CurriculumElementWithViewsRow c1, CurriculumElementWithViewsRow c2) {
-		int c = compareClosed(c1, c2);
+		int c = 0;
 		
+		if (c1.getCurriculumElementPos() != null && c2.getCurriculumElementPos() != null) {
+			c = Long.compare(c1.getCurriculumElementPos().longValue(), c2.getCurriculumElementPos().longValue());
+		}
+		
+		if(c == 0) {
+			c = compareClosed(c1, c2);
+		}
+
 		if(c == 0) {
 			if(c1.getCurriculumElementBeginDate() == null || c2.getCurriculumElementBeginDate() == null) {
 				c = compareNullObjects(c1.getCurriculumElementBeginDate(), c2.getCurriculumElementBeginDate());

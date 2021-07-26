@@ -46,6 +46,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +79,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	private SingleSelection layoutEl;
 	private SingleSelection recordEl;
 	private SingleSelection publishingEl;
+	private SingleSelection joinPolicyEl;
 
 	private RecurringMeetingsContext meetingsContext;
 	private List<BigBlueButtonMeetingTemplate> templates;
@@ -185,6 +187,14 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 			layoutEl.select(BigBlueButtonMeetingLayoutEnum.standard.name(), true);
 		}
 		layoutEl.setVisible(layoutEl.getKeys().length > 1);
+		
+		KeyValues joinKeyValues = new KeyValues();
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
+		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
+		joinPolicyEl = uifactory.addDropdownSingleselect("template.join.policy", "template.join.policy", formLayout,
+				joinKeyValues.keys(), joinKeyValues.values());
+		joinPolicyEl.select(JoinPolicyEnum.disabled.name(), true);
 		
 		String[] externalLinkValues = new String[] { translate("enable.generate.url") };
 		externalLinkEl = uifactory.addCheckboxesHorizontal("meeting.external.users", formLayout, onKeys, externalLinkValues);
@@ -298,6 +308,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		allOk &= validateTime(followupTimeEl, 15l);
 
 		allOk &= validateSingleSelection(templateEl);
+		allOk &= validateSingleSelection(joinPolicyEl);
 		
 		// dates ok
 		if(allOk) {
@@ -401,6 +412,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 					templates, false);
 			boolean webcamAvailable = isWebcamLayoutAvailable(BigBlueButtonUIHelper.getSelectedTemplate(templateEl, templates));
 			BigBlueButtonUIHelper.updateLayoutSelection(layoutEl, getTranslator(), webcamAvailable);
+			BigBlueButtonUIHelper.updateJoinPolicy(templateEl, joinPolicyEl, templates, false);
 		} else if(recordEl == source || passwordEnableEl == source) {
 			BigBlueButtonUIHelper.updateTemplateInformations(templateEl, externalLinkEl, passwordEnableEl, passwordEl, publishingEl, recordEl,
 					templates, false);
@@ -425,6 +437,8 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		} else {
 			meetingsContext.setMeetingLayout(BigBlueButtonMeetingLayoutEnum.standard);
 		}
+		
+		meetingsContext.setJoinPolicy(JoinPolicyEnum.valueOf(joinPolicyEl.getSelectedKey()));
 		
 		if(publishingEl.isVisible() && publishingEl.isOneSelected()) {
 			meetingsContext.setRecordingsPublishing(BigBlueButtonRecordingsPublishingEnum.valueOf(publishingEl.getSelectedKey()));

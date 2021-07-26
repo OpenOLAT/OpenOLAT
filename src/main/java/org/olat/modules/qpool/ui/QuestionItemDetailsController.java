@@ -376,20 +376,20 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void initPrevNextTools() {
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
 		previousItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_previous");
-		if (numberOfItems <= 1) {
+		if ((itemIndex != null && itemIndex <= 0) || numberOfItems <= 1) {
 			previousItemLink.setEnabled(false);
 		}
 		stackPanel.addTool(previousItemLink);
 		
 		String numbersOf = translate("item.numbers.of", new String[]{
-				itemIndex != null? Integer.toString(itemIndex + 1): "",
+				itemIndex != null? Integer.toString(itemIndex + 1) : "",
 				Integer.toString(numberOfItems) });
 		numberItemsLink = LinkFactory.createToolLink("item.numbers.of", numbersOf, this);
 		stackPanel.addTool(numberItemsLink);
 		
 		nextItemLink = LinkFactory.createToolLink("next", translate("next"), this);
 		nextItemLink.setIconLeftCSS("o_icon io_icon-fw o_icon_next");
-		if (numberOfItems <= 1) {
+		if (itemIndex != null && itemIndex + 1 >= numberOfItems) {
 			nextItemLink.setEnabled(false);
 		}
 		stackPanel.addTool(nextItemLink);
