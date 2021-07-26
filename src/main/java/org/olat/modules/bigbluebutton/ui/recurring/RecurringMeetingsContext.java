@@ -30,6 +30,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
+import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -53,6 +54,7 @@ public class RecurringMeetingsContext {
 	private String password;
 	private boolean generateUrl;
 	private Boolean record;
+	private JoinPolicyEnum joinPolicy;
 	private BigBlueButtonMeetingLayoutEnum layout;
 	private BigBlueButtonRecordingsPublishingEnum recordingsPublishing;
 	
@@ -165,6 +167,14 @@ public class RecurringMeetingsContext {
 
 	public void setMeetingLayout(BigBlueButtonMeetingLayoutEnum layout) {
 		this.layout = layout;
+	}
+
+	public JoinPolicyEnum getJoinPolicy() {
+		return joinPolicy;
+	}
+
+	public void setJoinPolicy(JoinPolicyEnum joinPolicy) {
+		this.joinPolicy = joinPolicy;
 	}
 
 	public Date getStartTime() {
