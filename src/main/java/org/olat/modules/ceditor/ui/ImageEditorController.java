@@ -92,7 +92,7 @@ public class ImageEditorController extends FormBasicController implements PageEl
 	private ContentEditorModule contentEditorModule;
 	
 	public ImageEditorController(UserRequest ureq, WindowControl wControl, ImageElement mediaPart, DataStorage storage, PageElementStore<ImageElement> store) {
-		super(ureq, wControl, "image_editor", Util.createPackageTranslator(PageEditorController.class, ureq.getLocale()));
+		super(ureq, wControl, "image_editor", Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
 		this.imageElement = mediaPart;
 		this.dataStorage = storage;
 		this.store = store;

@@ -27,7 +27,7 @@ import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.ImageRunController;
-import org.olat.modules.ceditor.ui.PageEditorController;
+import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.ui.MediaMetadataController;
@@ -46,7 +46,7 @@ public class ImageMediaController extends ImageRunController implements PageRunE
 
 	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, Media media, PageElementRenderingHints hints) {
 		super(ureq, wControl, dataStorage, media, hints);
-		setTranslator(Util.createPackageTranslator(PageEditorController.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale(), getTranslator()));
 	}
 
 	@Override

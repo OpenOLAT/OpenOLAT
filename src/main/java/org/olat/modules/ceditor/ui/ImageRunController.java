@@ -72,7 +72,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	}
 
 	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, StoredData storedData, PageElementRenderingHints hints) {
-		super(ureq, wControl, Util.createPackageTranslator(PageEditorController.class, ureq.getLocale()));
+		super(ureq, wControl, Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
 		velocity_root = Util.getPackageVelocityRoot(ImageRunController.class);
 
 		mainVC = createVelocityContainer("image");
