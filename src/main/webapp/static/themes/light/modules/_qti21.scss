@@ -72,12 +72,17 @@ ul.sessionControl {
 	
 .o_group_colors {
 	.black .o_icon:before { color:#000000;  }
-	/* .white .o_icon:before { color:#FFFFFF; } */
+	.white .o_icon:before { color:#FFFFFF; }
 	.blue .o_icon:before { color:#0000FF;  } 
 	.green .o_icon:before { color:#008000;  } 
 	.yellow .o_icon:before { color:#FFFF00;  }
 	.red .o_icon:before { color:#FF0000;  } 
 	.purple .o_icon:before { color:#800080; }
+}
+
+.white.btn>i.o_icon_circle_color:before {
+	font-size: 110%;
+	color: #000000;
 }
 
 /* Graphic gap match */
