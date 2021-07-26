@@ -588,6 +588,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_draw_front:before { content: '\E900'; font-family: openolat; }
 .o_icon_draw_back:before { content: '\E901'; font-family: openolat; }
 .o_icon_draw_ellipse:before { content: $fa-var-circle; }
+.o_icon_draw_color:before { content: $fa-var-tint; }
 
 /* tests icons */
 .o_mi_qpool_import:before { content: $fa-var-database; }
