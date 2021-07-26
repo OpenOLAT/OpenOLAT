@@ -221,7 +221,7 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment assertOnNodeTitle() {
 		By shortTitleBy = By.className("o_sel_node_editor_shorttitle");
 		OOGraphene.waitElement(shortTitleBy, browser);
-		OOGraphene.waitTinymce(browser);
+
 		return this;
 	}
 	
