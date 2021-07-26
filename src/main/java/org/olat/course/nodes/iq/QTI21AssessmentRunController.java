@@ -412,7 +412,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				Date endTestDate = config.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
 				String end = null;
 				if(endTestDate != null) {
-					end = formatter.formatDateAndTime(startTestDate);
+					end = formatter.formatDateAndTime(endTestDate);
 					mainVC.contextPut("endTestDate", end);
 				}
 				
