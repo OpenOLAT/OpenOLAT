@@ -188,10 +188,10 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		}
 		layoutEl.setVisible(layoutEl.getKeys().length > 1);
 		
-		KeyValues joinKeyValues = new KeyValues();
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
-		joinKeyValues.add(KeyValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
+		SelectionValues joinKeyValues = new SelectionValues();
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.disabled.name(), translate("join.users.control.disabled")));
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.guestsApproval.name(), translate("join.users.control.guests")));
+		joinKeyValues.add(SelectionValues.entry(JoinPolicyEnum.allUsersApproval.name(), translate("join.users.control.users")));
 		joinPolicyEl = uifactory.addDropdownSingleselect("template.join.policy", "template.join.policy", formLayout,
 				joinKeyValues.keys(), joinKeyValues.values());
 		joinPolicyEl.select(JoinPolicyEnum.disabled.name(), true);
