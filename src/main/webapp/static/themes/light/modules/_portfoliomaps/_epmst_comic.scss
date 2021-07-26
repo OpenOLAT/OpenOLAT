@@ -1,9 +1,0 @@
-$bordercolor : #888;
-
-.o_map-comic {
-	background: #a2c3e8 none;
-	font-family: 'Comic Sans MS', 'Comic Sans', fantasy;
-
-	border: 1px solid $bordercolor; 
-	border-left: 3px solid transparentize(darken($bordercolor, 20%),0.2);
-}
