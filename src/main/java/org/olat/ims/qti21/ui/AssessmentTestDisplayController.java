@@ -194,6 +194,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private final Date controllerCreationDate = new Date();
 	
 	private final boolean anonym;
+	private final boolean guestOnly;
 	private final Identity assessedIdentity;
 	private final String anonymousIdentifier;
 	
@@ -246,7 +247,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		this.authorMode = authorMode;
 		
 		UserSession usess = ureq.getUserSession();
-		if(usess.getRoles().isGuestOnly() || anonym) {
+		guestOnly = usess.getRoles().isGuestOnly();
+		if(guestOnly || anonym) {
 			this.anonym = true;
 			assessedIdentity = null;
 			anonymousIdentifier = getAnonymousIdentifier(usess);
@@ -1772,6 +1774,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private DigitalSignatureOptions getDigitalSignatureOptions() {
+		if(guestOnly) {// no digital signature for guest
+			return new DigitalSignatureOptions(false, false, entry, testEntry);
+		}
+		
 		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
 		boolean digitalSignature = deliveryOptions.isDigitalSignature() && qtiModule.isDigitalSignatureEnabled();
 		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, entry, testEntry);
@@ -2344,7 +2350,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				flc.getFormItemComponent().getContext().put("menuWidth", newMenuWidth);
 				if(testEntry != null) {
 					UserSession usess = ureq.getUserSession();
-					if (usess.isAuthenticated() && !usess.getRoles().isGuestOnly()) {
+					if (usess.isAuthenticated() && !guestOnly) {
 						usess.getGuiPreferences().commit(this.getClass(), getMenuPrefsKey(), newMenuWidth);
 					}
 				}
