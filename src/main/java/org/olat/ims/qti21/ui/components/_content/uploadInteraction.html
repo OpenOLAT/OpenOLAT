@@ -10,7 +10,9 @@
 	#end
 	
 	#if($r.isTrue($isCorrectionSolution) || $r.isTrue($isSolutionMode))
-		<div class="o_note">$r.translate("warning.no.solution")</div>
+		#if($r.isNotNull($uploadIndex) && $uploadIndex == 1)
+			<div class="o_note">$r.translate("warning.no.solution")</div>
+		#end
 	#else
 
 		#if($r.isNotEmpty($numOfUploads) && $numOfUploads > 1)
