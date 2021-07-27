@@ -316,7 +316,11 @@ public class GroupAssessmentController extends FormBasicController {
 		} else {
 			applyToAllEl.select(onKeys[0], false);
 			table.setVisible(true);
-			model.getObjects().forEach(row -> row.getPassedEl().setVisible(true));
+			model.getObjects()
+				.stream()
+				.filter(row -> row.getPassedEl() != null)
+				.forEach(row -> row.getPassedEl().setVisible(true));
+			
 			if(groupPassedEl != null) {
 				groupPassedEl.setVisible(false);
 			}
@@ -578,7 +582,11 @@ public class GroupAssessmentController extends FormBasicController {
 		if(applyToAllEl == source) {
 			boolean allGroup = applyToAllEl.isAtLeastSelected(1);
 			table.setVisible(!allGroup);
-			model.getObjects().forEach(row -> row.getPassedEl().setVisible(!allGroup));
+			model.getObjects()
+				.stream()
+				.filter(row -> row.getPassedEl() != null)	
+				.forEach(row -> row.getPassedEl().setVisible(!allGroup));
+			
 			if(groupPassedEl != null) {
 				groupPassedEl.setVisible(allGroup);
 			}
