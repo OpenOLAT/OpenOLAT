@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -274,7 +273,10 @@ public class GroupAssessmentController extends FormBasicController {
 		if(modelInfos.isSame()) {
 			applyToAllEl.select(onKeys[0], true);
 			table.setVisible(false);
-			model.getObjects().forEach(row -> row.getPassedEl().setVisible(false));
+			model.getObjects()
+				.stream()
+				.filter(row -> row.getPassedEl() != null)	
+				.forEach(row -> row.getPassedEl().setVisible(false));
 			
 			if(groupPassedEl != null) {
 				groupPassedEl.setEvaluationOnlyVisible(true);
@@ -402,7 +404,6 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			ScoreEvaluation scoreEval = null;
 			if(withScore || withPassed) {
-				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				scoreEval = courseAssessmentService.toAssessmentEvaluation(entry, gtaNode);
 				if (scoreEval == null) {
 					scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
