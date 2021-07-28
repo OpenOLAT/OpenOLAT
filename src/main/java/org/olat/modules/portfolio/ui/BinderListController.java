@@ -323,10 +323,13 @@ public class BinderListController extends FormBasicController
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Binder".equalsIgnoreCase(resName)) {
 			Long portfolioKey = entries.get(0).getOLATResourceable().getResourceableId();
-			Activateable2 activateable = doOpenBinder(ureq, new BinderRefImpl(portfolioKey));
-			if(activateable != null) {
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
+			BinderRow row = model.getObjectByKey(portfolioKey);
+			if(row != null) {
+				Activateable2 activateable = doOpenBinder(ureq, new BinderRefImpl(portfolioKey));
+				if(activateable != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					activateable.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 			}
 		}
 	}
