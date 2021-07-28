@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.gta.ui.SubmitDocumentsController.SubmittedSolution;
 
 /**
@@ -42,17 +43,22 @@ import org.olat.course.nodes.gta.ui.SubmitDocumentsController.SubmittedSolution;
 public class DocumentUploadController extends FormBasicController {
 
 	private FileElement fileEl;
+	
 	private final File fileToReplace;
 	private final SubmittedSolution solution;
+	private final VFSContainer documentsContainer;
 
-	public DocumentUploadController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null, null);
+	public DocumentUploadController(UserRequest ureq, WindowControl wControl,
+			VFSContainer documentsContainer) {
+		this(ureq, wControl, null, null, documentsContainer);
 	}
 
-	public DocumentUploadController(UserRequest ureq, WindowControl wControl, SubmittedSolution solution, File fileToReplace) {
+	public DocumentUploadController(UserRequest ureq, WindowControl wControl, SubmittedSolution solution, File fileToReplace,
+			VFSContainer documentsContainer) {
 		super(ureq, wControl);
 		this.solution = solution;
 		this.fileToReplace = fileToReplace;
+		this.documentsContainer = documentsContainer;
 		initForm(ureq);
 	}
 
@@ -101,12 +107,19 @@ public class DocumentUploadController extends FormBasicController {
 			allOk &= false;
 		} else if (fileEl.getUploadFile() != null && !FileUtils.validateFilename(fileEl.getUploadFileName())) {
 			fileEl.setErrorKey("error.file.invalid", null);
-			allOk = false;
+			allOk &= false;
 		} else if (fileEl.getUploadFile() != null && fileEl.getUploadFile().length() == 0) {
 			fileEl.setErrorKey("error.file.empty", null);
-			allOk = false;
+			allOk &= false;
+		} else if(fileToReplace == null && documentsContainer != null
+				&& documentsContainer.resolve(fileEl.getUploadFileName()) != null) {
+			fileEl.setErrorKey("error.file.exists", new String[]{ fileEl.getUploadFileName() });
+			allOk &= false;
+		} else if(fileToReplace != null && !fileToReplace.getName().equals(fileEl.getUploadFileName())
+				&& documentsContainer != null && documentsContainer.resolve(fileEl.getUploadFileName()) != null) {
+			fileEl.setErrorKey("error.file.exists", new String[]{ fileEl.getUploadFileName() });
+			allOk &= false;
 		}
-
 		return allOk;
 	}
 

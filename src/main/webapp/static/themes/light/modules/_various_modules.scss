@@ -130,6 +130,9 @@ ul.o_dropdown {
 		color: $dropdown-link-color;
 		background: $dropdown-bg;
 		white-space: nowrap; // prevent links from randomly breaking onto new lines
+		text-overflow: ellipsis;
+		overflow: hidden;
+		
 		&:hover,
 		&:focus {
 			text-decoration: none;

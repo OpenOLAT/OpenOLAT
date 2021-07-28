@@ -421,12 +421,12 @@ public class ProfileFormController extends FormBasicController {
 		if (source == dialogCtr) {
 			dialogCtr.dispose();
 			dialogCtr = null;
-			if (DialogBoxUIFactory.isYesEvent(event)) {
-				if (changedEmail != null) {
-					createChangeEmailWorkflow(ureq);
-				}
+			if (DialogBoxUIFactory.isYesEvent(event) && changedEmail != null) {
+				createChangeEmailWorkflow(ureq);
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else {
+				fireEvent(ureq, Event.FAILED_EVENT);
 			}
-			fireEvent(ureq, Event.FAILED_EVENT);
 		}
 		super.event(ureq, source, event);
 	}
@@ -568,9 +568,6 @@ public class ProfileFormController extends FormBasicController {
 		conf.setTextAboutMe(textAboutMe.getValue());
 		hpcm.saveConfigTo(identityToModify, conf);
 
-		// fire the appropriate event
-		fireEvent(ureq, Event.DONE_EVENT);
-
 		// update the user profile data
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(
 			OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey()), new SyncerExecutor() {
@@ -595,6 +592,7 @@ public class ProfileFormController extends FormBasicController {
 						emailChanged = true;
 						// change email address to old address until it is verified
 						identityToModify.getUser().setProperty(UserConstants.EMAIL, currentEmail);
+						emailEl.setValue(currentEmail);
 					}
 				}
 				if (!userManager.updateUserFromIdentity(identityToModify)) {
@@ -606,10 +604,6 @@ public class ProfileFormController extends FormBasicController {
 				OLATResourceable modRes = OresHelper.createOLATResourceableInstance(Identity.class, identityToModify.getKey());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus()
 					.fireEventToListenersOf(new MultiUserEvent("changed"), modRes);
-				
-				if (!emailChanged) {
-					fireEvent(ureq, Event.FAILED_EVENT);
-				}
 			}
 		});
 		
@@ -625,6 +619,8 @@ public class ProfileFormController extends FormBasicController {
 			dialogCtr = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(), translate("email.change.dialog.title"), dialogText);
 			listenTo(dialogCtr);
 			dialogCtr.activate();
+		} else {
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 	
@@ -676,10 +672,12 @@ public class ProfileFormController extends FormBasicController {
 			if (isMailSent) {
 				tk.setMailSent(true);
 				// set key
-				User user = this.identityToModify.getUser();
+				User user = identityToModify.getUser();
 				user.setProperty("emchangeKey", tk.getRegistrationKey());
-				UserManager.getInstance().updateUser(user);
+				userManager.updateUserFromIdentity(identityToModify);
 				getWindowControl().setInfo(translate("email.sent"));
+				updateEmailForm(identityToModify.getUser());
+				flc.setDirty(true);
 			} else {
 				tk.setMailSent(false);
 				registrationManager.deleteTemporaryKeyWithId(tk.getRegistrationKey());

@@ -485,7 +485,7 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 	
 	private void doReplaceDocument(UserRequest ureq, SubmittedSolution row) {
-		replaceCtrl = new DocumentUploadController(ureq, getWindowControl(), row, row.getFile());
+		replaceCtrl = new DocumentUploadController(ureq, getWindowControl(), row, row.getFile(), documentsContainer);
 		listenTo(replaceCtrl);
 
 		String title = translate("replace.document");
@@ -520,7 +520,7 @@ class SubmitDocumentsController extends FormBasicController {
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");
 		} else {
-			uploadCtrl = new DocumentUploadController(ureq, getWindowControl());
+			uploadCtrl = new DocumentUploadController(ureq, getWindowControl(), documentsContainer);
 			listenTo(uploadCtrl);
 	
 			String title = translate("upload.document");
