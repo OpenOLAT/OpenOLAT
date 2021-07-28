@@ -4,10 +4,10 @@
 		<li id="o_navbar_impress">$r.render("topnav.impressum")</li>
 		#end
 		<li id="o_navbar_my_menu" class="dropdown o_navbar_dmz_help_menu">
-			<a href="#" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("search")">
+			<a href="#" class="dropdown-toggle" data-toggle="dropdown" title='$r.translate("topnav.help")'>
 				<i class="o_icon o_icon_help o_icon-lg"></i> $r.translate("topnav.help")
 			</a>
-			<ul class="dropdown-menu dropdown-menu-right">          
+			<ul class="dropdown-menu dropdown-menu-right">
 			#if($helpPlugins && $helpPlugins.size() > 0)
 				#foreach($helpPlugin in $helpPlugins)
 			 		<li>$r.render($helpPlugin)</li>
