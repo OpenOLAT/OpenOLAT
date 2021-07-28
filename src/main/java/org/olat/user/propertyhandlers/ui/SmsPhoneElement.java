@@ -57,6 +57,7 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	
 	private String phone;
 	private boolean forceFormDirty;
+	private boolean hasChanged = false;
 	private final User editedUser;
 	private final UserPropertyHandler handler;
 	
@@ -81,6 +82,10 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
+	
+	public boolean hasChanged() {
+		return hasChanged;
+	}
 
 	public FormLink getEditLink() {
 		return editLink;
@@ -104,6 +109,7 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 		} else if(smsPhoneCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				setPhone(smsPhoneCtrl.getPhone());
+				hasChanged = true;
 				forceFormDirty = true;
 				component.setDirty(true);
 			}
@@ -198,6 +204,7 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 
 	private void doRemove() {
 		setPhone(null);
+		hasChanged = true;
 		component.setDirty(true);
 	}
 }

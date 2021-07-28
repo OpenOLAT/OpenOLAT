@@ -59,7 +59,10 @@ public class SmsPhonePropertyHandler extends PhonePropertyHandler {
 	
 	@Override
 	public void updateUserFromFormItem(User user, FormItem formItem) {
-		//update is done during confirmation
+		if(formItem instanceof SmsPhoneElement && ((SmsPhoneElement)formItem).hasChanged()) {
+			SmsPhoneElement el = (SmsPhoneElement)formItem;
+			setInternalValue(user, el.getPhone());
+		}
 	}
 	
 	@Override
