@@ -537,7 +537,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if (event instanceof TreeEvent) {
 				TreeEvent te = (TreeEvent)event;
 				String cmd = te.getCommand();
-				if (MenuTree.COMMAND_TREENODE_CLICKED.equals(cmd)) {
+				if (MenuTree.COMMAND_TREENODE_CLICKED.equals(cmd)
+						&& te.getNodeId() != null
+						&& te.getNodeId().equals(menuTree.getSelectedNodeId())) {
 					TreeNode selectedNode = menuTree.getTreeModel()
 							.getNodeById(te.getNodeId());
 					partEditorFactory(ureq, selectedNode);
