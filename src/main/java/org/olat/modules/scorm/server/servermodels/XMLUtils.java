@@ -47,7 +47,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Iterator;
 
 import org.jdom.Document;
@@ -116,21 +115,10 @@ public final class XMLUtils {
 	public static Document readXMLFile(File file) throws IOException, JDOMException {
 		Document doc = null;
 		SAXBuilder builder = new SAXBuilder();
+		builder.setExpandEntities(false);
 		// This allows UNC mapped locations to load
 		doc = builder.build(new FileInputStream(file));
 		return doc;
-	}
-	
-	/**
-	 * Reads and returns a JDOM Document from String without Schema Validation
-	 * @param xmlString
-	 * @return
-	 * @throws JDOMException
-	 * @throws IOException
-	 */
-	public static Document readXMLString(String xmlString) throws JDOMException, IOException {
-	    SAXBuilder builder = new SAXBuilder();
-	    return builder.build(new StringReader(xmlString));
 	}
     
     /**
