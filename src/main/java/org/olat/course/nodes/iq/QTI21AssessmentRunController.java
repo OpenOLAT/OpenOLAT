@@ -207,6 +207,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		startButton.setElementCssClass("o_sel_start_qti21assessment");
 		startButton.setPrimary(true);
 		startButton.setVisible(!userCourseEnv.isCourseReadOnly());
+		if (!userCourseEnv.isParticipant() && !anonym) {
+			startButton.setCustomDisplayText(translate("preview"));
+		}
 		
 		// fetch disclaimer file
 		String sDisclaimer = config.getStringValue(IQEditController.CONFIG_KEY_DISCLAIMER);
