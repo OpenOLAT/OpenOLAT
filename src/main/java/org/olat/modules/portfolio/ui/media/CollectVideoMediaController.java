@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -43,6 +44,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.ceditor.PageElement;
@@ -63,6 +65,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CollectVideoMediaController extends FormBasicController implements PageElementAddController {
+
+	private static final Set<String> videoMimeTypes = Set.of("video/quicktime", "video/mp4");
 	
 	private FileElement fileEl;
 	private TextElement titleEl;
@@ -133,6 +137,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "artefact.file", "artefact.file", formLayout);
+		fileEl.limitToMimeType(videoMimeTypes, "error.video.mimetype", null);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMaxUploadSizeKB(250000, null, null);
 		fileEl.setPreview(ureq.getUserSession(), true);
@@ -179,6 +184,10 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
 			fileEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else {
+			List<ValidationStatus> status = new ArrayList<>();
+			fileEl.validate(status);
+			allOk &= status.isEmpty();
 		}
 		
 		titleEl.clearError();
@@ -193,9 +202,9 @@ public class CollectVideoMediaController extends FormBasicController implements 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(fileEl == source) {
-			if (this.titleEl.isEmpty()) {
-				this.titleEl.setValue(fileEl.getUploadFileName());
-				this.titleEl.getComponent().setDirty(true);
+			if (titleEl.isEmpty()) {
+				titleEl.setValue(fileEl.getUploadFileName());
+				titleEl.getComponent().setDirty(true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

@@ -324,6 +324,12 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		if(contentType.indexOf("mp4") >= 0) {
 			return "mp4";
 		}
+		if(contentType.indexOf("webm") >= 0) {
+			return "webm";
+		}
+		if(contentType.indexOf("webp") >= 0) {
+			return "webp";
+		}
 		if(contentType.indexOf("flv") >= 0) {
 			return "flv";
 		}

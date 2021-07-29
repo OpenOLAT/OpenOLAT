@@ -60,12 +60,9 @@ public class ImageRenderer extends DefaultComponentRenderer {
 	
 	private void renderMovie(StringOutput sb, ImageComponent ic) {
 		// Use configured calculated scaled size, fallback to default size / ratio
-		int width = 320;
-		int height = 240;
 		Size size = ic.getScaledSize();
-		if(size != null) {
-			width = size.getWidth();
-			height = size.getHeight() + 20;//+20 because of toolbar
+		if(size == null) {
+			size = ic.getRealSize();
 		}
 		// Add video name with mime type ending for better browser support
 		String mapperUrl = ic.getMapperUrl();
@@ -86,20 +83,27 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		sb.append("<div id='").append(compId).append("' class='o_video'>"); // START component
 		// The inner component 
 		String imgId = "mov_" + ic.getDispatchID();
-		sb.append("<div id='").append(imgId).append("' name='").append(imgId).append("' style='width:");
+		sb.append("<div id='").append(imgId).append("' style='width:");
 		if(size != null) {
-			sb.append(width).append("px; height:").append(height).append("px;");
+			sb.append(size.getWidth()).append("px; height:").append(size.getHeight()).append("px;");
 		} else {
-			// if no size available, scale to full width
-			sb.append("100%;");
-
+			// if no size available, try to scale to full width
+			sb.append("100%; min-width:480px;");
 		}
 		sb.append("' class='o_video_wrapper'></div>")
 		  .append("<script>")
 		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
-		sb.append("','").append(imgId).append("',").append(width).append(",").append(height).append(",'video'");
+		sb.append("','").append(imgId).append("',");
+		if(size == null) {
+			sb.append("undefined").append(",").append("undefined");
+		} else {
+			sb.append(size.getWidth()).append(",").append(size.getHeight());
+		}
+		sb.append(",0,0,'video',undefined,false,false,true,");
 		if (poster != null) {
-			sb.append(",null,null,null,null,null,null,'").append(poster).append("'");
+			sb.append("'").append(poster).append("'");
+		} else {
+			sb.append("undefined");
 		}
 		sb.append(");")
 		  .append("</script>")

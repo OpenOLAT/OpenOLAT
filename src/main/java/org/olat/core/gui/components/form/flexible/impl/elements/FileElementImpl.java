@@ -182,7 +182,8 @@ public class FileElementImpl extends FormItemImpl
 			}
 
 			if (previewEl != null && uploadMimeType != null
-					&& (uploadMimeType.startsWith("image/") || uploadMimeType.startsWith("video/"))) {
+					&& (uploadMimeType.startsWith("image/") || uploadMimeType.startsWith("video/"))
+					&& (!checkForMimeTypes || (isMimeTypeAllowed(uploadMimeType)))) {
 				VFSLeaf media = new LocalFileImpl(tempUploadFile);
 				previewEl.setMedia(media, uploadMimeType);
 				previewEl.setCropSelectionEnabled(cropSelectionEnabled);
@@ -304,20 +305,7 @@ public class FileElementImpl extends FormItemImpl
 		} else if (checkForMimeTypes && tempUploadFile != null && tempUploadFile.exists()) {
 			boolean found = false;
 			if (uploadMimeType != null) {
-				for (String validType : getMimeTypeLimitations()) {
-					if (validType.equals(uploadMimeType)) {
-						// exact match: image/jpg
-						found = true;
-						break;
-					} else if (validType.endsWith("/*")) {
-						// wildcard match: image/*
-						if (uploadMimeType != null
-								&& uploadMimeType.startsWith(validType.substring(0, validType.length() - 2))) {
-							found = true;
-							break;
-						}
-					}
-				}
+				found =isMimeTypeAllowed(uploadMimeType);
 			}
 			if (!found) {
 				setErrorKey(i18nErrMimeType, i18nErrMimeTypeArgs);
@@ -327,6 +315,27 @@ public class FileElementImpl extends FormItemImpl
 		}
 		// No error, clear errors from previous attempts
 		clearError();
+	}
+	
+	private boolean isMimeTypeAllowed(String mimeType) {
+		boolean found = false;
+		
+		for (String validType : getMimeTypeLimitations()) {
+			if (validType.equals(mimeType)) {
+				// exact match: image/jpg
+				found = true;
+				break;
+			} else if (validType.endsWith("/*")) {
+				// wildcard match: image/*
+				if (mimeType != null
+						&& mimeType.startsWith(validType.substring(0, validType.length() - 2))) {
+					found = true;
+					break;
+				}
+			}
+		}
+		
+		return found;
 	}
 
 	@Override
