@@ -133,7 +133,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				 if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 					 sb.append("\" data-max-size=\"").append(fileElem.getMaxUploadSizeKB() * 1024l);
 				 }
-				 sb.append("\" class='form-control o_realchooser' ");
+				 sb.append("\" class='form-control o_realchooser' tabindex='0' ");
 				 // Add on* event handlers
 				 StringBuilder eventHandlers = FormJSHelper.getRawJSFor(fileElem.getRootForm(), id, fileElem.getAction());
 				 int onChangePos = eventHandlers.indexOf("onchange=");
@@ -157,7 +157,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				sb.append("<div class='o_dnd' aria-hidden='true'>");
 				sb.append("<div class='o_dnd_icon'><i class='o_icon o_icon o_icon_upload'></i></div>");
 				sb.append("<div class='o_dnd_info'>").append(trans.translate("file.element.dnd.info")).append("</div>");
-				sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default'><span>");
+				sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>");
 				sb.append(trans.translate("file.element.dnd.select")).append("</span></button></div>");
 				sb.append("</div>");
 				
@@ -165,8 +165,8 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				// Add the visible but fake input field and a styled faked file chooser button
 				sb.append("<div class='o_fakechooser input-group' aria-hidden='true'>");
 				sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").appendHtmlEscaped(fileName)
-				  .append("\" placeholder=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");  
-				sb.append("<span class='input-group-addon'><a href='javascript:;'><i class='o_icon o_icon_upload'> </i></a></span>");
+				  .append("\" placeholder=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" tabindex='-1' />");  
+				sb.append("<span class='input-group-addon'><a href='javascript:;' tabindex='-1'><i class='o_icon o_icon_upload'> </i></a></span>");
 				sb.append("</div>");				
 			}
 			

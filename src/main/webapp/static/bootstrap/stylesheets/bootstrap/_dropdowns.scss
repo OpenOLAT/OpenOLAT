@@ -60,9 +60,11 @@
   }
 
   // Links within the dropdown menu
-  > li > a {
+  > li > a,
+  > li > label {
     display: block;
-    padding: 3px 20px;
+    padding: 3px 10px;
+    margin: 0;
     clear: both;
     font-weight: normal;
     line-height: $line-height-base;
@@ -72,7 +74,8 @@
 }
 
 // Hover/Focus state
-.dropdown-menu > li > a {
+.dropdown-menu > li > a,
+.dropdown-menu > li > label {
   &:hover,
   &:focus {
     text-decoration: none;
@@ -82,7 +85,8 @@
 }
 
 // Active state
-.dropdown-menu > .active > a {
+.dropdown-menu > .active > a,
+.dropdown-menu > .active > label {
   &,
   &:hover,
   &:focus {
@@ -97,7 +101,8 @@
 //
 // Gray out text and ensure the hover/focus state remains gray
 
-.dropdown-menu > .disabled > a {
+.dropdown-menu > .disabled > a,
+.dropdown-menu > .disabled > label {
   &,
   &:hover,
   &:focus {
@@ -123,7 +128,8 @@
   }
 
   // Remove the outline when :focus is triggered
-  > a {
+  > a,
+  > label {
     outline: 0;
   }
 }

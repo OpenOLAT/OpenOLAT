@@ -107,9 +107,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				sb.append(" disabled");
 			}
 			sb.append("'>");
+
 			
-			sb.append("<a href='#' id='").append(aId).append("'>");
-			
+			sb.append("<label class='").append("' for=\"").append(formDispatchId).append("\" id='").append(aId).append("'>");			
 			sb.append("<input type='checkbox' id='").append(formDispatchId).append("' ");
 			sb.append(subStrName);
 			sb.append(" value='").append(key).append("'");
@@ -131,7 +131,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				sb.append(" ").append(value);		
 			}
 			
-			sb.append("</a></li>");
+			sb.append("</label></li>");
 			if(stC.isEnabled()){
 				FormJSHelper.appendFlexiFormDirtyForClick(sb, stF.getRootForm(), aId);
 			}
@@ -187,7 +187,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		StringBuilder sb = new StringBuilder();
 		sb.append("jQuery('#").append(buttonTitleId).append("').text(function() {");
 		sb.append("  var $buttonText = jQuery.makeArray(");
-		sb.append("    jQuery('#").append(listId).append(" li a input').filter(':checked').map(function() {");
+		sb.append("    jQuery('#").append(listId).append(" li label input').filter(':checked').map(function() {");
 		sb.append("      return jQuery(this).data('value');");
 		sb.append("    })");
 		sb.append("  ).join(', ');");
