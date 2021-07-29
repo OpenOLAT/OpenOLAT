@@ -348,6 +348,8 @@ var BPlayer = {
 				mimeType = "video/mp4";
 			} else if(config.file.indexOf('openmeetings/recording') > 0) {
 				mimeType = "video/mp4";
+			} else if(extension.indexOf('webm') == 0) {
+				mimeType = "video/webm";
 			} else {
 				alert('Something go badly wrong!' + config.provider + "  " + extension);
 			}

@@ -384,7 +384,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		target.append("</span>");
 		//render badge
 		if(node.getBadge() != null) {
-			target.append("&nbsp");
+			target.append("&nbsp;");
 			renderer.render(node.getBadge(), target, new String[] {});
 		}
 	}

@@ -83,7 +83,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 			  .append("> </i>");
 		}
 		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
-			sb.append("&nbsp").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp");
+			sb.append("&nbsp;").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp;");
 		}
 		if (tblComponent.showSaveButton()) {
 			sb.append("<span class='input-group input-group-sm'>");
@@ -286,7 +286,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 		}
 		
 		if (tblComponent.isShowLabelAsInlineText() && StringHelper.containsNonWhitespace(tblComponent.getTextElementImpl().getLabelText())) {
-			output.append("&nbsp").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp");
+			output.append("&nbsp;").append(tblComponent.getTextElementImpl().getLabelText()).append("&nbsp;");
 		}
 		
 		if (items != null) {
