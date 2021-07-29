@@ -44,7 +44,17 @@
 		initColors();
 		initClear();
 		
-		{ // starts with a blue brush
+		var jsonState = jQuery('#op_' + inputHolderId + '_json').val();
+		var hasJsonState = !(typeof jsonState == "undefined") && jsonState.length > 0;
+		var parsedJsonState = null;
+		if(hasJsonState) {
+			parsedJsonState = JSON.parse(jsonState);
+		}
+		
+		if(isStateful(jsonState, parsedJsonState)) { // if already drawn, starts with select tool
+			selectTool(jQuery("#" + wrapperId + " div.o_group_tools a[data-tool=select]")[0]);
+			canvas.isDrawingMode = false;
+		} else { // if empty, starts with a blue brush
 			selectTool(jQuery("#" + wrapperId + " div.o_group_tools a[data-tool=brush]")[0]);
 			jQuery('#' + wrapperId + ' div.o_group_colors a.blue').addClass("active");
 			canvas.isDrawingMode = true;
@@ -95,16 +105,24 @@
 		canvas.on('mouse:out', save);
 		
 		// restore state
-		var val = jQuery('#op_' + inputHolderId + '_json').val();
-		if(!(typeof val == "undefined") && val.length > 0) {
-			var json = JSON.parse(val);
-			canvas.loadFromJSON(json, function() {
+		if(hasJsonState) {
+			canvas.loadFromJSON(parsedJsonState, function() {
 				canvas.renderAll(); 
 			}, function(o, object) {
 				if(object.isType("circle")) {
 					object.setControlsVisibility({ ml: false, mb: false, mr: false, mt: false, mtr: false });
 				}
 			});
+		}
+		
+		function isStateful(jsonState, parsedJsonState) {
+			try {
+				return jsonState && parsedJsonState != null
+					&& parsedJsonState.objects && parsedJsonState.objects.length > 0;
+			} catch(e) {
+				if(window.console) console.log(e);
+				return false;
+			}
 		}
 		
 		// select, stack up / down
