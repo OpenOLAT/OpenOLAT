@@ -50,7 +50,7 @@ public class IQTESTCoachIdentitiesController extends BasicController {
 
 		TooledStackedPanel stackPanel = new TooledStackedPanel("iqtestCoachStackPanel", getTranslator(), this);
 		stackPanel.setToolbarAutoEnabled(false);
-		stackPanel.setToolbarEnabled(false);
+		stackPanel.setToolbarEnabled(true);// show the questions / users segments
 		stackPanel.setShowCloseLink(true, false);
 		stackPanel.setCssClass("o_identity_list_stack");
 		putInitialPanel(stackPanel);
