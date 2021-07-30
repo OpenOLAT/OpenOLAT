@@ -187,9 +187,9 @@ public class TeacherRollCallController extends FormBasicController {
 			layoutCont.contextPut("teachers", sb.toString());
 			layoutCont.contextPut("lectureBlockTitle", StringHelper.escapeHtml(lectureBlock.getTitle()));
 			layoutCont.contextPut("lectureBlockExternalId", StringHelper.escapeHtml(lectureBlock.getExternalId()));
-			StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(lectureBlock.getDescription()));
+			StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(lectureBlock.getDescription(), true));
 			layoutCont.contextPut("lectureBlockDescription", StringHelper.xssScan(description));
-			StringBuilder preparation = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(lectureBlock.getPreparation()));
+			StringBuilder preparation = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(lectureBlock.getPreparation(), true));
 			layoutCont.contextPut("lectureBlockPreparation", StringHelper.xssScan(preparation));
 			layoutCont.contextPut("lectureBlockLocation", StringHelper.escapeHtml(lectureBlock.getLocation()));
 			layoutCont.contextPut("lectureBlock",lectureBlock);

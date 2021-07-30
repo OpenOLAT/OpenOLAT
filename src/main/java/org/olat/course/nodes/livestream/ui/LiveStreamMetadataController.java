@@ -65,7 +65,7 @@ public class LiveStreamMetadataController extends BasicController {
 				mainVC.contextPut("id", event.getId());
 				mainVC.contextPut("title", event.getSubject());
 				addDateToMainVC(event);
-				StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(event.getDescription()));
+				StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(event.getDescription(), true));
 				mainVC.contextPut("description", description.toString());
 				if (StringHelper.containsNonWhitespace(event.getLocation())) {
 					mainVC.contextPut("location", event.getLocation());

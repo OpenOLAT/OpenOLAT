@@ -406,7 +406,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private String prepareMsgBody(String body) {
-		body = Formatter.formatURLsAsLinks(body);
+		body = Formatter.formatURLsAsLinks(body, true);
 		body = Formatter.formatEmoticonsAsImages(body);
 		return body;
 	}

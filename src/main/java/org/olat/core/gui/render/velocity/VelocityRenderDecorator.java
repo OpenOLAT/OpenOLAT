@@ -1057,7 +1057,7 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @return text with clickable links
 	 */
 	public static String formatURLsAsLinks(String textFragment) {
-		return Formatter.formatURLsAsLinks(textFragment);
+		return Formatter.formatURLsAsLinks(textFragment, true);
 	}	
 	
  	/**

@@ -19,8 +19,10 @@
  */
 package org.olat.core.util;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -140,5 +142,45 @@ public class FormatterTest {
 		String latextFormatterJs = Formatter.elementLatexFormattingScript(domId);
 		Assert.assertNotNull(latextFormatterJs);
 		Assert.assertTrue(latextFormatterJs.contains(domId));
+	}
+	
+	@Test
+	public void testMailTransformation() {
+		// Valid Mails
+		List<String> validMails = new ArrayList<>();
+		validMails.add("abc.def@mail.cc");
+		validMails.add("abc.def@mail-archive.com");
+		validMails.add("abc.def@mail.org");
+		validMails.add("abc.def@mail.com");
+		validMails.add("abc.def@mail.com");
+		validMails.add("abc@mail.com");
+		validMails.add("abc_def@mail.com");
+		validMails.add("abc-d@mail.com");			
+		
+		// Invalid Mails
+		List<String> invalidMails = new ArrayList<>();
+		invalidMails.add("abc.def@mail#archive.com");
+		invalidMails.add("abc.def@mail");
+		invalidMails.add("abc.def@mail..com");
+		
+		for (String validMail : validMails) {
+			String valid = Formatter.formatMailsAsLinks(validMail, false);
+			String validIcon = Formatter.formatMailsAsLinks(validMail, true);
+			
+			Assert.assertTrue(valid.contains("<a"));
+			Assert.assertTrue(valid.contains("</a>"));
+			
+			Assert.assertTrue(validIcon.contains("<a"));
+			Assert.assertTrue(validIcon.contains("</a>"));
+			Assert.assertTrue(validIcon.contains("<i"));
+			Assert.assertTrue(validIcon.contains("</i>"));
+		}
+		
+		for (String invalidMail: invalidMails) {
+			invalidMail = Formatter.formatMailsAsLinks(invalidMail, false);
+			
+			Assert.assertTrue(!invalidMail.contains("<a"));
+			Assert.assertTrue(!invalidMail.contains("</a>"));
+		}
 	}
 }

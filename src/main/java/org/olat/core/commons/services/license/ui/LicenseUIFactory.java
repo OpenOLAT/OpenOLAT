@@ -87,7 +87,7 @@ public class LicenseUIFactory {
 	
 	public static String getFormattedLicenseText(License license) {
 		String licenseText = getLicenseText(license);
-		return Formatter.formatURLsAsLinks(Formatter.escWithBR(licenseText).toString());
+		return Formatter.formatURLsAsLinks(Formatter.escWithBR(licenseText).toString(), true);
 	}
 	
 	public static String getLicenseText(License license) {
