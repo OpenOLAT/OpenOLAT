@@ -191,7 +191,7 @@ public class RightsMetadataEditController extends FormBasicController {
 				sb.append("'> </i></div>");
 			}
 			String licenseTypeText = licenseType.getText() != null? licenseType.getText(): "";
-			String formattedLicenseText = Formatter.formatURLsAsLinks(Formatter.escWithBR(licenseTypeText).toString());
+			String formattedLicenseText = Formatter.formatURLsAsLinks(Formatter.escWithBR(licenseTypeText).toString(), true);
 			if (StringHelper.containsNonWhitespace(formattedLicenseText)) {
 				sb.append(formattedLicenseText);
 			}

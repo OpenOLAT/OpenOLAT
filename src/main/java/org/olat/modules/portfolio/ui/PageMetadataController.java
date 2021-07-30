@@ -189,10 +189,14 @@ public class PageMetadataController extends BasicController {
 	
 	private void initMetadata(UserRequest ureq) {
 		Set<Identity> owners = new HashSet<>();
+		boolean isOwnedByViewer;
+		
 		if(page.getSection() != null && page.getSection().getBinder() != null) {
 			owners.addAll(portfolioService.getMembers(page.getSection().getBinder(), PortfolioRoles.owner.name()));
 		}
+		
 		owners.addAll(portfolioService.getMembers(page, PortfolioRoles.owner.name()));
+		isOwnedByViewer = owners.contains(ureq.getUserSession().getIdentity());
 		
 		StringBuilder ownerSb = new StringBuilder();
 		for(Identity owner:owners) {
@@ -206,7 +210,8 @@ public class PageMetadataController extends BasicController {
 		mainVC.contextPut("statusIconCss", page.getPageStatus() == null ? PageStatus.draft.iconClass() : page.getPageStatus().iconClass());
 		mainVC.contextPut("statusCssClass", page.getPageStatus() == null ? PageStatus.draft.statusClass() : page.getPageStatus().statusClass());
 		
-		int sharedWith = portfolioService.countSharedPageBody(page) - 1;
+		
+		int sharedWith = isOwnedByViewer ? portfolioService.countSharedPageBody(page) - 1 : -1;
 		if(sharedWith > 0) {
 			String sharedWithString = String.valueOf(sharedWith) + " " + translate("page.body.shared.with." + (sharedWith == 1 ? "entry" : "entries"));
 			sharedWithLink = LinkFactory.createLink("sharedWithLink", "sharedWithLink", "showSharedPages", sharedWithString, getTranslator(), mainVC, this, Link.NONTRANSLATED);

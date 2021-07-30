@@ -19,8 +19,8 @@
  */
 package org.olat.admin.layout;
 
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.mail.MailHelper;
 
 /**
  * 
@@ -61,9 +61,10 @@ public class FooterInformations {
 		}
 		
 		String parsedFooterLine = null;
-		parsedFooterLine = dbFooterLine.replaceAll(MailHelper.MAIL_REGEX, "<a href=\"mailto:$0\">$0</a>");
-		String urlregex = "((http(s?)://)|(www.))(([\\w-.]+)*(/[^[:space:]]+)*)";
-		parsedFooterLine = parsedFooterLine.replaceAll(urlregex, "<a href=\"http$3://$4$5\" target=\"_blank\">$2$4$5</a>");
+		
+		parsedFooterLine = Formatter.formatURLsAsLinks(dbFooterLine, false);
+		parsedFooterLine = Formatter.formatMailsAsLinks(parsedFooterLine, false);
+		
 		return parsedFooterLine;
 	}
 }

@@ -694,9 +694,10 @@ public class Formatter {
 	 * HTML link objects.
 	 * 
 	 * @param textFragment
+	 * @param addIcon TODO
 	 * @return text with clickable links
 	 */
-	public static String formatURLsAsLinks(String textFragment) {
+	public static String formatURLsAsLinks(String textFragment, boolean addIcon) {
 		if(textFragment == null) return "";
 		Matcher matcher = urlPattern.matcher(textFragment); 		
 		
@@ -730,12 +731,14 @@ public class Formatter {
 				  .append(" rel=\"noopener noreferrer\"");
 			}
 			sb.append(">");
-			if (url.startsWith("mailto")) {
-				sb.append("<i class='o_icon o_icon_mail'> </i> ");					
-			} else if (!url.startsWith(Settings.getServerContextPathURI())) {
-				sb.append("<i class='o_icon o_icon_link_extern'> </i> ");				
-			} else {
-				sb.append("<i class='o_icon o_icon_star'> </i> ");
+			if (addIcon) {
+				if (url.startsWith("mailto")) {
+					sb.append("<i class='o_icon o_icon_mail'> </i> ");					
+				} else if (!url.startsWith(Settings.getServerContextPathURI())) {
+					sb.append("<i class='o_icon o_icon_link_extern'> </i> ");				
+				} else {
+					sb.append("<i class='o_icon o_icon_star'> </i> ");
+				}
 			}
 			
 			sb.append(url);
@@ -745,6 +748,22 @@ public class Formatter {
 		sb.append(textFragment.substring(pos));
 		//
 		return sb.toString();
+	}
+	
+	private static final Pattern mailPattern = Pattern.compile("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])");
+	
+	/**
+	 * Search in given text fragment for mail addresses and surround them with clickable links
+	 * 
+	 * @param textFragment
+	 * @return
+	 */
+	public static String formatMailsAsLinks(String textFragment, boolean addIcon) {
+		if(textFragment == null) return "";
+		
+		Matcher matcher = mailPattern.matcher(textFragment); 		
+				
+		return matcher.replaceAll("<a href=\"mailto:$0\">" + (addIcon ? "<i class='o_icon o_icon_mail'> </i> $0" : "$0") + "</a>");
 	}
 	
 

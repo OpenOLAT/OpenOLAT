@@ -280,7 +280,7 @@ public class InfoDisplayController extends FormBasicController {
 			message = message.toString();
 		} else if(StringHelper.containsNonWhitespace(message)) {
 			message = Formatter.escWithBR(info.getMessage()).toString();
-			message =	Formatter.formatURLsAsLinks(message);
+			message =	Formatter.formatURLsAsLinks(message, true);
 		}
 		
 		Formatter formatter = Formatter.getInstance(getLocale());

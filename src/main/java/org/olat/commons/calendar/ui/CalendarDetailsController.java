@@ -91,7 +91,7 @@ public class CalendarDetailsController extends BasicController {
 		} else {
 			mainVC.contextPut("subject", event.getSubject());
 			// format line breaks and render links as clickable links
-			StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(event.getDescription()));
+			StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(event.getDescription(), true));
 			mainVC.contextPut("description", description.toString());
 			if(StringHelper.containsNonWhitespace(event.getLocation())) {
 				mainVC.contextPut("location", event.getLocation());
