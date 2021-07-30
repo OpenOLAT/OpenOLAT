@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.9</org.springframework.version>
-		<org.hibernate.version>5.5.4.Final</org.hibernate.version>
+		<org.hibernate.version>5.5.5.Final</org.hibernate.version>
 		<apache.cxf>3.4.4</apache.cxf>
 		<apache.pdfbox>2.0.24</apache.pdfbox>
 		<apache.poi>5.0.0</apache.poi>
@@ -2335,7 +2335,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.10.1</version>
+			<version>1.11.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
