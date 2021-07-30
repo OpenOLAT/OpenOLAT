@@ -80,17 +80,14 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		
 		// Provide own component dispatch ID and wrap in div
 		String compId = "o_c" + ic.getDispatchID();
-		sb.append("<div id='").append(compId).append("' class='o_video'>"); // START component
+		sb.append("<div id='").append(compId).append("' class='o_video'"); // START component
+		applySize(sb, size)
+		  .append(">");
 		// The inner component 
 		String imgId = "mov_" + ic.getDispatchID();
-		sb.append("<div id='").append(imgId).append("' style='width:");
-		if(size != null) {
-			sb.append(size.getWidth()).append("px; height:").append(size.getHeight()).append("px;");
-		} else {
-			// if no size available, try to scale to full width
-			sb.append("100%; min-width:480px;");
-		}
-		sb.append("' class='o_video_wrapper'></div>")
+		sb.append("<div id='").append(imgId).append("' class='o_video_wrapper'");
+		applySize(sb, size)
+		  .append("></div>")
 		  .append("<script>")
 		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
 		sb.append("','").append(imgId).append("',");
@@ -108,6 +105,19 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		sb.append(");")
 		  .append("</script>")
 		  .append("</div>"); // ENDcomponent
+	}
+	
+	private StringOutput applySize(StringOutput sb, Size size) {
+		sb.append(" style='width:");
+		if(size != null) {
+			// don't set height (for the case where the video is in a table with a smaller width)
+			sb.append(size.getWidth()).append("px; max-height:").append(size.getHeight()).append("px;");
+		} else {
+			// if no size available, try to scale to full width
+			sb.append("100%; min-width:480px;");
+		}
+		sb.append("'");
+		return sb;
 	}
 	
 	private void renderImage(StringOutput sb, ImageComponent ic) {
