@@ -35,7 +35,7 @@
 			#else
 				<i class="o_icon o_icon_fw o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 				 #foreach($category in $pageCategories)
-				 	<span class="tag label label-info">
+				 	<span class="o_tag">
 					 	$category
 				 	</span>
 				 #end
@@ -50,7 +50,7 @@
 			#else
 				<i class="o_icon o_icon_fw o_icon_competences" title="$r.translateInAttribute("competences")"> </i>
 				 #foreach($competence in $pageCompetences)
-				 	<span class="tag label label-info">
+				 	<span class="o_tag o_competence">
 					 	$competence
 				 	</span>
 				 #end
