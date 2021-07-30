@@ -72,7 +72,7 @@ public class VideoLicenseInterceptionController extends FormBasicController {
 			if (StringHelper.containsNonWhitespace(license.getFreetext())) {
 				form.contextPut("licenseText", license.getFreetext());
 			} else {
-				form.contextPut("licenseText", Formatter.formatURLsAsLinks(license.getLicenseType().getText()));
+				form.contextPut("licenseText", Formatter.formatURLsAsLinks(license.getLicenseType().getText(), true));
 			}
 			
 			if (StringHelper.containsNonWhitespace(license.getLicensor())) {
