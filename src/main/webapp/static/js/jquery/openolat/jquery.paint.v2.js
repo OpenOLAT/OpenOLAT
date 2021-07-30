@@ -6,17 +6,17 @@
  *  @date Jui. 2021
  */
 (function($) {
-	"use strict";
+	// IE11 doesn't like use strict here
     $.fn.paintV2 = function(options) {
     	var paint = this.data("data-oo-paint-v2");
     	if(typeof paint === "undefined") {
-    		paint = new PaintV2(this, options);
+    		paint = new PainterV2(this, options);
     		this.data("data-oo-paint-v2", paint);
     	}
     	return paint;
 	};
 	
-	var PaintV2 = function(panels, params) {
+	var PainterV2 = function(panels, params) {
 		this.settings = $.extend({
 			inputHolderId: '',
 			formDispatchFieldId: ''
@@ -493,7 +493,7 @@
 			var rgbColor = color.substring(0, opacitySep);
 			jQuery('#' + wrapperId + ' div.o_group_colors a').each(function(index, el) {
 				var elColor = el.getAttribute('data-color');
-				if(elColor && elColor.startsWith(rgbColor)) {
+				if(elColor && elColor.indexOf(rgbColor) == 0) {
 					jQuery(el).addClass("active");
 				} else {
 					jQuery(el).removeClass("active");
@@ -532,7 +532,7 @@
 			brushContext.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
 			brushContext.fillStyle = color;
 			brushContext.fill();
-			if(color.startsWith("rgba(255,255,255,") || color.startsWith("#ff0000")) {
+			if(color.indexOf("rgba(255,255,255,") == 0 || color.indexOf("#ff0000") == 0) {
 				brushContext.strokeStyle = "#000000";
 				brushContext.lineWidth = "1";
 				brushContext.stroke();
