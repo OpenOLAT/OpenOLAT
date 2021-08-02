@@ -441,7 +441,7 @@ public class ImsQTI21Test extends Deployments {
 	public void qti21Course_dateTest(@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -771,7 +771,7 @@ public class ImsQTI21Test extends Deployments {
 	public void qti21Course_lmsHidden_results()
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -1027,7 +1027,7 @@ public class ImsQTI21Test extends Deployments {
 	public void qti21CourseTestCockpitProgress(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -1294,7 +1294,7 @@ public class ImsQTI21Test extends Deployments {
 		@Drone @User WebDriver graderBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
 		UserVO grader = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
 		
@@ -1476,7 +1476,7 @@ public class ImsQTI21Test extends Deployments {
 		@Drone @User WebDriver graderBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
 		UserVO grader = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
 		

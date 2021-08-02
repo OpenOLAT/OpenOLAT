@@ -98,7 +98,16 @@ public class BigBlueButtonPage {
 		return this;
 	}
 	
-	public BigBlueButtonPage addMultipleDailyMeetings(String name, String template) {
+	/**
+	 * Add meetings next month (meetings are only generated on morking days).
+	 * 
+	 * @param name The name of the meeting
+	 * @param firstDay The first day of the recurring meetings
+	 * @param lastDay The last day of the recurring meetings
+	 * @param template The template
+	 * @return Itself
+	 */
+	public BigBlueButtonPage addMultipleDailyMeetings(String name, int firstDay, int lastDay, String template) {
 		openCreateDropDown();
 		
 		By addSingleMeetingBy = By.cssSelector("a.o_sel_bbb_daily_meeting_add");
@@ -117,12 +126,12 @@ public class BigBlueButtonPage {
 		By startBy = By.cssSelector("div.o_sel_bbb_recurring_meeting_start span.input-group-addon i");
 		browser.findElement(startBy).click();
 		OOGraphene.selectNextMonthInDatePicker(browser);
-		OOGraphene.selectDayInDatePicker(5, browser);
+		OOGraphene.selectDayInDatePicker(firstDay, browser);
 		
 		By endBy = By.cssSelector("div.o_sel_bbb_recurring_meeting_end span.input-group-addon i");
 		browser.findElement(endBy).click();
 		OOGraphene.selectNextMonthInDatePicker(browser);
-		OOGraphene.selectDayInDatePicker(10, browser);
+		OOGraphene.selectDayInDatePicker(lastDay, browser);
 		
 		return this;
 	}
@@ -135,16 +144,20 @@ public class BigBlueButtonPage {
 	}
 	
 	/**
+	 * The method assert a range of meetings, this is needed because the
+	 * exact number is not known, saturday and sunday are not working days.
 	 * 
-	 * @param numOfMeetings Num. of meetings + 1
+	 * @param minNumOfMeetings The minimum number of meetings to assert
+	 * @param maxNumOfMeetings The maximum number of meetings to assert
 	 * @return Itself
 	 */
-	public BigBlueButtonPage assertOnDatesList(int numOfMeetings) {
-		By datesBy = By.cssSelector("div.o_sel_bbb_recurring_meeting_dates table tr");
+	public BigBlueButtonPage assertOnDatesList(int minNumOfMeetings, int maxNumOfMeetings) {
+		By datesBy = By.xpath("//div[contains(@class,'o_sel_bbb_recurring_meeting_dates')]//table/tbody/tr");
 		OOGraphene.waitElement(datesBy, browser);
 		
 		List<WebElement> lines = browser.findElements(datesBy);
-		Assert.assertEquals(numOfMeetings, lines.size());
+		int numOfMeetings = lines.size();
+		Assert.assertTrue(minNumOfMeetings <= numOfMeetings && numOfMeetings <= maxNumOfMeetings);
 		
 		return this;
 	}
@@ -188,11 +201,12 @@ public class BigBlueButtonPage {
 		return this;
 	}
 	
-	public BigBlueButtonPage assertOnList(String meetingName, int numOfMeetings) {
+	public BigBlueButtonPage assertOnList(String meetingName, int minNumOfMeetings, int maxNumOfMeetings) {
 		By meetingBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//td[contains(@class,'o_dnd_label')][text()[contains(.,'" + meetingName + "')]]");
 		OOGraphene.waitElement(meetingBy, browser);
 		List<WebElement> meetings = browser.findElements(meetingBy);
-		Assert.assertEquals(numOfMeetings, meetings.size());
+		int numOfMeetings = meetings.size();
+		Assert.assertTrue(minNumOfMeetings <= numOfMeetings && numOfMeetings <= maxNumOfMeetings);
 		return this;
 	}
 	

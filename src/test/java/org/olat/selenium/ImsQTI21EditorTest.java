@@ -1943,7 +1943,7 @@ public class ImsQTI21EditorTest extends Deployments {
 	@RunAsClient
 	public void qti21EditorOrder(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());

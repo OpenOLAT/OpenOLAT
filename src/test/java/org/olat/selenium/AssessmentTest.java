@@ -829,7 +829,7 @@ public class AssessmentTest extends Deployments {
 	public void certificatesGeneratedWithCascadingRules()
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 
@@ -1093,7 +1093,7 @@ public class AssessmentTest extends Deployments {
 			@Drone @Participant WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
 			
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 
@@ -1897,7 +1897,7 @@ public class AssessmentTest extends Deployments {
 	public void taskOptionalWithIndividualScore(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 
@@ -2046,7 +2046,7 @@ public class AssessmentTest extends Deployments {
 	public void taskWithoutSubmission(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 
@@ -2168,7 +2168,7 @@ public class AssessmentTest extends Deployments {
 	public void taskOptionalWithoutSubmission(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 		

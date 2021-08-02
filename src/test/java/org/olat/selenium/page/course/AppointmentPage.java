@@ -167,8 +167,10 @@ public class AppointmentPage {
 		By titleBy = By.xpath("//div[contains(@class,'o_appointment_header')]/h3[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(titleBy, browser);
 		By appointmentsBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')]");
+		OOGraphene.waitElement(appointmentsBy, browser);
 		List<WebElement> appointmentsEl = browser.findElements(appointmentsBy);
-		Assert.assertTrue(minNumOfAppointments <= appointmentsEl.size());
+		int numOfAppointments = appointmentsEl.size();
+		Assert.assertTrue(minNumOfAppointments <= numOfAppointments);
 		return this;
 	}
 	

@@ -78,7 +78,7 @@ public class CourseLearnPathTest extends Deployments {
 	public void learnPathConfirmationAndVisitedFlow(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -206,7 +206,7 @@ public class CourseLearnPathTest extends Deployments {
 	public void taskLearnPathSolutionsOnly(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);

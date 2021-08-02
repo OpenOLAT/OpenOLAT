@@ -186,7 +186,7 @@ public class CourseElementTest extends Deployments {
 	public void courseWithSCORM_fullAuto()
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -1414,7 +1414,7 @@ public class CourseElementTest extends Deployments {
 			@Drone @Student WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -2048,7 +2048,7 @@ public class CourseElementTest extends Deployments {
 	@Test
 	public void survey(@Drone @User WebDriver userBrowser)
 	throws IOException, URISyntaxException {
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Maximilien");
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -2268,11 +2268,11 @@ public class CourseElementTest extends Deployments {
 		bigBlueButton
 			.assertOnRuntime()
 			.selectEditMeetingsList()
-			.addMultipleDailyMeetings(meetingName, "Classroom")
+			.addMultipleDailyMeetings(meetingName, 5, 10, "Classroom")
 			.nextToDatesList()
-			.assertOnDatesList(5)
+			.assertOnDatesList(3, 5)
 			.finishRecurringMeetings()
-			.assertOnList(meetingName, 4)
+			.assertOnList(meetingName, 3, 5)
 			.selectMeetingsList()
 			.selectMeeting(meetingName, 1)
 			.assertOnMeeting(meetingName);
@@ -2359,7 +2359,7 @@ public class CourseElementTest extends Deployments {
 	public void courseWithTeamsWeeklyMeetings()
 	throws IOException, URISyntaxException {
 
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -2423,7 +2423,7 @@ public class CourseElementTest extends Deployments {
 	public void courseWithAppointment()
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
@@ -2483,7 +2483,7 @@ public class CourseElementTest extends Deployments {
 	public void courseWithAppointmentRecurring(@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -2537,7 +2537,7 @@ public class CourseElementTest extends Deployments {
 		AppointmentPage appointment = new AppointmentPage(browser);
 		appointment
 			.addTopic(topicTitle)
-			.setRecurringTopic(1, 25, 13, 14, DayOfWeek.MONDAY)
+			.setRecurringTopic(1, 28, 13, 14, DayOfWeek.MONDAY)
 			.saveTopic()
 			.assertOnTopicMultipleMeetings(topicTitle, 3)
 			.addUserToAppointment(1)
@@ -2605,7 +2605,7 @@ public class CourseElementTest extends Deployments {
 	public void courseWithAppointmentFinding(@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
