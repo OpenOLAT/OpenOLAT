@@ -2257,7 +2257,7 @@ public class CourseElementTest extends Deployments {
 			.enableGuestLink()
 			.save();
 
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
