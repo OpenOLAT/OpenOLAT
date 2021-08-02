@@ -562,7 +562,7 @@ public class CourseTest extends Deployments {
 			@Drone @User WebDriver userBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
 		
 		//administrator create the categories in the catalog
@@ -922,7 +922,7 @@ public class CourseTest extends Deployments {
 	public void courseBooking(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		
-		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());

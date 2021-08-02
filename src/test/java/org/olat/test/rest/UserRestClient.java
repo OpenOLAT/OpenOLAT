@@ -97,11 +97,6 @@ public class UserRestClient {
 		return createAuthor("Selena");
 	}
 	
-	public UserVO createRandomAuthor()
-	throws IOException, URISyntaxException {
-		return createAuthor("Selena-" + UUID.randomUUID());
-	}
-	
 	public UserVO createAuthor(String name)
 	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
@@ -142,7 +137,7 @@ public class UserRestClient {
 		vo.setLogin(login);
 		String rndPassword = ("passwd-" + uuid).substring(0, 24);
 		vo.setPassword(rndPassword);
-		vo.setFirstName(name + "-"+ role + "-" + uuid);
+		vo.setFirstName(name + "-" + role + "-" + uuid);
 		vo.setLastName("Smith");
 		vo.setEmail(rndUsername + "@frentix.com");
 		vo.putProperty("telOffice", "39847592");

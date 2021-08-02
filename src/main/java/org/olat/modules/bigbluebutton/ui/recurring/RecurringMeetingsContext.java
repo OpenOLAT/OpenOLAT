@@ -242,13 +242,33 @@ public class RecurringMeetingsContext {
 	}
 	
 	public void generateMeetings() {
-		Date start = CalendarUtils.startOfDay(startRecurringDate);
+		Date start = startDay(CalendarUtils.startOfDay(startRecurringDate));
 		Date end = CalendarUtils.endOfDay(endRecurringDate);
 		
 		meetings.clear();
 		for(Date current=start; current.before(end); current = nextDay(current)) {
 			meetings.add(generateMeeting(current));
 		}
+	}
+
+	/**
+	 * 
+	 * @param date The proposed date
+	 * @return The date but only working day (without sturday and sunday).
+	 */
+	private Date startDay(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		if(recurringMode == RecurringMode.daily) {
+			int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+			// only working day
+			if(dayOfWeek == Calendar.SATURDAY) {
+				cal.add(Calendar.DATE, 2);
+			} else if(dayOfWeek == Calendar.SUNDAY) {
+				cal.add(Calendar.DATE, 1);
+			}
+		}
+		return cal.getTime();
 	}
 	
 	private Date nextDay(Date date) {
