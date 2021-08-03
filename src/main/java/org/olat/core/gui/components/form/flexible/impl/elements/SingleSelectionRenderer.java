@@ -108,7 +108,7 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 
 		if(source.isEnabled()){
 			// use the selection elements formDispId instead of the one of this element.
-			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction()));
+			sb.append(FormJSHelper.getRawJSFor(ssec.getRootForm(), ssec.getSelectionElementFormDisId(), ssec.getAction(), false, null, formDispatchId));
 		} else {
 			//mark as disabled and do not add javascript
 			sb.append(" disabled='disabled' ");

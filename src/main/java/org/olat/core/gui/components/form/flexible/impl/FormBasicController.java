@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
@@ -440,6 +441,9 @@ public abstract class FormBasicController extends BasicController {
 			FormLink link = (FormLink)fiSrc;
 			if(!link.isPopup() && !link.isNewWindow()) {
 				flc.setDirty(true);
+				// Trigger re-focusing of current focused element										
+				JSCommand focusCommand = FormJSHelper.getFormFocusCommand(this.flc.getRootForm().getFormName(), null);						
+				getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 			}
 		} else if(fiSrc instanceof InlineElement) {
 			if(fiSrc instanceof RichTextElement) {
@@ -449,6 +453,9 @@ public abstract class FormBasicController extends BasicController {
 				//is made of severals components. If a form item is set to invisible
 				//the layout which glue the different components stay visible
 				flc.setDirty(true);
+				// Trigger re-focusing of current focused element
+				JSCommand focusCommand = FormJSHelper.getFormFocusCommand(this.flc.getRootForm().getFormName(), null);						
+				getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 			}
 		}
 	}

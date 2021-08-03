@@ -69,10 +69,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<div ");
 		appendIdIfRequired(sb, stC).append(">");
-		sb.append("<div");
-		if (stF.isDropdownHiddenEventEnabled()) {
-			sb.append(" id='").append(buttonGroupId).append("'");
-		}
+		sb.append("<div id='").append(buttonGroupId).append("'");
 		sb.append(" class='button-group");
 		if (stF.getFormRequestEval().isTrue()) {
 			// The menu should be open, if the component is dirty after a listener event
@@ -160,9 +157,14 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				sb.append(getRawJSFor(check));
 				sb.append(getAjaxOnlyJs(stF, stC, key));
 				sb.append("   }, 0);");
-				sb.append("   jQuery(event.target).blur();");
+// TODO: UH: what is this blur for? Breaks Keyboard / tabbing navigation, do we need it?
+//				sb.append("   jQuery(event.target).blur();");
 				sb.append("   return false;");
 				sb.append("});");
+				// remember last focus position, see FormJSHelper.getRawJSFor()
+				sb.append("jQuery('#").append(check.getFormDispatchId()).append("').on('focus',function(event) {");
+				sb.append("o_info.lastFormFocusEl='").append(check.getFormDispatchId()).append("';"); 
+				sb.append("});");				
 				sb.append("/* ]]> */");
 				sb.append("</script>");
 			}
@@ -200,7 +202,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	}
 
 	private String getRawJSFor(CheckboxElement check) {
-		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction());
+		StringBuilder eventHandlers = FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction(), false, null, check.getFormDispatchId());
 		String onKeyword = "onclick=";
 		int onPos = eventHandlers.indexOf(onKeyword);
 		String substring = "";
@@ -208,6 +210,13 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			// Strip onclick to use it in jQuery script.
 			substring = eventHandlers.substring(onPos + onKeyword.length() + 1, eventHandlers.length() - 1);
 		 }
+		// Remove focus part
+		onKeyword = "onfocus=";
+		onPos = substring.indexOf(onKeyword);
+		if (onPos != -1) {
+			substring = substring.substring(0, onPos);
+		 }
+		
 		return substring;
 	}
 	
@@ -324,7 +333,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			  .append(";\"");
 		} else {
 			//use the selection form dispatch id and not the one of the element!
-			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction()));
+			sb.append(FormJSHelper.getRawJSFor(check.getRootForm(), check.getSelectionElementFormDispatchId(), check.getAction(), false, null, check.getFormDispatchId()));
 		}
 		sb.append(" />");
 		String iconLeftCSS = check.getIconLeftCSS();

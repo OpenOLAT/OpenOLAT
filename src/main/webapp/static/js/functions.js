@@ -2049,6 +2049,34 @@ function o_ffRegisterSubmit(formId, submElmId){
 	jQuery('#'+formId).data('FlexiSubmit', submElmId);
 }
 
+
+// Set the focus in a flexi form to a specific form item, the first error 
+// in the form or the last element focused by a user action 
+function o_ffSetFocus(formId, formItemId){
+	// 1) Focus on element stored in 
+	// o_info.lastFormFocusEl
+	
+	// 2) Override focus on specific form item if provided
+	if (formItemId) {
+		o_info.lastFormFocusEl = formItemId;
+	}
+	// 3) Override focus on first error in form 
+	var errItem = jQuery('#' + formId + ' .has-error .form-control'); 
+	if (errItem.length > 0) { 
+		o_info.lastFormFocusEl = errItem[0].getAttribute('id');
+	}
+	// 4) Now set focus
+	if (o_info.lastFormFocusEl) {
+		var lastEl = jQuery('#' + o_info.lastFormFocusEl);
+		if (lastEl.length > 0) {
+			lastEl[0].focus();
+		} else {
+			o_info.lastFormFocusEl = 0;
+		}
+	} 
+}
+
+
 function dismissInfoBox(uuid) {
 	jQuery('#' + uuid).remove();
 	return true;

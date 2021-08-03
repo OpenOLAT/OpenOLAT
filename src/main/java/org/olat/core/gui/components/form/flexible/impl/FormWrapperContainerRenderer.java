@@ -122,6 +122,10 @@ class FormWrapperContainerRenderer implements ComponentRenderer {
 			 * FORM SUBMIT on keypress enter
 			 */
 			sb.append(FormJSHelper.submitOnKeypressEnter(formC.getFormName()));
+			/*
+			 * Set Form focus to error or last focused element 
+			 */
+			FormJSHelper.setFormFocus(sb, formC.getFormName(), null, true);
 		}
 	}
 
