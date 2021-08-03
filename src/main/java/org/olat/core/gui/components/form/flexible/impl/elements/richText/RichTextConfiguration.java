@@ -1146,6 +1146,8 @@ public class RichTextConfiguration implements Disposable {
 
 		// default table style
 		tinyMenuSb.append("table_default_attributes: { class: 'b_default' },\n");
+		// prevent cloning custom elements (especially QTI related)
+		tinyMenuSb.append("table_clone_elements: \"strong em b i span[data-qti!='textentryinteraction'][data-qti!='hottext'] font h1 h2 h3 h4 h5 h6 p div\",\n");
 
 		if (tinyConfig.getTool1() != null) {
 			tinyMenuSb.append("toolbar1: '").append(tinyConfig.getTool1()).append("',\n");

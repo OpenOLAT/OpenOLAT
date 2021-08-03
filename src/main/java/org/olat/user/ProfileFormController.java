@@ -329,11 +329,11 @@ public class ProfileFormController extends FormBasicController {
 			Map<String, String> mails = registrationManager.readTemporaryValue(tempKey.getEmailAddress());
 			String mail = mails.get("changedEMail");
 			emailEl.setExampleKey("email.change.form.info", new String[] { mail });
-			emailEl.setElementCssClass("o_omit_margin");
+			emailEl.setElementCssClass("o_omit_margin o_user_profil_email");
 			buttonsVisible = isAdministrativeUser;
 		} else {
 			emailEl.setExampleKey(null, null);
-			emailEl.setElementCssClass(null);
+			emailEl.setElementCssClass("o_user_profil_email");
 		}
 		removeEmailInProcessButton.setVisible(buttonsVisible);
 		confirmEmailInProcessButton.setVisible(buttonsVisible);

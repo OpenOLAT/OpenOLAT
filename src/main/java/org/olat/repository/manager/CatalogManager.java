@@ -634,7 +634,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		parentEntry = loadCatalogEntry(parentEntry);
 		newEntry = loadCatalogEntry(newEntry);
 		List<CatalogEntry> catEntries = parentEntry.getChildren();
-		RepositoryEntry repoEntry = newEntry.getRepositoryEntry();
+		RepositoryEntry repoEntry2 = newEntry.getRepositoryEntry();
 		
 		if(catEntries.isEmpty()) {
 			catEntries.add(newEntry);
@@ -803,7 +803,9 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		// Check that the new parent doesn't contain the entry already and remove it from its list
 		List<CatalogEntry> newParentChildren = newParentEntry.getChildren();
 		for (CatalogEntry newParentChild : newParentChildren) {
-			if (newParentChild.getType() == CatalogEntry.TYPE_LEAF && newParentChild.getRepositoryEntry().equals(toBeMovedEntry.getRepositoryEntry())) {
+			if (newParentChild != null && newParentChild.getType() == CatalogEntry.TYPE_LEAF
+					&& newParentChild.getRepositoryEntry() != null
+					&& newParentChild.getRepositoryEntry().equals(toBeMovedEntry.getRepositoryEntry())) {
 				// Entry is already existing
 				return false;
 			}
@@ -818,7 +820,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		}
 		// set new parent and save
 		toBeMovedEntry.setParent(newParentEntry);
-		updateCatalogEntry(toBeMovedEntry);
+		toBeMovedEntry = updateCatalogEntry(toBeMovedEntry);
 		addToChildren(newParentEntry, toBeMovedEntry);
 		dbInstance.commitAndCloseSession();
 		return true;

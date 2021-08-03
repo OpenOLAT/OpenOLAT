@@ -69,7 +69,7 @@ public class CatalogManagerTest extends OlatTestCase {
 	@Autowired
 	private SecurityGroupDAO securityGroupDao;
 	
-	Random random = new Random();
+	private static Random random = new Random();
 	
 	private void afterPropoertiesSet() {
 		try {
@@ -258,7 +258,7 @@ public class CatalogManagerTest extends OlatTestCase {
 		
 		Assert.assertNotNull(nodes);
 		for (CatalogEntry catalogEntry : nodes) {
-			Assert.assertTrue(catalogEntry.getType() == CatalogEntry.TYPE_NODE);
+			Assert.assertEquals(CatalogEntry.TYPE_NODE, catalogEntry.getType());
 		}
 	}
 
@@ -342,7 +342,7 @@ public class CatalogManagerTest extends OlatTestCase {
 		
 		CatalogEntry compareEntry = catalogManager.getCatalogEntryByKey(catalogEntry.getKey());
 		
-		Assert.assertTrue(catalogEntry.equals(compareEntry));
+		Assert.assertEquals(catalogEntry, compareEntry);
 	}
 	
 	@Test
@@ -383,7 +383,7 @@ public class CatalogManagerTest extends OlatTestCase {
 		List<CatalogEntry> children = catalogManager.loadCatalogEntry(parentEntry).getChildren();
 		System.out.println(children.size());
 		
-		Assert.assertTrue(catalogManager.loadCatalogEntry(catalogEntry2) == null);		
+		Assert.assertNull(catalogManager.loadCatalogEntry(catalogEntry2));		
 		assertThat(children).containsExactlyInAnyOrder(catalogEntry3);
 	}
 	
@@ -602,11 +602,9 @@ public class CatalogManagerTest extends OlatTestCase {
 		assertThat(catalogEntryAA3.getPosition()).isEqualTo(2);
 		assertThat(catalogManager.moveCatalogEntry(catalogEntryAA2, parentEntryBA)).isTrue();
 		assertThat(catalogEntryAA2.getPosition()).isEqualTo(1);
-		assertThat(catalogManager.moveCatalogEntry(parentEntryAA, parentEntryBA));
+		assertThat(catalogManager.moveCatalogEntry(parentEntryAA, parentEntryBA)).isTrue();
 		assertThat(catalogEntryB1.getPosition()).isEqualTo(1);
-		assertThat(parentEntryAA.getPosition()).isEqualTo(0);
-		
-		
+		assertThat(parentEntryAA.getPosition()).isZero();
 	}
 	
 	@Test
@@ -648,16 +646,16 @@ public class CatalogManagerTest extends OlatTestCase {
 		catalogEntryB1 = catalogManager.loadCatalogEntry(catalogEntryB1);
 		
 		assertThat(catalogManager.reorderCatalogEntry(parentEntryA.getKey(), catalogEntryB1.getKey(), true)).isEqualTo(1);
-		assertThat(catalogManager.reorderCatalogEntry(parentEntryAA.getKey(), catalogEntryAA1.getKey(), false)).isEqualTo(0);
+		assertThat(catalogManager.reorderCatalogEntry(parentEntryAA.getKey(), catalogEntryAA1.getKey(), false)).isZero();
 		
 		catalogEntryAA1 = catalogManager.loadCatalogEntry(catalogEntryAA1);
 		assertThat(catalogEntryAA1.getPosition()).isEqualTo(1);
 		
 		assertThat(catalogManager.setPosition(catalogEntryB1.getKey(), 10)).isEqualTo(2);
-		assertThat(catalogManager.setPosition(catalogEntryAA2.getKey(), 0)).isEqualTo(0);
+		assertThat(catalogManager.setPosition(catalogEntryAA2.getKey(), 0)).isZero();
 		
 		catalogEntryAA2 = catalogManager.loadCatalogEntry(catalogEntryAA2);
-		assertThat(catalogEntryAA2.getPosition()).isEqualTo(0);
+		assertThat(catalogEntryAA2.getPosition()).isZero();
 	}
 	
 }
