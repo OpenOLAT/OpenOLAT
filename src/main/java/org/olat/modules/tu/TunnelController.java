@@ -30,11 +30,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.httpclient.HttpClientService;
@@ -50,11 +48,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author gnaegi 
  */
-public class TunnelController extends DefaultController implements CloneableController {
+public class TunnelController extends DefaultController {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(TunnelController.class);
 
 	private TunnelComponent tuc;
-	private ModuleConfiguration config;
 	private VelocityContainer main;
 	private CloseableHttpClient httpClientInstance;
 	
@@ -63,7 +60,6 @@ public class TunnelController extends DefaultController implements CloneableCont
 	
 	public TunnelController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(wControl);
-		this.config = config;
 		Translator trans = Util.createPackageTranslator(TunnelController.class, ureq.getLocale());
 		main = new VelocityContainer("tucMain", VELOCITY_ROOT + "/index.html", trans, null);
 
@@ -87,11 +83,6 @@ public class TunnelController extends DefaultController implements CloneableCont
 	protected void doDispose() {
 		IOUtils.closeQuietly(httpClientInstance);
 		tuc = null;
-	}
-
-	@Override
-	public Controller cloneController(UserRequest ureq, WindowControl control) {
-		return new TunnelController(ureq, control, config);
 	}
 
 }

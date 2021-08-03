@@ -68,7 +68,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
@@ -128,7 +127,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author guido
  */
-public class WikiMainController extends BasicController implements CloneableController, Activateable2 {
+public class WikiMainController extends BasicController implements Activateable2 {
 
 	private static final Logger log = Tracing.createLoggerFor(WikiMainController.class);
 
@@ -1205,11 +1204,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass());
 		doReleaseEditLock();
-	}
-
-	@Override
-	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
-		return WikiManager.getInstance().createWikiMainController(ureq, wControl, ores, securityCallback, assessmentProvider, null);
 	}
 
 	private void doReleaseEditLock() {

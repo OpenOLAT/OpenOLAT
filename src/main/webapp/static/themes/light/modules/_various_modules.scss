@@ -69,10 +69,6 @@ a.o_chelp {
 	}
 }
 
-/* Make the parent raltive to apply the absoluteof the children */
-.o_content_cloneable {
-	position: relative;
-}
 /* normally content is wrapped in a single page which uses an iframedisplay */
 .o_singlepage {
 	position: relative;
@@ -89,12 +85,6 @@ a.o_chelp {
 		}
  	}
 	&:hover .o_edit_wrapper .o_edit { @include opacity(1); }
-}
-/* the clone controller is used to pop content out of the window into another window. */
-.o_content_popup {
-	position: absolute;
-	top: 0;
-	right: 0;
 }
 
 /* content packaging module */

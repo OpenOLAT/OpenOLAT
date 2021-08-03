@@ -29,8 +29,6 @@ import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,10 +39,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.clone.CloneController;
-import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
@@ -53,7 +47,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
@@ -211,33 +204,8 @@ public class SPRunController extends BasicController implements Activateable2 {
 			}
 		}		
 
-		// create clone wrapper layout
-		CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
-			@Override
-			public ControllerCreator createLayoutControllerCreator(UserRequest uureq, final ControllerCreator contentControllerCreator) {
-				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, new ControllerCreator() {
-					@Override
-					public Controller createController(UserRequest lureq, WindowControl lwControl) {
-						// Wrap in column layout, popup window needs a layout controller
-						Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-						layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), userCourseEnv.getCourseEnvironment()));
-						//Controller titledCtrl = TitledWrapperHelper.getWrapper(lureq, lwControl, ctr, courseNode, "o_sp_icon");
-						layoutCtr.addDisposableChildController(ctr);
-						return layoutCtr;
-					}
-				});
-			}
-		};
-		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), spCtr, userCourseEnv, courseNode, "o_sp_icon");
-		if(ctrl instanceof CloneableController) {
-			CloneController cloneC= new CloneController(ureq, getWindowControl(), (CloneableController)ctrl, clccc);
-			listenTo(cloneC);
-			main.setContent(cloneC.getInitialComponent());
-		} else {
-			throw new AssertException("Controller must be cloneable");
-		}
+		main.setContent(ctrl.getInitialComponent());
 	}
 	
 	

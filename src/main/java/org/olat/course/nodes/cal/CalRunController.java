@@ -23,23 +23,17 @@ package org.olat.course.nodes.cal;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.clone.CloneController;
-import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
-import org.olat.course.CourseFactory;
 import org.olat.course.nodes.CalCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -55,7 +49,6 @@ import org.olat.modules.ModuleConfiguration;
 public class CalRunController extends BasicController implements Activateable2 {
 
 	private final CourseCalendarController calCtr;
-	private final CloneController cloneCtr;
 	private final ModuleConfiguration config;
 	
 	public CalRunController(WindowControl wControl, UserRequest ureq, CalCourseNode calCourseNode,
@@ -76,19 +69,7 @@ public class CalRunController extends BasicController implements Activateable2 {
 			if(startDate == null) startDate = new Date();
 		}
 		calCtr.setFocus(startDate);
-
-		CloneLayoutControllerCreatorCallback clccc = (uureq, contentControllerCreator)  -> {
-			return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, (lureq, lwControl) -> {
-				// wrap in column layout, popup window needs a layout controller
-				Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv.getCourseEnvironment()));
-				layoutCtr.addDisposableChildController(ctr);
-				return layoutCtr;
-			});
-		};
-		cloneCtr = new CloneController(ureq, getWindowControl(), calCtr, clccc);
-		mainVC.put("cal", cloneCtr.getInitialComponent());
+		mainVC.put("cal", calCtr.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
 
@@ -112,9 +93,6 @@ public class CalRunController extends BasicController implements Activateable2 {
 	protected void doDispose() {
 		if(calCtr != null){
 			calCtr.dispose();
-		}
-		if(cloneCtr != null){
-			cloneCtr.dispose();
 		}
 	}
 }

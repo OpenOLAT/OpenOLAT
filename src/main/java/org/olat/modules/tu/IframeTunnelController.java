@@ -31,11 +31,9 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -56,12 +54,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *   
  * </pre>
  */
-public class IframeTunnelController extends BasicController implements CloneableController {
+public class IframeTunnelController extends BasicController {
 
 	private VelocityContainer myContent;
 	
 	private CloseableHttpClient httpClientInstance; // package local for performance only
-	private ModuleConfiguration config;
 	
 	@Autowired
 	private HttpClientService httpClientService;
@@ -70,7 +67,6 @@ public class IframeTunnelController extends BasicController implements Cloneable
 		super(ureq, wControl);
 		// use iframe translator for generic iframe title text
 		setTranslator(Util.createPackageTranslator(IFrameDisplayController.class, ureq.getLocale()));
-		this.config = config;
 		
 		// configuration....
 		int configVersion = config.getConfigurationVersion();
@@ -122,11 +118,6 @@ public class IframeTunnelController extends BasicController implements Cloneable
 	@Override
 	protected void doDispose() {
 		IOUtils.closeQuietly(httpClientInstance);
-	}
-
-	@Override
-	public Controller cloneController(UserRequest ureq, WindowControl control) {
-		return new IframeTunnelController(ureq, control, config);
 	}
 	
 }

@@ -21,7 +21,6 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,7 +36,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -61,13 +59,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementCalendarController extends BasicController implements CloneableController {
+public class CurriculumElementCalendarController extends BasicController {
 
 	private final WeeklyCalendarController calendarController;
 
-	private final CurriculumElementRef element;
 	private final OLATResourceable callerOres;
-	private final List<RepositoryEntry> entries;
 	private final List<KalendarRenderWrapper> calendars;
 	private final CurriculumSecurityCallback secCallback;
 	
@@ -79,8 +75,6 @@ public class CurriculumElementCalendarController extends BasicController impleme
 	public CurriculumElementCalendarController(UserRequest ureq, WindowControl wControl,
 			CurriculumElementRef element, List<RepositoryEntry> entries, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl);
-		this.entries = entries;
-		this.element = element;
 		this.secCallback = secCallback;
 		calendars = loadCalendars(ureq, entries);
 
@@ -172,13 +166,5 @@ public class CurriculumElementCalendarController extends BasicController impleme
 	@Override
 	protected void doDispose() {
 		calendarController.dispose();
-	}
-
-	@Override
-	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
-		Date focus = calendarController.getFocus();
-		CurriculumElementCalendarController ctrl = new CurriculumElementCalendarController(ureq, wControl, element, entries, secCallback);
-		ctrl.calendarController.setFocus(focus);
-		return ctrl;
 	}
 }

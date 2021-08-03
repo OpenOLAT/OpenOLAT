@@ -43,7 +43,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
@@ -73,7 +72,7 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  *
  * @author gnaegi 
  */
-public class SinglePageController extends BasicController implements CloneableController, Activateable2 {
+public class SinglePageController extends BasicController implements Activateable2 {
 
 	private static final Logger log = Tracing.createLoggerFor(SinglePageController.class);
 	
@@ -88,15 +87,9 @@ public class SinglePageController extends BasicController implements CloneableCo
 	private CustomLinkTreeModel customLinkTreeModel;
 	private CustomLinkTreeModel toolLinkTreeModel;
 
-	private final String frameId;
-	private final boolean randomizeMapper;
 	private final DeliveryOptions deliveryOptions;
 	
 	private String g_curURI;
-	// save constructor args to remember if we open a site in a new window
-	private String g_fileName;
-	private boolean g_allowRelativeLinks;
-	private VFSContainer g_rootContainer;
 	private VFSContainer g_new_rootContainer;
 	private Long courseRepoKey;
 	
@@ -140,15 +133,7 @@ public class SinglePageController extends BasicController implements CloneableCo
 		SimpleStackedPanel mainP = new SimpleStackedPanel("iframemain");
 		myContent = createVelocityContainer("index");
 		
-		// remember values in case of later cloning
-		// g_fileName : initial file name given (no root correction), e.g. bla.html or f/g/blu.html
-		// always use non-iframe mode for screenreaders
 		this.deliveryOptions = config;
-		this.g_allowRelativeLinks = allowRelativeLinks;
-		this.g_fileName = fileName;
-		this.g_rootContainer = rootContainer;
-		this.frameId = frameId;
-		this.randomizeMapper = randomizeMapper;
 		this.courseRepoKey = courseRepoKey;
 		boolean jumpIn = false;
 		
@@ -294,11 +279,6 @@ public class SinglePageController extends BasicController implements CloneableCo
 	
 	public void setToolLinkTreeModel(CustomLinkTreeModel toolLinkTreeModel) {
 		this.toolLinkTreeModel = toolLinkTreeModel;
-	}
-
-	@Override
-	public Controller cloneController(UserRequest ureq, WindowControl control) {
-		return new SinglePageController(ureq, control, g_rootContainer, g_fileName, g_allowRelativeLinks, frameId, null, deliveryOptions, randomizeMapper, courseRepoKey);
 	}
 
 	@Override

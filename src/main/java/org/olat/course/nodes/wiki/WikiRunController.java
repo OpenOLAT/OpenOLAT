@@ -28,27 +28,20 @@ package org.olat.course.nodes.wiki;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.clone.CloneController;
-import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
-import org.olat.course.CourseFactory;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.nodes.WikiCourseNode;
@@ -82,7 +75,6 @@ public class WikiRunController extends BasicController implements Activateable2 
 	private CourseEnvironment courseEnv;
 	private WikiMainController wikiCtr;
 	private ModuleConfiguration config;
-	private CloneController cloneCtr;
 	
 	@Autowired
 	private RepositoryService repositoryService;
@@ -138,24 +130,8 @@ public class WikiRunController extends BasicController implements Activateable2 
 		}
 		listenTo(wikiCtr);
 
-		Controller wrappedCtr = TitledWrapperHelper.getWrapper(ureq, wControl, wikiCtr, userCourseEnv, wikiCourseNode, Wiki.CSS_CLASS_WIKI_ICON);
-		
-		CloneLayoutControllerCreatorCallback clccc = (uureq, contentControllerCreator) -> BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, (lureq, lwControl)  -> {
-				// wrapp in column layout, popup window needs a layout controller
-				Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-				layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
-				layoutCtr.addDisposableChildController(ctr);
-				return layoutCtr;
-			});
-		
-		if (wrappedCtr instanceof CloneableController) {
-			cloneCtr = new CloneController(ureq, getWindowControl(), (CloneableController)wrappedCtr, clccc);
-			listenTo(cloneCtr);
-			putInitialPanel(cloneCtr.getInitialComponent());
-		} else {
-			putInitialPanel(new Panel("uups.no.clone.controller"));			
-		}
+		Controller wrappedCtr = TitledWrapperHelper.getWrapper(ureq, wControl, wikiCtr, userCourseEnv, wikiCourseNode, Wiki.CSS_CLASS_WIKI_ICON);		
+		putInitialPanel(wrappedCtr.getInitialComponent());
 	}
 	
 	private boolean hasEditRights(WikiCourseNode courseNode, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {

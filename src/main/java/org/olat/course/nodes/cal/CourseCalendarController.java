@@ -32,7 +32,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.course.run.calendar.CourseCalendarSubscription;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -44,7 +43,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * Initial Date:  10 nov. 2009 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
-public class CourseCalendarController extends DefaultController implements CloneableController {
+public class CourseCalendarController extends DefaultController {
 
 	private final WeeklyCalendarController calendarController;
 	private KalendarRenderWrapper courseKalendarWrapper;
@@ -102,15 +101,5 @@ public class CourseCalendarController extends DefaultController implements Clone
 	@Override
 	protected void doDispose() {
 		calendarController.dispose();
-	}
-
-	@Override
-	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
-		CourseCalendars myCal = new CourseCalendars(courseKalendarWrapper, calendars);
-
-		Date focus = calendarController.getFocus();
-		CourseCalendarController ctrl = new CourseCalendarController(ureq, wControl, myCal, courseEnv, secCallback);
-		ctrl.calendarController.setFocus(focus);
-		return ctrl;
 	}
 }

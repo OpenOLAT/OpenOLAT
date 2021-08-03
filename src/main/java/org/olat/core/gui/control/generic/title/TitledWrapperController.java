@@ -37,7 +37,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.spacesaver.ToggleBoxController;
 import org.olat.core.id.context.ContextEntry;
@@ -56,7 +55,7 @@ import org.olat.core.util.StringHelper;
  * @author Lavinia Dumitrescu, Florian Gnägi
  */
 public class TitledWrapperController extends BasicController
-	implements CloneableController, Activateable2, TooledController, ConfigurationChangedListener {
+	implements Activateable2, TooledController, ConfigurationChangedListener {
 	
 	private static final String COMPONENT_NAME = "child";
 	//Velocity variable
@@ -77,7 +76,6 @@ public class TitledWrapperController extends BasicController
 	private Controller contentController;
 	
 	private String wrapperCss;
-	private TitleInfo titleInfo;
 	
 	/**
 	 * Constructor for a title wrapper with the following default configuration:
@@ -105,7 +103,6 @@ public class TitledWrapperController extends BasicController
 		}
 		
 		this.wrapperCss = (wrapperCss == null ? "" : wrapperCss);
-		this.titleInfo = titleInfo;
 
 		// set title info variables
 		theVelocityContainer.contextPut(TITLE_VAR, StringHelper.escapeHtml(titleInfo.getTitle()));	
@@ -242,21 +239,5 @@ public class TitledWrapperController extends BasicController
 	 */
 	public void setSeparatorEnabled(boolean useSeparator) {
 		theVelocityContainer.contextPut(USE_SEPARATOR, Boolean.valueOf(useSeparator));					
-	}
-
-	@Override
-	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
-		if(contentController == null || contentController instanceof CloneableController) {
-			Controller wrappedAndCloned = ((CloneableController)contentController).cloneController(ureq, wControl);
-			TitledWrapperController clone = new TitledWrapperController(ureq, wControl, wrappedAndCloned, wrapperCss, titleInfo);
-			clone.setTitle((String)theVelocityContainer.getContext().get(TITLE_VAR));
-			clone.setSubTitle((String)theVelocityContainer.getContext().get(SUBTITLE_VAR));
-			clone.setContextTitle((String)theVelocityContainer.getContext().get(CONTEXT_TITLE_VAR));
-			clone.setIconCssClass((String)theVelocityContainer.getContext().get(ICON_CSS));
-			clone.setSeparatorEnabled((Boolean)theVelocityContainer.getContext().get(USE_SEPARATOR));	
-			clone.setTitleSize((Integer)theVelocityContainer.getContext().get(TITLE_SIZE));	
-			return clone;
-		}
-		return null;
 	}
 }

@@ -25,8 +25,6 @@
 
 package org.olat.course.nodes.tu;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -35,12 +33,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.clone.CloneController;
-import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
-import org.olat.core.gui.control.generic.clone.CloneableController;
-import org.olat.core.logging.AssertException;
-import org.olat.course.CourseFactory;
 import org.olat.course.nodes.TUCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -62,9 +54,7 @@ public class TURunController extends BasicController {
 	private TUCourseNode courseNode;
 	private Panel main;	
 	private ModuleConfiguration config;
-	private CourseEnvironment courseEnv;
-	private CloneController cloneC;
-	
+	private CourseEnvironment courseEnv;	
 
 	/**
  	 * Constructor for tunneling run controller
@@ -117,45 +107,17 @@ public class TURunController extends BasicController {
 
 	private void doLaunch(UserRequest ureq) {
 		boolean iniframe = config.getBooleanSafe(TUConfigForm.CONFIG_IFRAME);
-		// create the possibility to float
-		CloneableController controller;
+		Controller controller;
 		if (iniframe) {  
 			// Do not dispose this controller if the course is closed...
-			IframeTunnelController ifC = new IframeTunnelController(ureq, getWindowControl(), config);
-			controller = ifC;			
+			controller = new IframeTunnelController(ureq, getWindowControl(), config);
 		} else {
-			TunnelController tuC = new TunnelController(ureq, getWindowControl(), config);
-			controller = tuC;			
+			controller = new TunnelController(ureq, getWindowControl(), config);
 		}
 		listenTo(controller);
 		
-		// create clone wrapper layout
-		CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
-			@Override
-			public ControllerCreator createLayoutControllerCreator(UserRequest ureq, final ControllerCreator contentControllerCreator) {
-				return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, new ControllerCreator() {
-					@Override
-					@SuppressWarnings("synthetic-access")
-					public Controller createController(UserRequest lureq, WindowControl lwControl) {
-						// wrapp in column layout, popup window needs a layout controller
-						Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-						LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-						layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), courseEnv));
-						layoutCtr.addDisposableChildController(ctr);
-						return layoutCtr;
-					}
-				});
-			}
-		};
-		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), controller, courseNode, "o_tu_icon");
-		if(ctrl instanceof CloneableController) {
-			cloneC= new CloneController(ureq, getWindowControl(), (CloneableController)ctrl, clccc);
-			listenTo(cloneC);
-			main.setContent(cloneC.getInitialComponent());
-		} else {
-			throw new AssertException("Controller must be cloneable");
-		}
+		main.setContent(ctrl.getInitialComponent());
 	}
 	
 	/**

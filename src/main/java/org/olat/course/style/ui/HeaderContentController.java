@@ -31,7 +31,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.spacesaver.ExpandController;
 import org.olat.core.gui.control.generic.spacesaver.ExpandableController;
@@ -56,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class HeaderContentController extends BasicController
-		implements CloneableController, Activateable2, TooledController, ConfigurationChangedListener {
+		implements Activateable2, TooledController, ConfigurationChangedListener {
 	
 	private final VelocityContainer mainVC;
 	private final ExpandController collapseCtrl;
@@ -168,16 +167,6 @@ public class HeaderContentController extends BasicController
 	@Override
 	protected void doDispose() {
 		//
-	}
-
-	@Override
-	public Controller cloneController(UserRequest ureq, WindowControl wControl) {
-		if(contentCtrl == null || contentCtrl instanceof CloneableController) {
-			Controller contentClone = ((CloneableController)contentCtrl).cloneController(ureq, wControl);
-			Controller clone = new HeaderContentController(ureq, wControl, contentClone, userCourseEnv, courseNode, iconCssClass);
-			return clone;
-		}
-		return null;
 	}
 
 }

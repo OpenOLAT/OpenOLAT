@@ -33,27 +33,19 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.control.generic.clone.CloneController;
-import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallback;
-import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -202,31 +194,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 				spCtr.setToolLinkTreeModel(new CourseToolLinkTreeModel(userCourseEnv.getCourseEnvironment().getCourseConfig(), ureq.getLocale()));
 			}
 			spCtr.addLoggingResourceable(LoggingResourceable.wrap(this));
-			// create clone wrapper layout, allow popping into second window
-			CloneLayoutControllerCreatorCallback clccc = new CloneLayoutControllerCreatorCallback() {
-				@Override
-				public ControllerCreator createLayoutControllerCreator(final UserRequest uureq, final ControllerCreator contentControllerCreator) {
-					return BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(uureq, new ControllerCreator() {
-						@Override
-						public Controller createController(UserRequest lureq, WindowControl lwControl) {
-							// wrap in column layout, popup window needs a layout controller
-							Controller ctr = contentControllerCreator.createController(lureq, lwControl);
-							LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, ctr);
-							layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), userCourseEnv.getCourseEnvironment()));
-							
-							Controller wrappedCtrl = TitledWrapperHelper.getWrapper(lureq, lwControl, ctr, userCourseEnv, STCourseNode.this, ICON_CSS_CLASS);
-							layoutCtr.addDisposableChildController(wrappedCtrl);
-							return layoutCtr;
-						}
-					});
-				}
-			};
-			Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, spCtr, userCourseEnv, this, ICON_CSS_CLASS);
-			if(wrappedCtrl instanceof CloneableController) {
-				cont = new CloneController(ureq, wControl, (CloneableController)wrappedCtrl, clccc);
-			} else {
-				throw new AssertException("Need to be a cloneable");
-			}
+			cont = TitledWrapperHelper.getWrapper(ureq, wControl, spCtr, userCourseEnv, this, ICON_CSS_CLASS);
 		} else {
 			// evaluate the score accounting for this node. this uses the score accountings local
 			// cache hash map to reduce unnecessary calculations
