@@ -62,7 +62,7 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 			sb.append(" autofocus");
 		}
 		
-		StringBuilder js = FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction(), fs.isNewWindowAfterDispatchUrl(), null);
+		StringBuilder js = FormJSHelper.getRawJSFor(fs.getRootForm(), id, fs.getAction(), fs.isNewWindowAfterDispatchUrl(), null, id);
 		sb.append(js);
 		sb.append(" class=\"btn");
 		if (fsC.getIsSubmitAndValidate()) {

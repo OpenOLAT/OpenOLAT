@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
@@ -62,19 +63,22 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static StringBuilder getRawJSFor(Form form, String id, int actions) {
-		return getRawJSFor(form, id, actions, false, null);
+		return getRawJSFor(form, id, actions, false, null, id);
 	}
 	
 	/**
 	 * 
-	 * @param form The form
-	 * @param id The id
-	 * @param actions The action
-	 * @param newWindow true if a new window is wanted
+	 * @param form       The form
+	 * @param id         The id
+	 * @param actions    The action
+	 * @param newWindow  true if a new window is wanted
 	 * @param tmpCommand Write a temporary cid in the form submit
+	 * @param focusId    The element id that will get the focus event (not the same
+	 *                   for special cases such as radios) or NULL if re-focus feature
+	 *                   shall not be used
 	 * @return The on... event with the o_ffEvent call
 	 */
-	public static StringBuilder getRawJSFor(Form form, String id, int actions, boolean newWindow, String tmpCommand) {
+	public static StringBuilder getRawJSFor(Form form, String id, int actions, boolean newWindow, String tmpCommand, String focusId) {
 		StringBuilder sb = new StringBuilder(64);
 		// find correct action! only one action supported
 		for (int i = FormEvent.ON_DOTDOTDOT.length - 1; i >= 0; i--) {
@@ -87,6 +91,10 @@ public class FormJSHelper {
 				sb.append("\"");
 				break;
 			}
+		}
+		// Remember the form item when being focused for next server roundtrip
+		if (focusId != null) {
+			sb.append(" onfocus=\"o_info.lastFormFocusEl='").append(focusId).append("'; \"");					
 		}
 		return sb;
 	}
@@ -437,5 +445,44 @@ public class FormJSHelper {
 		  .append("});\n")
 		  .append(getJSEnd());
 		return sb.toString();
+	}
+
+	/**
+	 * JS Code to set the form focus to a specific form item, to the first error or
+	 * the last focused element
+	 * 
+	 * @param sb The output
+	 * @param formName The root form name
+	 * @param formItemId null or the form item id that needs to get the focus
+	 * @param withScriptTag true: add script tag; false: only JS code
+	 * @return the sb
+	 */
+	public static StringOutput setFormFocus(StringOutput sb, String formName, String formItemId, boolean withScriptTag) {		
+		if (withScriptTag) {
+			sb.append("<script>\n");			
+		}
+		sb.append("setTimeout(function(){ o_ffSetFocus('").append(formName);
+		if (formItemId != null) {
+			sb.append("','").append(formItemId);
+		}
+		sb.append("'); },10);");
+		if (withScriptTag) {
+			sb.append("</script>\n");			
+		}
+		return sb;
+	}
+	/**
+	 * JS command to set the form focus to a specific form item, to the first error or
+	 * the last focused element
+	 * 
+	 * @param formName The root form name
+	 * @param formItemId null or the form item id that needs to get the focus
+	 * @return A JSCommand object
+	 */
+	public static JSCommand getFormFocusCommand(String formName, String formItemId) {
+		StringOutput sb = new StringOutput();
+		setFormFocus(sb, formName, formItemId, false);
+		JSCommand focusCommand = new JSCommand(sb.toString());
+		return focusCommand;
 	}
 }
