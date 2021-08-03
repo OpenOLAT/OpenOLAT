@@ -59,6 +59,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import com.dumbster.smtp.SmtpMessage;
+
 /**
  * 
  * Initial date: 19.06.2014<br>
@@ -459,6 +461,55 @@ public class UserTest extends Deployments {
 			.resume()
 			.assertLoggedIn(user);
 	}
+	
+
+	/**
+	 * Change the email, log out and check the new confirmed E-mail.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void userChangeItsEmail()
+	throws IOException, URISyntaxException {
+		
+		UserVO user = new UserRestClient(deploymentUrl).createRandomUser();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		
+		String newEmail = user.getLogin() + "@openolat.frentix.com";
+
+		UserToolsPage userTools = new UserToolsPage(browser);
+		UserProfilePage profil = userTools
+			.openUserToolsMenu()
+			.openMyProfil()
+			.changeEmail(newEmail)
+			.saveProfilAndConfirmEmail()
+			.assertOnChangedEmail(newEmail);
+		
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
+		String confirmationLink = profil.extractConfirmationLink(messages.get(0));
+		profil.loadConfirmationLink(confirmationLink);
+		
+		loginPage
+			.loginAs(user.getLogin(), user.getPassword())
+			.resume();
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		
+		userTools = new UserToolsPage(browser);
+		profil = userTools
+			.openUserToolsMenu()
+			.openMyProfil()
+			.assertOnEmail(newEmail);
+	}
+	
 	
 	/**
 	 * Reset the preferences and check that a log out happens

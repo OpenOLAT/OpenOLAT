@@ -140,6 +140,16 @@ public class UserToolsPage {
 		return new UserSettingsPage(browser);
 	}
 	
+	public UserProfilePage openMyProfil() {
+		By profilBy = By.cssSelector("li>a.o_sel_user_tools-profil");
+		OOGraphene.waitElement(profilBy, browser);
+		browser.findElement(profilBy).click();
+		OOGraphene.waitBusy(browser);
+		By userFormBy =  By.cssSelector("div.o_user_profile_form");
+		OOGraphene.waitElement(userFormBy, browser);
+		return new UserProfilePage(browser);
+	}
+	
 	public EfficiencyStatementPage openMyEfficiencyStatement() {
 		By efficiencyStatementsBy = By.className("o_sel_user_tools-effstatements");
 		WebElement efficiencyStatementsLink = browser.findElement(efficiencyStatementsBy);
