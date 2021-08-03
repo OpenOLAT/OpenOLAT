@@ -75,11 +75,20 @@ a.o_chelp {
 }
 /* normally content is wrapped in a single page which uses an iframedisplay */
 .o_singlepage {
-	.o_edit {
+	position: relative;
+	.o_edit_wrapper {
 		position: absolute;
 		top: 0;
-		right: $padding-xs-horizontal + $line-height-computed;
+		right: 0;
+		background: rgba(255,255,255, 0.8);
+		background: linear-gradient(188deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.9430147058823529) 35%, rgba(255,255,255,0) 100%);
+		border-radius: $border-radius-small;
+		padding: 0 0 20px 10px;
+		.o_edit {
+			@include opacity(.8);	
+		}
  	}
+	&:hover .o_edit_wrapper .o_edit { @include opacity(1); }
 }
 /* the clone controller is used to pop content out of the window into another window. */
 .o_content_popup {

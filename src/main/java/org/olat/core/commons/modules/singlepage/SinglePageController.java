@@ -213,10 +213,9 @@ public class SinglePageController extends BasicController implements CloneableCo
 	 * is possible, you have to call this method after construction time explicitly
 	 */
 	public void allowPageEditing() {
-		editLink = LinkFactory.createCustomLink(COMMAND_EDIT, COMMAND_EDIT, "", Link.NONTRANSLATED, myContent, this);
+		editLink = LinkFactory.createButtonXSmall(COMMAND_EDIT, myContent, this);
 		editLink.setElementCssClass("o_edit");
 		editLink.setIconLeftCSS("o_icon o_icon_edit_file o_icon-lg");
-		editLink.setTitle(translate(COMMAND_EDIT));
 	}
 	
 	public void setAllowDownload(boolean allow) {
