@@ -31,7 +31,6 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentToolManager;
-import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.group.BusinessGroup;
@@ -156,11 +155,6 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// separate check with more options in the search parameters
 		// add by group key 
 		params.setBusinessGroupKeys(Collections.singletonList(group1.getKey()));
-		
-		// assessed groups
-		List<AssessedBusinessGroup> assessedGroups = assessmentToolManager.getBusinessGroupStatistics(coach, params);
-		Assert.assertNotNull(assessedGroups);
-		Assert.assertEquals(1, assessedGroups.size());
 
 		//check assessed identities list
 		List<Identity> assessedIdentitiesAlt = assessmentToolManager.getAssessedIdentities(coach, params);

@@ -40,8 +40,6 @@ import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.certificate.CertificatesManager;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
@@ -57,7 +55,6 @@ public class AssessmentCourseOverviewController extends BasicController {
 	
 	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
 	protected static final Event SELECT_NODES_EVENT = new Event("assessment-tool-select-nodes");
-	protected static final Event SELECT_GROUPS_EVENT = new Event("assessment-tool-select-groups");
 	protected static final Event SELECT_PASSED_EVENT = new Event("assessment-tool-select-passed");
 	protected static final Event SELECT_FAILED_EVENT = new Event("assessment-tool-select-failed");
 	
@@ -68,16 +65,11 @@ public class AssessmentCourseOverviewController extends BasicController {
 
 	private Link passedLink;
 	private Link failedLink;
-	private Link assessedGroupsLink;
 	private Link assessedIdentitiesLink;
 	private Link assessableCoureNodesLink;
-	
-	private final int numOfGroups;
 
 	@Autowired
 	private CertificatesManager certificatesManager;
-	@Autowired
-	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
@@ -145,25 +137,6 @@ public class AssessmentCourseOverviewController extends BasicController {
 		assessableCoureNodesLink.setElementCssClass("o_sel_assessment_tool_assessable_course_nodes");
 		assessableCoureNodesLink.setIconLeftCSS("o_icon o_ms_icon o_icon-fw");
 		
-		if(assessmentCallback.canAssessBusinessGoupMembers()) {
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			if(assessmentCallback.isAdmin()) {
-				//all groups
-			} else {
-				params.setOwner(true);
-				params.setIdentity(getIdentity());
-			}
-			numOfGroups = businessGroupService.countBusinessGroups(params, courseEntry);
-		} else {
-			numOfGroups = 0;
-		}
-		
-		if(numOfGroups > 0) {
-			assessedGroupsLink = LinkFactory.createLink("assessed.groups", "assessed.groups", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-			assessedGroupsLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedGroups", new String[]{ Integer.toString(numOfGroups) }));
-			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group o_icon-fw");
-		}
-		
 		assessmentModeListCtrl = new AssessmentModeOverviewListController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(assessmentModeListCtrl);
 		if(assessmentModeListCtrl.getNumOfAssessmentModes() > 0) {
@@ -171,10 +144,6 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 
 		putInitialPanel(mainVC);
-	}
-	
-	public int getNumOfBusinessGroups() {
-		return numOfGroups;
 	}
 	
 	public void reloadAssessmentModes() {
@@ -204,8 +173,6 @@ public class AssessmentCourseOverviewController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(assessedIdentitiesLink == source) {
 			fireEvent(ureq, SELECT_USERS_EVENT);
-		} else if(assessedGroupsLink == source) {
-			fireEvent(ureq, SELECT_GROUPS_EVENT);
 		} else if(passedLink == source) {
 			fireEvent(ureq, SELECT_PASSED_EVENT);
 		} else if(failedLink == source) {

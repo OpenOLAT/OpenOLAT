@@ -35,11 +35,8 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModule;
-import org.olat.group.BusinessGroupService;
-import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,18 +47,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AssessmentOverviewController extends BasicController implements Activateable2 {
 		
 	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
-	protected static final Event SELECT_GROUPS_EVENT = new Event("assessment-tool-select-groups");
 	protected static final Event SELECT_PASSED_EVENT = new Event("assessment-tool-select-passed");
 	protected static final Event SELECT_FAILED_EVENT = new Event("assessment-tool-select-failed");
 	
 	private final VelocityContainer mainVC;
 	private final AssessmentToReviewSmallController toReviewCtrl;
 	private final AssessmentStatisticsSmallController statisticsCtrl;
-
-	private Link assessedIdentitiesLink, assessedGroupsLink, passedLink, failedLink;
-
-	@Autowired
-	private BusinessGroupService businessGroupService;
+	
+	private final Link passedLink;
+	private final Link failedLink;
+	private final Link assessedIdentitiesLink;
 		
 	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, AssessmentToolSecurityCallback assessmentCallback) {
@@ -91,24 +86,6 @@ public class AssessmentOverviewController extends BasicController implements Act
 		failedLink = LinkFactory.createLink("failed.identities", "failed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 		failedLink.setCustomDisplayText(translate("assessment.tool.numOfFailed", new String[]{ Integer.toString(numOfFailed) }));
 		failedLink.setIconLeftCSS("o_failed o_icon o_icon_failed o_icon-fw");
-		
-		int numOfGroups = 0;
-		if(assessmentCallback.canAssessBusinessGoupMembers()) {
-			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-			if(assessmentCallback.isAdmin()) {
-				//all groups
-			} else {
-				params.setOwner(true);
-				params.setIdentity(getIdentity());
-			}
-			numOfGroups = businessGroupService.countBusinessGroups(params, testEntry);
-		}
-		
-		if(numOfGroups > 0) {
-			assessedGroupsLink = LinkFactory.createLink("assessed.groups", "assessed.groups", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-			assessedGroupsLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedGroups", new String[]{ Integer.toString(numOfGroups) }));
-			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group o_icon-fw");
-		}
 
 		putInitialPanel(mainVC);
 	}
@@ -137,8 +114,6 @@ public class AssessmentOverviewController extends BasicController implements Act
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(assessedIdentitiesLink == source) {
 			fireEvent(ureq, SELECT_USERS_EVENT);
-		} else if(assessedGroupsLink == source) {
-			fireEvent(ureq, SELECT_GROUPS_EVENT);
 		} else if(passedLink == source) {
 			fireEvent(ureq, SELECT_PASSED_EVENT);
 		} else if(failedLink == source) {

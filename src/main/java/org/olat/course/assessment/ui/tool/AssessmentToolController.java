@@ -74,7 +74,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
 	private Link usersLink;
-	private Link groupsLink;
 	private Link overviewLink;
 	private Link bulkAssessmentLink;
 	private Link recalculateLink;
@@ -123,11 +122,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		usersLink.setElementCssClass("o_sel_assessment_tool_users");
 		segmentButtonsCmp.addButton(usersLink, false);
 		
-		if(overviewCtrl.getNumOfBusinessGroups() > 0) {
-			groupsLink = LinkFactory.createToolLink("groups", translate("groups"), this/*, "o_icon_group"*/);
-			groupsLink.setElementCssClass("o_sel_assessment_tool_groups");
-			segmentButtonsCmp.addButton(groupsLink, false);
-		}
 		stackPanel.addTool(segmentButtonsCmp, Align.segment, true);
 		
 		recalculateLink = LinkFactory.createToolLink("recalculate", translate("menu.recalculate"), this, "o_icon_recalculate");
@@ -150,12 +144,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		if(entries == null || entries.isEmpty()) return;
 		
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Users".equalsIgnoreCase(resName)) {
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			doSelectUsersView(ureq, null).activate(ureq, subEntries, entries.get(0).getTransientState());
-		} else if("BusinessGroups".equalsIgnoreCase(resName) || "Groups".equalsIgnoreCase(resName)) {
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			doSelectGroupsView(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+		if("Node".equalsIgnoreCase(resName)) {
+			doSelectUsersView(ureq, null).activate(ureq, entries, null);
 		}
 	}
 
@@ -168,12 +158,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		} else if (source == usersLink) {
 			cleanUp();
 			doSelectUsersView(ureq, null);
-		} else if (groupsLink == source) {
-			cleanUp();
-			doSelectGroupsView(ureq);
 		} else if(recalculateLink == source) {
 			cleanUp();
-			doOpenRecaluclate(ureq);
+			doOpenRecalculate(ureq);
 		} else if(bulkAssessmentLink == source) {
 			cleanUp();
 			doBulkAssessmentView(ureq);
@@ -198,8 +185,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				doSelectUsersView(ureq, null);
 			} else if(event == AssessmentCourseOverviewController.SELECT_NODES_EVENT) {
 				doSelectUsersView(ureq, null);
-			} else if(event == AssessmentCourseOverviewController.SELECT_GROUPS_EVENT) {
-				doSelectGroupsView(ureq);
 			} else if(event == AssessmentCourseOverviewController.SELECT_PASSED_EVENT) {
 				doSelectUsersView(ureq, new AssessedIdentityListState("passed"));
 			} else if(event == AssessmentCourseOverviewController.SELECT_FAILED_EVENT) {
@@ -258,7 +243,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		stackPanel.pushController(translate("menu.bulkfocus"), bulkAssessmentOverviewCtrl);
 	}
 	
-	private void doOpenRecaluclate(UserRequest ureq) {
+	private void doOpenRecalculate(UserRequest ureq) {
 		boolean showResetOverriden = !nodeAccessService
 				.isScoreCalculatorSupported(coachUserEnv.getCourseEnvironment().getCourseConfig().getNodeAccessType());
 		assessmentResetCtrl = new AssessmentResetController(ureq, getWindowControl(), showResetOverriden, false);
@@ -280,20 +265,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			courseAssessmentService.evaluateAll(course);
 		}
-	}
-	
-	private AssessmentCourseTreeController doSelectGroupsView(UserRequest ureq) {
-		if(courseTreeCtrl == null || courseTreeCtrl.isDisposed()) {
-			stackPanel.popUpToController(this);
-			
-			courseTreeCtrl = new AssessmentCourseTreeController(ureq, getWindowControl(), stackPanel, courseEntry, coachUserEnv, toolContainer, assessmentCallback);
-			listenTo(courseTreeCtrl);
-			TreeNode node = courseTreeCtrl.getSelectedCourseNode();
-			stackPanel.pushController(node.getTitle(), "o_icon ".concat(node.getIconCssClass()), courseTreeCtrl);
-		}
-		courseTreeCtrl.switchToBusinessGroupsView(ureq);
-		segmentButtonsCmp.setSelectedButton(groupsLink);
-		return courseTreeCtrl;
 	}
 
 	private AssessmentCourseTreeController doSelectUsersView(UserRequest ureq, StateEntry stateUserList) {

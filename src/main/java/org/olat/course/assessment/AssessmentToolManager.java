@@ -24,7 +24,6 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -44,9 +43,6 @@ import org.olat.repository.RepositoryEntry;
 public interface AssessmentToolManager {
 	
 	public AssessmentStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params);
-	
-	
-	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params);
 	
 	/**
 	 * Return the number of 
