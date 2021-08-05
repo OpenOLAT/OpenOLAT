@@ -180,7 +180,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			int timeLimitInSeconds = testCourseNode.getQTI21TimeLimitMaxInSeconds(qtiTestEntry);
 			boolean suspendEnabled = isSuspendEnable();
 			if(!suspendEnabled) {
-				Date endDate = testCourseNode.getModuleConfiguration().getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+				Date endDate = null;
+				if(testCourseNode.getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false)) {
+					endDate = testCourseNode.getModuleConfiguration().getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+				}
 				FlexiCellRenderer renderer = new EndTimeCellRenderer(timeLimitInSeconds, endDate, getLocale());
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.end.date",
 						IdentityCourseElementCols.details.ordinal(), renderer));
