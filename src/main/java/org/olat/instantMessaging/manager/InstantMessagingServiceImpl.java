@@ -62,6 +62,7 @@ import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageNotification;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.LeaveChatEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyGroup;
 import org.olat.instantMessaging.model.BuddyStats;
@@ -439,6 +440,8 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener) {
 		rosterDao.deleteEntry(identity, chatResource);
 		dbInstance.commit();
+		coordinator.getCoordinator().getEventBus()
+			.fireEventToListenersOf(new LeaveChatEvent(identity.getKey(), chatResource), chatResource);
 		coordinator.getCoordinator().getEventBus().deregisterFor(listener, chatResource);
 	}
 

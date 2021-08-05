@@ -36,7 +36,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -59,6 +58,7 @@ import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.LeaveChatEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
@@ -106,6 +106,8 @@ public class ChatController extends BasicController implements GenericEventListe
 	@Autowired
 	private MapperService mapperService;
 	@Autowired
+	private InstantMessagingModule imModule;
+	@Autowired
 	private InstantMessagingService imService;
 	@Autowired
 	private DisplayPortraitManager portraitManager;
@@ -137,7 +139,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		mainVC.put("updatecontrol", jsc);
 
 		// configure anonym mode depending on configuration. separate configurations for course and group chats
-		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		boolean offerAnonymMode;
 		boolean defaultAnonym;
 		if ("CourseModule".equals(ores.getResourceableTypeName())) {
@@ -157,7 +158,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			buddyList = new Roster(getIdentity().getKey());
 			List<Buddy> buddies = imService.getBuddiesListenTo(getOlatResourceable());
 			buddyList.addBuddies(buddies);
-			//chat started as anonymous depending on configuratino
+			//chat started as anonymous depending on configuration
 			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode);
 			listenTo(rosterCtrl);
 			String nickName = rosterCtrl.getNickName();
@@ -294,6 +295,8 @@ public class ChatController extends BasicController implements GenericEventListe
 	public void event(Event event) {
 		if(event instanceof InstantMessagingEvent) {
 			processInstantMessageEvent((InstantMessagingEvent)event);
+		} else if(event instanceof LeaveChatEvent) {
+			processInstantMessageEvent((LeaveChatEvent)event);
 		}
 	}
 	
@@ -335,8 +338,19 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 	}
 	
+	private void processInstantMessageEvent(LeaveChatEvent event) {
+		if(buddyList != null && rosterCtrl != null && event.sameOres(ores)) {
+			Long identityKey = event.getIdentityKey();
+			if(buddyList.contains(identityKey)) {
+				Buddy entry = buddyList.get(identityKey);
+				buddyList.remove(entry);
+			}
+			rosterCtrl.updateModel();
+		}
+	}
+	
 	/**
-	 * This method close the chat from extern
+	 * This method close the chat from external
 	 */
 	protected void closeChat() {
 		allChats.remove(Integer.toString(hashCode()));

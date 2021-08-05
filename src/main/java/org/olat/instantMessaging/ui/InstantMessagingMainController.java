@@ -61,6 +61,7 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyStats;
 import org.olat.instantMessaging.model.Presence;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br />
@@ -97,12 +98,12 @@ public class InstantMessagingMainController extends BasicController implements G
 	private int stateUpdateCounter = 0;
 	private boolean inAssessment = false;
 	private EventBus singleUserEventCenter;
-	private final InstantMessagingService imService;
+	
+	@Autowired
+	private InstantMessagingService imService;
 
 	public InstantMessagingMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		
 		boolean ajaxOn = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
 		chatContent.contextPut("isAjaxMode", Boolean.valueOf(ajaxOn));

@@ -75,6 +75,15 @@ public class Roster {
 		return null;
 	}
 	
+	public synchronized void remove(Buddy entry) {
+		if(entry == null) return;
+		
+		entries.remove(entry);
+		for(BuddyGroup group:groups) {
+			group.getBuddy().remove(entry);
+		}
+	}
+	
 	public synchronized void addBuddies(List<Buddy> buddies) {
 		if(buddies != null) {
 			for(Buddy buddy:buddies) {

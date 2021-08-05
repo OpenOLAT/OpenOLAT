@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -41,6 +40,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Buddy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -55,11 +55,11 @@ public class ChatManagerController extends BasicController {
 	private final VelocityContainer container;
 	private final Map<Long, ChatController> chats = new HashMap<>();
 
-	private final InstantMessagingService imService;
+	@Autowired
+	private InstantMessagingService imService;
 
 	public ChatManagerController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
-		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		
 		container = createVelocityContainer("chats");
 		container.contextPut("chats", chats);
@@ -90,9 +90,6 @@ public class ChatManagerController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		chats.clear();
