@@ -83,7 +83,10 @@ public class ChatController extends BasicController implements GenericEventListe
 	private Map<Long,Long> avatarKeyCache = new HashMap<>();
 	private Deque<ChatMessage> messageHistory = new LinkedBlockingDeque<>();
 
-	private Link refresh, todayLink, lastWeek, lastMonth;
+	private Link refresh;
+	private Link lastWeek;
+	private Link lastMonth;
+	private Link todayLink;
 	private JSAndCSSComponent jsc;
 	private FloatingResizableDialogController chatPanelCtr;
 	
@@ -287,6 +290,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	 * Gets called if either a new message from one of the buddies happens
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		if(event instanceof InstantMessagingEvent) {
 			processInstantMessageEvent((InstantMessagingEvent)event);
@@ -342,8 +346,8 @@ public class ChatController extends BasicController implements GenericEventListe
 	private void appendToMessageHistory(InstantMessage message, boolean focus) {
 		if(message == null || message.getBody() == null) return;
 		
-		String m = message.getBody().replaceAll("<br/>\n", "\r\n");
-		m = prepareMsgBody(m.replaceAll("<", "&lt;").replaceAll(">", "&gt;")).replaceAll("\r\n", "<br/>\n");
+		String m = message.getBody().replace("<br/>\n", "\r\n");
+		m = prepareMsgBody(m.replace("<", "&lt;").replace(">", "&gt;")).replace("\r\n", "<br/>\n");
 		
 		Date msgDate = message.getCreationDate();
 		String creationDate;
@@ -354,14 +358,16 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 
 		boolean first = true;
+		Long fromKey = message.getFromKey();
 		String from = message.getFromNickName();
 		ChatMessage last = messageHistory.peekLast();
-		if(last != null && from.equals(last.getFrom())) {
+		if(last != null
+				&& fromKey.equals(last.getFromKey())
+				&& from.equals(last.getFrom())) {
 			first = false;
 		}
 
 		boolean anonym = message.isAnonym();
-		Long fromKey = message.getFromKey();
 		ChatMessage msg = new ChatMessage(creationDate, from, fromKey, m, first, anonym);
 		if(!anonym ) {
 			msg.setAvatarKey(getAvatarKey(message.getFromKey()));
