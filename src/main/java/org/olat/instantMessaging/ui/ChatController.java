@@ -36,7 +36,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -59,6 +58,7 @@ import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.LeaveChatEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
@@ -83,7 +83,10 @@ public class ChatController extends BasicController implements GenericEventListe
 	private Map<Long,Long> avatarKeyCache = new HashMap<>();
 	private Deque<ChatMessage> messageHistory = new LinkedBlockingDeque<>();
 
-	private Link refresh, todayLink, lastWeek, lastMonth;
+	private Link refresh;
+	private Link lastWeek;
+	private Link lastMonth;
+	private Link todayLink;
 	private JSAndCSSComponent jsc;
 	private FloatingResizableDialogController chatPanelCtr;
 	
@@ -102,6 +105,8 @@ public class ChatController extends BasicController implements GenericEventListe
 	private BaseSecurity securityManager;
 	@Autowired
 	private MapperService mapperService;
+	@Autowired
+	private InstantMessagingModule imModule;
 	@Autowired
 	private InstantMessagingService imService;
 	@Autowired
@@ -134,7 +139,6 @@ public class ChatController extends BasicController implements GenericEventListe
 		mainVC.put("updatecontrol", jsc);
 
 		// configure anonym mode depending on configuration. separate configurations for course and group chats
-		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		boolean offerAnonymMode;
 		boolean defaultAnonym;
 		if ("CourseModule".equals(ores.getResourceableTypeName())) {
@@ -154,7 +158,7 @@ public class ChatController extends BasicController implements GenericEventListe
 			buddyList = new Roster(getIdentity().getKey());
 			List<Buddy> buddies = imService.getBuddiesListenTo(getOlatResourceable());
 			buddyList.addBuddies(buddies);
-			//chat started as anonymous depending on configuratino
+			//chat started as anonymous depending on configuration
 			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode);
 			listenTo(rosterCtrl);
 			String nickName = rosterCtrl.getNickName();
@@ -287,9 +291,12 @@ public class ChatController extends BasicController implements GenericEventListe
 	 * Gets called if either a new message from one of the buddies happens
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		if(event instanceof InstantMessagingEvent) {
 			processInstantMessageEvent((InstantMessagingEvent)event);
+		} else if(event instanceof LeaveChatEvent) {
+			processInstantMessageEvent((LeaveChatEvent)event);
 		}
 	}
 	
@@ -331,8 +338,19 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 	}
 	
+	private void processInstantMessageEvent(LeaveChatEvent event) {
+		if(buddyList != null && rosterCtrl != null && event.sameOres(ores)) {
+			Long identityKey = event.getIdentityKey();
+			if(buddyList.contains(identityKey)) {
+				Buddy entry = buddyList.get(identityKey);
+				buddyList.remove(entry);
+			}
+			rosterCtrl.updateModel();
+		}
+	}
+	
 	/**
-	 * This method close the chat from extern
+	 * This method close the chat from external
 	 */
 	protected void closeChat() {
 		allChats.remove(Integer.toString(hashCode()));
@@ -342,8 +360,8 @@ public class ChatController extends BasicController implements GenericEventListe
 	private void appendToMessageHistory(InstantMessage message, boolean focus) {
 		if(message == null || message.getBody() == null) return;
 		
-		String m = message.getBody().replaceAll("<br/>\n", "\r\n");
-		m = prepareMsgBody(m.replaceAll("<", "&lt;").replaceAll(">", "&gt;")).replaceAll("\r\n", "<br/>\n");
+		String m = message.getBody().replace("<br/>\n", "\r\n");
+		m = prepareMsgBody(m.replace("<", "&lt;").replace(">", "&gt;")).replace("\r\n", "<br/>\n");
 		
 		Date msgDate = message.getCreationDate();
 		String creationDate;
@@ -354,14 +372,16 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 
 		boolean first = true;
+		Long fromKey = message.getFromKey();
 		String from = message.getFromNickName();
 		ChatMessage last = messageHistory.peekLast();
-		if(last != null && from.equals(last.getFrom())) {
+		if(last != null
+				&& fromKey.equals(last.getFromKey())
+				&& from.equals(last.getFrom())) {
 			first = false;
 		}
 
 		boolean anonym = message.isAnonym();
-		Long fromKey = message.getFromKey();
 		ChatMessage msg = new ChatMessage(creationDate, from, fromKey, m, first, anonym);
 		if(!anonym ) {
 			msg.setAvatarKey(getAvatarKey(message.getFromKey()));

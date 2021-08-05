@@ -24,47 +24,35 @@ import org.olat.core.util.event.MultiUserEvent;
 
 /**
  * 
- * Description:<br>
- * Message to close a new message window. Only use this event with
- * the Single VM message bus with the SingleUserEventCenter!!!
- * 
- * <P>
- * Initial Date:  2 mar. 2011 <br>
+ * Initial date: 5 août 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class CloseInstantMessagingEvent extends MultiUserEvent {
+public class LeaveChatEvent extends MultiUserEvent {
 
-	private static final long serialVersionUID = -2290953538061783875L;
+	private static final long serialVersionUID = 4395873098351195377L;
+	public static final String LEAVE_CHAT = "leave-chat";
 	
-	public static final String CLOSE_IM = "closeim";
-
-	private Long chatId;
+	private Long identityKey;
 	private OLATResourceable ores;
 	
-	public CloseInstantMessagingEvent() {
-		super(CLOSE_IM);
-	}
-	
-	public CloseInstantMessagingEvent(Long chatId) {
-		super(CLOSE_IM);
-		this.chatId = chatId;
-	}
-	
-	public CloseInstantMessagingEvent(OLATResourceable ores) {
-		super(CLOSE_IM);
+	public LeaveChatEvent(Long identityKey, OLATResourceable ores) {
+		super(LEAVE_CHAT);
+		this.identityKey = identityKey;
 		this.ores = ores;
-		this.chatId = ores.getResourceableId();
 	}
-
-	public Long getChatId() {
-		return chatId;
-	}
-
-	public void setChatId(Long chatId) {
-		this.chatId = chatId;
+	
+	public Long getIdentityKey() {
+		return identityKey;
 	}
 	
 	public OLATResourceable getOres() {
 		return ores;
+	}
+	
+	public boolean sameOres(OLATResourceable resource) {
+		if(resource == null || ores == null) return false;
+		return ores.getResourceableId() != null && ores.getResourceableId().equals(resource.getResourceableId())
+				&& ores.getResourceableTypeName() != null && ores.getResourceableTypeName().equals(resource.getResourceableTypeName());
 	}
 }

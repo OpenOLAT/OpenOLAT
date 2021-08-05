@@ -25,7 +25,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -46,11 +45,9 @@ import org.olat.instantMessaging.InstantMessage;
  */
 @Entity(name="instantmessage")
 @Table(name="o_im_message")
-@NamedQueries({
-	@NamedQuery(name="loadIMessageByKey",query="select msg from instantmessage msg  where msg.key=:key"),
-	@NamedQuery(name="loadIMessageByResource", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname order by msg.creationDate desc"),
-	@NamedQuery(name="loadIMessageByResourceAndDate", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname and msg.creationDate>=:from order by msg.creationDate desc")
-})
+@NamedQuery(name="loadIMessageByKey",query="select msg from instantmessage msg  where msg.key=:key")
+@NamedQuery(name="loadIMessageByResource", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname order by msg.creationDate desc")
+@NamedQuery(name="loadIMessageByResourceAndDate", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname and msg.creationDate>=:from order by msg.creationDate desc")
 public class InstantMessageImpl implements InstantMessage, Persistable, CreateInfo {
 	
 	private static final long serialVersionUID = 1425964260797865080L;
