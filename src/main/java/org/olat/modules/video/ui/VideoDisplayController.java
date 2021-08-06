@@ -135,7 +135,7 @@ public class VideoDisplayController extends BasicController {
 	private LicenseService licenseService;
 	
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
-		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, true, true, true, videoEntry.getDescription(), false, false));
+		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, true, true, true, videoEntry.getDescription(), false, false, false));
 	}
 	
 	/**
@@ -203,6 +203,7 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("showDescription", displayOptions.isShowDescription());
 			mainVC.contextPut("alwaysShowControls", displayOptions.isAlwaysShowControls());
 			mainVC.contextPut("clickToPlayPause", displayOptions.isClickToPlayPause());
+			mainVC.contextPut("forwardSeekingRestricted", displayOptions.isForwardSeekingRestricted());
 			
 			initDownloadOptions();
 			
@@ -242,6 +243,10 @@ public class VideoDisplayController extends BasicController {
 
 	public void setTimeUpdateListener(boolean enable) {
 		mainVC.contextPut("listenTimeUpdate", enable);
+	}
+
+	public void setProgressListener(boolean enable) {
+		mainVC.contextPut("listenProgress", enable);
 	}
 	
 	public Integer getUserPreferredResolution() {
@@ -606,6 +611,9 @@ public class VideoDisplayController extends BasicController {
 			case "timeupdate":
 				fireEvent(ureq, new VideoEvent(VideoEvent.TIMEUPDATE, currentTime, duration));
 				break;
+			case "progress":
+				fireEvent(ureq, new VideoEvent(VideoEvent.PROGRESS, currentTime, duration));
+				break;
 			case "marker":
 				String markerId = ureq.getParameter("markerId");
 				loadMarker(ureq, currentTime, markerId);
@@ -845,6 +853,26 @@ public class VideoDisplayController extends BasicController {
 		}
 	}
 
+	/**
+	 * Set and enable the replay feature for a certain position. The position is
+	 * defined by the percentage of the video time already watched.
+	 * 
+	 * @param completion Value between 0 (0% watched) and 1 (100% watched) to
+	 *                   indicate the progress.
+	 */
+	public void setPlayProgress(Double playProgress) {
+		// only set play position when in between of the video
+		if (playProgress > 0d && playProgress < 1d) {
+			mainVC.contextPut("playProgress", playProgress);			
+			String playPercent = Math.round(playProgress * 100) + "";
+			// Enable resume dialog for now only for local videos and not for youtube/vimeo etc.
+			mainVC.contextPut("resumeIntro", translate("resume.intro", playPercent));			
+			//TODO: make media.duration and currentTime time for external videos work to enable the feature there as well
+			// as soon as it works the enableResumeDialog flag can be removed
+			mainVC.contextPut("enableResumeDialog", Boolean.valueOf(videoMetadata.getUrl() == null));		
+		}
+	}
+	
 	
 	public static class VideoMarkerWrapper {
 		

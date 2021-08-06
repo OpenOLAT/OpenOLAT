@@ -43,9 +43,10 @@ public class VideoDisplayOptions {
 	private boolean dragAnnotations;
 	private boolean clickToPlayPause;
 	private boolean authorMode;
+	private boolean forwardSeekingRestricted;
 	
 	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean showTitle, boolean showDescription,
-			boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly) {
+			boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly, boolean forwardSeekingRestricted) {
 		VideoDisplayOptions options = new VideoDisplayOptions();
 		options.setAutoplay(autoplay);
 		options.setAutoWidth(autoWidth);
@@ -55,6 +56,7 @@ public class VideoDisplayOptions {
 		options.setShowRating(showRating);
 		options.setShowTitle(showTitle);
 		options.setShowDescription(showDescription);
+		options.setForwardSeekingRestricted(forwardSeekingRestricted);
 		options.setShowPoster(true);
 		options.setShowQuestions(true);
 		options.setShowAnnotations(true);
@@ -75,6 +77,7 @@ public class VideoDisplayOptions {
 		options.setShowRating(false);
 		options.setShowTitle(false);
 		options.setShowDescription(false);
+		options.setForwardSeekingRestricted(false);
 		options.setShowPoster(true);
 		options.setShowQuestions(false);
 		options.setShowAnnotations(false);
@@ -203,5 +206,14 @@ public class VideoDisplayOptions {
 
 	public void setAuthorMode(boolean authorMode) {
 		this.authorMode = authorMode;
+	}
+
+	public boolean isForwardSeekingRestricted() {
+		return forwardSeekingRestricted;
+	}
+	
+	public void setForwardSeekingRestricted(boolean forwardSeekingRestricted) {
+		this.forwardSeekingRestricted = forwardSeekingRestricted
+				;
 	}
 }

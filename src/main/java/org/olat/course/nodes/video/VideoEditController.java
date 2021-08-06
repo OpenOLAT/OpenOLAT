@@ -80,7 +80,14 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_KEY_AUTOPLAY = "autoplay";
 	public static final String CONFIG_KEY_COMMENTS = "comments";
 	public static final String CONFIG_KEY_RATING = "rating";
+	public static final String CONFIG_KEY_FORWARD_SEEKING_RESTRICTED = "forwardSeekingRestricted";
+	public static final String CONFIG_KEY_TITLE = "title";
 	public static final String CONFIG_KEY_DESCRIPTION_SELECT = "descriptionSelect";
+	public static final String CONFIG_KEY_DESCRIPTION_SELECT_NONE = "none";
+	public static final String CONFIG_KEY_DESCRIPTION_SELECT_RESOURCE = "resourceDescription";
+	public static final String CONFIG_KEY_DESCRIPTION_SELECT_CUSTOM = "customDescription";
+	
+	
 	public static final String CONFIG_KEY_DESCRIPTION_CUSTOMTEXT = "descriptionText";
 
 	private static final String VC_CHOSENVIDEO = "chosenvideo";
@@ -312,12 +319,16 @@ class VideoOptionsForm extends FormBasicController{
 	private SelectionElement videoComments;
 	private SelectionElement videoRating;
 	private SelectionElement videoAutoplay;
+	private SelectionElement videoForwardSeekingRestricted;
+	private SelectionElement title;
 	private SingleSelection description;
 	private RichTextElement descriptionField;
 	private StaticTextElement descriptionRepoField;
+	private boolean titleEnabled;
 	private boolean commentsEnabled;
 	private boolean ratingEnabled;
 	private boolean autoplay;
+	private boolean forwardSeekingRestricted;
 	
 	private String mediaRepoBaseUrl;
 	private final RepositoryEntry repoEntry;
@@ -331,6 +342,8 @@ class VideoOptionsForm extends FormBasicController{
 		commentsEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
 		ratingEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
 		autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
+		forwardSeekingRestricted = config.getBooleanSafe(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED);
+		titleEnabled = config.getBooleanSafe(VideoEditController.CONFIG_KEY_TITLE);
 		
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repoEntry);
 		VFSContainer mediaContainer = handler.getMediaContainer(repoEntry);
@@ -346,6 +359,8 @@ class VideoOptionsForm extends FormBasicController{
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_COMMENTS, videoComments.isSelected(0));
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_RATING, videoRating.isSelected(0));
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_AUTOPLAY, videoAutoplay.isSelected(0));
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED, videoForwardSeekingRestricted.isSelected(0));
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_TITLE, title.isSelected(0));
 		config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, description.getSelectedKey());
 		if("customDescription".equals(description.getSelectedKey())) {
 			config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, descriptionField.getValue());
@@ -360,16 +375,23 @@ class VideoOptionsForm extends FormBasicController{
 		videoComments.select("xx",commentsEnabled);
 		videoRating = uifactory.addCheckboxesHorizontal("videoRating", "video.config.rating", formLayout, new String[]{"xx"}, new String[]{null});
 		videoRating.select("xx",ratingEnabled);
+		
+		uifactory.addSpacerElement("spacer1", formLayout, false);		
 		videoAutoplay = uifactory.addCheckboxesHorizontal("videoAutoplay", "video.config.autoplay", formLayout, new String[]{"xx"}, new String[]{null});
 		videoAutoplay.select("xx",autoplay);
+		videoForwardSeekingRestricted = uifactory.addCheckboxesHorizontal("videoForwardSeekingAllowed", "video.config.forwardSeekingRestricted", formLayout, new String[]{"xx"}, new String[]{null});
+		videoForwardSeekingRestricted.select("xx",forwardSeekingRestricted);
 
-		String[] descriptionkeys = new String[]{ "none", "resourceDescription", "customDescription" };
+		String[] descriptionkeys = new String[]{ VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT_NONE, VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT_RESOURCE, VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT_CUSTOM};
 		String[] descriptionValues = new String[]{ translate("description.none"), translate("description.resource"), translate("description.custom") };
 
+		uifactory.addSpacerElement("spacer2", formLayout, false);
+		title = uifactory.addCheckboxesHorizontal("title", "video.config.title", formLayout, new String[]{"xx"}, new String[]{null});
+		title.select("xx",titleEnabled);
 		//add textfield for custom description
 		description = uifactory.addDropdownSingleselect("video.config.description", formLayout, descriptionkeys, descriptionValues, null);
 		description.addActionListener(FormEvent.ONCHANGE);
-		description.select(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT,"none"), true);
+		description.select(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT_NONE), true);
 		String desc = repoEntry.getDescription();
 		descriptionField = uifactory.addRichTextElementForStringDataMinimalistic("description", "", desc, -1, -1, formLayout, getWindowControl());
 		descriptionRepoField = uifactory.addStaticTextElement("description.repo", "", "", formLayout);
@@ -381,7 +403,7 @@ class VideoOptionsForm extends FormBasicController{
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_RATING, videoRating.isSelected(0));
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_AUTOPLAY, videoAutoplay.isSelected(0));
 		config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, description.getSelectedKey());
-		if("customDescription".equals(description.getSelectedKey())) {
+		if(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT_CUSTOM.equals(description.getSelectedKey())) {
 			config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, descriptionField.getValue());
 		}
 	}
@@ -394,7 +416,7 @@ class VideoOptionsForm extends FormBasicController{
 		if("none".equals(selectDescOption)) {
 			descriptionField.setVisible(false);
 			descriptionRepoField.setVisible(false);
-		} else if("resourceDescription".equals(selectDescOption)) {
+		} else if(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT_RESOURCE.equals(selectDescOption)) {
 			descriptionField.setVisible(false);
 			descriptionField.setEnabled(false);
 			
@@ -408,7 +430,7 @@ class VideoOptionsForm extends FormBasicController{
 			}
 			descriptionRepoField.setValue(text);
 			descriptionRepoField.setVisible(true);
-		} else if("customDescription".equals(selectDescOption)) {
+		} else if(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT_CUSTOM.equals(selectDescOption)) {
 			descriptionField.setVisible(true);
 			descriptionField.setEnabled(true);
 			descriptionField.setValue(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, ""));

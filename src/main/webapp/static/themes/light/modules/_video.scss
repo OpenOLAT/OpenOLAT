@@ -343,6 +343,12 @@
 	background-color: $o-video-time-marker-default-bg-color;
 }
 
+/* replay button */
+.mejs__overlay-button.o_mejs_replay {
+	background-position: -671px -4px;
+	background-size: 1677px;
+	margin-left: 20px;
+}
 
 /* make button better readable on white background */
 .mejs__overlay-button {
@@ -359,4 +365,27 @@
 
 .o_video_download_btn {
 	margin-top: 20px;
+}
+
+/* Resume dialog */
+.o_video_resume_wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	
+	.o_video_resume_panel {
+		margin: 10% auto;
+		padding: 10px 20px 20px 20px;
+		max-width: 500px;
+		background-color: $panel-bg;
+		border: 1px solid transparent;
+		border-radius: $panel-border-radius;
+		@include box-shadow(0 1px 1px rgba(0,0,0,.05));
+		text-align: center;
+	}
+	.o_video_resume_buttons {
+		margin: 20px 0
+	} 
 }

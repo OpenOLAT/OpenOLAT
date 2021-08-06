@@ -19,31 +19,19 @@
  */
 package org.olat.course.nodes.video;
 
-import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.VideoCourseNode;
-import org.springframework.stereotype.Service;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentConfig;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 23 July 2021<br>
+ * @author gnaegi, gnaegi@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class VideoAssessmentHandler extends LearningPathOnlyAssessmentHandler {
-
-	private static final AssessmentConfig VIDEO_CONFIG = new VideoAssessmentConfig();
+public class VideoAssessmentConfig extends LearningPathOnlyAssessmentConfig {
 
 	@Override
-	public String acceptCourseNodeType() {
-		return VideoCourseNode.TYPE;
-	}
-
-	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
-		return VIDEO_CONFIG;
+	public Mode getCompletionMode() {
+		return Mode.setByNode;
 	}
 
 }

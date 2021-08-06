@@ -35,6 +35,7 @@ public class VideoEvent extends Event {
 	public static final String SEEKED = "seeked";
 	public static final String ENDED = "ended";
 	public static final String TIMEUPDATE = "timeupdate";
+	public static final String PROGRESS = "progress";
 
 	private final String timeCode;
 	private final String duration;
@@ -58,6 +59,23 @@ public class VideoEvent extends Event {
 	 */
 	public String getDuration() {
 		return duration;
+	}
+	
+	/**
+	 * @return The position of this event as percentage in relation of the duration of the entire movie (0-1)
+	 */
+	public double getProgress() {
+		double percent = 0d;
+		try {
+			double time = Double.parseDouble(timeCode);
+			double dur = Double.parseDouble(duration);
+			if (dur != 0d && time <= dur) {
+				percent = (float)(time / dur);				
+			}
+		} catch(NumberFormatException e) {
+			// 
+		}
+		return percent;
 	}
 	
 }

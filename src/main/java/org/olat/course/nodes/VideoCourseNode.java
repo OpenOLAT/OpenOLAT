@@ -63,6 +63,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -3808867902051897291L;
+	private static final int CURRENT_VERSION = 2;
 	public static final String TYPE = "video";
 
 	public VideoCourseNode() {
@@ -108,9 +109,11 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		boolean autoplay = config.getBooleanSafe(VideoEditController.CONFIG_KEY_AUTOPLAY);
 		boolean comments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COMMENTS);
 		boolean ratings = config.getBooleanSafe(VideoEditController.CONFIG_KEY_RATING);
+		boolean forwardSeekingRestrictred = config.getBooleanSafe(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED);
+		boolean title = config.getBooleanSafe(VideoEditController.CONFIG_KEY_TITLE);
 		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
 
-		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, true, false, false, null, false, readOnly);
+		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, title, false, false, null, false, readOnly, forwardSeekingRestrictred);
 		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, "none")) {
 			case "customDescription":
 				displayOptions.setShowDescription(true);
@@ -146,6 +149,33 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		return sd;
 	}
 
+	/**
+	 * Update the module configuration to have all mandatory configuration flags set
+	 * to useful default values
+	 * @param isNewNode true: an initial configuration is set; false: upgrading from
+	 *                  previous node configuration version, set default to maintain
+	 *                  previous behavior
+	 */
+	@Override
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
+
+		if (isNewNode) {
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_AUTOPLAY, false);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_TITLE, false);	// different than in v1		
+			config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT_NONE);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_COMMENTS, false);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_RATING, false);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED, false);
+		} else if (version == 1) {
+			// Set defaults as it was in version 1 for newly added options
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_TITLE, true);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED, false);			
+		}
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+	
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		// only here we know which translator to take for translating condition

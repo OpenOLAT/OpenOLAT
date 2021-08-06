@@ -98,13 +98,22 @@
 					}
 		        }, false);
 		        
-		        
+				var mediaElementCurrentProgressPos = 0;	
 		        mediaElement.addEventListener('timeupdate', function(e) {
 		        	#if($r.isTrue($listenTimeUpdate))
 		        	if (!o_info.linkbusy) {
 						$r.openNoResponseJavaScriptCommand("timeupdate"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
 					}
 		        	#end
+		        	#if($r.isTrue($listenProgress))
+		        	if (!o_info.linkbusy) {
+		        		## Report whenever the next percent has been reached. Depending on video size and timeupdate internvall not all percents are reported
+		        		if (mediaElementCurrentProgressPos + (mediaElement.duration / 100) <= mediaElement.currentTime) {
+		        			mediaElementCurrentProgressPos = mediaElement.currentTime;
+							$r.openNoResponseJavaScriptCommand("progress"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);		        		 
+		        		}
+					}
+					#end
 		        }, false);
 		        
 		        ## listen to end events, fired when movie is finished
@@ -133,13 +142,82 @@
 		        ## Preset the duration without loading the video
 		        jQuery('#' + player.id + ' .mejs__duration').html('$duration');
 		        
+		        var mediaElementResumeTime = 0;
 		        mediaElement.addEventListener('loadedmetadata', function(e) {
-			        jQuery('#$r.getId("o_vid")').data('playerloaded', true);
+		        	#if($r.isTrue($forwardSeekingRestricted))
+		        	mediaElementResumeTime = player.media.duration * $playProgress;
+		        	#end
+		        	jQuery('#$r.getId("o_vid")').data('playerloaded', true);
 		        }, false);
+		        
+				## Disable forward seeking
+				#if($r.isTrue($forwardSeekingRestricted))
+				_setCurrentTime_orig = player.media.setCurrentTime; ## store the native setCurrentTime temporarily
+				var scope = this;
+  				player.media.setCurrentTime = function(time) { 		## override it with our own method  				
+				    if(time <= mediaElement.currentTime || time <= mediaElementResumeTime){
+				    	_setCurrentTime_orig.apply(scope,[time]); 	## call the stored method if our conditions are met
+      				} else {
+      					showInfoBox("$r.translate("forwardSeekting.title")", "$r.translate("forwardSeekting.message")");
+      				}
+  				};
+  				#end
 			}
+			
 		});
 		</script>
 	</div>
+	
+	
+	## Replay button
+	#if($r.isTrue($enableResumeDialog) && $playProgress)
+		<div id="$r.getId("o_vid")_resume" class="o_video_resume_wrapper"><div class="o_video_resume_panel">
+			<h3>$r.translate("resume.title")</h3>
+			<div class="o_video_resume_intro">
+				$resumeIntro
+			</div>
+			<div class="o_video_resume_buttons">
+				<a class="btn btn-small btn-primary o_video_resume_resume">
+					<i class="o_icon i_icon-fw o_icon_video_resume"> </i>
+					<span>$r.translate("resume.button.resume")</span>
+				</a>
+				<a class="btn btn-small btn-default o_video_resume_play">
+					<i class="o_icon i_icon-fw o_icon_video_replay"> </i>
+					<span>$r.translate("resume.button.play")</span>
+				</a>
+			</div>
+			<script>
+			## click handler for resume
+			jQuery("#$r.getId("o_vid")_resume .o_video_resume_resume").click(function () {
+				var id = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
+				var me_player = mejs.players[id];							
+				me_player.media.addEventListener("loadedmetadata", function() {
+					me_player.currentTime = me_player.media.duration * $playProgress;; // set starting time
+					me_player.play();					
+					// Show panel only once, remove
+					jQuery("#$r.getId("o_vid")_resume").remove();
+				});
+				me_player.media.load();										
+			});
+			## click handler for replay
+			jQuery("#$r.getId("o_vid")_resume .o_video_resume_replay").click(function () {
+				var id = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
+				var me_player = mejs.players[id];
+				me_player.play();					
+				// Show panel only once, remove
+				jQuery("#${r.getId("o_vid")}_resume").remove();
+				
+			});
+			## Move myself into the mediaelementjs player zone
+			jQuery(function() {
+				var pid = jQuery('#$r.getId("o_vid")').closest('.mejs__container').attr('id');
+				var xbigPlay = jQuery('#' + pid).find('.mejs__overlay-play');
+				jQuery("#${r.getId("o_vid")}_resume").appendTo(xbigPlay);			
+			});
+			</script>
+		</div></div>
+	#end
+	
 	
 	#if($r.isTrue($downloadEnabled))
 		<div class="pull-right o_block_top">
