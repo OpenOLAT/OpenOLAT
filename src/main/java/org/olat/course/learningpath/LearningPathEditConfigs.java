@@ -40,6 +40,8 @@ public interface LearningPathEditConfigs {
 	
 	public boolean isTriggerStatusDone();
 	
+	public FullyAssessedTrigger getDefaultTrigger();
+	
 	public LearningPathTranslations getTranslations();
 	
 	public static LearningPathEditConfigsBuilder builder() {

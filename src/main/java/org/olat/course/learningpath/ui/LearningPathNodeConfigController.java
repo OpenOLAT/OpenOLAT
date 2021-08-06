@@ -126,7 +126,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		triggerEl.addActionListener(FormEvent.ONCHANGE);
 		FullyAssessedTrigger trigger = learningPathConfigs.getFullyAssessedTrigger() != null
 				? learningPathConfigs.getFullyAssessedTrigger()
-				: LearningPathConfigs.TRIGGER_DEFAULT;
+				: editConfigs.getDefaultTrigger();
 		String triggerKey = trigger.name();
 		if (Arrays.asList(triggerEl.getKeys()).contains(triggerKey)) {
 			triggerEl.select(triggerKey, true);
@@ -266,7 +266,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		FullyAssessedTrigger trigger = triggerEl.isOneSelected()
 				? FullyAssessedTrigger.valueOf(triggerEl.getSelectedKey())
-				: LearningPathConfigs.TRIGGER_DEFAULT;
+				: editConfigs.getDefaultTrigger();
 		learningPathConfigs.setFullyAssessedTrigger(trigger);
 		
 		Integer score = scoreCutEl.isVisible()? Integer.valueOf(scoreCutEl.getValue()): null;

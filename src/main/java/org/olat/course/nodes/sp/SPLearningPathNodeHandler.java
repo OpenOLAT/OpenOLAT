@@ -22,6 +22,7 @@ package org.olat.course.nodes.sp;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
@@ -44,6 +45,7 @@ public class SPLearningPathNodeHandler implements LearningPathNodeHandler {
 	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
 			.enableNodeVisited()
 			.enableConfirmed()
+			.setDefaultTrigger(FullyAssessedTrigger.nodeVisited)
 			.build();
 	
 	@Override
