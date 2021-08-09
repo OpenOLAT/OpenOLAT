@@ -68,6 +68,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -75,6 +76,8 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
+import org.olat.restapi.support.vo.RepositoryEntryEducationalTypeVO;
+import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.JunitTestHelper.IdentityWithLogin;
@@ -590,6 +593,130 @@ public class CourseTest extends OlatRestTestCase {
 		Assert.assertTrue(isParticipant1);
 		Assert.assertTrue(isParticipant2);
 	}
+	
+	
+	@Test
+	public void getMetadata() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
+		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
+		courseEntry = repositoryManager.setDescriptionAndName(courseEntry, courseEntry.getDisplayname(), "Course ref.", "Course authors",
+				"Course description", "Course objectives", "Course requirements", "Course credits", "DE", "Zurich", "5 days",
+				null, null, null, educationalType);
+		dbInstance.commitAndCloseSession();
+		course.getCourseEnvironment().updateCourseEntry(courseEntry);
+
+		//remove the owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("courses").path(course.getResourceableId().toString()).path("metadata").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryMetadataVO metadataVo = conn.parse(response, RepositoryEntryMetadataVO.class);
+		conn.shutdown();
+		
+		//check
+		Assert.assertNotNull(metadataVo);
+		Assert.assertEquals(courseEntry.getKey(), metadataVo.getKey());
+		Assert.assertEquals(courseEntry.getDisplayname(), metadataVo.getDisplayname());
+		Assert.assertEquals("Course ref.", metadataVo.getExternalRef());
+		Assert.assertEquals("Course authors", metadataVo.getAuthors());
+		Assert.assertEquals("Course description", metadataVo.getDescription());
+		Assert.assertEquals("Course objectives", metadataVo.getObjectives());
+		Assert.assertEquals("Course requirements", metadataVo.getRequirements());
+		Assert.assertEquals("Course credits", metadataVo.getCredits());
+		Assert.assertEquals("DE", metadataVo.getMainLanguage());
+		Assert.assertEquals("Zurich", metadataVo.getLocation());
+		Assert.assertEquals("5 days", metadataVo.getExpenditureOfWork());
+		
+		RepositoryEntryEducationalTypeVO educationTypeVo = metadataVo.getEducationalType();
+		Assert.assertNotNull(educationTypeVo);
+		Assert.assertEquals(educationalType.getKey(), educationTypeVo.getKey());
+		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
+	}
+	
+	
+	@Test
+	public void updateMetadata() throws IOException, URISyntaxException {
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("courses").path(course.getResourceableId().toString()).path("metadata").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryMetadataVO metadataVo = conn.parse(response, RepositoryEntryMetadataVO.class);
+		
+		// fill the metadata
+		metadataVo.setAuthors("Kurs Authors");
+		metadataVo.setCredits("Kurs credits");
+		metadataVo.setDescription("Kurs Beschreibung");
+		metadataVo.setExpenditureOfWork("4 weeks");
+		metadataVo.setExternalRef("Kurs Reference");
+		metadataVo.setLocation("Solothurn");
+		metadataVo.setMainLanguage("English");
+		metadataVo.setObjectives("Our objectives");
+		metadataVo.setRequirements("Their requirements");
+		
+		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
+		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
+		metadataVo.setEducationalType(RepositoryEntryEducationalTypeVO.valueOf(educationalType));
+
+		URI updateRequest = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("courses").path(course.getResourceableId().toString()).path("metadata").build();
+		HttpPost updateMethod = conn.createPost(updateRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(updateMethod, metadataVo);
+		HttpResponse updateResponse = conn.execute(updateMethod);
+		Assert.assertEquals(200, updateResponse.getStatusLine().getStatusCode());
+		RepositoryEntryMetadataVO updatedMetadataVo = conn.parse(updateResponse, RepositoryEntryMetadataVO.class);
+
+		//check the response
+		Assert.assertNotNull(metadataVo);
+		Assert.assertEquals(courseEntry.getKey(), updatedMetadataVo.getKey());
+		Assert.assertEquals(courseEntry.getDisplayname(), updatedMetadataVo.getDisplayname());
+		Assert.assertEquals("Kurs Reference", updatedMetadataVo.getExternalRef());
+		Assert.assertEquals("Kurs Authors", updatedMetadataVo.getAuthors());
+		Assert.assertEquals("Kurs Beschreibung", updatedMetadataVo.getDescription());
+		Assert.assertEquals("Our objectives", updatedMetadataVo.getObjectives());
+		Assert.assertEquals("Their requirements", updatedMetadataVo.getRequirements());
+		Assert.assertEquals("Kurs credits", updatedMetadataVo.getCredits());
+		Assert.assertEquals("English", updatedMetadataVo.getMainLanguage());
+		Assert.assertEquals("Solothurn", updatedMetadataVo.getLocation());
+		Assert.assertEquals("4 weeks", updatedMetadataVo.getExpenditureOfWork());
+		
+		RepositoryEntryEducationalTypeVO educationTypeVo = updatedMetadataVo.getEducationalType();
+		Assert.assertNotNull(educationTypeVo);
+		Assert.assertEquals(educationalType.getKey(), educationTypeVo.getKey());
+		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
+
+		RepositoryEntry updatedRe = repositoryService.loadByKey(courseEntry.getKey());
+		Assert.assertEquals(courseEntry.getKey(), updatedRe.getKey());
+		Assert.assertEquals(courseEntry.getDisplayname(), updatedRe.getDisplayname());
+		Assert.assertEquals("Kurs Reference", updatedRe.getExternalRef());
+		Assert.assertEquals("Kurs Authors", updatedRe.getAuthors());
+		Assert.assertEquals("Kurs Beschreibung", updatedRe.getDescription());
+		Assert.assertEquals("Our objectives", updatedRe.getObjectives());
+		Assert.assertEquals("Their requirements", updatedRe.getRequirements());
+		Assert.assertEquals("Kurs credits", updatedRe.getCredits());
+		Assert.assertEquals("English", updatedRe.getMainLanguage());
+		Assert.assertEquals("Solothurn", updatedRe.getLocation());
+		Assert.assertEquals("4 weeks", updatedRe.getExpenditureOfWork());
+		Assert.assertEquals(educationalType, updatedRe.getEducationalType());
+	}
+	
 	
 	@Test
 	public void getAccess() throws IOException, URISyntaxException {

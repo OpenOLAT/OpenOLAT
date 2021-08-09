@@ -31,7 +31,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -43,6 +42,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -53,7 +53,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -63,6 +62,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
@@ -72,6 +72,8 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
+import org.olat.restapi.support.vo.RepositoryEntryEducationalTypeVO;
+import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
@@ -156,8 +158,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 
 	@Test
 	public void getOwners() throws IOException, URISyntaxException {
-		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsAuthor("author-1-" + UUID.randomUUID().toString());
-		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsAuthor("author-2-" + UUID.randomUUID().toString());
+		Identity owner1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-1");
+		Identity owner2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-2");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryManager.addOwners(owner1, new IdentitiesAddEvent(owner1), re, null);
 		repositoryManager.addOwners(owner1, new IdentitiesAddEvent(owner2), re, null);
@@ -190,7 +192,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void addOwner() throws IOException, URISyntaxException {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsAuthor("author-3-" + UUID.randomUUID().toString());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-3");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 
@@ -251,7 +253,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void removeOwner() throws IOException, URISyntaxException {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsAuthor("author-4-" + UUID.randomUUID().toString());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndAuthor("author-4-");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryManager.addOwners(owner, new IdentitiesAddEvent(owner), re, new MailPackage(false));
 		dbInstance.commitAndCloseSession();
@@ -277,8 +279,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getCoaches() throws IOException, URISyntaxException {
-		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-1-" + UUID.randomUUID().toString());
-		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-2-" + UUID.randomUUID().toString());
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("coach-1");
+		Identity coach2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("coach-2");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryManager.addTutors(coach1, Roles.administratorRoles(), new IdentitiesAddEvent(coach1), re, new MailPackage(false));
 		repositoryManager.addTutors(coach1, Roles.administratorRoles(), new IdentitiesAddEvent(coach2), re, new MailPackage(false));
@@ -311,7 +313,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void addCoach() throws IOException, URISyntaxException {
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-3-" + UUID.randomUUID().toString());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("coach-3");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 
@@ -372,7 +374,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void removeCoach() throws IOException, URISyntaxException {
-		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("coach-4-" + UUID.randomUUID());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndAuthor("coach-4");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryManager.addTutors(coach, Roles.administratorRoles(), new IdentitiesAddEvent(coach), re, new MailPackage(false));
 		dbInstance.commitAndCloseSession();
@@ -398,8 +400,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void getParticipants() throws IOException, URISyntaxException {
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-1-" + UUID.randomUUID().toString());
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-2-" + UUID.randomUUID().toString());
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("participant-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndAuthor("participant-2");
 		Roles part1Roles = securityManager.getRoles(participant1);
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryManager.addParticipants(participant1, part1Roles, new IdentitiesAddEvent(participant1), re, null);
@@ -432,7 +434,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void addParticipant() throws IOException, URISyntaxException {
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-3-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndAuthor("participant-3");
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		dbInstance.commitAndCloseSession();
 
@@ -495,7 +497,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRemoveParticipant() throws IOException, URISyntaxException {
-		Identity participant = JunitTestHelper.createAndPersistIdentityAsAuthor("participant-4-" + UUID.randomUUID().toString());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndAuthor("participant-4");
 		Roles partRoles = securityManager.getRoles(participant);
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
 		repositoryManager.addParticipants(participant, partRoles, new IdentitiesAddEvent(participant), re, null);
@@ -519,6 +521,125 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(participants.isEmpty());
 		Assert.assertFalse(participants.contains(participant));
 	}
+	
+	
+	@Test
+	public void getMetadata() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
+		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
+		re = repositoryManager.setDescriptionAndName(re, re.getDisplayname(), "Ext-REF", "Auth",
+				"RE description", "RE objectives", "RE requirements", "RE credits", "DE", "Zurich", "3 days",
+				null, null, null, educationalType);
+		dbInstance.commitAndCloseSession();
+
+		//remove the owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo/entries").path(re.getKey().toString()).path("metadata").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryMetadataVO metadataVo = conn.parse(response, RepositoryEntryMetadataVO.class);
+		conn.shutdown();
+		
+		//check
+		Assert.assertNotNull(metadataVo);
+		Assert.assertEquals(re.getKey(), metadataVo.getKey());
+		Assert.assertEquals(re.getDisplayname(), metadataVo.getDisplayname());
+		Assert.assertEquals("Ext-REF", metadataVo.getExternalRef());
+		Assert.assertEquals("Auth", metadataVo.getAuthors());
+		Assert.assertEquals("RE description", metadataVo.getDescription());
+		Assert.assertEquals("RE objectives", metadataVo.getObjectives());
+		Assert.assertEquals("RE requirements", metadataVo.getRequirements());
+		Assert.assertEquals("RE credits", metadataVo.getCredits());
+		Assert.assertEquals("DE", metadataVo.getMainLanguage());
+		Assert.assertEquals("Zurich", metadataVo.getLocation());
+		Assert.assertEquals("3 days", metadataVo.getExpenditureOfWork());
+		
+		RepositoryEntryEducationalTypeVO educationTypeVo = metadataVo.getEducationalType();
+		Assert.assertNotNull(educationTypeVo);
+		Assert.assertEquals(educationalType.getKey(), educationTypeVo.getKey());
+		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
+	}
+	
+	
+	@Test
+	public void updateMetadata() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo/entries").path(re.getKey().toString()).path("metadata").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		RepositoryEntryMetadataVO metadataVo = conn.parse(response, RepositoryEntryMetadataVO.class);
+		
+		// fill the metadata
+		metadataVo.setAuthors("Authors");
+		metadataVo.setCredits("The credits");
+		metadataVo.setDescription("A description");
+		metadataVo.setExpenditureOfWork("4 weeks");
+		metadataVo.setExternalRef("Reference");
+		metadataVo.setLocation("Biel/Bienne");
+		metadataVo.setMainLanguage("French");
+		metadataVo.setObjectives("Our objectives");
+		metadataVo.setRequirements("Their requirements");
+		
+		List<RepositoryEntryEducationalType> educationalTypes = repositoryManager.getAllEducationalTypes();
+		RepositoryEntryEducationalType educationalType = educationalTypes.get(0);
+		metadataVo.setEducationalType(RepositoryEntryEducationalTypeVO.valueOf(educationalType));
+
+		URI updateRequest = UriBuilder.fromUri(getContextURI())
+				.path("repo/entries").path(re.getKey().toString()).path("metadata").build();
+		HttpPost updateMethod = conn.createPost(updateRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(updateMethod, metadataVo);
+		HttpResponse updateResponse = conn.execute(updateMethod);
+		Assert.assertEquals(200, updateResponse.getStatusLine().getStatusCode());
+		RepositoryEntryMetadataVO updatedMetadataVo = conn.parse(updateResponse, RepositoryEntryMetadataVO.class);
+
+		//check the response
+		Assert.assertNotNull(metadataVo);
+		Assert.assertEquals(re.getKey(), updatedMetadataVo.getKey());
+		Assert.assertEquals(re.getDisplayname(), updatedMetadataVo.getDisplayname());
+		Assert.assertEquals("Reference", updatedMetadataVo.getExternalRef());
+		Assert.assertEquals("Authors", updatedMetadataVo.getAuthors());
+		Assert.assertEquals("A description", updatedMetadataVo.getDescription());
+		Assert.assertEquals("Our objectives", updatedMetadataVo.getObjectives());
+		Assert.assertEquals("Their requirements", updatedMetadataVo.getRequirements());
+		Assert.assertEquals("The credits", updatedMetadataVo.getCredits());
+		Assert.assertEquals("French", updatedMetadataVo.getMainLanguage());
+		Assert.assertEquals("Biel/Bienne", updatedMetadataVo.getLocation());
+		Assert.assertEquals("4 weeks", updatedMetadataVo.getExpenditureOfWork());
+		
+		RepositoryEntryEducationalTypeVO educationTypeVo = updatedMetadataVo.getEducationalType();
+		Assert.assertNotNull(educationTypeVo);
+		Assert.assertEquals(educationalType.getKey(), educationTypeVo.getKey());
+		Assert.assertEquals(educationalType.getIdentifier(), educationTypeVo.getIdentifier());
+
+		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
+		Assert.assertEquals(re.getKey(), updatedRe.getKey());
+		Assert.assertEquals(re.getDisplayname(), updatedRe.getDisplayname());
+		Assert.assertEquals("Reference", updatedRe.getExternalRef());
+		Assert.assertEquals("Authors", updatedRe.getAuthors());
+		Assert.assertEquals("A description", updatedRe.getDescription());
+		Assert.assertEquals("Our objectives", updatedRe.getObjectives());
+		Assert.assertEquals("Their requirements", updatedRe.getRequirements());
+		Assert.assertEquals("The credits", updatedRe.getCredits());
+		Assert.assertEquals("French", updatedRe.getMainLanguage());
+		Assert.assertEquals("Biel/Bienne", updatedRe.getLocation());
+		Assert.assertEquals("4 weeks", updatedRe.getExpenditureOfWork());
+		Assert.assertEquals(educationalType, updatedRe.getEducationalType());
+	}
+	
 	
 	@Test
 	public void getAccess() throws IOException, URISyntaxException {
