@@ -19,10 +19,7 @@
 						<span class='o_organizers'>
 							#if($r.isNotEmpty($topic.organizerNames))
 								<span class="small">
-									$r.translate("organizer.with")
-									#foreach($organizer in $topic.organizerNames)
-										<span class="o_organizer">$organizer#if($foreach.index < $topic.organizers.size() - 1)$r.translate("organizer.separator")#end</span>
-									#end
+									$r.translate("organizer.with")&nbsp;&nbsp;$topic.organizerNames
 								</span>
 							#end
 						</span>

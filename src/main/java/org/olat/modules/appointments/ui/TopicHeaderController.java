@@ -19,7 +19,6 @@
  */
 package org.olat.modules.appointments.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -37,7 +36,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Organizer;
 import org.olat.modules.appointments.Topic;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,8 +61,6 @@ public class TopicHeaderController extends BasicController {
 
 	@Autowired
 	private AppointmentsService appointmentsService;
-	@Autowired
-	private UserManager userManager;
 
 	public TopicHeaderController(UserRequest ureq, WindowControl wControl, Topic topic, boolean email) {
 		super(ureq, wControl);
@@ -103,13 +99,7 @@ public class TopicHeaderController extends BasicController {
 	}
 	
 	private void putOrganizersToVC(List<Organizer> organizers) {
-		List<String> organizerNames = new ArrayList<>(organizers.size());
-		for(Organizer organizer: organizers) {
-			String name = userManager.getUserDisplayName(organizer.getIdentity().getKey());
-			organizerNames.add(name);
-		}
-		organizerNames.sort(String.CASE_INSENSITIVE_ORDER);
-		mainVC.contextPut("organizers", organizerNames);
+		mainVC.contextPut("organizerNames", AppointmentsUIFactory.formatOrganizers(organizers));
 		
 		if (email && !organizers.isEmpty()) {
 			emailLink = LinkFactory.createCustomLink("email", CMD_EMAIL, null, Link.NONTRANSLATED, mainVC, this);
