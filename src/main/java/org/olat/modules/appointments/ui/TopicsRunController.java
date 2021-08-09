@@ -210,13 +210,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 	}
 	
 	private void wrapOrganizers(TopicWrapper wrapper, List<Organizer> organizers) {
-		List<String> organizerNames = new ArrayList<>(organizers.size());
-		for (Organizer organizer : organizers) {
-			String name = userManager.getUserDisplayName(organizer.getIdentity().getKey());
-			organizerNames.add(name);
-		}
-		organizerNames.sort(String.CASE_INSENSITIVE_ORDER);
-		wrapper.setOrganizerNames(organizerNames);
+		wrapper.setOrganizerNames(AppointmentsUIFactory.formatOrganizers(organizers));
 		wrapper.setOrganizers(organizers);
 		if (!organizers.isEmpty()) {
 			FormLink link = uifactory.addFormLink("email" + counter++, CMD_EMAIL, "", null, flc, Link.NONTRANSLATED);
@@ -725,7 +719,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 
 		private final Topic topic;
 		private Collection<Organizer> organizers;
-		private List<String> organizerNames;
+		private String organizerNames;
 		private String emailLinkName;
 		private Appointment appointment;
 		private List<String> participants;
@@ -774,11 +768,11 @@ public class TopicsRunController extends FormBasicController implements Activate
 			this.organizers = organizers;
 		}
 
-		public List<String> getOrganizerNames() {
+		public String getOrganizerNames() {
 			return organizerNames;
 		}
 		
-		public void setOrganizerNames(List<String> organizerNames) {
+		public void setOrganizerNames(String organizerNames) {
 			this.organizerNames = organizerNames;
 		}
 

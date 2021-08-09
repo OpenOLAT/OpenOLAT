@@ -149,6 +149,8 @@ public abstract class AppointmentListController extends FormBasicController impl
 	protected abstract boolean canSelect();
 	
 	protected abstract boolean canEdit();
+	
+	protected abstract boolean canEmailToOrganizers();
 
 	protected abstract boolean isParticipationVisible();
 	
@@ -178,7 +180,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		backLink.setElementCssClass("o_back");
 		
 		// Header
-		headerCtrl = new TopicHeaderController(ureq, getWindowControl(), topic, false);
+		headerCtrl = new TopicHeaderController(ureq, getWindowControl(), topic, canEmailToOrganizers());
 		listenTo(headerCtrl);
 		flc.put("header", headerCtrl.getInitialComponent());
 		

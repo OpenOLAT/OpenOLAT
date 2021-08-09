@@ -1,12 +1,9 @@
 <div class='o_appointments o_appointment_header'>
 	<h3>$title
 		<span class='o_organizers'>
-			#if($r.isNotEmpty($organizers))
+			#if($r.isNotEmpty($organizerNames))
 				<span class="small">
-					$r.translate("organizer.with")
-					#foreach($organizer in $organizers)
-						<span class="o_organizer">$organizer#if($foreach.index < $organizers.size() - 1)$r.translate("organizer.separator")#end</span>
-					#end
+					$r.translate("organizer.with")&nbsp;&nbsp;$organizerNames
 					#if($r.available("email"))
 						$r.render("email")
 					#end

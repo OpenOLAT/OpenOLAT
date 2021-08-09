@@ -215,7 +215,7 @@ public class TopicsRunCoachController extends FormBasicController {
 			TopicWrapper wrapper = new TopicWrapper(topic);
 			List<Organizer> organizers = topicKeyToOrganizer.getOrDefault(topic.getKey(), emptyList());
 			if (secCallback.canViewAppointment(organizers)) {
-				wrapOrganizers(wrapper, organizers);
+				wrapper.setOrganizerNames(AppointmentsUIFactory.formatOrganizers(organizers));
 				List<Appointment> appointments = topicKeyToAppointments.getOrDefault(topic.getKey(), emptyList());
 				List<Participation> topicParticipations = topicKeyToParticipations.getOrDefault(topic.getKey(), emptyList());
 				wrapParticpations(wrapper, topicParticipations, appointments, appointmentKeyToParticipations);
@@ -223,17 +223,6 @@ public class TopicsRunCoachController extends FormBasicController {
 			}
 		}
 		return wrappers;
-	}
-
-	private void wrapOrganizers(TopicWrapper wrapper, List<Organizer> organizers) {
-		wrapper.setOrganizers(organizers);
-		List<String> organizerNames = new ArrayList<>(organizers.size());
-		for (Organizer organizer : organizers) {
-			String name = userManager.getUserDisplayName(organizer.getIdentity().getKey());
-			organizerNames.add(name);
-		}
-		organizerNames.sort(String.CASE_INSENSITIVE_ORDER);
-		wrapper.setOrganizerNames(organizerNames);
 	}
 
 	private void wrapParticpations(TopicWrapper wrapper, List<Participation> participations, List<Appointment> appointments,
@@ -864,7 +853,7 @@ public class TopicsRunCoachController extends FormBasicController {
 
 		private final Topic topic;
 		private Collection<Organizer> organizers;
-		private List<String> organizerNames;
+		private String organizerNames;
 		private String message;
 		
 		//next appointment
@@ -915,11 +904,11 @@ public class TopicsRunCoachController extends FormBasicController {
 			this.organizers = organizers;
 		}
 
-		public List<String> getOrganizerNames() {
+		public String getOrganizerNames() {
 			return organizerNames;
 		}
 
-		public void setOrganizerNames(List<String> organizerNames) {
+		public void setOrganizerNames(String organizerNames) {
 			this.organizerNames = organizerNames;
 		}
 

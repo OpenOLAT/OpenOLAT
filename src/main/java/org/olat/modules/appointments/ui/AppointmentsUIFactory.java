@@ -19,13 +19,18 @@
  */
 package org.olat.modules.appointments.ui;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.stream.Collectors;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.appointments.Appointment;
+import org.olat.modules.appointments.Organizer;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -51,6 +56,17 @@ public class AppointmentsUIFactory {
 		}
 		
 		return sb.length() > 0? sb.toString(): null;
+	}
+	
+	public static String formatOrganizers(Collection<Organizer> organizers) {
+		if (organizers.isEmpty()) return null;
+		
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		return organizers.stream()
+				.map(organizer -> userManager.getUserDisplayName(organizer.getIdentity().getKey()))
+				.sorted(String.CASE_INSENSITIVE_ORDER)
+				.map(name -> "<span class=\"o_organizer\"><i class='o_icon o_icon_user'> </i> " + name + "</span>")
+				.collect(Collectors.joining(" &nbsp;"));
 	}
 	
 	public static String lineBreakToBr(String value) {
