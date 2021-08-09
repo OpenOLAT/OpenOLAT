@@ -103,7 +103,7 @@ public class EnrollmentConfigurationPage {
 		return this;
 	}
 	
-	public EnrollmentConfigurationPage selectMultipleEnrollments(int maxEnrollmentCount){
+	public EnrollmentConfigurationPage selectMultipleEnrollments(int maxEnrollmentCount) {
 		By multiEnroll = By.name("allowMultipleEnroll");
 		browser.findElement(multiEnroll).click();
 		OOGraphene.waitBusy(browser);
@@ -115,6 +115,10 @@ public class EnrollmentConfigurationPage {
 		By saveBy = By.tagName("button");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		By updatedMaxCountBy = By.cssSelector(".o_sel_enroll_max input[type='text'][value='" + maxEnrollmentCount + "']");
+		OOGraphene.waitElement(updatedMaxCountBy, browser);
+		// For Firefox
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 	
