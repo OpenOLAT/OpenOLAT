@@ -75,6 +75,11 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 	}
 
 	@Override
+	protected boolean canEmailToOrganizers() {
+		return true;
+	}
+
+	@Override
 	protected boolean isParticipationVisible() {
 		return topic.isParticipationVisible();
 	}
