@@ -180,14 +180,14 @@ public class RulesEditController extends StepFormBasicController {
 			if(rules != null && !rules.isEmpty()) {
 				ReminderRule mainRule = rules.get(0);
 				RuleSPI ruleSpy = reminderModule.getRuleSPIByType(mainRule.getType());
-				mainRuleEl = initRuleForm(ureq, ruleSpy, mainRule, mainTypeKeys, mainTypeValues);
+				mainRuleEl = initRuleForm(ureq, ruleSpy, mainRule, true);
 				rulesCont.contextPut("mainRule", mainRuleEl);
 				
 				for (int i = 1; i < rules.size(); i++) {
 					ReminderRule rule = rules.get(i);
 					if(rule != null) {
 						ruleSpy = reminderModule.getRuleSPIByType(rule.getType());
-						RuleElement ruleEl = initRuleForm(ureq, ruleSpy, rule, additionalTypeKeys, additionalTypeValues);
+						RuleElement ruleEl = initRuleForm(ureq, ruleSpy, rule, false);
 						additionalRuleEls.add(ruleEl);
 					}
 					
@@ -228,8 +228,10 @@ public class RulesEditController extends StepFormBasicController {
 		return "<i class='o_icon o_icon-lg o_icon_time'></i> <b>" + descText + "</b> - " + translate("send.time.info");
 	}
 	
-	protected RuleElement initRuleForm(UserRequest ureq, RuleSPI ruleSpi, ReminderRule rule, String[] typeKeys, String[] typeValues) {
+	protected RuleElement initRuleForm(UserRequest ureq, RuleSPI ruleSpi, ReminderRule rule, boolean mainRule) {
 		String id = Integer.toString(counter++);
+		String[] typeKeys = mainRule? mainTypeKeys: additionalTypeKeys;
+		String[] typeValues = mainRule? mainTypeValues: additionalTypeValues;
 		SingleSelection typeEl = uifactory.addDropdownSingleselect("rule.type.".concat(id), null, rulesCont, typeKeys, typeValues, null);
 		typeEl.addActionListener(FormEvent.ONCHANGE);
 		String type = ruleSpi.getClass().getSimpleName();
@@ -245,15 +247,23 @@ public class RulesEditController extends StepFormBasicController {
 		
 		RuleEditorFragment editor = ruleSpi.getEditorFragment(rule, reminder.getEntry());
 		FormItem customItem = editor.initForm(rulesCont, this, ureq);
-		if (editor instanceof CourseNodeFragment && StringHelper.containsNonWhitespace(reminderProvider.getCourseNodeIdent())) {
-			((CourseNodeFragment)editor).setCourseNodeIdent(reminderProvider.getCourseNodeIdent());
-		}
+		updateCourseNodeFragment(editor, mainRule);
 		
 		RuleElement ruleEl = new RuleElement(typeEl, deleteRuleButton, editor, customItem);
 		
 		typeEl.setUserObject(ruleEl);
 		deleteRuleButton.setUserObject(ruleEl);
 		return ruleEl;
+	}
+
+	private void updateCourseNodeFragment(RuleEditorFragment editor, boolean mainRule) {
+		if (editor instanceof CourseNodeFragment && StringHelper.containsNonWhitespace(reminderProvider.getCourseNodeIdent())) {
+			CourseNodeFragment courseNodeFragment = (CourseNodeFragment)editor;
+			if (mainRule) {
+				courseNodeFragment.limitSelection(reminderProvider.getCourseNodeIdent());
+			}
+			courseNodeFragment.select(reminderProvider.getCourseNodeIdent());
+		}
 	}
 	
 	private void doInitDefaultRule(UserRequest ureq) {
@@ -264,7 +274,7 @@ public class RulesEditController extends StepFormBasicController {
 		}
 		
 		RuleSPI ruleSpi = reminderModule.getRuleSPIByType(defaultType);
-		mainRuleEl = initRuleForm(ureq, ruleSpi, null, mainTypeKeys, mainTypeValues);
+		mainRuleEl = initRuleForm(ureq, ruleSpi, null, true);
 		rulesCont.contextPut("mainRule", mainRuleEl);
 	}
 	
@@ -286,7 +296,7 @@ public class RulesEditController extends StepFormBasicController {
 			if(panelToUpdate != null) {
 				SingleSelection typeEl = (SingleSelection)source;
 				RuleSPI type = reminderModule.getRuleSPIByType(typeEl.getSelectedKey());
-				doUpdateRuleForm(ureq, panelToUpdate, type);
+				doUpdateRuleForm(ureq, panelToUpdate, type, panelToUpdate == mainRuleEl);
 			}
 		} else if(source instanceof FormLink) {
 			FormLink button = (FormLink)source;
@@ -308,7 +318,7 @@ public class RulesEditController extends StepFormBasicController {
 			allOk &= false;
 		}
 		
-		mainRuleEl.getEditor().validateFormLogic(ureq);
+		allOk &= mainRuleEl.getEditor().validateFormLogic(ureq);
 		
 		for(RuleElement ruleEl:additionalRuleEls) {
 			allOk &= ruleEl.getEditor().validateFormLogic(ureq);
@@ -343,22 +353,20 @@ public class RulesEditController extends StepFormBasicController {
 		//
 	}
 	
-	private void doUpdateRuleForm(UserRequest ureq, RuleElement panelToUpdate, RuleSPI ruleSpi) {
+	private void doUpdateRuleForm(UserRequest ureq, RuleElement panelToUpdate, RuleSPI ruleSpi, boolean mainRule) {
 		//remove old editor
 		rulesCont.remove(panelToUpdate.getCustomItem());
 		//add new one
 		RuleEditorFragment editor = ruleSpi.getEditorFragment(null, reminder.getEntry());
 		FormItem customItem = editor.initForm(rulesCont, this, ureq);
-		if (editor instanceof CourseNodeFragment && StringHelper.containsNonWhitespace(reminderProvider.getCourseNodeIdent())) {
-			((CourseNodeFragment)editor).setCourseNodeIdent(reminderProvider.getCourseNodeIdent());
-		}
+		updateCourseNodeFragment(editor, mainRule);
 		panelToUpdate.setCustomItem(customItem, editor);
 		rulesCont.setDirty(true);
 	}
 	
 	private void doAddRule(UserRequest ureq) {
 		RuleSPI ruleSpi = reminderModule.getRuleSPIByType(addEl.getSelectedKey());
-		RuleElement ruleEl = initRuleForm(ureq, ruleSpi, null, additionalTypeKeys, additionalTypeValues);
+		RuleElement ruleEl = initRuleForm(ureq, ruleSpi, null, false);
 		additionalRuleEls.add(ruleEl);
 		addEl.select(SingleSelection.NO_SELECTION_KEY, true);
 	}

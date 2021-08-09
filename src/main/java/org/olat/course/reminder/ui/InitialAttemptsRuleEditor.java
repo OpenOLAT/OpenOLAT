@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -64,9 +65,11 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 	
 	private TextElement valueEl;
 	private SingleSelection courseNodeEl, unitEl;
+	private String[] nodeKeys;
+	private String[] nodeValues;
 	
 	private final RepositoryEntry entry;
-	
+
 	public InitialAttemptsRuleEditor(ReminderRule rule, RepositoryEntry entry) {
 		super(rule);
 		this.entry = entry;
@@ -103,8 +106,8 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 		searchAttemptableNodes(course.getRunStructure().getRootNode(), attemptableNodes);
 		searchAttemptableNodes(course.getEditorTreeModel().getRootNode(), attemptableNodes);
 		
-		String[] nodeKeys = new String[attemptableNodes.size()];
-		String[] nodeValues = new String[attemptableNodes.size()];
+		nodeKeys = new String[attemptableNodes.size()];
+		nodeValues = new String[attemptableNodes.size()];
 		
 		for(int i=0; i<attemptableNodes.size(); i++) {
 			CourseNode attemptableNode = attemptableNodes.get(i);
@@ -244,9 +247,31 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 		}
 		return configuredRule;
 	}
+	
+	@Override
+	public void limitSelection(String nodeIdent) {
+		if (StringHelper.containsNonWhitespace(nodeIdent)) {
+			int nodeIdentIndex = -1;
+			for (int i = 0; i < nodeKeys.length; i++) {
+				String key = nodeKeys[i];
+				if (key.equals(nodeIdent)) {
+					nodeIdentIndex = i;
+				}
+			}
+			if (nodeIdentIndex >= 0) {
+				String[] limitKeys = new String[] { nodeKeys[nodeIdentIndex] };
+				String[] limitValues = new String[] { nodeValues[nodeIdentIndex] };
+				courseNodeEl.setKeysAndValues(limitKeys, limitValues, null);
+			} else {
+				courseNodeEl.setKeysAndValues(ArrayHelper.emptyStrings(), ArrayHelper.emptyStrings(), null);
+			}
+		} else {
+			courseNodeEl.setKeysAndValues(nodeKeys, nodeValues, null);
+		}
+	}
 
 	@Override
-	public void setCourseNodeIdent(String nodeIdent) {
+	public void select(String nodeIdent) {
 		if (Arrays.asList(courseNodeEl.getKeys()).contains(nodeIdent)) {
 			courseNodeEl.select(nodeIdent, true);
 		}

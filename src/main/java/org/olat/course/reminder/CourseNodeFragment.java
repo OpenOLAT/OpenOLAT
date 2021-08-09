@@ -27,6 +27,8 @@ package org.olat.course.reminder;
  */
 public interface CourseNodeFragment {
 	
-	public void setCourseNodeIdent(String nodeIdent);
+	public void limitSelection(String nodeIdent);
+	
+	public void select(String nodeIdent);
 
 }
