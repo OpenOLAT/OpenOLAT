@@ -80,11 +80,13 @@ public class OverviewFactory {
 		mapperPrefix = CodeHelper.getUniqueID();
 		
 		now = new Date();
-		if (userCourseEnv.isParticipant()) {
-			scoreAccounting = userCourseEnv.getScoreAccounting();
-			scoreAccounting.evaluateAll();
-		} else if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
-			learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
+			if (userCourseEnv.isParticipant()) {
+				scoreAccounting = userCourseEnv.getScoreAccounting();
+				scoreAccounting.evaluateAll();
+			} else {
+				learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+			}
 		}
 	}
 

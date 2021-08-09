@@ -226,6 +226,8 @@ public class NodeLayoutController extends FormBasicController {
 			}
 		}
 		
+		uifactory.addStaticTextElement("teaser.image.style", translate(CourseStyleUIFactory.getI18nKey(teaserImageStyle)), formLayout);
+		
 		SelectionValues colorCategoryKV = new SelectionValues();
 		colorCategoryKV.add(entry(ColorCategory.IDENTIFIER_COURSE, translate("color.category.type.course")));
 		colorCategoryKV.add(entry(ColorCategory.IDENTIFIER_INHERITED, translate("color.category.type.inherited")));
@@ -475,7 +477,7 @@ public class NodeLayoutController extends FormBasicController {
 			if (teaserImageUploadEl.getUploadFile() != null) {
 				mapper = new VFSMediaMapper(teaserImageUploadEl.getUploadFile());
 			} else if (teaserImageUploadEl.getInitialFile() != null) {
-				mapper = new VFSMediaMapper(teaserImageUploadEl.getUploadFile());
+				mapper = new VFSMediaMapper(teaserImageUploadEl.getInitialFile());
 			}
 		} else if (teaserImageSystemEl.isVisible() && teaserImageSystemEl.isOneSelected()) {
 			File file = courseStyleService.getSystemTeaserImageFile(teaserImageSystemEl.getSelectedKey());
