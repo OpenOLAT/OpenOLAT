@@ -191,12 +191,12 @@ public class AppointmentsSecurityCallbackFactory {
 		}
 		
 		private boolean isOrganizer(Collection<Organizer> organizers) {
-			return organizers.stream()
+			return organizers != null && organizers.stream()
 					.anyMatch(o -> o.getIdentity().getKey().equals(identity.getKey()));
 		}
 		
 		private boolean isParticipation(Collection<Participation> participations) {
-			return participations.stream()
+			return participations != null && participations.stream()
 					.anyMatch(p -> p.getIdentity().getKey().equals(identity.getKey()));
 		}
 		
