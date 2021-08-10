@@ -503,7 +503,6 @@ public class EditMembershipController extends FormBasicController {
 		
 		FormLayoutContainer groupRightActions = FormLayoutContainer.createHorizontalFormLayout("groupRightActions", getTranslator());
 		groupRightActions.setRootForm(mainForm);
-		groupRightActions.setElementCssClass("pull-right");
 		groupContainer.add(groupRightActions);
 		
 		selectAllGroupCoachEl = uifactory.addAddRemoveElement("edit.members.group.select.all.coach", Link.BUTTON_XSMALL, true, null);
@@ -552,7 +551,6 @@ public class EditMembershipController extends FormBasicController {
 		
 		FormLayoutContainer curriculumRightActions = FormLayoutContainer.createHorizontalFormLayout("curriculumRightActions", getTranslator());
 		curriculumRightActions.setRootForm(mainForm);
-		curriculumRightActions.setElementCssClass("pull-right");
 		curriculumContainer.add(curriculumRightActions);
 		
 		selectAllCurriculumOwnerEl = uifactory.addAddRemoveElement("edit.members.curriculum.select.all.owner", Link.BUTTON_XSMALL, true, null);

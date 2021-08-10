@@ -37,7 +37,7 @@ import org.olat.course.disclaimer.ui.CourseDisclaimerController;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
-import org.olat.repository.ui.author.copy.wizard.nodes.BlogStep;
+import org.olat.repository.ui.author.copy.wizard.additional.RemindersStep;
 
 /**
  * Initial date: 21.04.2021<br>
@@ -50,7 +50,7 @@ public class DisclaimerStep extends BasicStep {
 		if (steps.isEditDisclaimer()) {
 			return new DisclaimerStep(ureq, stepCollection, steps);
 		} else {
-			return BlogStep.create(ureq, steps);
+			return RemindersStep.create(ureq, steps);
 		}
 	}
 	
@@ -66,7 +66,7 @@ public class DisclaimerStep extends BasicStep {
 		}
 		setStepCollection(stepCollection);
 		
-		setNextStep(BlogStep.create(ureq, steps));
+		setNextStep(RemindersStep.create(ureq, steps));
 	}
 
 	@Override

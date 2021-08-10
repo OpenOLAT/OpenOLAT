@@ -92,7 +92,7 @@ public class CopyRepositoryEntryWrapperController extends BasicController {
 			}
 			cleanUp();
 		} else if (copyLearningPathCourseWizardController == source) {
-			if (event == Event.CHANGED_EVENT) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				launchCopiedCourse(ureq, copyLearningPathCourseWizardController.getCopiedEntry());
 			}
 			cleanUp();

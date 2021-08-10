@@ -34,7 +34,6 @@ public class CopyCourseSteps {
 	private boolean advancedMode;
 	
 	// General steps
-	private boolean editMetadata;
 	private boolean editGroups;
 	private boolean editCoaches;
 	private boolean editOwners;
@@ -42,10 +41,7 @@ public class CopyCourseSteps {
 	private boolean editDisclaimer;
 	
 	// Node steps
-	private boolean editBlogSettings;
-	private boolean editFolderSettings;
-	private boolean editWikiSettings;
-	private boolean editDates;
+	private boolean showNodesOverview;
 	
 	// Reminder steps
 	private boolean editReminders;	
@@ -60,16 +56,11 @@ public class CopyCourseSteps {
 	public void loadFromWizardConfig(CopyCourseWizardModule wizardModule) {
 		setAdvancedMode(isCustomConfig(wizardModule.getWizardMode()));
 		
-		setEditMetadata(isCustomConfig(wizardModule.getMetaDataCopyType()));
 		setEditGroups(isCustomConfig(wizardModule.getGroupsCopyType()));
 		setEditCoaches(isCustomConfig(wizardModule.getCoachesCopyType()));
 		setEditOwners(isCustomConfig(wizardModule.getOwnersCopyType()));
 		setEditCatalog(isCustomConfig(wizardModule.getCatalogCopyType()));
 		setEditDisclaimer(isCustomConfig(wizardModule.getDisclaimerCopyType()));
-		
-		setEditBlogSettings(isCustomConfig(wizardModule.getBlogCopyType()));
-		setEditFolderSettings(isCustomConfig(wizardModule.getFolderCopyType()));
-		setEditWikiSettings(isCustomConfig(wizardModule.getWikiCopyType()));
 		
 		setEditReminders(isCustomConfig(wizardModule.getReminderCopyType()));
 		setEditAssessmentModes(isCustomConfig(wizardModule.getAssessmentCopyType()));
@@ -86,14 +77,6 @@ public class CopyCourseSteps {
 	
 	public void setAdvancedMode(boolean advancedMode) {
 		this.advancedMode = advancedMode;
-	}
-	
-	public boolean isEditMetadata() {
-		return editMetadata;
-	}
-	
-	public void setEditMetadata(boolean editMetadata) {
-		this.editMetadata = editMetadata;
 	}
 	
 	public boolean isEditGroups() {
@@ -136,36 +119,8 @@ public class CopyCourseSteps {
 		this.editDisclaimer = editDisclaimer;
 	}
 	
-	public boolean isEditBlogSettings() {
-		return editBlogSettings;
-	}
-	
-	public void setEditBlogSettings(boolean editBlogSteps) {
-		this.editBlogSettings = editBlogSteps;
-	}
-	
-	public boolean isEditFolderSettings() {
-		return editFolderSettings;
-	}
-	
-	public void setEditFolderSettings(boolean editFolderSteps) {
-		this.editFolderSettings = editFolderSteps;
-	}
-	
-	public boolean isEditWikiSettings() {
-		return editWikiSettings;
-	}
-	
-	public void setEditWikiSettings(boolean editWikiSteps) {
-		this.editWikiSettings = editWikiSteps;
-	}
-	
-	public boolean isEditDates() {
-		return editDates;
-	}
-	
-	public void setEditDates(boolean editDates) {
-		this.editDates = editDates;
+	public void setShowNodesOverview(boolean showNodesOverview) {
+		this.showNodesOverview = showNodesOverview;
 	}
 	
 	public boolean isEditReminders() {
@@ -193,6 +148,6 @@ public class CopyCourseSteps {
 	}	
 	
 	public boolean showNodesOverview() {
-		return editBlogSettings || editWikiSettings || editFolderSettings;
+		return showNodesOverview;
 	}
 }

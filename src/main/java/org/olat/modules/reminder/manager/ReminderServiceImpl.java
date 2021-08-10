@@ -154,6 +154,11 @@ public class ReminderServiceImpl implements ReminderService {
 	}
 	
 	@Override
+	public Reminder duplicate(Reminder toCopy, RepositoryEntry newEntry, Identity creator) {
+		return reminderDao.duplicate(toCopy, newEntry, creator);
+	}
+	
+	@Override
 	public void delete(Reminder reminder) {
 		reminderDao.delete(reminder);
 	}

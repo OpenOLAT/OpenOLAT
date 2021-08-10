@@ -308,6 +308,40 @@
 	}
 }
 
+/* Button group single selection */
+.o_radio_buttons {
+	.radio label {
+		padding-left: 0;
+	}
+	
+	.btn.active {
+		&.o_dark_blue {
+			background-color: $o-selection-dark-blue;
+		}
+		&.o_light_blue {
+			background-color: $o-selection-light-blue;
+		}
+		&.o_purple {
+			background-color: $o-selection-purple;
+		}
+		&.o_red {
+			background-color: $o-selection-red;
+		}
+		&.o_orange {
+			background-color: $o-selection-orange;
+		}
+		&.o_yellow {
+			background-color: $o-selection-yellow;
+		}
+		&.o_light_green {
+			background-color: $o-selection-light-green;
+		}		
+		&.o_dark_green {
+			background-color: $o-selection-dark-green;
+		}
+	}
+}
+
 
 /* file chooser */
 .o_filepreview {

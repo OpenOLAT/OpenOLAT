@@ -82,6 +82,7 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * 
@@ -306,8 +307,8 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
-		super.postCopy(envMapper, processType, course, sourceCrourse);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 		postImportCopy(course, getIdent());
 	}
 	

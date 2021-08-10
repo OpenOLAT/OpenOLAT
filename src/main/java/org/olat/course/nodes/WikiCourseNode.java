@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -62,6 +63,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
@@ -81,9 +83,12 @@ import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiToZipUtils;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 
 /**
  * Description: <br>
@@ -182,6 +187,61 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
 		super.postExport(envMapper, backwardsCompatible);
 		postExportCondition(preConditionEdit, envMapper, backwardsCompatible);
+	}
+	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+		if (context != null) {
+			CopyType resourceCopyType = null;
+			
+			if (context.isCustomConfigsLoaded()) {
+				OverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
+				
+				if (nodeSettings != null && nodeSettings.getResourceChooser() != null) {
+					resourceCopyType = CopyType.valueOf(nodeSettings.getResourceChooser().getSelectedKey());
+				}
+			} else if (context.getBlogCopyType() != null) {
+				resourceCopyType = context.getWikiCopyType();				
+			}
+			
+			if (resourceCopyType != null) {
+				switch (resourceCopyType) {
+				case reference:
+					// Nothing to do here, this is the default behavior
+					break;
+				case createNew:
+					// Create a new empty wiki with the same name
+					RepositoryEntry wiki = getReferencedRepositoryEntry();
+					
+					if (wiki != null) {
+						RepositoryHandlerFactory handlerFactory = RepositoryHandlerFactory.getInstance();
+						
+						Set<RepositoryEntryToOrganisation> organisations = wiki.getOrganisations();
+						Organisation organisation = null;
+						if (organisations != null && organisations.size() > 1) {
+							organisation = organisations.stream().filter(rel -> rel.isMaster()).map(rel -> rel.getOrganisation()).findFirst().orElse(null);
+						} else if (organisations != null) {
+							organisation = organisations.stream().map(rel -> rel.getOrganisation()).findFirst().orElse(null);
+						}
+						
+						RepositoryEntry newWiki = handlerFactory.getRepositoryHandler(wiki).createResource(context.getExecutingIdentity(), wiki.getDisplayname(), wiki.getDescription(), null, organisation, null);
+						
+						if (newWiki != null) {
+							AbstractFeedCourseNode.setReference(getModuleConfiguration(), newWiki);
+						}
+					}
+					break;
+				case ignore:
+					// Remove the config, must be configured later
+					AbstractFeedCourseNode.removeReference(getModuleConfiguration());
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		
+		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 	}
 
 	@Override

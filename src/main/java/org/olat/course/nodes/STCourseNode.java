@@ -79,6 +79,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -449,8 +450,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
-        super.postCopy(envMapper, processType, course, sourceCrourse);
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+        super.postCopy(envMapper, processType, course, sourceCrourse, context);
         postImportCopy(envMapper);
     }
 	

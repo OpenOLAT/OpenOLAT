@@ -247,6 +247,8 @@ public class RemindersStep extends BasicStep {
 					
 					Date beforeDate = null;
 					Date afterDate = null;
+					DateChooser beforeDateChooser = null;
+					DateChooser afterDateChooser = null;
 					
 					if (!beforeDates.isEmpty()) {
 						beforeDate = Collections.min(beforeDates);
@@ -256,15 +258,22 @@ public class RemindersStep extends BasicStep {
 						afterDate = Collections.min(afterDates);
 					}
 					
-					beforeDate.setTime(beforeDate.getTime() + context.getDateDifference());
-					afterDate.setTime(afterDate.getTime() + context.getDateDifference());
+					if (beforeDate != null) {
+						beforeDate.setTime(beforeDate.getTime() + context.getDateDifference());
+						
+						beforeDateChooser = uifactory.addDateChooser("before_date_" + counter, beforeDate, tableItems);
+						beforeDateChooser.addActionListener(FormEvent.ONCHANGE);
+						beforeDateChooser.setInitialDate(beforeDate);
+						
+					}
 					
-					DateChooser beforeDateChooser = uifactory.addDateChooser("before_date_" + counter, beforeDate, tableItems);
-					beforeDateChooser.addActionListener(FormEvent.ONCHANGE);
-					beforeDateChooser.setInitialDate(beforeDate);
-					DateChooser afterDateChooser = uifactory.addDateChooser("after_date_" + counter++, afterDate, tableItems);
-					afterDateChooser.addActionListener(FormEvent.ONCHANGE);
-					afterDateChooser.setInitialDate(afterDate);
+					if (afterDate != null) {
+						afterDate.setTime(afterDate.getTime() + context.getDateDifference());
+						
+						afterDateChooser = uifactory.addDateChooser("after_date_" + counter++, afterDate, tableItems);
+						afterDateChooser.addActionListener(FormEvent.ONCHANGE);
+						afterDateChooser.setInitialDate(afterDate);
+					}
 					
 					row.setAfterDateChooser(afterDateChooser);
 					row.setBeforeDateChooser(beforeDateChooser);

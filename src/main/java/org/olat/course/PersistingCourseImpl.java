@@ -61,6 +61,8 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
 
 import com.thoughtworks.xstream.XStream;
@@ -284,12 +286,48 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, ICourse sourceCourse) {
 		Structure importedStructure = getRunStructure();
-		visit(new NodePostCopyVisitor(envMapper, Processing.runstructure, this, sourceCourse), importedStructure.getRootNode());
+		visit(new NodePostCopyVisitor(envMapper, Processing.runstructure, this, sourceCourse, null), importedStructure.getRootNode());
 		saveRunStructure();
 		
 		CourseEditorTreeModel importedEditorModel = getEditorTreeModel();
-		visit(new NodePostCopyVisitor(envMapper, Processing.editor, this, sourceCourse), importedEditorModel.getRootNode());
+		visit(new NodePostCopyVisitor(envMapper, Processing.editor, this, sourceCourse, null), importedEditorModel.getRootNode());
 		saveEditorTreeModel();
+	}
+	
+	@Override
+	public void postCopyCourse(CourseEnvironmentMapper envMapper, ICourse sourceCourse, CopyCourseContext context) {
+		// Create repository handler instance 
+		RepositoryHandlerFactory handlerFactory = RepositoryHandlerFactory.getInstance();
+		context.setHandlerFactory(handlerFactory);
+		
+		// Save editor tree model and perform post copy actions
+		visit(new NodePostCopyVisitor(envMapper, Processing.editor, this, sourceCourse, context), editorTreeModel.getRootNode());
+		saveEditorTreeModel();
+		
+		CourseFactory.openCourseEditSession(getResourceableId());
+		
+		Structure runStructure = getRunStructure();
+		runStructure.getRootNode().removeAllChildren();
+		
+		// Mark entire structure as dirty / new so the user can re-publish
+		CourseEditorTreeNode editorRootNode = (CourseEditorTreeNode) editorTreeModel.getRootNode();
+		markDirtyNewRecursively(editorRootNode);
+		
+		// Root has already been created during copy proccess
+		editorRootNode.setNewnode(false);
+		
+		CourseFactory.saveCourse(getResourceableId());
+		CourseFactory.closeCourseEditSession(getResourceableId(), true);
+	}
+	
+	private void markDirtyNewRecursively(CourseEditorTreeNode editorRootNode) {
+		editorRootNode.setDirty(true);
+		editorRootNode.setNewnode(true);
+		if (editorRootNode.getChildCount() > 0) {
+			for (int i = 0; i < editorRootNode.getChildCount(); i++) {
+				markDirtyNewRecursively((CourseEditorTreeNode)editorRootNode.getChildAt(i));
+			}
+		}
 	}
 	
 	@Override
@@ -487,12 +525,14 @@ class NodePostCopyVisitor implements Visitor {
 	private final CourseEnvironmentMapper envMapper;
 	private final ICourse course;
 	private final ICourse sourceCourse;
+	private final CopyCourseContext context;
 	
-	public NodePostCopyVisitor(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse) {
+	public NodePostCopyVisitor(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		this.envMapper = envMapper;
 		this.processType = processType;
 		this.course = course;
 		this.sourceCourse = sourceCourse;
+		this.context = context;
 	}
 	
 	@Override
@@ -501,7 +541,7 @@ class NodePostCopyVisitor implements Visitor {
 			node = ((CourseEditorTreeNode)node).getCourseNode();
 		}
 		if(node instanceof CourseNode) {
-			((CourseNode)node).postCopy(envMapper, processType, course, sourceCourse);
+			((CourseNode)node).postCopy(envMapper, processType, course, sourceCourse, context);
 		}
 	}
 }

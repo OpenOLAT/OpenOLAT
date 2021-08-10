@@ -74,6 +74,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	private RepositoryEntry repositoryEntry;
 	
 	private boolean usedInWizard;
+	private boolean dateMoved;
 
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -122,9 +123,9 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Set up info page");
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
 		if (!usedInWizard) {
+			setFormContextHelp("Set up info page");
 			setFormTitle("details.execution.title");
 		}
 
@@ -207,10 +208,10 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		privateDatesCont.setLabel("cif.private.dates", null);
 		formLayout.add("private.date", privateDatesCont);
 		
-		startDateEl = uifactory.addDateChooser("date.start", "cif.date.start", null, privateDatesCont);
+		startDateEl = uifactory.addDateChooser("date.start", "cif.date.from", null, privateDatesCont);
 		startDateEl.setElementCssClass("o_sel_repo_lifecycle_validfrom");
 		startDateEl.setEnabled(!readOnly);
-		endDateEl = uifactory.addDateChooser("date.end", "cif.date.end", null, privateDatesCont);
+		endDateEl = uifactory.addDateChooser("date.end", "cif.date.to", null, privateDatesCont);
 		endDateEl.setElementCssClass("o_sel_repo_lifecycle_validto");
 		endDateEl.setEnabled(!readOnly);
 		
@@ -295,12 +296,13 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 		if (source == dateTypesEl) {
 			updateDatesVisibility();
 		} else if (source == startDateEl) {
-			if (startDateEl.getInitialDate() != null && endDateEl != null && endDateEl.getDate() != null) {
+			if (!dateMoved && startDateEl.getInitialDate() != null && endDateEl != null && endDateEl.getDate() != null) {
 				Date startDate = startDateEl.getDate();
 				long difference = startDate.getTime() - startDateEl.getInitialDate().getTime();
 				Date endDate = endDateEl.getDate();
 				endDate.setTime(endDate.getTime() + difference);
 				endDateEl.setDate(endDate);
+				dateMoved = true;
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

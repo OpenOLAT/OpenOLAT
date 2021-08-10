@@ -58,6 +58,7 @@ import org.olat.course.statistic.StatisticType;
 import org.olat.course.style.ImageSource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -339,11 +340,11 @@ public interface CourseNode extends INode, ShortName {
 	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences);
 	
 	/**
-	 * Remap the node to the context of the course after import.
+	 * Remap the node to the context of the course after import and apply changes from the copy wizard
 	 * @param sourceCrourse
 	 * @param sourceCourse 
 	 */
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing type, ICourse course, ICourse sourceCrourse);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing type, ICourse course, ICourse sourceCrourse, CopyCourseContext context);
 	
 	/**
 	 * Remap the node to the context of the course after import.

@@ -56,6 +56,7 @@ import org.olat.modules.edusharing.EdusharingProvider;
 import org.olat.modules.edusharing.EdusharingService;
 import org.olat.modules.edusharing.EdusharingUsage;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.settings.RepositoryEdusharingProvider;
 
 /**
@@ -201,8 +202,8 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
-		super.postCopy(envMapper, processType, course, sourceCrourse);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 		postImportCopy(course, this, envMapper.getAuthor());
 	}
 	

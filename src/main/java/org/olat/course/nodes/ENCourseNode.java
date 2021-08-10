@@ -72,6 +72,7 @@ import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
 
 /**
@@ -414,8 +415,8 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	}
 	
     @Override
-    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
-    	super.postCopy(envMapper, processType, course, sourceCrourse);
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+    	super.postCopy(envMapper, processType, course, sourceCrourse, context);
 	    postImportCopy(envMapper);
 	}
     

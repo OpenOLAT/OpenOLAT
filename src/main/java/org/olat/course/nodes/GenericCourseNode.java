@@ -67,6 +67,7 @@ import org.olat.course.statistic.StatisticType;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ImageSource;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * Description:<br>
@@ -405,7 +406,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
 	}
 

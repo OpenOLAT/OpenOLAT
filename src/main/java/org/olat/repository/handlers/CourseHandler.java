@@ -37,7 +37,10 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -81,6 +84,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.reminder.model.ReminderRow;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -107,6 +111,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.CreateCourseRepositoryEntryController;
 import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -494,7 +499,10 @@ public class CourseHandler implements RepositoryHandler {
 
 		//upgrade to the current version of the course
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
-		course.postCopy(envMapper, sourceCourse);
+		course.postCopyCourse(envMapper, sourceCourse, context);
+		
+		cloneReminders(context.getExecutingIdentity(), envMapper, context.getSourceRepositoryEntry(), target, context);
+		cloneLectureConfig(context.getSourceRepositoryEntry(), target);
 		
 		return target;
 	}
@@ -502,6 +510,50 @@ public class CourseHandler implements RepositoryHandler {
 	private void cloneLectureConfig(RepositoryEntry source, RepositoryEntry target) {
 		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		lectureService.copyRepositoryEntryLectureConfiguration(source, target);
+	}
+	
+	private void cloneReminders(Identity author, CourseEnvironmentMapper envMapper, RepositoryEntry source, RepositoryEntry target, CopyCourseContext context) {
+		CopyType remindersCopyType = context.getReminderCopyType();
+		Map<Long, ReminderRow> remindersMap = null;
+		
+		if (context.getReminderRows() != null) {
+			remindersMap = context.getReminderRows().stream().collect(Collectors.toMap(row -> row.getKey(), Function.identity()));
+		}
+		
+		if (remindersCopyType.equals(CopyType.copy) || remindersCopyType.equals(CopyType.custom)) {
+			ReminderModule reminderModule = CoreSpringFactory.getImpl(ReminderModule.class);
+			ReminderService reminderService = CoreSpringFactory.getImpl(ReminderService.class);
+			List<Reminder> reminders = reminderService.getReminders(source);
+			
+			for(Reminder reminder:reminders) {
+				String configuration = reminder.getConfiguration();
+				ReminderRules rules = reminderService.toRules(configuration);
+				ReminderRules clonedRules = new ReminderRules();
+				
+				long dateDifference = context.getDateDifference();
+				if (remindersMap.get(reminder.getKey()) != null) {
+					ReminderRow reminderRow = remindersMap.get(reminder.getKey());
+					// TODO calculate datedifference
+				}
+				
+				for(ReminderRule rule:rules.getRules()) {
+					RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
+					if(ruleSpi != null) {
+						ReminderRule clonedRule = ruleSpi.moveDate(rule, envMapper, dateDifference);
+						if (clonedRule != null) 
+							clonedRules.getRules().add(clonedRule);
+					}
+				}
+				
+				Identity creator = author == null ? reminder.getCreator() : author;
+				Reminder clonedReminder = reminderService.createReminder(target, creator);
+				clonedReminder.setDescription(reminder.getDescription());
+				clonedReminder.setEmailSubject(reminder.getEmailSubject());
+				clonedReminder.setEmailBody(reminder.getEmailBody());
+				clonedReminder.setConfiguration(reminderService.toXML(clonedRules));
+				reminderService.save(clonedReminder);
+			}
+		}
 	}
 	
 	private void cloneReminders(Identity author, CourseEnvironmentMapper envMapper, RepositoryEntry source, RepositoryEntry target) {

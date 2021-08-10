@@ -102,15 +102,19 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		private final String value;
 		private final String description;
 		private final String iconCssClass;
+		private final String customCssClass;
 		private final boolean selected;
+		private final boolean enabled;
 
-		RadioElementComponent(SingleSelection selectionWrapper, int which, String key, String value, String description, String iconCssClass, boolean selected) {
+		RadioElementComponent(SingleSelection selectionWrapper, int which, String key, String value, String description, String iconCssClass, String customCssClass, boolean enabled, boolean selected) {
 			this.selectionWrapper = selectionWrapper;
 			this.which = which;
 			this.key = key;
 			this.value = value;
 			this.description = description;
 			this.iconCssClass = iconCssClass;
+			this.customCssClass = customCssClass;
+			this.enabled = enabled;
 			this.selected = selected;
 		}
 
@@ -151,6 +155,20 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		 */
 		public String getIconCssClass() {
 			return iconCssClass;
+		}
+		
+		/**
+		 * Optional CSS class, used for custom backgrounds when active in button group style rendering
+		 */
+		public String getCustomCssClass() {
+			return customCssClass;
+		}
+		
+		/**
+		 * Is the current option enabled?
+		 */
+		public boolean isEnabled() {
+			return enabled;
 		}
 		
 		/**

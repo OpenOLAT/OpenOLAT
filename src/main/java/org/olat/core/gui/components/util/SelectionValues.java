@@ -148,6 +148,24 @@ public class SelectionValues {
 		return keyValues.stream().map(SelectionValue::getIcon).toArray(String[]::new);
 	}
 	
+	/**
+	 * Returns a array of all custom css classes. The method creates a new array every time it is invoked.
+	 *
+	 * @return
+	 */
+	public String[] cssClasses() {
+		return keyValues.stream().map(SelectionValue::getCssClass).toArray(String[]::new);
+	}
+	
+	/**
+	 * Returns a array of all enabled states. The method creates a new array every time it is invoked.
+	 *
+	 * @return
+	 */
+	public Boolean[] enabledStates() {
+		return keyValues.stream().map(SelectionValue::isEnabled).toArray(Boolean[]::new);
+	}
+	
 	public void sort(Comparator<SelectionValue> comparator) {
 		keyValues.sort(comparator);
 	}
@@ -183,21 +201,29 @@ public class SelectionValues {
 		private final String value;
 		private final String description;
 		private final String icon;
+		private final String cssClass;
+		private boolean enabled;
 		
 		
-		public SelectionValue(String key, String value, String description, String icon) {
+		public SelectionValue(String key, String value, String description, String icon, String cssClass, boolean enabled) {
 			this.key = key;
 			this.value = value;
 			this.description = description;
 			this.icon = icon;
+			this.cssClass = cssClass;
+			this.enabled = enabled;
+		}
+		
+		public SelectionValue(String key, String value, String cssClass, boolean enabled) {
+			this(key, value, null, null, cssClass, enabled);
 		}
 		
 		public SelectionValue(String key, String value, String description) {
-			this(key, value, description, null);
+			this(key, value, description, null, null, true);
 		}
 		
 		public SelectionValue(String key, String value) {
-			this(key, value, null, null);
+			this(key, value, null, null, null, true);
 		}
 
 		public String getKey() {
@@ -214,6 +240,18 @@ public class SelectionValues {
 		
 		public String getDescription() {
 			return description;
+		}
+		
+		public String getCssClass() {
+			return cssClass;
+		}
+		
+		public boolean isEnabled() {
+			return enabled;
+		}
+		
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
 		}
 
 		@Override

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.author.copy.wizard.dates;
+package org.olat.repository.ui.author.copy.wizard.general;
 
 import java.util.Date;
 
@@ -42,13 +42,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
-import org.olat.core.gui.control.generic.wizard.BasicStepCollection;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.editor.EditorMainController;
@@ -56,43 +56,42 @@ import org.olat.course.editor.overview.OverviewDataModel;
 import org.olat.course.editor.overview.OverviewDataModel.OverviewCols;
 import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.nodes.BCCourseNode;
+import org.olat.course.nodes.BlogCourseNode;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.WikiCourseNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
-import org.olat.repository.ui.author.copy.wizard.general.MetadataStep;
+import org.olat.repository.ui.author.copy.wizard.dates.MoveDateConfirmController;
+import org.olat.repository.ui.author.copy.wizard.dates.MoveDatesEvent;
 
 /**
  * Initial date: 10.05.2021<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class GeneralDatesStep extends BasicStep {
+public class CourseOverviewStep extends BasicStep {
 
-	public static Step create(UserRequest ureq, BasicStepCollection stepCollection, CopyCourseSteps steps) {
-		if (steps.isEditDates()) {
-			return new GeneralDatesStep(ureq, stepCollection, steps);
+	public static Step create(UserRequest ureq, CopyCourseSteps steps) {
+		if (steps.isAdvancedMode() && steps.showNodesOverview()) {
+			return new CourseOverviewStep(ureq, steps);
 		} else {
-			return MetadataStep.create(ureq, null, steps);
+			return GroupStep.create(ureq, null, steps);
 		}
 	}
 	
-	public GeneralDatesStep(UserRequest ureq, BasicStepCollection stepCollection, CopyCourseSteps steps) {
+	public CourseOverviewStep(UserRequest ureq, CopyCourseSteps steps) {
 		super(ureq);
 		
 		// Translator and title
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
-		setI18nTitleAndDescr("steps.leaninpath.dates", null);
-		
-		// Check or create step collection
-		if (stepCollection == null) {
-			stepCollection = new BasicStepCollection();
-			stepCollection.setTitle(getTranslator(), "steps.move.dates.title");
-		}
-		setStepCollection(stepCollection);
+		setI18nTitleAndDescr("steps.move.dates.title", null);
 		
 		// Next step
-		setNextStep(MetadataStep.create(ureq, null, steps));
+		setNextStep(GroupStep.create(ureq, null, steps));
 	}
 
 	@Override
@@ -102,10 +101,10 @@ public class GeneralDatesStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		return new GeneralDatesStepController(ureq, windowControl, form, stepsRunContext);
+		return new CourseOverviewStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class GeneralDatesStepController extends StepFormBasicController {
+	private class CourseOverviewStepController extends StepFormBasicController {
 
 		private CopyCourseContext context;
 		
@@ -115,9 +114,8 @@ public class GeneralDatesStep extends BasicStep {
 		private CloseableModalController cmc;
 		private MoveDateConfirmController moveDateConfirmController;
 		private boolean askForDateMove = true;
-		private boolean moveDates = false;
 		
-		public GeneralDatesStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CourseOverviewStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 			
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
@@ -156,9 +154,13 @@ public class GeneralDatesStep extends BasicStep {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.startChooser));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.endChooser));
 			}
+			
+			if (context.hasNodeSpecificSettings()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.resourceChooser));
+			}
 									
 			dataModel = new OverviewDataModel(columnsModel);
-			tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 			tableEl.setEmptyTableMessageKey("table.empty");
 			tableEl.setExportEnabled(false);
 			tableEl.setMultiSelect(false);
@@ -166,6 +168,7 @@ public class GeneralDatesStep extends BasicStep {
 			tableEl.setCustomizeColumns(false);
 			
 			forgeRows(formLayout);
+			context.setCustomConfigsLoaded(true);
 		}
 		
 		private void forgeRows(FormItemContainer formLayout) {
@@ -179,6 +182,14 @@ public class GeneralDatesStep extends BasicStep {
 			SelectionValue optional = new SelectionValue(AssessmentObligation.optional.name(), translate("config.obligation.optional"));
 			SelectionValue mandatory = new SelectionValue(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory"));
 			obligationModes.add(optional, mandatory);
+			
+			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"));
+			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"));
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"));
+			SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"));
+			SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"));
+			
+			SelectionValues copyModes = null;
 			
 			for (OverviewRow row : context.getCourseNodes()) {
 				if (row.getLearningPathConfigs() != null) {
@@ -214,10 +225,58 @@ public class GeneralDatesStep extends BasicStep {
 						}
 					}
 				}
+				
+				if (isConfigurable(row.getCourseNode())) {
+					if (row.getResourceChooser() == null) {
+						if (row.getCourseNode() instanceof BCCourseNode) {
+							copyModes = new SelectionValues(copyContent, ignoreContent);
+						} else {
+							copyModes = new SelectionValues(reference, createNew, ignore);
+						}
+						
+						SingleSelection resourceChooser = uifactory.addDropdownSingleselect("resource_" + row.getCourseNode().getIdent(), tableItems, copyModes.keys(), copyModes.values());
+						selectCopyMode(context, row.getCourseNode(), resourceChooser);
+						row.setResourceChooser(resourceChooser);
+					}
+				}
 			}
 			
 			dataModel.setObjects(context.getCourseNodes());
 			tableEl.reset();
+		}
+		
+		private boolean isConfigurable(CourseNode courseNode) {
+			if (courseNode instanceof WikiCourseNode ||
+					courseNode instanceof BlogCourseNode ||
+					courseNode instanceof BCCourseNode) {
+				return true;
+			}
+			
+			return false;
+		}
+		
+		private void selectCopyMode(CopyCourseContext context, CourseNode courseNode, SingleSelection chooser) {
+			String selectKey = "";
+			
+			if (courseNode instanceof WikiCourseNode) {
+				selectKey = getCopyType(context.getWikiCopyType());
+			} else if (courseNode instanceof BlogCourseNode) {
+				selectKey = getCopyType(context.getBlogCopyType());
+			} else if (courseNode instanceof BCCourseNode) {
+				selectKey = getCopyType(context.getFolderCopyType());
+			}
+			
+			if (StringHelper.containsNonWhitespace(selectKey)) {
+				chooser.select(selectKey, true);
+			}
+		}
+		
+		private String getCopyType(CopyType copyType) {
+			if (copyType != null) {
+				return copyType.name();
+			}
+			
+			return null;
 		}
 		
 		private Date calculateDate(Date initialDate, long timeDifference) {
@@ -244,12 +303,8 @@ public class GeneralDatesStep extends BasicStep {
 					DateChooser sourceDateChooser = (DateChooser) source;
 					boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
 					
-					if (hasInitialDate) {
-						if (askForDateMove) {
-							doAskForDateMove(ureq, sourceDateChooser);
-						} else if (moveDates) {
-							moveAllDates(sourceDateChooser, dataModel);
-						}
+					if (hasInitialDate && askForDateMove) {
+						doAskForDateMove(ureq, sourceDateChooser);
 					} else {
 						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
@@ -265,11 +320,10 @@ public class GeneralDatesStep extends BasicStep {
 					
 					if (moveDatesEvent.isMoveDates()) {
 						// Move other dates
-						moveAllDates(moveDatesEvent.getDateChooser(), dataModel);					
+						moveAllDates(moveDatesEvent, dataModel);					
 					} 
 					
 					askForDateMove = !moveDatesEvent.isRememberChoice();
-					moveDates = moveDatesEvent.isMoveDates();
 				}
 				
 				cmc.deactivate();
@@ -293,6 +347,10 @@ public class GeneralDatesStep extends BasicStep {
 				return;
 			}
 			
+			if (dateChooser.getInitialDate().equals(dateChooser.getDate())) {
+				return;
+			}
+			
 			moveDateConfirmController = new MoveDateConfirmController(ureq, getWindowControl(), dateChooser);
 			listenTo(moveDateConfirmController);
 			
@@ -301,7 +359,9 @@ public class GeneralDatesStep extends BasicStep {
 			cmc.activate();
 		}
 		
-		private void moveAllDates(DateChooser dateChooser, OverviewDataModel model) {	
+		private void moveAllDates(MoveDatesEvent moveDatesEvent, OverviewDataModel model) {
+			DateChooser dateChooser = moveDatesEvent.getDateChooser();
+			
 			if (dateChooser == null || dateChooser.getInitialDate() == null || dateChooser.getDate() == null) {
 				return;
 			}
@@ -313,17 +373,21 @@ public class GeneralDatesStep extends BasicStep {
 				DateChooser end = row.getEndChooser();
 				
 				if (start != null && !start.equals(dateChooser) && start.getDate() != null) {
-					Date startDate = start.getInitialDate();
-					startDate.setTime(startDate.getTime() + difference);
-					start.setDate(startDate);
-					start.setInitialDate(startDate);
+					if ((moveDatesEvent.isMoveAllAfterCurrentDate() && !start.getInitialDate().before(dateChooser.getInitialDate())) || !moveDatesEvent.isMoveAllAfterCurrentDate()) {
+						Date startDate = start.getInitialDate();
+						startDate.setTime(startDate.getTime() + difference);
+						start.setDate(startDate);
+						start.setInitialDate(startDate);
+					}
 				}
 				
 				if (end != null && !end.equals(dateChooser) && end.getDate() != null) {
-					Date endDate = end.getInitialDate();
-					endDate.setTime(endDate.getTime() + difference);
-					end.setDate(endDate);
-					end.setInitialDate(endDate);
+					if ((moveDatesEvent.isMoveAllAfterCurrentDate() && !end.getInitialDate().before(dateChooser.getInitialDate())) || !moveDatesEvent.isMoveAllAfterCurrentDate()) {
+						Date endDate = end.getInitialDate();
+						endDate.setTime(endDate.getTime() + difference);
+						end.setDate(endDate);
+						end.setInitialDate(endDate);
+					}
 				}
 			}
 			

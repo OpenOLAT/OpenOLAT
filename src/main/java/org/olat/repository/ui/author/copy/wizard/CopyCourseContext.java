@@ -33,6 +33,7 @@ import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.ui.main.BGTableItem;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.author.copy.wizard.additional.AssessmentModeCopyInfos;
 
@@ -49,9 +50,12 @@ public class CopyCourseContext {
 	private Identity executingIdentity;
 	
 	// Repository entry and course
+	private RepositoryHandlerFactory handlerFactory;
 	private RepositoryEntry sourceRepositoryEntry;
 	private ICourse course;
 	private List<OverviewRow> courseNodes;
+	private Map<String, OverviewRow> courseNodesMap;
+	private boolean customConfigsLoaded;
 	private boolean isLearningPath;
 	private boolean hasWiki;
 	private boolean hasBlog;
@@ -60,14 +64,15 @@ public class CopyCourseContext {
 	private boolean hasLectureBlocks;
 	private boolean hasReminders;
 	private boolean hasAssessmentModes;
-	
-	// ReferenceAndTitleStep
+
+	// Metadata
 	private String displayName; //
 	private String externalRef; //
-	
-	// MetadataStep
-	private CopyType metadataCopyType; // 
 	private String authors; // 
+	private String licenseTypeKey;
+	private String licensor;
+	private String licenseFreetext;
+	private String expenditureOfWork;
 	
 	// GroupStep
 	private CopyType groupCopyType;			 // 
@@ -88,7 +93,7 @@ public class CopyCourseContext {
 	private ExecutionType executionType;
 	private Date beginDate;
 	private Date endDate;
-	private long dateDifference;
+	private long dateDifference = 0;
 	private Long semesterKey;
 	private String location;
 	
@@ -103,19 +108,15 @@ public class CopyCourseContext {
 	
 	// BlogStep
 	private CopyType blogCopyType;
-	private CopyType customBlogCopyType;
 	
 	// FolderStep
 	private CopyType folderCopyType;
-	private CopyType customFolderCopyType;
 	
 	// WikiStep
 	private CopyType wikiCopyType;
-	private CopyType customWikiCopyType;
 	
 	// ReminderStep
 	private CopyType reminderCopyType;
-	private CopyType customReminderCopyType;
 	private List<ReminderRow> reminderRows;
 	
 	// AssessmentModeStep
@@ -131,7 +132,6 @@ public class CopyCourseContext {
 	
 	// Load config from module
 	public void loadFromWizardConfig(CopyCourseWizardModule wizardModule) {
-		setMetadataCopyType(wizardModule.getMetaDataCopyType());
 		setGroupCopyType(wizardModule.getGroupsCopyType());
 		setOwnersCopyType(wizardModule.getOwnersCopyType());
 		setCoachesCopyType(wizardModule.getCoachesCopyType());
@@ -153,6 +153,14 @@ public class CopyCourseContext {
 	
 	public void setExecutingIdentity(Identity executingIdentity) {
 		this.executingIdentity = executingIdentity;
+	}
+	
+	public RepositoryHandlerFactory getHandlerFactory() {
+		return handlerFactory;
+	}
+	
+	public void setHandlerFactory(RepositoryHandlerFactory handlerFactory) {
+		this.handlerFactory = handlerFactory;
 	}
 	
 	public RepositoryEntry getSourceRepositoryEntry() {
@@ -177,6 +185,22 @@ public class CopyCourseContext {
 	
 	public void setCourseNodes(List<OverviewRow> courseNodes) {
 		this.courseNodes = courseNodes;
+	}
+	
+	public Map<String, OverviewRow> getCourseNodesMap() {
+		return courseNodesMap;
+	}
+	
+	public void setCourseNodesMap(Map<String, OverviewRow> courseNodesMap) {
+		this.courseNodesMap = courseNodesMap;
+	}
+	
+	public boolean isCustomConfigsLoaded() {
+		return customConfigsLoaded;
+	}
+	
+	public void setCustomConfigsLoaded(boolean customConfigsLoaded) {
+		this.customConfigsLoaded = customConfigsLoaded;
 	}
 	
 	public boolean isLearningPath() {
@@ -283,14 +307,6 @@ public class CopyCourseContext {
 		this.dateDifference = dateDifference;
 	}
 
-	public CopyType getMetadataCopyType() {
-		return metadataCopyType;
-	}
-	
-	public void setMetadataCopyType(CopyType metadataCopyType) {
-		this.metadataCopyType = metadataCopyType;
-	}
-	
 	public String getAuthors() {
 		return getValue(authors, sourceRepositoryEntry.getAuthors());
 	}
@@ -299,6 +315,38 @@ public class CopyCourseContext {
 		this.authors = authors;
 	}
 	
+	public String getLicenseTypeKey() {
+		return licenseTypeKey;
+	}
+	
+	public void setLicenseTypeKey(String licenseTypeKey) {
+		this.licenseTypeKey = licenseTypeKey;
+	}
+	
+	public String getLicensor() {
+		return licensor;
+	}
+	
+	public void setLicensor(String licensor) {
+		this.licensor = licensor;
+	}
+	
+	public String getLicenseFreetext() {
+		return licenseFreetext;
+	}
+	
+	public void setLicenseFreetext(String freetext) {
+		this.licenseFreetext = freetext;
+	}
+	
+	public String getExpenditureOfWork() {
+		return expenditureOfWork;
+	}
+	
+	public void setExpenditureOfWork(String expenditureOfWork) {
+		this.expenditureOfWork = expenditureOfWork;
+	}
+
 	public CopyType getGroupCopyType() {
 		return groupCopyType;
 	}
@@ -477,28 +525,12 @@ public class CopyCourseContext {
 		this.blogCopyType = blogCopyType;
 	}
 	
-	public CopyType getCustomBlogCopyType() {
-		return customBlogCopyType;
-	}
-	
-	public void setCustomBlogCopyType(CopyType customBlogCopyType) {
-		this.customBlogCopyType = customBlogCopyType;
-	}
-	
 	public CopyType getFolderCopyType() {
 		return folderCopyType;
 	}
 	
 	public void setFolderCopyType(CopyType folderCopyType) {
 		this.folderCopyType = folderCopyType;
-	}
-	
-	public CopyType getCustomFolderCopyType() {
-		return customFolderCopyType;
-	}
-	
-	public void setCustomFolderCopyType(CopyType customFolderCopyType) {
-		this.customFolderCopyType = customFolderCopyType;
 	}
 	
 	public CopyType getWikiCopyType() {
@@ -509,28 +541,12 @@ public class CopyCourseContext {
 		this.wikiCopyType = wikiCopyType;
 	}
 	
-	public CopyType getCustomWikiCopyType() {
-		return customWikiCopyType;
-	}
-	
-	public void setCustomWikiCopyType(CopyType customWikiCopyType) {
-		this.customWikiCopyType = customWikiCopyType;
-	}
-	
 	public CopyType getReminderCopyType() {
 		return reminderCopyType;
 	}
 	
 	public void setReminderCopyType(CopyType reminderCopyType) {
 		this.reminderCopyType = reminderCopyType;
-	}
-	
-	public CopyType getCustomReminderCopyType() {
-		return customReminderCopyType;
-	}
-	
-	public void setCustomReminderCopyType(CopyType customReminderCopyType) {
-		this.customReminderCopyType = customReminderCopyType;
 	}
 	
 	public List<ReminderRow> getReminderRows() {

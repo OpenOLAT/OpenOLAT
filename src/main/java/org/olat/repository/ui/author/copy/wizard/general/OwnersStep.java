@@ -176,7 +176,7 @@ public class OwnersStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"));
-			SelectionValue replace = new SelectionValue(CopyType.replace.name(), translate("owners.options.replace"));
+			SelectionValue replace = new SelectionValue(CopyType.replace.name(), translate("owners.options.replace", new String[] { ureq.getUserSession().getIdentity().getUser().getFirstName() + " " + ureq.getUserSession().getIdentity().getUser().getLastName() }));
 			
 			SelectionValues copyOwnerModes = new SelectionValues(copy, replace);
 			

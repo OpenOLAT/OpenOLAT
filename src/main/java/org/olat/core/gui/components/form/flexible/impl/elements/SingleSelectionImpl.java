@@ -49,12 +49,16 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	protected String[] keys;
 	protected String[] descriptions;
 	protected String[] iconsCssClasses;
+	protected String[] customCssClasses;
+	protected Boolean[] enabledStates;
+	
 	protected String original = null;
 	protected boolean originalSelect = false;
 	protected int selectedIndex = -1;
 	private boolean allowNoSelection = false;
 	private boolean noSelectionElement = false;
 	private boolean renderAsCard = false;
+	private boolean renderAsButtonGroup = false;
 	private String translatedNoSelectionValue;
 
 	private final Layout layout;
@@ -145,6 +149,20 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		this.iconsCssClasses = iconsCssClasses;
 		this.setKeysAndValues(keys, values, null);
 		this.renderAsCard = true;
+	}
+	
+	/**
+	 * Set data and enable button group mode
+	 * 
+	 * @param keys
+	 * @param values
+	 * @param customCssClases - Can be used to color active element
+	 */
+	public void setKeysAndValuesAndEnableButtonGroupStyle(String[] keys, String[] values, String[] customCssClases, Boolean[] enabledStates) {
+		this.customCssClasses = customCssClases;
+		this.enabledStates = enabledStates;
+		this.setKeysAndValues(keys, values, null);
+		this.renderAsButtonGroup = true;
 	}
 
 	
@@ -381,8 +399,10 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		for (int i = 0; i < keys.length; i++) {
 			String desc = (descriptions != null ? descriptions[i] : null);
 			String icon = (iconsCssClasses != null ? iconsCssClasses[i] : null);
+			String customCss = (customCssClasses != null && customCssClasses.length > 0 ? customCssClasses[i] : null);	
+			boolean enabled = (enabledStates != null && enabledStates.length > 0 && enabledStates[i] != null ? enabledStates[i] : true);	
 			
-			radios[i] = new RadioElementComponent(this, i, keys[i], values[i],  desc, icon, selectedIndex == i);
+			radios[i] = new RadioElementComponent(this, i, keys[i], values[i],  desc, icon, customCss, enabled, selectedIndex == i);
 		}
 		component.setRadioComponents(radios);
 	}
@@ -460,6 +480,10 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	 */
 	public boolean isRenderAsCard() {
 		return this.renderAsCard;
+	}
+	
+	public boolean isRenderAsButtonGroup() {
+		return this.renderAsButtonGroup;
 	}
 
 }

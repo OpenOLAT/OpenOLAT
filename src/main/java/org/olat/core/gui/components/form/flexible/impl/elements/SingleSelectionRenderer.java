@@ -54,57 +54,87 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 	private void renderVertical(StringOutput sb, SingleSelectionComponent source) {
 		RadioElementComponent[] radios = source.getRadioComponents();
 		String css = source.getElementCssClass();
-		boolean hasCss = css != null || source.getSingleSelectionImpl().isRenderAsCard();
+		boolean hasCss = css != null || source.getSingleSelectionImpl().isRenderAsCard() || source.getSingleSelectionImpl().isRenderAsButtonGroup();
 
 		if (hasCss) {
 			sb.append("<div class=\"")
 				.append(css, css != null)
 				.append(" o_radio_cards", source.getSingleSelectionImpl().isRenderAsCard())
-				.append("\">");
+				.append(" o_radio_buttons btn-group-vertical", source.getSingleSelectionImpl().isRenderAsButtonGroup())
+				.append("\"")
+				.append("data-toggle=\"buttons\"", source.getSingleSelectionImpl().isRenderAsButtonGroup())
+				.append(">");
 			
 		}
+		
 		for(RadioElementComponent radio:radios) {
 			renderRadio(sb, source, radio, false);
 		}
+		
 		sb.append("</div>", hasCss);
 	}
 	
 	private void renderHorizontal(StringOutput sb, SingleSelectionComponent source) {
 		String css = source.getElementCssClass();
+		
 		sb.append("<div class=\"form-inline ")
 			.append("o_radio_cards ", source.getSingleSelectionImpl().isRenderAsCard())
+			.append("o_radio_buttons btn-group ", source.getSingleSelectionImpl().isRenderAsButtonGroup())
 			.append(css, css != null)
-			.append("\">");
+			.append("\"")
+			.append("data-toggle=\"buttons\"", source.getSingleSelectionImpl().isRenderAsButtonGroup())
+			.append(">");
+		
 		RadioElementComponent[] radios = source.getRadioComponents();
+		
 		for(RadioElementComponent radio:radios) {
 			renderRadio(sb, source, radio, true);
 		}
+		
 		sb.append("</div>");
 	}
 	
 	private void renderRadio(StringOutput sb, SingleSelectionComponent source, RadioElementComponent ssec, boolean inline) {
 		String subStrName = "name='" + ssec.getGroupingName() + "'";
-
 		String key = ssec.getKey();
 		String value = ssec.getValue();
-		boolean selected = ssec.isSelected();
 		String formDispatchId = ssec.getFormDispatchId();
 		
+		boolean buttonGroupStyle = source.getSingleSelectionImpl().isRenderAsButtonGroup();
+		boolean hasCustomCss = StringHelper.containsNonWhitespace(ssec.getCustomCssClass());
+		boolean disabled = !ssec.isEnabled();
+		boolean selected = ssec.isSelected();
+		
 		// read write view
-		sb.append("<div class='radio' ", !inline); // normal radios need a wrapper (bootstrap) ...
+		sb.append("<div class='radio ", !inline) // normal radios need a wrapper (bootstrap) ...
+		  .append("btn btn-default ", !inline && buttonGroupStyle)
+		  .append(ssec.getCustomCssClass(), !inline && buttonGroupStyle && hasCustomCss)
+		  .append(" active", !inline && buttonGroupStyle && selected)
+		  .append("' ", !inline)
+		  .append("disabled ", !inline && disabled);
+
 		if(!inline && source.getWidthInPercent() > 0) {
 			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
 		}
 		sb.append(">", !inline)
-		  .append("<label ").append("class='radio-inline' ", inline); // ... and inline a class on the label (bootstrap)
+		  .append("<label ").append("class='", inline || source.getSingleSelectionImpl().isRenderAsButtonGroup())
+		  					.append("radio-inline ", inline)			// ... and inline a class on the label (bootstrap)
+		  					.append("btn btn-default ", inline && buttonGroupStyle)
+		  					.append(ssec.getCustomCssClass(), inline && buttonGroupStyle && hasCustomCss)
+		  					.append(" active", inline && buttonGroupStyle && selected)
+		  					.append("' ", inline || source.getSingleSelectionImpl().isRenderAsButtonGroup())
+		  					.append("disabled ", inline && disabled);
+		
 		if(inline && source.getWidthInPercent() > 0) {
 			sb.append("style='width:").append(source.getWidthInPercent()).append("%;'");
 		}
+		
 		sb.append(" for=\"").append(formDispatchId).append("\">")
 		  .append("<input id='").append(formDispatchId).append("' ")
 		  .append("type='radio' ").append(subStrName)
 		  .append(" value='").append(key).append("' ")
-		  .append(" checked='checked' ", selected);
+		  .append(" checked='checked' ", selected)
+		  .append(" disabled ", disabled);
 
 		if(source.isEnabled()){
 			// use the selection elements formDispId instead of the one of this element.

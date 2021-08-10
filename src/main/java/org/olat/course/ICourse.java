@@ -36,6 +36,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * Description:<BR/>
@@ -63,6 +64,8 @@ public interface ICourse extends OLATResourceable {
 	public CourseEditorTreeModel getEditorTreeModel();
 	
 	public void postCopy(CourseEnvironmentMapper envMapper, ICourse sourceCourse);
+	
+	public void postCopyCourse(CourseEnvironmentMapper envMapper, ICourse sourceCourse, CopyCourseContext context);
 	
 	public void postImport(File importDirectory, CourseEnvironmentMapper envMapper);
 	

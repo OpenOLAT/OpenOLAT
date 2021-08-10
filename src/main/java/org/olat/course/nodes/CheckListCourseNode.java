@@ -88,6 +88,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * 
@@ -504,7 +505,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse) {
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		ModuleConfiguration config = getModuleConfiguration();
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		CheckboxList list = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);
@@ -531,7 +532,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		}
 
 		checkboxManager.syncCheckbox(list, course, getIdent());
-		super.postCopy(envMapper, processType, course, sourceCourse);
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
 	}
 
 	@Override

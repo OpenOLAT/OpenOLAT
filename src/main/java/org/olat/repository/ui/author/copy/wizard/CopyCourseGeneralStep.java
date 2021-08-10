@@ -41,8 +41,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.repository.ui.author.copy.wizard.dates.GeneralDatesStep;
 import org.olat.repository.ui.settings.RepositoryEntryLifecycleController;
+import org.olat.repository.ui.settings.RepositoryEntryMetadataController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,13 +63,8 @@ public class CopyCourseGeneralStep extends BasicStep {
 		
 		setI18nTitleAndDescr("general.title", null);
 		
-		steps.setEditDates(context.hasDateDependantNodes());
-		
-		if (steps.isAdvancedMode()) {
-			setNextStep(CopyCourseStepsStep.create(ureq, steps));
-		} else {
-			setNextStep(GeneralDatesStep.create(ureq, null, steps));
-		}
+		steps.setShowNodesOverview(context.hasDateDependantNodes() || context.hasNodeSpecificSettings());
+		setNextStep(CopyCourseStepsStep.create(ureq, steps));
 	}
 
 	@Override
@@ -94,13 +89,12 @@ public class CopyCourseGeneralStep extends BasicStep {
 		private TextElement displayNameEl;
 		
 		private RepositoryEntryLifecycleController lifecycleController;
+		private RepositoryEntryMetadataController metadataController;
 		
 		private SingleSelection copyModeEl;
 		
 		@Autowired
 		private RepositoryService repositoryService;
-		@Autowired
-		private CopyCourseWizardModule wizardModule;
 		
 		public GeneralStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -108,7 +102,10 @@ public class CopyCourseGeneralStep extends BasicStep {
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 			
-			lifecycleController = new RepositoryEntryLifecycleController(ureq, getWindowControl(), context.getSourceRepositoryEntry(), rootForm);
+			metadataController = new RepositoryEntryMetadataController(ureq, wControl, context.getSourceRepositoryEntry(), rootForm);
+			listenTo(metadataController);
+			
+			lifecycleController = new RepositoryEntryLifecycleController(ureq, wControl, context.getSourceRepositoryEntry(), rootForm);
 			listenTo(lifecycleController);
 			
 			initForm(ureq);
@@ -136,7 +133,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			context.setDisplayName(displayNameEl.getValue());
 			context.setExternalRef(externalRefEl.getValue());
 			
-			if (lifecycleController.saveToContext(ureq, context)) {
+			if (lifecycleController.saveToContext(ureq, context) && metadataController.saveToContext(ureq, context)) {
 				fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 			}
 		}
@@ -163,11 +160,18 @@ public class CopyCourseGeneralStep extends BasicStep {
 			uifactory.addSpacerElement("space_1", formLayout, false);
 			
 			// Execution
-			formLayout.add(lifecycleController.getInitialFormItem());
+			formLayout.add("lifeCycle", lifecycleController.getInitialFormItem());
 			lifecycleController.loadFromContext(context);
 			
 			// Spacer
 			uifactory.addSpacerElement("space_2", formLayout, false);
+			
+			// Metadata
+			formLayout.add("metaData", metadataController.getInitialFormItem());
+			metadataController.loadFromContext(context);
+			
+			// Spacer
+			uifactory.addSpacerElement("space_3", formLayout, false);
 			
 			FormItemContainer copyModeLayout = FormLayoutContainer.createDefaultFormLayout_2_10("copyModeLayout", getTranslator());
 			copyModeLayout.setRootForm(mainForm);

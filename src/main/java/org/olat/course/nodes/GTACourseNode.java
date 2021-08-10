@@ -94,6 +94,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.user.UserManager;
 
 /**
@@ -470,8 +471,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse) {
-		super.postCopy(envMapper, processType, course, sourceCourse);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
 		//change groups and areas mapping
 		postImportCopy(envMapper);
 		

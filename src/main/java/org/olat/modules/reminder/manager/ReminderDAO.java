@@ -109,6 +109,25 @@ public class ReminderDAO {
 		dbInstance.getCurrentEntityManager().persist(reminder);
 		return reminder;
 	}
+	
+	public Reminder duplicate(Reminder toCopy, RepositoryEntry newEntry, Identity creator) {
+		ReminderImpl reminder = new ReminderImpl();
+		Date now = new Date();
+		reminder.setCreationDate(now);
+		reminder.setLastModified(now);
+		if(newEntry != null) {
+			reminder.setEntry(newEntry);
+		}
+		reminder.setCreator(creator);
+		reminder.setDescription(toCopy.getDescription() + " (Copy)");
+		reminder.setConfiguration(toCopy.getConfiguration());
+		reminder.setEmailSubject(toCopy.getEmailSubject());
+		reminder.setEmailBody(toCopy.getEmailBody());
+		reminder.setEmailCopy(new HashSet<>(toCopy.getEmailCopy()));
+		reminder.setCustomEmailCopy(toCopy.getCustomEmailCopy());
+		dbInstance.getCurrentEntityManager().persist(reminder);
+		return reminder;
+	}
 
 	public int delete(Reminder reminder) {
 		ReminderImpl ref = dbInstance.getCurrentEntityManager()

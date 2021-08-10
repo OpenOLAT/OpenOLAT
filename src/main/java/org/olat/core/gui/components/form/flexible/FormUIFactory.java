@@ -93,6 +93,7 @@ import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
@@ -452,6 +453,22 @@ public class FormUIFactory {
 	public SingleSelection addCardSingleSelectVertical(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theTitles, final String[] theDescriptions, final String[] theIconCssClasses) {
 		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.vertical, formLayout.getTranslator().getLocale());
 		ss.setKeysAndValuesAndEnableCardStyle(theKeys, theTitles, theDescriptions, theIconCssClasses);
+		setLabelIfNotNull(name, ss);
+		formLayout.add(ss); 
+		return ss;
+	}
+	
+	public SingleSelection addButtonGroupSingleSelectVertical(final String name, FormItemContainer formLayout, SelectionValues selectionValues) {
+		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.vertical, formLayout.getTranslator().getLocale());
+		ss.setKeysAndValuesAndEnableButtonGroupStyle(selectionValues.keys(), selectionValues.values(), selectionValues.cssClasses(), selectionValues.enabledStates());
+		setLabelIfNotNull(name, ss);
+		formLayout.add(ss); 
+		return ss;
+	}
+	
+	public SingleSelection addButtonGroupSingleSelectHorizontal(final String name, FormItemContainer formLayout, SelectionValues selectionValues) {
+		SingleSelectionImpl ss = new SingleSelectionImpl(name, name, SingleSelection.Layout.horizontal, formLayout.getTranslator().getLocale());
+		ss.setKeysAndValuesAndEnableButtonGroupStyle(selectionValues.keys(), selectionValues.values(), selectionValues.cssClasses(), selectionValues.enabledStates());
 		setLabelIfNotNull(name, ss);
 		formLayout.add(ss); 
 		return ss;

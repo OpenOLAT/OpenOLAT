@@ -404,7 +404,7 @@ $o-cn-style-cover-text-bg			: rgba(255, 255, 255, 0.6) !default;
 $o-cn-style-cat-dark-blue-color		: #000080 !default;
 $o-cn-style-cat-light-blue-color	: #4169E1 !default;
 $o-cn-style-cat-purple-color		: #800080 !default;
-$o-cn-style-cat-red-color			: #DD1414 !default;
+$o-cn-style-cat-red-color			: #DC143C !default;
 $o-cn-style-cat-orange-color		: #FF8C00 !default;
 $o-cn-style-cat-yellow-color		: #FFD700 !default;
 $o-cn-style-cat-light-green-color	: #32CD32 !default;
@@ -990,5 +990,14 @@ $o-competences-selected-bg-color	: #fff;
 $o-competences-selected-color		: $o-button-dirty-bg;
 $o-competences-selected-border-color: $o-button-dirty-border;
 
+/* Selection Background Colors */
+$o-selection-dark-blue	: #00008033; 
+$o-selection-light-blue	: #4169E133;
+$o-selection-purple		: #80008033;
+$o-selection-red		: #DD141433;
+$o-selection-orange		: #FF8C0033;
+$o-selection-yellow		: #FFD70033;
+$o-selection-light-green: #32CD3233;
+$o-selection-dark-green : #228B2233;
 
 

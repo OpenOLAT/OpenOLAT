@@ -33,15 +33,17 @@ public class MoveDatesEvent extends Event {
 
 	private boolean moveDates;
 	private boolean rememberChoice;
+	private boolean moveAllAfterCurrentDate;
 	
 	private DateChooser dateChooser;
 	
-	public MoveDatesEvent(DateChooser dateChooser, boolean moveDates, boolean rememberChoice) {
+	public MoveDatesEvent(DateChooser dateChooser, boolean moveDates, boolean rememberChoice, boolean moveAllAfterCurrentDate) {
 		super("done");
 		
 		this.dateChooser = dateChooser;
 		this.moveDates = moveDates;
 		this.rememberChoice = rememberChoice;
+		this.moveAllAfterCurrentDate = moveAllAfterCurrentDate;
 	}
 	
 	public DateChooser getDateChooser() {
@@ -54,6 +56,10 @@ public class MoveDatesEvent extends Event {
 	
 	public boolean isRememberChoice() {
 		return rememberChoice;
+	}
+	
+	public boolean isMoveAllAfterCurrentDate() {
+		return moveAllAfterCurrentDate;
 	}
 
 }

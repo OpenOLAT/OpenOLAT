@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -71,6 +72,7 @@ import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +87,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 
 	private final boolean readOnly;
 	private final boolean showHeading;
+	private final boolean usedInWizard;
 	private ResourceLicense license;
 	private RepositoryEntry repositoryEntry;
 	private Set<TaxonomyLevel> taxonomyLevels;
@@ -130,11 +133,30 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		this.repositoryEntry = entry;
 		this.readOnly = readOnly;
 		this.showHeading = showHeading;
+		this.usedInWizard = false;
 		initForm(ureq);
 	}
 	
 	public RepositoryEntryMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		this(ureq, wControl, entry, readOnly, true);
+	}
+	
+	/**
+	 * Used in wizard 
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param entry
+	 * @param rootForm
+	 */
+	public RepositoryEntryMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10, null, rootForm);
+		setBasePackage(RepositoryService.class);
+		this.repositoryEntry = entry;
+		this.usedInWizard = true;
+		this.readOnly = false;
+		this.showHeading = false;
+		initForm(ureq);
 	}
 
 	/**
@@ -164,24 +186,28 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		} else {
 			typeDisplay = translate("cif.type.na");
 		}
-		uifactory.addStaticTextElement("cif.type", typeDisplay, formLayout);
-
-		String id = repositoryEntry.getResourceableId() == null ? "-" : repositoryEntry.getResourceableId().toString();
-		uifactory.addStaticTextElement("cif.id", id, formLayout);
 		
-		String externalId = repositoryEntry.getExternalId();
-		if(StringHelper.containsNonWhitespace(externalId)) {
-			uifactory.addStaticTextElement("cif.externalid", externalId, formLayout);
+		if (!usedInWizard) {
+			
+			uifactory.addStaticTextElement("cif.type", typeDisplay, formLayout);
+	
+			String id = repositoryEntry.getResourceableId() == null ? "-" : repositoryEntry.getResourceableId().toString();
+			uifactory.addStaticTextElement("cif.id", id, formLayout);
+			
+			String externalId = repositoryEntry.getExternalId();
+			if(StringHelper.containsNonWhitespace(externalId)) {
+				uifactory.addStaticTextElement("cif.externalid", externalId, formLayout);
+			}
+	
+			String initalAuthor = repositoryEntry.getInitialAuthor() == null ? "-" : repositoryEntry.getInitialAuthor();
+			if(repositoryEntry.getInitialAuthor() != null) {
+				initalAuthor = userManager.getUserDisplayName(initalAuthor);
+			}
+			initalAuthor = StringHelper.escapeHtml(initalAuthor);
+			uifactory.addStaticTextElement("cif.initialAuthor", initalAuthor, formLayout);
+	
+			uifactory.addSpacerElement("spacer1", formLayout, false);
 		}
-
-		String initalAuthor = repositoryEntry.getInitialAuthor() == null ? "-" : repositoryEntry.getInitialAuthor();
-		if(repositoryEntry.getInitialAuthor() != null) {
-			initalAuthor = userManager.getUserDisplayName(initalAuthor);
-		}
-		initalAuthor = StringHelper.escapeHtml(initalAuthor);
-		uifactory.addStaticTextElement("cif.initialAuthor", initalAuthor, formLayout);
-
-		uifactory.addSpacerElement("spacer1", formLayout, false);
 
 		authors = uifactory.addTextElement("cif.authors", "cif.authors", 255, repositoryEntry.getAuthors(), formLayout);
 		authors.setDisplaySize(60);
@@ -193,7 +219,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			initFormTaxonomy(formLayout, taxonomyRef);
 		}
 		
-		if (CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+		if (!usedInWizard && CourseModule.ORES_TYPE_COURSE.equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
 			SelectionValues educationalTypeKV = new SelectionValues();
 			repositoryManager.getAllEducationalTypes()
 					.forEach(type -> educationalTypeKV.add(entry(type.getIdentifier(), translate(RepositoyUIFactory.getI18nKey(type)))));
@@ -207,8 +233,10 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			educationalTypeEl.setEnabled(!readOnly);
 		}
 		
-		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
-		language.setEnabled(!readOnly);
+		if (!usedInWizard) {
+			language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
+			language.setEnabled(!readOnly);
+		}
 		
 		expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), formLayout);
 		expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
@@ -250,15 +278,17 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			}
 		}
 
-		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
-
-		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
-		formLayout.add("buttonContainer", buttonContainer);
-		buttonContainer.setElementCssClass("o_sel_repo_save_details");
-		buttonContainer.setVisible(!readOnly);
-		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
-		FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
-		submit.setVisible(!managed && !readOnly);
+		if (!usedInWizard) {
+			boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
+	
+			FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
+			formLayout.add("buttonContainer", buttonContainer);
+			buttonContainer.setElementCssClass("o_sel_repo_save_details");
+			buttonContainer.setVisible(!readOnly);
+			uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
+			FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
+			submit.setVisible(!managed && !readOnly);
+		}
 	}
 	
 	private void buildLicensesList(StringBuilder sb, List<License> elementsLicenses) {
@@ -323,85 +353,135 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (licenseModule.isEnabled(licenseHandler)) {
-			if (licenseEl != null && licenseEl.isOneSelected()) {
-				String licenseTypeKey = licenseEl.getSelectedKey();
-				LicenseType licneseType = licenseService.loadLicenseTypeByKey(licenseTypeKey);
-				license.setLicenseType(licneseType);
+		if (!usedInWizard) {
+			if (licenseModule.isEnabled(licenseHandler)) {
+				if (licenseEl != null && licenseEl.isOneSelected()) {
+					String licenseTypeKey = licenseEl.getSelectedKey();
+					LicenseType licneseType = licenseService.loadLicenseTypeByKey(licenseTypeKey);
+					license.setLicenseType(licneseType);
+				}
+				String licensor = null;
+				String freetext = null;
+				if (licensorEl != null && licensorEl.isVisible()) {
+					licensor = StringHelper.containsNonWhitespace(licensorEl.getValue())? licensorEl.getValue(): null;
+				}
+				if (licenseFreetextEl != null && licenseFreetextEl.isVisible()) {
+					freetext = StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())? licenseFreetextEl.getValue(): null;
+				}
+				license.setLicensor(licensor);
+				license.setFreetext(freetext);
+				license = licenseService.update(license);
+				licensorEl.setValue(license.getLicensor());
+				licenseFreetextEl.setValue(license.getFreetext());
 			}
-			String licensor = null;
-			String freetext = null;
-			if (licensorEl != null && licensorEl.isVisible()) {
-				licensor = StringHelper.containsNonWhitespace(licensorEl.getValue())? licensorEl.getValue(): null;
+			
+			if (educationalTypeEl != null) {
+				String identifier = educationalTypeEl.isOneSelected()? educationalTypeEl.getSelectedKey(): null;
+				RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(identifier);
+				repositoryEntry.setEducationalType(educationalType);
 			}
-			if (licenseFreetextEl != null && licenseFreetextEl.isVisible()) {
-				freetext = StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())? licenseFreetextEl.getValue(): null;
+	
+			String mainLanguage = language.getValue();
+			if(StringHelper.containsNonWhitespace(mainLanguage)) {
+				repositoryEntry.setMainLanguage(mainLanguage);
+			} else {
+				repositoryEntry.setMainLanguage(null);
 			}
-			license.setLicensor(licensor);
-			license.setFreetext(freetext);
-			license = licenseService.update(license);
-			licensorEl.setValue(license.getLicensor());
-			licenseFreetextEl.setValue(license.getFreetext());
+	
+			if(authors != null) {
+				String auth = authors.getValue().trim();
+				repositoryEntry.setAuthors(auth);
+			}
+			if(expenditureOfWork != null) {
+				String exp = expenditureOfWork.getValue().trim();
+				repositoryEntry.setExpenditureOfWork(exp);
+			}
+			
+			// Taxonomy levels
+			if (taxonomyLevelEl != null) {
+				Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
+				List<String> currentKeys = taxonomyLevels.stream()
+						.map(l -> l.getKey().toString())
+						.collect(Collectors.toList());
+				// add newly selected keys
+				Collection<String> addKeys = new HashSet<>(selectedLevelKeys);
+				addKeys.removeAll(currentKeys);
+				for (String addKey : addKeys) {
+					TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
+					taxonomyLevels.add(level);
+				}
+				// remove newly unselected keys
+				Collection<String> removeKeys = new HashSet<>(currentKeys);
+				removeKeys.removeAll(selectedLevelKeys);
+				for (String removeKey: removeKeys) {
+					taxonomyLevels.removeIf(level -> removeKey.equals(level.getKey().toString()));
+				}
+			}
+	
+			repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
+					repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
+					repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
+					repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
+					repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, taxonomyLevels,
+					repositoryEntry.getEducationalType());
+			if(repositoryEntry == null) {
+				showWarning("repositoryentry.not.existing");
+				fireEvent(ureq, Event.CLOSE_EVENT);
+			} else {
+				fireEvent(ureq, Event.CHANGED_EVENT);
+				MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.modifiedDescription, "authoring");
+				CoordinatorManager.getInstance().getCoordinator().getEventBus()
+					.fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
+			}
 		}
+	}
+	
+	public boolean saveToContext(UserRequest ureq, CopyCourseContext context) {
+		String licenseTypeKey = null;
+		String licensor = null;
+		String freetext = null;
 		
-		if (educationalTypeEl != null) {
-			String identifier = educationalTypeEl.isOneSelected()? educationalTypeEl.getSelectedKey(): null;
-			RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(identifier);
-			repositoryEntry.setEducationalType(educationalType);
-		}
-
-		String mainLanguage = language.getValue();
-		if(StringHelper.containsNonWhitespace(mainLanguage)) {
-			repositoryEntry.setMainLanguage(mainLanguage);
-		} else {
-			repositoryEntry.setMainLanguage(null);
-		}
-
-		if(authors != null) {
-			String auth = authors.getValue().trim();
-			repositoryEntry.setAuthors(auth);
-		}
-		if(expenditureOfWork != null) {
-			String exp = expenditureOfWork.getValue().trim();
-			repositoryEntry.setExpenditureOfWork(exp);
-		}
+		String authorsValue = null;
 		
-		// Taxonomy levels
-		if (taxonomyLevelEl != null) {
-			Collection<String> selectedLevelKeys = taxonomyLevelEl.getSelectedKeys();
-			List<String> currentKeys = taxonomyLevels.stream()
-					.map(l -> l.getKey().toString())
-					.collect(Collectors.toList());
-			// add newly selected keys
-			Collection<String> addKeys = new HashSet<>(selectedLevelKeys);
-			addKeys.removeAll(currentKeys);
-			for (String addKey : addKeys) {
-				TaxonomyLevel level = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(addKey));
-				taxonomyLevels.add(level);
+		String expenditureOfWorkValue = null;
+		
+		if (validateFormLogic(ureq)) {
+			if (licenseModule.isEnabled(licenseHandler)) {
+				if (licenseEl != null && licenseEl.isOneSelected()) {
+					licenseTypeKey = licenseEl.getSelectedKey();
+				}
+				
+				if (licensorEl != null && licensorEl.isVisible()) {
+					licensor = StringHelper.containsNonWhitespace(licensorEl.getValue())? licensorEl.getValue(): null;
+				}
+				if (licenseFreetextEl != null && licenseFreetextEl.isVisible()) {
+					freetext = StringHelper.containsNonWhitespace(licenseFreetextEl.getValue())? licenseFreetextEl.getValue(): null;
+				}
 			}
-			// remove newly unselected keys
-			Collection<String> removeKeys = new HashSet<>(currentKeys);
-			removeKeys.removeAll(selectedLevelKeys);
-			for (String removeKey: removeKeys) {
-				taxonomyLevels.removeIf(level -> removeKey.equals(level.getKey().toString()));
+			
+	
+			if(authors != null) {
+				authorsValue = authors.getValue().trim();
 			}
-		}
-
-		repositoryEntry = repositoryManager.setDescriptionAndName(repositoryEntry,
-				repositoryEntry.getDisplayname(), repositoryEntry.getExternalRef(), repositoryEntry.getAuthors(),
-				repositoryEntry.getDescription(), repositoryEntry.getObjectives(), repositoryEntry.getRequirements(),
-				repositoryEntry.getCredits(), repositoryEntry.getMainLanguage(), repositoryEntry.getLocation(),
-				repositoryEntry.getExpenditureOfWork(), repositoryEntry.getLifecycle(), null, taxonomyLevels,
-				repositoryEntry.getEducationalType());
-		if(repositoryEntry == null) {
-			showWarning("repositoryentry.not.existing");
-			fireEvent(ureq, Event.CLOSE_EVENT);
+			
+			if(expenditureOfWork != null) {
+				expenditureOfWorkValue = expenditureOfWork.getValue().trim();
+			}
+			
+			context.setAuthors(authorsValue);
+			context.setExpenditureOfWork(expenditureOfWorkValue);
+			context.setLicenseTypeKey(licenseTypeKey);
+			context.setLicensor(licensor);
+			context.setLicenseFreetext(freetext);
+			
+			return true;
 		} else {
-			fireEvent(ureq, Event.CHANGED_EVENT);
-			MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.modifiedDescription, "authoring");
-			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
+			return false;
 		}
+	}
+	
+	public void loadFromContext(CopyCourseContext context) {
+		
 	}
 
 	@Override

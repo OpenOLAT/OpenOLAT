@@ -58,6 +58,8 @@ public interface ReminderService {
 	
 	public Reminder duplicate(Reminder toCopy, Identity creator);
 	
+	public Reminder duplicate(Reminder toCopy, RepositoryEntry newRepoEntry, Identity creator);
+	
 	public void delete(Reminder reminder);
 	
 	/**

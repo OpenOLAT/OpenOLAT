@@ -35,7 +35,6 @@ public class CopyCourseWizardModule extends AbstractSpringModule {
 
 	private static final String WIZARD_MODE = "course.copy.wizard.mode";
 	
-	private static final String META_DATA_COPY_TYPE = "course.copy.wizard.metadata";
 	private static final String GROUPS_COPY_TYPE = "course.copy.wizard.groups";
 	private static final String OWNERS_COPY_TYPE = "course.copy.wizard.owners";
 	private static final String COACHES_COPY_TYPE = "course.copy.wizard.coaches";
@@ -53,8 +52,6 @@ public class CopyCourseWizardModule extends AbstractSpringModule {
 	@Value("${course.copy.wizard.mode}")
 	private CopyType wizardMode;
 	
-	@Value("${course.copy.wizard.metadata}")
-	private CopyType metaDataCopyType;
 	@Value("${course.copy.wizard.groups}")
 	private CopyType groupsCopyType;
 	@Value("${course.copy.wizard.owners}")
@@ -94,7 +91,6 @@ public class CopyCourseWizardModule extends AbstractSpringModule {
 	protected void initFromChangedProperties() {
 		wizardMode = getCopyType(WIZARD_MODE, wizardMode);
 		
-		metaDataCopyType = getCopyType(META_DATA_COPY_TYPE, metaDataCopyType);
 		groupsCopyType = getCopyType(GROUPS_COPY_TYPE, groupsCopyType);
 		ownersCopyType = getCopyType(OWNERS_COPY_TYPE, ownersCopyType);
 		coachesCopyType = getCopyType(COACHES_COPY_TYPE, coachesCopyType);
@@ -132,15 +128,6 @@ public class CopyCourseWizardModule extends AbstractSpringModule {
 		setStringProperty(WIZARD_MODE, wizardMode.name(), true);
 	}
 	
-	public CopyType getMetaDataCopyType() {
-		return metaDataCopyType;
-	}
-
-	public void setMetaDataCopyType(CopyType metaDataCopyType) {
-		this.metaDataCopyType = metaDataCopyType;
-		setStringProperty(META_DATA_COPY_TYPE, metaDataCopyType.name(), true);
-	}
-
 	public CopyType getGroupsCopyType() {
 		return groupsCopyType;
 	}

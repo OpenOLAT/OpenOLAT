@@ -64,6 +64,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
@@ -81,6 +82,8 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 
 /*
  * Description:<br>
@@ -407,6 +410,77 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		super.postExport(envMapper, backwardsCompatible);
 		postExportCondition(preConditionUploaders, envMapper, backwardsCompatible);
 		postExportCondition(preConditionDownloaders, envMapper, backwardsCompatible);
+	}
+	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+		if (context != null) {
+			CopyType resourceCopyType = null;
+			
+			if (context.isCustomConfigsLoaded()) {
+				OverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
+				
+				if (nodeSettings != null && nodeSettings.getResourceChooser() != null) {
+					resourceCopyType = CopyType.valueOf(nodeSettings.getResourceChooser().getSelectedKey());
+				}
+			} else if (context.getFolderCopyType() != null) {
+				resourceCopyType = context.getFolderCopyType();				
+			}
+			
+			if (resourceCopyType != null) {
+				switch (resourceCopyType) {
+				case copy:
+					// Nothing to do here, this is the default behavior
+					break;
+				case ignore:
+					// Delete the content of this folder
+					// TODO Potential problems: two or more folder nodes share the same folder
+					// Some are copied, some are not, what happens / what should happen?
+					
+					VFSContainer folderContainer = null;
+					
+					if(getModuleConfiguration().getBooleanSafe(BCCourseNode.CONFIG_AUTO_FOLDER)){
+						VFSContainer directory = BCCourseNode.getNodeFolderContainer(this, course.getCourseEnvironment());
+						folderContainer = directory;
+					} else {
+						VFSContainer courseContainer = course.getCourseFolderContainer();
+						String path = getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH, "");
+						VFSItem pathItem = courseContainer.resolve(path);
+						if(pathItem instanceof VFSContainer){
+							folderContainer = (VFSContainer) pathItem;
+							if(isSharedFolder()) {
+								if(course.getCourseConfig().isSharedFolderReadOnlyMount()) {
+									// Do not change any read only folders
+									folderContainer = null;
+								} 
+							} else {
+								VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(folderContainer);
+								if (inheritingContainer != null && inheritingContainer.getLocalSecurityCallback() != null
+										&& inheritingContainer.getLocalSecurityCallback().getQuota() != null) {
+									// Nothing to do here -> we can delete
+								} else {
+									// Again read only -> do not delete
+									folderContainer = null;
+								}
+							}
+						}
+					}
+					
+					if (folderContainer != null && folderContainer.getItems() != null) {
+						for (VFSItem item : folderContainer.getItems()) {
+							// TODO Delete or delete silently?
+							item.deleteSilently();
+						}
+					}
+					
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		
+		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 	}
 
 	@Override
