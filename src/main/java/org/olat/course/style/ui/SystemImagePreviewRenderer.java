@@ -40,8 +40,11 @@ public class SystemImagePreviewRenderer implements FlexiCellRenderer {
 		if (cellValue instanceof String) {
 			String url = (String)cellValue;
 			
-			target.append("<div class=\"o_cn_styled o_system_image o_cover\">");
-			target.append("<div class=\"o_top\" style=\"background-image:url(").append(url).append(")\">");
+			target.append("<div class=\"o_cn_styled o_system_image\">");
+			target.append("<div class=\"o_top\">");
+			target.append("<div class=\"o_image\">");
+			target.append("<img src=\"").append(url).append("\"&>");
+			target.append("</div>");
 			target.append("</div>");
 			target.append("</div>");
 		}

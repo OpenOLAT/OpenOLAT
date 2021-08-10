@@ -73,22 +73,27 @@
 	border: $o-cn-style-border;
 	border-radius: $o-cn-style-border-radius;
 	
+	.o_expanded {
+		border-top: $o-cn-style-border;
+	}
+	
 	.o_text {
 		padding: $o-cn-style-text-pading;
 	}
-
-	&.o_right > .o_top > .o_image,
-	&.o_gradient > .o_top > .o_image {
-		background-repeat: no-repeat;
-		background-position: right top;
+	
+	.o_image {
+		max-width: $o-cn-style-image-width;
+		background-position: center;
 	}
-	&.o_left > .o_top > .o_image,
+	
 	&.o_cover > .o_top {
-		background-repeat: no-repeat;
-		background-position: left top;
+		background-position: center left;
 	}
+	
 	.o_image,
 	&.o_cover > .o_top {
+		min-height: $o-cn-style-image-height;
+		background-repeat: no-repeat;
 		background-color: $o-cn-style-image-bg;
 		&.o_colcat_dark_blue { background-color: $o-cn-style-cat-dark-blue-color; }
 		&.o_colcat_light_blue { background-color: $o-cn-style-cat-light-blue-color; }
@@ -105,12 +110,17 @@
 		*/
 		.o_text_block {
 			display: flex;
-			div:nth-child(1) > * {
-				background-color: $o-cn-style-cover-text-bg;
-			}
 			> div > h5 {
 				padding-bottom: 10px;
 				margin-bottom: 0px;
+			}
+		}
+		.o_top {
+			.o_text_block {
+				& > div:nth-child(1) {
+					background-color: $o-cn-style-cover-text-bg;
+					padding: $o-cn-style-cover-text-padding;
+				}
 			}
 		}
 	}
@@ -120,10 +130,13 @@
 			flex-wrap: nowrap;
 			
 			.o_text {
-				width: 74%;
+				margin-right: auto;
 			}
 			.o_image {
-				width: 26%;
+				img {
+					height: $o-cn-style-image-height;
+					max-width: $o-cn-style-image-width;
+				}
 			}
 		}
 	}
@@ -132,26 +145,34 @@
 			flex-direction: row-reverse;
 		}
 	}
+	&.o_gradient {
+		.o_image {
+			position:relative;
+		}
+		.o_image:after {
+			content:'';
+			position:absolute;
+			left:0;
+			top:0;
+			width:100%;
+			height:100%;
+			display:inline-block;
+			background: linear-gradient(to right, rgba(255, 255, 255), rgba(255, 255, 255, 0) 10% );
+		}
+	}
 	
 	&.o_cn_header {
-		.o_text {
-			padding-bottom: 10px;
-		}
-	
 		// Always (settings, etc.) like in #o_main_wrapper
 		h2:first-child {
-			margin-top: 0;
+			margin: 0;
 		}
 		.o_instructional_design {
 			background-color: rgba(122, 15, 124, 0.15);
-			padding: 1px 6px;
+			padding: 1px 11px;
 		}
 	}
 	
 	&.o_cn_peekview {
-		.o_image {
-			min-height: $o-cn-style-peekview-height;
-		}
 		.o_text {
 			padding-bottom: 5px;
 		}
@@ -160,7 +181,8 @@
 		}
 		.o_no_access {
 			background-color: rgba(122, 15, 124, 0.15);
-			padding: 1px 6px;
+			padding: 6px 11px;
+			margin-bottom: 10px;
 			h5 {
 				margin-top: 3px;
 			}
@@ -170,7 +192,6 @@
 			background: $o-cn-style-peekview-bg;
 		}
 		.o_assessment {
-			margin-bottom: 7px;
 			.o_labeled {
 				margin-bottom: 3px;
 			}
@@ -196,11 +217,15 @@
 		}
 	}
 	&.o_system_image {
-		height: 140px;
-		width: 140px;
+		width: $o-cn-style-image-width;
 		.o_top {
-			height: 140px;
-			width: 140px;
+			height: $o-cn-style-image-height;
+			width: $o-cn-style-image-width;
+			.o_image {
+				img {
+					height: $o-cn-style-image-height;
+				}
+			}
 		}
 	}
 }
