@@ -90,6 +90,7 @@ import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.course.disclaimer.ui.CourseDisclaimerConsentController;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -285,6 +286,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				? courseRepositoryEntry.getEducationalType().getIdentifier()
 				: null;
 		coursemain.contextPut("educationalTypeIdentifier", educationalTypeIdentifier);
+		
+		boolean leaningPath = NodeAccessType.of(course).getType().equals(LearningPathNodeAccessProvider.TYPE);
+		coursemain.contextPut("learningPath", Boolean.valueOf(leaningPath));
 		
 		// if a disclaimer is enabled, show it first
 		disclaimerAccepted = !courseModule.isDisclaimerEnabled()

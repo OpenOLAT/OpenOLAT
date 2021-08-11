@@ -31,5 +31,8 @@ function o_activateCourseTool(toolname) {
 #end
 
 <div class="o_course_run" data-nodeid="$initNodeId">
+	#if($learningPath)
+		<div class="o_lp_spacer"></div>
+	#end
 	$r.render("coursemain")
 </div>

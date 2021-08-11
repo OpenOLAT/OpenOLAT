@@ -513,6 +513,11 @@
 		}
 	}
 	
+	@media (min-width: $screen-xs-max) {
+		.o_lp_spacer {
+			height: 8px;
+		}
+	}
 }
 
 @if not $o-course-show-icon-menu {
