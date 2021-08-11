@@ -88,12 +88,14 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.manager.RepositoryEntryEducationalTypeDAO;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -104,6 +106,7 @@ import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
+import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.OrganisationVO;
 import org.olat.user.restapi.UserVO;
@@ -150,6 +153,8 @@ public class RepositoryEntryWebService {
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
+	private RepositoryEntryEducationalTypeDAO educationalTypeDao;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
@@ -632,8 +637,16 @@ public class RepositoryEntryWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
+		RepositoryEntryLifecycle lifecycle = updateLifecycle(vo.getLifecycle());
+		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, vo.getDisplayname(), vo.getDescription(),
+				vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
+				lifecycle);
+		RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(reloaded);
+		return Response.ok(rvo).build();
+	}
+	
+	private RepositoryEntryLifecycle updateLifecycle(RepositoryEntryLifecycleVO lifecycleVo) {
 		RepositoryEntryLifecycle lifecycle = null;
-		RepositoryEntryLifecycleVO lifecycleVo = vo.getLifecycle();
 		if (lifecycleVo != null) {
 			if (lifecycleVo.getKey() != null) {
 				lifecycle = lifecycleDao.loadById(lifecycleVo.getKey());
@@ -660,12 +673,7 @@ public class RepositoryEntryWebService {
 				lifecycle = lifecycleDao.create(label, softKey, true, from, to);
 			}
 		}
-
-		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, vo.getDisplayname(), vo.getDescription(),
-				vo.getLocation(), vo.getAuthors(), vo.getExternalId(), vo.getExternalRef(), vo.getManagedFlags(),
-				lifecycle);
-		RepositoryEntryVO rvo = RepositoryEntryVO.valueOf(reloaded);
-		return Response.ok(rvo).build();
+		return lifecycle;
 	}
 
   /**
@@ -851,6 +859,88 @@ public class RepositoryEntryWebService {
 		}
 		return Response.ok().build();
 	}
+	
+	
+	/**
+	 * Return metadata of the repository entry, educational type, objectives...
+	 */
+	@GET
+	@Path("metadata")
+	@Operation(summary = "Get lots of metadata of the repository entry", description = "Get lots of metadata of the repository entry from description up-to educational type and technical type")
+	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The repository entry not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getMetadata(@Context HttpServletRequest request) {
+		if(!isAuthor(request) && !isAuthorEditor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		RepositoryEntryMetadataVO metadataVo = RepositoryEntryMetadataVO.valueOf(entry);
+		return Response.ok(metadataVo).build();
+	}
+	
+	/**
+	 * Update the metadata of the repository entry. The NULL values will be updated as NULL.
+	 * 
+	 * @param metadataVo The metadata object
+	 * @param request The HTTP request
+	 * @return Updated metadata
+	 */
+	@PUT
+	@Path("metadata")
+	@Operation(summary = "Update lots of metadata of the repository entry", description = "Update lots of metadata of the repository entry from description up-to educational type and technical type. The NULL values will be updated as NULL values.")
+	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The repository entry not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
+		return updateMetadata(metadataVo, request);
+	}
+	
+	/**
+	 * Update the metadata of the repository entry. The NULL values will be updated as NULL.
+	 * 
+	 * @param metadataVo The metadata object
+	 * @param request The HTTP request
+	 * @return Updated metadata
+	 */
+	@POST
+	@Path("metadata")
+	@Operation(summary = "Update lots of metadata of the repository entry", description = "Update lots of metadata of the repository entry from description up-to educational type and technical type. The NULL values will be updated as NULL values")
+	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The repository entry not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response postMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
+		return updateMetadata(metadataVo, request);
+	}
+	
+	public Response updateMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
+		if(!isAuthorEditor(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		if(metadataVo.getKey() != null && !metadataVo.getKey().equals(entry.getKey())) {
+			return Response.serverError().status(Status.BAD_REQUEST).build();
+		}
+
+		RepositoryEntryLifecycle lifecycle = updateLifecycle(metadataVo.getLifecycle());
+		RepositoryEntryEducationalType educationalType = null;
+		if (metadataVo.getEducationalType() != null && metadataVo.getEducationalType().getKey() != null) {
+			educationalType = educationalTypeDao.loadByKey(metadataVo.getEducationalType().getKey());
+		}
+		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(entry, metadataVo.getDisplayname(), metadataVo.getExternalRef(), metadataVo.getAuthors(),
+				metadataVo.getDescription(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(), metadataVo.getMainLanguage(),
+				metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
+		
+		return Response.ok(RepositoryEntryMetadataVO.valueOf(reloaded)).build();
+	}
+
 	
 	/**
 	 * Get the access configuration of the repository entry.

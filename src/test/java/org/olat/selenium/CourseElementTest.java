@@ -2674,7 +2674,7 @@ public class CourseElementTest extends Deployments {
 		
 		// author confirm the participant's appointment
 		course
-			.clickTree()
+			.clickTreeNode(nodeTitle)
 			.assertWithTitle(nodeTitle);
 		
 		appointment

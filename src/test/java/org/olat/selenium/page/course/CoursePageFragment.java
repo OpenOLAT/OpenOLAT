@@ -171,12 +171,24 @@ public class CoursePageFragment {
 	/**
 	 * Click the first element of the menu tree.
 	 * 
-	 * @return Itself
+	 * @return The menu tree page
 	 */
 	public MenuTreePageFragment clickTree() {
 		OOGraphene.waitElement(MenuTreePageFragment.treeBy, browser);
 		MenuTreePageFragment menuTree = new MenuTreePageFragment(browser);
 		return menuTree.selectRoot();
+	}
+	
+	/**
+	 * Click the node with the specified title.
+	 * 
+	 * @param title The title of the course node
+	 * @return The menu tree page
+	 */
+	public MenuTreePageFragment clickTreeNode(String title) {
+		OOGraphene.waitElement(MenuTreePageFragment.treeBy, browser);
+		MenuTreePageFragment menuTree = new MenuTreePageFragment(browser);
+		return menuTree.selectWithTitle(title);
 	}
 	
 	/**

@@ -87,6 +87,7 @@ import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -94,6 +95,9 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.manager.RepositoryEntryEducationalTypeDAO;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
@@ -104,6 +108,8 @@ import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.OlatResourceVO;
 import org.olat.restapi.support.vo.RepositoryEntryAccessVO;
+import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
+import org.olat.restapi.support.vo.RepositoryEntryMetadataVO;
 import org.olat.user.restapi.OrganisationVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
@@ -153,7 +159,11 @@ public class CourseWebService {
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
+	private RepositoryEntryLifecycleDAO lifecycleDao;
+	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
+	@Autowired
+	private RepositoryEntryEducationalTypeDAO educationalTypeDao;
 
 	
 	private final ICourse course;
@@ -299,6 +309,122 @@ public class CourseWebService {
 		CourseVO vo = ObjectFactory.get(course);
 		return Response.ok(vo).build();
 	}
+	
+
+	/**
+	 * Return metadata of the repository entry, educational type, objectives...
+	 */
+	@GET
+	@Path("metadata")
+	@Operation(summary = "Get lots of metadata of the repository entry", description = "Get lots of metadata of the repository entry from description up-to educational type and technical type")
+	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The repository entry not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getMetadata(@Context HttpServletRequest request) {
+		if(!isAuthor(request) && !isManager(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntryMetadataVO metadataVo = RepositoryEntryMetadataVO.valueOf(courseRe);
+		return Response.ok(metadataVo).build();
+	}
+	
+	/**
+	 * Update the metadata of the repository entry. The NULL values will be updated as NULL.
+	 * 
+	 * @param metadataVo The metadata object
+	 * @param request The HTTP request
+	 * @return Updated metadata
+	 */
+	@PUT
+	@Path("metadata")
+	@Operation(summary = "Update lots of metadata of the repository entry", description = "Update lots of metadata of the repository entry from description up-to educational type and technical type. The NULL values will be updated as NULL values.")
+	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The repository entry not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
+		return updateMetadata(metadataVo, request);
+	}
+	
+	/**
+	 * Update the metadata of the repository entry. The NULL values will be updated as NULL.
+	 * 
+	 * @param metadataVo The metadata object
+	 * @param request The HTTP request
+	 * @return Updated metadata
+	 */
+	@POST
+	@Path("metadata")
+	@Operation(summary = "Update lots of metadata of the repository entry", description = "Update lots of metadata of the repository entry from description up-to educational type and technical type. The NULL values will be updated as NULL values")
+	@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryMetadataVO.class)) })
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The repository entry not found")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response postMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
+		return updateMetadata(metadataVo, request);
+	}
+	
+	public Response updateMetadata(RepositoryEntryMetadataVO metadataVo, @Context HttpServletRequest request) {
+		if(!isManager(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		if(metadataVo.getKey() != null && !metadataVo.getKey().equals(courseRe.getKey())) {
+			return Response.serverError().status(Status.BAD_REQUEST).build();
+		}
+
+		RepositoryEntryLifecycle lifecycle = updateLifecycle(metadataVo.getLifecycle());
+		RepositoryEntryEducationalType educationalType = null;
+		if (metadataVo.getEducationalType() != null && metadataVo.getEducationalType().getKey() != null) {
+			educationalType = educationalTypeDao.loadByKey(metadataVo.getEducationalType().getKey());
+		}
+		RepositoryEntry reloaded = repositoryManager.setDescriptionAndName(courseRe, metadataVo.getDisplayname(), metadataVo.getExternalRef(), metadataVo.getAuthors(),
+				metadataVo.getDescription(), metadataVo.getObjectives(), metadataVo.getRequirements(), metadataVo.getCredits(), metadataVo.getMainLanguage(),
+				metadataVo.getLocation(), metadataVo.getExpenditureOfWork(), lifecycle, null, null, educationalType);
+		
+		return Response.ok(RepositoryEntryMetadataVO.valueOf(reloaded)).build();
+	}
+	
+	private RepositoryEntryLifecycle updateLifecycle(RepositoryEntryLifecycleVO lifecycleVo) {
+		RepositoryEntryLifecycle lifecycle = null;
+		if (lifecycleVo != null) {
+			if (lifecycleVo.getKey() != null) {
+				lifecycle = lifecycleDao.loadById(lifecycleVo.getKey());
+				if (lifecycle.isPrivateCycle()) {
+					// check date
+					String fromStr = lifecycleVo.getValidFrom();
+					String toStr = lifecycleVo.getValidTo();
+					String label = lifecycleVo.getLabel();
+					String softKey = lifecycleVo.getSoftkey();
+					Date from = ObjectFactory.parseDate(fromStr);
+					Date to = ObjectFactory.parseDate(toStr);
+					lifecycle.setLabel(label);
+					lifecycle.setSoftKey(softKey);
+					lifecycle.setValidFrom(from);
+					lifecycle.setValidTo(to);
+				}
+			} else {
+				String fromStr = lifecycleVo.getValidFrom();
+				String toStr = lifecycleVo.getValidTo();
+				String label = lifecycleVo.getLabel();
+				String softKey = lifecycleVo.getSoftkey();
+				Date from = ObjectFactory.parseDate(fromStr);
+				Date to = ObjectFactory.parseDate(toStr);
+				lifecycle = lifecycleDao.create(label, softKey, true, from, to);
+			}
+		}
+		return lifecycle;
+	}
+	
 	
 	/**
 	 * Get the access configuration of the course by id.
