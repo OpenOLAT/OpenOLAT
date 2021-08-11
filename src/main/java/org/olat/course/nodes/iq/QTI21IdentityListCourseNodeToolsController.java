@@ -372,7 +372,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private void doConfirmRemoveCompensationExtraTime(UserRequest ureq) {
 		List<DisadvantageCompensation> compensations = disadvantageCompensationService
 				.getDisadvantageCompensations(assessedIdentity, courseEntry, testCourseNode.getIdent());
-		removeCompensationExtraTimeCtrl = new ConfirmDeleteDisadvantageCompensationController(ureq, getWindowControl(), compensations);
+		removeCompensationExtraTimeCtrl = new ConfirmDeleteDisadvantageCompensationController(ureq, getWindowControl(),
+				compensations, lastSession);
 		listenTo(removeCompensationExtraTimeCtrl);
 
 		String fullName  = userManager.getUserDisplayName(assessedIdentity);

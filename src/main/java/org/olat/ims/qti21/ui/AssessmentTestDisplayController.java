@@ -507,9 +507,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private void processRetrieveAssessmentTestSessionEvent(RetrieveAssessmentTestSessionEvent rats) {
 		if(candidateSession != null && candidateSession.getKey().equals(rats.getAssessmentTestSessionKey())) {
 			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
+			boolean hasCurrentlyExtraTime = extraTime != null || compensationExtraTime != null;
 			extraTime = candidateSession.getExtraTime();
 			compensationExtraTime = candidateSession.getCompensationExtraTime();
-			if(extraTime != null || compensationExtraTime != null) {
+			if(extraTime != null || compensationExtraTime != null || hasCurrentlyExtraTime) {
 				qtiWorksCtrl.extraTime();
 			}
 		}

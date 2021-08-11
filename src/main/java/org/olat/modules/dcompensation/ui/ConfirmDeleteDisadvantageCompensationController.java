@@ -19,6 +19,7 @@
  */
 package org.olat.modules.dcompensation.ui;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -28,6 +29,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController.AssessmentTestSessionDetailsComparator;
+import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
@@ -41,14 +46,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfirmDeleteDisadvantageCompensationController extends FormBasicController {
 	
+	private final AssessmentTestSession lastSession;
 	private final List<DisadvantageCompensation> compensationToDelete;
 
+	@Autowired
+	private QTI21Service qtiService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public ConfirmDeleteDisadvantageCompensationController(UserRequest ureq, WindowControl wControl,
 			List<DisadvantageCompensation> compensationToDelete) {
+		this(ureq, wControl, compensationToDelete, null);
+	}
+	
+	public ConfirmDeleteDisadvantageCompensationController(UserRequest ureq, WindowControl wControl,
+			List<DisadvantageCompensation> compensationToDelete, AssessmentTestSession lastSession) {
 		super(ureq, wControl, "confirm_delete");
+		this.lastSession = lastSession;
 		this.compensationToDelete = compensationToDelete;
 		initForm(ureq);
 	}
@@ -78,6 +92,17 @@ public class ConfirmDeleteDisadvantageCompensationController extends FormBasicCo
 	@Override
 	protected void formOK(UserRequest ureq) {
 		for(DisadvantageCompensation compensation:compensationToDelete) {
+			if(lastSession != null) {
+				qtiService.compensationExtraTimeAssessmentTestSession(lastSession, 0, getIdentity());
+			} else {
+				List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService
+						.getAssessmentTestSessionsStatistics(compensation.getEntry(), compensation.getSubIdent(), compensation.getIdentity(), true);
+				if(!sessionsStatistics.isEmpty()) {
+					Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());
+					AssessmentTestSession oneLastSession = sessionsStatistics.get(0).getTestSession();
+					qtiService.compensationExtraTimeAssessmentTestSession(oneLastSession, 0, getIdentity());
+				}
+			}
 			compensation.setStatusEnum(DisadvantageCompensationStatusEnum.deleted);
 			disadvantageCompensationService.updateDisadvantageCompensation(compensation);
 		}
