@@ -234,7 +234,14 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		if (nodeSecCallback.isAccessible()) {
 			ModuleConfiguration config = getModuleConfiguration();
-			if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))) {
+			INode parent = getParent();
+			boolean showFile = true;
+			if (parent instanceof STCourseNode) {
+				STCourseNode parentNode = (STCourseNode)parent;
+				String peekViewFilterConfig = parentNode.getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_FILTER, STCourseNodeEditController.CONFIG_VALUE_PEEKVIEW_ALL);
+				showFile = !STCourseNodeEditController.CONFIG_VALUE_PEEKVIEW_STRUCTURES.equals(peekViewFilterConfig);
+			}
+			if (showFile && STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))) {
 				// use single page preview if a file is configured
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 				return new SPPeekviewController(ureq, wControl, userCourseEnv, config, ores);				

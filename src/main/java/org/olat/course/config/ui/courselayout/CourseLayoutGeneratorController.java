@@ -50,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
@@ -58,6 +59,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
@@ -195,7 +197,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		initForm(ureq);
 		updateTeaserImageUI();
 		updateColorCategoryUI();
-		updateHeaderPreviewUI(ureq);
+		updateHeaderPreviewUI(ureq, false);
 		
 		if(lockEntry != null && !lockEntry.isSuccess()) {
 			String lockerName = "???";
@@ -367,8 +369,6 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		teaserImageUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "teaser.image.upload", styleCont);
 		teaserImageUploadEl.setMaxUploadSizeKB(IMAGE_LIMIT_KB, null, null);
-		teaserImageUploadEl.setExampleKey("teaser.image.upload.example", null);
-		teaserImageUploadEl.setHelpTextKey("teaser.image.upload.help", null);
 		teaserImageUploadEl.addActionListener(FormEvent.ONCHANGE);
 		teaserImageUploadEl.setEnabled(editable);
 		teaserImageUploadEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
@@ -463,21 +463,21 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			refreshLogoImage(ureq);
 		} else if (source == teaserImageTypeEl) {
 			updateTeaserImageUI();
-			updateHeaderPreviewUI(ureq);
+			updateHeaderPreviewUI(ureq, true);
 		} else if (source == teaserImageSystemEl) {
-			updateHeaderPreviewUI(ureq);
+			updateHeaderPreviewUI(ureq, true);
 		} else if (source == teaserImageUploadEl) {
-			updateHeaderPreviewUI(ureq);
+			updateHeaderPreviewUI(ureq, true);
 		} else if (source == teaserImageStyleEl) {
 			teaserImageStyle = TeaserImageStyle.valueOf(teaserImageStyleEl.getSelectedKey());
 			updateTeaserImageUI();
-			updateHeaderPreviewUI(ureq);
+			updateHeaderPreviewUI(ureq, true);
 		} else if (source == colorCategoryEl) {
 			updateColorCategorySelectionUI();
-			updateHeaderPreviewUI(ureq);
+			updateHeaderPreviewUI(ureq, true);
 		} else if (source == colorCategorySelectionEl) {
 			doChooseColorCategory(ureq);
-			updateHeaderPreviewUI(ureq);
+			updateHeaderPreviewUI(ureq, true);
 		} 
 	}
 
@@ -487,7 +487,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				colorCategoryIdentifier = colorCategoryChooserCtrl.getColorCategory().getIdentifier();
 				updateColorCategoryUI();
-				updateHeaderPreviewUI(ureq);
+				updateHeaderPreviewUI(ureq, true);
 			}
 			calloutCtrl.deactivate();
 			cleanUp();
@@ -746,7 +746,11 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 				: ImageSourceType.none;
 		teaserImageUploadEl.setVisible(ImageSourceType.custom == type);
 		teaserImageSystemEl.setVisible(ImageSourceType.system == type);
-		teaserImageStyleEl.setVisible(ImageSourceType.none != type);
+		
+		String teaserImageExampleKey = teaserImageStyleEl.isOneSelected() && teaserImageStyleEl.isKeySelected(TeaserImageStyle.cover.name())
+				? "teaser.image.upload.example.cover"
+				: "teaser.image.upload.example";
+		teaserImageUploadEl.setExampleKey(teaserImageExampleKey, null);
 	}
 
 	private void updateColorCategorySelectionUI() {
@@ -785,7 +789,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		colorCategorySelectionEl.setVisible(custom);
 	}
 
-	private void updateHeaderPreviewUI(UserRequest ureq) {
+	private void updateHeaderPreviewUI(UserRequest ureq, boolean dirty) {
 		removeAsListenerAndDispose(headerCtrl);
 		headerCtrl = null;
 		
@@ -793,6 +797,11 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		headerCtrl = new HeaderController(ureq, getWindowControl(), header);
 		listenTo(headerCtrl);
 		headerPreviewCont.put("header", headerCtrl.getInitialComponent());
+	
+		if (dirty) {
+			String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
+			getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
+		}
 	}
 	
 	private Header createPreviewHeader() {
@@ -809,8 +818,11 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			} else if (teaserImageUploadEl.getInitialFile() != null) {
 				mapper = new VFSMediaMapper(teaserImageUploadEl.getInitialFile());
 			}
-		} else if (teaserImageSystemEl.isVisible() && teaserImageSystemEl.isOneSelected()) {
-			File file = courseStyleService.getSystemTeaserImageFile(teaserImageSystemEl.getSelectedKey());
+		} else if (teaserImageSystemEl.isVisible()) {
+			String selectedKey =  teaserImageSystemEl.isOneSelected()
+					? teaserImageSystemEl.getSelectedKey()
+					: teaserImageSystemEl.getKeys().length > 0? teaserImageSystemEl.getKey(0): null;
+			File file = courseStyleService.getSystemTeaserImageFile(selectedKey);
 			if (file != null) {
 				mapper = new VFSMediaMapper(file);
 			}

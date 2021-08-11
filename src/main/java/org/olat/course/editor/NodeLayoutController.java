@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -46,6 +47,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -144,7 +146,7 @@ public class NodeLayoutController extends FormBasicController {
 		initForm(ureq);
 		updateTeaserImageUI();
 		updateColorCategoryUI();
-		updatePreviewUI(ureq);
+		updatePreviewUI(ureq, false);
 	}
 
 	@Override
@@ -214,8 +216,10 @@ public class NodeLayoutController extends FormBasicController {
 		
 		teaserImageUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "teaser.image.upload", formLayout);
 		teaserImageUploadEl.setMaxUploadSizeKB(IMAGE_LIMIT_KB, null, null);
-		teaserImageUploadEl.setExampleKey("teaser.image.upload.example", null);
-		teaserImageUploadEl.setHelpTextKey("teaser.image.upload.help", null);
+		String teaserImageExampleKey = teaserImageStyle != null &&  TeaserImageStyle.cover == teaserImageStyle
+				? "teaser.image.upload.example.cover"
+				: "teaser.image.upload.example";
+		teaserImageUploadEl.setExampleKey(teaserImageExampleKey, null);
 		teaserImageUploadEl.addActionListener(FormEvent.ONCHANGE);
 		teaserImageUploadEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
 		if (ImageSourceType.custom.name().equals(teaserImageTypeEl.getSelectedKey())) {
@@ -264,22 +268,22 @@ public class NodeLayoutController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == displayTitleEl) {
-			updatePreviewUI(ureq);
+			updatePreviewUI(ureq, true);
 		} else if (source == displayMetadataEl) {
-			updatePreviewUI(ureq);
+			updatePreviewUI(ureq, true);
 		} else if (source == teaserImageTypeEl) {
 			updateTeaserImageUI();
-			updatePreviewUI(ureq);
+			updatePreviewUI(ureq, true);
 		} else if (source == teaserImageSystemEl) {
-			updatePreviewUI(ureq);
+			updatePreviewUI(ureq, true);
 		} else if (source == teaserImageUploadEl) {
-			updatePreviewUI(ureq);
+			updatePreviewUI(ureq, true);
 		} else if (source == colorCategoryEl) {
 			updateColorCategorySelectionUI();
-			updatePreviewUI(ureq);
+			updatePreviewUI(ureq, true);
 		} else if (source == colorCategorySelectionEl) {
 			doChooseColorCategory(ureq);
-			updatePreviewUI(ureq);
+			updatePreviewUI(ureq, true);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -290,7 +294,7 @@ public class NodeLayoutController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				colorCategoryIdentifier = colorCategoryChooserCtrl.getColorCategory().getIdentifier();
 				updateColorCategoryUI();
-				updatePreviewUI(ureq);
+				updatePreviewUI(ureq, true);
 			}
 			calloutCtrl.deactivate();
 			cleanUp();
@@ -425,7 +429,7 @@ public class NodeLayoutController extends FormBasicController {
 		colorCategorySelectionEl.setVisible(custom);
 	}
 	
-	public void updatePreviewUI(UserRequest ureq) {
+	public void updatePreviewUI(UserRequest ureq, boolean dirty) {
 		if (previewCtrl == null) {
 			previewCtrl = new NodeLayoutPreviewController(ureq, getWindowControl(), courseNode);
 			listenTo(previewCtrl);
@@ -469,6 +473,11 @@ public class NodeLayoutController extends FormBasicController {
 		}
 		
 		previewCtrl.update(ureq, header, overview);
+		
+		if (dirty) {
+			String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
+			getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
+		}
 	}
 
 	private Mapper createPreviewImageMapper() {

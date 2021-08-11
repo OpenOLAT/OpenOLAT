@@ -183,7 +183,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			}
 		} else if (source == nodeAccessCtrl) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
-				layoutCtrl.updatePreviewUI(urequest);
+				layoutCtrl.updatePreviewUI(urequest, false);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == childTabsCntrllr) {
@@ -200,7 +200,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			}
 		} else if (source == nodeConfigController) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
-				layoutCtrl.updatePreviewUI(urequest);
+				layoutCtrl.updatePreviewUI(urequest, false);
 				fireEvent(urequest, event);
 			}
 		}
