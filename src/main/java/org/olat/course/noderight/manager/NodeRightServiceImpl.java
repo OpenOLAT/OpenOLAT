@@ -190,7 +190,12 @@ public class NodeRightServiceImpl implements NodeRightService {
 
 	@Override
 	public void setRoleGrants(NodeRight nodeRight, Collection<NodeRightRole> roles) {
-		nodeRight.getGrants().clear();
+		if(nodeRight instanceof NodeRightImpl) {
+			// prevents cross reference (OO-5640)
+			((NodeRightImpl)nodeRight).setGrants(new ArrayList<>(roles.size()));
+		} else {
+			nodeRight.getGrants().clear();
+		}
 		Collection<NodeRightGrant> roleGrants = roles.stream().map(this::createGrant).collect(Collectors.toList());
 		addGrants(nodeRight, roleGrants);
 	}
