@@ -80,6 +80,8 @@ public class BigBlueButtonRecordingReferenceDAO {
 	public BigBlueButtonRecordingReference loadRecordingReferenceByKey(Long referenceKey) {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("select record from bigbluebuttonrecording as record")
+		  .append(" left join fetch record.meeting as meeting")
+		  .append(" left join fetch meeting.server as server")
 		  .append(" where record.key=:referenceKey");
 		
 		List<BigBlueButtonRecordingReference> refs = dbInstance.getCurrentEntityManager()
@@ -90,9 +92,11 @@ public class BigBlueButtonRecordingReferenceDAO {
 	}
 	
 	public List<BigBlueButtonRecordingReference> getRecordingReferences(Collection<BigBlueButtonMeeting> meetings) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select record from bigbluebuttonrecording as record")
-		  .append(" where record.meeting.key in (:meetingKeys)");
+		  .append(" inner join fetch record.meeting as meeting")
+		  .append(" left join fetch meeting.server as server")
+		  .append(" where meeting.key in (:meetingKeys)");
 		
 		List<Long> meetingKeys = meetings.stream().map(BigBlueButtonMeeting::getKey).collect(Collectors.toList());
 		return dbInstance.getCurrentEntityManager()

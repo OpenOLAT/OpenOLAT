@@ -50,6 +50,10 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController.AssessmentTestSessionDetailsComparator;
+import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationAuditLog.Action;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
@@ -78,6 +82,8 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 	private DisadvantageCompensation compensation;
 	
 	@Autowired
+	private QTI21Service qtiService;
+	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	private CloseableModalController cmc;
@@ -87,6 +93,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		super(ureq, wControl);
 		this.compensation = compensation;
 		this.entry = compensation.getEntry();
+		this.disadvantagedIdentity = compensation.getIdentity();
 		initForm(ureq);
 	}
 	
@@ -221,6 +228,14 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 		int extraTime = Integer.parseInt(extraTimeEl.getValue()) * 60;
 		String subIdent = elementEl.getSelectedKey();
 		String subIdentName = getCourseNodeName(entry, subIdent,elementEl.getSelectedValue());
+		
+		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService
+				.getAssessmentTestSessionsStatistics(entry, subIdent, disadvantagedIdentity, true);
+		if(!sessionsStatistics.isEmpty()) {
+			Collections.sort(sessionsStatistics, new AssessmentTestSessionDetailsComparator());
+			AssessmentTestSession oneLastSession = sessionsStatistics.get(0).getTestSession();
+			qtiService.compensationExtraTimeAssessmentTestSession(oneLastSession, extraTime, getIdentity());
+		}
 		
 		if(compensation == null) {
 			compensation = disadvantageCompensationService.createDisadvantageCompensation(disadvantagedIdentity,
