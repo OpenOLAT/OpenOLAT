@@ -82,6 +82,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
+import org.olat.course.assessment.AssessmentEvents;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.condition.ConditionNodeAccessProvider;
@@ -758,6 +759,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				luTree.setSelectedNodeId(newCpTreeNode.getIdent());
 			} else if (event == Event.CHANGED_EVENT) {
 				updateTreeAndContent(ureq, currentCourseNode, null);
+			} else if (event == AssessmentEvents.CHANGED_EVENT) {
+				doAssessmentChanged();
 			} else if (event instanceof BusinessGroupModifiedEvent) {
 				fireEvent(ureq, event);
 				updateTreeAndContent(ureq, currentCourseNode, null);
@@ -834,6 +837,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce(), confirmed);
 		updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
 		updateAssessmentConfirmUI(getCurrentCourseNode());
+	}
+	
+	private void doAssessmentChanged() {
+		updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
+		updateProgressUI();
 	}
 
 	private void doNodeClick(UserRequest ureq, TreeEvent tev) {

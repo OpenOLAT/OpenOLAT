@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.video;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -27,8 +28,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.logging.Tracing;
+import org.olat.course.assessment.AssessmentEvents;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.nodes.VideoCourseNode;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -53,6 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class VideoRunController extends BasicController {
 
+	private static final Logger log = Tracing.createLoggerFor(VideoRunController.class);
+
 	private Panel main;
 	
 	private VideoDisplayController videoDispCtr;
@@ -67,15 +71,9 @@ public class VideoRunController extends BasicController {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
-	/**
-	 * single page run controller 
-	 * @param wControl
-	 * @param ureq
-	 * @param userCourseEnv
-	 * @param videoNode
-	 */
-	public VideoRunController(ModuleConfiguration config, WindowControl wControl, UserRequest ureq, UserCourseEnvironment userCourseEnv, VideoCourseNode videoNode) {
-		super(ureq,wControl);
+	public VideoRunController(ModuleConfiguration config, WindowControl wControl, UserRequest ureq,
+			UserCourseEnvironment userCourseEnv, VideoCourseNode videoNode) {
+		super(ureq, wControl);
 		
 		this.config = config;
 		this.videoNode = videoNode;
@@ -102,62 +100,64 @@ public class VideoRunController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == videoDispCtr) {
-			if (event instanceof VideoEvent	) {
+		if (source == videoDispCtr) {
+			if (event instanceof VideoEvent) {
 				VideoEvent videoEvent = (VideoEvent) event;
 				if (videoEvent.getCommand().equals(VideoEvent.ENDED)) {
-					doUpdateAssessmentStatus(ureq, 1d, true);					
+					doUpdateAssessmentStatus(ureq, 1d, true);
 				} else if (videoEvent.getCommand().equals(VideoEvent.PAUSE)) {
 					doUpdateAssessmentStatus(ureq, videoEvent.getProgress(), true);
 				} else if (videoEvent.getCommand().equals(VideoEvent.PROGRESS)) {
 					doUpdateAssessmentStatus(ureq, videoEvent.getProgress(), false);
-				}				
+				}
 			}
 		}
 	}
 	
 	private void doUpdateAssessmentStatus(UserRequest ureq, double progress, boolean forceSave) {
-		if (!this.userCourseEnv.isCourseReadOnly() && this.userCourseEnv.isParticipant()) {						
-			boolean update = false;
+		if (!userCourseEnv.isCourseReadOnly() && userCourseEnv.isParticipant()) {
+			log.debug("Update assessment entry: ident={}, progress={}, forceSave={}",
+					userCourseEnv.getIdentityEnvironment().getIdentity().getKey(), progress, forceSave);
+			boolean update = forceSave;
 			// Update video progress as assessment completion if not already in status DONE
-			AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(videoNode, userCourseEnv);
-			if (!AssessmentEntryStatus.done.equals(assessmentEvaluation.getAssessmentStatus())) {
+			AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(videoNode,
+					userCourseEnv);
+			AssessmentEntryStatus assessmentEntryStatus = assessmentEvaluation.getAssessmentStatus();
+			if (!AssessmentEntryStatus.done.equals(assessmentEntryStatus)) {
 				// Update watch progress
 				Double newProgress = assessmentEvaluation.getCompletion();
-				if (newProgress ==  null ||  newProgress.floatValue() < progress) { 
+				if (newProgress == null || newProgress.floatValue() < progress) {
 					newProgress = Double.valueOf(progress);
-					// Save only in 10% steps to reduce save and assessment recalcualtion cycles					
-					if (!forceSave && (Math.round(currentProgress * 10) + 1 <= Math.round(progress * 10))) {						
+					// Save only in 10% steps to reduce save and assessment recalculation cycles
+					if (!forceSave && (Math.round(currentProgress * 10) + 1 <= Math.round(progress * 10))) {
 						update = true;
 					}
-					this.currentProgress = newProgress;
-				}		
-				// Update status, only if configured to be done by node
-				AssessmentEntryStatus assessmentEntryStatus = assessmentEvaluation.getAssessmentStatus();
-				if (Mode.setByNode.equals(courseAssessmentService.getAssessmentConfig(videoNode).getCompletionMode())) {					
-					// 95% is considered as "fully watched", set as done
-					if (newProgress.floatValue() >= 0.95d) {
-						assessmentEntryStatus = AssessmentEntryStatus.done;
-						newProgress = 1d;
-						update = true;
-					} else {
-						assessmentEntryStatus = AssessmentEntryStatus.inProgress;				
-					}
+					currentProgress = newProgress;
 				}
-	
+				
+				// 95% is considered as "fully watched", set as done
+				if (newProgress.floatValue() >= 0.95d) {
+					assessmentEntryStatus = AssessmentEntryStatus.done;
+					newProgress = 1d;
+					update = true;
+				} else {
+					assessmentEntryStatus = AssessmentEntryStatus.inProgress;
+				}
+				
 				if (update) {
-					courseAssessmentService.updateCompletion(videoNode, userCourseEnv, newProgress, assessmentEntryStatus, Role.user);				
-					if (assessmentEntryStatus == AssessmentEntryStatus.done) {			
-						courseAssessmentService.updateFullyAssessed(videoNode, userCourseEnv, Boolean.TRUE, assessmentEntryStatus);	
-						// TODO: Update menu tree to indicate DONE state
-					}
+					courseAssessmentService.updateCompletion(videoNode, userCourseEnv, newProgress,
+							assessmentEntryStatus, Role.user);
+					log.debug("Updateed assessment entry (old): ident={}, progress={}, status={}",
+							userCourseEnv.getIdentityEnvironment().getIdentity().getKey(), assessmentEvaluation.getCompletion(), assessmentEvaluation.getAssessmentStatus());
+					log.debug("Updateed assessment entry (new): ident={}, progress={}, status={}",
+							userCourseEnv.getIdentityEnvironment().getIdentity().getKey(), newProgress, assessmentEntryStatus);
+					fireEvent(ureq, AssessmentEvents.CHANGED_EVENT);
 				}
 			}
 		}
 	}
 	
-	
-	private void doLaunch(UserRequest ureq){
+	private void doLaunch(UserRequest ureq) {
 		VelocityContainer myContent = createVelocityContainer("run");
 		RepositoryEntry videoEntry = VideoEditController.getVideoReference(config, false);
 		if (videoEntry == null) {
@@ -173,21 +173,20 @@ public class VideoRunController extends BasicController {
 		double completion = (assessmentEvaluation.getCompletion() == null ? 0d : assessmentEvaluation.getCompletion());
 		// Override forwardSeeking configuration
 		if (this.userCourseEnv.isParticipant()) {
-			if (this.userCourseEnv.isCourseReadOnly() || completion == 1d) {			
+			if (this.userCourseEnv.isCourseReadOnly() || completion == 1d) {
 				displayOptions.setForwardSeekingRestricted(false);
 			} // else use as configured in course element
 		} else {
-			// don't restrict it for owner, coaches etc. 
-			displayOptions.setForwardSeekingRestricted(false);			
+			// don't restrict it for owner, coaches etc.
+			displayOptions.setForwardSeekingRestricted(false);
 		}
 		videoDispCtr = new VideoDisplayController(ureq, getWindowControl(), videoEntry, courseEntry, videoNode, displayOptions);
 		// Enable progress tracking for participants in learning path courses
-		//TODO: only for learning path courses?
 		if (!this.userCourseEnv.isCourseReadOnly() && this.userCourseEnv.isParticipant()) {
 			videoDispCtr.setProgressListener(true);
 			// Init with last position
 			if (completion > 0.05d && completion < 0.95d) {
-				videoDispCtr.setPlayProgress(completion);			
+				videoDispCtr.setPlayProgress(completion);
 			}
 		}
 		
