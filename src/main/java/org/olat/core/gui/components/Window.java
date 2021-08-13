@@ -545,11 +545,16 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 										// check for dirty child components in the component tree
 										if (isDebugLog) {
 											long durationBeforeHandleDirties = System.currentTimeMillis() - debug_start;
-											log.debug("Perf-Test: Window durationBeforeHandleDirties=" + durationBeforeHandleDirties);
+											log.debug("Perf-Test: Window durationBeforeHandleDirties={}", durationBeforeHandleDirties);
 										}
 										Command co;
 										try {
-											co = handleDirties();
+											String noResponseMarker = ureq.getParameter(NO_RESPONSE_PARAMETER_MARKER);
+											if(NO_RESPONSE_VALUE_MARKER.equals(noResponseMarker)) {
+												co = null;// don't handle dirties if the browser cannot render them
+											} else {
+												co = handleDirties();
+											}
 										} catch (CannotReplaceDOMFragmentException e) {
 											String reRenderUri = buildURIFor(this, timestampID, null);
 											co = CommandFactory.createParentRedirectTo(reRenderUri);
@@ -558,7 +563,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 										Command co2 = handleBusinessPath(ureq);
 										if (isDebugLog) {
 											long durationAfterHandleDirties = System.currentTimeMillis() - debug_start;
-											log.debug("Perf-Test: Window durationAfterHandleDirties=" + durationAfterHandleDirties);
+											log.debug("Perf-Test: Window durationAfterHandleDirties={}", durationAfterHandleDirties);
 										}
 										wbackofficeImpl.fireCycleEvent(AFTER_INLINE_RENDERING);
 										if (co != null) { // see method handleDirties for the rare case of co == null even if there are dirty components;
