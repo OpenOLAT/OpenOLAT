@@ -310,7 +310,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private void updateModel() {
 		List<AppointmentRow> rows = loadModel();
 		dataModel.setObjects(rows);
-		tableEl.reset(true, true, true);
+		tableEl.reset(false, false, true);
 	}
 
 	protected void forgeAppointmentView(AppointmentRow row, Appointment appointment) {

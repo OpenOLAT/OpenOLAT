@@ -457,7 +457,8 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Long resourceKey = 725l;
 
 		//make statements
-	    UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, Boolean.TRUE, participant, resourceKey, "Hello");
+	    UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, Boolean.TRUE,
+	    		null, null, null, null, participant, resourceKey, "Hello");
 		dbInstance.commitAndCloseSession();
 		
 		UserEfficiencyStatement lightStatement = effManager.getUserEfficiencyStatementLightByResource(resourceKey, participant);
@@ -503,7 +504,8 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Long resourceKey = 725l;
 
 		//make statements
-	    UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, Boolean.TRUE, participant, resourceKey, "Hello");
+	    UserEfficiencyStatement statement = effManager.createStandAloneUserEfficiencyStatement(new Date(), 22.0f, Boolean.TRUE,
+	    		null, null, null, null, participant, resourceKey, "Hello");
 		dbInstance.commitAndCloseSession();
 		
 		List<UserEfficiencyStatementLight> lightStatements = effManager.findEfficiencyStatementsLight(participant);

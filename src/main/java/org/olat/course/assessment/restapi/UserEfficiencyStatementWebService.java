@@ -21,11 +21,13 @@ package org.olat.course.assessment.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
-import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -39,12 +41,12 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
-import org.olat.course.assessment.model.EfficiencyStatementVO;
-import org.olat.resource.OLATResource;
-import org.olat.resource.OLATResourceManager;
+import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -56,47 +58,48 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * 
- * Initial date: 17.11.2014<br>
+ * Initial date: 13 août 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Tag(name = "Repo")
+@Tag(name = "Users")
 @Component
-@Path("repo/courses/{resourceKey}/statements")
-public class EfficiencyStatementWebService {
+@Path("users/{identityKey}/statements")
+public class UserEfficiencyStatementWebService {
 	
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private OLATResourceManager resourceManager;
+	private RepositoryService repositoryService;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	@GET
-	@Path("{identityKey}") 
-	@Operation(summary = "Get statement", description = "Get statemenet")
-	@ApiResponse(responseCode = "200", description = "The statement", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = EfficiencyStatementVO.class)),
-			@Content(mediaType = "application/xml", schema = @Schema(implementation = EfficiencyStatementVO.class)) })
+	@Path("") 
+	@Operation(summary = "Get the efficiency statements of a user", description = "Get the efficiency statements of a user")
+	@ApiResponse(responseCode = "200", description = "The statements", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = UserEfficiencyStatementVOes.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserEfficiencyStatementVOes.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The repository entry cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getEfficiencyStatement(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-			@Context HttpServletRequest request) {
+	public Response getEfficiencyStatement(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 		if(assessedIdentity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
 		if(!isAdminOf(assessedIdentity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
-		UserEfficiencyStatement efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementLightByResource(resourceKey, assessedIdentity);
-		if(efficiencyStatement == null) {
-			return Response.serverError().status(Response.Status.NOT_FOUND).build();
-		}
-		
-		EfficiencyStatementVO statementVO = new EfficiencyStatementVO(efficiencyStatement);
-		return Response.ok(statementVO).build();
+		List<UserEfficiencyStatementImpl> efficiencyStatements = efficiencyStatementManager.getUserEfficiencyStatementFull(assessedIdentity);
+		List<UserEfficiencyStatementVO> statementVoList = efficiencyStatements.stream()
+				.map(UserEfficiencyStatementVO::new)
+				.collect(Collectors.toList());
+
+		UserEfficiencyStatementVOes statementVoes = new UserEfficiencyStatementVOes();
+		statementVoes.setStatements(statementVoList);
+		return Response.ok(statementVoes).build();
 	}
 	
 	/**
@@ -107,17 +110,18 @@ public class EfficiencyStatementWebService {
 	 * @return Nothing special
 	 */
 	@PUT
-	@Operation(summary = "Create a new efficiency statement", description = "Create a new efficiency statement")
+	@Path("")
+	@Operation(summary = "Create a new efficiency statement", description = "Create a new efficiency statement, you cannot update an existing one. If you want a standalone statement, let the course key null.")
 	@ApiResponse(responseCode = "200", description = "If the statement was persisted ")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putEfficiencyStatement(@PathParam("resourceKey") Long resourceKey,
-						EfficiencyStatementVO efficiencyStatementVO, @Context HttpServletRequest request) {
-		return putEfficiencyStatement(efficiencyStatementVO.getIdentityKey(), resourceKey, efficiencyStatementVO, request);
+	public Response putEfficiencyStatement(@PathParam("identityKey") Long identityKey,
+			UserEfficiencyStatementVO efficiencyStatementVO, @Context HttpServletRequest request) {
+		return postEfficiencyStatement(identityKey, efficiencyStatementVO, request);
 	}
-
+	
 	/**
 	 * Create a new efficiency statement.
 	 * 
@@ -125,42 +129,54 @@ public class EfficiencyStatementWebService {
 	 * @param resourceKey The primary key of the resource of the repository entry of the course.
 	 * @return Nothing special
 	 */
-	@PUT
-	@Path("{identityKey}")
-	@Operation(summary = "Create a new efficiency statement", description = "Create a new efficiency statement")
+	@POST
+	@Path("")
+	@Operation(summary = "Create a new efficiency statement", description = "Create a new efficiency statement, you cannot update an existing one. If you want a standalone statement, let the course key null.")
 	@ApiResponse(responseCode = "200", description = "If the statement was persisted ")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putEfficiencyStatement(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-						EfficiencyStatementVO efficiencyStatementVO, @Context HttpServletRequest request) {
+	public Response postEfficiencyStatement(@PathParam("identityKey") Long identityKey,
+			UserEfficiencyStatementVO efficiencyStatementVO, @Context HttpServletRequest request) {
+	
 		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 		if(assessedIdentity == null) {
 			return Response.serverError().status(Response.Status.NOT_FOUND).build();
 		}
-		if(!isAdminOf(assessedIdentity, request)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-
-		EfficiencyStatement efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByResourceKey(resourceKey, assessedIdentity);
-		if(efficiencyStatement != null) {
+		if(efficiencyStatementVO.getIdentityKey() != null && !assessedIdentity.getKey().equals(efficiencyStatementVO.getIdentityKey())) {
 			return Response.serverError().status(Response.Status.CONFLICT).build();
 		}
-		
-		Date creationDate = efficiencyStatementVO.getCreationDate();
-		Float score = efficiencyStatementVO.getScore();
-		Boolean passed = efficiencyStatementVO.getPassed();
+		if(!isAdminOf(assessedIdentity, request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
 
-		OLATResource resource = resourceManager.findResourceById(resourceKey);
-		if(resource == null) {
-			String courseTitle = efficiencyStatementVO.getCourseTitle();
-			efficiencyStatementManager.createStandAloneUserEfficiencyStatement(creationDate, score, passed,
-					null, null, null, null, assessedIdentity, resourceKey, courseTitle);
+		Long courseRepoKey = efficiencyStatementVO.getCourseRepoKey();
+		if(courseRepoKey != null) {
+			RepositoryEntry courseEntry = repositoryService.loadByKey(courseRepoKey);
+			if(courseEntry == null) {
+				createStandalone(assessedIdentity, efficiencyStatementVO);
+			} else {
+				UserEfficiencyStatement efficiencyStatement = efficiencyStatementManager
+						.getUserEfficiencyStatementFull(new RepositoryEntryRefImpl(courseRepoKey), assessedIdentity);
+				if(efficiencyStatement != null) {
+					return Response.serverError().status(Response.Status.CONFLICT).build();
+				}
+				efficiencyStatementManager.createUserEfficiencyStatement(efficiencyStatementVO.getCreationDate(),
+						efficiencyStatementVO.getScore(), efficiencyStatementVO.getPassed(),
+						assessedIdentity, courseEntry.getOlatResource());
+			}
 		} else {
-			efficiencyStatementManager.createUserEfficiencyStatement(creationDate, score, passed, assessedIdentity, resource);
+			createStandalone(assessedIdentity, efficiencyStatementVO);
 		}
 		return Response.ok().build();
+	}
+	
+	private void createStandalone(Identity assessedIdentity, UserEfficiencyStatementVO efficiencyStatementVO) {
+		efficiencyStatementManager.createStandAloneUserEfficiencyStatement(efficiencyStatementVO.getCreationDate(),
+				efficiencyStatementVO.getScore(), efficiencyStatementVO.getPassed(),
+				efficiencyStatementVO.getTotalNodes(), efficiencyStatementVO.getAttemptedNodes(), efficiencyStatementVO.getPassedNodes(),
+				efficiencyStatementVO.getStatementXml(), assessedIdentity, null, efficiencyStatementVO.getCourseTitle());
 	}
 	
 	private boolean isAdminOf(Identity assessedIdentity, HttpServletRequest httpRequest) {
@@ -171,4 +187,5 @@ public class EfficiencyStatementWebService {
 		Roles identityRoles = securityManager.getRoles(assessedIdentity);
 		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles);
 	}
+
 }

@@ -686,8 +686,11 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setArchivedResourceKey(resourceKey);
 		if(creationDate != null) {
 			certificate.setCreationDate(creationDate);
+			certificate.setLastModified(new Date());
+		} else {
+			certificate.setCreationDate(new Date());
+			certificate.setLastModified(certificate.getCreationDate());
 		}
-		certificate.setLastModified(certificate.getCreationDate());
 		certificate.setIdentity(identity);
 		certificate.setUuid(UUID.randomUUID().toString());
 		certificate.setLast(true);
