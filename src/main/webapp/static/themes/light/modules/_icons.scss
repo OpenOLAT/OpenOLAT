@@ -95,7 +95,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_color_picker:before { content: $fa-var-tint;}
 .o_icon_column:before { content: $fa-var-align-justify;}
 .o_icon_columns:before { content: $fa-var-columns;}
-.o_icon_commands:before { content: $fa-var-ellipsis-h;}
+.o_icon_commands:before { content: $fa-var-ellipsis-v; }
 .o_icon_container:before { content: $fa-var-columns;}
 .o_icon_copy:before { content: $fa-var-copy;}
 .o_icon_course_previous:before { content: $fa-var-chevron-left; }
