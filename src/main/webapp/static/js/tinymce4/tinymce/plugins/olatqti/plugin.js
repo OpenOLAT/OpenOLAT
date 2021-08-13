@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.9'
+				version : '1.3.0'
 			};
 		},
 
@@ -95,7 +95,11 @@
 					
 					var responseIdentifier = "RESPONSE_" + (counter + 1);
 					if(typeof newSelectedText === "undefined" || newSelectedText.length == 0) {
-						newSelectedText = "gap";
+						if(gapType === "float") {
+							newSelectedText = "42.0";
+						} else {
+							newSelectedText = "gap";
+						}
 					}
 					
 					var placeholder = createTextEntryPlaceholder(responseIdentifier, newSelectedText, 'textentryinteraction', gapType);
@@ -259,7 +263,7 @@
 					if(jQuery("span[contenteditable='true']", el).text() == "x-y-x" && jQuery(el).attr('data-qti-empty') == "true") {
 						jQuery("span[contenteditable='true']", el).text("");
 						jQuery(el).attr('data-qti-empty', 'false');
-					}s
+					}
 					
 					jQuery("a.o_ops", jQuery(el)).each(function(aIndex, aEl) {
 						var ev = jQuery._data(aEl, 'events');
@@ -409,6 +413,55 @@
 				return content;
 			}
 			
+			function replaceTextContent(content) {
+			
+				var replace = false;
+				var wrappedContent = '<div id="' + guid() + '">' + content + '</div>';
+				var htmlContent = jQuery(wrappedContent);
+
+				jQuery(htmlContent).find("span[data-qti='hottext']").each(function(index, el) {
+					var hotId = 'ht' + guid();
+					jQuery(el).attr('data-qti-identifier', hotId);
+					jQuery(el).attr('data-copy', 'needlistener');
+					jQuery(el).attr('data-copy-empty', 'false');
+					
+					var empty = jQuery("span[contenteditable='true']", el).text();
+					if(empty == null || empty.length == 0) {
+						jQuery("span[contenteditable='true']", el).text("x-y-x");
+						jQuery(el).attr('data-copy-empty', 'true');
+					}
+					replace = true;
+				});
+				
+				jQuery(htmlContent).find("span[data-qti='textentryinteraction']").each(function(index, el) {
+					var entryId = 'te' + guid();
+					jQuery(el).attr('data-qti-response-identifier', entryId);
+					jQuery(el).attr('data-copy', 'needlistener');
+					jQuery(el).attr('data-copy-empty', 'false');
+					
+					var gapType = jQuery(el).attr("data-qti-gap-type");
+					var solution = jQuery(el).attr("data-qti-solution");
+					var ffxhrevent = ed.getParam("ffxhrevent");
+					o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
+							'_csrf', ffxhrevent.csrf, 'cmd', 'copy-gapentry', 'responseIdentifier', entryId, 'newEntry', true, 'selectedText', solution, 'gapType', gapType);
+					//add it because tiny delete it
+					jQuery("a.o_ops", el).append(jQuery("<i class='visible'>&nbsp;</i>"));
+					
+					var empty = jQuery("span[contenteditable='true']", el).text();
+					if(empty == null || empty.length == 0) {
+						jQuery("span[contenteditable='true']", el).text("x-y-x");
+						jQuery(el).attr('data-copy-empty', 'true');
+					}
+					
+					replace = true;
+				});
+				
+				var replacement = new Object();
+				replacement.replace = replace;
+				replacement.htmlContent = htmlContent;
+				return replacement;
+			}
+			
 			ed.addCommand('qtiUpdateTextEntry', function (ui, value) {
 				var responseIdentifier = value['responseIdentifier'];
 				var solution = value['data-qti-solution'];
@@ -500,6 +553,13 @@
 			    });
 			});
 			
+			ed.on('newcell', function (e) {
+				var replacement = replaceTextContent(e.node.innerHTML);
+				if(replacement.replace) {
+					e.node.innerHTML = jQuery(replacement.htmlContent).html();
+				}
+			});
+			
 			ed.on('PastePreProcess', function (e) {
 				var selectedNode = ed.selection.getNode();
 				if(selectedNode != null &&
@@ -512,49 +572,10 @@
 					return;
 				}
 				
-				var replace = false;
-				var wrappedContent = '<div id="' + guid() + '">' + e.content + '</div>';
-				var htmlContent = jQuery(wrappedContent);
-
-				jQuery(htmlContent).find("span[data-qti='hottext']").each(function(index, el) {
-					var hotId = 'ht' + guid();
-					jQuery(el).attr('data-qti-identifier', hotId);
-					jQuery(el).attr('data-copy', 'needlistener');
-					jQuery(el).attr('data-copy-empty', 'false');
-					
-					var empty = jQuery("span[contenteditable='true']", el).text();
-					if(empty == null || empty.length == 0) {
-						jQuery("span[contenteditable='true']", el).text("x-y-x");
-						jQuery(el).attr('data-copy-empty', 'true');
-					}
-					replace = true;
-				});
-				
-				jQuery(htmlContent).find("span[data-qti='textentryinteraction']").each(function(index, el) {
-					var entryId = 'te' + guid();
-					jQuery(el).attr('data-qti-response-identifier', entryId);
-					jQuery(el).attr('data-copy', 'needlistener');
-					jQuery(el).attr('data-copy-empty', 'false');
-					
-					var gapType = jQuery(el).attr("data-qti-gap-type");
-					var solution = jQuery(el).attr("data-qti-solution");
-					var ffxhrevent = ed.getParam("ffxhrevent");
-					o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
-							'_csrf', ffxhrevent.csrf, 'cmd', 'copy-gapentry', 'responseIdentifier', entryId, 'newEntry', true, 'selectedText', solution, 'gapType', gapType);
-					//add it because tiny delete it
-					jQuery("a.o_ops", el).append(jQuery("<i class='visible'>&nbsp;</i>"));
-					
-					var empty = jQuery("span[contenteditable='true']", el).text();
-					if(empty == null || empty.length == 0) {
-						jQuery("span[contenteditable='true']", el).text("x-y-x");
-						jQuery(el).attr('data-copy-empty', 'true');
-					}
-					
-					replace = true;
-				});
-				
-				if(replace) {
-					e.content = jQuery(htmlContent).html();
+				// replace and create new id
+				var replacement = replaceTextContent(e.content);
+				if(replacement.replace) {
+					e.content = jQuery(replacement.htmlContent).html();
 				}
 			});
 		}
