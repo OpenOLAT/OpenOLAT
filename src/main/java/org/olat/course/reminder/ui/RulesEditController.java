@@ -77,6 +77,7 @@ public class RulesEditController extends StepFormBasicController {
 	
 	private final Reminder reminder;
 	private final CourseNodeReminderProvider reminderProvider;
+	private final String warningI18nKey;
 	private int counter = 0;
 	
 	@Autowired
@@ -85,9 +86,10 @@ public class RulesEditController extends StepFormBasicController {
 	private ReminderModule reminderModule;
 
 
-	public RulesEditController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, CourseNodeReminderProvider reminderProvider) {
+	public RulesEditController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, CourseNodeReminderProvider reminderProvider, String warningI18nKey) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
 		this.reminderProvider = reminderProvider;
+		this.warningI18nKey = warningI18nKey;
 		setTranslator(Util.createPackageTranslator(ReminderAdminController.class, getLocale(), getTranslator()));
 		reminder = (Reminder)runContext.get(RulesEditStep.CONTEXT_KEY);
 		initTypeKeyValues();
@@ -160,6 +162,9 @@ public class RulesEditController extends StepFormBasicController {
 		generalCont.setRootForm(mainForm);
 		generalCont.setFormContextHelp("Course Reminders");
 		generalCont.setFormInfo(getSendTimeDescription());
+		if (StringHelper.containsNonWhitespace(warningI18nKey)) {
+			generalCont.setFormWarning(translate(warningI18nKey));
+		}
 		formLayout.add(generalCont);
 		
 		String desc = reminder.getDescription();
@@ -247,7 +252,7 @@ public class RulesEditController extends StepFormBasicController {
 		
 		RuleEditorFragment editor = ruleSpi.getEditorFragment(rule, reminder.getEntry());
 		FormItem customItem = editor.initForm(rulesCont, this, ureq);
-		updateCourseNodeFragment(editor, mainRule);
+		limitFragmentSelection(editor, mainRule);
 		
 		RuleElement ruleEl = new RuleElement(typeEl, deleteRuleButton, editor, customItem);
 		
@@ -256,12 +261,18 @@ public class RulesEditController extends StepFormBasicController {
 		return ruleEl;
 	}
 
-	private void updateCourseNodeFragment(RuleEditorFragment editor, boolean mainRule) {
+	private void limitFragmentSelection(RuleEditorFragment editor, boolean mainRule) {
 		if (editor instanceof CourseNodeFragment && StringHelper.containsNonWhitespace(reminderProvider.getCourseNodeIdent())) {
 			CourseNodeFragment courseNodeFragment = (CourseNodeFragment)editor;
 			if (mainRule) {
 				courseNodeFragment.limitSelection(reminderProvider.getCourseNodeIdent());
 			}
+		}
+	}
+	
+	private void doSelectCourseNode(RuleEditorFragment editor) {
+		if (editor instanceof CourseNodeFragment && StringHelper.containsNonWhitespace(reminderProvider.getCourseNodeIdent())) {
+			CourseNodeFragment courseNodeFragment = (CourseNodeFragment)editor;
 			courseNodeFragment.select(reminderProvider.getCourseNodeIdent());
 		}
 	}
@@ -272,9 +283,9 @@ public class RulesEditController extends StepFormBasicController {
 		if (!StringHelper.containsNonWhitespace(defaultType)) {
 			defaultType = mainTypeKeys[0];
 		}
-		
 		RuleSPI ruleSpi = reminderModule.getRuleSPIByType(defaultType);
 		mainRuleEl = initRuleForm(ureq, ruleSpi, null, true);
+		doSelectCourseNode(mainRuleEl.getEditor());
 		rulesCont.contextPut("mainRule", mainRuleEl);
 	}
 	
@@ -359,7 +370,7 @@ public class RulesEditController extends StepFormBasicController {
 		//add new one
 		RuleEditorFragment editor = ruleSpi.getEditorFragment(null, reminder.getEntry());
 		FormItem customItem = editor.initForm(rulesCont, this, ureq);
-		updateCourseNodeFragment(editor, mainRule);
+		limitFragmentSelection(editor, mainRule);
 		panelToUpdate.setCustomItem(customItem, editor);
 		rulesCont.setDirty(true);
 	}
@@ -367,6 +378,7 @@ public class RulesEditController extends StepFormBasicController {
 	private void doAddRule(UserRequest ureq) {
 		RuleSPI ruleSpi = reminderModule.getRuleSPIByType(addEl.getSelectedKey());
 		RuleElement ruleEl = initRuleForm(ureq, ruleSpi, null, false);
+		doSelectCourseNode(ruleEl.getEditor());
 		additionalRuleEls.add(ruleEl);
 		addEl.select(SingleSelection.NO_SELECTION_KEY, true);
 	}

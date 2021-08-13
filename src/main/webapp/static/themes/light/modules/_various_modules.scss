@@ -654,6 +654,9 @@ div.o_assessment_mode_row {
 .o_reminder_rules_view {
 	td {
 		padding: $o-reminder-cell-padding;
+		div {
+			padding: $o-reminder-div-padding;
+		}
 	}
 	.o_marker {
 		color: $o-reminder-marker-color;

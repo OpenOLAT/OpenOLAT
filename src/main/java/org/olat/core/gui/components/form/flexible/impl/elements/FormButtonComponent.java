@@ -70,6 +70,10 @@ class FormButtonComponent extends FormBaseComponentImpl {
 		return isSubmitAndValidate;
 	}
 
+	public void setSubmitAndValidate(boolean isSubmitAndValidate) {
+		this.isSubmitAndValidate = isSubmitAndValidate;
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
 	 */

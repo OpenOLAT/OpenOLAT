@@ -41,11 +41,13 @@ public class RulesEditStep extends BasicStep {
 	
 	private final Reminder reminder;
 	private final CourseNodeReminderProvider reminderProvider;
+	private final String warningI18nKey;
 
-	public RulesEditStep(UserRequest ureq, Reminder reminder, CourseNodeReminderProvider reminderProvider) {
+	public RulesEditStep(UserRequest ureq, Reminder reminder, CourseNodeReminderProvider reminderProvider, String warningI18nKey) {
 		super(ureq);
 		this.reminder = reminder;
 		this.reminderProvider = reminderProvider;
+		this.warningI18nKey = warningI18nKey;
 		setI18nTitleAndDescr("edit.rules", null);
 		setNextStep(new RulesOverviewStep(ureq));
 		init(ureq);
@@ -67,7 +69,7 @@ public class RulesEditStep extends BasicStep {
 		if (!stepsRunContext.containsKey(CONTEXT_KEY)) {
 			stepsRunContext.put(CONTEXT_KEY, reminder);
 		}
-		return new RulesEditController(ureq, wControl, form, stepsRunContext, reminderProvider);
+		return new RulesEditController(ureq, wControl, form, stepsRunContext, reminderProvider, warningI18nKey);
 	}
 
 }

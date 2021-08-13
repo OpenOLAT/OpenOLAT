@@ -117,5 +117,11 @@ public class FormSubmit extends FormButton implements Submit{
 		return getTranslator().translate(i18nKey, i18nArgs);
 	}
 
+	public void setSubmitAndValidate(boolean isSubmitAndValidate) {
+		if (component != null) {
+			component.setSubmitAndValidate(isSubmitAndValidate);
+		}
+	}
+
 
 }

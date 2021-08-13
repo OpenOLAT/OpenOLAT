@@ -205,8 +205,16 @@ a.o_orderby, a.o_orderby:hover {
 	vertical-align:middle;
 }
 
-.o_table_row_details td {
-	background-color: white;
+.o_table_row_details {
+	& > td {
+		background: rgba(238, 247, 251, 0.3);
+	}
+	& > td:first-child {
+		border-left: 1px solid #EBEBEB;
+	}
+	& > td:last-child {
+		border-right: 1px solid #EBEBEB;
+	}
 }
 
 .o_table_config {

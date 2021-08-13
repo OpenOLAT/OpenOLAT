@@ -81,7 +81,10 @@ public class SubmissionTaskRuleSPI extends AbstractDueDateTaskRuleSPI {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 			if (courseNode == null) {
-				return null;
+				courseNode = course.getEditorTreeModel().getCourseNode(nodeIdent);
+				if (courseNode == null) {
+					return null;
+				}
 			}
 			
 			Date dueDate = null;

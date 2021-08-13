@@ -2,21 +2,21 @@
 #if($r.isNotNull($mainRule))
 	<table>
 	<tr>
-		<td><span class="o_marker">$r.translate("rule.if")</span></td>
-		<td colspan="2">$mainRule</td>
+		<td><div class="o_marker">$r.translate("rule.if")</div></td>
+		<td colspan="2"><div>$mainRule</div></td>
 	</tr>
 	#if($r.isNotEmpty($additionalRules))
 		#foreach($rule in $additionalRules)
 		<tr>
 			<td></td>
-			<td><span class="o_marker">$r.translate("rule.additional")</span></td>
-			<td>$rule</td>
+			<td><div class="o_marker">$r.translate("rule.additional")</div></td>
+			<td><div>$rule</div></td>
 		</tr>
 		#end
 	#end
 	<tr>
-		<td><span class="o_marker">$r.translate("rule.then")</span></td>
-		<td colspan="2">$r.translate("rule.then.instruction")</td>
+		<td><div class="o_marker">$r.translate("rule.then")</div></td>
+		<td colspan="2"><div>$r.translate("rule.then.instruction")</div></td>
 	</tr>
 	</table>
 #else

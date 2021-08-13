@@ -49,13 +49,18 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.model.SentReminderRow;
 import org.olat.course.reminder.ui.CourseSendReminderTableModel.SendCols;
 import org.olat.modules.reminder.Reminder;
+import org.olat.modules.reminder.ReminderModule;
+import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
+import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.SentReminder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -83,6 +88,8 @@ public class CourseReminderLogsController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private ReminderModule reminderModule;
 	@Autowired
 	private ReminderService reminderService;
 	@Autowired
@@ -150,15 +157,36 @@ public class CourseReminderLogsController extends FormBasicController {
 		List<SentReminderRow> rows = new ArrayList<>(sentReminders.size());
 		
 		for(SentReminder sentReminder:sentReminders) {
-			Identity identity = sentReminder.getIdentity();
-			Reminder reminder = sentReminder.getReminder();
-			SentReminderRow row = new SentReminderRow(reminder, sentReminder, identity, userPropertyHandlers, getLocale());
-			rows.add(row);	
+			if (isVisible(sentReminder)) {
+				Identity identity = sentReminder.getIdentity();
+				Reminder reminder = sentReminder.getReminder();
+				SentReminderRow row = new SentReminderRow(reminder, sentReminder, identity, userPropertyHandlers, getLocale());
+				rows.add(row);
+			}
 		}
 
 		tableModel.setObjects(rows);
 		tableEl.reset();
 		tableEl.setVisible(rows.size() > 0);
+	}
+	
+	private boolean isVisible(SentReminder sentReminder) {
+		String configuration = sentReminder.getReminder().getConfiguration();
+		if (StringHelper.containsNonWhitespace(configuration)) {
+			List<ReminderRule> rules = reminderService.toRules(configuration).getRules();
+			if(rules != null && !rules.isEmpty()) {
+				List<String> nodeIdents = new ArrayList<>(1);
+				for (ReminderRule rule : rules) {
+					RuleSPI ruleSPI = reminderModule.getRuleSPIByType(rule.getType());
+					if (ruleSPI instanceof CourseNodeRuleSPI) {
+						nodeIdents.add(((CourseNodeRuleSPI)ruleSPI).getCourseNodeIdent(rule));
+					}
+				}
+				return reminderProvider.filter(nodeIdents);
+			}
+		}
+		
+		return false;
 	}
 	
 	@Override
@@ -205,7 +233,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		removeAsListenerAndDispose(wizardCtrl);
 		
 		Reminder reminder = reminderService.loadByKey(row.getReminderKey());
-		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider),
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider, null),
 				doSaveReminder(), null, translate("edit.reminder"), "");
 		listenTo(wizardCtrl);
 		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
@@ -215,6 +243,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		return (uureq, control, runContext) -> {
 			Reminder reminder = (Reminder)runContext.get(RulesEditStep.CONTEXT_KEY);
 			reminderService.save(reminder);
+			fireEvent(uureq, FormEvent.CHANGED_EVENT);
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 	}

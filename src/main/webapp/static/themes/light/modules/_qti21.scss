@@ -528,6 +528,7 @@ body>li.o_assessmentitem_order_item  {
 		min-height: $o-qti-item-min-height;
 		margin: 0;
 		padding: $padding-small-vertical $padding-small-horizontal;
+		background-color: $panel-bg;
 		border-left: 1px solid $o-qti-item-border-color;
 		border-right: 1px solid $o-qti-item-border-color;
 		font-size: $font-size-base;

@@ -1,5 +1,8 @@
 $r.render("rules")
 <div class="o_block_top">
+	<fieldset>
+		<legend>$r.translate("send.preview.receivers")</legend>
+	</fieldset>
 	#if($showUnsent)
 		$r.translate("send.info", $unsent, $all)
 	#end

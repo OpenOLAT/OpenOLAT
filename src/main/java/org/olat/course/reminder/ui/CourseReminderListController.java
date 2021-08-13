@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -82,6 +84,7 @@ public class CourseReminderListController extends FormBasicController
 		implements Activateable2, FlexiTableComponentDelegate {
 	
 	private FormLink addButton;
+	private FormLink showLogLink;
 	private FlexiTableElement tableEl;
 	private CourseReminderTableModel tableModel;
 	private final BreadcrumbPanel toolbarPanel;
@@ -95,6 +98,7 @@ public class CourseReminderListController extends FormBasicController
 	private DialogBoxController deleteDialogBox;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private CourseSendReminderListController sendReminderListCtrl;
+	private CourseReminderLogsController reminderLogsCtrl;
 
 	private final AtomicInteger counter = new AtomicInteger();
 	private final RepositoryEntry repositoryEntry;
@@ -121,20 +125,26 @@ public class CourseReminderListController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_reminder_list");
-		if (StringHelper.containsNonWhitespace(warningI18nKey)) {
-			flc.contextPut("warningI18nKey", warningI18nKey);
-		}
 		
 		addButton = uifactory.addFormLink("add.reminder", formLayout, Link.BUTTON);
 		addButton.setIconLeftCSS("o_icon o_icon_add");
 		addButton.setElementCssClass("o_sel_add_course_reminder");
 		
+		DropdownItem dropdown = uifactory.addDropdownMenu("tools", null, null, flc, getTranslator());
+		dropdown.setCarretIconCSS("o_icon o_icon_commands");
+		dropdown.setOrientation(DropdownOrientation.right);
+		dropdown.setExpandContentHeight(true);
+		
+		showLogLink = uifactory.addFormLink("show.sent", "show.sent", "show.sent", null, flc, Link.LINK);
+		showLogLink.setIconLeftCSS("o_icon o_icon-fw o_icon_show_send");
+		dropdown.addElement(showLogLink);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.description, "edit"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creator));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.lastModified, null));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.send));
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(ReminderCols.tools);
 		toolsCol.setAlwaysVisible(true);
@@ -157,6 +167,7 @@ public class CourseReminderListController extends FormBasicController
 	
 	private void updateModel(UserRequest ureq) {
 		List<ReminderInfos> reminders = reminderService.getReminderInfos(repositoryEntry);
+		reminders.sort((r1, r2) -> r1.getDescription().compareToIgnoreCase(r2.getDescription()));
 		List<ReminderRow> rows = new ArrayList<>(reminders.size());
 		for(ReminderInfos reminder:reminders) {
 			if (isVisible(reminder)) {
@@ -227,6 +238,8 @@ public class CourseReminderListController extends FormBasicController
 		if("SentReminders".equalsIgnoreCase(entryPoint)) {
 			Long key = entry.getOLATResourceable().getResourceableId();
 			doSendReminderList(ureq, key);
+		} else if("RemindersLogs".equalsIgnoreCase(entryPoint)) {
+			doShowLog(ureq);
 		}
 	}
 
@@ -243,6 +256,8 @@ public class CourseReminderListController extends FormBasicController
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addButton == source) {
 			doAddReminder(ureq);
+		} else if (showLogLink == source) {
+			doShowLog(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -283,6 +298,10 @@ public class CourseReminderListController extends FormBasicController
 			}
 			getWindowControl().pop();
 			cleanUp();
+		} else if (reminderLogsCtrl == source) {
+			if (event == Event.CHANGED_EVENT) {
+				updateModel(ureq);
+			}
 		} else if(deleteDialogBox == source) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				doDelete(ureq, (ReminderRow)deleteDialogBox.getUserObject());
@@ -335,7 +354,7 @@ public class CourseReminderListController extends FormBasicController
 	private void doAddReminder(UserRequest ureq) {
 		removeAsListenerAndDispose(wizardCtrl);
 		Reminder reminder = reminderService.createReminder(repositoryEntry, getIdentity());
-		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider),
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider, warningI18nKey),
 				doSaveReminder(), null, translate("new.reminder"), "");
 		listenTo(wizardCtrl);
 		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());
@@ -363,6 +382,20 @@ public class CourseReminderListController extends FormBasicController
 		
 		toolbarPanel.pushController(translate("send.reminder"), sendReminderListCtrl);	
 	}
+
+	private void doShowLog(UserRequest ureq) {
+		removeAsListenerAndDispose(reminderLogsCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RemindersLogs", 0l);
+		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+
+		reminderLogsCtrl = new CourseReminderLogsController(ureq, bwControl, repositoryEntry, reminderProvider);
+		listenTo(reminderLogsCtrl);
+		addToHistory(ureq, reminderLogsCtrl);
+		
+		toolbarPanel.pushController(translate("send.reminder"), reminderLogsCtrl);	
+	}
 	
 	private void doConfirmDelete(UserRequest ureq, ReminderRow row) {
 		String desc = StringHelper.escapeHtml(row.getDescription());
@@ -381,7 +414,7 @@ public class CourseReminderListController extends FormBasicController
 		removeAsListenerAndDispose(wizardCtrl);
 		
 		Reminder reminder = reminderService.loadByKey(row.getKey());
-		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider),
+		wizardCtrl = new StepsMainRunController(ureq, getWindowControl(), new RulesEditStep(ureq, reminder, reminderProvider, warningI18nKey),
 				doSaveReminder(), null, translate("edit.reminder"), "");
 		listenTo(wizardCtrl);
 		getWindowControl().pushAsModalDialog(wizardCtrl.getInitialComponent());

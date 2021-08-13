@@ -122,7 +122,8 @@ import org.olat.course.nodes.info.InfoCourseSecurityCallback;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
 import org.olat.course.nodes.wiki.WikiToolController;
-import org.olat.course.reminder.ui.CourseRemindersController;
+import org.olat.course.reminder.CourseProvider;
+import org.olat.course.reminder.ui.CourseReminderListController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
@@ -220,7 +221,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private TeamsMeetingsRunController teamsCtrl;
 	private SearchInputController searchController;
 	private StatisticMainController statisticsCtrl;
-	private CourseRemindersController remindersCtrl;
+	private CourseReminderListController remindersCtrl;
 	private TeacherOverviewController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
 	private MembersToolRunController participatListCtrl;
@@ -1449,8 +1450,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if (efficiencyStatementsLink != null && efficiencyStatementsLink.isVisible()) {
 					doEfficiencyStatements(ureq);
 				}
-			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
-				doReminders(ureq);
+			} else if("Reminders".equalsIgnoreCase(type)) {
+				if (reminderLink != null && reminderLink.isVisible()) {
+					activateSubEntries(ureq, doReminders(ureq), entries);
+				}
 			} else if("Lectures".equalsIgnoreCase(type)) {
 				activateSubEntries(ureq, doLectures(ureq), entries);
 			} else if("LectureBlock".equalsIgnoreCase(type)) {
@@ -1778,12 +1781,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void doReminders(UserRequest ureq) {
+	private Activateable2 doReminders(UserRequest ureq) {
 		if(delayedClose == Delayed.reminders || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS();
-
-				CourseRemindersController ctrl = new CourseRemindersController(ureq, getWindowControl(), getRepositoryEntry(), toolbarPanel);
+				
+				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Reminders", 0l), null);
+				CourseReminderListController ctrl = new CourseReminderListController(ureq, swControl, toolbarPanel, getRepositoryEntry(),
+						CourseProvider.create(), null);
 				remindersCtrl = pushController(ureq, translate("command.reminders"), ctrl);
 				setActiveTool(reminderLink);
 				currentToolCtr = remindersCtrl;
@@ -1791,6 +1796,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else {
 			delayedClose = Delayed.reminders;
 		}
+		return remindersCtrl;
 	}
 	
 	private LectureRepositoryAdminController doLecturesAdmin(UserRequest ureq) {

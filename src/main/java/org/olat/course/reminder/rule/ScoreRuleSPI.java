@@ -90,7 +90,10 @@ public class ScoreRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 			if (courseNode == null) {
-				return null;
+				courseNode = course.getEditorTreeModel().getCourseNode(nodeIdent);
+				if (courseNode == null) {
+					return null;
+				}
 			}
 			
 			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent(), score };

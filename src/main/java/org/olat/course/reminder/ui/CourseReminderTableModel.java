@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.reminder.model.ReminderRow;
@@ -77,7 +77,7 @@ public class CourseReminderTableModel extends DefaultFlexiTableDataModel<Reminde
 		}
 	}
 	
-	public enum ReminderCols implements FlexiColumnDef {
+	public enum ReminderCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
 		description("table.header.description"),
 		descriptionElement("table.header.description"),
@@ -102,7 +102,6 @@ public class CourseReminderTableModel extends DefaultFlexiTableDataModel<Reminde
 			this(i18nKey, null);
 		}
 		
-
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
@@ -111,6 +110,16 @@ public class CourseReminderTableModel extends DefaultFlexiTableDataModel<Reminde
 		@Override
 		public String iconHeader() {
 			return icon;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 		
 	}

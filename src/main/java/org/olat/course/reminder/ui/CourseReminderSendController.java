@@ -163,6 +163,8 @@ public class CourseReminderSendController extends FormBasicController {
 		if (!readonly) {
 			sendAllLink.setI18nKey("send.all", new String[] { String.valueOf(identites.size()) } );
 			sendUnsentLink.setI18nKey("send.unsent", new String[] { String.valueOf(unsent) } );
+			sendUnsentLink.setEnabled(unsent > 0);
+			sendUnsentLink.setSubmitAndValidate(unsent > 0);
 		}
 		
 		dataModel.setObjects(rows);
