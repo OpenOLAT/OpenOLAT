@@ -161,16 +161,25 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	}
 	
 	public UserEfficiencyStatement createStandAloneUserEfficiencyStatement(Date creationDate, Float score, Boolean passed,
+			Integer totalNodes, Integer attemptedNodes, Integer passedNodes, String statementXml,
 			Identity identity, Long resourceKey, String courseTitle) {
 		UserEfficiencyStatementStandalone efficiencyProperty = new UserEfficiencyStatementStandalone();
-		efficiencyProperty.setCreationDate(creationDate);
-		efficiencyProperty.setLastModified(new Date());
+		if(creationDate != null) {
+			efficiencyProperty.setCreationDate(creationDate);
+			efficiencyProperty.setLastModified(new Date());
+		} else {
+			efficiencyProperty.setCreationDate(new Date());
+			efficiencyProperty.setLastModified(efficiencyProperty.getCreationDate());
+		}
+
 		efficiencyProperty.setScore(score);
 		efficiencyProperty.setPassed(passed);
 
-		efficiencyProperty.setTotalNodes(0);
-		efficiencyProperty.setAttemptedNodes(0);
-		efficiencyProperty.setPassedNodes(0);
+		efficiencyProperty.setTotalNodes(totalNodes == null ? Integer.valueOf(0) : totalNodes);
+		efficiencyProperty.setAttemptedNodes(attemptedNodes == null ? Integer.valueOf(0) : attemptedNodes);
+		efficiencyProperty.setPassedNodes(passedNodes == null ? Integer.valueOf(0) : passedNodes);
+		
+		efficiencyProperty.setStatementXml(statementXml);
 
 		efficiencyProperty.setIdentity(identity);
 		efficiencyProperty.setResourceKey(resourceKey);
@@ -183,7 +192,6 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 
 		return efficiencyProperty;
 	}
-	
 	
 	/**
 	 * Updates the users efficiency statement for this course
@@ -428,6 +436,18 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			return null;
 		}
 		return statement.get(0);
+	}
+	
+	public List<UserEfficiencyStatementImpl> getUserEfficiencyStatementFull(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select statement from effstatement as statement")
+		  .append(" left join fetch statement.resource as resource")
+		  .append(" where statement.identity.key=:identityKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
 	}
 	
 	public boolean hasUserEfficiencyStatement(Long courseRepoEntryKey, IdentityRef identity) {

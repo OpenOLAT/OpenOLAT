@@ -90,14 +90,7 @@ public class CertificationTest extends OlatRestTestCase {
 		sleep(1000);
 		
 		//wait until the certificate is created
-		waitForCondition(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
-				VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
-				return CertificateStatus.ok.equals(reloadedCertificate.getStatus()) && certificateFile != null;
-			}
-		}, 30000);
+		waitCertificate(certificate.getKey());
 		
 		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
 				.path(entry.getOlatResource().getKey().toString())
@@ -219,7 +212,6 @@ public class CertificationTest extends OlatRestTestCase {
 		EntityUtils.consume(response.getEntity());
 
 		//check certificate
-		System.out.println("Test: " + Thread.currentThread().getName());
 		Certificate certificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
 		Assert.assertNotNull(certificate);
 		Assert.assertEquals(creationDate, certificate.getCreationDate());
@@ -288,14 +280,7 @@ public class CertificationTest extends OlatRestTestCase {
 		sleep(1000);
 		
 		//wait until certificate is generated
-		waitForCondition(new Callable<Boolean>() {
-			@Override
-			public Boolean call() throws Exception {
-				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
-				VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(reloadedCertificate);
-				return CertificateStatus.ok.equals(reloadedCertificate.getStatus()) && certificateFile != null;
-			}
-		}, 30000);
+		waitCertificate(certificate.getKey());
 		
 		// check that there is a real certificate with its file
 		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
@@ -333,5 +318,16 @@ public class CertificationTest extends OlatRestTestCase {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
+	}
+	
+	private void waitCertificate(Long certificateKey) {
+		//wait until the certificate is created
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+			}
+		}, 30000);
 	}
 }
