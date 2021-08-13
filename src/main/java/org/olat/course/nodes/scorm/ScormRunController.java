@@ -96,8 +96,8 @@ public class ScormRunController extends BasicController implements GenericEventL
 	private ControllerEventListener treeNodeClickListener;
 	private UserCourseEnvironment userCourseEnv;
 	private ChooseScormRunModeForm chooseScormRunMode;
-	private boolean isPreview;
-	private boolean isAssessable;
+	private final boolean isAssessable;
+	private final boolean isPreview;
 	private String assessableType;
 	private DeliveryOptions deliveryOptions;
 	private final UserSession userSession;//need for high score
@@ -122,13 +122,16 @@ public class ScormRunController extends BasicController implements GenericEventL
 			ScormCourseNode scormNode, boolean isPreview) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		// assertion to make sure the moduleconfig is valid
-		if (!ScormEditController.hasScormReference(config))
+		if (!ScormEditController.hasScormReference(config)) {
 			throw new AssertException("scorm run controller had an invalid module config:" + config.toString());
-		this.isPreview = isPreview || userCourseEnv.isCourseReadOnly() || !userCourseEnv.isParticipant();
+		}
+		userSession = ureq.getUserSession(); 
+		boolean guestOnly = userSession.getRoles().isGuestOnly();
+		this.isPreview = isPreview || userCourseEnv.isCourseReadOnly() || !userCourseEnv.isParticipant() || guestOnly;
+		this.isAssessable = userCourseEnv.isParticipant() && config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true) && !guestOnly;
 		this.userCourseEnv = userCourseEnv;
 		this.config = config;
 		this.scormNode = scormNode;
-		userSession = ureq.getUserSession(); 
 		deliveryOptions = (DeliveryOptions)config.get(ScormEditController.CONFIG_DELIVERY_OPTIONS);
 
 		addLoggingResourceable(LoggingResourceable.wrap(scormNode));
@@ -137,9 +140,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 
 	private void init(UserRequest ureq) {
 		startPage = createVelocityContainer("run");
-		// show browse mode option only if not assessable, hide it if in
-		// "real test mode"
-		isAssessable = userCourseEnv.isParticipant() && config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
+		// show browse mode option only if not assessable, hide it if in real test mode
 		if(isAssessable) {
 			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
