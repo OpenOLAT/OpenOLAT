@@ -24,7 +24,6 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
@@ -50,7 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21AssessedIdentityListController extends AssessedIdentityListController {
 	
-	private FormLink resetButton, pullButton;
+	private FormLink pullButton;
+	private FormLink resetButton;
 	
 	private CloseableModalController cmc;
 	private QTI21ResetDataController resetDataCtrl;
@@ -73,11 +73,6 @@ public class QTI21AssessedIdentityListController extends AssessedIdentityListCon
 		
 		pullButton = uifactory.addFormLink("menu.retrieve.tests.title", formLayout, Link.BUTTON);
 		pullButton.setIconLeftCSS("o_icon o_icon_pull");
-	}
-	
-	@Override
-	protected void updateModel(String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
-		super.updateModel(searchString, filters, extendedFilters);
 	}
 	
 	@Override

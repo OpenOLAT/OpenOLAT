@@ -84,16 +84,7 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 
 	@Override
 	public ResultInfos<RepositoryEntryRow> getRows(String query, List<FlexiTableFilter> filters,
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		
-		if(condQueries != null && !condQueries.isEmpty()) {
-			String filter = condQueries.get(0);
-			if(StringHelper.containsNonWhitespace(filter)) {
-				searchParams.setFilters(Collections.singletonList(Filter.valueOf(filter)));
-			} else {
-				searchParams.setFilters(null);
-			}
-		}
+			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			OrderBy o = OrderBy.valueOf(orderBy[0].getKey());

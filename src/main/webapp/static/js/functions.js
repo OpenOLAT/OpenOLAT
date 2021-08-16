@@ -2175,8 +2175,18 @@ function o_table_toggleCheck(ref, checked) {
 		}
 	}
 }
-function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll) {
+function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll, selectedEntriesInfo) {
 	try {
+		jQuery('#' + dispatchId + '_bab').each(function(index, el) {
+			if (showSelectAll) {
+				jQuery(el).addClass("o_table_batch_hide").removeClass("o_table_batch_show");
+			} else {
+				jQuery(el).addClass("o_table_batch_show").removeClass("o_table_batch_hide");	
+			}
+		});
+		
+		jQuery('#' + dispatchId + '_mscount').text(selectedEntriesInfo);
+	
 		var selectAllEl = jQuery('#' + dispatchId + '_sm');
 		if (selectAllEl.length == 0) {
 			// if the select all menu is not there, try with select all link
@@ -2201,7 +2211,7 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll) 
 		} else {
 			selectAllEl.hide();
 			deselectAllEl.hide();
-			deselectMixedEl.show();		
+			deselectMixedEl.show();
 		}
 	} catch(e){
 		if(window.console)  console.log(e);

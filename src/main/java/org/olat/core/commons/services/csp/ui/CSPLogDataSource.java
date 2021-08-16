@@ -65,7 +65,7 @@ public class CSPLogDataSource implements FlexiTableDataSourceDelegate<CSPLog> {
 
 	@Override
 	public ResultInfos<CSPLog> getRows(String query, List<FlexiTableFilter> filters,
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		List<CSPLog> rows = cspManager.getLog(firstResult, maxResults);
 		ResultInfos<CSPLog> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);

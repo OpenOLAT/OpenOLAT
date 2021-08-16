@@ -71,7 +71,7 @@ public class UserSearchDataSource implements FlexiTableDataSourceDelegate<Identi
 
 	@Override
 	public ResultInfos<IdentityPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+			int firstResult, int maxResults, SortKey... orderBy) {
 		SortKey sortKey = null;
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			sortKey = orderBy[0];

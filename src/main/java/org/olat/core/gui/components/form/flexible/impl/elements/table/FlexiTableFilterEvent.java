@@ -34,9 +34,8 @@ public class FlexiTableFilterEvent extends FlexiTableReduceEvent {
 
 	private static final long serialVersionUID = -7676917137818815141L;
 
-	public FlexiTableFilterEvent(String cmd, FormItem source, String search, List<FlexiTableFilter> filters,
-			List<FlexiTableFilter> extendedFilters, List<String> condQueries, int action) {
-		super(cmd, source, search, filters, extendedFilters, condQueries, action);
+	public FlexiTableFilterEvent(String cmd, FormItem source, String search, List<FlexiTableFilter> filters, int action) {
+		super(cmd, source, search, filters, action);
 	}
 	
 	public FlexiTableFilterEvent(FormItem source, int action) {

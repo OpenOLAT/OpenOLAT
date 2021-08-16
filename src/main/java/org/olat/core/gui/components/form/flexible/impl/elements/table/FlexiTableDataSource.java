@@ -51,6 +51,6 @@ public interface FlexiTableDataSource<U> extends FlexiTableDataModel<U> {
 	 * @param maxResults
 	 * @param orderBy
 	 */
-	public ResultInfos<U> load(String query, List<FlexiTableFilter> filters, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<U> load(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy);
 
 }

@@ -59,7 +59,7 @@ public class DeletedUserDataSource implements FlexiTableDataSourceDelegate<Delet
 
 	@Override
 	public ResultInfos<DeletedIdentity> getRows(String query, List<FlexiTableFilter> filters,
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		SortKey sortKey = null;
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {

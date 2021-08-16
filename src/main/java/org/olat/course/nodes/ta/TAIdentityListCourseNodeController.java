@@ -32,7 +32,6 @@ import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.TACourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentToolOptions;
@@ -63,7 +62,7 @@ public class TAIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		if(!coachCourseEnv.isCourseReadOnly()) {
 			BulkAssessmentToolController bulkAssessmentTollCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
-					getCourseEnvironment(), (TACourseNode)courseNode);
+					getCourseEnvironment(), courseNode);
 			listenTo(bulkAssessmentTollCtrl);
 			formLayout.put("bulk.assessment", bulkAssessmentTollCtrl.getInitialComponent());	
 		}

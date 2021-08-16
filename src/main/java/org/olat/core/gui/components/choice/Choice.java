@@ -56,7 +56,7 @@ public class Choice extends AbstractComponent {
 	private List<Integer> selectedRows = new ArrayList<>();
 	private List<Integer> removedRows = new ArrayList<>();
 	private List<Integer> addedRows = new ArrayList<>();
-	private ChoiceModel model;
+	private ChoiceModel<?> model;
 	
 	private boolean escapeHtml = true;
 
@@ -75,9 +75,6 @@ public class Choice extends AbstractComponent {
 		super(name, Util.createPackageTranslator(Table.class, translator.getLocale(), translator));
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		// since we are a >form<, this must be a submit or a cancel
@@ -103,7 +100,7 @@ public class Choice extends AbstractComponent {
 				// Boolean
 				boolean wasPreviouslySelected = oldV.booleanValue();
 				// add to different lists
-				Integer key = new Integer(i);
+				Integer key = Integer.valueOf(i);
 				if (exists != null) { // the row was selected
 					selectedRows.add(key);
 					if (!wasPreviouslySelected) { // not selected in model, but now ->
@@ -181,7 +178,7 @@ public class Choice extends AbstractComponent {
 		int size = model.getRowCount();
 		List<Integer> allRows = new ArrayList<>(size);
 		for (int i = 0; i < size; i++) {
-			allRows.add(new Integer(i));
+			allRows.add(Integer.valueOf(i));
 		}
 		return allRows;
 	}
@@ -189,7 +186,7 @@ public class Choice extends AbstractComponent {
 	/**
 	 * @return TableDataModel
 	 */
-	public ChoiceModel getModel() {
+	public ChoiceModel<?> getModel() {
 		return model;
 	}
 
@@ -201,7 +198,7 @@ public class Choice extends AbstractComponent {
 	 * 
 	 * @param model
 	 */
-	public void setModel(ChoiceModel model) {
+	public void setModel(ChoiceModel<?> model) {
 		this.model = model;
 	}
 

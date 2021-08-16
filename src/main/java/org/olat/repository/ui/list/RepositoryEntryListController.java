@@ -37,7 +37,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -53,6 +55,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
@@ -63,6 +70,7 @@ import org.olat.core.gui.components.rating.RatingFormEvent;
 import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -91,6 +99,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
+import org.olat.repository.model.SearchMyRepositoryEntryViewParams.FilterButton;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
@@ -111,7 +120,13 @@ public class RepositoryEntryListController extends FormBasicController
 	private final List<Link> orderByLinks = new ArrayList<>();
 	
 	private boolean withSearch;
+	private boolean withPresets;
 	private boolean withSavedSettings;
+	
+	private FlexiFilterTabPreset myTab;
+	private FlexiFilterTabPreset closedTab;
+	private FlexiFilterTabPreset bookmarkTab;
+	private FlexiFilterTabPreset searchTab;
 
 	private final String name;
 	private FlexiTableElement tableEl;
@@ -123,9 +138,9 @@ public class RepositoryEntryListController extends FormBasicController
 	private UserCommentsController commentsCtrl;
 	private final BreadcrumbPanel stackPanel;
 	private RepositoryEntryDetailsController detailsCtrl;
-	private RepositoryEntrySearchController searchCtrl;
 	
 	private final MapperKey mapperThumbnailKey;
+	
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
@@ -141,13 +156,14 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
 			SearchMyRepositoryEntryViewParams searchParams, boolean load, 
-			boolean withSearch, boolean withSavedSettings, String name, BreadcrumbPanel stackPanel) {
+			boolean withSearch, boolean withPresets, boolean withSavedSettings, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.withSearch = withSearch;
+		this.withPresets = withPresets;
 		this.withSavedSettings = withSavedSettings;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
@@ -171,19 +187,20 @@ public class RepositoryEntryListController extends FormBasicController
 		return name;
 	}
 	
+	public FlexiFilterTabPreset getBookmarkPreset() {
+		return bookmarkTab;
+	}
+	
+	public FlexiFilterTabPreset getMyEntriesPreset() {
+		return myTab;
+	}
+	
 	public void reloadRows() {
 		tableEl.reloadData();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(withSearch) {
-			setFormDescription("table.search.mycourses.desc");
-			searchCtrl = new RepositoryEntrySearchController(ureq, getWindowControl(), true, mainForm);
-			searchCtrl.setEnabled(false);
-			listenTo(searchCtrl);
-		}
-
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 		if(!guestOnly) {
@@ -234,7 +251,6 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(withSearch);
-		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		if (withSearch) {
@@ -246,7 +262,12 @@ public class RepositoryEntryListController extends FormBasicController
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		
-		initFilters(tableEl);
+		if(withPresets) {
+			initFiltersPresets();
+			initFiltersButtons();
+		} else {
+			initSmallFilters(tableEl);
+		}
 		initSorters(tableEl);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2-".concat(name));
@@ -259,7 +280,7 @@ public class RepositoryEntryListController extends FormBasicController
 		loadFilterPreferences(ureq);
 	}
 
-	private void initFilters(FlexiTableElement tableElement) {
+	private void initSmallFilters(FlexiTableElement tableElement) {
 		List<FlexiTableFilter> filters = new ArrayList<>(16);
 		filters.add(new FlexiTableFilter(translate("filter.show.all"), Filter.showAll.name(), true));
 		filters.add(FlexiTableFilter.SPACER);
@@ -279,6 +300,84 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(new FlexiTableFilter(translate("filter.not.passed"), Filter.notPassed.name()));
 		filters.add(new FlexiTableFilter(translate("filter.without.passed.infos"), Filter.withoutPassedInfos.name()));
 		tableElement.setFilters(null, filters, false);
+	}
+	
+	private void initFiltersPresets() {
+		List<String> filters = List.of();
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		// bookmarks
+		if(!guestOnly) {
+			bookmarkTab = new FlexiFilterTabPreset("Bookmarks", translate("search.mark"),
+					filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")));
+			tabs.add(bookmarkTab);
+		}
+		
+		myTab = new FlexiFilterTabPreset("My", translate("search.mycourses.student"),
+				filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
+		tabs.add(myTab);
+		
+		closedTab = new FlexiFilterTabPreset("Closed", translate("search.courses.closed"),
+				filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
+						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
+		tabs.add(closedTab);
+		
+		// search
+		searchTab = new FlexiFilterTabPreset("Search", translate("search.courses.student"), filters, List.of());
+		tabs.add(searchTab);
+		
+		tableEl.setFilterTabs(true, tabs);
+	}
+	
+	private void initFiltersButtons() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// bookmarked
+		SelectionValues markedKeyValue = new SelectionValues();
+		markedKeyValue.add(SelectionValues.entry("marked", translate("search.mark")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("search.mark"), FilterButton.MARKED.name(),
+				markedKeyValue, true, true));
+		
+		// my resources
+		SelectionValues myResourcesKeyValue = new SelectionValues();
+		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.owned.resources.only"), FilterButton.OWNED.name(),
+				myResourcesKeyValue, true, true));
+
+		SelectionValues coursesValues = new SelectionValues();
+		coursesValues.add(SelectionValues.entry(Filter.onlyCourses.name(), translate("filter.only.courses")));
+		coursesValues.add(SelectionValues.entry(Filter.currentCourses.name(), translate("filter.current.courses")));
+		coursesValues.add(SelectionValues.entry(Filter.upcomingCourses.name(), translate("filter.upcoming.courses")));
+		coursesValues.add(SelectionValues.entry(Filter.oldCourses.name(), translate("filter.old.courses")));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.timeline"), FilterButton.DATES.name(),
+				coursesValues, true, false));
+
+		SelectionValues bookingValues = new SelectionValues();
+		bookingValues.add(SelectionValues.entry(Filter.asParticipant.name(), translate("filter.booked.participant")));
+		bookingValues.add(SelectionValues.entry(Filter.asCoach.name(), translate("filter.booked.coach")));
+		bookingValues.add(SelectionValues.entry(Filter.asAuthor.name(), translate("filter.booked.author")));
+		if(!searchParams.isMembershipMandatory()) {
+			bookingValues.add(SelectionValues.entry(Filter.notBooked.name(), translate("filter.not.booked")));
+		}
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.membership"), FilterButton.BOOKING.name(),
+				bookingValues, true, false));
+
+		SelectionValues passedValues = new SelectionValues();
+		passedValues.add(SelectionValues.entry(Filter.passed.name(), translate("filter.passed")));
+		passedValues.add(SelectionValues.entry(Filter.notPassed.name(), translate("filter.not.passed")));
+		passedValues.add(SelectionValues.entry(Filter.withoutPassedInfos.name(), translate("filter.without.passed.infos")));
+		
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.score"), FilterButton.PASSED.name(),
+				passedValues, true, false));
+		
+		// life-cycle
+		SelectionValues lifecycleValues = new SelectionValues();
+		lifecycleValues.add(SelectionValues.entry("active", translate("cif.resources.status.active")));
+		lifecycleValues.add(SelectionValues.entry("closed", translate("cif.resources.status.closed")));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"), FilterButton.STATUS.name(),
+				lifecycleValues, true, false));
+		
+		tableEl.setFilters(true, filters, false);
+		
 	}
 	
 	private void initSorters(FlexiTableElement tableElement) {
@@ -341,7 +440,6 @@ public class RepositoryEntryListController extends FormBasicController
 				tableEl.setStateEntry(ureq, se.getTableState());
 			}
 			if(se.getSearchEvent() != null) {
-				searchCtrl.update(se.getSearchEvent());
 				doSearch(ureq, se.getSearchEvent());
 			}
 		}
@@ -406,6 +504,8 @@ public class RepositoryEntryListController extends FormBasicController
 			} else if(event instanceof FlexiTableFilterEvent) {
 				FlexiTableFilterEvent ftfe = (FlexiTableFilterEvent)event;
 				saveFilterPreferences(ureq, ftfe.getFilters());
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -497,15 +597,6 @@ public class RepositoryEntryListController extends FormBasicController
 				cmc.deactivate();
 				cleanUp();
 			}
-		} else if(searchCtrl == source) {
-			if(event instanceof SearchEvent) {
-				SearchEvent se = (SearchEvent)event;
-				doSearch(ureq, se);
-			} else if(event == Event.CANCELLED_EVENT) {
-				searchParams.setIdAndRefs(null);
-				searchParams.setAuthor(null);
-				searchParams.setText(null);
-			}
 		} else if(detailsCtrl == source) {
 			if(event instanceof LeavingEvent) {
 				stackPanel.popUpToController(this);
@@ -547,6 +638,26 @@ public class RepositoryEntryListController extends FormBasicController
 		state.setTableState(tableEl.getStateEntry());
 		state.setSearchEvent(se);
 		addToHistory(ureq, state);
+	}
+	
+	protected void selectFilterTab(FlexiFiltersTab tab) {
+		if(tab == null) return;
+		
+		tableEl.setSelectedFilterTab(tab);
+		doSelectFilterTab(tab);
+	}
+	
+	private void doSelectFilterTab(FlexiFiltersTab tab) {
+		if(searchTab == tab) {
+			tableEl.expandFilters(true);
+			tableEl.setSearchEnabled(true, true);
+			model.clear();
+			tableEl.reset(true, true, false);
+		} else {
+			tableEl.expandFilters(false);
+			tableEl.setSearchEnabled(true, false);
+			tableEl.reloadData();
+		}
 	}
 	
 	private void doFilter(List<Filter> filters) {	

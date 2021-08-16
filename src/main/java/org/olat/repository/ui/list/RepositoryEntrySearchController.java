@@ -19,9 +19,6 @@
  */
 package org.olat.repository.ui.list;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -47,6 +44,7 @@ import org.olat.repository.RepositoryManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+//TODO table delete
 public class RepositoryEntrySearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
 	private static final String[] statusKeys = new String[]{ "all", "active", "closed" };
@@ -136,11 +134,6 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 	@Override
 	protected void doDispose() {
 		//
-	}
-
-	@Override
-	public List<String> getConditionalQueries() {
-		return Collections.emptyList();
 	}
 
 	/**

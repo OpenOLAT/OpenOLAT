@@ -369,11 +369,6 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		//
 	}
 
-	@Override
-	public List<String> getConditionalQueries() {
-		return Collections.emptyList();
-	}
-
 	/**
 	 * @return Return value of ID field.
 	 */

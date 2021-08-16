@@ -323,7 +323,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(state instanceof AssessedIdentityListState) {
 			AssessedIdentityListState listState = (AssessedIdentityListState)state;
-			tableEl.setSelectedFilterKey(listState.getFilter());
+			listState.setValuesToFilter(tableEl.getExtendedFilters());
+			//TODO table
 			loadModel();
 		}	
 	}

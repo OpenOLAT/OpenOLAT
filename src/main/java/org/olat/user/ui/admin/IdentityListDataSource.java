@@ -66,7 +66,7 @@ public class IdentityListDataSource implements FlexiTableDataSourceDelegate<Iden
 
 	@Override
 	public ResultInfos<IdentityPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+			int firstResult, int maxResults, SortKey... orderBy) {
 
 		List<Integer> exactStatusList = getStatusFromFilter(filters);
 		if(StringHelper.containsNonWhitespace(query) || !exactStatusList.isEmpty()) {

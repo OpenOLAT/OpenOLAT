@@ -22,7 +22,6 @@ package org.olat.modules.quality.ui;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -161,11 +160,6 @@ public class DataCollectionSearchController extends FormBasicController implemen
 	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
-	}
-
-	@Override
-	public List<String> getConditionalQueries() {
-		return Collections.emptyList();
 	}
 	
 	@Override

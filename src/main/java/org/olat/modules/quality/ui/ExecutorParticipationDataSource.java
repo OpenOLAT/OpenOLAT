@@ -67,7 +67,7 @@ class ExecutorParticipationDataSource implements FlexiTableDataSourceDelegate<Ex
 
 	@Override
 	public ResultInfos<ExecutorParticipationRow> getRows(String query, List<FlexiTableFilter> filters,
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+			int firstResult, int maxResults, SortKey... orderBy) {
 
 		List<QualityExecutorParticipation> participations = qualityService.loadExecutorParticipations(translator,
 				searchParams, firstResult, maxResults, orderBy);

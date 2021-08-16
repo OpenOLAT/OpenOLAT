@@ -199,6 +199,16 @@ public class SearchMyRepositoryEntryViewParams {
 		this.marked = marked;
 	}
 	
+	public enum FilterButton {
+		MARKED,
+		OWNED,
+		STATUS,
+		PASSED,
+		BOOKING,
+		DATES
+		
+	}
+	
 	public enum OrderBy {
 		automatic,
 		favorit,

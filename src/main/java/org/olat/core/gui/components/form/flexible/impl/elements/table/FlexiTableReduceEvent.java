@@ -42,40 +42,26 @@ public class FlexiTableReduceEvent extends FormEvent {
 	public static final String EXTENDED_FILTER = "ftEXTENDEDFILTER";
 
 	private final String search;
-	private final List<String> condQueries;
 	private final List<FlexiTableFilter> filters;
-	private final List<FlexiTableFilter> extendedFilters;
 
-	public FlexiTableReduceEvent(String cmd, FormItem source, String search, List<FlexiTableFilter> filters,
-			List<FlexiTableFilter> extendedFilters, List<String> condQueries, int action) {
+	public FlexiTableReduceEvent(String cmd, FormItem source, String search,
+			List<FlexiTableFilter> filters, int action) {
 		super(cmd, source, action);
 		this.search = search;
 		this.filters = filters;
-		this.condQueries = condQueries;
-		this.extendedFilters = extendedFilters;
 	}
 	
 	public FlexiTableReduceEvent(FormItem source, int action) {
 		super(RESET, source, action);
 		this.search = null;
 		this.filters = null;
-		this.condQueries = null;
-		this.extendedFilters = null;
 	}
 
 	public String getSearch() {
 		return search;
 	}
 
-	public List<String> getCondQueries() {
-		return condQueries;
-	}
-
 	public List<FlexiTableFilter> getFilters() {
 		return filters;
-	}
-
-	public List<FlexiTableFilter> getExtendedFilters() {
-		return extendedFilters;
 	}
 }

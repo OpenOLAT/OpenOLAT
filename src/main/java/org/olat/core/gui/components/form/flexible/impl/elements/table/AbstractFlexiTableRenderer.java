@@ -27,6 +27,7 @@ import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -53,75 +54,100 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		String id = ftC.getFormDispatchId();
 		
-		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
-		renderBreadcrumbs(sb, ftE);
+		renderHeaders(renderer, sb, ftE, ubu, translator, renderResult, args);
 		
 		if(ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
-			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);			
-			
+			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);
 		} else {
-			sb.append("<div class='o_table_wrapper o_table_flexi")
-			  .append(" o_table_edit", ftE.isEditMode());
-			String css = ftE.getElementCssClass();
-			if (css != null) {
-				sb.append(" ").append(css);
-			}
-			switch(ftE.getRendererType()) {
-				case custom: sb.append(" o_rendertype_custom"); break;
-				case classic: sb.append(" o_rendertype_classic"); break;
-			}
-			sb.append("'");
-			String wrapperSelector = ftE.getWrapperSelector();
-			if (wrapperSelector != null) {
-				sb.append(" id='").append(wrapperSelector).append("'");
-			}
-			String scrollableWrapperId = "o_scroll_" + id;
-			sb.append("><div class='o_scrollable_wrapper' id=\"").append(scrollableWrapperId).append("\"><div class='o_scrollable'>")
-				.append("<table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover").append(" table-bordered", ftE.isBordered()).append("\">");
-			
-			//render headers
-			renderHeaders(sb, ftC, translator);
-			//render footers
-			if(hasFooter(ftE)) {
-				sb.append("<tfoot>");
-				renderFooter(renderer, sb, ftC, ubu, translator, renderResult);
-				sb.append("</tfoot>");
-			}
-			//render body
-			sb.append("<tbody>");
-			renderBody(renderer, sb, ftC, ubu, translator, renderResult);
-			sb.append("</tbody>");
-			
-			sb.append("</table></div></div>"); // END o_scrollable_wrapper and o_scrollable
-			
-			renderFooterButtons(sb, ftC, translator);
-			renderFooterGroupedButtons(renderer, sb, ftC, ubu, translator, renderResult, args);
-			//draggable
-			if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
-				sb.append("<script>")
-				  .append("jQuery(function() {\n")
-				  .append(" jQuery('.o_table_flexi table tr').draggable({\n")
-		          .append("  containment: '#o_main',\n")
-		          .append("  zIndex: 10000,\n")
-		          .append("  cursorAt: {left: 0, top: 0},\n")
-		          .append("  accept: function(event,ui){ return true; },\n")
-		          .append("  helper: function(event,ui,zt) {\n")
-		          .append("    var helperText = jQuery(this).children('.o_dnd_label').text();\n")
-		          .append("    return jQuery(\"<div class='ui-widget-header o_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
-		          .append("  }\n")
-		          .append("});\n")
-		          .append("});\n")
-				  .append("</script>\n");
-			}
-			sb.append("</div>"); // END o_table_wrapper
-			// Initialize the scrolling overflow indicator code
-			sb.append("<script>o_initScrollableOverflowIndicator('").append(scrollableWrapperId).append("');</script>");
+			renderTable(renderer, sb, ftC, ubu, translator, renderResult);
 		}
 		
 		//source
 		if (source.isEnabled()) {
 			FormJSHelper.appendFlexiFormDirty(sb, ftE.getRootForm(), id);
 		}
+	}
+	
+	protected final void renderHeaders(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		
+		if(ftE.isFilterTabsEnabled()) {
+			renderFilterTabs(renderer, sb, ftE, ubu, translator, renderResult, args);
+		}
+		if(ftE.isSearchEnabled() && ftE.isSearchLarge()) {
+			renderLargeSearch(renderer, sb, ftE, ubu, translator, renderResult);
+		}
+		if(ftE.isFiltersEnabled()) {
+			renderFiltersRow(renderer, sb, ftE, ubu, translator, renderResult, args);
+		}
+		renderSearchAndOptions(renderer, sb, ftE, ubu, translator, renderResult, args);
+		renderBreadcrumbs(sb, ftE);
+		renderBulkActions(renderer, sb, ftE.getComponent(), ubu, translator, renderResult, args);
+	}
+	
+	protected void renderTable(Renderer renderer, StringOutput sb, FlexiTableComponent ftC, URLBuilder ubu, Translator translator,
+			RenderResult renderResult) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		String id = ftC.getFormDispatchId();
+		
+		sb.append("<div class='o_table_wrapper o_table_flexi")
+		  .append(" o_table_edit", ftE.isEditMode());
+		String css = ftE.getElementCssClass();
+		if (css != null) {
+			sb.append(" ").append(css);
+		}
+		switch(ftE.getRendererType()) {
+			case custom: sb.append(" o_rendertype_custom"); break;
+			case classic: sb.append(" o_rendertype_classic"); break;
+		}
+		sb.append("'");
+		String wrapperSelector = ftE.getWrapperSelector();
+		if (wrapperSelector != null) {
+			sb.append(" id='").append(wrapperSelector).append("'");
+		}
+		String scrollableWrapperId = "o_scroll_" + id;
+		sb.append("><div class='o_scrollable_wrapper' id=\"").append(scrollableWrapperId).append("\"><div class='o_scrollable'>")
+			.append("<table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover").append(" table-bordered", ftE.isBordered()).append("\">");
+		
+		//render headers
+		renderHeaders(sb, ftC, translator);
+		//render footers
+		if(hasFooter(ftE)) {
+			sb.append("<tfoot>");
+			renderFooter(renderer, sb, ftC, ubu, translator, renderResult);
+			sb.append("</tfoot>");
+		}
+		//render body
+		sb.append("<tbody>");
+		renderBody(renderer, sb, ftC, ubu, translator, renderResult);
+		sb.append("</tbody>");
+		
+		sb.append("</table></div></div>"); // END o_scrollable_wrapper and o_scrollable
+		
+		renderTreeButtons(sb, ftC, translator);
+		if(ftE.getDefaultPageSize() > 0) {
+			renderPagesLinks(sb, ftC, translator);
+		}
+		//draggable
+		if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
+			sb.append("<script>")
+			  .append("jQuery(function() {\n")
+			  .append(" jQuery('.o_table_flexi table tr').draggable({\n")
+	          .append("  containment: '#o_main',\n")
+	          .append("  zIndex: 10000,\n")
+	          .append("  cursorAt: {left: 0, top: 0},\n")
+	          .append("  accept: function(event,ui){ return true; },\n")
+	          .append("  helper: function(event,ui,zt) {\n")
+	          .append("    var helperText = jQuery(this).children('.o_dnd_label').text();\n")
+	          .append("    return jQuery(\"<div class='ui-widget-header o_table_drag'>\" + helperText + \"</div>\").appendTo('body').css('zIndex',5).show();\n")
+	          .append("  }\n")
+	          .append("});\n")
+	          .append("});\n")
+			  .append("</script>\n");
+		}
+		sb.append("</div>"); // END o_table_wrapper
+		// Initialize the scrolling overflow indicator code
+		sb.append("<script>o_initScrollableOverflowIndicator('").append(scrollableWrapperId).append("');</script>");
 	}
 
 	protected void renderEmptyState(Renderer renderer, StringOutput sb, URLBuilder ubu, Translator translator,
@@ -163,7 +189,157 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		return false;
 	}
 	
-	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+	private void renderFilterTabs(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		renderFormItem(renderer, sb, ftE.getFilterTabsElement(), ubu, translator, renderResult, args);
+	}
+	
+	private void renderFiltersRow(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		renderFormItem(renderer, sb, ftE.getFiltersElement(), ubu, translator, renderResult, args);
+	}
+	
+	private void renderLargeSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult) {
+
+		sb.append("<div class='o_table_large_search o_noprint'>");
+		TextElement searchEl = ftE.getSearchElement();
+		if(StringHelper.containsNonWhitespace(searchEl.getValue())) {
+			searchEl.setFocus(true);
+		}
+		if(!StringHelper.containsNonWhitespace(searchEl.getPlaceholder())) {
+			searchEl.setPlaceholderKey("search.placeholder", null);
+		}
+		renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
+		renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
+		
+		// num. of entries
+		if(ftE.isNumOfRowsEnabled()) {
+			sb.append("<div>");
+			int rowCount = ftE.getTableDataModel().getRowCount();
+			if(rowCount == 1) {
+				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));
+			} else if(rowCount > 1) {
+				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
+			}
+			sb.append("</div>");
+		}
+		sb.append("</div>");
+	}
+	
+	private void renderSearchAndOptions(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+
+		Component searchCmp = ftE.getExtendedSearchComponent();
+		
+		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
+		boolean hideSearch = empty && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey()) && !ftE.isFilterEnabled() 
+				&& !ftE.isExtendedSearchExpanded() && !StringHelper.containsNonWhitespace(ftE.getQuickSearchString())
+				&& !ftE.isShowAlwaysSearchFields();
+		
+		if(searchCmp != null && ftE.isExtendedSearchExpanded()) {
+			renderer.render(searchCmp, sb, args);
+		}
+		
+		sb.append("<div class='o_table_toolbar clearfix'>");
+		
+		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
+		// search
+		if(!hideSearch && (searchCmp == null || !ftE.isExtendedSearchExpanded())
+				&& !ftE.isSearchLarge() && ftE.isSearchEnabled() && ftE.getSearchElement() != null) {
+			TextElement searchEl = ftE.getSearchElement();
+			if(StringHelper.containsNonWhitespace(searchEl.getPlaceholder())) {
+				searchEl.setPlaceholderKey(null, null);
+			}
+			renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
+			
+			if(ftE.getExtendedSearchButton() != null) {
+				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
+				renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, null);
+			} else {
+				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
+			}
+		}
+		
+		// num. of entries
+		if(!empty && ftE.isNumOfRowsEnabled()) {
+			sb.append(" ");
+			int rowCount = ftE.getTableDataModel().getRowCount();
+			if(rowCount == 1) {
+				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));
+			} else if(rowCount > 1) {
+				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
+			}
+		}
+		sb.append("</div>");
+		
+
+		sb.append("<div class='o_table_tools o_noprint'>");
+		
+		String filterIndication = null;
+		//filter
+		if(ftE.isFilterEnabled()) {
+			List<FlexiTableFilter> filters = ftE.getFilters();
+			if(filters != null && !filters.isEmpty()) {
+				filterIndication = renderFilterDropdown(sb, ftE, filters, translator);
+			}
+		}
+		
+		// order by
+		if(!empty && ftE.isSortEnabled()) {
+			List<FlexiTableSort> sorts = ftE.getSorts();
+			if(sorts != null && !sorts.isEmpty()) {
+				renderSortDropdown(sb, ftE, sorts, translator);
+			}
+		}
+		
+		// view custom / table
+		//switch type of tables
+		FlexiTableRendererType[] types = ftE.getAvailableRendererTypes();
+		if(!empty && types.length > 1) {
+			sb.append("<div class='btn-group'>");
+			for(FlexiTableRendererType type:types) {
+				renderHeaderSwitchType(type, renderer, sb, ftE, ubu, translator, renderResult, null);
+			}
+			sb.append("</div> ");
+		}
+		
+		// preferences columns
+		if(!empty && ftE.getCustomButton() != null && ftE.isCustomizeColumns()
+				&& (ftE.getRendererType() == null || ftE.getRendererType() == FlexiTableRendererType.classic)) {
+			sb.append("<div class='btn-group'>");
+			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, null);
+			sb.append("</div> ");
+		}
+		
+		// download
+		if(!empty && ftE.getExportButton() != null && ftE.isExportEnabled()) {
+			sb.append("<div class='btn-group'>");
+			ftE.getExportButton().setEnabled(!empty);
+			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, null);
+			sb.append("</div> ");
+		}
+		
+		if(StringHelper.containsNonWhitespace(filterIndication)) {
+			Form theForm = ftE.getRootForm();
+			String dispatchId = ftE.getFormDispatchId();
+			
+			sb.append("<div class='o_table_tools_indications'>").append(filterIndication)
+				// remove filter
+			  .append(" <a href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+					  new NameValuePair("rm-filter", "true")))
+			  .append("\" title=\"").append(translator.translate("remove.filters")).append("\">")
+			  .append("<i class='o_icon o_icon_remove o_icon-fw'> </i></a></div>"); 
+		}
+		
+		sb.append("</div>");
+		
+		sb.append("</div>");
+		
+	}
+	
+	protected final void renderHeaderButtonsOld(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		Component searchCmp = ftE.getExtendedSearchComponent();
 		
@@ -185,14 +361,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderer.render(searchCmp, sb, args);
 		}
 		
-		sb.append("<div class='row clearfix o_table_toolbar'>")
+		sb.append("<div class='row clearfix o_table_toolbar' style='background-color: green; '>")
 		  .append("<div class='col-sm-6 col-xs-12 o_table_toolbar_left'>");
 		if(!hideSearch && (searchCmp == null || !ftE.isExtendedSearchExpanded())) {
-			renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
+			// renderHeaderSearch(renderer, sb, ftE, ubu, translator, renderResult, args);
 		}
 		sb.append("</div>");
 
-		sb.append("<div class='col-sm-2 col-xs-4 o_table_row_count'>");
+		sb.append("<div class='col-sm-2 col-xs-4 o_table_row_count' style='background-color: purple; '>");
 		if(!empty && ftE.isNumOfRowsEnabled()) {
 			int rowCount = ftE.getTableDataModel().getRowCount();
 			if(rowCount == 1) {
@@ -201,7 +377,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entries"));
 			}
 		}
-		sb.append("</div><div class='col-sm-4 col-xs-8'><div class='pull-right'><div class='o_table_tools o_noprint'>");
+		sb.append("</div><div class='col-sm-4 col-xs-8'style='background-color: pink; '><div class='pull-right'><div class='o_table_tools o_noprint'>");
 		
 		String filterIndication = null;
 		//filter
@@ -261,10 +437,28 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("</div></div>");
 	}
 	
+	protected void renderHeaderQuickSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
+			RenderResult renderResult) {
+
+		if(ftE.isSearchEnabled()) {
+			boolean searchInput = ftE.getSearchElement() != null;
+			
+			if(searchInput) {
+				renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, null);
+	
+				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
+				if(ftE.getExtendedSearchButton() != null) {
+					renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, null);
+				}
+				sb.append("</div>");// close the div input-group-btn
+			}
+		} 
+	}
+	
 	protected void renderHeaderSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
-		if(ftE.isSearchEnabled() || ftE.getExtendedFilterButton() != null) {
+		if(ftE.isSearchEnabled()) {
 			Form theForm = ftE.getRootForm();
 			String dispatchId = ftE.getFormDispatchId();
 			boolean searchInput = ftE.getSearchElement() != null;
@@ -286,27 +480,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 					renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, null);
 				}
 			}
-			
-			StringBuilder filterIndication = new StringBuilder();
-			if(ftE.getExtendedFilterButton() != null) {
-				ftE.getSelectedExtendedFilters().forEach(filter -> {
-					if(filterIndication.length() > 0) filterIndication.append(", ");
-					filterIndication.append(filter.getLabel());
-				});
-				
-				renderFormItem(renderer, sb, ftE.getExtendedFilterButton(), ubu, translator, renderResult, args);
-			}
+
 			sb.append("</div>", searchInput);// close the div input-group-btn
 			sb.append("</div>");
-			if(filterIndication.length() > 0) {
-				sb.append("<div class='o_table_tools_indications").append("_filter_only", !searchInput).append("'>").append(filterIndication)
-				// remove filter
-				  .append("<a href=\"javascript:")
-				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
-						  new NameValuePair("rm-extended-filter", "true")))
-				  .append("\" title=\"").append(translator.translate("remove.filters")).append("\">")
-				  .append("<i class='o_icon o_icon_remove o_icon-fw'> </i></a></div>");
-			}
 		} else if(ftE.getExtendedSearchButton() != null) {
 			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);
 		}
@@ -324,14 +500,12 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		  .append("<div id='table-filters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 		
 		List<FlexiTableFilter> selectedFilters = ftE.getSelectedFilters();
-		List<FlexiTableFilter> selectedExtendedFilters = ftE.getSelectedExtendedFilters();
-		
-		
+
 		for(FlexiTableFilter filter:filters) {
 			if(FlexiTableFilter.SPACER.equals(filter)) {
 				sb.append("<li class='divider'></li>");
 			} else {
-				boolean isSelected = filter.isSelected() || (filter.isShowAll() && selectedFilters.isEmpty() && selectedExtendedFilters.isEmpty());
+				boolean isSelected = filter.isSelected() || (filter.isShowAll() && selectedFilters.isEmpty());
 				
 				sb.append("<li><a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
@@ -361,10 +535,30 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		Form theForm = ftE.getRootForm();
 		String dispatchId = ftE.getFormDispatchId();
 		
+		FlexiTableSort selectedSort = null;
+		for(FlexiTableSort sort:sorts) {
+			if(sort.isSelected()) {
+				selectedSort = sort;
+			}
+		}
+
 		sb.append("<div class='btn-group'>")
 		  .append("<button id='table-button-sorters-").append(dispatchId).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'")
-		  .append(" aria-label='").append(translator.translate("aria.sort")).append("'>")
-		  .append("<i class='o_icon o_icon_sort_menu o_icon-lg'> </i> <b class='caret'></b></button>")
+		  .append(" aria-label='").append(translator.translate("aria.sort")).append("'>");
+		
+		if(selectedSort != null) {
+			if(selectedSort.getSortKey().isAsc()) {
+				sb.append("<i class='o_icon o_icon_sort_amount_asc o_icon-lg'> </i> ");
+			} else {
+				sb.append("<i class='o_icon o_icon_sort_amount_desc o_icon-lg'> </i> ");
+			}
+			if(StringHelper.containsNonWhitespace(selectedSort.getLabel())) {
+				sb.append(selectedSort.getLabel()).append(" ");
+			}
+		} else {
+			sb.append("<i class='o_icon o_icon_sort_menu o_icon-lg'> </i> ");
+		}
+		sb.append("<b class='caret'></b></button>")
 		  .append("<div id='table-sorters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 		
 		for(FlexiTableSort sort:sorts) {
@@ -411,7 +605,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	protected void renderBreadcrumbs(StringOutput sb, FlexiTableElementImpl ftE) {
 		FlexiTreeTableNode rootCrumb = ftE.getRootCrumb();
 		List<FlexiTreeTableNode> crumbs = ftE.getCrumbs();
-		if(rootCrumb != null || crumbs.size() > 0) {
+		if(rootCrumb != null || !crumbs.isEmpty()) {
 			sb.append("<div class='o_breadcrumb o_table_flexi_breadcrumb'><ol class='breadcrumb'>");
 			if(rootCrumb != null) {
 				renderBreadcrumbs(sb, ftE, rootCrumb, "tt-root-crumb");
@@ -441,9 +635,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 	}
 	
-	protected void renderFooterButtons(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
+	protected void renderTreeButtons(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
-		if(ftE.isSelectAllEnable() || ftE.getTreeTableDataModel() != null) {
+		if(ftE.getTreeTableDataModel() != null) {
 			String dispatchId = ftE.getFormDispatchId();
 
 			if(ftE.getTreeTableDataModel() != null && ftE.getTreeTableDataModel().hasOpenCloseAll()) {
@@ -466,19 +660,28 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("</div></div>");
 			}
 		}
-		
-		if(ftE.getDefaultPageSize() > 0) {
-			renderPagesLinks(sb, ftC, translator);
-		}
 	}
 	
-	protected void renderFooterGroupedButtons(Renderer renderer, StringOutput sb, FlexiTableComponent ftC,
+	protected void renderBulkActions(Renderer renderer, StringOutput sb, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
-		List<FormItem> items = ftC.getFlexiTableElement().getBatchButtons();
-		if(items != null) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		List<FormItem> items = ftE.getBatchButtons();
+		if(items != null && !items.isEmpty()) {
 			boolean atLeastOneVisible = items.stream().anyMatch(FormItem::isVisible);
 			if(atLeastOneVisible) {
-				sb.append("<div class='o_button_group'>");
+				int numOf = ftE.getNumOfMultiSelectedIndex();
+				String entryI18n;
+				if(numOf <= 1) {
+					entryI18n = translator.translate("number.selected.entry", new String[] { Integer.toString(numOf) });
+				} else {
+					entryI18n = translator.translate("number.selected.entries", new String[] { Integer.toString(numOf) });
+				}
+				
+				String dispatchId = ftE.getFormDispatchId();	
+				sb.append("<div id='").append(dispatchId).append("_bab' class='o_button_group o_table_batch_buttons ")
+				  .append("o_table_batch_show", "o_table_batch_hide", ftE.hasMultiSelectedIndex()).append("'>")
+				  .append("<span id='").append(dispatchId).append("_mscount' class='o_table_batch_label'>")
+				  .append(entryI18n).append("</span> ");
 				for(FormItem item:items) {
 					renderFormItem(renderer, sb, item, ubu, translator, renderResult, args);
 				}
@@ -522,9 +725,11 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		int pageSize = ftE.getPageSize();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		int rows = dataModel.getRowCount();
+		
+		sb.append("<div class='o_table_pagination'>");
 
 		if (rows > ftE.getDefaultPageSize()) {
-			renderPageSize(sb, ftC, translator);
+			renderSmallPageSize(sb, ftC, translator);
 		}
 
 		if(pageSize > 0 && rows > pageSize) {
@@ -536,6 +741,54 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderPageNextLink(sb, ftC, page, maxPage);
 			sb.append("</ul>");
 		}
+		
+		sb.append("</div>");
+	}
+	
+	private void renderSmallPageSize(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+	
+		Form theForm = ftE.getRootForm();
+		String dispatchId = ftE.getFormDispatchId();
+		
+		int pageSize = ftE.getPageSize();
+		sb.append("<div class='o_table_rows_infos o_noprint'>")
+		  .append(translator.translate("page.size.a.small"))
+		  .append(" ")
+		  .append("<div class='btn-group dropup'><button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-expanded='false'>")
+	      .append("<span>");
+		if(pageSize < 0) {
+			sb.append(translator.translate("show.all"));
+		} else {
+			sb.append(Integer.toString(pageSize));
+		}
+		
+		sb.append("</span> <span class='caret'></span></button>")
+	      .append("<ul class='dropdown-menu' role='menu'>");
+		
+		int[] sizes = new int[]{ 20, 50, 100, 250 };
+		int defaultPageSize = ftE.getDefaultPageSize();
+		if (Arrays.binarySearch(sizes, defaultPageSize) < 0) {
+			sizes = new int[]{ 20, 50, 100, 250, defaultPageSize };
+			Arrays.sort(sizes);
+		}
+		for(int size:sizes) {
+			sb.append("<li><a href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+					  new NameValuePair("pagesize", Integer.toString(size))))
+			  .append("\">").append(Integer.toString(size)).append("</a></li>");
+		}
+		
+		if(ftE.isShowAllRowsEnabled()) {
+			sb.append("<li><a href=\"javascript:")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+					  new NameValuePair("pagesize", "all")))
+			  .append("\">").append(translator.translate("show.all")).append("</a></li>");
+		}
+		  
+		sb.append("</ul></div>")
+		  .append(" ").append(translator.translate("page.size.b"))
+		  .append("</div> ");
 	}
 	
 	private void renderPageSize(StringOutput sb, FlexiTableComponent ftC, Translator translator) {

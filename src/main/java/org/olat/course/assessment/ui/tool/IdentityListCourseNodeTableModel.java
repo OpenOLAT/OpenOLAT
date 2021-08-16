@@ -20,7 +20,6 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentMap;
@@ -28,20 +27,16 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.CourseNode;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 
 /**
@@ -51,7 +46,7 @@ import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
  *
  */
 public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel<AssessedIdentityElementRow>
-	implements SortableFlexiTableDataModel<AssessedIdentityElementRow>, FilterableFlexiTableModel {
+	implements SortableFlexiTableDataModel<AssessedIdentityElementRow> {
 	
 	private static final Logger log = Tracing.createLoggerFor(IdentityListCourseNodeTableModel.class);
 	private static final IdentityCourseElementCols[] COLS = IdentityCourseElementCols.values();
@@ -62,7 +57,6 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	private Float maxScore;
 	private Float cutValue;
 	private final CourseNode courseNode;
-	private List<AssessedIdentityElementRow> backups;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
 	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, CourseNode courseNode, Locale locale) {
@@ -85,45 +79,6 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 
 	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
 		this.certificateMap = certificateMap;
-	}
-
-	@Override
-	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
-		if(StringHelper.containsNonWhitespace(key)) {
-			List<AssessedIdentityElementRow> filteredRows = new ArrayList<>();
-			if("passed".equals(key)) {
-				for(AssessedIdentityElementRow row:backups) {
-					if(row.getPassed() != null && row.getPassed().booleanValue()) {
-						filteredRows.add(row);
-					}
-				}
-			} else if("failed".equals(key)) {
-				for(AssessedIdentityElementRow row:backups) {
-					if(row.getPassed() != null && !row.getPassed().booleanValue()) {
-						filteredRows.add(row);
-					}
-				}
-			} else if(AssessmentEntryStatus.isValueOf(key)) {
-				for(AssessedIdentityElementRow row:backups) {
-					if(row.getAssessmentStatus() != null
-							&& key != null && key.equals(row.getAssessmentStatus().name())) {
-						filteredRows.add(row);
-					}
-				}
-			} else {
-				filteredRows.addAll(backups);
-			}
-			super.setObjects(filteredRows);
-		} else {
-			super.setObjects(backups);
-		}
-	}
-
-	@Override
-	public void setObjects(List<AssessedIdentityElementRow> objects) {
-		backups = objects;
-		super.setObjects(objects);
 	}
 
 	@Override

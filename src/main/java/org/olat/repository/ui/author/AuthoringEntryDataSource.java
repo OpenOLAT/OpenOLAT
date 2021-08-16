@@ -34,18 +34,25 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 import org.olat.repository.ui.PriceMethod;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
@@ -73,14 +80,12 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	private final LicenseService licenseService;
 	private final AuthoringEntryDataSourceUIFactory uifactory;
 	private Integer count;
-	private final boolean useFilters;
 	private final boolean taxonomyEnabled;
 	
 	public AuthoringEntryDataSource(SearchAuthorRepositoryEntryViewParams searchParams,
-			AuthoringEntryDataSourceUIFactory uifactory, boolean useFilters, boolean taxonomyEnabled) {
+			AuthoringEntryDataSourceUIFactory uifactory, boolean taxonomyEnabled) {
 		this.searchParams = searchParams;
 		this.uifactory = uifactory;
-		this.useFilters = useFilters;
 		this.taxonomyEnabled = taxonomyEnabled;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
@@ -109,29 +114,27 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 
 	@Override
 	public final ResultInfos<AuthoringEntryRow> getRows(String query, List<FlexiTableFilter> filters,
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+			int firstResult, int maxResults, SortKey... orderBy) {
 
-		if(filters != null && !filters.isEmpty()) {
-			String filter = filters.get(0).getFilter();
-			if(StringHelper.containsNonWhitespace(filter)) {
-				searchParams.setResourceTypes(Collections.singletonList(filter));
-			} else {
-				searchParams.setResourceTypes(null);
+		if(StringHelper.containsNonWhitespace(query)) {
+			searchParams.setIdRefsAndTitle(query);
+		} else {
+			searchParams.setIdRefsAndTitle(null);
+		}
+		
+		if(filters == null) {
+			searchParams.reset();
+		} else {
+			searchParams.reset();
+			for(FlexiTableFilter filter:filters) {
+				setFilterValue(filter);
 			}
-		} else if(useFilters) {
-			searchParams.setResourceTypes(null);
 		}
 		
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			OrderBy o = OrderBy.valueOf(orderBy[0].getKey());
 			searchParams.setOrderBy(o);
 			searchParams.setOrderByAsc(orderBy[0].isAsc());
-		}
-		
-		if(StringHelper.containsNonWhitespace(query)) {
-			searchParams.setIdRefsAndTitle(query);
-		} else {
-			searchParams.setIdRefsAndTitle(null);
 		}
 		
 		RepositoryEntryAuthorViewResults viewResults = repositoryService.searchAuthorView(searchParams, firstResult, maxResults);
@@ -142,6 +145,102 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			count = Integer.valueOf(views.size() );
 		}
 		return results;
+	}
+	
+	public enum AuthorSourceFilter {
+		MARKED,
+		OWNED,
+		STATUS,
+		TYPE,
+		ID,
+		AUTHOR,
+		DISPLAYNAME,
+		DESCRIPTION,
+		TECHNICALTYPE,
+		EDUCATIONALTYPE,
+		TAXONOMYLEVEL,
+		LICENSE,
+		USAGE
+	}
+	
+	private void setFilterValue(FlexiTableFilter filter) {
+		switch(AuthorSourceFilter.valueOf(filter.getFilter())) {
+			case MARKED: 
+				if(StringHelper.containsNonWhitespace(((FlexiTableExtendedFilter)filter).getValue())) {
+					searchParams.setMarked(Boolean.TRUE);
+				} else {
+					searchParams.setMarked(null);
+				}
+				break;
+			case OWNED:
+				boolean ownedOnly = StringHelper.containsNonWhitespace(((FlexiTableExtendedFilter)filter).getValue());
+				searchParams.setOwnedResourcesOnly(ownedOnly);
+				break;
+			case STATUS:
+				String selectedStatus = ((FlexiTableSingleSelectionFilter)filter).getValue();
+				if("active".equals(selectedStatus)) {
+					searchParams.setClosed(Boolean.FALSE);
+					searchParams.setDeleted(false);
+				} else if("closed".equals(selectedStatus)) {
+					searchParams.setClosed(Boolean.TRUE);
+					searchParams.setDeleted(false);
+				} else if("deleted".equals(selectedStatus)) {
+					searchParams.setClosed(null);
+					searchParams.setDeleted(true);
+				} else {
+					searchParams.setDeleted(false);
+					searchParams.setClosed(null);
+				}
+				break;
+			case TYPE:
+				searchParams.setResourceTypes(((FlexiTableMultiSelectionFilter)filter).getValues());
+				break;
+			case ID:
+				searchParams.setIdAndRefs(((FlexiTableTextFilter)filter).getValue());
+				break;
+			case AUTHOR: 
+				searchParams.setAuthor(((FlexiTableTextFilter)filter).getValue());
+				break;
+			case DISPLAYNAME:
+				searchParams.setDisplayname(((FlexiTableTextFilter)filter).getValue());
+				break;
+			case DESCRIPTION:
+				searchParams.setDescription(((FlexiTableTextFilter)filter).getValue());
+				break;
+			case TECHNICALTYPE:
+				List<String> technicalTypes = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				searchParams.setTechnicalTypes(technicalTypes);
+				break;
+			case EDUCATIONALTYPE:
+				List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
+				searchParams.setEducationalTypeKeys(educationalTypes);
+				break;
+			case TAXONOMYLEVEL:
+				List<String> taxonomyLevelKeys = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				List<TaxonomyLevelRef> taxonomyLevels = null;
+				if(taxonomyLevelKeys != null) {
+					taxonomyLevels = taxonomyLevelKeys
+						.stream().filter(StringHelper::isLong)
+						.map(Long::valueOf)
+						.map(TaxonomyLevelRefImpl::new)
+						.collect(Collectors.toList());
+				}
+				searchParams.setTaxonomyLevels(taxonomyLevels);
+				break;
+			case LICENSE:
+				List<Long> licenseTypeKeys = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
+				searchParams.setLicenseTypeKeys(licenseTypeKeys);
+				break;
+			case USAGE:
+				String usageKey = ((FlexiTableSingleSelectionFilter)filter).getValue();
+				if(StringHelper.containsNonWhitespace(usageKey)) {
+					searchParams.setResourceUsage(ResourceUsage.valueOf(usageKey));
+				} else {
+					searchParams.setResourceUsage(null);
+				}
+				break;
+				
+		}
 	}
 
 	private List<AuthoringEntryRow> processViewModel(List<RepositoryEntryAuthorView> repoEntries) {

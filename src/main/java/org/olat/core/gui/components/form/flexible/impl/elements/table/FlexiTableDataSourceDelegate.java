@@ -37,5 +37,5 @@ public interface FlexiTableDataSourceDelegate<V> {
 	
 	public List<V> reload(List<V> rows);
 	
-	public ResultInfos<V> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<V> getRows(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy);
 }

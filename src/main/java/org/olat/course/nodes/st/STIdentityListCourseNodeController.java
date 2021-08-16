@@ -125,6 +125,7 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(courseNode.getParent() == null && pdfModule.isEnabled()) {
 			pdfButton = uifactory.addFormLink("bulk.pdf", formLayout, Link.BUTTON); 
 			pdfButton.setIconLeftCSS("o_icon o_icon_tool_pdf");
+			tableEl.addBatchButton(pdfButton);
 		} else {
 			tableEl.setMultiSelect(false);
 			tableEl.setSelectAllEnable(false);

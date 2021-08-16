@@ -27,11 +27,13 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
@@ -104,29 +106,36 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 
 	@Override
 	public final ResultInfos<RepositoryEntryRow> getRows(String query, List<FlexiTableFilter> filters, 
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+			int firstResult, int maxResults, SortKey... orderBy) {
 		
-		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
-			String filter = filters.get(0).getFilter();
-			if(StringHelper.containsNonWhitespace(filter)) {
-				searchParams.setFilters(Collections.singletonList(Filter.valueOf(filter)));
+		if(filters != null && !filters.isEmpty()) {
+			if(filters.get(0) instanceof FlexiTableExtendedFilter) {
+				resetFilters();
+				for(FlexiTableFilter filter:filters) {
+					setFilter(filter);
+				}
 			} else {
-				searchParams.setFilters(null);
+				String filter = filters.get(0).getFilter();
+				if(StringHelper.containsNonWhitespace(filter)) {
+					searchParams.setFilters(Collections.singletonList(Filter.valueOf(filter)));
+				} else {
+					searchParams.setFilters(null);
+				}
 			}
 		} else {
-			searchParams.setFilters(null);
-		}
-		
-		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
-			OrderBy o = OrderBy.valueOf(orderBy[0].getKey());
-			searchParams.setOrderBy(o);
-			searchParams.setOrderByAsc(orderBy[0].isAsc());
+			resetFilters();
 		}
 
 		if(StringHelper.containsNonWhitespace(query)) {
 			searchParams.setIdRefsAndTitle(query);
 		} else {
 			searchParams.setIdRefsAndTitle(null);
+		}
+		
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			OrderBy o = OrderBy.valueOf(orderBy[0].getKey());
+			searchParams.setOrderBy(o);
+			searchParams.setOrderByAsc(orderBy[0].isAsc());
 		}
 		
 		List<RepositoryEntryMyView> views = repositoryService.searchMyView(searchParams, firstResult, maxResults);
@@ -136,6 +145,48 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			count = Integer.valueOf(views.size());
 		}
 		return results;
+	}
+	
+	private void resetFilters() {
+		searchParams.setIdRefsAndTitle(null);
+		searchParams.setMarked(null);
+		searchParams.setMembershipMandatory(true);
+		searchParams.setFilters(null);
+		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
+	}
+	
+	private void setFilter(FlexiTableFilter filter) {
+		switch(FilterButton.valueOf(filter.getFilter())) {
+			case MARKED:
+				searchParams.setMarked(Boolean.TRUE);
+				break;
+			case OWNED:
+				String ownedValue = ((FlexiTableExtendedFilter)filter).getValue();
+				searchParams.setMembershipMandatory(StringHelper.containsNonWhitespace(ownedValue));
+				break;
+			case STATUS:
+				String value = ((FlexiTableExtendedFilter)filter).getValue();
+				if("closed".equals(value)) {
+					searchParams.setEntryStatus(new RepositoryEntryStatusEnum[] {RepositoryEntryStatusEnum.closed });
+				} else {
+					searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
+				}
+				break;
+			default:
+				String val = null;
+				searchParams.setFilters(Collections.singletonList(Filter.valueOf(val)));
+				break;
+		}
+	}
+	
+	public enum FilterButton {
+		MARKED,
+		OWNED,
+		STATUS,
+		PASSED,
+		BOOKING,
+		DATES
+		
 	}
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {

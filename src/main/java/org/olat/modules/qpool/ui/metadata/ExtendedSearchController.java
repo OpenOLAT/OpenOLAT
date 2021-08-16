@@ -68,7 +68,6 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	
 	private final SearchAttributes searchAttributes;
 	private final List<ConditionalQuery> uiQueries = new ArrayList<>();
-	private final List<String> condQueries = new ArrayList<>();
 	
 	private final String prefsKey;
 	private ExtendedSearchPrefs prefs;
@@ -201,11 +200,6 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		prefs.setCondQueries(params);
 		ureq.getUserSession().getGuiPreferences().putAndSave(ExtendedFlexiTableSearchController.class, prefsKey, prefs);
 		fireEvent(ureq, new QPoolSearchEvent(searchParams));
-	}
-	
-	@Override
-	public List<String> getConditionalQueries() {
-		return condQueries;
 	}
 
 	@Override

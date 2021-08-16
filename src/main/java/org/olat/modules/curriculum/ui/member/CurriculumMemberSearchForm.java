@@ -20,7 +20,6 @@
 package org.olat.modules.curriculum.ui.member;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,11 +140,6 @@ public class CurriculumMemberSearchForm extends FormBasicController implements E
 	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
-	}
-
-	@Override
-	public List<String> getConditionalQueries() {
-		return Collections.emptyList();
 	}
 
 	@Override

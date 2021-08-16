@@ -68,7 +68,7 @@ public class BigBlueButtonMeetingDataSource implements FlexiTableDataSourceDeleg
 	}
 
 	@Override
-	public ResultInfos<BigBlueButtonMeetingAdminInfos> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries,
+	public ResultInfos<BigBlueButtonMeetingAdminInfos> getRows(String query, List<FlexiTableFilter> filters,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		if(StringHelper.containsNonWhitespace(query)) {
 			searchParams.setSearchString(query);

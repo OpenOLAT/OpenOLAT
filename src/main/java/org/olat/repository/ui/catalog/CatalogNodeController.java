@@ -165,7 +165,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		searchParams.setParentEntry(catalogEntry);
 		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 		
-		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, false, "catalog", stackPanel);
+		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, false, false, "catalog", stackPanel);
 		if(!entryListController.isEmpty() || searchParams.getFilters() != null) {
 			mainVC.put("entries", entryListController.getInitialComponent());
 		}
@@ -177,7 +177,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		searchClosedParams.setParentEntry(catalogEntry);
 		searchClosedParams.setEntryStatus(RepositoryEntryStatusEnum.closed());
 		
-		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, false, "catalog-closed", stackPanel);
+		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, false, false, "catalog-closed", stackPanel);
 
 		if(!closedEntryListController.isEmpty() || searchClosedParams.getFilters() != null) {
 			mainVC.put("closedEntries", closedEntryListController.getInitialComponent());
@@ -207,7 +207,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 			String node = ureq.getParameter("node");
 			if(StringHelper.isLong(node)) {
 				try {
-					Long categoryNodeKey = new Long(node);
+					Long categoryNodeKey = Long.valueOf(node);
 					CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
 					selectCatalogEntry(ureq, entry);
 				} catch (NumberFormatException e) {

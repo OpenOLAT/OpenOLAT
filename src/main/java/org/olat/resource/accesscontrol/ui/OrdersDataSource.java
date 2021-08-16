@@ -101,7 +101,7 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	}
 
 	@Override
-	public ResultInfos<OrderTableItem> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries,
+	public ResultInfos<OrderTableItem> getRows(String query, List<FlexiTableFilter> filters,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		OrderStatus[] states = null;

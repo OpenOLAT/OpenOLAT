@@ -34,6 +34,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -43,10 +44,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -87,13 +91,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessedIdentityListController extends FormBasicController implements Activateable2 {
 
+	
 	private final RepositoryEntry testEntry;
 	private final AssessableResource element;
 	private SearchAssessedIdentityParams searchParams;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	protected final AssessmentToolSecurityCallback assessmentCallback;
 	
-	private Link nextLink, previousLink;
+	private Link nextLink;
+	private Link previousLink;
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	private AssessedIdentityListTableModel usersTableModel;
@@ -186,13 +192,21 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), testEntry, testEntry, null, assessmentCallback), ureq.getUserSession());
 		
-		List<FlexiTableFilter> filters = new ArrayList<>();
-		filters.add(new FlexiTableFilter(translate("filter.passed"), "passed"));
-		filters.add(new FlexiTableFilter(translate("filter.failed"), "failed"));
-		filters.add(new FlexiTableFilter(translate("filter.inProgress"), "inProgress"));
-		filters.add(new FlexiTableFilter(translate("filter.inReview"), "inReview"));
-		filters.add(new FlexiTableFilter(translate("filter.done"), "done"));
-		tableEl.setFilters("", filters, false);
+		initFilters();
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// life-cycle
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry("passed", translate("filter.passed")));
+		statusValues.add(SelectionValues.entry("failed", translate("filter.failed")));
+		statusValues.add(SelectionValues.entry("inProgress", translate("filter.inProgress")));
+		statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
+		statusValues.add(SelectionValues.entry("done", translate("filter.done")));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.status"), "status",
+				statusValues, true, true));
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			List<BusinessGroup> coachedGroups;
@@ -204,15 +218,17 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			}
 
 			if(!coachedGroups.isEmpty()) {
-				List<FlexiTableFilter> groupFilters = new ArrayList<>();
+				SelectionValues groupValues = new SelectionValues();
 				for(BusinessGroup coachedGroup:coachedGroups) {
 					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
-					groupFilters.add(new FlexiTableFilter(groupName, coachedGroup.getKey().toString(), "o_icon o_icon_group"));
+					groupValues.add(new SelectionValue(coachedGroup.getKey().toString(), groupName, null, "o_icon o_icon_group", null, true));
 				}
-				
-				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
+				filters.add(new FlexiTableSingleSelectionFilter(translate("filter.groups"), "groups",
+						groupValues, true, true));
 			}
 		}
+
+		tableEl.setFilters(true, filters, true);
 	}
 	
 	public class AToolsOptions extends AssessmentToolOptions {
@@ -223,7 +239,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 	}
 	
-	protected void updateModel(String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
+	protected void updateModel(String searchString, List<FlexiTableFilter> filters) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
 		
 		List<AssessmentEntryStatus> assessmentStatus = null;
@@ -242,6 +258,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		params.setAssessmentStatus(assessmentStatus);
 		
 		List<Long> businessGroupKeys = null;
+		//TODO table
+		/*
 		if(extendedFilters != null && !extendedFilters.isEmpty()) {
 			businessGroupKeys = new ArrayList<>(extendedFilters.size());
 			for(FlexiTableFilter extendedFilter:extendedFilters) {
@@ -250,6 +268,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				}
 			}
 		}
+		*/
 		params.setBusinessGroupKeys(businessGroupKeys);
 		params.setSearchString(searchString);
 		
@@ -290,18 +309,15 @@ public class AssessedIdentityListController extends FormBasicController implemen
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		String filter = null;
 		if(state instanceof AssessedIdentityListState) {
 			AssessedIdentityListState listState = (AssessedIdentityListState)state;
-			if(StringHelper.containsNonWhitespace(listState.getFilter())) {
-				filter = listState.getFilter();
-			}
+			listState.setValuesToFilter(tableEl.getExtendedFilters());
+			//TODO table
 		}
 
-		tableEl.setSelectedFilterKey(filter);
-		updateModel(null, tableEl.getSelectedFilters(), null);
+		updateModel(null, tableEl.getSelectedFilters());
 		
-		if(entries != null && entries.size() > 0) {
+		if(entries != null && !entries.isEmpty()) {
 			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Identity".equals(resourceType)) {
 				Long identityKey = entries.get(0).getOLATResourceable().getResourceableId();
@@ -334,16 +350,16 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(currentIdentityCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				updateModel(null, null, null);
+				updateModel(null, null);
 			} else if(event == Event.DONE_EVENT) {
-				updateModel(null, null, null);
+				updateModel(null, null);
 				stackPanel.popController(currentIdentityCtrl);
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentIdentityCtrl);
 			}
 		} else if(toolsCtrl != null && toolsCtrl.contains(source)) {
 			if(event == Event.CHANGED_EVENT) {
-				updateModel(null, null, null);
+				updateModel(null, null);
 			}
 		}
 		super.event(ureq, source, event);
@@ -361,7 +377,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
-				updateModel(ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
+				updateModel(ftse.getSearch(), ftse.getFilters());
 			}
 		}
 		

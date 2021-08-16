@@ -1,0 +1,12 @@
+#if($r.isNotNull($numOfItems) && $numOfItems > 15) 
+<div class="clearfix">
+	<div class="input-group">$r.render("quicksearch")<div class="input-group-btn">$r.render("resetQuickSearch") $r.render("quickSearchButton")</div></div>
+</div>
+#end
+<div class="clearfix #if($r.isNotNull($numOfItems) && $numOfItems > 15) o_filter_search_list_values #end">
+$r.render("list")
+</div>
+#if($f.hasError("list"))
+	<br>$r.render("list_ERROR")
+#end
+<div class="o_block">$r.render("update") $r.render("clear")</div>

@@ -163,7 +163,7 @@ public class DataCollectionListController extends FormBasicController implements
 			DataCollectionRow row = dataModel.getObjectByKey(key);
 			if (row == null) {
 				dataModel.clear();
-				dataModel.load(null, null, null, 0, -1);
+				dataModel.load(null, null, 0, -1);
 				row = dataModel.getObjectByKey(key);
 				if (row != null) {
 					int index = dataModel.getObjects().indexOf(row);

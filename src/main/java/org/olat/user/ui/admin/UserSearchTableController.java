@@ -768,7 +768,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 
 		@Override
 		public ResultInfos<IdentityPropertiesRow> getRows(String query, List<FlexiTableFilter> filters,
-				List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+				int firstResult, int maxResults, SortKey... orderBy) {
 			return new DefaultResultInfos<>();
 		}
 	}

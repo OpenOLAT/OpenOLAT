@@ -21,8 +21,14 @@ package org.olat.modules.assessment.ui;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -33,44 +39,81 @@ import org.olat.core.id.context.StateEntry;
 public class AssessedIdentityListState implements StateEntry {
 
 	private static final long serialVersionUID = -6546620154750599626L;
+	private static final Logger log = Tracing.createLoggerFor(AssessedIdentityListState.class);
+
+	public static final String FILTER_STATUS = "status";
+	public static final String FILTER_GROUPS = "groups";
 	
-	private String filter;
-	private List<FlexiTableFilter> extendedFilters;
+	private String status;
+	private List<String> groupKeys;
 	
 	public AssessedIdentityListState() {
 		//
 	}
 	
-	public AssessedIdentityListState(String filter) {
-		this.filter = filter;
+	public AssessedIdentityListState(String status, List<String> groupKeys) {
+		this.status = status;
+		this.groupKeys = groupKeys;
 	}
 	
-	public AssessedIdentityListState(String filter, List<FlexiTableFilter> extendedFilters) {
-		this.filter = filter;
-		this.extendedFilters = extendedFilters;
+	public static AssessedIdentityListState valueOf(String statusValue) {
+		return new AssessedIdentityListState(statusValue, null);
+	}
+	
+	public static AssessedIdentityListState valueOf(List<FlexiTableFilter> filters) {
+		AssessedIdentityListState state = new AssessedIdentityListState();
+		for(FlexiTableFilter filter:filters) {
+			if(FILTER_STATUS.equals(filter.getFilter()) && filter.isSelected()) {
+				if(filter instanceof FlexiTableSingleSelectionFilter) {
+					state.setStatus(((FlexiTableSingleSelectionFilter)filter).getValue());
+				} else {
+					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
+				}
+			} else if(FILTER_GROUPS.equals(filter.getFilter())) {
+				if(filter instanceof FlexiTableMultiSelectionFilter) {
+					state.setGroupKeys(((FlexiTableMultiSelectionFilter)filter).getValues());
+				} else {
+					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
+				}
+			}
+		}
+		return state;
+	}
+	
+	public void setValuesToFilter(List<FlexiTableExtendedFilter> filters) {
+		for(FlexiTableExtendedFilter filter:filters) {
+			if(FILTER_STATUS.equals(filter.getFilter())
+					&& StringHelper.containsNonWhitespace(getStatus())
+					&& filter instanceof FlexiTableSingleSelectionFilter) {
+				((FlexiTableSingleSelectionFilter)filter).setValue(getStatus());
+				((FlexiTableSingleSelectionFilter)filter).setVisible(true);
+			} else if(FILTER_GROUPS.equals(filter.getFilter())
+					&& getGroupKeys() != null
+					&& filter instanceof FlexiTableMultiSelectionFilter) {
+				((FlexiTableMultiSelectionFilter)filter).setValues(getGroupKeys());
+				((FlexiTableMultiSelectionFilter)filter).setVisible(true);
+			}
+		}
 	}
 
-	public String getFilter() {
-		return filter;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setFilter(String filter) {
-		this.filter = filter;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
-	public List<FlexiTableFilter> getExtendedFilters() {
-		return extendedFilters;
+	public List<String> getGroupKeys() {
+		return groupKeys;
 	}
 
-	public void setExtendedFilters(List<FlexiTableFilter> extendedFilters) {
-		this.extendedFilters = extendedFilters;
+	public void setGroupKeys(List<String> groupKeys) {
+		this.groupKeys = groupKeys;
 	}
 
 	@Override
 	public AssessedIdentityListState clone() {
-		AssessedIdentityListState clone = new AssessedIdentityListState();
-		clone.setFilter(getFilter());
-		clone.setExtendedFilters(getExtendedFilters());
-		return clone;
+		return new AssessedIdentityListState(status, groupKeys);
 	}
 }

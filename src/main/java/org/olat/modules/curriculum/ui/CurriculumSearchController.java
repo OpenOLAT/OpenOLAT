@@ -19,9 +19,7 @@
  */
 package org.olat.modules.curriculum.ui;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
@@ -110,11 +108,6 @@ public class CurriculumSearchController extends FormBasicController implements E
 	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
-	}
-
-	@Override
-	public List<String> getConditionalQueries() {
-		return Collections.emptyList();
 	}
 
 	@Override

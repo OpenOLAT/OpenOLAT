@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.util.UserSession;
@@ -265,6 +266,8 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public void setSearchEnabled(boolean enable);
 	
+	public void setSearchEnabled(boolean enable, boolean large);
+	
 	/**
 	 * Enable the search with a suggestions provider.
 	 * 
@@ -369,15 +372,21 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public void collapseExtendedSearch();
 	
-	/**
-	 * Setup a filter button right of the quick search
-	 * @param label
-	 */
-	public void setExtendedFilterButton(String label, List<FlexiTableFilter> extendedFilters);
+	public boolean isFiltersEnabled();
 	
-	public List<FlexiTableFilter> getSelectedExtendedFilters();
+	public List<FlexiTableExtendedFilter> getExtendedFilters();
 	
-	public void setSelectedExtendedFilters(List<FlexiTableFilter> filters);
+	public void setFilters(boolean enable, List<FlexiTableExtendedFilter> filters, boolean alwaysOn);
+	
+	public void setFiltersValues(String quickSearch, List<FlexiTableFilterValue> values);
+	
+	public void expandFilters(boolean expand);
+	
+	public boolean isFilterTabsEnabled();
+	
+	public void setFilterTabs(boolean enable, List<FlexiFiltersTab> tabs);
+	
+	public void setSelectedFilterTab(FlexiFiltersTab tab);
 	
 	/**
 	 * Is the details view visible for this particular row?

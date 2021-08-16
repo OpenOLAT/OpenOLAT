@@ -708,6 +708,35 @@ div.o_reminder_custom_email {
 	}
 }
 
+.o_segments.o_segments_tab {
+	border-bottom: 1px solid $o-content-link-color;
+	width: 100%;
+
+	.btn, .btn:hover, .btn:active, .btn:focus {
+		border: none;
+		border-radius: 0;
+		border-color: white;
+		border-bottom: 4px solid white;
+		box-shadow: none;
+		background: none;
+		padding-right: 0;
+		padding-left: 0;
+		margin-right: 1em;
+	}
+	.btn.btn-primary, .btn.btn-primary:hover, .btn.btn-primary:active, .btn.btn-primary:focus {
+		background: none;
+		border-color: $o-content-link-color;
+	}
+	.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus {
+		color: $o-content-link-color;
+		background: none;
+	}
+	.o_segment_separator {
+		color: #000;
+	}
+
+}
+
 /* Tabbed pane component */
 .o_tabbed_pane { 
 	.o_tabbed_pane_content {

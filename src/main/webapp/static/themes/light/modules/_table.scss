@@ -28,10 +28,6 @@
 		background-color: $o-table-edit-bg;
 	}
 
-	.o_table_search {
-		max-width:50em;
-	}
-
 	.o_table_footer {
 		.o_table_expandall>a {
 			font-weight: normal;
@@ -143,18 +139,133 @@
 	}
 }
 
-.o_table_search {
-	a.btn.o_reset_quick_search {
-		width: 38px;
-		margin-left: -38px;
-		z-index:5;
-		color: grey;
+.o_table_tabs {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	
+	border-bottom: 1px solid $o-content-link-color;
+
+	ul.o_segments.o_segments_tab {
+		padding: 0;
+		margin: 0;
+		flex: 1;
+		border-bottom: none;
 	}
 	
-	>label {
-		display: inline;
+	ul>li {
+		display: inline-block;
+	}
+	
+	>a.o_table_remove_filters {
+		display: block;
 	}
 }
+
+.o_table_filters_wrapper {
+	z-index: 3;
+	position: relative;
+	text-align: center;
+
+	.o_table_filters_row {
+		padding: 10px 0 10px 0;
+		
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+
+		>ul.o_table_filters {
+			flex: 1;
+
+			>li {
+				margin-left: 0px;
+				margin-right: 2px;
+			}
+		}
+		>ul.o_table_filters_config {
+			margin-left: 1em;
+		}
+		
+		a.btn {
+			padding: 6px 12px;
+			margin-right: 2px;
+			margin-bottom: 2px;
+			background-image: none;
+			filter: none;
+		}
+	}
+	
+	>.o_button_group {
+		border-top: 1px solid $o-content-link-color;
+		margin: 0;
+	}
+	
+	&.o_collpased>.o_button_group {
+		margin-top: -1px;
+	}
+	
+	&.always-on {
+		margin-bottom: 4px;
+		
+		.o_table_filters_row {
+			padding: 0;
+			border-bottom: none;
+		}
+	}
+	
+	.o_button_details {
+		margin: -2px auto 0 auto;
+		
+		padding: 0px 8px;
+		border: $o-cn-style-border;
+		border-top: 0px;
+		border-top-left-radius: 0px;
+		border-top-right-radius: 0px;
+	
+		>span {
+			display: none;
+		}
+	}
+}
+
+.o_table_batch_buttons {
+	margin: 0.7em 0 0 0;
+	text-align: left;
+	
+	&.o_table_batch_hide {
+		display: none;
+	}
+	
+	>span {
+		display: inline-block;
+		vertical-align: middle;
+		margin-bottom: 0.5em;
+	}
+	.o_table_batch_label {
+		padding-right: 1em;
+	}
+}
+
+.input-group .input-group-btn .o_reset_filter_search {
+	width: 38px;
+	margin-left: -38px;
+	z-index:5;
+	color: grey;
+}
+
+.o_filter_search_list_values {
+	max-height: 300px;
+	overflow-y: scroll;
+	margin-right: -15px;
+}
+
+a.o_filter_clear {
+	padding-left: 1em;
+
+}
+
 
 .o_breadcrumb.o_table_flexi_breadcrumb ol.breadcrumb {
 	margin: 5px 0 0 0;
@@ -226,7 +337,6 @@ a.o_orderby, a.o_orderby:hover {
 }
 
 .o_table_tools_indications, .o_table_tools_indications_filter_only {
-	margin-left: 10px;
 	padding-top:3px;
 	font-size:80%;
 	
@@ -245,6 +355,78 @@ a.o_orderby, a.o_orderby:hover {
 	padding: 0 $panel-body-padding;
 }
 
+.o_table_search, .o_table_large_search {
+	input[type='text'] {
+		max-width: 300px;
+		display: inline-block;
+		border-bottom-right-radius: 0;
+		border-top-right-radius: 0;
+		// vertical-align: middle !important;
+	}
+	
+	input[type='text']:focus ~ a.btn {
+		$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+		outline: 0;
+		@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px $color-rgba);
+		border-color: $input-border-focus;
+	}
+	
+	a.btn.o_table_search_button, a.btn.o_sel_flexi_extendedsearch {
+		display: inline-block;
+		color: grey;
+		border-bottom-left-radius: 0;
+		border-top-left-radius: 0;
+		border-left: none;
+		margin: -1px 1em 0px -1px;
+		vertical-align: baseline;
+		@include box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
+	
+		>span {
+			display: none;
+		}
+	}
+}
+
+.o_table_search.o_table_search_extended a.btn.o_table_search_button {
+	margin-right: 0;
+	color: black;
+	border-bottom-right-radius: 0;
+	border-top-right-radius: 0;
+	border-right: none;
+	
+	>span {
+		display: inline-block;
+	}
+}
+
+.o_table_search.o_table_search_extended a.btn.o_sel_flexi_extendedsearch {
+	color: black;
+	
+	>span {
+		display: inline-block;
+	}
+}
+
+.o_table_toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	
+	.o_table_search {
+		flex: 1;
+	}
+}
+
+.o_table_large_search {
+	text-align: center;
+	padding: 15px 20px;
+	
+	input[type='text'] {
+		max-width: 400px;
+	}
+}
+
 .o_table_filter {
 	.control-label {
 		margin-right: 0.5em;
@@ -260,6 +442,13 @@ a.o_orderby, a.o_orderby:hover {
 			font-weight: normal;
 		}
 	}
+}
+
+.o_table_flexi .o_table_pagination {
+	ul {
+	
+	}
+	
 }
 
  table tr.o_no_border td,

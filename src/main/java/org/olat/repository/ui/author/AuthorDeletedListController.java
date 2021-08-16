@@ -31,10 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -42,15 +39,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
-import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 
 /**
  * 
@@ -70,7 +63,7 @@ public class AuthorDeletedListController extends AuthorListController {
 	
 	public AuthorDeletedListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch) {
-		super(ureq, wControl, i18nName, searchParams, withSearch, false);
+		super(ureq, wControl);
 	}
 
 	@Override
@@ -80,7 +73,7 @@ public class AuthorDeletedListController extends AuthorListController {
 
 	@Override
 	protected void initActionsColumns(FlexiTableColumnModel columnsModel) {
-
+/*
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.deletedBy.i18nKey(), Cols.deletedBy.ordinal(),
 				true, OrderBy.deletedBy.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.deletionDate.i18nKey(), Cols.deletionDate.ordinal(),
@@ -95,11 +88,13 @@ public class AuthorDeletedListController extends AuthorListController {
 			toolsColumn.setExportable(false);
 			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
+		*/
 	}
 	
 
 	@Override
 	protected void initBatchButtons(FormItemContainer formLayout) {
+		/*
 		restoreButton = uifactory.addFormLink("tools.restore", formLayout, Link.BUTTON);
 		tableEl.addBatchButton(restoreButton);
 
@@ -107,10 +102,12 @@ public class AuthorDeletedListController extends AuthorListController {
 			deletePermanentlyButton = uifactory.addFormLink("tools.delete.permanently", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(deletePermanentlyButton);
 		}
+		*/
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		/*
 		if(confirmDeletePermanentlyCtrl == source) {
 			cmc.deactivate();
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -135,7 +132,7 @@ public class AuthorDeletedListController extends AuthorListController {
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			}
-		}
+		}*/
 		super.event(ureq, source, event);
 	}
 
@@ -177,6 +174,7 @@ public class AuthorDeletedListController extends AuthorListController {
 	}
 	
 	private void doOpenTools(UserRequest ureq, AuthoringEntryRow row, FormLink link) {
+		/*
 		removeAsListenerAndDispose(dToolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
@@ -193,6 +191,7 @@ public class AuthorDeletedListController extends AuthorListController {
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
+		*/
 	}
 
 	private void doRestore(UserRequest ureq, List<AuthoringEntryRow> rows) {
@@ -208,6 +207,7 @@ public class AuthorDeletedListController extends AuthorListController {
 		if(entriesToRestore.isEmpty()) {
 			showWarning("bulk.update.nothing.applicable.selected");
 		} else {
+			/*
 			removeAsListenerAndDispose(confirmRestoreCtrl);
 			removeAsListenerAndDispose(cmc);
 			
@@ -218,6 +218,7 @@ public class AuthorDeletedListController extends AuthorListController {
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRestoreCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
+			*/
 		}
 	}
 	
@@ -235,6 +236,7 @@ public class AuthorDeletedListController extends AuthorListController {
 		if(entriesToDelete.isEmpty()) {
 			showWarning("bulk.update.nothing.applicable.selected");
 		} else {
+			/*
 			removeAsListenerAndDispose(confirmDeletePermanentlyCtrl);
 			removeAsListenerAndDispose(cmc);
 			
@@ -245,6 +247,7 @@ public class AuthorDeletedListController extends AuthorListController {
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeletePermanentlyCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
+			*/
 		}
 	}
 

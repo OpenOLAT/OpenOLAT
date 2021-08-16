@@ -179,11 +179,11 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 	}
 
 	@Override
-	public ResultInfos<U> load(String query, List<FlexiTableFilter> filters, List<String> addQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		return loadDatas(query, filters, addQueries, false, firstResult, maxResults, orderBy);
+	public ResultInfos<U> load(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy) {
+		return loadDatas(query, filters, false, firstResult, maxResults, orderBy);
 	}
 	
-	private ResultInfos<U> loadDatas(String query, List<FlexiTableFilter> filters, List<String> addQueries, final boolean force, final int firstResult, final int maxResults, SortKey... orderBy) {
+	private ResultInfos<U> loadDatas(String query, List<FlexiTableFilter> filters, final boolean force, final int firstResult, final int maxResults, SortKey... orderBy) {
 		if(rows == null) {
 			rows = new ArrayList<>();
 		}
@@ -211,7 +211,7 @@ public abstract class DefaultFlexiTableDataSourceModel<U> implements FlexiTableD
 			}
 		}
 		
-		ResultInfos<U> newRows = sourceDelegate.getRows(query, filters, addQueries, correctedFirstResult, correctMaxResults, orderBy);
+		ResultInfos<U> newRows = sourceDelegate.getRows(query, filters, correctedFirstResult, correctMaxResults, orderBy);
 		if(firstResult == 0) {
 			if(newRows.getObjects().size() < correctMaxResults) {
 				rowCount = newRows.getObjects().size();

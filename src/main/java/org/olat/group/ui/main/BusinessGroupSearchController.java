@@ -19,7 +19,6 @@
  */
 package org.olat.group.ui.main;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -256,11 +255,6 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		return displayName.isEmpty() && owner.isEmpty() && description.isEmpty()
 				&& id.isEmpty() && courseTitle.isEmpty();
 	}
-	
-	@Override
-	public List<String> getConditionalQueries() {
-		return Collections.emptyList();
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -269,7 +263,7 @@ public class BusinessGroupSearchController extends FormBasicController implement
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		lastUsageEl.clearError();
-		if (lastUsageEl != null && lastUsageEl.isVisible()) {
+		if (lastUsageEl.isVisible()) {
 			String lastUsage = lastUsageEl.getValue();
 			if (StringHelper.containsNonWhitespace(lastUsage)) {
 				int min = 1;

@@ -214,6 +214,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry)) {
 			extraTimeButton = uifactory.addFormLink("extra.time", formLayout, Link.BUTTON);
 			extraTimeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+			tableEl.addBatchButton(extraTimeButton);
 		}
 		boolean qti21 = isTestQTI21();
 		

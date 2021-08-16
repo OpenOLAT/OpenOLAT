@@ -68,7 +68,7 @@ public class TeamsMeetingDataSource implements FlexiTableDataSourceDelegate<Team
 	}
 
 	@Override
-	public ResultInfos<TeamsMeeting> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries,
+	public ResultInfos<TeamsMeeting> getRows(String query, List<FlexiTableFilter> filters,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		if(StringHelper.containsNonWhitespace(query)) {
 			searchParams.setSearchString(query);

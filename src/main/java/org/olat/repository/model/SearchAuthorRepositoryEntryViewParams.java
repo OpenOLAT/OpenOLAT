@@ -22,7 +22,6 @@ package org.olat.repository.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
@@ -57,9 +56,9 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private OrderBy orderBy;
 	private boolean orderByAsc;
 	private List<String> resourceTypes;
-	private Collection<String> techncialTypes;
+	private Collection<String> technicalTypes;
 	private Collection<Long> educationalTypeKeys;
-	private Set<Long> licenseTypeKeys;
+	private Collection<Long> licenseTypeKeys;
 	private List<OrganisationRef> entryOrganisations;
 	private List<TaxonomyLevelRef> taxonomyLevels;
 	
@@ -176,15 +175,15 @@ public class SearchAuthorRepositoryEntryViewParams {
 	}
 	
 	public boolean isTechnicalTypeDefined() {
-		return techncialTypes != null && !techncialTypes.isEmpty();
+		return technicalTypes != null && !technicalTypes.isEmpty();
 	}
 	
-	public Collection<String> getTechncialTypes() {
-		return techncialTypes;
+	public Collection<String> getTechnicalTypes() {
+		return technicalTypes;
 	}
 
-	public void setTechncialTypes(Collection<String> techncialTypes) {
-		this.techncialTypes = techncialTypes;
+	public void setTechnicalTypes(Collection<String> technicalTypes) {
+		this.technicalTypes = technicalTypes;
 	}
 
 	public boolean isEducationalTypeDefined() {
@@ -243,11 +242,11 @@ public class SearchAuthorRepositoryEntryViewParams {
 		return licenseTypeKeys != null && !licenseTypeKeys.isEmpty();
 	}
  
-	public Set<Long> getLicenseTypeKeys() {
+	public Collection<Long> getLicenseTypeKeys() {
 		return licenseTypeKeys;
 	}
 
-	public void setLicenseTypeKeys(Set<Long> licenseTypeKeys) {
+	public void setLicenseTypeKeys(Collection<Long> licenseTypeKeys) {
 		this.licenseTypeKeys = licenseTypeKeys;
 	}
 	
@@ -269,6 +268,24 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setTaxonomyLevels(List<TaxonomyLevelRef> taxonomyLevels) {
 		this.taxonomyLevels = taxonomyLevels;
+	}
+	
+	/**
+	 * Reset the search values but not the permissions.
+	 */
+	public void reset() {
+		setMarked(null);
+		setOwnedResourcesOnly(false);
+		setResourceTypes(null);
+		setIdAndRefs(null);
+		setClosed(null);
+		setAuthor(null);
+		setDisplayname(null);
+		setDescription(null);
+		setEducationalTypeKeys(null);
+		setTaxonomyLevels(null);
+		setLicenseTypeKeys(null);
+		setResourceUsage(null);
 	}
 
 	public enum OrderBy {

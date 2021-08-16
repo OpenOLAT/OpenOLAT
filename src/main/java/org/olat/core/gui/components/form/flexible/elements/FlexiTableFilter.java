@@ -19,6 +19,10 @@
  */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.util.List;
+
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 12.05.2014<br>
@@ -26,7 +30,7 @@ package org.olat.core.gui.components.form.flexible.elements;
  *
  */
 public class FlexiTableFilter {
-	
+
 	public static final FlexiTableFilter SPACER = new FlexiTableFilter("oo-spacer-xx", "oo-spacer-xx");
 	
 	private final String label;
@@ -36,12 +40,20 @@ public class FlexiTableFilter {
 	
 	private boolean selected;
 	private boolean showAll = false;
+	private boolean visible = true;
+	private final boolean alwaysVisible;
 	
 	public FlexiTableFilter(String label, String filter) {
+		this(label, filter, true, true);
+	}
+	
+	public FlexiTableFilter(String label, String filter, boolean visible, boolean alwaysVisible) {
 		this.label = label;
 		this.filter = filter;
 		this.renderer = null;
 		this.iconLeftCSS = null;
+		this.visible = visible;
+		this.alwaysVisible = alwaysVisible;
 	}
 	
 	public FlexiTableFilter(String label, String filter, boolean showAll) {
@@ -50,6 +62,7 @@ public class FlexiTableFilter {
 		this.showAll = showAll;
 		this.renderer = null;
 		this.iconLeftCSS = null;
+		this.alwaysVisible = true;
 	}
 	
 	public FlexiTableFilter(String label, String filter, String iconLeftCSS) {
@@ -57,6 +70,7 @@ public class FlexiTableFilter {
 		this.filter = filter;
 		this.renderer = null;
 		this.iconLeftCSS = iconLeftCSS;
+		this.alwaysVisible = true;
 	}
 	
 	public FlexiTableFilter(String label, String filter, FlexiTableFilterIconRenderer renderer) {
@@ -64,6 +78,7 @@ public class FlexiTableFilter {
 		this.filter = filter;
 		this.renderer = renderer;
 		this.iconLeftCSS = null;
+		this.alwaysVisible = true;
 	}
 	
 	public String getLabel() {
@@ -94,8 +109,31 @@ public class FlexiTableFilter {
 		this.selected = selected;
 	}
 
+	public boolean isVisible() {
+		return visible;
+	}
+
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+	}
+
+	public boolean isAlwaysVisible() {
+		return alwaysVisible;
+	}
+
 	public FlexiTableFilterIconRenderer getIconRenderer() {
 		return renderer;
+	}
+	
+	public static FlexiTableFilter getFilter(List<FlexiTableFilter> filters, String filter) {
+		if(filters != null && !filters.isEmpty() && StringHelper.containsNonWhitespace(filter)) {
+			for(FlexiTableFilter ftf:filters) {
+				if(filter.equals(ftf.getFilter())) {
+					return ftf;
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override

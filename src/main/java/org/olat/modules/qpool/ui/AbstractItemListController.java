@@ -489,7 +489,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 
 	@Override
-	public ResultInfos<ItemRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<ItemRow> getRows(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy) {
 		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, firstResult, maxResults, orderBy);
 		List<ItemRow> rows = new ArrayList<>(items.getObjects().size());
 		List<ResourceLicense> licenses = licenseService.loadLicenses(items.getObjects());

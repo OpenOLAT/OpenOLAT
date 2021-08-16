@@ -34,6 +34,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -48,8 +49,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -58,7 +62,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
@@ -259,9 +262,7 @@ public class PFCoachController extends FormBasicController {
 			}
 			columnsModel.addFlexiColumnModel(col);
 			
-			if(!options.hasDefaultOrderBy()) {
-				options.setDefaultOrderBy(new SortKey(propName, true));
-			} else if(UserConstants.LASTNAME.equals(propName)) {
+			if(!options.hasDefaultOrderBy() || UserConstants.LASTNAME.equals(propName)) {
 				options.setDefaultOrderBy(new SortKey(propName, true));
 			}
 		}
@@ -289,63 +290,55 @@ public class PFCoachController extends FormBasicController {
 		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach-v2");
 		dropboxTable.setEmptyTableMessageKey("table.empty");
 		
-		
-		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonGroupLayout.setElementCssClass("o_button_group");
-		formLayout.add(buttonGroupLayout);
-		
-		downloadLink = uifactory.addFormLink("download.link", buttonGroupLayout, Link.BUTTON);
-		uploadAllLink = uifactory.addFormLink("upload.link", buttonGroupLayout, Link.BUTTON);
+		downloadLink = uifactory.addFormLink("download.link", formLayout, Link.BUTTON);
+		dropboxTable.addBatchButton(downloadLink);
+		uploadAllLink = uifactory.addFormLink("upload.link", formLayout, Link.BUTTON);
+		dropboxTable.addBatchButton(uploadAllLink);
 	}
 	
 	private void initFilters() {
-		List<FlexiTableFilter> filters = new ArrayList<>();
+		SelectionValues groupValues = new SelectionValues();
 		
 		List<BusinessGroup> coachedGroups = userCourseEnv.isAdmin()
-				? courseEnv.getCourseGroupManager().getAllBusinessGroups() : userCourseEnv.getCoachedGroups(); 
-		List<CurriculumElement> coachedElements = userCourseEnv.isAdmin()
-				? courseEnv.getCourseGroupManager().getAllCurriculumElements() : userCourseEnv.getCoachedCurriculumElements();
-		
+				? courseEnv.getCourseGroupManager().getAllBusinessGroups() : userCourseEnv.getCoachedGroups();
 		if(coachedGroups != null) {
 			for(BusinessGroup coachedGroup:coachedGroups) {
-				String groupName = StringHelper.escapeHtml(coachedGroup.getName());
-				filters.add(new FlexiTableFilter(groupName, BUSINESS_GROUP_PREFIX.concat(coachedGroup.getKey().toString()), "o_icon o_icon_group"));
+				groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), coachedGroup.getName(),
+						null, "o_icon o_icon_curriculum_element", null, true));
 			}
 		}
-		
-		if(!coachedElements.isEmpty()) {
-			if(!filters.isEmpty()) {
-				filters.add(FlexiTableFilter.SPACER);
-			}
 
+		List<CurriculumElement> coachedElements = userCourseEnv.isAdmin()
+				? courseEnv.getCourseGroupManager().getAllCurriculumElements() : userCourseEnv.getCoachedCurriculumElements();
+		if(!coachedElements.isEmpty()) {
 			for(CurriculumElement coachedElement: coachedElements) {
-				String groupName = StringHelper.escapeHtml(coachedElement.getDisplayName());
-				filters.add(new FlexiTableFilter(groupName, CURRICULUM_EL_PREFIX.concat(coachedElement.getKey().toString()), "o_icon o_icon_curriculum_element"));
+				groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), coachedElement.getDisplayName(),
+						null, "o_icon o_icon_curriculum_element", null, true));
 			}
 		}
 		
-		if(!filters.isEmpty()) {
-			filters.add(FlexiTableFilter.SPACER);
-			filters.add(new FlexiTableFilter(translate("show.all"), "", true));
-			dropboxTable.setExtendedFilterButton(translate("filter.groups"), filters);
+		if(!groupValues.isEmpty()) {
+			FlexiTableExtendedFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.groups"), "groups", groupValues, true, true);
+			dropboxTable.setFilters(true, List.of(filter), true);
 		}
 	}
 	
 	private void loadModel(boolean full) {
-		List<FlexiTableFilter> extendedFilters = dropboxTable.getSelectedExtendedFilters();
+		List<FlexiTableFilter> filters = dropboxTable.getSelectedFilters();
 		List<DropBoxRow> rows;
-		if(extendedFilters == null || extendedFilters.isEmpty() || extendedFilters.get(0).isShowAll()) {	
+		if(filters == null || filters.isEmpty()) {	
 			rows = pfManager.getParticipants(getIdentity(), pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin());
 		} else {
-			List<BusinessGroupRef> businessGroups = new ArrayList<>(extendedFilters.size());
-			List<CurriculumElementRef> curriculumElements = new ArrayList<>(extendedFilters.size());
-			for(FlexiTableFilter extendedFilter:extendedFilters) {
-				String filter = extendedFilter.getFilter();
-				if(filter.startsWith(BUSINESS_GROUP_PREFIX)) {
-					String key = filter.substring(BUSINESS_GROUP_PREFIX.length(), filter.length());
+			List<String> filterValues = ((FlexiTableExtendedFilter)filters.get(0)).getValues();
+			
+			List<BusinessGroupRef> businessGroups = new ArrayList<>(filters.size());
+			List<CurriculumElementRef> curriculumElements = new ArrayList<>(filters.size());
+			for(String filterValue:filterValues) {
+				if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
+					String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
 					businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
-				} else if(filter.startsWith(CURRICULUM_EL_PREFIX)) {
-					String key = filter.substring(CURRICULUM_EL_PREFIX.length(), filter.length());
+				} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
+					String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
 					curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
 				}
 			}

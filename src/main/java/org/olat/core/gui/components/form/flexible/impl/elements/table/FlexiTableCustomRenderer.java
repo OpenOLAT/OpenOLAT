@@ -49,7 +49,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		String id = ftC.getFormDispatchId();
 
-		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
+		renderHeaders(renderer, sb, ftE, ubu, translator, renderResult, args);
 		
 		if (ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
 			renderEmptyState(renderer, sb, ubu, translator, renderResult, ftE);			
@@ -83,7 +83,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 			renderBody(renderer, sb, ftC, ubu, translator, renderResult);
 			sb.append("</div>");
 	
-			renderFooterButtons(sb, ftC, translator);
+			renderTreeButtons(sb, ftC, translator);
 			sb.append("</div>");
 		}
 		

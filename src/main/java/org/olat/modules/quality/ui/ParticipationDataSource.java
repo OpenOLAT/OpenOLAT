@@ -63,7 +63,7 @@ class ParticipationDataSource implements FlexiTableDataSourceDelegate<Participat
 	}
 
 	@Override
-	public ResultInfos<ParticipationRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries,
+	public ResultInfos<ParticipationRow> getRows(String query, List<FlexiTableFilter> filters,
 			int firstResult, int maxResults, SortKey... orderBy) {
 
 		List<QualityParticipation> participations = qualityService.loadParticipations(dataCollection,

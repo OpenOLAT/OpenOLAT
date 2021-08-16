@@ -355,7 +355,7 @@ public class RepositoryEntryAuthorQueries {
 		}
 		
 		if (params.isTechnicalTypeDefined()) {
-			dbQuery.setParameter("technicalTypes", params.getTechncialTypes());
+			dbQuery.setParameter("technicalTypes", params.getTechnicalTypes());
 		}
 		if (params.isEducationalTypeDefined()) {
 			dbQuery.setParameter("educationalTypeKeys", params.getEducationalTypeKeys());

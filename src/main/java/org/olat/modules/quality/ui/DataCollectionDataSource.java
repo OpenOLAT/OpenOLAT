@@ -86,7 +86,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 
 	@Override
 	public ResultInfos<DataCollectionRow> getRows(String query, List<FlexiTableFilter> filters,
-			List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+			int firstResult, int maxResults, SortKey... orderBy) {
 		searchParams.setSearchString(query);
 
 		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(translator, searchParams,

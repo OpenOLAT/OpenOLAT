@@ -577,11 +577,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 		// Nothing do to here
 	}
 
-	@Override
-	public List<String> getConditionalQueries() {
-		return Collections.emptyList();
-	}
-
 	private void openUser(UserRequest ureq, Long userKey) {
 		NewControllerFactory.getInstance().launch("[UserAdminSite:0][usearch:0][table:0][Identity:" + userKey.toString() + "]", ureq, getWindowControl());
 	}

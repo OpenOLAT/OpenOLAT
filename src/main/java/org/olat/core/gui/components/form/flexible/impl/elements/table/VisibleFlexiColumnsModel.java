@@ -31,7 +31,7 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VisibleFlexiColumnsModel implements ChoiceModel {
+public class VisibleFlexiColumnsModel implements ChoiceModel<FlexiColumnModel> {
 	
 	private Set<Integer> enabledCols = new HashSet<>();
 	private final Translator translator;
@@ -51,7 +51,7 @@ public class VisibleFlexiColumnsModel implements ChoiceModel {
 	@Override
 	public Boolean isEnabled(int row) {
 		FlexiColumnModel cd = getObject(row);
-		return cd.isAlwaysVisible() || enabledCols.contains(new Integer(cd.getColumnIndex()))
+		return cd.isAlwaysVisible() || enabledCols.contains(Integer.valueOf(cd.getColumnIndex()))
 				? Boolean.TRUE : Boolean.FALSE;
 	}
 
@@ -68,6 +68,7 @@ public class VisibleFlexiColumnsModel implements ChoiceModel {
 		return cd.isAlwaysVisible();
 	}
 
+	@Override
 	public FlexiColumnModel getObject(int row) {
 		if(columns == null) return null;
 		return columns.getColumnModel(row);

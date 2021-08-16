@@ -25,7 +25,7 @@ package org.olat.core.gui.components.choice;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ChoiceModel {
+public interface ChoiceModel<U> {
 	
 	public int getRowCount();
 	
@@ -34,5 +34,7 @@ public interface ChoiceModel {
 	public String getLabel(int row);
 	
 	public boolean isDisabled(int row);
+	
+	public U getObject(int row);
 
 }
