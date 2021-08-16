@@ -68,27 +68,61 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		String subIdenOther = random();
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identityOther = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNotUserVisible = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNoUserVisibility = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNoScore = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityOtherEntry = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityOtherSubEntry = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNotTarget = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Identity> targetIdentities = asList(identity1, identity2, identityNotUserVisible, identityNoUserVisibility,
+				identityNoScore, identityOtherEntry, identityOtherSubEntry);
 		
 		AssessmentEntry ae1 = assessmentService.getOrCreateAssessmentEntry(identity1, null, entry, subIdent, Boolean.FALSE, null);
 		ae1.setScore(BigDecimal.valueOf(5));
+		ae1.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentService.getOrCreateAssessmentEntry(identity2, null, entry, subIdent, Boolean.FALSE, null);
 		ae2.setScore(BigDecimal.valueOf(6));
+		ae2.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(ae2);
-		AssessmentEntry aeOtherEntry = assessmentService.getOrCreateAssessmentEntry(identity1, null, entryOther, subIdent, Boolean.FALSE, null);
+		AssessmentEntry aeNotUserVisible = assessmentService.getOrCreateAssessmentEntry(identityNotUserVisible, null, entry, subIdent, Boolean.FALSE, null);
+		aeNotUserVisible.setScore(BigDecimal.valueOf(10));
+		aeNotUserVisible.setUserVisibility(Boolean.FALSE);
+		assessmentService.updateAssessmentEntry(aeNotUserVisible);
+		AssessmentEntry aeNoUserVisibility = assessmentService.getOrCreateAssessmentEntry(identityNoUserVisibility, null, entry, subIdent, Boolean.FALSE, null);
+		aeNoUserVisibility.setScore(BigDecimal.valueOf(11));
+		aeNoUserVisibility.setUserVisibility(null);
+		assessmentService.updateAssessmentEntry(aeNoUserVisibility);
+		AssessmentEntry aeNoScore = assessmentService.getOrCreateAssessmentEntry(identityNoScore, null, entry, subIdent, Boolean.FALSE, null);
+		aeNoScore.setScore(null);
+		aeNoScore.setUserVisibility(Boolean.TRUE);
+		assessmentService.updateAssessmentEntry(aeNoScore);
+		AssessmentEntry aeOtherEntry = assessmentService.getOrCreateAssessmentEntry(identityOtherEntry, null, entryOther, subIdent, Boolean.FALSE, null);
 		aeOtherEntry.setScore(BigDecimal.valueOf(7));
+		aeOtherEntry.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aeOtherEntry);
-		AssessmentEntry aeOtherSubIdent = assessmentService.getOrCreateAssessmentEntry(identity1, null, entry, subIdenOther, Boolean.FALSE, null);
+		AssessmentEntry aeOtherSubIdent = assessmentService.getOrCreateAssessmentEntry(identityOtherSubEntry, null, entry, subIdenOther, Boolean.FALSE, null);
 		aeOtherSubIdent.setScore(BigDecimal.valueOf(8));
+		aeOtherSubIdent.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aeOtherSubIdent);
-		AssessmentEntry aeOtherIdentity = assessmentService.getOrCreateAssessmentEntry(identityOther, null, entry, subIdent, Boolean.FALSE, null);
+		AssessmentEntry aeOtherIdentity = assessmentService.getOrCreateAssessmentEntry(identityNotTarget, null, entry, subIdent, Boolean.FALSE, null);
 		aeOtherIdentity.setScore(BigDecimal.valueOf(9));
+		aeOtherIdentity.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aeOtherIdentity);
 		
-		Map<Long, Float> scores = sut.getScores(entry, node, asList(identity1, identity2));
+		Map<Long, Float> scores = sut.getScores(entry, node, targetIdentities);
 		
-		assertThat(scores.size()).isEqualTo(2);
+		assertThat(scores.keySet()).containsExactlyInAnyOrder(
+						identity1.getKey(),
+						identity2.getKey())
+				.doesNotContain(
+						identityNotUserVisible.getKey(),
+						identityNoUserVisibility.getKey(),
+						identityNoScore.getKey(),
+						identityOtherEntry.getKey(),
+						identityOtherSubEntry.getKey(),
+						identityNotTarget.getKey()
+				);
 		assertThat(scores.get(identity1.getKey())).isEqualTo(5);
 		assertThat(scores.get(identity2.getKey())).isEqualTo(6);
 	}
@@ -136,51 +170,79 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		String subIdenOther = random();
 		Identity identityPassed1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity identityPassed2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNotUserVisible = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNoUserVisibility = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity identityFailed = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity identityNotGraded = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identityOther = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityOtherEntry = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityOtherSubEntry = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNotTarget = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		List<Identity> targetIdentities = asList(identityPassed1, identityPassed2, identityNotUserVisible,
+				identityNoUserVisibility, identityFailed, identityNotGraded, identityOtherEntry, identityOtherSubEntry);
 		
 		AssessmentEntry aePassed1 = assessmentService.getOrCreateAssessmentEntry(identityPassed1, null, entry, subIdent, Boolean.FALSE, null);
 		aePassed1.setPassed(Boolean.TRUE);
+		aePassed1.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aePassed1);
 		AssessmentEntry aePassed2 = assessmentService.getOrCreateAssessmentEntry(identityPassed2, null, entry, subIdent, Boolean.FALSE, null);
 		aePassed2.setPassed(Boolean.TRUE);
+		aePassed1.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aePassed2);
+		AssessmentEntry aeNotUserVisible = assessmentService.getOrCreateAssessmentEntry(identityNotUserVisible, null, entry, subIdent, Boolean.FALSE, null);
+		aeNotUserVisible.setPassed(Boolean.TRUE);
+		aeNotUserVisible.setUserVisibility(Boolean.FALSE);
+		assessmentService.updateAssessmentEntry(aeNotUserVisible);
+		AssessmentEntry aeNoUserVisibility = assessmentService.getOrCreateAssessmentEntry(identityNoUserVisibility, null, entry, subIdent, Boolean.FALSE, null);
+		aeNoUserVisibility.setPassed(Boolean.TRUE);
+		aeNoUserVisibility.setUserVisibility(null);
+		assessmentService.updateAssessmentEntry(aeNoUserVisibility);
 		AssessmentEntry aeFailed = assessmentService.getOrCreateAssessmentEntry(identityFailed, null, entry, subIdent, Boolean.FALSE, null);
 		aeFailed.setPassed(Boolean.FALSE);
+		aeFailed.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aeFailed);
 		AssessmentEntry aeNotGraded = assessmentService.getOrCreateAssessmentEntry(identityNotGraded, null, entry, subIdent, Boolean.FALSE, null);
 		aeNotGraded.setPassed(null);
+		aeNotGraded.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aeNotGraded);
-		AssessmentEntry aeOtherEntry = assessmentService.getOrCreateAssessmentEntry(identityPassed1, null, entryOther, subIdent, Boolean.FALSE, null);
-		aeOtherEntry.setPassed(Boolean.FALSE);
+		AssessmentEntry aeOtherEntry = assessmentService.getOrCreateAssessmentEntry(identityOtherEntry, null, entryOther, subIdent, Boolean.FALSE, null);
+		aeOtherEntry.setPassed(Boolean.TRUE);
+		aeOtherEntry.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aeOtherEntry);
-		AssessmentEntry aeOtherSubIdent = assessmentService.getOrCreateAssessmentEntry(identityPassed1, null, entry, subIdenOther, Boolean.FALSE, null);
-		aeOtherSubIdent.setPassed(Boolean.FALSE);
+		AssessmentEntry aeOtherSubIdent = assessmentService.getOrCreateAssessmentEntry(identityOtherSubEntry, null, entry, subIdenOther, Boolean.FALSE, null);
+		aeOtherSubIdent.setPassed(Boolean.TRUE);
+		aeOtherSubIdent.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aeOtherSubIdent);
-		AssessmentEntry aeOtherIdentity = assessmentService.getOrCreateAssessmentEntry(identityOther, null, entry, subIdent, Boolean.FALSE, null);
+		AssessmentEntry aeOtherIdentity = assessmentService.getOrCreateAssessmentEntry(identityNotTarget, null, entry, subIdent, Boolean.FALSE, null);
 		aeOtherIdentity.setPassed(Boolean.FALSE);
+		aeOtherIdentity.setUserVisibility(Boolean.TRUE);
 		assessmentService.updateAssessmentEntry(aeOtherIdentity);
-		List<Identity> targetIdentities = asList(identityPassed1, identityPassed2, identityFailed, identityNotGraded);
 		
 		List<Long> keys = sut.getPassed(entry, node, targetIdentities, Set.of(Status.gradedPassed));
 		assertThat(keys).containsExactlyInAnyOrder(
 						identityPassed1.getKey(),
 						identityPassed2.getKey())
 				.doesNotContain(
+						identityNotUserVisible.getKey(),
+						identityNoUserVisibility.getKey(),
 						identityFailed.getKey(),
 						identityNotGraded.getKey(),
-						identityOther.getKey()
+						identityOtherEntry.getKey(),
+						identityOtherSubEntry.getKey(),
+						identityNotTarget.getKey()
 				);
 		
 		keys = sut.getPassed(entry, node, targetIdentities, Set.of(Status.gradedFailed, Status.notGraded));
 		assertThat(keys).containsExactlyInAnyOrder(
+						identityNotUserVisible.getKey(), // = not graded
+						identityNoUserVisibility.getKey(), // = not graded
 						identityFailed.getKey(),
 						identityNotGraded.getKey())
 				.doesNotContain(
 						identityPassed1.getKey(),
 						identityPassed2.getKey(),
-						identityOther.getKey()
+						identityOtherEntry.getKey(),
+						identityOtherSubEntry.getKey(),
+						identityNotTarget.getKey()
 				);
 	}
 	

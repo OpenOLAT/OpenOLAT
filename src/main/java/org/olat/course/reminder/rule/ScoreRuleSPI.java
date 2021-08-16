@@ -19,32 +19,26 @@
  */
 package org.olat.course.reminder.rule;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.STCourseNode;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.ScoreRuleEditor;
-import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -67,6 +61,8 @@ public class ScoreRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	@Override
 	public int getSortValue() {
@@ -136,25 +132,14 @@ public class ScoreRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 			}
 			
 			Map<Long, Float> scores;
-			if(courseNode instanceof STCourseNode) {
-				scores = new HashMap<>();
-				
-				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-				if(Mode.none != assessmentConfig.getScoreMode()) {
-					for(Identity identity:identities) {
-						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-						ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
-						Float score = scoreEval.getScore();
-						if(score != null) {
-							scores.put(identity.getKey(), score);
-						}
-					}
-				}
-			} else {
-				scores = helperDao.getScores(entry, courseNode, identities);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			if(Mode.none == assessmentConfig.getScoreMode()) {
+				// The rule is invalid if the curse node has no score (anymore). Send no reminder at all.
+				identities.clear();
+				return;
 			}
 			
+			scores = helperDao.getScores(entry, courseNode, identities);
 			for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
 				Identity identity = identityIt.next();
 				Float score = scores.get(identity.getKey());

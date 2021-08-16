@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -97,6 +96,8 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	@Override
 	public int getSortValue() {
@@ -177,7 +178,6 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 				return;
 			}
 			
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if(Mode.none != assessmentConfig.getPassedMode()) {
 				Set<Status> status = Status.split(statusValue);

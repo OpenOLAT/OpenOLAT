@@ -63,8 +63,9 @@ public class ReminderRuleDAO {
 		Set<Long> identityKeySet = null;
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data.identity.key, data.score from assessmententry data")
-		  .append(" where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent");
-		if(identities.size() < 50) {
+		  .append(" where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent")
+		  .append(" and data.userVisibility = true");
+		if(identities.size() < IN_CLAUSE_MAX) {
 			sb.append(" and data.identity.key in (:identityKeys)");
 		}
 
@@ -101,7 +102,7 @@ public class ReminderRuleDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data.identity.key, data.attempts from assessmententry data")
 		  .append(" where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent");
-		if(identities.size() < 50) {
+		if(identities.size() < IN_CLAUSE_MAX) {
 			sb.append(" and data.identity.key in (:identityKeys)");
 		}
 
@@ -109,7 +110,7 @@ public class ReminderRuleDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("courseEntryKey", entry.getKey())
 				.setParameter("subIdent", node.getIdent());
-		if(identities.size() < 50) {
+		if(identities.size() < IN_CLAUSE_MAX) {
 			query.setParameter("identityKeys", PersistenceHelper.toKeys(identities));
 		} else {
 			identityKeySet = new HashSet<>(PersistenceHelper.toKeys(identities));
@@ -141,7 +142,7 @@ public class ReminderRuleDAO {
 		sb.append("select data.identity.key, data.lastAttempt from assessmententry data")
 		  .append(" where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent")
 		  .append(" and data.lastAttempt is not null");
-		if(identities.size() < 50) {
+		if(identities.size() < IN_CLAUSE_MAX) {
 			sb.append(" and data.identity.key in (:identityKeys)");
 		}
 
@@ -149,7 +150,7 @@ public class ReminderRuleDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("courseEntryKey", entry.getKey())
 				.setParameter("subIdent", node.getIdent());
-		if(identities.size() < 50) {
+		if(identities.size() < IN_CLAUSE_MAX) {
 			query.setParameter("identityKeys", PersistenceHelper.toKeys(identities));
 		} else {
 			identityKeySet = new HashSet<>(PersistenceHelper.toKeys(identities));
@@ -178,19 +179,19 @@ public class ReminderRuleDAO {
 		sb.append(" and (");
 		boolean or = false;
 		if (status.contains(Status.gradedPassed)) {
-			sb.append("data.passed = true");
+			sb.append("(data.passed = true and data.userVisibility = true)");
 			or = true;
 		}
 		if (status.contains(Status.gradedFailed)) {
-			sb.append(" or ", or).append("data.passed = false");
+			sb.append(" or ", or).append("(data.passed = false and data.userVisibility = true)");
 			or = true;
 		}
 		if (status.contains(Status.notGraded)) {
-			sb.append(" or ", or).append("data.passed is null");
+			sb.append(" or ", or).append("(data.passed is null or data.userVisibility = false or data.userVisibility is null)");
 		}
 		
 		sb.append(")");
-		if(identities.size() < 50) {
+		if(identities.size() < IN_CLAUSE_MAX) {
 			sb.append(" and data.identity.key in (:identityKeys)");
 		}
 
@@ -199,12 +200,12 @@ public class ReminderRuleDAO {
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("courseEntryKey", entry.getKey())
 				.setParameter("subIdent", node.getIdent());
-		if(identities.size() < 50) {
+		if(identities.size() < IN_CLAUSE_MAX) {
 			query.setParameter("identityKeys", targetIdenityKeys);
 		}
 		
 		List<Long> identityKeys = query.getResultList();
-		if (identities.size() >= 50) {
+		if (identities.size() >= IN_CLAUSE_MAX) {
 			identityKeys.removeIf(key -> !targetIdenityKeys.contains(key));
 		}
 		return identityKeys;
