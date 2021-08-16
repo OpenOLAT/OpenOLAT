@@ -28,10 +28,13 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -58,6 +61,12 @@ import org.olat.course.editor.NodeConfigController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.manager.NodeRightServiceImpl;
+import org.olat.course.noderight.model.NodeRightImpl;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -408,6 +417,59 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
+		
+		// Load config
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		// Move potential high score dates
+		Date highScorePublicationDate = config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART);
+		
+		if (highScorePublicationDate != null) {
+			highScorePublicationDate.setTime(highScorePublicationDate.getTime() + context.getDateDifference(getIdent()));
+			config.setDateValue(HighScoreEditController.CONFIG_KEY_DATESTART, highScorePublicationDate);
+		}
+		
+		// Move potential user right dates
+		Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
+		
+		if (!potentialNodeRights.isEmpty()) {
+			
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			
+			for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
+				if (!(entry.getValue() instanceof NodeRight)) {
+					continue;
+				}
+				
+				NodeRightImpl nodeRight = (NodeRightImpl) entry.getValue();
+				List<NodeRightGrant> nodeRightGrants = new ArrayList<>();
+				
+				if (nodeRight.getGrants() != null) {
+					for (NodeRightGrant grant : nodeRight.getGrants()) {
+						// Remove any rights associated with an identity or group
+						if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
+							continue;
+						}
+						
+						// Move potential dates
+						if (grant.getStart() != null) {
+							grant.setStart(new Date(grant.getStart().getTime() + context.getDateDifference(getIdent())));
+						}
+						
+						if (grant.getEnd() != null) {
+							grant.setEnd(new Date(grant.getEnd().getTime() + context.getDateDifference(getIdent())));
+						}
+						
+						// Only grants for roles are kept
+						nodeRightGrants.add(grant);
+					}
+				}
+				
+				nodeRight.setGrants(nodeRightGrants);
+				nodeRightService.setRight(getModuleConfiguration(), nodeRight);
+			}
+		}
+		
 	}
 
 	@Override

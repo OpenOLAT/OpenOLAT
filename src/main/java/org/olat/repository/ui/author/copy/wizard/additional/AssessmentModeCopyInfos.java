@@ -20,7 +20,6 @@
 package org.olat.repository.ui.author.copy.wizard.additional;
 
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 
 /**
  * Initial date: 01.06.2021<br>
@@ -31,22 +30,12 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
  */
 public class AssessmentModeCopyInfos {
 	
-	private TextElement nameElement;
 	private DateChooser beginDateChooser;
 	private DateChooser endDateChooser;
 	
-	public AssessmentModeCopyInfos(TextElement nameElement, DateChooser beginDateChooser, DateChooser endDateChooser) {
-		this.nameElement = nameElement;
+	public AssessmentModeCopyInfos(DateChooser beginDateChooser, DateChooser endDateChooser) {
 		this.beginDateChooser = beginDateChooser;
 		this.endDateChooser = endDateChooser;
-	}
-	
-	public TextElement getNameElement() {
-		return nameElement;
-	}
-	
-	public void setNameElement(TextElement nameElement) {
-		this.nameElement = nameElement;
 	}
 	
 	public DateChooser getBeginDateChooser() {

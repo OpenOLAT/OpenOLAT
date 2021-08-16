@@ -93,6 +93,7 @@ public class CopyCourseStepsStep extends BasicStep {
 		private SingleSelection blogSettingsEl;
 		private SingleSelection wikiSettingsEl;
 		private SingleSelection folderSettingsEl;
+		private SingleSelection taskSettingsEl;
 
 		private SingleSelection lectureBlockSettingsEl;
 		private SingleSelection reminderSettingsEl;
@@ -133,8 +134,6 @@ public class CopyCourseStepsStep extends BasicStep {
 			SelectionValue customize = new SelectionValue(CopyType.custom.name(), translate("options.customize"), "o_yellow", true);
 			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"), "o_purple", true);
 			SelectionValue configureLater = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"), "o_orange", true);
-			SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"), "o_light_green", true);
-			SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"), "o_red", true);
 
 			// Group settings
 			SelectionValues groupSettings = new SelectionValues(copy, ignore, reference, customize);
@@ -175,7 +174,22 @@ public class CopyCourseStepsStep extends BasicStep {
 			if (context.hasNodeSpecificSettings()) {
 				uifactory.addSpacerElement("spacer", formLayout, false);
 
+				if (context.hasTask()) {
+					SelectionValue copyAssignmentAndSolution = new SelectionValue(CopyType.copy.name(), translate("options.copy.assignment.solution"), "o_light_green", true);
+					SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"), "o_red", true);
+					SelectionValues taskSettings = new SelectionValues(copyAssignmentAndSolution, ignoreAssignmentAndSolution);
+					taskSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("tasks", formLayout, taskSettings);
+					taskSettingsEl.addActionListener(FormEvent.ONCHANGE);
+					allOptions.add(taskSettingsEl);
+					
+					if (context.hasFolder() || context.hasBlog() || context.hasWiki()) {
+						uifactory.addSpacerElement("spacer", formLayout, false);
+					}
+				}
+				
 				if (context.hasFolder()) {
+					SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"), "o_light_green", true);
+					SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"), "o_red", true);
 					SelectionValues folderSettings = new SelectionValues(copyContent, ignoreContent);
 					folderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("folders", formLayout, folderSettings);
 					folderSettingsEl.setHelpTextKey("folders.help", null);
@@ -212,9 +226,18 @@ public class CopyCourseStepsStep extends BasicStep {
 				// Reminder steps
 				if (context.hasReminders()) {
 					SelectionValues reminderSettings = new SelectionValues(copy, ignore, customize);
+					
+					if (!context.hasDateDependantReminders()) {
+						disableOptions(customize);
+					}
+					
 					reminderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("reminders", formLayout, reminderSettings);
 					reminderSettingsEl.addActionListener(FormEvent.ONCHANGE);
 					allOptions.add(reminderSettingsEl);
+					
+					if (!context.hasDateDependantReminders()) {
+						enableOptions(customize);
+					}
 				}
 
 				// Assessment mode steps
@@ -277,6 +300,9 @@ public class CopyCourseStepsStep extends BasicStep {
 				disclaimerSettingsEl.select(context.getDisclaimerCopyType().name(), true);
 			}
 			
+			if (taskSettingsEl != null) {
+				taskSettingsEl.select(context.getTaskCopyType().name(), true);
+			}
 			if (blogSettingsEl != null) {
 				blogSettingsEl.select(context.getBlogCopyType().name(), true);
 			}
@@ -291,7 +317,13 @@ public class CopyCourseStepsStep extends BasicStep {
 				lectureBlockSettingsEl.select(context.getLectureBlockCopyType().name(), true);
 			}
 			if (reminderSettingsEl != null) {
-				reminderSettingsEl.select(context.getReminderCopyType().name(), true);
+				String copyMode = context.getReminderCopyType().name();
+				
+				if (copyMode.equals(CopyType.custom.name()) && !context.hasDateDependantReminders()) {
+					copyMode = CopyType.copy.name();
+				}
+				
+				reminderSettingsEl.select(copyMode, true);
 			}
 			if (assessmentModeSettingsEl != null) {
 				assessmentModeSettingsEl.select(context.getAssessmentModeCopyType().name(), true);
@@ -332,6 +364,11 @@ public class CopyCourseStepsStep extends BasicStep {
 			context.setDisclaimerCopyType(context.getCopyType(disclaimerSettingsEl.getSelectedKey()));
 			steps.setEditDisclaimer(disclaimerSettingsEl.isKeySelected(CopyType.custom.name()));
 
+			// Task settings
+			if (context.hasTask()) {
+				context.setTaskCopyType(context.getCopyType(taskSettingsEl.getSelectedKey()));
+			}
+			
 			// Blog settings
 			if (context.hasBlog()) {
 				context.setBlogCopyType(context.getCopyType(blogSettingsEl.getSelectedKey()));
@@ -354,7 +391,7 @@ public class CopyCourseStepsStep extends BasicStep {
 			}
 
 			// Reminder settings
-			if (context.hasReminders()) {
+			if (context.hasDateDependantReminders()) {
 				context.setReminderCopyType(context.getCopyType(reminderSettingsEl.getSelectedKey()));
 				steps.setEditReminders(reminderSettingsEl.isKeySelected(CopyType.custom.name()));
 			}

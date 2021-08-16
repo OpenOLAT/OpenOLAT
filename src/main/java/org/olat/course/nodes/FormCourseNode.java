@@ -21,6 +21,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
@@ -213,6 +214,15 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
 		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 		postImportCopy(course, this);
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		Date participationDeadline = config.getDateValue(CONFIG_KEY_PARTICIPATION_DEADLINE);
+		
+		if (participationDeadline != null) {
+			participationDeadline.setTime(participationDeadline.getTime() + context.getDateDifference(getIdent()));
+			config.setDateValue(CONFIG_KEY_PARTICIPATION_DEADLINE, participationDeadline);
+		}
 	}
 	
 	@Override

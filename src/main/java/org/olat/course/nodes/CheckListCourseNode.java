@@ -22,9 +22,11 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -530,7 +532,23 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 				FileUtils.copyDirContentsToDir(sourceDir, targetDir, false, "copy files of checkbox");
 			}
 		}
-
+		
+		// Move dates
+		Date dueDate = config.getDateValue(CONFIG_KEY_DUE_DATE);
+		Date closeAfterDueDate = config.getDateValue(CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
+		
+		long dateDifference = context.getDateDifference(getIdent());
+		
+		if (dueDate != null) {
+			dueDate.setTime(dueDate.getTime() + dateDifference);
+			config.set(CONFIG_KEY_DUE_DATE, dueDate);
+		}
+		
+		if (closeAfterDueDate != null) {
+			closeAfterDueDate.setTime(closeAfterDueDate.getTime() + dateDifference);
+			config.set(CONFIG_KEY_CLOSE_AFTER_DUE_DATE, closeAfterDueDate);
+		}
+		
 		checkboxManager.syncCheckbox(list, course, getIdent());
 		super.postCopy(envMapper, processType, course, sourceCourse, context);
 	}
@@ -652,6 +670,25 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new CheckListAssessmentConfig(getModuleConfiguration()));
+	}
+	
+	@Override
+	public Map<String, Date> getNodeSpecificDatesWithLabel() {
+		ModuleConfiguration config = getModuleConfiguration();
+		HashMap<String, Date> datesWithLabel = new HashMap<>();
+		
+		Date dueDate = config.getDateValue(CONFIG_KEY_DUE_DATE);
+		Date closeAfterDueDate = config.getDateValue(CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
+		
+		if (dueDate != null) {
+			datesWithLabel.put("checklist.duedate", dueDate);
+		}
+		
+		if (closeAfterDueDate != null) {
+			datesWithLabel.put("checklist.close.after.duedate", closeAfterDueDate);
+		}
+		
+		return datesWithLabel;
 	}
 	
 }

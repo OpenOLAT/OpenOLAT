@@ -60,9 +60,11 @@ public class CopyCourseContext {
 	private boolean hasWiki;
 	private boolean hasBlog;
 	private boolean hasFolder;
+	private boolean hasTask;
 	private boolean hasDateDependantNodes;
 	private boolean hasLectureBlocks;
 	private boolean hasReminders;
+	private boolean hasDateDependantReminders;
 	private boolean hasAssessmentModes;
 
 	// Metadata
@@ -106,14 +108,10 @@ public class CopyCourseContext {
 	private CopyType customDisclaimerCopyType;
 	private CourseDisclaimerContext disclaimerCopyContext;
 	
-	// BlogStep
 	private CopyType blogCopyType;
-	
-	// FolderStep
 	private CopyType folderCopyType;
-	
-	// WikiStep
 	private CopyType wikiCopyType;
+	private CopyType taskCopyType;
 	
 	// ReminderStep
 	private CopyType reminderCopyType;
@@ -138,6 +136,7 @@ public class CopyCourseContext {
 		setCatalogCopyType(wizardModule.getCatalogCopyType());
 		setDisclaimerCopyType(wizardModule.getDisclaimerCopyType());
 		
+		setTaskCopyType(wizardModule.getTaskCopyType());
 		setBlogCopyType(wizardModule.getBlogCopyType());
 		setFolderCopyType(wizardModule.getFolderCopyType());
 		setWikiCopyType(wizardModule.getWikiCopyType());
@@ -227,6 +226,14 @@ public class CopyCourseContext {
 		this.hasFolder = hasFolder;
 	}
 	
+	public boolean hasTask() {
+		return hasTask;
+	}
+	
+	public void setHasTask(boolean hasTask) {
+		this.hasTask = hasTask;
+	}
+	
 	public boolean hasWiki() {
 		return hasWiki;
 	}
@@ -272,15 +279,23 @@ public class CopyCourseContext {
 	}
 	
 	public boolean hasAdditionalSettings() {
-		return hasReminders || hasLectureBlocks || hasAssessmentModes;
+		return hasDateDependantReminders || hasLectureBlocks || hasAssessmentModes;
 	}
 	
 	public boolean hasReminders() {
 		return hasReminders;
 	}
 	
-	public void setReminders(boolean hasReminders) {
+	public void setHasReminders(boolean hasReminders) {
 		this.hasReminders = hasReminders;
+	}	
+	
+	public boolean hasDateDependantReminders() {
+		return hasDateDependantReminders;
+	}
+	
+	public void setDateDependantReminders(boolean hasDateDependantReminders) {
+		this.hasDateDependantReminders = hasDateDependantReminders;
 	}
 	
 	public String getDisplayName() {
@@ -541,6 +556,14 @@ public class CopyCourseContext {
 		this.wikiCopyType = wikiCopyType;
 	}
 	
+	public CopyType getTaskCopyType() {
+		return taskCopyType;
+	}
+	
+	public void setTaskCopyType(CopyType taskCopyType) {
+		this.taskCopyType = taskCopyType;
+	}
+	
 	public CopyType getReminderCopyType() {
 		return reminderCopyType;
 	}
@@ -618,9 +641,7 @@ public class CopyCourseContext {
 	public enum CopyType {
 		copy,
 		replace,
-		shift,
 		reference,
-		selectNew,
 		createNew,
 		ignore,
 		custom,
@@ -647,5 +668,25 @@ public class CopyCourseContext {
 		} catch(Exception e) {
 			return null;
 		}
+	}
+	
+	public long getDateDifference(String courseNodeIdent) {
+		long dateDifference = 0;
+		
+		if (getCourseNodesMap() != null) {
+			OverviewRow overviewRow = getCourseNodesMap().get(courseNodeIdent);
+			
+			if (overviewRow.getStartChooser() != null && overviewRow.getStart() != null) {
+				dateDifference = overviewRow.getStartChooser().getDate().getTime() - overviewRow.getStart().getTime();
+			} else if (overviewRow.getEndChooser() != null && overviewRow.getEnd() != null) {
+				dateDifference = overviewRow.getEndChooser().getDate().getTime() - overviewRow.getEnd().getTime();
+			} else {
+				dateDifference = getDateDifference();
+			}
+		} else {
+			dateDifference = getDateDifference();
+		}
+		
+		return dateDifference;
 	}
 }

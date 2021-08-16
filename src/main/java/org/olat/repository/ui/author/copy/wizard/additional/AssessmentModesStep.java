@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -149,7 +148,7 @@ public class AssessmentModesStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.status, new ModeStatusCellRenderer(getTranslator())));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.nameElement));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.beginChooser));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.endChooser));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.leadTime, new TimeCellRenderer(getTranslator())));
@@ -176,15 +175,22 @@ public class AssessmentModesStep extends BasicStep {
 				int counter = 0;
 				
 				for (AssessmentMode mode : modes) {
-					TextElement nameElement = uifactory.addTextElement("description_" + counter, -1, mode.getName(), tableItems);
-					DateChooser beginDateChooser = uifactory.addDateChooser("begin_date_" + counter, mode.getBegin(), tableItems);
+					// Assessment modes which are bound to a lecture block shall not be copied
+					if (mode.getLectureBlock() != null) {
+						continue;
+					}
+					
+					Date begin = new Date(mode.getBegin().getTime() + context.getDateDifference());
+					DateChooser beginDateChooser = uifactory.addDateChooser("begin_date_" + counter, begin, tableItems);
 					beginDateChooser.setInitialDate(mode.getBegin());
 					beginDateChooser.addActionListener(FormEvent.ONCHANGE);
-					DateChooser endDateChooser = uifactory.addDateChooser("end_date_" + counter++, mode.getEnd(), tableItems);
-					endDateChooser.setInitialDate(mode.getEnd());
+					
+					Date end = new Date(mode.getEnd().getTime() + context.getDateDifference());
+					DateChooser endDateChooser = uifactory.addDateChooser("end_date_" + counter++, end, tableItems);
+					endDateChooser.setInitialDate(end);
 					endDateChooser.addActionListener(FormEvent.ONCHANGE);
 					
-					AssessmentModeCopyInfos copyInfo = new AssessmentModeCopyInfos(nameElement, beginDateChooser, endDateChooser);
+					AssessmentModeCopyInfos copyInfo = new AssessmentModeCopyInfos(beginDateChooser, endDateChooser);
 					copyInfos.put(mode, copyInfo);
 					
 				}

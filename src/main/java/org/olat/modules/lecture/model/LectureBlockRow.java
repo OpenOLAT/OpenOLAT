@@ -48,7 +48,6 @@ public class LectureBlockRow implements LectureBlockRef {
 	private DateChooser dateChooser;
 	private FormLink teacherChooserLink;
 	private TextElement locationElement;
-	private TextElement titleElement;
 	private List<Identity> teachersList;
 	
 	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef,
@@ -124,14 +123,6 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public void setLocationElement(TextElement locationElement) {
 		this.locationElement = locationElement;
-	}
-	
-	public TextElement getTitleElement() {
-		return titleElement;
-	}
-	
-	public void setTitleElement(TextElement titleElement) {
-		this.titleElement = titleElement;
 	}
 	
 	public List<Identity> getTeachersList() {

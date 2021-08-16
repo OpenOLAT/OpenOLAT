@@ -153,7 +153,7 @@ public class LectureBlocksStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.titleElement));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.assessmentMode,
 					new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.compulsory, new YesNoCellRenderer(getTranslator())));
@@ -192,20 +192,28 @@ public class LectureBlocksStep extends BasicStep {
 					LectureBlockRow row = new LectureBlockRow(block.getLectureBlock(), context.getSourceRepositoryEntry().getDisplayname(), context.getSourceRepositoryEntry().getExternalRef(),
 							null, false, block.isAssessmentMode());
 					
-					DateChooser dateChooser = uifactory.addDateChooser("lecture_block_date_" + counter, block.getLectureBlock().getStartDate(), tableItems);
-					dateChooser.setInitialDate(block.getLectureBlock().getStartDate());
+					Date startDate = null;
+					Date endDate = null;
+					
+					if (block.getLectureBlock().getStartDate() != null) {
+						startDate = new Date(block.getLectureBlock().getStartDate().getTime() + context.getDateDifference());
+					}
+					
+					if (block.getLectureBlock().getEndDate() != null) {
+						endDate = new Date(block.getLectureBlock().getEndDate().getTime() + context.getDateDifference());
+					}
+					
+					DateChooser dateChooser = uifactory.addDateChooser("lecture_block_date_" + counter, startDate, tableItems);
+					dateChooser.setInitialDate(startDate);
 					dateChooser.setDateChooserTimeEnabled(true);
 					dateChooser.setSecondDate(true);
-					dateChooser.setSecondDate(block.getLectureBlock().getEndDate());
+					dateChooser.setSecondDate(endDate);
 					dateChooser.setSameDay(true);
 					dateChooser.addActionListener(FormEvent.ONCHANGE);
 					row.setDateChooser(dateChooser);
 					
 					TextElement locationElement = uifactory.addTextElement("lecture_block_location_" + counter, -1, block.getLectureBlock().getLocation(), tableItems);
 					row.setLocationElement(locationElement);
-					
-					TextElement titleElement = uifactory.addTextElement("lecture_block_title_" + counter, -1, block.getLectureBlock().getTitle(), tableItems);
-					row.setTitleElement(titleElement);
 					
 					FormLink teachersLink = uifactory.addFormLink("lecture_block_teachers_" + counter++, tableItems);
 					teachersLink.setI18nKey("edit.teachers");

@@ -26,6 +26,7 @@
 package org.olat.course.nodes;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -39,7 +40,10 @@ import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * Initial Date: May 28, 2004
@@ -111,6 +115,32 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
 		super.postExport(envMapper, backwardsCompatible);
 		postExportCondition(preConditionAccess, envMapper, backwardsCompatible);
+	}
+	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE, config, context);
+		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_END_DATE, config, context);
+		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, config, context);
+		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, config, context);
+		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, config, context);
+		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, config, context);
+		
+		checkAndUpdateDate(IQEditController.CONFIG_KEY_START_TEST_DATE, config, context);
+		checkAndUpdateDate(IQEditController.CONFIG_KEY_END_TEST_DATE, config, context);
+	}
+	
+	private void checkAndUpdateDate(String configKey, ModuleConfiguration config, CopyCourseContext context) {
+		Date dateToCheck = config.getDateValue(configKey);
+		
+		if (dateToCheck != null) {
+			dateToCheck.setTime(dateToCheck.getTime() + context.getDateDifference(getIdent()));
+			config.setDateValue(configKey, dateToCheck);
+		}
 	}
 
 	@Override

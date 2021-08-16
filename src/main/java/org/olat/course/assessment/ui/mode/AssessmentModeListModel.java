@@ -27,7 +27,6 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -94,20 +93,11 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 			case target: return mode.getTargetAudience();
 			case start: return canStart(mode);
 			case stop: return canStop(mode);
-			case nameElement: return getNameElement(mode);
 			case endChooser: return getDateChooser(mode, col);
 			case beginChooser: return getDateChooser(mode, col);
 			
 			default: return "ERROR";
 		}
-	}
-	
-	private TextElement getNameElement(AssessmentMode mode) {
-		if (copyInfos.containsKey(mode)) {
-			return copyInfos.get(mode).getNameElement();
-		}
-		
-		return null;
 	}
 	
 	private DateChooser getDateChooser(AssessmentMode mode, int col) {
@@ -218,7 +208,6 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		target("table.header.target"),
 		start(""),
 		stop(""),
-		nameElement("table.header.name"),
 		beginChooser("table.header.begin"),
 		endChooser("table.header.end");
 		

@@ -52,13 +52,20 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.reminder.ReminderModule;
+import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
+import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.model.ReminderInfos;
+import org.olat.modules.reminder.model.ReminderRules;
+import org.olat.modules.reminder.rule.BeforeDateRuleSPI;
+import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -92,6 +99,8 @@ public class CopyCourseWizardController extends BasicController {
 	private LectureService lectureService;
 	@Autowired
 	private ReminderService reminderManager;
+	@Autowired
+	private ReminderModule reminderModule;
 
 	public CopyCourseWizardController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course) {
 		super(ureq, wControl);
@@ -123,16 +132,18 @@ public class CopyCourseWizardController extends BasicController {
 		forgeRows(courseNodes, rootNode, 0, null);
 		
 		copyContext.setCourseNodes(courseNodes);
-		copyContext.setBlog(hasBlog(courseNodes));
-		copyContext.setWiki(hasWiki(courseNodes));
-		copyContext.setFolder(hasFolder(courseNodes));
+		copyContext.setBlog(hasCourseNode(courseNodes, BlogCourseNode.class));
+		copyContext.setWiki(hasCourseNode(courseNodes, WikiCourseNode.class));
+		copyContext.setFolder(hasCourseNode(courseNodes, BCCourseNode.class));
+		copyContext.setHasTask(hasCourseNode(courseNodes, GTACourseNode.class));
 		copyContext.setDateDependantNodes(hasDateDependantNodes(courseNodes));
 		copyContext.setLectureBlocks(hasLectureBlogs(sourceEntry));
-		copyContext.setReminders(hasReminders(sourceEntry));
+		copyContext.setDateDependantReminders(hasDateDependantReminders(sourceEntry));
+		copyContext.setHasReminders(hasReminders(sourceEntry));
 		copyContext.setAssessmentModes(hasAssessmentModes(sourceEntry));
 		
 		copySteps.setEditLectureBlocks(copyContext.hasLectureBlocks());
-		copySteps.setEditReminders(copyContext.hasReminders());
+		copySteps.setEditReminders(copyContext.hasDateDependantReminders());
 		copySteps.setEditAssessmentModes(copyContext.hasAssessmentModes());
 
         CopyCourseGeneralStep copyCourseStep = new CopyCourseGeneralStep(ureq, copySteps, copyContext);
@@ -267,41 +278,15 @@ public class CopyCourseWizardController extends BasicController {
 		return null;
 	}
 	
-	private boolean hasWiki(List<OverviewRow> courseNodes) {
+	private boolean hasCourseNode(List<OverviewRow> courseNodes, Class... courseNodeClasses) {
 		if (courseNodes == null || courseNodes.size() == 0) {
 			return false;
 		} else {
 			for (OverviewRow courseNode : courseNodes) {
-				if (courseNode.getCourseNode() instanceof WikiCourseNode) {
-					return true;
-				}
-			}
-			
-			return false;
-		}
-	}
-	
-	private boolean hasBlog(List<OverviewRow> courseNodes) {
-		if (courseNodes == null || courseNodes.size() == 0) {
-			return false;
-		} else {
-			for (OverviewRow courseNode : courseNodes) {
-				if (courseNode.getCourseNode() instanceof BlogCourseNode) {
-					return true;
-				}
-			}
-			
-			return false;
-		}
-	}
-	
-	private boolean hasFolder(List<OverviewRow> courseNodes) {
-		if (courseNodes == null || courseNodes.size() == 0) {
-			return false;
-		} else {
-			for (OverviewRow courseNode : courseNodes) {
-				if (courseNode.getCourseNode() instanceof BCCourseNode) {
-					return true;
+				for (Class courseNodeClass : courseNodeClasses) {
+					if (courseNodeClass.isInstance(courseNode.getCourseNode())) {
+						return true;
+					}
 				}
 			}
 			
@@ -337,8 +322,31 @@ public class CopyCourseWizardController extends BasicController {
 		return assessmentModes != null && !assessmentModes.isEmpty();
 	}
 	
-	private boolean hasReminders(RepositoryEntry repoEntry) {
+	private boolean hasDateDependantReminders(RepositoryEntry repoEntry) {
 		List<ReminderInfos> reminders = reminderManager.getReminderInfos(repoEntry);
+		
+		if (reminders == null || reminders.isEmpty()) {
+			return false;
+		}
+		
+		for (ReminderInfos reminder : reminders) {
+			ReminderRules rules = reminderManager.toRules(reminder.getConfiguration());
+			
+			if (rules != null) {
+				for (ReminderRule rule : rules.getRules()) {
+					RuleSPI ruleSPI = reminderModule.getRuleSPIByType(rule.getType());
+					if (ruleSPI instanceof DateRuleSPI || ruleSPI instanceof BeforeDateRuleSPI) {
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean hasReminders(RepositoryEntry repositoryEntry) {
+		List<ReminderInfos> reminders = reminderManager.getReminderInfos(repositoryEntry);
 		
 		return reminders != null && !reminders.isEmpty();
 	}

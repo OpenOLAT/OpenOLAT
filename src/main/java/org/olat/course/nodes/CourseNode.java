@@ -26,8 +26,11 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.ShortName;
@@ -440,6 +443,14 @@ public interface CourseNode extends INode, ShortName {
 	 */
 	public default CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return null;
+	}
+	
+	public default boolean hasNodeSpecificDates() {
+		return !getNodeSpecificDatesWithLabel().isEmpty();
+	}
+	
+	public default Map<String, Date> getNodeSpecificDatesWithLabel() {
+		return new HashMap<>();
 	}
 	
 	public enum Processing {

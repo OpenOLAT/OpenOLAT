@@ -23,7 +23,6 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.modules.reminder.model.ReminderInfos;
 
 /**
@@ -44,7 +43,8 @@ public class ReminderRow {
 	// Used in copy wizard
 	private DateChooser beforeDateChooser;
 	private DateChooser afterDateChooser;
-	private TextElement descriptionElement;
+	private Date initialBeforeDate;
+	private Date initialAfterDate;
 
 	public ReminderRow(ReminderInfos reminder, FormLink toolsLink, FormLink emailLink, FormLink sendLink, String rulesComponentName) {
 		this.reminder = reminder;
@@ -118,11 +118,20 @@ public class ReminderRow {
 		this.afterDateChooser = afterDateChooser;
 	}
 	
-	public TextElement getDescriptionElement() {
-		return descriptionElement;
+	public Date getInitialAfterDate() {
+		return initialAfterDate;
 	}
 	
-	public void setDescriptionElement(TextElement descriptionElement) {
-		this.descriptionElement = descriptionElement;
+	public void setInitialAfterDate(Date initialAfterDate) {
+		this.initialAfterDate = new Date(initialAfterDate.getTime());
 	}
+	
+	public Date getInitialBeforeDate() {
+		return initialBeforeDate;
+	}
+	
+	public void setInitialBeforeDate(Date initialBeforeDate) {
+		this.initialBeforeDate = new Date(initialBeforeDate.getTime());
+	}
+	
 }

@@ -41,6 +41,7 @@ public class CopyCourseWizardModule extends AbstractSpringModule {
 	private static final String CATALOG_COPY_TYPE = "course.copy.wizard.catalog";
 	private static final String DISCLAIMER_COPY_TYPE = "course.copy.wizard.disclaimer";
 	
+	private static final String TASK_COPY_TYPE = "course.copy.wizard.task";
 	private static final String BLOG_COPY_TYPE = "course.copy.wizard.blog";
 	private static final String FOLDER_COPY_TYPE = "course.copy.wizard.folder";
 	private static final String WIKI_COPY_TYPE = "course.copy.wizard.wiki";
@@ -63,6 +64,8 @@ public class CopyCourseWizardModule extends AbstractSpringModule {
 	@Value("${course.copy.wizard.disclaimer}")
 	private CopyType disclaimerCopyType;
 	
+	@Value("${course.copy.wizard.task}")
+	private CopyType taskCopyType;
 	@Value("${course.copy.wizard.blog}")
 	private CopyType blogCopyType;
 	@Value("${course.copy.wizard.folder}")
@@ -97,6 +100,7 @@ public class CopyCourseWizardModule extends AbstractSpringModule {
 		catalogCopyType = getCopyType(CATALOG_COPY_TYPE, catalogCopyType);
 		disclaimerCopyType = getCopyType(DISCLAIMER_COPY_TYPE, disclaimerCopyType);
 		
+		taskCopyType = getCopyType(TASK_COPY_TYPE, taskCopyType);
 		blogCopyType = getCopyType(BLOG_COPY_TYPE, blogCopyType);
 		folderCopyType = getCopyType(FOLDER_COPY_TYPE, folderCopyType);
 		wikiCopyType = getCopyType(WIKI_COPY_TYPE, wikiCopyType);
@@ -171,6 +175,15 @@ public class CopyCourseWizardModule extends AbstractSpringModule {
 	public void setDisclaimerCopyType(CopyType disclaimerCopyType) {
 		this.disclaimerCopyType = disclaimerCopyType;
 		setStringProperty(DISCLAIMER_COPY_TYPE, disclaimerCopyType.name(), true);
+	}
+	
+	public CopyType getTaskCopyType() {
+		return taskCopyType;
+	}
+	
+	public void setTaskCopyType(CopyType taskCopyType) {
+		this.taskCopyType = taskCopyType;
+		setStringProperty(TASK_COPY_TYPE, taskCopyType.name(), true);
 	}
 
 	public CopyType getBlogCopyType() {

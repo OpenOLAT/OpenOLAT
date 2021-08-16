@@ -19,9 +19,12 @@
  */
 package org.olat.repository.ui.author.copy.wizard.general;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -31,12 +34,15 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DetailsToggleEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -59,6 +65,8 @@ import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeDatesListController;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -104,7 +112,7 @@ public class CourseOverviewStep extends BasicStep {
 		return new CourseOverviewStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class CourseOverviewStepController extends StepFormBasicController {
+	private class CourseOverviewStepController extends StepFormBasicController implements FlexiTableComponentDelegate {
 
 		private CopyCourseContext context;
 		
@@ -115,6 +123,8 @@ public class CourseOverviewStep extends BasicStep {
 		private MoveDateConfirmController moveDateConfirmController;
 		private boolean askForDateMove = true;
 		
+		private CourseNodeDatesListController courseNodeDatesListController;
+		
 		public CourseOverviewStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 			
@@ -123,6 +133,7 @@ public class CourseOverviewStep extends BasicStep {
 			setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
 			
 			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
+			courseNodeDatesListController = new CourseNodeDatesListController(ureq, wControl);
 			
 			initForm(ureq);
 		}
@@ -167,8 +178,24 @@ public class CourseOverviewStep extends BasicStep {
 			tableEl.setBordered(false);
 			tableEl.setCustomizeColumns(false);
 			
+			VelocityContainer detailsVC = createVelocityContainer("node_dates_details");
+			detailsVC.put("node.dates.details.controller", courseNodeDatesListController.getInitialComponent());
+			tableEl.setDetailsRenderer(detailsVC, this);
+			
 			forgeRows(formLayout);
 			context.setCustomConfigsLoaded(true);
+		}
+		
+		@Override
+		public Iterable<Component> getComponents(int row, Object rowObject) {
+			if (courseNodeDatesListController == null) {
+				return null;
+			}
+			
+			List<Component> components = new ArrayList<>(1);
+			components.add(courseNodeDatesListController.getInitialComponent());
+			
+			return components;
 		}
 		
 		private void forgeRows(FormItemContainer formLayout) {
@@ -188,8 +215,13 @@ public class CourseOverviewStep extends BasicStep {
 			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"));
 			SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"));
 			SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"));
+			SelectionValue copyAssignmentAndSolution = new SelectionValue(CopyType.copy.name(), translate("options.copy.assignment.solution"));
+			SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"));
 			
 			SelectionValues copyModes = null;
+			
+			List<Integer> dateDependantNodesRows = new ArrayList<>();
+			int rowCount = 0;
 			
 			for (OverviewRow row : context.getCourseNodes()) {
 				if (row.getLearningPathConfigs() != null) {
@@ -230,6 +262,8 @@ public class CourseOverviewStep extends BasicStep {
 					if (row.getResourceChooser() == null) {
 						if (row.getCourseNode() instanceof BCCourseNode) {
 							copyModes = new SelectionValues(copyContent, ignoreContent);
+						} else if (row.getCourseNode() instanceof GTACourseNode) {
+							copyModes = new SelectionValues(copyAssignmentAndSolution, ignoreAssignmentAndSolution);
 						} else {
 							copyModes = new SelectionValues(reference, createNew, ignore);
 						}
@@ -239,16 +273,24 @@ public class CourseOverviewStep extends BasicStep {
 						row.setResourceChooser(resourceChooser);
 					}
 				}
+				
+				if (row.getCourseNode().hasNodeSpecificDates()) {
+					dateDependantNodesRows.add(rowCount);
+				}
+				
+				rowCount++;
 			}
 			
 			dataModel.setObjects(context.getCourseNodes());
+			tableEl.setDetailsRows(dateDependantNodesRows);
 			tableEl.reset();
 		}
 		
 		private boolean isConfigurable(CourseNode courseNode) {
 			if (courseNode instanceof WikiCourseNode ||
 					courseNode instanceof BlogCourseNode ||
-					courseNode instanceof BCCourseNode) {
+					courseNode instanceof BCCourseNode ||
+					courseNode instanceof GTACourseNode) {
 				return true;
 			}
 			
@@ -264,6 +306,8 @@ public class CourseOverviewStep extends BasicStep {
 				selectKey = getCopyType(context.getBlogCopyType());
 			} else if (courseNode instanceof BCCourseNode) {
 				selectKey = getCopyType(context.getFolderCopyType());
+			} else if (courseNode instanceof GTACourseNode) {
+				selectKey = getCopyType(context.getTaskCopyType());
 			}
 			
 			if (StringHelper.containsNonWhitespace(selectKey)) {
@@ -291,6 +335,16 @@ public class CourseOverviewStep extends BasicStep {
 		
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (source == tableEl) {
+				if (event instanceof DetailsToggleEvent) {
+					DetailsToggleEvent dte = (DetailsToggleEvent)event;
+					if (dte.isVisible()) {
+						OverviewRow row = dataModel.getObject(dte.getRowIndex());
+						courseNodeDatesListController.updateCourseNode(row.getCourseNode(), ureq);
+					}
+				}
+			}
+			
 			if (source instanceof SingleSelection) {
 				SingleSelection sourceSelection = (SingleSelection) source;
 				
@@ -397,7 +451,8 @@ public class CourseOverviewStep extends BasicStep {
 		private void updateVisibility(OverviewRow row) {
 			boolean endChooserVisible = row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name());
 			row.getEndChooser().setVisible(endChooserVisible);
-		}		
+		}
+		
 	}
 
 }

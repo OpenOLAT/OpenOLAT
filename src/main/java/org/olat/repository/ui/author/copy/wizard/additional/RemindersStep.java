@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -153,8 +152,8 @@ public class RemindersStep extends BasicStep {
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReminderCols.id.i18nHeaderKey(), ReminderCols.id.ordinal(),
 					true, ReminderCols.id.name()));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.descriptionElement.i18nHeaderKey(), ReminderCols.descriptionElement.ordinal(),
-					true, ReminderCols.descriptionElement.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.description.i18nHeaderKey(), ReminderCols.description.ordinal(),
+					true, ReminderCols.description.name()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.afterDate.i18nHeaderKey(), ReminderCols.afterDate.ordinal(),
 					true, ReminderCols.afterDate.name()));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReminderCols.untilDate.i18nHeaderKey(), ReminderCols.untilDate.ordinal(),
@@ -242,9 +241,6 @@ public class RemindersStep extends BasicStep {
 						}
 					}
 					
-					TextElement descriptionElement = uifactory.addTextElement("description_" + counter, -1, reminder.getDescription(), tableItems);
-					row.setDescriptionElement(descriptionElement);
-					
 					Date beforeDate = null;
 					Date afterDate = null;
 					DateChooser beforeDateChooser = null;
@@ -252,10 +248,12 @@ public class RemindersStep extends BasicStep {
 					
 					if (!beforeDates.isEmpty()) {
 						beforeDate = Collections.min(beforeDates);
+						row.setInitialBeforeDate(beforeDate);
 					}
 					
 					if (!afterDates.isEmpty()) {
 						afterDate = Collections.min(afterDates);
+						row.setInitialAfterDate(afterDate);
 					}
 					
 					if (beforeDate != null) {

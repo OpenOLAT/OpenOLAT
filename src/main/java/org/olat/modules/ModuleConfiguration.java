@@ -62,6 +62,22 @@ public class ModuleConfiguration implements Serializable {
 	public ModuleConfiguration() {
 		config = new HashMap<>();
 	}
+	
+	public Map<String,Object> getConfigEntries(String keyFragment) {
+		Map<String, Object> returnMap = new HashMap<>();
+		
+		for (Map.Entry<String, Object> entry : config.entrySet()) {
+			if (entry == null || entry.getKey() == null) {
+				continue; 
+			}
+			
+			if (entry.getKey().contains(keyFragment)) {
+				returnMap.put(entry.getKey(), entry.getValue());
+			}
+		}
+		
+		return returnMap;
+	}
 
 	/**
 	 * Set a key to a value.

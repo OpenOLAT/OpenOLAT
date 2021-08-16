@@ -50,6 +50,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.nodes.pf.ui.PFCoachController;
@@ -63,6 +64,7 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 public class PFCourseNode extends AbstractAccessableCourseNode {
 	
@@ -85,6 +87,26 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 
 	public PFCourseNode(INode parent) {
 		super(TYPE, parent);
+	}
+	
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		Date uploadStart = config.getDateValue(CONFIG_KEY_DATESTART);
+		Date uploadEnd = config.getDateValue(CONFIG_KEY_DATEEND);
+		
+		if (uploadStart != null) {
+			uploadStart.setTime(uploadStart.getTime() + context.getDateDifference(getIdent()));
+			config.setDateValue(CONFIG_KEY_DATESTART, uploadStart);
+		}
+		
+		if (uploadEnd != null) {
+			uploadEnd.setTime(uploadEnd.getTime() + context.getDateDifference(getIdent()));
+			config.setDateValue(CONFIG_KEY_DATEEND, uploadEnd);
+		}
 	}
 
 	@Override

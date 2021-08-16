@@ -99,6 +99,8 @@ import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.modules.reminder.RuleSPI;
 import org.olat.modules.reminder.model.ReminderRules;
+import org.olat.modules.reminder.rule.BeforeDateRuleSPI;
+import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -525,33 +527,53 @@ public class CourseHandler implements RepositoryHandler {
 			ReminderService reminderService = CoreSpringFactory.getImpl(ReminderService.class);
 			List<Reminder> reminders = reminderService.getReminders(source);
 			
-			for(Reminder reminder:reminders) {
-				String configuration = reminder.getConfiguration();
-				ReminderRules rules = reminderService.toRules(configuration);
-				ReminderRules clonedRules = new ReminderRules();
-				
-				long dateDifference = context.getDateDifference();
-				if (remindersMap.get(reminder.getKey()) != null) {
-					ReminderRow reminderRow = remindersMap.get(reminder.getKey());
-					// TODO calculate datedifference
-				}
-				
-				for(ReminderRule rule:rules.getRules()) {
-					RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
-					if(ruleSpi != null) {
-						ReminderRule clonedRule = ruleSpi.moveDate(rule, envMapper, dateDifference);
-						if (clonedRule != null) 
-							clonedRules.getRules().add(clonedRule);
+			if (reminders != null) {
+				for(Reminder reminder:reminders) {
+					String configuration = reminder.getConfiguration();
+					ReminderRules rules = reminderService.toRules(configuration);
+					ReminderRules clonedRules = new ReminderRules();
+					
+					long afterDateDifference = context.getDateDifference();
+					long beforeDateDifference = context.getDateDifference();
+					
+					if (remindersMap != null && remindersMap.get(reminder.getKey()) != null) {
+						ReminderRow reminderRow = remindersMap.get(reminder.getKey());
+						
+						if (reminderRow.getAfterDateChooser() != null && reminderRow.getAfterDateChooser().getDate() != null) {
+							afterDateDifference = reminderRow.getAfterDateChooser().getDate().getTime() - reminderRow.getInitialAfterDate().getTime();
+						}
+						
+						if (reminderRow.getBeforeDateChooser() != null && reminderRow.getBeforeDateChooser().getDate() != null) {
+							beforeDateDifference = reminderRow.getBeforeDateChooser().getDate().getTime() - reminderRow.getInitialBeforeDate().getTime();
+						}
 					}
+					
+					for(ReminderRule rule:rules.getRules()) {
+						RuleSPI ruleSpi = reminderModule.getRuleSPIByType(rule.getType());
+						if(ruleSpi != null) {
+							ReminderRule clonedRule = null;
+							
+							if (ruleSpi instanceof DateRuleSPI) {
+								clonedRule = ruleSpi.moveDate(rule, envMapper, afterDateDifference);
+							} else if (ruleSpi instanceof BeforeDateRuleSPI) {
+								clonedRule = ruleSpi.moveDate(rule, envMapper, beforeDateDifference);
+							} else {
+								clonedRule = ruleSpi.clone(rule, envMapper);
+							}
+							
+							if (clonedRule != null) 
+								clonedRules.getRules().add(clonedRule);
+						}
+					}
+					
+					Identity creator = author == null ? reminder.getCreator() : author;
+					Reminder clonedReminder = reminderService.createReminder(target, creator);
+					clonedReminder.setDescription(reminder.getDescription());
+					clonedReminder.setEmailSubject(reminder.getEmailSubject());
+					clonedReminder.setEmailBody(reminder.getEmailBody());
+					clonedReminder.setConfiguration(reminderService.toXML(clonedRules));
+					reminderService.save(clonedReminder);
 				}
-				
-				Identity creator = author == null ? reminder.getCreator() : author;
-				Reminder clonedReminder = reminderService.createReminder(target, creator);
-				clonedReminder.setDescription(reminder.getDescription());
-				clonedReminder.setEmailSubject(reminder.getEmailSubject());
-				clonedReminder.setEmailBody(reminder.getEmailBody());
-				clonedReminder.setConfiguration(reminderService.toXML(clonedRules));
-				reminderService.save(clonedReminder);
 			}
 		}
 	}

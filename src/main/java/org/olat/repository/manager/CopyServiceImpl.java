@@ -45,6 +45,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.learningpath.LearningPathConfigs;
@@ -55,7 +58,12 @@ import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.olat.modules.reminder.ReminderService;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LectureBlockImpl;
+import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.CopyService;
@@ -71,6 +79,8 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.repository.ui.author.copy.wizard.additional.AssessmentModeCopyInfos;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -110,8 +120,9 @@ public class CopyServiceImpl implements CopyService {
 	@Autowired
 	private LearningPathService learningPathService;
 	@Autowired
-	private ReminderService reminderService;
-
+	private LectureService lectureService;
+	@Autowired
+	private AssessmentModeManager assessmentModeManager;
 	
 	
 	@Override
@@ -147,11 +158,13 @@ public class CopyServiceImpl implements CopyService {
 
 		// Add to organisations
 		List<Organisation> sourceOrganisations = reToGroupDao.getOrganisations(sourceEntry);
-		for(Organisation sourceOrganisation:sourceOrganisations) {
-			RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(sourceOrganisation, target, false);
-			target.getOrganisations().add(orgRelation);
-			RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(sourceOrganisation.getGroup(), target);
-			target.getGroups().add(grpRelation);
+		if (sourceOrganisations != null) {
+			for(Organisation sourceOrganisation:sourceOrganisations) {
+				RepositoryEntryToOrganisation orgRelation = repositoryEntryToOrganisationDao.createRelation(sourceOrganisation, target, false);
+				target.getOrganisations().add(orgRelation);
+				RepositoryEntryToGroupRelation grpRelation = reToGroupDao.createRelation(sourceOrganisation.getGroup(), target);
+				target.getGroups().add(grpRelation);
+			}
 		}
 
 		
@@ -223,10 +236,20 @@ public class CopyServiceImpl implements CopyService {
 		// Move dates
 		moveDates(context, target, sourceCourseNodesMap);
 		
+		// Copy lecture blocks
+		copyLectureBlocks(context, target);
+		
+		// Copy assessment modes
+		copyAssessmentModes(context, target);
+		
 		return target;
 	}
 	
 	private void copyGroups(CopyCourseContext context, RepositoryEntry target) {
+		if (context.getGroupCopyType() == null) {
+			return;
+		}
+		
 		switch (context.getGroupCopyType()) {
 		case copy:
 			List<BusinessGroup> copiedGroups = new ArrayList<>();
@@ -514,4 +537,116 @@ public class CopyServiceImpl implements CopyService {
 			}
 		}
 	}
+	
+	private void copyLectureBlocks(CopyCourseContext context, RepositoryEntry target) {
+		if (context.getLectureBlockCopyType() == null || context.getLectureBlockCopyType().equals(CopyType.ignore)) {
+			return;
+		}
+		
+		List<LectureBlockWithTeachers> lectureBlocks = lectureService.getLectureBlocksWithTeachers(context.getSourceRepositoryEntry());
+		List<Identity> coaches = repositoryService.getMembers(target, RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
+		
+		if (context.getLectureBlockCopyType().equals(CopyType.copy)) {			
+			for (LectureBlockWithTeachers lectureBlockWithTeachers : lectureBlocks) {
+				LectureBlockImpl original = (LectureBlockImpl) lectureBlockWithTeachers.getLectureBlock();
+				LectureBlockImpl copy = (LectureBlockImpl) lectureService.createLectureBlock(target);
+				
+				// TODO apply date difference
+				LectureBlock result = copyLectureBlockDetails(copy, original, original.getLocation(), original.getStartDate(), original.getEndDate(), original.getEffectiveEndDate(), original.getAutoClosedDate());
+				
+				for (Identity coach : lectureService.getTeachers(original)) {
+					if (coaches.contains(coach));
+					lectureService.addTeacher(result, coach);
+				}
+			}
+		} else if (context.getLectureBlockCopyType().equals(CopyType.custom) && context.getLectureBlockRows() != null) {
+			for (LectureBlockRow lectureBlockRow : context.getLectureBlockRows()) {
+				LectureBlockImpl original = (LectureBlockImpl) lectureBlockRow.getLectureBlock();
+				LectureBlockImpl copy = (LectureBlockImpl) lectureService.createLectureBlock(target);
+				
+				Date startDate = lectureBlockRow.getDateChooser().getDate();
+				Date endDate = lectureBlockRow.getDateChooser().getSecondDate();
+				
+				// TODO How to deal with effective and closing date?
+				LectureBlock result = copyLectureBlockDetails(copy, original, lectureBlockRow.getLocationElement().getValue(), startDate, endDate, null, null);
+				
+				for (Identity coach : lectureBlockRow.getTeachersList()) {
+					lectureService.addTeacher(result, coach);
+				}
+			}
+		}
+	}
+	
+	private LectureBlock copyLectureBlockDetails(LectureBlockImpl copy, LectureBlockImpl original, String location, Date startDate, Date endDate, Date effectiveEndDate, Date autoClosedDate) {
+		// TODO Copy external ID?
+		copy.setExternalId(original.getExternalId());
+		copy.setManagedFlagsString(original.getManagedFlagsString());
+		
+		copy.setTitle(original.getTitle());
+		copy.setDescription(original.getDescription());
+		copy.setPreparation(original.getPreparation());
+		copy.setLocation(location);
+		copy.setComment(original.getComment());
+		
+		copy.setEndDate(endDate);
+		copy.setStartDate(startDate);
+		copy.setEffectiveEndDate(effectiveEndDate);
+		copy.setCompulsory(original.isCompulsory());
+		
+		copy.setPlannedLecturesNumber(original.getPlannedLecturesNumber());
+		copy.setEffectiveLecturesNumber(original.getEffectiveLecturesNumber());
+		
+		copy.setAutoClosedDate(autoClosedDate);
+		copy.setStatusString(original.getStatusString());
+		copy.setRollCallStatus(LectureRollCallStatus.open);
+		
+		copy.setReasonEffectiveEnd(original.getReasonEffectiveEnd());
+		copy.setTaxonomyLevels(original.getTaxonomyLevels());
+		
+		// TODO How to handle lecture block groups?
+		
+		return lectureService.save(copy, null);
+	}
+	
+	private void copyAssessmentModes(CopyCourseContext context, RepositoryEntry target) {
+		if (context.getAssessmentModeCopyType() == null || context.getAssessmentModeCopyType().equals(CopyType.ignore)) {
+			return;
+		}
+		
+		List<AssessmentMode> originals = assessmentModeManager.getAssessmentModeFor(context.getSourceRepositoryEntry());
+		
+		for (AssessmentMode original : originals) {
+			if (original.getLectureBlock() != null) {
+				continue;
+			}
+			
+			AssessmentModeImpl copy = (AssessmentModeImpl) assessmentModeManager.createAssessmentMode(original);
+			
+			Date begin = null;
+			Date end = null;
+
+			if (context.getAssessmentModeCopyType().equals(CopyType.custom)) {
+				AssessmentModeCopyInfos copyInfos = context.getAssessmentCopyInfos().get(original);
+				begin = copyInfos.getBeginDateChooser().getDate();
+				end = copyInfos.getEndDateChooser().getDate();
+			} else {
+				if (original.getBegin() != null) {
+					begin = new Date(original.getBegin().getTime() + context.getDateDifference());
+				}
+				
+				if (original.getEnd() != null) {
+					end = new Date(original.getEnd().getTime() + context.getDateDifference());
+				}
+			}
+			
+			copy.setRepositoryEntry(target);
+			copy.setBegin(begin);
+			copy.setEnd(end);
+			
+			// TODO forceStatus?
+			assessmentModeManager.merge(copy, false);
+			
+		}
+	}
+		
 }
