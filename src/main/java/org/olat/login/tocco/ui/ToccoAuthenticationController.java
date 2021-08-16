@@ -26,6 +26,7 @@ import org.olat.basesecurity.AuthHelper;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -36,6 +37,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.login.LoginModule;
@@ -64,6 +66,8 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 	@Autowired
 	private LoginModule loginModule;
 	@Autowired
+	private ToccoLoginModule toccoModule;
+	@Autowired
 	private RegistrationManager registrationManager;
 	@Autowired
 	private ToccoAuthManager toccoAuthenticationManager;
@@ -78,6 +82,16 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 		
 		VelocityContainer loginComp = createVelocityContainer("tocco_log", "tocco_login");
 		loginComp.put("loginForm", loginForm.getInitialComponent());
+		
+		if(StringHelper.containsNonWhitespace(toccoModule.getChangePasswordUrl())) {
+			ExternalLink link = new ExternalLink("_tocco_login_change_pwd", "menu.pw");
+			link.setElementCssClass("o_login_pwd");
+			link.setName(translate("menu.pw"));
+			link.setUrl(toccoModule.getChangePasswordUrl());
+			link.setTarget("_blank");
+			loginComp.put("menu.pw", link);
+		}
+		
 		putInitialPanel(loginComp);
 		
 	}

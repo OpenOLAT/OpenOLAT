@@ -1,3 +1,6 @@
 <div class="o_login_form o_login_tocco">		
 	$r.render("loginForm")
+	#if ($r.available("menu.pw"))
+		$r.render("menu.pw")
+	#end
 </div>
