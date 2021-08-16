@@ -19,6 +19,7 @@
  */
 package org.olat.course.reminder.manager;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.reminder.rule.PassedRuleSPI.Status;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReminderRuleDAO {
 
+	private static final int IN_CLAUSE_MAX = 64;
+	
 	@Autowired
 	private DB dbInstance;
 
@@ -68,7 +72,7 @@ public class ReminderRuleDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("courseEntryKey", entry.getKey())
 				.setParameter("subIdent", node.getIdent());
-		if(identities.size() < 50) {
+		if(identities.size() < IN_CLAUSE_MAX) {
 			query.setParameter("identityKeys", PersistenceHelper.toKeys(identities));
 		} else {
 			identityKeySet = new HashSet<>(PersistenceHelper.toKeys(identities));
@@ -163,39 +167,47 @@ public class ReminderRuleDAO {
 		return dateMap;
 	}
 	
-	public Map<Long,Boolean> getPassed(RepositoryEntryRef entry, CourseNode node, List<Identity> identities) {
-		if(identities == null || identities.isEmpty()) {
-			return new HashMap<>();
+	public List<Long> getPassed(RepositoryEntryRef entry, CourseNode node, List<Identity> identities, Set<Status> status) {
+		if(identities == null || identities.isEmpty() || status == null || status.isEmpty()) {
+			return Collections.emptyList();
 		}
 
-		Set<Long> identityKeySet = null;
-		StringBuilder sb = new StringBuilder();
-		sb.append("select data.identity.key, data.passed from assessmententry data")
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select data.identity.key from assessmententry data")
 		  .append(" where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent");
+		sb.append(" and (");
+		boolean or = false;
+		if (status.contains(Status.gradedPassed)) {
+			sb.append("data.passed = true");
+			or = true;
+		}
+		if (status.contains(Status.gradedFailed)) {
+			sb.append(" or ", or).append("data.passed = false");
+			or = true;
+		}
+		if (status.contains(Status.notGraded)) {
+			sb.append(" or ", or).append("data.passed is null");
+		}
+		
+		sb.append(")");
 		if(identities.size() < 50) {
 			sb.append(" and data.identity.key in (:identityKeys)");
 		}
 
-		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class)
+		List<Long> targetIdenityKeys = PersistenceHelper.toKeys(identities);
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("courseEntryKey", entry.getKey())
 				.setParameter("subIdent", node.getIdent());
 		if(identities.size() < 50) {
-			query.setParameter("identityKeys", PersistenceHelper.toKeys(identities));
-		} else {
-			identityKeySet = new HashSet<>(PersistenceHelper.toKeys(identities));
+			query.setParameter("identityKeys", targetIdenityKeys);
 		}
-
-		List<Object[]> infoList = query.getResultList();
-		Map<Long,Boolean> dateMap = new HashMap<>();
-		for(Object[] infos:infoList) {
-			Long identityKey = (Long)infos[0];
-			if(identityKeySet == null || identityKeySet.contains(identityKey)) {
-				Boolean passed = (Boolean)infos[1];
-				dateMap.put(identityKey, passed);
-			}
+		
+		List<Long> identityKeys = query.getResultList();
+		if (identities.size() >= 50) {
+			identityKeys.removeIf(key -> !targetIdenityKeys.contains(key));
 		}
-		return dateMap;
+		return identityKeys;
 	}
 	
 	public Map<Long, Double> getRootCompletions(RepositoryEntry entry, List<Identity> identities) {

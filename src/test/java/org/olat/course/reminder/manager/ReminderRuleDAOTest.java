@@ -28,12 +28,14 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
+import org.olat.course.reminder.rule.PassedRuleSPI.Status;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -132,31 +134,54 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		CourseNode node = new SPCourseNode();
 		String subIdent = node.getIdent();
 		String subIdenOther = random();
-		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityPassed1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityPassed2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityFailed = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identityNotGraded = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity identityOther = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		
-		AssessmentEntry ae1 = assessmentService.getOrCreateAssessmentEntry(identity1, null, entry, subIdent, Boolean.FALSE, null);
-		ae1.setPassed(Boolean.TRUE);
-		assessmentService.updateAssessmentEntry(ae1);
-		AssessmentEntry ae2 = assessmentService.getOrCreateAssessmentEntry(identity2, null, entry, subIdent, Boolean.FALSE, null);
-		ae2.setPassed(Boolean.TRUE);
-		assessmentService.updateAssessmentEntry(ae2);
-		AssessmentEntry aeOtherEntry = assessmentService.getOrCreateAssessmentEntry(identity1, null, entryOther, subIdent, Boolean.FALSE, null);
+		AssessmentEntry aePassed1 = assessmentService.getOrCreateAssessmentEntry(identityPassed1, null, entry, subIdent, Boolean.FALSE, null);
+		aePassed1.setPassed(Boolean.TRUE);
+		assessmentService.updateAssessmentEntry(aePassed1);
+		AssessmentEntry aePassed2 = assessmentService.getOrCreateAssessmentEntry(identityPassed2, null, entry, subIdent, Boolean.FALSE, null);
+		aePassed2.setPassed(Boolean.TRUE);
+		assessmentService.updateAssessmentEntry(aePassed2);
+		AssessmentEntry aeFailed = assessmentService.getOrCreateAssessmentEntry(identityFailed, null, entry, subIdent, Boolean.FALSE, null);
+		aeFailed.setPassed(Boolean.FALSE);
+		assessmentService.updateAssessmentEntry(aeFailed);
+		AssessmentEntry aeNotGraded = assessmentService.getOrCreateAssessmentEntry(identityNotGraded, null, entry, subIdent, Boolean.FALSE, null);
+		aeNotGraded.setPassed(null);
+		assessmentService.updateAssessmentEntry(aeNotGraded);
+		AssessmentEntry aeOtherEntry = assessmentService.getOrCreateAssessmentEntry(identityPassed1, null, entryOther, subIdent, Boolean.FALSE, null);
 		aeOtherEntry.setPassed(Boolean.FALSE);
 		assessmentService.updateAssessmentEntry(aeOtherEntry);
-		AssessmentEntry aeOtherSubIdent = assessmentService.getOrCreateAssessmentEntry(identity1, null, entry, subIdenOther, Boolean.FALSE, null);
+		AssessmentEntry aeOtherSubIdent = assessmentService.getOrCreateAssessmentEntry(identityPassed1, null, entry, subIdenOther, Boolean.FALSE, null);
 		aeOtherSubIdent.setPassed(Boolean.FALSE);
 		assessmentService.updateAssessmentEntry(aeOtherSubIdent);
 		AssessmentEntry aeOtherIdentity = assessmentService.getOrCreateAssessmentEntry(identityOther, null, entry, subIdent, Boolean.FALSE, null);
 		aeOtherIdentity.setPassed(Boolean.FALSE);
 		assessmentService.updateAssessmentEntry(aeOtherIdentity);
+		List<Identity> targetIdentities = asList(identityPassed1, identityPassed2, identityFailed, identityNotGraded);
 		
-		Map<Long, Boolean> passed = sut.getPassed(entry, node, asList(identity1, identity2));
+		List<Long> keys = sut.getPassed(entry, node, targetIdentities, Set.of(Status.gradedPassed));
+		assertThat(keys).containsExactlyInAnyOrder(
+						identityPassed1.getKey(),
+						identityPassed2.getKey())
+				.doesNotContain(
+						identityFailed.getKey(),
+						identityNotGraded.getKey(),
+						identityOther.getKey()
+				);
 		
-		assertThat(passed).hasSize(2);
-		assertThat(passed.get(identity1.getKey())).isTrue();
-		assertThat(passed.get(identity2.getKey())).isTrue();
+		keys = sut.getPassed(entry, node, targetIdentities, Set.of(Status.gradedFailed, Status.notGraded));
+		assertThat(keys).containsExactlyInAnyOrder(
+						identityFailed.getKey(),
+						identityNotGraded.getKey())
+				.doesNotContain(
+						identityPassed1.getKey(),
+						identityPassed2.getKey(),
+						identityOther.getKey()
+				);
 	}
 	
 	@Test

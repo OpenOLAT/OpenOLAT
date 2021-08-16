@@ -19,32 +19,30 @@
  */
 package org.olat.course.reminder.rule;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.STCourseNode;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.PassedRuleEditor;
-import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -63,6 +61,39 @@ import org.springframework.stereotype.Service;
 public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(PassedRuleSPI.class);
+	
+	public enum Status {
+		
+		gradedPassed,
+		gradedFailed,
+		notGraded;
+		
+		private final static List<String> NAMES = Arrays.stream(Status.values()).map(Status::name).collect(Collectors.toList());
+		
+		public static final Set<Status> split(String values) {
+			Set<Status> status = new HashSet<>();
+			if (StringHelper.containsNonWhitespace(values)) {
+				for (String value : values.split(",")) {
+					if (NAMES.contains(value)) {
+						status.add(Status.valueOf(value));
+					} else if ("passed".equals(value)) {
+						// backward compatibility
+						status.add(Status.gradedPassed);
+					} else if("failed".equals(value)) {
+						// backward compatibility: failed was "not passed"
+						status.add(Status.gradedFailed);
+						status.add(Status.notGraded);
+					}
+				}
+			}
+			return status;
+		}
+		
+		public static final String join(Set<Status> status) {
+			return status.stream().map(Status::name).collect(Collectors.joining(","));
+		}
+		
+	}
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
@@ -83,7 +114,7 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 			ReminderRuleImpl r = (ReminderRuleImpl)rule;
 			Translator translator = Util.createPackageTranslator(PassedRuleEditor.class, locale);
 			String nodeIdent = r.getLeftOperand();
-			String status = r.getRightOperand();
+			String statusValue = r.getRightOperand();
 			
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
@@ -94,12 +125,29 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 				}
 			}
 			
-			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent() };
-			if ("passed".equals(status)) {
-				return translator.translate("rule.passed.passed", args);
-			} else if("failed".equals(status)) {
-				return translator.translate("rule.passed.failed", args);
+			Set<Status> status = Status.split(statusValue);
+			StringBuilder statusText = new StringBuilder();
+			boolean separator = false;
+			if (status.contains(Status.gradedPassed)) {
+				statusText.append(translator.translate("passed"));
+				separator = true;
 			}
+			if (status.contains(Status.gradedFailed)) {
+				if (separator) {
+					statusText.append(translator.translate("rule.passed.separator"));
+				}
+				statusText.append(translator.translate("failed"));
+				separator = true;
+			}
+			if (status.contains(Status.notGraded)) {
+				if (separator) {
+					statusText.append(translator.translate("rule.passed.separator"));
+				}
+				statusText.append(translator.translate("not.graded"));
+			}
+			
+			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent(), statusText.toString() };
+			return translator.translate("rule.passed.text", args);
 		}
 		return null;
 	}
@@ -119,7 +167,7 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 		if(rule instanceof ReminderRuleImpl) {
 			ReminderRuleImpl r = (ReminderRuleImpl)rule;
 			String nodeIdent = r.getLeftOperand();
-			String status = r.getRightOperand();
+			String statusValue = r.getRightOperand();
 			
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
@@ -129,40 +177,15 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 				return;
 			}
 			
-			Map<Long, Boolean> passeds;
-			if(courseNode instanceof STCourseNode) {
-				passeds = new HashMap<>();
-				
-				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-				if(Mode.none != assessmentConfig.getPassedMode()) {
-					for(Identity identity:identities) {
-						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-						ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
-						Boolean passed = scoreEval.getPassed();
-						if(passed != null) {
-							passeds.put(identity.getKey(), passed);
-						}
-					}
-				}
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			if(Mode.none != assessmentConfig.getPassedMode()) {
+				Set<Status> status = Status.split(statusValue);
+				List<Long> matchedIdentityKeys = helperDao.getPassed(entry, courseNode, identities, status);
+				identities.removeIf(identity -> !matchedIdentityKeys.contains(identity.getKey()));
 			} else {
-				passeds = helperDao.getPassed(entry, courseNode, identities);
-			}
-			
-			if("passed".equals(status)) {
-				for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
-					Boolean passed = passeds.get(identityIt.next().getKey());
-					if(passed == null || !passed.booleanValue()) {
-						identityIt.remove();
-					}
-				}
-			} else if("failed".equals(status)) {
-				for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
-					Boolean passed = passeds.get(identityIt.next().getKey());
-					if(passed != null && passed.booleanValue()) {
-						identityIt.remove();
-					}
-				}
+				// The rule is invalid if the curse node cannot be passed (anymore). Send no reminder at all.
+				identities.clear();
 			}
 		}
 	}

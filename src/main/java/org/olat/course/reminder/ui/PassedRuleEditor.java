@@ -22,14 +22,17 @@ package org.olat.course.reminder.ui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.ArrayHelper;
@@ -44,6 +47,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.CourseNodeFragment;
 import org.olat.course.reminder.rule.PassedRuleSPI;
+import org.olat.course.reminder.rule.PassedRuleSPI.Status;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -58,9 +62,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFragment {
 	
-	private static final String[] statusKeys = new String[]{ "passed", "failed" };
-	
-	private SingleSelection courseNodeEl, statusEl;
+	private SingleSelection courseNodeEl;
+	private MultipleSelectionElement statusEl;
 	private String[] nodeKeys;
 	private String[] nodeValues;
 	
@@ -125,23 +128,22 @@ public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFr
 		}
 		
 		Translator trans = formLayout.getTranslator();
-		String[] statusValues = new String[] {
-			trans.translate("passed"), trans.translate("failed")
-		};
-
-		statusEl = uifactory.addDropdownSingleselect("status.".concat(id), null, ruleCont, statusKeys, statusValues, null);
+		SelectionValues statusSV = new SelectionValues();
+		statusSV.add(SelectionValues.entry(PassedRuleSPI.Status.gradedPassed.name(), trans.translate("passed")));
+		statusSV.add(SelectionValues.entry(PassedRuleSPI.Status.gradedFailed.name(), trans.translate("failed")));
+		statusSV.add(SelectionValues.entry(PassedRuleSPI.Status.notGraded.name(), trans.translate("not.graded")));
+		statusEl = uifactory.addCheckboxesHorizontal("status.".concat(id), null, ruleCont, statusSV.keys(), statusSV.values());
 		statusEl.setDomReplacementWrapperRequired(false);
-		boolean statusSelected = false;
-		if(currentStatus != null) {
-			for(String statusKey:statusKeys) {
-				if(currentStatus.equals(statusKey)) {
-					statusEl.select(statusKey, true);
-					statusSelected = true;
-				}
+		Set<Status> status = Status.split(currentStatus);
+		for (Status value : status) {
+			if (statusEl.getKeys().contains(value.name())) {
+				statusEl.select(value.name(), true);
+				
 			}
 		}
-		if(!statusSelected) {
-			statusEl.select(statusKeys[1], true);
+		if(!statusEl.isAtLeastSelected(1)) {
+			statusEl.select(PassedRuleSPI.Status.gradedFailed.name(), true);
+			statusEl.select(PassedRuleSPI.Status.notGraded.name(), true);
 		}
 		
 		return ruleCont;
@@ -188,7 +190,7 @@ public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFr
 		}
 		
 		statusEl.clearError();
-		if(!statusEl.isOneSelected()) {
+		if(!statusEl.isAtLeastSelected(1)) {
 			statusEl.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
 		}
@@ -199,12 +201,14 @@ public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFr
 	@Override
 	public ReminderRule getConfiguration() {
 		ReminderRuleImpl configuredRule = null; 
-		if(courseNodeEl.isOneSelected() && statusEl.isOneSelected()) {
+		if(courseNodeEl.isOneSelected() && statusEl.isAtLeastSelected(1)) {
 			configuredRule = new ReminderRuleImpl();
 			configuredRule.setType(PassedRuleSPI.class.getSimpleName());
 			configuredRule.setLeftOperand(courseNodeEl.getSelectedKey());
 			configuredRule.setOperator("=");
-			configuredRule.setRightOperand(statusEl.getSelectedKey());
+			Set<Status> status = statusEl.getSelectedKeys().stream().map(PassedRuleSPI.Status::valueOf).collect(java.util.stream.Collectors.toSet());
+			String statusValues = PassedRuleSPI.Status.join(status);
+			configuredRule.setRightOperand(statusValues);
 		}
 		return configuredRule;
 	}
