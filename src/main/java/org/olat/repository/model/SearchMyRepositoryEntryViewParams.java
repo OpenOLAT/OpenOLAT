@@ -140,6 +140,15 @@ public class SearchMyRepositoryEntryViewParams {
 		this.filters = filters;
 	}
 	
+	public void addFilter(Filter filter) {
+		if(filters == null) {
+			filters = new ArrayList<>(4);
+		}
+		if(!filters.contains(filter)) {
+			filters.add(filter);
+		}
+	}
+	
 	public boolean isPassedFiltered() {
 		return filters != null && (filters.contains(Filter.notPassed)
 				|| filters.contains(Filter.passed)

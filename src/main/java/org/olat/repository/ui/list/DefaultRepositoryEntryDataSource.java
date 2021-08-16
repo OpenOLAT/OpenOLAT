@@ -173,8 +173,10 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				}
 				break;
 			default:
-				String val = null;
-				searchParams.setFilters(Collections.singletonList(Filter.valueOf(val)));
+				String filterVal = ((FlexiTableExtendedFilter)filter).getValue();
+				if(filterVal != null) {
+					searchParams.addFilter(Filter.valueOf(filterVal));
+				}
 				break;
 		}
 	}
