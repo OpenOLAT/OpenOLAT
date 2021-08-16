@@ -24,6 +24,7 @@ import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.scoring.EndDateEvaluator;
 import org.olat.course.run.scoring.StartDateEvaluator;
 import org.olat.course.run.scoring.StatusEvaluator;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -37,18 +38,22 @@ public class LearningPathEvaluatorBuilder {
 	private static final EndDateEvaluator CONFIG_END_DATE_EVALUATOR = new ConfigEndDateEvaluator();
 	private static final ConfigObligationEvaluator CONFIG_OBLIGATION_EVALUATOR = new ConfigObligationEvaluator();
 	private static final ConfigDurationEvaluator CONFIG_DURATION_EVALUATOR = new ConfigDurationEvaluator();
-	private static final StatusEvaluator STATUS_EVALUATOR = new DefaultLearningPathStatusEvaluator();
-	private static final AccountingEvaluators DEFAULT = AccountingEvaluatorsBuilder
+	private static final StatusEvaluator STATUS_EVALUATOR = new DefaultLearningPathStatusEvaluator(AssessmentEntryStatus.notStarted);
+	private static final AccountingEvaluators DEFAULT = defaults().build();
+	
+	public static AccountingEvaluators buildDefault() {
+		return DEFAULT;
+	}
+	
+	public static AccountingEvaluatorsBuilder defaults() {
+		 return AccountingEvaluatorsBuilder
 			.builder()
 			.withStartDateEvaluator(CONFIG_START_DATE_EVALUATOR)
 			.withEndDateEvaluator(CONFIG_END_DATE_EVALUATOR)
 			.withObligationEvaluator(CONFIG_OBLIGATION_EVALUATOR)
 			.withDurationEvaluator(CONFIG_DURATION_EVALUATOR)
-			.withStatusEvaluator(STATUS_EVALUATOR)
-			.build();
-	
-	public static AccountingEvaluators buildDefault() {
-		return DEFAULT;
+			.withStatusEvaluator(STATUS_EVALUATOR);
 	}
+	
 
 }

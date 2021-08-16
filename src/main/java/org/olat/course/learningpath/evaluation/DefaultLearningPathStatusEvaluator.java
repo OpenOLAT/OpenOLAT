@@ -38,6 +38,12 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class DefaultLearningPathStatusEvaluator implements StatusEvaluator {
 
 	private static final Logger log = Tracing.createLoggerFor(DefaultLearningPathStatusEvaluator.class);
+	
+	private final AssessmentEntryStatus initialNotBlockedStatus;
+	
+	public DefaultLearningPathStatusEvaluator(AssessmentEntryStatus initialNotBlockedStatus) {
+		this.initialNotBlockedStatus = initialNotBlockedStatus;
+	}
 
 	@Override
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
@@ -46,7 +52,7 @@ public class DefaultLearningPathStatusEvaluator implements StatusEvaluator {
 		AssessmentEntryStatus status = currentStatus;
 		if (isNotInProgressYet(currentStatus)) {
 			if (isNotBlocked(blocker)) {
-				status = AssessmentEntryStatus.notStarted;
+				status = initialNotBlockedStatus;
 			} else {
 				status = AssessmentEntryStatus.notReady;
 			}

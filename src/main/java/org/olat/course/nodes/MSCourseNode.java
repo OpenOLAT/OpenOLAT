@@ -77,6 +77,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.properties.Property;
@@ -100,7 +101,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	@SuppressWarnings("deprecation")
 	private static final String PACKAGE_MS = Util.getPackageName(MSCourseNodeRunController.class);
 
-	public static final int CURRENT_VERSION = 2;
+	public static final int CURRENT_VERSION = 3;
 	public static final String TYPE = "ms";
 	/** configuration: score can be set */
 	public static final String CONFIG_KEY_HAS_SCORE_FIELD = "hasScoreField";
@@ -134,6 +135,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_EVAL_FORM_SOFTKEY = "evaluation.form.softkey";
 	public static final String CONFIG_KEY_EVAL_FORM_SCALE = "evaluation.form.scale";
 	public static final String CONFIG_DEFAULT_EVAL_FORM_SCALE = "1.0";
+	
+	public static final String CONFIG_KEY_INITIAL_STATUS = "initial.status";
 
 	public MSCourseNode() {
 		this(null);
@@ -166,6 +169,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		if (isNewNode) {
 			initDefaultConfig(config);
 			config.setStringValue(CONFIG_KEY_SCORE, CONFIG_VALUE_SCORE_NONE);
+			config.setStringValue(CONFIG_KEY_INITIAL_STATUS, AssessmentEntryStatus.inReview.name());
 		}
 		if (config.getConfigurationVersion() < 2) {
 			// migrate legacy configs
@@ -180,6 +184,11 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			// new configs
 			config.setBooleanEntry(CONFIG_KEY_EVAL_FORM_ENABLED, false);
 			config.setStringValue(CONFIG_KEY_EVAL_FORM_SCALE, CONFIG_DEFAULT_EVAL_FORM_SCALE);
+		}
+		if (config.getConfigurationVersion() < 3) {
+			if (!config.has(CONFIG_KEY_INITIAL_STATUS)) {
+				config.setStringValue(CONFIG_KEY_INITIAL_STATUS, AssessmentEntryStatus.notStarted.name());
+			}
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}

@@ -56,6 +56,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -227,6 +228,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 			myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			myContent.contextPut("passed", assessmentEntry.getPassed());
+			myContent.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview ==  assessmentEntry.getAssessmentStatus()));
 			
 			if(resultsVisible) {
 				if(hasComment) {

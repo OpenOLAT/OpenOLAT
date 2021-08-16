@@ -30,15 +30,18 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.evaluation.DefaultLearningPathStatusEvaluator;
 import org.olat.course.learningpath.evaluation.LearningPathEvaluatorBuilder;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
+import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -52,6 +55,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MSAssessmentHandler implements AssessmentHandler {
+	
+	private static final StatusEvaluator STATUS_EVALUATOR_NOT_STARTED = new DefaultLearningPathStatusEvaluator(AssessmentEntryStatus.notStarted);
+	private static final StatusEvaluator STATUS_EVALUATOR_IN_REVIEW = new DefaultLearningPathStatusEvaluator(AssessmentEntryStatus.inReview);
 
 	@Override
 	public String acceptCourseNodeType() {
@@ -75,7 +81,13 @@ public class MSAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig) {
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
-			return LearningPathEvaluatorBuilder.buildDefault();
+			String initialStatus = courseNode.getModuleConfiguration().getStringValue(MSCourseNode.CONFIG_KEY_INITIAL_STATUS);
+			StatusEvaluator statusEvaluator = AssessmentEntryStatus.inReview.name().equals(initialStatus)
+					? STATUS_EVALUATOR_IN_REVIEW
+					: STATUS_EVALUATOR_NOT_STARTED;
+			return LearningPathEvaluatorBuilder.defaults()
+					.withStatusEvaluator(statusEvaluator)
+					.build();
 		}
 		return AccountingEvaluatorsBuilder.defaultConventional();
 	}

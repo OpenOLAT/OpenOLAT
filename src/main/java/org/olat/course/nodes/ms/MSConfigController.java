@@ -49,11 +49,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.handler.EvaluationFormResource;
@@ -74,6 +76,7 @@ public class MSConfigController extends FormBasicController {
 	private static final String[] EMPTY_ARRAY = new String[]{};
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
 
+	private MultipleSelectionElement initialStatusEl;
 	private MultipleSelectionElement evaluationFormEnabledEl;
 	private StaticTextElement evaluationFormNotChoosen;
 	private FormLink evaluationFormLink;
@@ -103,6 +106,7 @@ public class MSConfigController extends FormBasicController {
 	private final ModuleConfiguration config;
 	private final RepositoryEntry ores;
 	private final String nodeIdent;
+	private final boolean showInitialStatus;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private RepositoryEntry formEntry;
 	private MinMax formMinMax;
@@ -120,6 +124,7 @@ public class MSConfigController extends FormBasicController {
 		this.config = courseNode.getModuleConfiguration();
 		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		this.nodeIdent = courseNode.getIdent();
+		this.showInitialStatus = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		this.formEntry = MSCourseNode.getEvaluationForm(config);
 		doCalculateMinMax();
@@ -143,6 +148,15 @@ public class MSConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_course_ms");
+		
+		// Initial status
+		if (showInitialStatus) {
+			initialStatusEl = uifactory.addCheckboxesHorizontal("form.initial.status", formLayout, ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
+			initialStatusEl.setHelpUrl("form.initial.status.help");
+			String initialStatus = config.getStringValue(MSCourseNode.CONFIG_KEY_INITIAL_STATUS);
+			initialStatusEl.select(ENABLED_KEYS[0], AssessmentEntryStatus.inReview.name().equals(initialStatus));
+		}
+		
 		// Evaluation Form
 		evaluationFormEnabledEl = uifactory.addCheckboxesHorizontal("form.evaluation.enabled", formLayout,
 				ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
@@ -206,7 +220,7 @@ public class MSConfigController extends FormBasicController {
 			passedTypeEl.select(trueFalseKeys[0], true);
 		} else {
 			passedTypeEl.select(trueFalseKeys[1], true);
-			cut = new Float(0.0);
+			cut = Float.valueOf(0.0f);
 		}
 
 		// Passing grade cut value
@@ -471,6 +485,13 @@ public class MSConfigController extends FormBasicController {
 	}
 
 	private void updateConfig() {
+		if (initialStatusEl.isVisible()) {
+			String initialStatus = initialStatusEl.isAtLeastSelected(1)
+					? AssessmentEntryStatus.inReview.name()
+					: AssessmentEntryStatus.notStarted.name();
+			config.setStringValue(MSCourseNode.CONFIG_KEY_INITIAL_STATUS, initialStatus);
+		}
+		
 		boolean evalFormEnabled = evaluationFormEnabledEl.isAtLeastSelected(1);
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED, evalFormEnabled);
 		if (evalFormEnabled) {

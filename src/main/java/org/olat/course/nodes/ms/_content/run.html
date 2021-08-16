@@ -16,16 +16,14 @@
 		<tr class="o_score">
 			<th>$r.translate("score.yourscore")</th>
 			<td>
-			#if($score)
-				#if($resultsVisible)
-					$score
-				#else
-					<span id="o_score_in_review" class="o_in_review">
-						<i class="o_icon o_icon-fw o_icon_warn"> </i>
-						$r.translate("in.review")
-					</span>
-					$r.mouseoverHelp("o_score_in_review", "assessment.review.explanation")
-				#end
+			#if($score && $resultsVisible)
+				$score
+			#elseif(($score && !$resultsVisible) || $inReview)
+				<span id="o_score_in_review" class="o_in_review">
+					<i class="o_icon o_icon-fw o_icon_warn"> </i>
+					$r.translate("in.review")
+				</span>
+				$r.mouseoverHelp("o_score_in_review", "assessment.review.explanation")
 			#else
 				<div class="o_noinfo">$r.translate("score.noscore")</div>
 			#end
@@ -43,7 +41,7 @@
 		<tr class="o_state #if(!$resultsVisible) #elseif($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
 			<th>$r.translate("passed.yourpassed")</th>
 			<td>
-			#if($hasPassedValue && !$resultsVisible)
+			#if(($hasPassedValue && !$resultsVisible) || $inReview)
 				<span id="o_passed_in_review" class="o_in_review">
 					<i class="o_icon o_icon-fw o_icon_warn"> </i>
 					$r.translate("in.review")

@@ -37,7 +37,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class DefaultLearningPathStatusEvaluatorTest {
 	
-	private DefaultLearningPathStatusEvaluator sut = new DefaultLearningPathStatusEvaluator();
+	private DefaultLearningPathStatusEvaluator sut = new DefaultLearningPathStatusEvaluator(AssessmentEntryStatus.inReview);
 	
 	@Test
 	public void shouldBlockIfMandatoryAndNotFullyAssessed() {
@@ -103,13 +103,13 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	}
 	
 	@Test
-	public void shouldSetNotStartedIfNotBlocked() {
+	public void shouldSetInitialStatusIfNotBlocked() {
 		Blocker blocker = new SequentialBlocker();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, null, null);
 		
 		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
 		
-		assertThat(status).isEqualTo(AssessmentEntryStatus.notStarted);
+		assertThat(status).isEqualTo(AssessmentEntryStatus.inReview);
 	}
 	
 	@Test
