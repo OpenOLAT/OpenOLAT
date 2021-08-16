@@ -24,12 +24,14 @@ import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
@@ -50,6 +52,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.co.ContactForm;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,8 +66,10 @@ public class ContactTeachersController extends FormBasicController {
 	
 	private TextElement subjectEl;
 	private RichTextElement bodyEl;
+	private MultipleSelectionElement sendMailEl;
 	private MultipleSelectionElement teachersEl;
 	
+	private final boolean mailMandatory;
 	private final boolean withButtons;
 	private List<Identity> identities;
 
@@ -78,16 +83,19 @@ public class ContactTeachersController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(ContactForm.class, getLocale(), getTranslator()));
 		this.identities = identities;
 		withButtons = true;
+		mailMandatory = true;
 		
 		initForm(ureq);
 	}
 	
-	public ContactTeachersController(UserRequest ureq, WindowControl wControl, List<Identity> identities, Form rootForm) {
+	public ContactTeachersController(UserRequest ureq, WindowControl wControl, List<Identity> identities,
+			LecturesSecurityCallback secCallback, Form rootForm) {
 		super(ureq, wControl, LAYOUT_DEFAULT, "", rootForm);	
 		setTranslator(Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(ContactForm.class, getLocale(), getTranslator()));
 		this.identities = identities;
 		withButtons = false;
+		mailMandatory = secCallback.needToInformTeacher();
 		
 		initForm(ureq);
 	}
@@ -103,6 +111,10 @@ public class ContactTeachersController extends FormBasicController {
 		return teachers;
 	}
 	
+	public boolean isSendMail() {
+		return sendMailEl == null || sendMailEl.isAtLeastSelected(1);
+	}
+	
 	public String getSubject() {
 		return subjectEl.getValue();
 	}
@@ -113,6 +125,13 @@ public class ContactTeachersController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(!withButtons && !mailMandatory) {
+			sendMailEl = uifactory.addCheckboxesVertical("send.mail", null, formLayout,
+					new String[] { "on" }, new String[] { translate("send.mail") }, 1);
+			sendMailEl.selectAll();
+			sendMailEl.addActionListener(FormEvent.ONCLICK);
+		}
+		
 		KeyValues keyValues = new KeyValues();
 		for(Identity identity:identities) {
 			String key = identity.getKey().toString();
@@ -170,6 +189,21 @@ public class ContactTeachersController extends FormBasicController {
 		}
 
 		return allOk;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == sendMailEl) {
+			updateEmail();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateEmail() {
+		boolean sendMail = sendMailEl.isAtLeastSelected(1);
+		subjectEl.setVisible(sendMail);
+		bodyEl.setVisible(sendMail);
+		teachersEl.setVisible(sendMail);
 	}
 
 	@Override

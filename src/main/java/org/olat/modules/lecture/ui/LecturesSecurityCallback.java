@@ -48,6 +48,11 @@ public interface LecturesSecurityCallback {
 	public boolean canAddNoticeOfAbsences();
 	
 	public boolean canAddDispensations();
+	
+	/**
+	 * @return true if a E-mail to the teaches after creating a notice is mandatory
+	 */
+	public boolean needToInformTeacher();
 
 	public boolean canEditAbsenceNotices();
 	

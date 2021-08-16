@@ -41,7 +41,7 @@ public class AbsenceNotice4ReasonStep extends BasicStep {
 	public AbsenceNotice4ReasonStep(UserRequest ureq, LecturesSecurityCallback secCallback) {
 		super(ureq);
 		this.secCallback = secCallback;
-		setNextStep(new AbsenceNotice5ContactStep(ureq));
+		setNextStep(new AbsenceNotice5ContactStep(ureq, secCallback));
 		setI18nTitleAndDescr("wizard.reason.title", "wizard.reason.title");
 	}
 
