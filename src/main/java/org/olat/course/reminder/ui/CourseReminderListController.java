@@ -137,6 +137,7 @@ public class CourseReminderListController extends FormBasicController
 		
 		showLogLink = uifactory.addFormLink("show.sent", "show.sent", "show.sent", null, flc, Link.LINK);
 		showLogLink.setIconLeftCSS("o_icon o_icon-fw o_icon_show_send");
+		showLogLink.setElementCssClass("o_sel_reminder_show_sent");
 		dropdown.addElement(showLogLink);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

@@ -126,15 +126,27 @@ public class RemindersPage {
 		return this;
 	}
 	
+	public RemindersPage openMoreMenu() {
+		By moreMenuBy = By.xpath("//fieldset[contains(@class,'o_sel_course_reminder_list')]//button[i[contains(@class,'o_icon_commands')]]");
+		browser.findElement(moreMenuBy).click();
+		OOGraphene.waitBusy(browser);
+
+		By calloutBy = By.cssSelector("fieldset.o_sel_course_reminder_list ul.dropdown-menu");
+		OOGraphene.waitElement(calloutBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Open the log
 	 * 
 	 * @return
 	 */
 	public RemindersPage openLog() {
-		By logSegmentBy = By.cssSelector("a.o_sel_course_reminder_log_segment");
-		browser.findElement(logSegmentBy).click();
+		By logMenuItemBy = By.cssSelector("ul.dropdown-menu a.o_sel_reminder_show_sent");
+		browser.findElement(logMenuItemBy).click();
 		OOGraphene.waitBusy(browser);
+		By logTableBy = By.cssSelector("div.o_table_flexi.o_sel_course_sent_reminder_log_list");
+		OOGraphene.waitElement(logTableBy, browser);
 		return this;
 	}
 	
