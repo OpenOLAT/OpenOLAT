@@ -118,6 +118,7 @@ public class EditNoticeController extends FormBasicController {
 		absenceNotice.setAbsenceCategory(noticeWrapper.getAbsenceCategory());
 		absenceNotice.setAbsenceReason(noticeWrapper.getAbsenceReason());
 		absenceNotice.setNoticeTarget(noticeWrapper.getAbsenceNoticeTarget());
+		absenceNotice.setNoticeType(noticeWrapper.getAbsenceNoticeType());
 		
 		List<RepositoryEntry> entries = null;
 		List<LectureBlock> lectureBlocks = null;
