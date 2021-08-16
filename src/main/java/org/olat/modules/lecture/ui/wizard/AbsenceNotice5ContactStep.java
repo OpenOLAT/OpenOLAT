@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 
 /**
  * 
@@ -34,9 +35,12 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  *
  */
 public class AbsenceNotice5ContactStep extends BasicStep {
+	
+	private final LecturesSecurityCallback secCallback;
 
-	public AbsenceNotice5ContactStep(UserRequest ureq) {
+	public AbsenceNotice5ContactStep(UserRequest ureq, LecturesSecurityCallback secCallback) {
 		super(ureq);
+		this.secCallback = secCallback;
 		setNextStep(NOSTEP);
 		setI18nTitleAndDescr("wizard.contact.title", "wizard.contact.title");
 	}
@@ -48,7 +52,7 @@ public class AbsenceNotice5ContactStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new InformStepController(ureq, wControl, form, runContext);
+		return new InformStepController(ureq, wControl, form, secCallback, runContext);
 	}
 	
 }

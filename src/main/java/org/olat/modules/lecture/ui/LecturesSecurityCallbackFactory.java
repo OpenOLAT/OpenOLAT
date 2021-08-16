@@ -205,6 +205,14 @@ public class LecturesSecurityCallbackFactory {
 			}
 			return false;
 		}
+		
+		@Override
+		public boolean needToInformTeacher() {
+			if(adminRole || this.masterCoachRole) {
+				return false;
+			}
+			return viewAs == LectureRoles.participant;
+		}
 
 		@Override
 		public boolean canEditAbsenceNotices() {

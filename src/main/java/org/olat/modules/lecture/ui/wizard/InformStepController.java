@@ -32,6 +32,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.ContactTeachersController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,13 +49,14 @@ public class InformStepController extends StepFormBasicController {
 	@Autowired
 	private LectureService lectureService;
 
-	public InformStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public InformStepController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			LecturesSecurityCallback secCallback, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
 		EditAbsenceNoticeWrapper noticeWrapper = (EditAbsenceNoticeWrapper)getFromRunContext("absence");
 		List<Identity> teachers = lectureService.getTeachers(noticeWrapper.getIdentity(), noticeWrapper.getLectureBlocks(),
 				noticeWrapper.getEntries(), noticeWrapper.getStartDate(), noticeWrapper.getEndDate());
-		teachersCtrl = new ContactTeachersController(ureq, getWindowControl(), teachers, rootForm);
+		teachersCtrl = new ContactTeachersController(ureq, getWindowControl(), teachers, secCallback, rootForm);
 		listenTo(teachersCtrl);
 		
 		initForm(ureq);
@@ -81,7 +83,7 @@ public class InformStepController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		EditAbsenceNoticeWrapper noticeWrapper = (EditAbsenceNoticeWrapper)getFromRunContext("absence");
 		List<Identity> teachers = teachersCtrl.getSelectedTeacher();
-		if(!teachers.isEmpty()) {
+		if(!teachers.isEmpty() && teachersCtrl.isSendMail()) {
 			noticeWrapper.setIdentitiesToContact(teachers);
 			noticeWrapper.setContactSubject(teachersCtrl.getSubject());
 			noticeWrapper.setContactBody(teachersCtrl.getBody());

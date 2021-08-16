@@ -41,6 +41,8 @@ public class ToccoLoginModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean enabled;	
 	@Value("${tocco.server.url:true}")
 	private String toccoServerUrl;
+	@Value("${tocco.changePasswordUrl}")
+	private String changePasswordUrl;
 	
 	@Autowired
 	public ToccoLoginModule(CoordinatorManager coordinatorManager) {
@@ -64,6 +66,14 @@ public class ToccoLoginModule extends AbstractSpringModule implements ConfigOnOf
 	
 	public String getToccoServerUrl() {
 		return toccoServerUrl;
+	}
+
+	public void setToccoServerUrl(String toccoServerUrl) {
+		this.toccoServerUrl = toccoServerUrl;
+	}
+
+	public String getChangePasswordUrl() {
+		return changePasswordUrl;
 	}
 
 }
