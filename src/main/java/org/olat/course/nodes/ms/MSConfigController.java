@@ -485,7 +485,7 @@ public class MSConfigController extends FormBasicController {
 	}
 
 	private void updateConfig() {
-		if (initialStatusEl.isVisible()) {
+		if (initialStatusEl != null) {
 			String initialStatus = initialStatusEl.isAtLeastSelected(1)
 					? AssessmentEntryStatus.inReview.name()
 					: AssessmentEntryStatus.notStarted.name();
