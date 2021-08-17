@@ -40,7 +40,9 @@ import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -66,6 +68,8 @@ public class CourseProviderDAOTest extends OlatTestCase {
 	private QualityService qualityService;
 	@Autowired
 	private QualityGeneratorService generatorService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -352,6 +356,28 @@ public class CourseProviderDAOTest extends OlatTestCase {
 				.doesNotContain(courseStartInFutrue, courseEndInPast);
 	}
 	
+	@Test
+	public void shouldFilterByEducationalTypeExclusion() {
+		RepositoryEntry courseWithoutType = createEntry(null, null, null);
+		RepositoryEntry courseWithType = createEntry(null, null, null);
+		updateEducationalType(courseWithType, "ok");
+		RepositoryEntry courseExcludedType1 = createEntry(null, null, null);
+		updateEducationalType(courseExcludedType1, "nok1");
+		RepositoryEntry courseExcludedType2 = createEntry(null, null, null);
+		updateEducationalType(courseExcludedType2, "nok2");
+		dbInstance.commitAndCloseSession();
+		
+		SearchParameters seachParameters = new SearchParameters();
+		seachParameters.setExcludedEducationalTypeKeys(asList(
+				courseExcludedType1.getEducationalType().getKey(),
+				courseExcludedType2.getEducationalType().getKey()));
+		List<RepositoryEntry> courses = sut.loadCourses(seachParameters);
+
+		assertThat(courses)
+				.contains(courseWithoutType, courseWithType)
+				.doesNotContain(courseExcludedType1, courseExcludedType2);
+	}
+	
 	private RepositoryEntry createEntry(OLATResource resource, RepositoryEntryStatusEnum status, Organisation organisation) {
 		String initialAuthorAlt = UUID.randomUUID().toString();
 		String displayname = UUID.randomUUID().toString();
@@ -365,6 +391,17 @@ public class CourseProviderDAOTest extends OlatTestCase {
 		String softKey = "lf_" + entry.getSoftkey();
 		RepositoryEntryLifecycle cycle = lifecycleDao.create(entry.getDisplayname(), softKey, true, begin, end);
 		entry.setLifecycle(cycle);
+		dbInstance.getCurrentEntityManager().merge(entry);
+		return entry;
+	}
+	
+	private RepositoryEntry updateEducationalType(RepositoryEntry entry, String identifier) {
+		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(identifier);
+		if (educationalType == null) {
+			educationalType = repositoryManager.createEducationalType(identifier);
+			
+		}
+		entry.setEducationalType(educationalType);
 		dbInstance.getCurrentEntityManager().merge(entry);
 		return entry;
 	}

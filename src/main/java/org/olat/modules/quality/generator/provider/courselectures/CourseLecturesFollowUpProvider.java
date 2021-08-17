@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -106,6 +107,8 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 	public static final String CONFIG_KEY_REMINDER2_AFTER_DC_DAYS = "reminder2.after.dc.start.days";
 	public static final String CONFIG_KEY_TITLE = "title";
 	public static final String CONFIG_KEY_TOTAL_LECTURES_MIN = "total.lecture";
+	public static final String CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION = "educational.type.exclusion";
+	public static final String EDUCATIONAL_TYPE_EXCLUSION_DELIMITER = ",";
 
 	public static final String ROLES_DELIMITER = ",";
 	
@@ -359,6 +362,15 @@ public class CourseLecturesFollowUpProvider implements QualityGeneratorProvider 
 		searchParams.setTo(to);
 		
 		searchParams.setLastLectureBlock(true);
+		
+		String educationalTypeConfig = configs.getValue(CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION);
+		if (StringHelper.containsNonWhitespace(educationalTypeConfig)) {
+			Collection<Long> excludedEducationalTypeKeys = Arrays.asList(educationalTypeConfig.split(EDUCATIONAL_TYPE_EXCLUSION_DELIMITER)).stream()
+					.filter(StringHelper::isLong)
+					.map(Long::valueOf)
+					.collect(Collectors.toSet());
+			searchParams.setExcludedEducationalTypeKeys(excludedEducationalTypeKeys);
+		}
 		
 		return searchParams;
 	}

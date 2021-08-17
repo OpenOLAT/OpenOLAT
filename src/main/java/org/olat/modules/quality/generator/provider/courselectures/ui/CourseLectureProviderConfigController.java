@@ -20,6 +20,7 @@
 package org.olat.modules.quality.generator.provider.courselectures.ui;
 
 import static java.util.stream.Collectors.joining;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateInteger;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateIsMandatory;
@@ -35,16 +36,22 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.TitleCreator;
+import org.olat.modules.quality.generator.provider.courselectures.CourseLecturesFollowUpProvider;
 import org.olat.modules.quality.generator.provider.courselectures.CourseLecturesProvider;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,15 +97,19 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 	private TextElement reminder2DaysEl;
 	private MultipleSelectionElement rolesEl;
 	private TextElement durationEl;
+	private MultipleSelectionElement educationalTypeEl;
 	
 	private final QualityGeneratorConfigs configs;
 
 	@Autowired
 	private TitleCreator titleCreator;
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	public CourseLectureProviderConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGeneratorConfigs configs) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.configs = configs;
 		initForm(ureq);
 	}
@@ -169,6 +180,22 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 			}
 		}
 		
+		// educational type exclusion
+		SelectionValues educationalTypeKV = new SelectionValues();
+		repositoryManager.getAllEducationalTypes()
+				.forEach(type -> educationalTypeKV.add(entry(
+						type.getKey().toString(),
+						translate(RepositoyUIFactory.getI18nKey(type)))));
+		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+		educationalTypeEl = uifactory.addCheckboxesDropdown("type.exclusion", "config.educational.type.exclusion",
+				formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
+		String educationalTypeKeys = configs.getValue(CourseLecturesFollowUpProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION);
+		if (StringHelper.containsNonWhitespace(educationalTypeKeys)) {
+			Arrays.stream(educationalTypeKeys.split(CourseLecturesFollowUpProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
+					.filter(key -> educationalTypeEl.getKeys().contains(key))
+					.forEach(key -> educationalTypeEl.select(key, true));
+		}
+		
 		updateUI();
 	}
 
@@ -194,6 +221,7 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		reminder2DaysEl.setEnabled(enabled);
 		rolesEl.setEnabled(enabled);
 		durationEl.setEnabled(enabled);
+		educationalTypeEl.setEnabled(enabled);
 		flc.setDirty(true);
 	}
 
@@ -309,6 +337,12 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 				.map(r -> r.substring(ROLES_PREFIX.length()))
 				.collect(joining(CourseLecturesProvider.ROLES_DELIMITER));
 		configs.setValue(CourseLecturesProvider.CONFIG_KEY_ROLES, roles);
+		
+		String educationalTypeKeys = educationalTypeEl.isAtLeastSelected(1)
+				? educationalTypeEl.getSelectedKeys().stream()
+						.collect(Collectors.joining(CourseLecturesFollowUpProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
+				: null;
+		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION, educationalTypeKeys);
 	}
 
 	@Override

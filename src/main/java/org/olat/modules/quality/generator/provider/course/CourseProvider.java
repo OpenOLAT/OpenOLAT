@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -101,6 +102,8 @@ public class CourseProvider implements QualityGeneratorProvider {
 	public static final String CONFIG_KEY_TITLE = "title";
 	public static final String CONFIG_KEY_WHITE_LIST = "white.list";
 	public static final String ROLES_DELIMITER = ",";
+	public static final String CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION = "educational.type.exclusion";
+	public static final String EDUCATIONAL_TYPE_EXCLUSION_DELIMITER = ",";
 
 	@Autowired
 	private CourseProviderDAO providerDao;
@@ -361,6 +364,15 @@ public class CourseProvider implements QualityGeneratorProvider {
 		searchParams.setWhiteListRefs(whiteListRefs);
 		List<RepositoryEntryRef> blackListRefs = RepositoryEntryBlackListController.getRepositoryEntryRefs(configs);
 		searchParams.setBlackListRefs(blackListRefs);
+		
+		String educationalTypeConfig = configs.getValue(CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION);
+		if (StringHelper.containsNonWhitespace(educationalTypeConfig)) {
+			Collection<Long> excludedEducationalTypeKeys = Arrays.asList(educationalTypeConfig.split(EDUCATIONAL_TYPE_EXCLUSION_DELIMITER)).stream()
+					.filter(StringHelper::isLong)
+					.map(Long::valueOf)
+					.collect(Collectors.toSet());
+			searchParams.setExcludedEducationalTypeKeys(excludedEducationalTypeKeys);
+		}
 		return searchParams;
 	}
 	

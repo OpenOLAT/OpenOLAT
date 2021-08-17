@@ -71,7 +71,7 @@ public class CourseLecturesProviderDAO {
 	}
 
 	private Long loadLectureBlockCountHql(SearchParameters searchParams) {
-		return new Long(loadLectureBlockInfoHql(searchParams).size());
+		return Long.valueOf(loadLectureBlockInfoHql(searchParams).size());
 	}
 
 	public List<LectureBlockInfo> loadLectureBlockInfo(SearchParameters searchParams) {
@@ -227,6 +227,9 @@ public class CourseLecturesProviderDAO {
 			sb.append("                 and dc.fk_generator = :excludeGeneratorRepoKey");
 			sb.append("              )");
 		}
+		if (searchParams.getExcludedEducationalTypeKeys()!= null && !searchParams.getExcludedEducationalTypeKeys().isEmpty()) {
+			sb.and().append("(course.fk_educational_type is null or course.fk_educational_type not in (:educationalTypeKeys))");
+		}
 		return sb;
 	}
 
@@ -256,7 +259,7 @@ public class CourseLecturesProviderDAO {
 	}
 	
 	private void appendParametersNative(Query query, SearchParameters searchParams) {
-		appendParameters(query, searchParams);
+		appendParametersHql(query, searchParams);
 		if (searchParams.getMinTotalLectures() != null) {
 			query.setParameter("minTotalLectures", searchParams.getMinTotalLectures());
 		}
@@ -320,7 +323,7 @@ public class CourseLecturesProviderDAO {
 		
 		TypedQuery<LectureBlockInfo> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockInfo.class);
-		appendParameters(query, searchParams);
+		appendParametersHql(query, searchParams);
 		
 		List<LectureBlockInfo> infos = query.getResultList();
 		
@@ -443,9 +446,12 @@ public class CourseLecturesProviderDAO {
 		if (searchParams.getTo() != null) {
 			sb.and().append("lectureblock.endDate <= :to");
 		}
+		if (searchParams.getExcludedEducationalTypeKeys()!= null && !searchParams.getExcludedEducationalTypeKeys().isEmpty()) {
+			sb.and().append("(course.educationalType.key is null or course.educationalType.key not in (:educationalTypeKeys))");
+		}
 	}
 
-	private void appendParameters(Query query, SearchParameters searchParams) {
+	private void appendParametersHql(Query query, SearchParameters searchParams) {
 		if (searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef() != null) {
 			query.setParameter("generatorIdentKey", searchParams.getFinishedDataCollectionForGeneratorAndTopicIdentityRef().getKey());
 		}
@@ -486,6 +492,9 @@ public class CourseLecturesProviderDAO {
 		}
 		if (searchParams.getTo() != null) {
 			query.setParameter("to", searchParams.getTo());
+		}
+		if (searchParams.getExcludedEducationalTypeKeys() != null && !searchParams.getExcludedEducationalTypeKeys().isEmpty()) {
+			query.setParameter("educationalTypeKeys", searchParams.getExcludedEducationalTypeKeys());
 		}
 	}
 

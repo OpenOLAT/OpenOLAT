@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -104,6 +105,8 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	public static final String CONFIG_KEY_TOPIC_COURSE = "config.topic.course";
 	public static final String ROLES_DELIMITER = ",";
 	public static final String TEACHING_COACH = "teaching.coach";
+	public static final String CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION = "educational.type.exclusion";
+	public static final String EDUCATIONAL_TYPE_EXCLUSION_DELIMITER = ",";
 	
 	@Autowired
 	private CourseLecturesProviderDAO providerDao;
@@ -360,6 +363,15 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 			searchParams.setSelectingLecture(-1); // select nothing
 			log.warn("Quality data collection generator is not properly configured: " + generator);
 			break;
+		}
+		
+		String educationalTypeConfig = configs.getValue(CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION);
+		if (StringHelper.containsNonWhitespace(educationalTypeConfig)) {
+			Collection<Long> excludedEducationalTypeKeys = Arrays.asList(educationalTypeConfig.split(EDUCATIONAL_TYPE_EXCLUSION_DELIMITER)).stream()
+					.filter(StringHelper::isLong)
+					.map(Long::valueOf)
+					.collect(Collectors.toSet());
+			searchParams.setExcludedEducationalTypeKeys(excludedEducationalTypeKeys);
 		}
 		
 		return searchParams;

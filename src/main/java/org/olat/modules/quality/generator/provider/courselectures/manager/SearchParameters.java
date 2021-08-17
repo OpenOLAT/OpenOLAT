@@ -55,6 +55,7 @@ public class SearchParameters {
 	private List<? extends OrganisationRef> organisationRefs;
 	private Date from;
 	private Date to;
+	private Collection<Long> excludedEducationalTypeKeys;
 
 	public Integer getMinTotalLectures() {
 		return minTotalLectures;
@@ -187,6 +188,14 @@ public class SearchParameters {
 	public void setTo(Date to) {
 		this.to = to;
 	}
+	
+	public Collection<Long> getExcludedEducationalTypeKeys() {
+		return excludedEducationalTypeKeys;
+	}
+	
+	public void setExcludedEducationalTypeKeys(Collection<Long> excludedEducationalTypeKeys) {
+		this.excludedEducationalTypeKeys = excludedEducationalTypeKeys;
+	}
 
 	@Override
 	public String toString() {
@@ -227,6 +236,11 @@ public class SearchParameters {
 		builder.append(from);
 		builder.append(", to=");
 		builder.append(to);
+		builder.append("]");
+		builder.append(", excludedEducationalTypeKeys=[");
+		builder.append(excludedEducationalTypeKeys.stream()
+				.map(r -> r.toString())
+				.collect(Collectors.joining(", ")));
 		builder.append("]");
 		return builder.toString();
 	}

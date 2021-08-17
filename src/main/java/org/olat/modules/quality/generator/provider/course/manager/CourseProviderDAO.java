@@ -125,6 +125,9 @@ public class CourseProviderDAO {
 		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
 			sb.and().append("entry.key not in (:blackListKeys)");
 		}
+		if (searchParams.getExcludedEducationalTypeKeys()!= null && !searchParams.getExcludedEducationalTypeKeys().isEmpty()) {
+			sb.and().append("(entry.educationalType.key is null or entry.educationalType.key not in (:educationalTypeKeys))");
+		}
 	}
 
 	private void appendParameter(TypedQuery<RepositoryEntry> query, SearchParameters searchParams) {
@@ -164,6 +167,9 @@ public class CourseProviderDAO {
 		if (searchParams.getBlackListRefs() != null && !searchParams.getBlackListRefs().isEmpty()) {
 			List<Long> keys = searchParams.getBlackListRefs().stream().map(RepositoryEntryRef::getKey).collect(toList());
 			query.setParameter("blackListKeys", keys);
+		}
+		if (searchParams.getExcludedEducationalTypeKeys() != null && !searchParams.getExcludedEducationalTypeKeys().isEmpty()) {
+			query.setParameter("educationalTypeKeys", searchParams.getExcludedEducationalTypeKeys());
 		}
 	}
 

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator.provider.courselectures.manager;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -52,7 +53,9 @@ import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -72,6 +75,8 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -264,6 +269,46 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
 				.containsExactlyInAnyOrder(course1.getKey(), course2.getKey())
 				.doesNotContain(otherCourse.getKey());
+	}
+	
+	@Test
+	public void shouldFilterLectureBlockInfosByEducationalTypeExclusion() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("");
+		Organisation organisation = organisationService.createOrganisation("org", "Org", null, null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("Curriculum", "Curriculum", null, organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element", "Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement otherElement = curriculumService.createCurriculumElement("Element", "Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		RepositoryEntry courseWithoutType = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseWithType = JunitTestHelper.createAndPersistRepositoryEntry();
+		updateEducationalType(courseWithType, "ok");
+		RepositoryEntry courseNok1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		updateEducationalType(courseNok1, "nok1");
+		RepositoryEntry courseNok2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		updateEducationalType(courseNok2, "nok2");
+		createLectureBlock(courseWithoutType, teacher, 1);
+		createLectureBlock(courseWithType, teacher, 1);
+		createLectureBlock(courseNok1, teacher, 1);
+		createLectureBlock(courseNok2, teacher, 1);
+		curriculumService.addRepositoryEntry(element, courseWithoutType, false);
+		curriculumService.addRepositoryEntry(element, courseWithType, false);
+		curriculumService.addRepositoryEntry(otherElement, courseNok1, false);
+		curriculumService.addRepositoryEntry(otherElement, courseNok2, false);
+		dbInstance.commitAndCloseSession();
+
+		SearchParameters searchParams = new SearchParameters();
+		searchParams.setTeacherRef(teacher);
+		searchParams.setExcludedEducationalTypeKeys(asList(
+				courseNok1.getEducationalType().getKey(),
+				courseNok2.getEducationalType().getKey()));
+		List<LectureBlockInfo> infos = sut.loadLectureBlockInfo(searchParams);
+
+		assertThat(infos).extracting(LectureBlockInfo::getCourseRepoKey)
+				.containsExactlyInAnyOrder(courseWithoutType.getKey(), courseWithType.getKey())
+				.doesNotContain(courseNok1.getKey(), courseNok2.getKey());
 	}
 	
 	@Test
@@ -621,5 +666,15 @@ public class CourseLecturesProviderDAOTest extends OlatTestCase {
 		return hour;
 	}
 	
+	private RepositoryEntry updateEducationalType(RepositoryEntry entry, String identifier) {
+		RepositoryEntryEducationalType educationalType = repositoryManager.getEducationalType(identifier);
+		if (educationalType == null) {
+			educationalType = repositoryManager.createEducationalType(identifier);
+			
+		}
+		entry.setEducationalType(educationalType);
+		dbInstance.getCurrentEntityManager().merge(entry);
+		return entry;
+	}
 
 }

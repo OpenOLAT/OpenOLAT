@@ -46,6 +46,7 @@ public class SearchParameters {
 	private Date lifecycleValidAt;
 	private Collection<? extends RepositoryEntryRef> whiteListRefs;
 	private Collection<? extends RepositoryEntryRef> blackListRefs;
+	private Collection<Long> excludedEducationalTypeKeys;
 	
 	public QualityGeneratorRef getGeneratorRef() {
 		return generatorRef;
@@ -127,6 +128,14 @@ public class SearchParameters {
 		this.blackListRefs = blackListRefs;
 	}
 	
+	public Collection<Long> getExcludedEducationalTypeKeys() {
+		return excludedEducationalTypeKeys;
+	}
+	
+	public void setExcludedEducationalTypeKeys(Collection<Long> excludedEducationalTypeKeys) {
+		this.excludedEducationalTypeKeys = excludedEducationalTypeKeys;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -160,6 +169,11 @@ public class SearchParameters {
 		builder.append("]");
 		builder.append(", generatorDataCollectionStart=");
 		builder.append(generatorDataCollectionStart);
+		builder.append("]");
+		builder.append(", excludedEducationalTypeKeys=[");
+		builder.append(excludedEducationalTypeKeys.stream()
+				.map(r -> r.toString())
+				.collect(Collectors.joining(", ")));
 		builder.append("]");
 		return builder.toString();
 	}

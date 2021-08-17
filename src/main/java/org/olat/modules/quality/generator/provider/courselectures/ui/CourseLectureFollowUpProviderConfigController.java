@@ -19,6 +19,7 @@
  */
 package org.olat.modules.quality.generator.provider.courselectures.ui;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateDouble;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateInteger;
@@ -30,12 +31,16 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorSearchParams;
 import org.olat.modules.quality.generator.QualityGeneratorService;
@@ -46,6 +51,9 @@ import org.olat.modules.quality.generator.provider.courselectures.CourseLectures
 import org.olat.modules.quality.generator.provider.courselectures.LimitCheck;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,6 +77,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 	private TextElement invitationDaysEl;
 	private TextElement reminder1DaysEl;
 	private TextElement reminder2DaysEl;
+	private MultipleSelectionElement educationalTypeEl;
 	
 	private final QualityGeneratorConfigs configs;
 
@@ -76,10 +85,13 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 	private QualityGeneratorService generatorService;
 	@Autowired
 	private TitleCreator titleCreator;
+	@Autowired
+	private RepositoryManager repositoryManager;
 
 	public CourseLectureFollowUpProviderConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGeneratorConfigs configs) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.configs = configs;
 		initForm(ureq);
 	}
@@ -152,6 +164,22 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 
 		String reminder2Days = configs.getValue(CourseLecturesFollowUpProvider.CONFIG_KEY_REMINDER2_AFTER_DC_DAYS);
 		reminder2DaysEl = uifactory.addTextElement("config.reminder2.days", 4, reminder2Days, formLayout);
+		
+		// educational type exclusion
+		SelectionValues educationalTypeKV = new SelectionValues();
+		repositoryManager.getAllEducationalTypes()
+				.forEach(type -> educationalTypeKV.add(entry(
+						type.getKey().toString(),
+						translate(RepositoyUIFactory.getI18nKey(type)))));
+		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+		educationalTypeEl = uifactory.addCheckboxesDropdown("educational.type", "config.educational.type.exclusion",
+				formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
+		String educationalTypeKeys = configs.getValue(CourseLecturesFollowUpProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION);
+		if (StringHelper.containsNonWhitespace(educationalTypeKeys)) {
+			Arrays.stream(educationalTypeKeys.split(CourseLecturesFollowUpProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
+					.filter(key -> educationalTypeEl.getKeys().contains(key))
+					.forEach(key -> educationalTypeEl.select(key, true));
+		}
 	}
 
 	@Override
@@ -166,6 +194,7 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 		reminder1DaysEl.setEnabled(enabled);
 		reminder2DaysEl.setEnabled(enabled);
 		durationEl.setEnabled(enabled);
+		educationalTypeEl.setEnabled(enabled);
 		flc.setDirty(true);
 	}
 
@@ -244,6 +273,12 @@ public class CourseLectureFollowUpProviderConfigController extends ProviderConfi
 
 		String reminder2Days = reminder2DaysEl.getValue();
 		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_REMINDER2_AFTER_DC_DAYS, reminder2Days);
+		
+		String educationalTypeKeys = educationalTypeEl.isAtLeastSelected(1)
+				? educationalTypeEl.getSelectedKeys().stream()
+						.collect(Collectors.joining(CourseLecturesFollowUpProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
+				: null;
+		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION, educationalTypeKeys);
 	}
 
 	@Override

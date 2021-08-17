@@ -22,6 +22,7 @@ package org.olat.modules.quality.generator.provider.course.ui;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateInteger;
 import static org.olat.modules.quality.ui.QualityUIFactory.validateIsMandatory;
@@ -46,12 +47,16 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.quality.generator.ProviderHelper;
 import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.provider.course.CourseProvider;
 import org.olat.modules.quality.generator.ui.ProviderConfigController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -92,15 +97,19 @@ public class CourseProviderConfigController extends ProviderConfigController {
 	private TextElement reminder1DaysEl;
 	private TextElement reminder2DaysEl;
 	private MultipleSelectionElement rolesEl;
+	private MultipleSelectionElement educationalTypeEl;
 	
 	private final QualityGeneratorConfigs configs;
 	
 	@Autowired
 	private TitleCreator titleCreator;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	public CourseProviderConfigController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			QualityGeneratorConfigs configs) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.configs = configs;
 		initForm(ureq);
 	}
@@ -185,6 +194,22 @@ public class CourseProviderConfigController extends ProviderConfigController {
 			}
 		}
 		
+		// educational type exclusion
+		SelectionValues educationalTypeKV = new SelectionValues();
+		repositoryManager.getAllEducationalTypes()
+				.forEach(type -> educationalTypeKV.add(entry(
+						type.getKey().toString(),
+						translate(RepositoyUIFactory.getI18nKey(type)))));
+		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+		educationalTypeEl = uifactory.addCheckboxesDropdown("educational.type", "config.educational.type.exclusion",
+				formLayout, educationalTypeKV.keys(), educationalTypeKV.values());
+		String educationalTypeKeys = configs.getValue(CourseProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION);
+		if (StringHelper.containsNonWhitespace(educationalTypeKeys)) {
+			Arrays.stream(educationalTypeKeys.split(CourseProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
+					.filter(key -> educationalTypeEl.getKeys().contains(key))
+					.forEach(key -> educationalTypeEl.select(key, true));
+		}
+		
 		updateUI();
 	}
 
@@ -214,6 +239,7 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		reminder2DaysEl.setEnabled(enabled);
 		rolesEl.setEnabled(enabled);
 		durationEl.setEnabled(enabled);
+		educationalTypeEl.setEnabled(enabled);
 		flc.setDirty(true);
 	}
 
@@ -317,6 +343,12 @@ public class CourseProviderConfigController extends ProviderConfigController {
 				.map(r -> r.substring(ROLES_PREFIX.length()))
 				.collect(joining(CourseProvider.ROLES_DELIMITER));
 		configs.setValue(CourseProvider.CONFIG_KEY_ROLES, roles);
+		
+		String educationalTypeKeys = educationalTypeEl.isAtLeastSelected(1)
+				? educationalTypeEl.getSelectedKeys().stream()
+						.collect(Collectors.joining(CourseProvider.EDUCATIONAL_TYPE_EXCLUSION_DELIMITER))
+				: null;
+		configs.setValue(CourseProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION, educationalTypeKeys);
 	}
 
 	private void clearTriggerConfigs() {
