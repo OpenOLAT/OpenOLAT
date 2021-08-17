@@ -279,6 +279,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 		setResourceTypes(null);
 		setIdAndRefs(null);
 		setClosed(null);
+		setDeleted(false);
 		setAuthor(null);
 		setDisplayname(null);
 		setDescription(null);

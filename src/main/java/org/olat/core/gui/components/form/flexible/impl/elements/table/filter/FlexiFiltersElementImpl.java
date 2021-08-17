@@ -61,7 +61,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private final FormLink resetFiltersButton;
 	private final FormLink collpaseFiltersButton;
 	private final FlexiFiltersComponent component;
-	private final List<FormLink> filters = new ArrayList<>();
+	private final List<FormLink> filterButtons = new ArrayList<>();
 	private Map<String,FormItem> components = new HashMap<>();
 	
 	private Controller filterCtrl;
@@ -135,17 +135,17 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	protected List<FormLink> getFiltersButtons() {
-		for(FormLink filterItem:filters) {
-			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
-			filterItem.setVisible(enabledFilters.contains(filter.getFilter()) || filter.isAlwaysVisible());
+		for(FormLink filterButton:filterButtons) {
+			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterButton.getUserObject();
+			filterButton.setVisible(enabledFilters.contains(filter.getFilter()) || filter.isAlwaysVisible());
 		}
 		
-		return filters;
+		return filterButtons;
 	}
 	
 	public List<FlexiTableFilter> getSelectedFilters() {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
-		for(FormItem filterItem:filters) {
+		for(FormItem filterItem:filterButtons) {
 			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
 			if(filter.isSelected()) {
 				selectedFilters.add((FlexiTableFilter)filter);
@@ -156,7 +156,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	
 	public List<FlexiTableFilter> getVisibleFilters() {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
-		for(FormItem filterItem:filters) {
+		for(FormItem filterItem:filterButtons) {
 			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
 			if(enabledFilters.contains(filter.getFilter())) {
 				selectedFilters.add((FlexiTableFilter)filter);
@@ -166,22 +166,22 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	public List<FlexiTableFilter> getAllFilters() {
-		List<FlexiTableFilter> selectedFilters = new ArrayList<>(filters.size());
-		for(FormItem filterItem:filters) {
+		List<FlexiTableFilter> selectedFilters = new ArrayList<>(filterButtons.size());
+		for(FormItem filterItem:filterButtons) {
 			selectedFilters.add((FlexiTableFilter)filterItem.getUserObject());
 		}
 		return selectedFilters;
 	}
 	
 	public void setFilters(List<FlexiTableExtendedFilter> filters) {
-		this.filters.clear();
+		this.filterButtons.clear();
 		enabledFilters.clear();
 		for(FlexiTableExtendedFilter filter:filters) {
 			boolean enabled = filter.isVisible() || filter.isAlwaysVisible();
 			if(enabled) {
 				enabledFilters.add(filter.getFilter());
 			}
-			this.filters.add(forgeFormLink(filter, enabled));
+			this.filterButtons.add(forgeFormLink(filter, enabled));
 		}
 		component.setDirty(true);
 	}
@@ -221,7 +221,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			expand(!expanded);
 			component.fireEvent(ureq, new ExpandFiltersEvent(expanded));
 		} else {
-			for(FormItem filter:filters) {
+			for(FormItem filter:filterButtons) {
 				if(filter.getFormDispatchId().equals(dispatchuri)) {
 					doOpenFilter(ureq, filter, (FlexiTableExtendedFilter)filter.getUserObject());
 				}
@@ -314,7 +314,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	public void setFiltersValues(List<FlexiTableFilterValue> values, boolean reset) {
-		for(FormLink filterItem:filters) {
+		for(FormLink filterItem:filterButtons) {
 			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
 			
 			boolean resetFilter = reset;
@@ -352,7 +352,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	private void doFilter(UserRequest ureq, FlexiTableExtendedFilter filter) {
-		for(FormLink filterItem:filters) {
+		for(FormLink filterItem:filterButtons) {
 			if(filterItem.getUserObject() == filter) {
 				if(filter.isSelected()) {
 					filterItem.getComponent().setCustomDisplayText(filter.getDecoratedLabel());
@@ -383,7 +383,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			}
 		}
 		
-		for(FormItem filterItem:filters) {
+		for(FormItem filterItem:filterButtons) {
 			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
 			boolean enabled = enabledFilters.contains(filter.getFilter()) || filter.isAlwaysVisible();
 			if(enabled) {
@@ -398,7 +398,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	public void resetCustomizedFilters() {
 		enabledFilters.clear();
 		
-		for(FormItem filterItem:filters) {
+		for(FormItem filterItem:filterButtons) {
 			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
 			filter.reset();
 			

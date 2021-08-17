@@ -54,32 +54,24 @@ public class MyCoursesPage {
 		By searchBy = By.className("o_sel_mycourses_search");
 		browser.findElement(searchBy).click();
 		OOGraphene.waitBusy(browser);
+		By largeSearchBy = By.className("o_table_large_search");
+		OOGraphene.waitElement(largeSearchBy, browser);
 		return this;
 	}
 	
 	public MyCoursesPage openCatalog() {
-		By catalogBy = By.className("o_sel_mycourses_catlog");
+		By catalogBy = By.className("o_sel_mycourses_catalog");
 		browser.findElement(catalogBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public MyCoursesPage extendedSearch(String title) {
-		By extendedSearchButtonBy = By.className("o_sel_flexi_extendedsearch");
-		List<WebElement> extendedSearchButtons = browser.findElements(extendedSearchButtonBy);
-		if(extendedSearchButtons.size() > 0 && extendedSearchButtons.get(0).isDisplayed()) {
-			WebElement extendedSearchButton = extendedSearchButtons.get(0);
-			extendedSearchButton.click();
-			OOGraphene.waitBusy(browser);
-		}
-
-		By titleBy = By.cssSelector(".o_sel_repo_search_displayname input[type='text']");
-		WebElement titleEl = browser.findElement(titleBy);
-		titleEl.sendKeys(title);
+		By titleBy = By.cssSelector(".o_table_large_search input[type='text']");
+		browser.findElement(titleBy).sendKeys(title);
 		
-		By searchButton = By.className("o_sel_repo_search_button");
-		WebElement searchEl = browser.findElement(searchButton);
-		searchEl.click();
+		By searchButton = By.cssSelector(".o_table_large_search a.o_table_search_button");
+		browser.findElement(searchButton).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

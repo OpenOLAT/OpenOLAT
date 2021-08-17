@@ -364,6 +364,10 @@ a.o_orderby, a.o_orderby:hover {
 		// vertical-align: middle !important;
 	}
 	
+	.twitter-typeahead input[type='text'] {
+		vertical-align: baseline !important;
+	}
+	
 	input[type='text']:focus ~ a.btn {
 		$color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
 		outline: 0;

@@ -29,6 +29,7 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 	
 	private final String id;
 	private final String label;
+	private String elementCssClass;
 	private boolean selected;
 	
 	public FlexiFiltersTabImpl(String id, String label) {
@@ -44,6 +45,15 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 	@Override
 	public String getLabel() {
 		return label;
+	}
+
+	@Override
+	public String getElementCssClass() {
+		return elementCssClass;
+	}
+
+	public void setElementCssClass(String elementCssClass) {
+		this.elementCssClass = elementCssClass;
 	}
 
 	@Override

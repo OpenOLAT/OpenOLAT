@@ -309,20 +309,24 @@ public class RepositoryEntryListController extends FormBasicController
 		if(!guestOnly) {
 			bookmarkTab = new FlexiFilterTabPreset("Bookmarks", translate("search.mark"),
 					filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")));
+			bookmarkTab.setElementCssClass("o_sel_mycourses_fav");
 			tabs.add(bookmarkTab);
 		}
 		
 		myTab = new FlexiFilterTabPreset("My", translate("search.mycourses.student"),
 				filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
+		myTab.setElementCssClass("o_sel_mycourses_my");
 		tabs.add(myTab);
 		
 		closedTab = new FlexiFilterTabPreset("Closed", translate("search.courses.closed"),
 				filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
+		closedTab.setElementCssClass("o_sel_mycourses_closed");
 		tabs.add(closedTab);
 		
 		// search
 		searchTab = new FlexiFilterTabPreset("Search", translate("search.courses.student"), filters, List.of());
+		searchTab.setElementCssClass("o_sel_mycourses_search");
 		tabs.add(searchTab);
 		
 		tableEl.setFilterTabs(true, tabs);

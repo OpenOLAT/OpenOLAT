@@ -130,7 +130,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			catalogLink = LinkFactory.createLink("search.catalog", mainVC, this);
 			catalogLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[Catalog:0]"));
-			catalogLink.setElementCssClass("o_sel_mycourses_catlog");
+			catalogLink.setElementCssClass("o_sel_mycourses_catalog");
 			segmentView.addSegment(catalogLink, false);
 		}
 

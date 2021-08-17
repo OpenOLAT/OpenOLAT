@@ -30,6 +30,8 @@ public interface FlexiFiltersTab {
 	public String getId();
 	
 	public String getLabel();
+
+	public String getElementCssClass();
 	
 	public boolean isSelected();
 

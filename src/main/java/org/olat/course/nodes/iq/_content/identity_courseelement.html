@@ -2,7 +2,9 @@
 <h2><i class="o_icon $courseNodeCssClass"> </i> $r.escapeHtml($courseNodeTitle)#if($r.isNotEmpty($businessGroupName)) <small><i class="o_icon o_icon_group"> </i> $r.escapeHtml($businessGroupName)</small>#end</h2>
 #end
 <div class="o_button_group o_button_group_right">
+	#if($r.available("button.stats"))
 	$r.render("button.stats")
+	#end
 	#if($r.available("button.export"))
 		$r.render("button.export")
 	#end

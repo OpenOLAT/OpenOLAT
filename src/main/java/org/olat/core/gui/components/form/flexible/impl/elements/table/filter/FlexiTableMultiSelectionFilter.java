@@ -87,6 +87,7 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 		if(val == null) {
 			this.value = null;
 		} else if(val instanceof List) {
+			@SuppressWarnings("unchecked")
 			List<String> vals = (List<String>)val;
 			this.value = new ArrayList<>(vals);
 		} else {

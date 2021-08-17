@@ -150,7 +150,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private void resetFilters() {
 		searchParams.setIdRefsAndTitle(null);
 		searchParams.setMarked(null);
-		searchParams.setMembershipMandatory(true);
+		searchParams.setMembershipMandatory(false);
 		searchParams.setFilters(null);
 		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 	}

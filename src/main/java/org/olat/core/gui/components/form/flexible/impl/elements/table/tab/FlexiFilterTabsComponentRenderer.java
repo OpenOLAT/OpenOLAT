@@ -58,10 +58,14 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 			sb.append("<li>");
 			
 			String id = tabEl.getFormDispatchId();
+			String elementCssClass = tab.getElementCssClass();
+			
 			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, false, false, false,
 					  new NameValuePair("tab", tab.getId())))
-			  .append("\" class='btn btn-default").append(" btn-primary", selectedTab == tab).append("'><span>").append(tab.getLabel())
+			  .append("\" class='btn btn-default").append(" btn-primary", selectedTab == tab)
+			  .append(" ", elementCssClass != null).append(elementCssClass, elementCssClass != null)
+			  .append("'><span>").append(tab.getLabel())
 			  .append("</span></a>");
 
 			sb.append("</li>");
