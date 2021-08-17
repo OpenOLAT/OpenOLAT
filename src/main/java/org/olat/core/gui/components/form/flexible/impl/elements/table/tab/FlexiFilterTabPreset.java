@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.tab;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
@@ -31,19 +32,37 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
  */
 public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFiltersPreset {
 	
-	private List<String> visibleFilters;
+	private List<String> defaultFilters;
+	private List<String> implicitFilters;
 	private List<FlexiTableFilterValue> filtersValues;
 	
 	public FlexiFilterTabPreset(String id, String label,
-			List<String> visibleFilters, List<FlexiTableFilterValue> filtersValues) {
-		super( id, label);
-		this.visibleFilters = (visibleFilters == null ? null : List.copyOf(visibleFilters));
-		this.filtersValues = (filtersValues == null ? null : List.copyOf(filtersValues));
+			List<String> defaultFilters) {
+		super(id, label);
+		this.defaultFilters = (defaultFilters == null ? null : List.copyOf(defaultFilters));
+	}
+	
+	public static FlexiFilterTabPreset presetWithImplicitFilters(String id, String label,
+			List<String> defaultFilters, List<FlexiTableFilterValue> implicitValueFilters) {
+		FlexiFilterTabPreset preset = new FlexiFilterTabPreset(id, label, defaultFilters);
+		
+		List<String> implicitFilters = new ArrayList<>(implicitValueFilters.size());
+		for(FlexiTableFilterValue implicitValueFilter:implicitValueFilters) {
+			implicitFilters.add(implicitValueFilter.getFilter());
+		}
+		preset.implicitFilters = implicitFilters;
+		preset.filtersValues = implicitValueFilters;
+		return preset;
 	}
 
 	@Override
-	public List<String> getVisibleFilters() {
-		return visibleFilters;
+	public List<String> getDefaultFilters() {
+		return defaultFilters;
+	}
+
+	@Override
+	public List<String> getImplicitFilters() {
+		return implicitFilters;
 	}
 
 	@Override

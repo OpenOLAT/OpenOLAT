@@ -205,8 +205,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		statusValues.add(SelectionValues.entry("inProgress", translate("filter.inProgress")));
 		statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
 		statusValues.add(SelectionValues.entry("done", translate("filter.done")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.status"), "status",
-				statusValues, true, true));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.status"),
+				"status", statusValues, true));
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			List<BusinessGroup> coachedGroups;
@@ -223,8 +223,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
 					groupValues.add(new SelectionValue(coachedGroup.getKey().toString(), groupName, null, "o_icon o_icon_group", null, true));
 				}
-				filters.add(new FlexiTableSingleSelectionFilter(translate("filter.groups"), "groups",
-						groupValues, true, true));
+				filters.add(new FlexiTableSingleSelectionFilter(translate("filter.groups"),
+						"groups", groupValues, true));
 			}
 		}
 

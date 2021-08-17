@@ -332,8 +332,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
 		statusValues.add(SelectionValues.entry("done", translate("filter.done")));
 		statusValues.add(SelectionValues.entry("notStarted", translate("filter.notStarted")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.status"), AssessedIdentityListState.FILTER_STATUS,
-				statusValues, true, true));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.status"),
+				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
 
 		SelectionValues groupValues = new SelectionValues();
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
@@ -372,8 +372,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		
 		if(!groupValues.isEmpty()) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"), AssessedIdentityListState.FILTER_GROUPS,
-					groupValues, true, true));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"),
+					AssessedIdentityListState.FILTER_GROUPS, groupValues, true));
 		}
 
 		tableEl.setFilters(true, filters, true);

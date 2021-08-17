@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFilterButton;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFiltersElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -78,6 +79,21 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 	protected boolean isFiltersExpanded() {
 		FlexiFiltersElementImpl filtersEl = tableEl.getFiltersElement();
 		return filtersEl != null && filtersEl.isEnabled() && filtersEl.isExpanded();
+	}
+	
+	protected boolean hasNonImplicitFiltersSet() {
+		FlexiFiltersElementImpl filtersEl = tableEl.getFiltersElement();
+		if(filtersEl == null) {
+			return false;
+		}
+		
+		List<FlexiFilterButton> filterButtons = filtersEl.getFiltersButtons();
+		for(FlexiFilterButton filterButton:filterButtons) {
+			if(!filterButton.isImplicit() && filterButton.getFilter().isSelected()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	protected FormLink getRemoveFiltersButton() {

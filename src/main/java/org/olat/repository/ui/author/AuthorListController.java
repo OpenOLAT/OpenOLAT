@@ -176,10 +176,10 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	
-	private FlexiFiltersTab myTab;
-	private FlexiFiltersTab bookmarkTab;
-	private FlexiFiltersTab searchTab;
-	private FlexiFiltersTab deletedTab;
+	private FlexiFilterTabPreset myTab;
+	private FlexiFilterTabPreset bookmarkTab;
+	private FlexiFilterTabPreset searchTab;
+	private FlexiFilterTabPreset deletedTab;
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
@@ -506,21 +506,25 @@ public class AuthorListController extends FormBasicController implements Activat
 		List<String> filters = List.of();
 		
 		if(!isGuestOnly) {
-			bookmarkTab = new FlexiFilterTabPreset("Favorits", translate("search.mark"),
+			bookmarkTab = FlexiFilterTabPreset.presetWithImplicitFilters("Bookmarks", translate("search.mark"),
 					filters, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.MARKED, "marked")));
+			bookmarkTab.setElementCssClass("o_sel_author_bookmarks");
 			tabs.add(bookmarkTab);
 		}
 		
-		myTab = new FlexiFilterTabPreset("My", translate("search.my"),
+		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.my"),
 				filters, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned")));
+		myTab.setElementCssClass("o_sel_author_my");
 		tabs.add(myTab);
 		
-		searchTab = new FlexiFilterTabPreset("Search", translate("search.generic"), filters, List.of());
+		searchTab = new FlexiFilterTabPreset("Search", translate("search.generic"), filters);
+		searchTab.setElementCssClass("o_sel_author_search");
 		tabs.add(searchTab);
 		
 		if(roles.isAuthor() || hasAdministratorRight) {
-			deletedTab = new FlexiFilterTabPreset("Deleted", translate("search.deleted"),
+			deletedTab = FlexiFilterTabPreset.presetWithImplicitFilters("Deleted", translate("search.deleted"),
 					filters, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, "deleted")));
+			deletedTab.setElementCssClass("o_sel_author_deleted");
 			tabs.add(deletedTab);
 		}
 		
@@ -534,26 +538,26 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		boolean admin = roles.isAdministrator() || roles.isSystemAdmin();
 		// external id
-		filters.add(new FlexiTableTextFilter(translate("cif.id"), AuthorSourceFilter.ID.name(), admin, admin));
+		filters.add(new FlexiTableTextFilter(translate("cif.id"), AuthorSourceFilter.ID.name(), admin));
 		
 		// bookmarked
 		SelectionValues markedKeyValue = new SelectionValues();
 		markedKeyValue.add(SelectionValues.entry("marked", translate("search.mark")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("search.mark"), AuthorSourceFilter.MARKED.name(),
-				markedKeyValue, true, true));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("search.mark"),
+				AuthorSourceFilter.MARKED.name(), markedKeyValue, true));
 		
 		// my resources
 		SelectionValues myResourcesKeyValue = new SelectionValues();
 		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.owned.resources.only"), AuthorSourceFilter.OWNED.name(),
-				myResourcesKeyValue, true, true));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.owned.resources.only"),
+				AuthorSourceFilter.OWNED.name(), myResourcesKeyValue, true));
 		
 		// author
-		filters.add(new FlexiTableTextFilter(translate("cif.author.search"), AuthorSourceFilter.AUTHOR.name(), false, false));
+		filters.add(new FlexiTableTextFilter(translate("cif.author.search"), AuthorSourceFilter.AUTHOR.name(), false));
 		
-		filters.add(new FlexiTableTextFilter(translate("cif.displayname"), AuthorSourceFilter.DISPLAYNAME.name(), false, false));
+		filters.add(new FlexiTableTextFilter(translate("cif.displayname"), AuthorSourceFilter.DISPLAYNAME.name(), false));
 		
-		filters.add(new FlexiTableTextFilter(translate("cif.description"), AuthorSourceFilter.DESCRIPTION.name(), false, false));
+		filters.add(new FlexiTableTextFilter(translate("cif.description"), AuthorSourceFilter.DESCRIPTION.name(), false));
 		
 		// technical type
 		SelectionValues technicalTypeKV = new SelectionValues();
@@ -562,16 +566,16 @@ public class AuthorListController extends FormBasicController implements Activat
 			technicalTypeKV.add(entry(identifier.getType(), name));
 		}
 		technicalTypeKV.sort(SelectionValues.VALUE_ASC);
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.technical.type"), AuthorSourceFilter.TECHNICALTYPE.name(),
-				technicalTypeKV, true, true));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.technical.type"),
+				AuthorSourceFilter.TECHNICALTYPE.name(), technicalTypeKV, true));
 
 		// educational type
 		SelectionValues educationalTypeKV = new SelectionValues();
 		repositoryManager.getAllEducationalTypes()
 				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"), AuthorSourceFilter.EDUCATIONALTYPE.name(),
-				educationalTypeKV, true, true));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
+				AuthorSourceFilter.EDUCATIONALTYPE.name(), educationalTypeKV, true));
 
 		// life-cycle
 		SelectionValues lifecycleValues = new SelectionValues();
@@ -581,8 +585,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			lifecycleValues.add(SelectionValues.entry("deleted", translate("cif.resources.status.deleted")));
 			
 		}
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"), AuthorSourceFilter.STATUS.name(),
-				lifecycleValues, true, true));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"),
+				AuthorSourceFilter.STATUS.name(), lifecycleValues, true));
 		
 		// type of resources
 		SelectionValues resourceValues = new SelectionValues();
@@ -592,28 +596,28 @@ public class AuthorListController extends FormBasicController implements Activat
 			String iconLeftCss = RepositoyUIFactory.getIconCssClass(type);
 			resourceValues.add(new SelectionValue(type, translate(type), null, "o_icon o_icon-fw ".concat(iconLeftCss), null, true));
 		}
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"), AuthorSourceFilter.TYPE.name(),
-				resourceValues, false, false));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"),
+				AuthorSourceFilter.TYPE.name(), resourceValues, false));
 		
 		// taxonomy
 		SelectionValues taxonomyValues = getTaxonomyLevels();
 		if(taxonomyValues != null) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.taxonomy.paths"), AuthorSourceFilter.TAXONOMYLEVEL.name(),
-					taxonomyValues, false, false));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("table.header.taxonomy.paths"),
+					AuthorSourceFilter.TAXONOMYLEVEL.name(), taxonomyValues, false));
 		}
 		
 		// license
 		SelectionValues licenseValues = getLicenseValues();
 		if(licenseValues != null) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.license"), AuthorSourceFilter.LICENSE.name(),
-					licenseValues, false, false));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.license"),
+					AuthorSourceFilter.LICENSE.name(), licenseValues, false));
 		}
 
 		SelectionValues usageValues = new SelectionValues();
 		usageValues.add(SelectionValues.entry(ResourceUsage.used.name(), translate("cif.owned.resources.usage.used")));
 		usageValues.add(SelectionValues.entry(ResourceUsage.notUsed.name(), translate("cif.owned.resources.usage.notUsed")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.owned.resources.usage"), AuthorSourceFilter.USAGE.name(),
-				usageValues, false, false));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.owned.resources.usage"),
+				AuthorSourceFilter.USAGE.name(), usageValues, false));
 
 		tableEl.setFilters(true, filters, false);
 	}

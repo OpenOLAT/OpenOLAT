@@ -42,10 +42,9 @@ public interface FlexiTableExtendedFilter {
 	
 	public String getDecoratedLabel();
 	
+
 	
-	public boolean isAlwaysVisible();
-	
-	public boolean isVisible();
+	public boolean isDefaultVisible();
 	
 	public boolean isSelected();
 	
@@ -58,6 +57,8 @@ public interface FlexiTableExtendedFilter {
 	
 	
 	public void reset();
+	
+	
 	
 	public Controller getController(UserRequest ureq, WindowControl wControl);
 

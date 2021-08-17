@@ -42,9 +42,10 @@ public class FlexiTableSingleSelectionFilter extends FlexiTableFilter implements
 	
 	private String value;
 	
-	public FlexiTableSingleSelectionFilter(String name, String filter, SelectionValues availableValues,
-			boolean visible, boolean alwaysVisible) {
-		super(name, filter, visible, alwaysVisible);
+	public FlexiTableSingleSelectionFilter(String label, String filter, SelectionValues availableValues,
+			boolean defaultVisible) {
+		super(label, filter);
+		setDefaultVisible(defaultVisible);
 		this.availableValues = availableValues;
 	}
 	

@@ -19,12 +19,9 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.gui.components.choice.ChoiceModel;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 
 /**
  * 
@@ -32,14 +29,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class VisibleFlexiFiltersModel implements ChoiceModel<FlexiTableFilter> {
+class VisibleFlexiFiltersModel implements ChoiceModel<FlexiFilterButton> {
 	
-	private final List<FlexiTableFilter> filters;
-	private final Set<FlexiTableFilter> enabledFilters;
+	private final List<FlexiFilterButton> filters;
 	
-	public VisibleFlexiFiltersModel(List<FlexiTableFilter> filters, List<FlexiTableFilter> enabledFilters) {
+	public VisibleFlexiFiltersModel(List<FlexiFilterButton> filters) {
 		this.filters = filters;
-		this.enabledFilters = new HashSet<>(enabledFilters);
 	}
 
 	@Override
@@ -49,24 +44,24 @@ class VisibleFlexiFiltersModel implements ChoiceModel<FlexiTableFilter> {
 
 	@Override
 	public Boolean isEnabled(int row) {
-		FlexiTableFilter filter = getObject(row);
-		return filter != null && enabledFilters.contains(filter) ? Boolean.TRUE : Boolean.FALSE;
+		FlexiFilterButton filter = getObject(row);
+		return filter != null && filter.isEnabled() ? Boolean.TRUE : Boolean.FALSE;
 	}
 
 	@Override
 	public String getLabel(int row) {
-		FlexiTableFilter filter = getObject(row);
-		return filter == null ? "-" : filter.getLabel();
+		FlexiFilterButton filter = getObject(row);
+		return filter == null ? "-" : filter.getFilter().getLabel();
 	}
 
 	@Override
 	public boolean isDisabled(int row) {
-		FlexiTableFilter filter = getObject(row);
-		return filter == null || filter.isAlwaysVisible();
+		FlexiFilterButton filter = getObject(row);
+		return filter == null || filter.isImplicit();
 	}
 
 	@Override
-	public FlexiTableFilter getObject(int row) {
+	public FlexiFilterButton getObject(int row) {
 		if(filters == null) return null;
 		return filters.get(row);
 	}

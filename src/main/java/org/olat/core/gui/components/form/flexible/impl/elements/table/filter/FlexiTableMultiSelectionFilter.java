@@ -44,9 +44,10 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 	
 	private List<String> value;
 	
-	public FlexiTableMultiSelectionFilter(String name, String filter, SelectionValues availableValues,
-			boolean visible, boolean alwaysVisible) {
-		super(name, filter, visible, alwaysVisible);
+	public FlexiTableMultiSelectionFilter(String label, String filter, SelectionValues availableValues,
+			boolean defaultVisible) {
+		super(label, filter, defaultVisible);
+		setDefaultVisible(defaultVisible);
 		this.availableValues = availableValues;
 	}
 	

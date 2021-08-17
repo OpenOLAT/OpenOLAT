@@ -40,20 +40,14 @@ public class FlexiTableFilter {
 	
 	private boolean selected;
 	private boolean showAll = false;
-	private boolean visible = true;
-	private final boolean alwaysVisible;
+	private boolean defaultVisible = true;
 	
 	public FlexiTableFilter(String label, String filter) {
-		this(label, filter, true, true);
-	}
-	
-	public FlexiTableFilter(String label, String filter, boolean visible, boolean alwaysVisible) {
 		this.label = label;
 		this.filter = filter;
 		this.renderer = null;
 		this.iconLeftCSS = null;
-		this.visible = visible;
-		this.alwaysVisible = alwaysVisible;
+		this.defaultVisible = true;
 	}
 	
 	public FlexiTableFilter(String label, String filter, boolean showAll) {
@@ -62,7 +56,7 @@ public class FlexiTableFilter {
 		this.showAll = showAll;
 		this.renderer = null;
 		this.iconLeftCSS = null;
-		this.alwaysVisible = true;
+		this.defaultVisible = true;
 	}
 	
 	public FlexiTableFilter(String label, String filter, String iconLeftCSS) {
@@ -70,7 +64,7 @@ public class FlexiTableFilter {
 		this.filter = filter;
 		this.renderer = null;
 		this.iconLeftCSS = iconLeftCSS;
-		this.alwaysVisible = true;
+		this.defaultVisible = true;
 	}
 	
 	public FlexiTableFilter(String label, String filter, FlexiTableFilterIconRenderer renderer) {
@@ -78,7 +72,7 @@ public class FlexiTableFilter {
 		this.filter = filter;
 		this.renderer = renderer;
 		this.iconLeftCSS = null;
-		this.alwaysVisible = true;
+		this.defaultVisible = true;
 	}
 	
 	public String getLabel() {
@@ -109,16 +103,12 @@ public class FlexiTableFilter {
 		this.selected = selected;
 	}
 
-	public boolean isVisible() {
-		return visible;
+	public boolean isDefaultVisible() {
+		return defaultVisible;
 	}
 
-	public void setVisible(boolean visible) {
-		this.visible = visible;
-	}
-
-	public boolean isAlwaysVisible() {
-		return alwaysVisible;
+	public void setDefaultVisible(boolean defaultVisible) {
+		this.defaultVisible = defaultVisible;
 	}
 
 	public FlexiTableFilterIconRenderer getIconRenderer() {

@@ -38,8 +38,9 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 	
 	private String value;
 	
-	public FlexiTableTextFilter(String label, String filter, boolean visible, boolean alwaysVisible) {
-		super(label, filter, visible, alwaysVisible);
+	public FlexiTableTextFilter(String label, String filter, boolean defaultVisible) {
+		super(label, filter);
+		setDefaultVisible(defaultVisible);
 	}
 	
 	@Override

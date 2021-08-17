@@ -31,7 +31,9 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
  */
 public interface FlexiFiltersPreset {
 
-	public List<String> getVisibleFilters();
+	public List<String> getImplicitFilters();
+	
+	public List<String> getDefaultFilters();
 	
 	public List<FlexiTableFilterValue> getDefaultFiltersValues();
 

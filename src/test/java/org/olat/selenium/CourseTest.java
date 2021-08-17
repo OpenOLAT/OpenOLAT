@@ -1219,6 +1219,7 @@ public class CourseTest extends Deployments {
 		//open reminders log
 		reminders
 			.clickToolbarBack()
+			.openMoreMenu()
 			.openLog()
 			.assertLogList(kanu, reminderTitle, true)
 			.assertLogList(author, reminderTitle, false);

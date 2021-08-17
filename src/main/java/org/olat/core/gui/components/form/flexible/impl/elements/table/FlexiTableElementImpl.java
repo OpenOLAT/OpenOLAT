@@ -759,6 +759,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void setFiltersValues(String quickSearch, List<FlexiTableFilterValue> values) {
+		setFiltersValues(quickSearch, null, values);
+	}
+	
+	private void setFiltersValues(String quickSearch, List<String> implicitFilters, List<FlexiTableFilterValue> values) {
 		if(searchFieldEl != null) {
 			if(StringHelper.containsNonWhitespace(quickSearch)) {
 				searchFieldEl.setValue(quickSearch);
@@ -766,8 +770,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				searchFieldEl.setValue("");
 			}
 		}
-		if(filtersEl == null) return;
-		filtersEl.setFiltersValues(values, true);
+		if(filtersEl != null) {
+			filtersEl.setFiltersValues(implicitFilters, values, true);
+		}
 	}
 
 	@Override
@@ -812,7 +817,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if(filtersValues == null) {
 				// do nothing
 			} else {
-				setFiltersValues(null, filtersValues);
+				setFiltersValues(null, preset.getImplicitFilters(), filtersValues);
 			}
 		}
 	}
@@ -1196,6 +1201,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				doSearch(ureq, FlexiTableReduceEvent.FILTER, getSearchText(), List.of((FlexiTableFilter)ce.getFilter()));
 			} else if(event instanceof ExpandFiltersEvent && filterTabsEl != null && filterTabsEl.isVisible()) {
 				filterTabsEl.getComponent().setDirty(true);
+			} else if(event instanceof RemoveFiltersEvent) {
+				resetFiltersSearch(ureq);
 			}
 		} else if(source instanceof Choice) {
 			if(Choice.EVNT_VALIDATION_OK.equals(event)) {
@@ -1880,7 +1887,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			FlexiFiltersTab tab = filterTabsEl.getSelectedTab();
 			if(tab instanceof FlexiFiltersPreset) {
 				FlexiFiltersPreset preset = (FlexiFiltersPreset)tab;
-				filtersEl.setFiltersValues(preset.getDefaultFiltersValues(), true);
+				filtersEl.setFiltersValues(preset.getImplicitFilters(), preset.getDefaultFiltersValues(), true);
 			}
 			filterTabsEl.getComponent().setDirty(true);
 		}

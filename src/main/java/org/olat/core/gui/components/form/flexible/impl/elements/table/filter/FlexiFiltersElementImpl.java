@@ -21,10 +21,8 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -39,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.RemoveFiltersEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -61,7 +60,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private final FormLink resetFiltersButton;
 	private final FormLink collpaseFiltersButton;
 	private final FlexiFiltersComponent component;
-	private final List<FormLink> filterButtons = new ArrayList<>();
+	private final List<FlexiFilterButton> filterButtons = new ArrayList<>();
 	private Map<String,FormItem> components = new HashMap<>();
 	
 	private Controller filterCtrl;
@@ -71,7 +70,6 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private int count = 0;
 	private boolean alwaysOn;
 	private boolean expanded = true;
-	private Set<String> enabledFilters = new HashSet<>();
 	
 	public FlexiFiltersElementImpl(WindowControl wControl, String name, Translator translator) {
 		super(name);
@@ -91,7 +89,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		resetFiltersButton.setTranslator(translator);
 		components.put("rResetFiltersDropDown", resetFiltersButton);
 		
-		collpaseFiltersButton = new FormLinkImpl(dispatchId.concat("_collpaseFiltersButton"), "rCollpaseFiltersButton", "collpase.filters", Link.BUTTON);
+		collpaseFiltersButton = new FormLinkImpl(dispatchId.concat("_collapseFiltersButton"), "rCollapseFiltersButton", "collpase.filters", Link.BUTTON);
 		collpaseFiltersButton.setElementCssClass("o_button_details");
 		collpaseFiltersButton.setDomReplacementWrapperRequired(false);
 		collpaseFiltersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details_collaps");
@@ -134,19 +132,18 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		return collpaseFiltersButton;
 	}
 	
-	protected List<FormLink> getFiltersButtons() {
-		for(FormLink filterButton:filterButtons) {
-			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterButton.getUserObject();
-			filterButton.setVisible(enabledFilters.contains(filter.getFilter()) || filter.isAlwaysVisible());
+	public List<FlexiFilterButton> getFiltersButtons() {
+		for(FlexiFilterButton filterButton:filterButtons) {
+			boolean visible = filterButton.isEnabled() && !filterButton.isImplicit();
+			filterButton.getButton().setVisible(visible);
 		}
-		
 		return filterButtons;
 	}
 	
 	public List<FlexiTableFilter> getSelectedFilters() {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
-		for(FormItem filterItem:filterButtons) {
-			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
+		for(FlexiFilterButton filterItem:filterButtons) {
+			FlexiTableExtendedFilter filter = filterItem.getFilter();
 			if(filter.isSelected()) {
 				selectedFilters.add((FlexiTableFilter)filter);
 			}
@@ -154,12 +151,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		return selectedFilters;
 	}
 	
-	public List<FlexiTableFilter> getVisibleFilters() {
+	public List<FlexiTableFilter> getEnabledFilters() {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
-		for(FormItem filterItem:filterButtons) {
-			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
-			if(enabledFilters.contains(filter.getFilter())) {
-				selectedFilters.add((FlexiTableFilter)filter);
+		for(FlexiFilterButton filterButton:filterButtons) {
+			if(filterButton.isEnabled()) {
+				selectedFilters.add((FlexiTableFilter)filterButton.getFilter());
 			}
 		}
 		return selectedFilters;
@@ -167,26 +163,22 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	
 	public List<FlexiTableFilter> getAllFilters() {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>(filterButtons.size());
-		for(FormItem filterItem:filterButtons) {
-			selectedFilters.add((FlexiTableFilter)filterItem.getUserObject());
+		for(FlexiFilterButton filterButton:filterButtons) {
+			selectedFilters.add((FlexiTableFilter)filterButton.getFilter());
 		}
 		return selectedFilters;
 	}
 	
 	public void setFilters(List<FlexiTableExtendedFilter> filters) {
-		this.filterButtons.clear();
-		enabledFilters.clear();
+		filterButtons.clear();
 		for(FlexiTableExtendedFilter filter:filters) {
-			boolean enabled = filter.isVisible() || filter.isAlwaysVisible();
-			if(enabled) {
-				enabledFilters.add(filter.getFilter());
-			}
-			this.filterButtons.add(forgeFormLink(filter, enabled));
+			boolean enabled = filter.isDefaultVisible();
+			filterButtons.add(forgeFormLink(filter, enabled));
 		}
 		component.setDirty(true);
 	}
 	
-	private FormLink forgeFormLink(FlexiTableExtendedFilter filter, boolean enabled) {
+	private FlexiFilterButton forgeFormLink(FlexiTableExtendedFilter filter, boolean enabled) {
 		String dispatchId = component.getDispatchID();
 		String id = dispatchId + "_filterButton-" + (count++);
 		String label;
@@ -199,11 +191,10 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		filterButton.setDomReplacementWrapperRequired(false);
 		filterButton.setTranslator(translator);
 		filterButton.setIconRightCSS("o_icon o_icon_caret");
-		filterButton.setUserObject(filter);
 		filterButton.setVisible(enabled);
 		components.put(id, filterButton);
 		rootFormAvailable(filterButton);
-		return filterButton;
+		return new FlexiFilterButton(filterButton, filter, enabled);
 	}
 
 	@Override
@@ -215,15 +206,15 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			doOpenAddFilter(ureq, addFiltersButton);
 		} else if(resetFiltersButton != null
 				&& resetFiltersButton.getFormDispatchId().equals(dispatchuri)) {
-			resetCustomizedFilters();
+			component.fireEvent(ureq, new RemoveFiltersEvent());
 		} else if(collpaseFiltersButton != null
 				&& collpaseFiltersButton.getFormDispatchId().equals(dispatchuri)) {
 			expand(!expanded);
 			component.fireEvent(ureq, new ExpandFiltersEvent(expanded));
 		} else {
-			for(FormItem filter:filterButtons) {
-				if(filter.getFormDispatchId().equals(dispatchuri)) {
-					doOpenFilter(ureq, filter, (FlexiTableExtendedFilter)filter.getUserObject());
+			for(FlexiFilterButton filterButton:filterButtons) {
+				if(filterButton.getButton().getFormDispatchId().equals(dispatchuri)) {
+					doOpenFilter(ureq, filterButton.getButton(), filterButton.getFilter());
 				}
 			}
 		}
@@ -313,9 +304,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		//
 	}
 	
-	public void setFiltersValues(List<FlexiTableFilterValue> values, boolean reset) {
-		for(FormLink filterItem:filterButtons) {
-			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
+	public void setFiltersValues(List<String> implicitFilters, List<FlexiTableFilterValue> values, boolean reset) {
+		for(FlexiFilterButton filterButton:filterButtons) {
+			FlexiTableExtendedFilter filter = filterButton.getFilter();
+			boolean implicit = (implicitFilters != null && implicitFilters.contains(filterButton.getFilter().getFilter()));
+			filterButton.setImplicit(implicit);
 			
 			boolean resetFilter = reset;
 			
@@ -323,9 +316,9 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 				if(value.getFilter().equals(filter.getFilter())) {
 					filter.setValue(value.getValue());
 					if(filter.isSelected()) {
-						filterItem.getComponent().setCustomDisplayText(filter.getDecoratedLabel());
+						filterButton.getButton().getComponent().setCustomDisplayText(filter.getDecoratedLabel());
 					} else {
-						filterItem.getComponent().setCustomDisplayText(filter.getLabel());
+						filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
 					}
 					
 					resetFilter = false;
@@ -334,7 +327,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			
 			if(resetFilter) {
 				filter.reset();
-				filterItem.getComponent().setCustomDisplayText(filter.getLabel());
+				filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
 			}
 		}
 
@@ -352,13 +345,10 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	private void doFilter(UserRequest ureq, FlexiTableExtendedFilter filter) {
-		for(FormLink filterItem:filterButtons) {
-			if(filterItem.getUserObject() == filter) {
-				if(filter.isSelected()) {
-					filterItem.getComponent().setCustomDisplayText(filter.getDecoratedLabel());
-				} else {
-					filterItem.getComponent().setCustomDisplayText(filter.getLabel());
-				}
+		for(FlexiFilterButton filterButton:filterButtons) {
+			if(filterButton.getFilter() == filter) {
+				String label = filter.isSelected() ? filter.getDecoratedLabel() : filter.getLabel();
+				filterButton.getButton().getComponent().setCustomDisplayText(label);
 			}
 		}
 		component.fireEvent(ureq, new ChangeFilterEvent(filter));
@@ -373,49 +363,30 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	private void setCustomizedFilters(Choice visibleColsChoice) {
-		enabledFilters.clear();
-		
 		List<Integer> chosenCols = visibleColsChoice.getSelectedRows();
 		if(!chosenCols.isEmpty()) {
 			VisibleFlexiFiltersModel model = (VisibleFlexiFiltersModel)visibleColsChoice.getModel();
-			for(Integer chosenCol:chosenCols) {
-				enabledFilters.add(model.getObject(chosenCol.intValue()).getFilter());
+			for(int i=model.getRowCount(); i-->0; ) {
+				boolean enabled = chosenCols.contains(Integer.valueOf(i));
+				model.getObject(i).setEnabled(enabled);
 			}
 		}
-		
-		for(FormItem filterItem:filterButtons) {
-			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
-			boolean enabled = enabledFilters.contains(filter.getFilter()) || filter.isAlwaysVisible();
-			if(enabled) {
-				enabledFilters.add(filter.getFilter());
-			}
-			filterItem.setVisible(enabled);
-		}
-		
 		component.setDirty(true);
 	}
 	
 	public void resetCustomizedFilters() {
-		enabledFilters.clear();
-		
-		for(FormItem filterItem:filterButtons) {
-			FlexiTableExtendedFilter filter = (FlexiTableExtendedFilter)filterItem.getUserObject();
+		for(FlexiFilterButton filterButton:filterButtons) {
+			FlexiTableExtendedFilter filter = filterButton.getFilter();
 			filter.reset();
-			
-			boolean defEnabled = filter.isVisible() || filter.isAlwaysVisible();
-			if(defEnabled) {
-				enabledFilters.add(filter.getFilter());
-			}
-			filterItem.setVisible(defEnabled);
+			filterButton.setEnabled(filter.isDefaultVisible());
+			filterButton.getButton().setVisible(filterButton.isEnabled());
 		}
 		component.setDirty(true);
 	}
 	
 	private Choice getFilterListAndTheirVisibility() {
 		Choice choice = new Choice("filterchoice", component.getTranslator());
-		List<FlexiTableFilter> allFilters = getAllFilters();
-		List<FlexiTableFilter> selectedFilters = getVisibleFilters();
-		choice.setModel(new VisibleFlexiFiltersModel(allFilters, selectedFilters));
+		choice.setModel(new VisibleFlexiFiltersModel(filterButtons));
 		choice.addListener(this);
 		choice.setEscapeHtml(false);
 		choice.setCancelKey("cancel");

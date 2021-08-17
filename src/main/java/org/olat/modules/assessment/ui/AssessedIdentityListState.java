@@ -86,12 +86,10 @@ public class AssessedIdentityListState implements StateEntry {
 					&& StringHelper.containsNonWhitespace(getStatus())
 					&& filter instanceof FlexiTableSingleSelectionFilter) {
 				((FlexiTableSingleSelectionFilter)filter).setValue(getStatus());
-				((FlexiTableSingleSelectionFilter)filter).setVisible(true);
 			} else if(FILTER_GROUPS.equals(filter.getFilter())
 					&& getGroupKeys() != null
 					&& filter instanceof FlexiTableMultiSelectionFilter) {
 				((FlexiTableMultiSelectionFilter)filter).setValues(getGroupKeys());
-				((FlexiTableMultiSelectionFilter)filter).setVisible(true);
 			}
 		}
 	}

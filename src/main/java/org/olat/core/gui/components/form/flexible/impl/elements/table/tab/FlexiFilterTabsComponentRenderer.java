@@ -72,7 +72,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("</ul>");
 		
-		if(!tabEl.isFiltersExpanded()) {
+		if(!tabEl.isFiltersExpanded() && tabEl.hasNonImplicitFiltersSet()) {
 			Component cmp = tabEl.getRemoveFiltersButton().getComponent();
 			Translator subTranslator = cmp.getTranslator();
 			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, subTranslator, renderResult, args);

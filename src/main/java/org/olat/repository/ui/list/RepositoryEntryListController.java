@@ -307,25 +307,25 @@ public class RepositoryEntryListController extends FormBasicController
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		// bookmarks
 		if(!guestOnly) {
-			bookmarkTab = new FlexiFilterTabPreset("Bookmarks", translate("search.mark"),
+			bookmarkTab = FlexiFilterTabPreset.presetWithImplicitFilters("Bookmarks", translate("search.mark"),
 					filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")));
 			bookmarkTab.setElementCssClass("o_sel_mycourses_fav");
 			tabs.add(bookmarkTab);
 		}
 		
-		myTab = new FlexiFilterTabPreset("My", translate("search.mycourses.student"),
+		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.mycourses.student"),
 				filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		myTab.setElementCssClass("o_sel_mycourses_my");
 		tabs.add(myTab);
 		
-		closedTab = new FlexiFilterTabPreset("Closed", translate("search.courses.closed"),
+		closedTab = FlexiFilterTabPreset.presetWithImplicitFilters("Closed", translate("search.courses.closed"),
 				filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		closedTab.setElementCssClass("o_sel_mycourses_closed");
 		tabs.add(closedTab);
 		
 		// search
-		searchTab = new FlexiFilterTabPreset("Search", translate("search.courses.student"), filters, List.of());
+		searchTab = new FlexiFilterTabPreset("Search", translate("search.courses.student"), filters);
 		searchTab.setElementCssClass("o_sel_mycourses_search");
 		tabs.add(searchTab);
 		
@@ -338,22 +338,22 @@ public class RepositoryEntryListController extends FormBasicController
 		// bookmarked
 		SelectionValues markedKeyValue = new SelectionValues();
 		markedKeyValue.add(SelectionValues.entry("marked", translate("search.mark")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("search.mark"), FilterButton.MARKED.name(),
-				markedKeyValue, true, true));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("search.mark"),
+				FilterButton.MARKED.name(), markedKeyValue, true));
 		
 		// my resources
 		SelectionValues myResourcesKeyValue = new SelectionValues();
 		myResourcesKeyValue.add(SelectionValues.entry("owned", translate("cif.owned.resources.only")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.owned.resources.only"), FilterButton.OWNED.name(),
-				myResourcesKeyValue, true, true));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.owned.resources.only"),
+				FilterButton.OWNED.name(), myResourcesKeyValue, true));
 
 		SelectionValues coursesValues = new SelectionValues();
 		coursesValues.add(SelectionValues.entry(Filter.onlyCourses.name(), translate("filter.only.courses")));
 		coursesValues.add(SelectionValues.entry(Filter.currentCourses.name(), translate("filter.current.courses")));
 		coursesValues.add(SelectionValues.entry(Filter.upcomingCourses.name(), translate("filter.upcoming.courses")));
 		coursesValues.add(SelectionValues.entry(Filter.oldCourses.name(), translate("filter.old.courses")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.timeline"), FilterButton.DATES.name(),
-				coursesValues, true, false));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.timeline"),
+				FilterButton.DATES.name(), coursesValues, true));
 
 		SelectionValues bookingValues = new SelectionValues();
 		bookingValues.add(SelectionValues.entry(Filter.asParticipant.name(), translate("filter.booked.participant")));
@@ -362,23 +362,22 @@ public class RepositoryEntryListController extends FormBasicController
 		if(!searchParams.isMembershipMandatory()) {
 			bookingValues.add(SelectionValues.entry(Filter.notBooked.name(), translate("filter.not.booked")));
 		}
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.membership"), FilterButton.BOOKING.name(),
-				bookingValues, true, false));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.membership"),
+				FilterButton.BOOKING.name(), bookingValues, true));
 
 		SelectionValues passedValues = new SelectionValues();
 		passedValues.add(SelectionValues.entry(Filter.passed.name(), translate("filter.passed")));
 		passedValues.add(SelectionValues.entry(Filter.notPassed.name(), translate("filter.not.passed")));
 		passedValues.add(SelectionValues.entry(Filter.withoutPassedInfos.name(), translate("filter.without.passed.infos")));
-		
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.score"), FilterButton.PASSED.name(),
-				passedValues, true, false));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.score"),
+				FilterButton.PASSED.name(), passedValues, true));
 		
 		// life-cycle
 		SelectionValues lifecycleValues = new SelectionValues();
 		lifecycleValues.add(SelectionValues.entry("active", translate("cif.resources.status.active")));
 		lifecycleValues.add(SelectionValues.entry("closed", translate("cif.resources.status.closed")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"), FilterButton.STATUS.name(),
-				lifecycleValues, true, false));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"),
+				FilterButton.STATUS.name(), lifecycleValues, true));
 		
 		tableEl.setFilters(true, filters, false);
 		
