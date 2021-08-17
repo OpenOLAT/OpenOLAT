@@ -1,7 +1,7 @@
 <div class="o_surv_run #if($withCmds) withCmds #end">
-	#if($r.available("run.reset"))
-		<div class="o_button_group_left">
-			$r.render("run.reset")
+	#if($r.available("cmds"))
+		<div class="o_button_group_right">
+			$r.render("cmds")
 		</div>
 	#end
 	#if($r.available("message"))

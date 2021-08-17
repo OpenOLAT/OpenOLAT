@@ -22,6 +22,9 @@ package org.olat.course.nodes.survey.ui;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.ButtonSize;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -95,8 +98,18 @@ public class SurveyRunController extends BasicController {
 		mainVC.clear();
 		
 		if (secCallback.canResetAll()) {
-			resetLink = LinkFactory.createButtonSmall("run.reset", mainVC, this);
-			resetLink.setIconLeftCSS("o_icon o_icon-fw o_icon_surv_reset");
+			Dropdown dropdown = new Dropdown("cmds", null, false, getTranslator());
+			dropdown.setCarretIconCSS("o_icon o_icon_commands");
+			dropdown.setButton(true);
+			dropdown.setButtonSize(ButtonSize.small);
+			dropdown.setEmbbeded(true);
+			dropdown.setOrientation(DropdownOrientation.right);
+			mainVC.put("cmds", dropdown);
+			
+			resetLink = LinkFactory.createLink("run.reset", mainVC, this);
+			resetLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			dropdown.addComponent(resetLink);
+			
 			mainVC.contextPut("withCmds", Boolean.TRUE);
 		}
 		
