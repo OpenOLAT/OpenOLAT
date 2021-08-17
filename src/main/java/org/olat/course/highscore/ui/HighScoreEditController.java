@@ -111,7 +111,7 @@ public class HighScoreEditController extends FormBasicController {
 		dateStart.setDateChooserTimeEnabled(true);
 		dateStart.setValidDateCheck("valid.date");
 		formLayout.add(dateStart);
-		Date start = config.getBooleanEntry(CONFIG_KEY_DATESTART) != null ? (Date) config.get(CONFIG_KEY_DATESTART) : null;
+		Date start = config.getDateValue(CONFIG_KEY_DATESTART);
 		dateStart.setDate(start);
 
 		displayAnonymous = uifactory.addCheckboxesHorizontal("highscore.anonymize", formLayout, new String[] { "xx" },
