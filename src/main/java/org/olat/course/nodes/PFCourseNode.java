@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
@@ -340,6 +341,26 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		return new StatusDescription[]{StatusDescription.NOERROR};
+	}
+	
+	@Override
+	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
+		List<Map.Entry<String, Date>> datesMap = new ArrayList<>();
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		Date uploadStart = config.getDateValue(CONFIG_KEY_DATESTART);
+		Date uploadEnd = config.getDateValue(CONFIG_KEY_DATEEND);
+		
+		if (uploadStart != null) {
+			datesMap.add(Map.entry("participant.folder.upload.start", uploadStart));
+		}
+			
+		if (uploadEnd != null) {
+			datesMap.add(Map.entry("participant.folder.upload.end", uploadEnd));
+		}
+		
+		return datesMap;
 	}
 
 }

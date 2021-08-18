@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -213,6 +214,54 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	 */
 	public ConditionAccessEditConfig getAccessEditConfig() {
 		return ConditionAccessEditConfig.custom();
+	}
+	
+	@Override
+	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
+		List<Map.Entry<String, Date>> datesMap = new ArrayList<>();
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		Date resultsStartDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+		Date resultsEndDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+		
+		Date resultsFailedStartDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+		Date resultsFailedEndDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+		
+		Date resultsPassedStartDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+		Date resultsPassedEndDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+		
+		Date testStartDate = config.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
+		Date testEndDate = config.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+		
+		if (testStartDate != null) {
+			datesMap.add(Map.entry("test.start", testStartDate));
+		}
+		if (testEndDate != null) {
+			datesMap.add(Map.entry("test.end", testEndDate));
+		}
+		
+		if (resultsStartDate != null) {
+			datesMap.add(Map.entry("test.results.start", resultsStartDate));
+		}
+		if (resultsEndDate != null) {
+			datesMap.add(Map.entry("test.results.end", resultsEndDate));
+		}
+		
+		if (resultsPassedStartDate != null) {
+			datesMap.add(Map.entry("test.results.passed.start", resultsPassedStartDate));
+		}
+		if (resultsPassedEndDate != null) {
+			datesMap.add(Map.entry("test.results.passed.end", resultsPassedEndDate));
+		}
+		
+		if (resultsFailedStartDate != null) {
+			datesMap.add(Map.entry("test.results.failed.start", resultsFailedStartDate));
+		}
+		if (resultsFailedEndDate != null) {
+			datesMap.add(Map.entry("test.results.failed.end", resultsFailedEndDate));
+		}
+		
+		return datesMap;
 	}
 	
 }

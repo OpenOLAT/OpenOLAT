@@ -136,7 +136,7 @@ public class CopyCourseStepsStep extends BasicStep {
 			SelectionValue configureLater = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"), "o_orange", true);
 
 			// Group settings
-			SelectionValues groupSettings = new SelectionValues(copy, ignore, reference, customize);
+			SelectionValues groupSettings = new SelectionValues(customize, copy, ignore, reference);
 			groupSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("groups", formLayout, groupSettings);
 			groupSettingsEl.addActionListener(FormEvent.ONCHANGE);
 			allOptions.add(groupSettingsEl);
@@ -250,7 +250,6 @@ public class CopyCourseStepsStep extends BasicStep {
 
 				// Lecture block steps
 				if (context.hasLectureBlocks()) {
-					disableOptions(copy);
 					SelectionValues lectureBlockSettings = new SelectionValues(copy, ignore, customize);
 					lectureBlockSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("lecture.blocks", formLayout, lectureBlockSettings);
 					lectureBlockSettingsEl.addActionListener(FormEvent.ONCHANGE);

@@ -22,6 +22,8 @@ package org.olat.repository.ui.author.copy.wizard;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -184,6 +186,12 @@ public class CopyCourseContext {
 	
 	public void setCourseNodes(List<OverviewRow> courseNodes) {
 		this.courseNodes = courseNodes;
+		
+		if (courseNodes != null && !courseNodes.isEmpty()) {
+			// For easier handling, put all nodes into a map with their identifier
+			Map<String, OverviewRow> sourceCourseNodesMap = getCourseNodes().stream().collect(Collectors.toMap(row -> row.getEditorNode().getIdent(), Function.identity()));
+			setCourseNodesMap(sourceCourseNodesMap);
+		}
 	}
 	
 	public Map<String, OverviewRow> getCourseNodesMap() {

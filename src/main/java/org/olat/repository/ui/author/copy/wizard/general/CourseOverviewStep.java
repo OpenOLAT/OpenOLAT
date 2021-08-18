@@ -133,7 +133,7 @@ public class CourseOverviewStep extends BasicStep {
 			setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
 			
 			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
-			courseNodeDatesListController = new CourseNodeDatesListController(ureq, wControl);
+			courseNodeDatesListController = new CourseNodeDatesListController(ureq, wControl, context);
 			
 			initForm(ureq);
 		}
@@ -274,7 +274,7 @@ public class CourseOverviewStep extends BasicStep {
 					}
 				}
 				
-				if (row.getCourseNode().hasNodeSpecificDates()) {
+				if (row.getCourseNode().hasDates()) {
 					dateDependantNodesRows.add(rowCount);
 				}
 				
@@ -362,6 +362,8 @@ public class CourseOverviewStep extends BasicStep {
 					} else {
 						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
+					
+					courseNodeDatesListController.updateDates(ureq);
 				}
 			}
 		}
@@ -379,6 +381,8 @@ public class CourseOverviewStep extends BasicStep {
 					
 					askForDateMove = !moveDatesEvent.isRememberChoice();
 				}
+				
+				courseNodeDatesListController.updateDates(ureq);
 				
 				cmc.deactivate();
 				cleanUp();

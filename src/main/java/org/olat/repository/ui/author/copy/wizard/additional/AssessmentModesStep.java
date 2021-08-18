@@ -183,11 +183,13 @@ public class AssessmentModesStep extends BasicStep {
 					Date begin = new Date(mode.getBegin().getTime() + context.getDateDifference());
 					DateChooser beginDateChooser = uifactory.addDateChooser("begin_date_" + counter, begin, tableItems);
 					beginDateChooser.setInitialDate(mode.getBegin());
+					beginDateChooser.setDateChooserTimeEnabled(true);
 					beginDateChooser.addActionListener(FormEvent.ONCHANGE);
 					
 					Date end = new Date(mode.getEnd().getTime() + context.getDateDifference());
 					DateChooser endDateChooser = uifactory.addDateChooser("end_date_" + counter++, end, tableItems);
 					endDateChooser.setInitialDate(end);
+					endDateChooser.setDateChooserTimeEnabled(true);
 					endDateChooser.addActionListener(FormEvent.ONCHANGE);
 					
 					AssessmentModeCopyInfos copyInfo = new AssessmentModeCopyInfos(beginDateChooser, endDateChooser);

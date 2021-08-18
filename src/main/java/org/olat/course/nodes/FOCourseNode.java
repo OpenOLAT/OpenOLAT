@@ -685,6 +685,11 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 
 		return super.getConditionExpressions();
 	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }
 
 class ReadOnlyForumCallback implements ForumCallback {
@@ -847,4 +852,5 @@ class ForumNodeForumCallback implements ForumCallback {
 		// do not offer subscription to forums for guests
 		return isGuestOnly ? null : subscriptionContext;
 	}
+	
 }

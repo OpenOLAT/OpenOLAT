@@ -381,4 +381,9 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 		notifManagar.delete(subscriptionContext);
 		super.cleanupOnDelete(course);
 	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }

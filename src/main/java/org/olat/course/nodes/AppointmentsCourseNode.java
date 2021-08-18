@@ -210,5 +210,9 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 		CoreSpringFactory.getImpl(AppointmentsService.class).deleteTopics(re, getIdent());
 		super.cleanupOnDelete(course);
 	}
-
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }

@@ -472,4 +472,9 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		preConditionReader.setConditionId("reader");
 		this.preConditionReader = preConditionReader;
 	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }

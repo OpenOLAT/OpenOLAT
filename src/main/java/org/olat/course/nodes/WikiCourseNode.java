@@ -434,4 +434,9 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		CoreSpringFactory.getImpl(NotificationsManager.class).delete(subsContext);
 	
 	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }

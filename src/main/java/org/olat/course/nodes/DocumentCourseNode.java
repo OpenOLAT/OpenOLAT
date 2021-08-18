@@ -301,4 +301,8 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 		return new DocumentSource(vfsLeaf, entry);
 	}
 	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }

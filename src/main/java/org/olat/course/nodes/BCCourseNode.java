@@ -573,4 +573,9 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		preConditionDownloaders = null;
 		preConditionUploaders = null;
 	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }

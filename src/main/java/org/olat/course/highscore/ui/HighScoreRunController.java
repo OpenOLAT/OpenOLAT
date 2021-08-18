@@ -125,8 +125,7 @@ public class HighScoreRunController extends FormBasicController{
 		if (!viewHighscore){
 			return;			
 		}
-		Date start = config.getBooleanEntry(HighScoreEditController.CONFIG_KEY_DATESTART) != null ? 
-				(Date) config.get(HighScoreEditController.CONFIG_KEY_DATESTART) : null;
+		Date start = config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART);
 		// display only if start time has been met		
 		if (start != null && start.after(new Date())){
 			viewHighscore = false;

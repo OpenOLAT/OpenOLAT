@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -882,6 +883,30 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new GTAReminderProvider(this);
+	}
+	
+	@Override
+	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
+		List<Map.Entry<String, Date>> nodeSpecificDates = new ArrayList<>();
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		Date assignmentDeadline = config.getDateValue(GTASK_ASSIGNMENT_DEADLINE);
+		Date submissionDeadline = config.getDateValue(GTASK_SUBMIT_DEADLINE);
+		Date visibleAfter = config.getDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+		
+		if (assignmentDeadline != null) {
+			nodeSpecificDates.add(Map.entry("gtask.assignment.deadline", assignmentDeadline));
+		}
+		
+		if (submissionDeadline != null) {
+			nodeSpecificDates.add(Map.entry("gtask.submission.deadline", submissionDeadline));
+		}
+		
+		if (visibleAfter != null) {
+			nodeSpecificDates.add(Map.entry("gtask.submission.visibility", visibleAfter));
+		}
+		
+		return nodeSpecificDates;
 	}
 
 }

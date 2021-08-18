@@ -290,4 +290,9 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 			nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
 		}
 	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }

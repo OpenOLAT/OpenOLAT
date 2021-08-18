@@ -22,7 +22,6 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -673,19 +672,19 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public Map<String, Date> getNodeSpecificDatesWithLabel() {
+	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
 		ModuleConfiguration config = getModuleConfiguration();
-		HashMap<String, Date> datesWithLabel = new HashMap<>();
+		List<Map.Entry<String, Date>> datesWithLabel = new ArrayList<>();
 		
 		Date dueDate = config.getDateValue(CONFIG_KEY_DUE_DATE);
 		Date closeAfterDueDate = config.getDateValue(CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
 		
 		if (dueDate != null) {
-			datesWithLabel.put("checklist.duedate", dueDate);
+			datesWithLabel.add(Map.entry("checklist.duedate", dueDate));
 		}
 		
 		if (closeAfterDueDate != null) {
-			datesWithLabel.put("checklist.close.after.duedate", closeAfterDueDate);
+			datesWithLabel.add(Map.entry("checklist.close.after.duedate", closeAfterDueDate));
 		}
 		
 		return datesWithLabel;

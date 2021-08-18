@@ -516,4 +516,9 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			removeReference(getModuleConfiguration());
 		}
 	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }

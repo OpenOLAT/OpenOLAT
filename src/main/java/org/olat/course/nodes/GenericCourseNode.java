@@ -65,6 +65,7 @@ import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant;
 import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.manager.NodeRightServiceImpl;
 import org.olat.course.noderight.model.NodeRightImpl;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -703,6 +704,66 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
 		//
+	}
+	
+	@Override
+	public boolean hasDates() {
+		// Check for node specific dates
+		if (!getNodeSpecificDatesWithLabel().isEmpty()) {
+			return true;
+		}
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		// Check for high score dates
+		if (config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART) != null) {
+			return true;
+		}
+		
+		// Check for user rights with dates
+		// Identity dependant or group denendant rights are ignored! 
+		Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
+		
+		if (!potentialNodeRights.isEmpty()) {
+			for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
+				if (!(entry.getValue() instanceof NodeRight)) {
+					continue;
+				}
+				
+				NodeRight nodeRight = (NodeRight) entry.getValue();
+				
+				if (nodeRight.getGrants() != null) {
+					for (NodeRightGrant grant : nodeRight.getGrants()) {
+						// Remove any rights associated with an identity or group
+						if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
+							continue;
+						}
+						
+						// Move potential dates
+						if (grant.getStart() != null) {
+							return true;
+						}
+						
+						if (grant.getEnd() != null) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		
+		// No dates found
+		return false;		
+	}
+	
+	@Override
+	public List<Map.Entry<String, Date>>  getNodeSpecificDatesWithLabel() {
+		return new ArrayList<>();
+	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return new ArrayList<>();
 	}
 
 }

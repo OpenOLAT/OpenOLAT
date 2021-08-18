@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -132,8 +131,7 @@ public class CopyServiceImpl implements CopyService {
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		
 		// For easier handling, put all nodes into a map with their identifier
-		Map<String, OverviewRow> sourceCourseNodesMap = context.getCourseNodes().stream().collect(Collectors.toMap(row -> row.getEditorNode().getIdent(), Function.identity()));
-		context.setCourseNodesMap(sourceCourseNodesMap);
+		Map<String, OverviewRow> sourceCourseNodesMap = context.getCourseNodesMap();
 		
 		RepositoryEntry target = repositoryService.create(context.getExecutingIdentity(), null, sourceEntry.getResourcename(), context.getDisplayName(),
 				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, null);

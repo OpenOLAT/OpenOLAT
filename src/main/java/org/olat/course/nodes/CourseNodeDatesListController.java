@@ -19,16 +19,33 @@
  */
 package org.olat.course.nodes;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant;
+import org.olat.course.noderight.NodeRightService;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.manager.NodeRightServiceImpl;
+import org.olat.course.noderight.ui.NodeRightsController;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 23.07.2021<br>
@@ -38,19 +55,65 @@ import org.olat.core.util.Util;
 public class CourseNodeDatesListController extends FormBasicController {
 
 	private CourseNode courseNode;
+	private CopyCourseContext context;
 	
-	public CourseNodeDatesListController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_DEFAULT);
-		
+	private List<DateChooser> innerDatesList;
+	private List<DateChooser> highscoreDatesList;
+	private List<DateChooser> userRightsDatesList;
+	
+	@Autowired
+	NodeRightService nodeRightService;
+	
+	public CourseNodeDatesListController(UserRequest ureq, WindowControl wControl, CopyCourseContext context) {
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(NodeRightsController.class, getLocale(), getTranslator()));
+		
+		this.context = context;
+		
+		innerDatesList = new ArrayList<>();
+		highscoreDatesList = new ArrayList<>();
+		userRightsDatesList = new ArrayList<>();
 	}	
 	
 	public void updateCourseNode(CourseNode courseNode, UserRequest ureq) {
 		this.courseNode = courseNode;
 		
+		this.innerDatesList.clear();
+		this.highscoreDatesList.clear();
+		this.userRightsDatesList.clear();
+		
 		this.flc.removeAll();
+		
 		initForm(ureq);
+	}
+	
+	public void updateDates(UserRequest ureq) {
+		flc.removeAll();
+		
+		initForm(ureq);
+	}
+	
+	private void moveDates(long dateDifference, List<DateChooser> datesToUpdate) {
+		if (datesToUpdate.isEmpty()) {
+			return;
+		}
+		
+		for (DateChooser dateToUpdate : datesToUpdate) {
+			Date date = dateToUpdate.getDate();
+			Date secondDate = dateToUpdate.getSecondDate();
+
+			if (date != null) {
+				
+				dateToUpdate.setDate(date);
+			}
+			
+			if (secondDate != null) {
+				secondDate.setTime(secondDate.getTime() + dateDifference);
+				dateToUpdate.setSecondDate(date);
+			}			
+		}
 	}
 	
 	@Override
@@ -60,20 +123,156 @@ public class CourseNodeDatesListController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (!courseNode.hasNodeSpecificDates()) {
+		// If there are no dates, stop here
+		if (!courseNode.hasDates()) {
 			return;
 		}
 		
-		for (Map.Entry<String, Date> entry : courseNode.getNodeSpecificDatesWithLabel().entrySet()) {
-			DateChooser dateChooser = uifactory.addDateChooser(entry.getKey(), entry.getValue(), formLayout);
-			dateChooser.setEnabled(false);
+		long dateDifference = context.getDateDifference(courseNode.getIdent());
+		
+		// Load course node dependant dates
+		if (!courseNode.getNodeSpecificDatesWithLabel().isEmpty()) {
+			FormLayoutContainer courseNodeDatesLayout = FormLayoutContainer.createDefaultFormLayout("courseNodeDatesLayout", getTranslator());
+			courseNodeDatesLayout.setRootForm(mainForm);
+			courseNodeDatesLayout.setFormTitle(translate("course.node.dates"));
+			formLayout.add(courseNodeDatesLayout);
+			
+			for (Map.Entry<String, Date> innerDate : courseNode.getNodeSpecificDatesWithLabel()) {
+				Date date = innerDate.getValue();
+				
+				if (date != null) {
+					date.setTime(date.getTime() + dateDifference);
+				}
+				
+				DateChooser dateChooser = uifactory.addDateChooser(innerDate.getKey(), date, courseNodeDatesLayout);
+				dateChooser.setDateChooserTimeEnabled(true);
+				dateChooser.setEnabled(false);
+				
+				innerDatesList.add(dateChooser);
+			}
+		}
+		
+		// Load course node config
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		
+		// Load potential highscore data
+		Date highScorePublicationDate = config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART);
+		
+		if (highScorePublicationDate != null) {
+			FormLayoutContainer highScoreDatesLayout = FormLayoutContainer.createDefaultFormLayout("highScoreDatesLayout", getTranslator());
+			highScoreDatesLayout.setRootForm(mainForm);
+			highScoreDatesLayout.setFormTitle(translate("course.node.highscore.dates"));
+			formLayout.add(highScoreDatesLayout);
+			
+			highScorePublicationDate.setTime(highScorePublicationDate.getTime() + dateDifference);
+			
+			DateChooser highScoreChooser = uifactory.addDateChooser("highscore.date.start", highScorePublicationDate, highScoreDatesLayout);
+			highScoreChooser.setDateChooserTimeEnabled(true);
+			highScoreChooser.setEnabled(false);
+			
+			highscoreDatesList.add(highScoreChooser);
+		}
+				
+		// Load potential user rights
+		// Move potential user right dates
+		List<NodeRightType> nodeRightTypes = courseNode.getNodeRightTypes();
+		Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
+		
+		// If there are no right types or rights, finish here
+		if (nodeRightTypes.isEmpty() || potentialNodeRights.isEmpty()) {
+			return;
+		}
+		
+		// Create map for easier handling
+		Map<String, NodeRightType> nodeRightTypesMap = nodeRightTypes.stream().collect(Collectors.toMap(type -> type.getIdentifier(), Function.identity()));
+		Map<NodeRightType, List<NodeRightGrant>> nodeRightGrants = new HashMap<>();
+		
+		for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
+			if (!(entry.getValue() instanceof NodeRight)) {
+				continue;
+			}
+			
+			NodeRight nodeRight = (NodeRight) entry.getValue();
+			
+			
+			if (nodeRight.getGrants() != null) {
+				for (NodeRightGrant grant : nodeRight.getGrants()) {
+					// Remove any rights associated with an identity or group, they won't be copied
+					if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
+						continue;
+					}
+					
+					// If the right does not include any date, don't list it
+					boolean hasDate = grant.getStart() != null || grant.getEnd() != null;
+					if (!hasDate) {
+						continue;
+					}
+					
+					// Put the grant into the map
+					NodeRightType type = nodeRightTypesMap.get(nodeRight.getTypeIdentifier());
+					
+					if (type != null) {
+						List<NodeRightGrant> grants = nodeRightGrants.get(type);
+						
+						if (grants == null) {
+							grants = new ArrayList<>();
+						}
+						
+						grants.add(grant);
+						
+ 						nodeRightGrants.put(type, grants);
+					}
+				}
+			}
+		}
+		
+		// If no user right grants where found, stop here
+		if (nodeRightGrants.isEmpty()) {
+			return;
+		}
+		
+		FormLayoutContainer rightDatesLayout = FormLayoutContainer.createDefaultFormLayout("rightDatesLayout", getTranslator());
+		rightDatesLayout.setRootForm(mainForm);
+		rightDatesLayout.setFormTitle(translate("course.node.user.right.dates"));
+		formLayout.add(rightDatesLayout);
+		
+		int count = 0;
+		
+		for (NodeRightType type : nodeRightGrants.keySet()) {
+			for (NodeRightGrant grant : nodeRightGrants.get(type)) {
+				String rightRole = grant.getRole() != null ? translate("role." + grant.getRole().name().toLowerCase()) : "";
+				String rightTitle = type.getTranslatorBaseClass() != null ? Util.createPackageTranslator(type.getTranslatorBaseClass(), getLocale()).translate(type.getI18nKey()) : type.getIdentifier();
+				
+				String label = rightTitle + (StringHelper.containsNonWhitespace(rightRole) ? " - " + rightRole : "");
+				
+				DateChooser userRightDate = uifactory.addDateChooser("user_right_" + count++, null, rightDatesLayout);
+				userRightDate.setDateChooserTimeEnabled(true);
+				userRightDate.setSecondDate(true);
+				userRightDate.setEnabled(false);
+				userRightDate.setLabel(label, null, false);
+				userRightDate.setSeparator("date.separator");
+				
+				Date start = grant.getStart();
+				if (start != null) {
+					start = new Date(start.getTime() + dateDifference);
+				}
+				
+				Date end = grant.getEnd();
+				if (end != null) {
+					end = new Date(end.getTime() + dateDifference);
+				}
+				
+				userRightDate.setDate(start);
+				userRightDate.setSecondDate(end);
+				
+				userRightsDatesList.add(userRightDate);
+			}
 		}
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		// TODO Auto-generated method stub
-		
+		// Nothing to to here
 	}
-
+	
 }

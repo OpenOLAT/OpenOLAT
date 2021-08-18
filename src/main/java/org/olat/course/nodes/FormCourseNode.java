@@ -21,9 +21,11 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -302,6 +304,20 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	
 	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
 		moduleConfig.remove(CONFIG_KEY_REPOSITORY_SOFTKEY);
+	}
+	
+	@Override
+	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
+		List<Map.Entry<String, Date>> datesMap = new ArrayList<>();
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		Date completionDeadline = config.getDateValue(CONFIG_KEY_PARTICIPATION_DEADLINE);
+		
+		if (completionDeadline != null) {
+			datesMap.add(Map.entry("form.participation.until", completionDeadline));
+		}
+		
+		return datesMap;
 	}
 }
 

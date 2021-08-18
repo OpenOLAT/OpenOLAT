@@ -27,7 +27,6 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,6 +49,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.noderight.NodeRightType;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -445,13 +445,22 @@ public interface CourseNode extends INode, ShortName {
 		return null;
 	}
 	
-	public default boolean hasNodeSpecificDates() {
-		return !getNodeSpecificDatesWithLabel().isEmpty();
-	}
+	/**
+	 * Determines whether the course node contains any dates. 
+	 * This includes node specific dates, high score specific dates and date dependant user rights.
+	 * 
+	 * @return
+	 */
+	public boolean hasDates();
 	
-	public default Map<String, Date> getNodeSpecificDatesWithLabel() {
-		return new HashMap<>();
-	}
+	/**
+	 * Returns a map with an i18nKeys and dates
+	 * 
+	 * @return
+	 */
+	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel();
+	
+	public List<NodeRightType> getNodeRightTypes();
 	
 	public enum Processing {
 		runstructure,

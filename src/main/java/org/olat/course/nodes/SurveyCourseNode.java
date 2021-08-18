@@ -388,5 +388,10 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
 		moduleConfig.remove(CONFIG_KEY_REPOSITORY_SOFTKEY);
 	}
+	
+	@Override
+	public List<NodeRightType> getNodeRightTypes() {
+		return NODE_RIGHT_TYPES;
+	}
 }
 
