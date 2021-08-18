@@ -221,16 +221,20 @@ public class SearchParameters {
 		builder.append(", courseRefs=");
 		builder.append(courseRefs);
 		builder.append(", curriculumElementRefs={");
-		builder.append(whiteListRefs.stream()
-				.map(CurriculumElementRef::getKey)
-				.map(k -> k.toString())
-				.collect(Collectors.joining(", ")));
+		if (whiteListRefs != null) {
+			builder.append(whiteListRefs.stream()
+					.map(CurriculumElementRef::getKey)
+					.map(k -> k.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		builder.append(", organisationRefs={");
-		builder.append(organisationRefs.stream()
-				.map(OrganisationRef::getKey)
-				.map(k -> k.toString())
-				.collect(Collectors.joining(", ")));
+		if (organisationRefs != null) {
+			builder.append(organisationRefs.stream()
+					.map(OrganisationRef::getKey)
+					.map(k -> k.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		builder.append(", from=");
 		builder.append(from);
@@ -238,9 +242,11 @@ public class SearchParameters {
 		builder.append(to);
 		builder.append("]");
 		builder.append(", excludedEducationalTypeKeys=[");
-		builder.append(excludedEducationalTypeKeys.stream()
-				.map(r -> r.toString())
-				.collect(Collectors.joining(", ")));
+		if (excludedEducationalTypeKeys != null) {
+			builder.append(excludedEducationalTypeKeys.stream()
+					.map(r -> r.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		return builder.toString();
 	}

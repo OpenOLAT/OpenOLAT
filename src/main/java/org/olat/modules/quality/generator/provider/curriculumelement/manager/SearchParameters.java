@@ -115,18 +115,31 @@ public class SearchParameters {
 		builder.append("SearchParameters [generatorRef=");
 		builder.append(generatorRef);
 		builder.append(", organisationRefs (keys)=[");
-		builder.append(organisationRefs.stream().map(OrganisationRef::getKey).map(k -> k.toString())
-				.collect(Collectors.joining(", ")));
+		if (organisationRefs != null) {
+			builder.append(organisationRefs.stream()
+					.map(OrganisationRef::getKey)
+					.map(k -> k.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		builder.append(", ceTypeKey=");
 		builder.append(ceTypeKey);
 		builder.append(", whiteListRefs (keys)=[");
-		builder.append(whiteListRefs.stream().map(CurriculumElementRef::getKey).map(ce -> ce.toString())
-				.collect(Collectors.joining(", ")));
+		if (whiteListRefs != null) {
+			builder.append(whiteListRefs.stream()
+					.map(CurriculumElementRef::getKey)
+					.map(ce -> ce.toString())
+					.collect(Collectors.joining(", ")));
+		}
+		
 		builder.append("]");
 		builder.append(", blackListRefs (keys)=[");
-		builder.append(blackListRefs.stream().map(CurriculumElementRef::getKey).map(ce -> ce.toString())
-				.collect(Collectors.joining(", ")));
+		if (blackListRefs != null) {
+			builder.append(blackListRefs.stream()
+					.map(CurriculumElementRef::getKey)
+					.map(ce -> ce.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		builder.append(", from=");
 		builder.append(from);

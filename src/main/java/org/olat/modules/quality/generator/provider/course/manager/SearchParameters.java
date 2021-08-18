@@ -142,10 +142,12 @@ public class SearchParameters {
 		builder.append("SearchParameters [generatorRef=");
 		builder.append(generatorRef);
 		builder.append(", organisationRefs (keys)=[");
-		builder.append(organisationRefs.stream()
-				.map(OrganisationRef::getKey)
-				.map(k -> k.toString())
-				.collect(Collectors.joining(", ")));
+		if (organisationRefs != null) {
+			builder.append(organisationRefs.stream()
+					.map(OrganisationRef::getKey)
+					.map(k -> k.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		builder.append(", beginFrom=");
 		builder.append(beginFrom);
@@ -156,24 +158,30 @@ public class SearchParameters {
 		builder.append(", endTo=");
 		builder.append(endTo);
 		builder.append(", whiteListRefs (keys)=[");
-		builder.append(whiteListRefs.stream()
-				.map(RepositoryEntryRef::getKey)
-				.map(r -> r.toString())
-				.collect(Collectors.joining(", ")));
+		if (whiteListRefs != null) {
+			builder.append(whiteListRefs.stream()
+					.map(RepositoryEntryRef::getKey)
+					.map(r -> r.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		builder.append(", blackListRefs (keys)=[");
-		builder.append(blackListRefs.stream()
-				.map(RepositoryEntryRef::getKey)
-				.map(r -> r.toString())
-				.collect(Collectors.joining(", ")));
+		if (blackListRefs != null) {
+			builder.append(blackListRefs.stream()
+					.map(RepositoryEntryRef::getKey)
+					.map(r -> r.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		builder.append(", generatorDataCollectionStart=");
 		builder.append(generatorDataCollectionStart);
 		builder.append("]");
 		builder.append(", excludedEducationalTypeKeys=[");
-		builder.append(excludedEducationalTypeKeys.stream()
-				.map(r -> r.toString())
-				.collect(Collectors.joining(", ")));
+		if (excludedEducationalTypeKeys != null) {
+			builder.append(excludedEducationalTypeKeys.stream()
+					.map(r -> r.toString())
+					.collect(Collectors.joining(", ")));
+		}
 		builder.append("]");
 		return builder.toString();
 	}
