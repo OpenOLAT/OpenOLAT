@@ -58,6 +58,7 @@ public class NodeLayoutPreviewController extends BasicController {
 		mainVC = createVelocityContainer("layout_preview");
 		
 		tabPane = new TabbedPane("tab", getLocale());
+		tabPane.setDirtyCheck(false);
 		tabPane.addListener(this);
 		mainVC.put("tabs", tabPane);
 		

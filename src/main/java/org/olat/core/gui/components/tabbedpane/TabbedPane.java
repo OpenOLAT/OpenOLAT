@@ -62,6 +62,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	protected static final String PARAM_PANE_ID = "taid";
 
 	private int selectedPane = -1;
+	private boolean dirtyCheck = true;
 	private boolean hideDisabledTab = false;
 	private final List<TabPane> tabPanes = new ArrayList<>(5);
 	private Translator compTrans;
@@ -81,6 +82,20 @@ public class TabbedPane extends Container implements Activateable2 {
 
 	public void setHideDisabledTab(boolean hideDisabledTab) {
 		this.hideDisabledTab = hideDisabledTab;
+	}
+
+	/**
+	 * @return false suppress the dirty check while switching tabs (default is true)
+	 */
+	public boolean isDirtyCheck() {
+		return dirtyCheck;
+	}
+
+	/**
+	 * @param dirtyCheck false to suppress the dirty check while switching of tabs
+	 */
+	public void setDirtyCheck(boolean dirtyCheck) {
+		this.dirtyCheck = dirtyCheck;
 	}
 
 	@Override

@@ -70,7 +70,7 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 			if (i != selPane && cnt > 1) {
 				if (tb.isEnabled(i)) {
 					sb.append("><a ");
-					ubu.buildHrefAndOnclick(sb, iframePostEnabled, new NameValuePair(TabbedPane.PARAM_PANE_ID, String.valueOf(i)));
+					ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, tb.isDirtyCheck(), true, new NameValuePair(TabbedPane.PARAM_PANE_ID, String.valueOf(i)));
 					sb.append(">").append(tabName).append("</a></li>");				
 				} else {
 					// disabled panels can not be clicked, but for layout reason needs still a a href
