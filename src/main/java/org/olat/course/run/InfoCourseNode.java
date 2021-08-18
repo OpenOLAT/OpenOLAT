@@ -47,8 +47,8 @@ public class InfoCourseNode {
 			if (StringHelper.containsNonWhitespace(courseNode.getLongTitle())) {
 				info.longTitle = courseNode.getLongTitle();
 			}
-			if (StringHelper.containsNonWhitespace(courseNode.getLearningObjectives())) {
-				info.description = courseNode.getLearningObjectives();
+			if (StringHelper.containsNonWhitespace(courseNode.getDescription())) {
+				info.description = courseNode.getDescription();
 			}
 			info.displayOption = courseNode.getDisplayOption();
 			return info;
