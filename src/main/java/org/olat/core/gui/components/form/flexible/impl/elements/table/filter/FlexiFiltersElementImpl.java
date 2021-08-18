@@ -37,6 +37,8 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabsElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.RemoveFiltersEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -62,6 +64,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private final FlexiFiltersComponent component;
 	private final List<FlexiFilterButton> filterButtons = new ArrayList<>();
 	private Map<String,FormItem> components = new HashMap<>();
+	private final FlexiTableElementImpl tableEl;
 	
 	private Controller filterCtrl;
 	private CloseableCalloutWindowController filtersCallout;
@@ -71,9 +74,10 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private boolean alwaysOn;
 	private boolean expanded = true;
 	
-	public FlexiFiltersElementImpl(WindowControl wControl, String name, Translator translator) {
+	public FlexiFiltersElementImpl(WindowControl wControl, String name, FlexiTableElementImpl tableEl, Translator translator) {
 		super(name);
 		this.wControl = wControl;
+		this.tableEl = tableEl;
 		component = new FlexiFiltersComponent(this, translator);
 		
 		String dispatchId = component.getDispatchID();
@@ -118,6 +122,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	public void setAlwaysOn(boolean alwaysOn) {
 		this.alwaysOn = alwaysOn;
 		component.setDirty(true);
+	}
+	
+	public boolean isTabsEnabled() {
+		FlexiFilterTabsElementImpl tabsEl = tableEl.getFilterTabsElement();
+		return tabsEl != null && tabsEl.isVisible();
 	}
 
 	protected FormLink getAddFiltersButton() {
@@ -312,16 +321,17 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			
 			boolean resetFilter = reset;
 			
-			for(FlexiTableFilterValue value:values) {
-				if(value.getFilter().equals(filter.getFilter())) {
-					filter.setValue(value.getValue());
-					if(filter.isSelected()) {
-						filterButton.getButton().getComponent().setCustomDisplayText(filter.getDecoratedLabel());
-					} else {
-						filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
+			if(values != null) {
+				for(FlexiTableFilterValue value:values) {
+					if(value.getFilter().equals(filter.getFilter())) {
+						filter.setValue(value.getValue());
+						if(filter.isSelected()) {
+							filterButton.getButton().getComponent().setCustomDisplayText(filter.getDecoratedLabel());
+						} else {
+							filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
+						}
+						resetFilter = false;
 					}
-					
-					resetFilter = false;
 				}
 			}
 			

@@ -82,6 +82,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	private CatalogNodeController catalogCtrl;
 	private CurriculumListController curriculumListCtrl;
 	
+	private boolean entriesDirty;
 	private final boolean guestOnly;
 	private final boolean withCurriculums;
 	
@@ -105,8 +106,13 @@ public class OverviewRepositoryListController extends BasicController implements
 		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
 		mainPanel.setDomReplaceable(false);
 		mainPanel.setCssClass("o_sel_my_repository_entries");
+
 		mainVC = createVelocityContainer("overview");
 		mainPanel.setContent(mainVC);
+		
+		withCurriculums = withCurriculumTab();
+		boolean withCatalog = repositoryModule.isCatalogEnabled() && repositoryModule.isCatalogBrowsingEnabled();
+		mainVC.contextPut("withSegments", Boolean.valueOf(withCurriculums || withCatalog));
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setReselect(true);
@@ -117,7 +123,6 @@ public class OverviewRepositoryListController extends BasicController implements
 		myCourseLink.setElementCssClass("o_sel_mycourses_my");
 		segmentView.addSegment(myCourseLink, false);
 		
-		withCurriculums = withCurriculumTab();
 		if(withCurriculums) {
 			curriculumLink = LinkFactory.createLink("search.curriculums", mainVC, this);
 			curriculumLink.setUrl(BusinessControlFactory.getInstance()
@@ -150,6 +155,8 @@ public class OverviewRepositoryListController extends BasicController implements
 		if(entries == null || entries.isEmpty()) {
 			if(currentCtrl == null) {
 				activateMyEntries(ureq);
+			} else if(entriesDirty && entriesCtrl != null) {
+				entriesCtrl.reloadRows();
 			}
 			addToHistory(ureq, this);
 		} else {
@@ -186,7 +193,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		segmentView.select(myCourseLink);
 
 		if(guestOnly) {
-			listCtrl.selectFilterTab(listCtrl.getBookmarkPreset());
+			listCtrl.selectFilterTab(listCtrl.getMyEntriesPreset());
 		} else {
 			listCtrl.selectFilterTab(listCtrl.getBookmarkPreset());
 			if(listCtrl.isEmpty()) {
@@ -199,7 +206,6 @@ public class OverviewRepositoryListController extends BasicController implements
 	protected void doDispose() {
 		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
 	}
-
 	
 	@Override
 	public void event(Event event) {
@@ -207,7 +213,7 @@ public class OverviewRepositoryListController extends BasicController implements
 			EntryChangedEvent ece = (EntryChangedEvent)event;
 			if(ece.getChange() == Change.addBookmark || ece.getChange() == Change.removeBookmark
 					|| ece.getChange() == Change.added || ece.getChange() == Change.deleted) {
-				//TODO table set dirty
+				entriesDirty = true;
 			}
 		}
 	}
@@ -254,7 +260,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		entriesStackPanel.pushController(translate("search.mycourses.student"), entriesCtrl);
 		listenTo(entriesCtrl);
 		currentCtrl = entriesCtrl;
-		//TODO table myDirty = false;
+		entriesDirty = false;
 
 		addToHistory(ureq, entriesCtrl);
 		mainVC.put("segmentCmp", entriesStackPanel);

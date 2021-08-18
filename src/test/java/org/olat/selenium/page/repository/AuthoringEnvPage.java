@@ -56,7 +56,7 @@ public class AuthoringEnvPage {
 	 * @return
 	 */
 	public AuthoringEnvPage assertOnGenericSearch() {
-		By genericSearchBy = By.xpath("//div[contains(@class,'o_segments')]/li/a[contains(@class,'btn-primary')][contains(@class,'o_sel_author_search')]");
+		By genericSearchBy = By.xpath("//ul[contains(@class,'o_segments')]/li/a[contains(@class,'btn-primary')][contains(@class,'o_sel_author_search')]");
 		OOGraphene.waitElement(genericSearchBy, browser);
 		WebElement genericSearchSegment = browser.findElement(genericSearchBy);
 		Assert.assertTrue(genericSearchSegment.isDisplayed());

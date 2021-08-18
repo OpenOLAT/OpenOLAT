@@ -66,6 +66,7 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 			} else {
 				sb.append("<ul class='nav nav-pills o_table_filters_config'>");
 				FormLink resetLink = ffE.getResetFiltersButton();
+				resetLink.setVisible(!ffE.isTabsEnabled());
 				renderFormItem(renderer, sb, resetLink, "pull-right", args);
 				FormLink addLink = ffE.getAddFiltersButton();
 				renderFormItem(renderer, sb, addLink, "pull-right", args);

@@ -233,6 +233,7 @@ public class AssessmentToolPage {
 		OOGraphene.flexiTableSelectAll(browser);
 		
 		By bulkBy = By.cssSelector("a.btn.o_sel_assessment_bulk_visible");
+		OOGraphene.waitElement(bulkBy, browser);
 		browser.findElement(bulkBy).click();
 		OOGraphene.waitModalDialog(browser);
 		

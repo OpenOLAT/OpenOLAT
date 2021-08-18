@@ -741,7 +741,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String dispatchId = component.getDispatchID().concat("_extFiltersSet");
 		if(enable) {
 			if(filtersEl == null) {
-				filtersEl = new FlexiFiltersElementImpl(wControl, dispatchId, getComponent().getTranslator());
+				filtersEl = new FlexiFiltersElementImpl(wControl, dispatchId, this, getComponent().getTranslator());
 				filtersEl.getComponent().addListener(this);
 				components.put(dispatchId, filtersEl);
 			}
@@ -813,12 +813,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		filterTabsEl.setSelectedTab(tab);
 		if(tab instanceof FlexiFiltersPreset) {
 			FlexiFiltersPreset preset = (FlexiFiltersPreset)tab;
-			List<FlexiTableFilterValue> filtersValues = preset.getDefaultFiltersValues();
-			if(filtersValues == null) {
-				// do nothing
-			} else {
-				setFiltersValues(null, preset.getImplicitFilters(), filtersValues);
-			}
+			setFiltersValues(null, preset.getImplicitFilters(), preset.getDefaultFiltersValues());
 		}
 	}
 

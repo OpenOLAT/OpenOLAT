@@ -145,7 +145,7 @@
 	justify-content: space-between;
 	width: 100%;
 	
-	border-bottom: 1px solid $o-content-link-color;
+	border-bottom: 1px solid $o-table-filter-collapse-color;
 
 	ul.o_segments.o_segments_tab {
 		padding: 0;
@@ -198,7 +198,7 @@
 	}
 	
 	>.o_button_group {
-		border-top: 1px solid $o-content-link-color;
+		border-top: 1px solid $o-table-filter-collapse-color;
 		margin: 0;
 	}
 	
@@ -395,7 +395,7 @@ a.o_orderby, a.o_orderby:hover {
 
 .o_table_search.o_table_search_extended a.btn.o_table_search_button {
 	margin-right: 0;
-	color: black;
+	color: $btn-default-color;
 	border-bottom-right-radius: 0;
 	border-top-right-radius: 0;
 	border-right: none;
@@ -406,7 +406,7 @@ a.o_orderby, a.o_orderby:hover {
 }
 
 .o_table_search.o_table_search_extended a.btn.o_sel_flexi_extendedsearch {
-	color: black;
+	color: $btn-default-color;
 	
 	>span {
 		display: inline-block;

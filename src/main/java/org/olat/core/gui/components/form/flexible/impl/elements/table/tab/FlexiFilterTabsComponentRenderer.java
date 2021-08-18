@@ -72,12 +72,11 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("</ul>");
 		
-		if(!tabEl.isFiltersExpanded() && tabEl.hasNonImplicitFiltersSet()) {
-			Component cmp = tabEl.getRemoveFiltersButton().getComponent();
-			Translator subTranslator = cmp.getTranslator();
-			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, subTranslator, renderResult, args);
-			cmp.setDirty(false);
+		Component cmp = tabEl.getRemoveFiltersButton().getComponent();
+		if(tabEl.hasNonImplicitFiltersSet()) {
+			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, cmp.getTranslator(), renderResult, args);
 		}
+		cmp.setDirty(false);
 		
 		sb.append("</div>");	
 	}
