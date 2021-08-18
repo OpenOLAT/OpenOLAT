@@ -342,12 +342,10 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		if (StringHelper.containsNonWhitespace(value)) {
 			sb.append(" ").append(value);		
-		} else if(inline) {
-			// at least something in label required for properly aligned rendering, nbsp is important for bootstrap
-			sb.append("&nbsp;"); 
 		}
-		sb.append("</label>");
-		sb.append("</div>", !inline); // normal radios need a wrapper (bootstrap)
+		sb.append("</label>")
+		  .append(" ", inline) // to let a little space before the next checkbox
+		  .append("</div>", !inline); // normal radios need a wrapper (bootstrap)
 			
 		if(stC.isEnabled()){
 			//add set dirty form only if enabled
