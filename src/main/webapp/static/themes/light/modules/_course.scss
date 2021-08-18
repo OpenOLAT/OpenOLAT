@@ -72,6 +72,7 @@
 .o_cn_styled {
 	border: $o-cn-style-border;
 	border-radius: $o-cn-style-border-radius;
+	background-color: $o-cn-style-bg;
 	
 	.o_expanded {
 		border-top: $o-cn-style-border;
@@ -157,7 +158,7 @@
 			width:100%;
 			height:100%;
 			display:inline-block;
-			background: linear-gradient(to right, rgba(255, 255, 255), rgba(255, 255, 255, 0) 10% );
+			background: linear-gradient(to right, $o-cn-style-bg, rgba($o-cn-style-bg, 0) 60% );
 		}
 	}
 	

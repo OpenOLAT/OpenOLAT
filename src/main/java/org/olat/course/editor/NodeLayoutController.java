@@ -283,7 +283,7 @@ public class NodeLayoutController extends FormBasicController {
 			updatePreviewUI(ureq, true);
 		} else if (source == colorCategorySelectionEl) {
 			doChooseColorCategory(ureq);
-			updatePreviewUI(ureq, true);
+			updatePreviewUI(ureq, false);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

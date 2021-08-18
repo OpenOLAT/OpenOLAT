@@ -477,7 +477,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			updateHeaderPreviewUI(ureq, true);
 		} else if (source == colorCategorySelectionEl) {
 			doChooseColorCategory(ureq);
-			updateHeaderPreviewUI(ureq, true);
+			updateHeaderPreviewUI(ureq, false);
 		} 
 	}
 
