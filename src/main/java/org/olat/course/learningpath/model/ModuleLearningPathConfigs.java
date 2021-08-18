@@ -133,7 +133,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	private String getFullyAssessedTriggerConfig() {
-		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, null);
+		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_VALUE_TRIGGER_CONFIRMED);
 	}
 
 	@Override
