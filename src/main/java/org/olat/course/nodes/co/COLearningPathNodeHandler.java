@@ -44,6 +44,10 @@ public class COLearningPathNodeHandler implements LearningPathNodeHandler {
 	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
 			.enableNodeVisited()
 			.enableConfirmed()
+			.enableStatusDone()
+			.withTranslations(CORunController.class)
+				.withTriggerStatusDone("fully.assessed.trigger.status.done")
+				.buildTranslations()
 			.build();
 	
 	@Override

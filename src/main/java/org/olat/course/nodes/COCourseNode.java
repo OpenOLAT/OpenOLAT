@@ -111,7 +111,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
             String message = trans.translate("freezenoaccess.message");
             controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
         } else {
-            controller = new CORunController(getModuleConfiguration(), ureq, wControl, userCourseEnv);
+            controller = new CORunController(this, ureq, wControl, userCourseEnv);
         }
         Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_co_icon");
         return new NodeRunConstructionResult(ctrl);

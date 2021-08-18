@@ -48,13 +48,20 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.mail.MailContent;
 import org.olat.core.util.mail.MailManager;
+import org.olat.course.assessment.AssessmentEvents;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.COCourseNode;
 import org.olat.course.nodes.members.ui.group.MembersSelectorFormFragment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -72,6 +79,9 @@ public class CORunController extends BasicController {
 
 	private ContactFormController coFoCtr;
 
+	private final COCourseNode courseNode;
+	private final UserCourseEnvironment userCourseEnv;
+
 	private final CourseGroupManager cgm;
 	
 	@Autowired
@@ -82,6 +92,8 @@ public class CORunController extends BasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	/**
 	 * Constructor for the contact form run controller
@@ -91,11 +103,15 @@ public class CORunController extends BasicController {
 	 * @param wControl
 	 * @param coCourseNode
 	 */
-	public CORunController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl,
+	public CORunController(COCourseNode courseNode, UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
-		
+		this.courseNode = courseNode;
+		this.userCourseEnv = userCourseEnv;
 		cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		
+		ModuleConfiguration moduleConfiguration = courseNode.getModuleConfiguration();
+		
 
 		//set translator with fall back translator.
 		Translator fallback = Util.createPackageTranslator(ContactFormController.class, ureq.getLocale());
@@ -322,6 +338,27 @@ public class CORunController extends BasicController {
 		cl.addAllIdentites(ownerList);
 		return cl;
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == coFoCtr) {
+			doUpdateAssessmentStatus(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
+
+	private void doUpdateAssessmentStatus(UserRequest ureq) {
+		if (!userCourseEnv.isCourseReadOnly() && userCourseEnv.isParticipant()) {
+			AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+			if (!AssessmentEntryStatus.done.equals(assessmentEvaluation.getAssessmentStatus())) {
+				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.done, null, null, null, null, null);
+				courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, null, false, Role.user);
+				fireEvent(ureq, AssessmentEvents.CHANGED_EVENT);
+			}
+		}
+	}
+
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
