@@ -70,6 +70,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -116,6 +117,9 @@ import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Description: <br>
  * 
@@ -159,6 +163,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private String courseTitle;
 	private Link nextLink, previousLink;
 	private GlossaryMarkupItemController glossaryMarkerCtr;
+	
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Autowired
 	private RepositoryService repositoryService;
@@ -280,12 +286,22 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// it is to correctly apply external links using course-internal links via javascript
 		coursemain.contextPut("courserepokey", courseRepositoryEntry.getKey());
 		
-		String educationalTypeIdentifier = null;
 		if (courseRepositoryEntry.getEducationalType() != null) {
-			courseRepositoryEntry.getEducationalType().getIdentifier();
 			toolbarPanel.addCssClass(courseRepositoryEntry.getEducationalType().getCssClass());
 		}
-		coursemain.contextPut("educationalTypeIdentifier", educationalTypeIdentifier);
+		
+		if (courseModule.isInfoDetailsEnabled()) {
+			String oInfoCourse = null;
+			try {
+				InfoCourse infoCourse = InfoCourse.of(courseRepositoryEntry);
+				if (infoCourse != null) {
+					oInfoCourse = objectMapper.writeValueAsString(infoCourse);
+				}
+			} catch (JsonProcessingException e) {
+				log.error("", e);
+			}
+			coursemain.contextPut("oInfoCourse", oInfoCourse);
+		}
 		
 		// if a disclaimer is enabled, show it first
 		disclaimerAccepted = !courseModule.isDisclaimerEnabled()
@@ -308,6 +324,18 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				initNodeId = treeModel.getRootNode().getIdent();
 			}
 			coursemain.contextPut("initNodeId", initNodeId);
+			
+			String oInfoCourseNode = null;
+			try {
+				CourseNode courseNode = currentCourseNode != null ? currentCourseNode : (CourseNode)treeModel.getRootNode();
+				InfoCourseNode infoCourseNode = InfoCourseNode.of(courseNode);
+				if (infoCourseNode != null) {
+					oInfoCourseNode = objectMapper.writeValueAsString(infoCourseNode);
+				}
+			} catch (JsonProcessingException e) {
+				log.error("", e);
+			}
+			coursemain.contextPut("oInfoCourseNode", oInfoCourseNode);
 		}
 		putInitialPanel(coursemain);
 
@@ -560,6 +588,26 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			sb.append("');");			
 		}
 		sb.append("oocourse=null;}catch(e){}");
+		
+		if (courseModule.isInfoDetailsEnabled()) {
+			String oInfoCourseNode = null;
+			try {
+				InfoCourseNode infoCourseNode = InfoCourseNode.of(calledCourseNode);
+				if (infoCourseNode != null) {
+					oInfoCourseNode = objectMapper.writeValueAsString(infoCourseNode);
+				}
+			} catch (JsonProcessingException e) {
+				log.error("", e);
+			}
+			sb.append("try {");
+			if (StringHelper.containsNonWhitespace(oInfoCourseNode)) {
+				sb.append("o_info.course_node=").append(oInfoCourseNode).append(";");
+			} else {
+				sb.append("delete o_info.course_node;");
+			}
+			sb.append("}catch(e){}");
+		}
+		
 		JSCommand jsc = new JSCommand(sb.toString());
 		WindowControl wControl = getWindowControl();
 		if (wControl != null && wControl.getWindowBackOffice() != null) {
