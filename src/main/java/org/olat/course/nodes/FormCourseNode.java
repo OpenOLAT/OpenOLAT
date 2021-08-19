@@ -217,13 +217,15 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 		postImportCopy(course, this);
 		
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		Date participationDeadline = config.getDateValue(CONFIG_KEY_PARTICIPATION_DEADLINE);
-		
-		if (participationDeadline != null) {
-			participationDeadline.setTime(participationDeadline.getTime() + context.getDateDifference(getIdent()));
-			config.setDateValue(CONFIG_KEY_PARTICIPATION_DEADLINE, participationDeadline);
+		if (context != null) {
+			ModuleConfiguration config = getModuleConfiguration();
+			
+			Date participationDeadline = config.getDateValue(CONFIG_KEY_PARTICIPATION_DEADLINE);
+			
+			if (participationDeadline != null) {
+				participationDeadline.setTime(participationDeadline.getTime() + context.getDateDifference(getIdent()));
+				config.setDateValue(CONFIG_KEY_PARTICIPATION_DEADLINE, participationDeadline);
+			}
 		}
 	}
 	

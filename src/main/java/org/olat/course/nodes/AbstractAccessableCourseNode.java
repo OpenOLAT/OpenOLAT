@@ -122,17 +122,18 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
 		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 		
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE, config, context);
-		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_END_DATE, config, context);
-		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, config, context);
-		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, config, context);
-		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, config, context);
-		checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, config, context);
-		
-		checkAndUpdateDate(IQEditController.CONFIG_KEY_START_TEST_DATE, config, context);
-		checkAndUpdateDate(IQEditController.CONFIG_KEY_END_TEST_DATE, config, context);
+		if (context != null) {
+			ModuleConfiguration config = getModuleConfiguration();
+			checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE, config, context);
+			checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_END_DATE, config, context);
+			checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, config, context);
+			checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, config, context);
+			checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, config, context);
+			checkAndUpdateDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, config, context);
+			
+			checkAndUpdateDate(IQEditController.CONFIG_KEY_START_TEST_DATE, config, context);
+			checkAndUpdateDate(IQEditController.CONFIG_KEY_END_TEST_DATE, config, context);
+		}
 	}
 	
 	private void checkAndUpdateDate(String configKey, ModuleConfiguration config, CopyCourseContext context) {

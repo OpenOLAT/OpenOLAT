@@ -532,20 +532,22 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 		
-		// Move dates
-		Date dueDate = config.getDateValue(CONFIG_KEY_DUE_DATE);
-		Date closeAfterDueDate = config.getDateValue(CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
-		
-		long dateDifference = context.getDateDifference(getIdent());
-		
-		if (dueDate != null) {
-			dueDate.setTime(dueDate.getTime() + dateDifference);
-			config.set(CONFIG_KEY_DUE_DATE, dueDate);
-		}
-		
-		if (closeAfterDueDate != null) {
-			closeAfterDueDate.setTime(closeAfterDueDate.getTime() + dateDifference);
-			config.set(CONFIG_KEY_CLOSE_AFTER_DUE_DATE, closeAfterDueDate);
+		if (context != null) {
+			// Move dates
+			Date dueDate = config.getDateValue(CONFIG_KEY_DUE_DATE);
+			Date closeAfterDueDate = config.getDateValue(CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
+			
+			long dateDifference = context.getDateDifference(getIdent());
+			
+			if (dueDate != null) {
+				dueDate.setTime(dueDate.getTime() + dateDifference);
+				config.set(CONFIG_KEY_DUE_DATE, dueDate);
+			}
+			
+			if (closeAfterDueDate != null) {
+				closeAfterDueDate.setTime(closeAfterDueDate.getTime() + dateDifference);
+				config.set(CONFIG_KEY_CLOSE_AFTER_DUE_DATE, closeAfterDueDate);
+			}
 		}
 		
 		checkboxManager.syncCheckbox(list, course, getIdent());

@@ -419,60 +419,60 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
 		
-		// Load config
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		// Move potential high score dates
-		Date highScorePublicationDate = config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART);
-		
-		if (highScorePublicationDate != null) {
-			highScorePublicationDate.setTime(highScorePublicationDate.getTime() + context.getDateDifference(getIdent()));
-			config.setDateValue(HighScoreEditController.CONFIG_KEY_DATESTART, highScorePublicationDate);
-		}
-		
-		// Move potential user right dates
-		Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
-		
-		if (!potentialNodeRights.isEmpty()) {
+		if (context != null) {
+			// Load config
+			ModuleConfiguration config = getModuleConfiguration();
 			
-			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			// Move potential high score dates
+			Date highScorePublicationDate = config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART);
 			
-			for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
-				if (!(entry.getValue() instanceof NodeRight)) {
-					continue;
-				}
+			if (highScorePublicationDate != null) {
+				highScorePublicationDate.setTime(highScorePublicationDate.getTime() + context.getDateDifference(getIdent()));
+				config.setDateValue(HighScoreEditController.CONFIG_KEY_DATESTART, highScorePublicationDate);
+			}
+			
+			// Move potential user right dates
+			Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
+			
+			if (!potentialNodeRights.isEmpty()) {
 				
-				NodeRightImpl nodeRight = (NodeRightImpl) entry.getValue();
-				List<NodeRightGrant> nodeRightGrants = new ArrayList<>();
+				NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
 				
-				if (nodeRight.getGrants() != null) {
-					for (NodeRightGrant grant : nodeRight.getGrants()) {
-						// Remove any rights associated with an identity or group
-						if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
-							continue;
-						}
-						
-						// Move potential dates
-						if (grant.getStart() != null) {
-							grant.setStart(new Date(grant.getStart().getTime() + context.getDateDifference(getIdent())));
-						}
-						
-						if (grant.getEnd() != null) {
-							grant.setEnd(new Date(grant.getEnd().getTime() + context.getDateDifference(getIdent())));
-						}
-						
-						// Only grants for roles are kept
-						nodeRightGrants.add(grant);
+				for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
+					if (!(entry.getValue() instanceof NodeRight)) {
+						continue;
 					}
+					
+					NodeRightImpl nodeRight = (NodeRightImpl) entry.getValue();
+					List<NodeRightGrant> nodeRightGrants = new ArrayList<>();
+					
+					if (nodeRight.getGrants() != null) {
+						for (NodeRightGrant grant : nodeRight.getGrants()) {
+							// Remove any rights associated with an identity or group
+							if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
+								continue;
+							}
+							
+							// Move potential dates
+							if (grant.getStart() != null) {
+								grant.setStart(new Date(grant.getStart().getTime() + context.getDateDifference(getIdent())));
+							}
+							
+							if (grant.getEnd() != null) {
+								grant.setEnd(new Date(grant.getEnd().getTime() + context.getDateDifference(getIdent())));
+							}
+							
+							// Only grants for roles are kept
+							nodeRightGrants.add(grant);
+						}
+					}
+					
+					nodeRight.setGrants(nodeRightGrants);
+					nodeRightService.setRight(getModuleConfiguration(), nodeRight);
 				}
-				
-				nodeRight.setGrants(nodeRightGrants);
-				nodeRightService.setRight(getModuleConfiguration(), nodeRight);
 			}
 		}
-		
 	}
-
 	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		postImportCopyConditions(envMapper);

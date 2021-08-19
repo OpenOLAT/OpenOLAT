@@ -58,7 +58,6 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
  * 
@@ -160,12 +159,6 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
 		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionEdit, envMapper);
-	}
-	
-	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
-		super.postCopy(envMapper, processType, course, sourceCrourse, context);
-		
 	}
 
 	@Override

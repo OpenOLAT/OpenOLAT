@@ -480,62 +480,64 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		postImportCopy(envMapper);
 		
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
-		CopyType taskCopyType = null;
 		
-		if (context.isCustomConfigsLoaded()) {
-			OverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
-			
-			if (nodeSettings != null && nodeSettings.getResourceChooser() != null) {
-				taskCopyType = CopyType.valueOf(nodeSettings.getResourceChooser().getSelectedKey());
-			}
-		} else if (context.getTaskCopyType() != null) {
-			taskCopyType = context.getTaskCopyType();				
-		}
-		
-		if (taskCopyType == null || taskCopyType.equals(CopyType.copy)) {
-			//copy tasks
-			File sourceTaskDirectory = gtaManager.getTasksDirectory(sourceCourse.getCourseEnvironment(), this);
-			File copyTaskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
-			FileUtils.copyDirContentsToDir(sourceTaskDirectory, copyTaskDirectory, false, "copy task course node");
-			
-			File taskDefinitions = new File(sourceTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
-			if(taskDefinitions.exists()) {
-				File copyTaskDefinitions = new File(copyTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
-				FileUtils.copyFileToFile(taskDefinitions, copyTaskDefinitions, false);
+		if (context != null) {
+			CopyType taskCopyType = null;
+			if (context.isCustomConfigsLoaded()) {
+				OverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
+				
+				if (nodeSettings != null && nodeSettings.getResourceChooser() != null) {
+					taskCopyType = CopyType.valueOf(nodeSettings.getResourceChooser().getSelectedKey());
+				}
+			} else if (context.getTaskCopyType() != null) {
+				taskCopyType = context.getTaskCopyType();				
 			}
 			
-			//copy solutions
-			File sourceSolutionsDirectory = gtaManager.getSolutionsDirectory(sourceCourse.getCourseEnvironment(), this);
-			File copySolutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
-			FileUtils.copyDirContentsToDir(sourceSolutionsDirectory, copySolutionsDirectory, false, "copy task course node solutions");
-	
-			File solutionDefinitions = new File(sourceSolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
-			if(solutionDefinitions.exists()) {
-				File copySolutionDefinitions = new File(copySolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
-				FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
+			if (taskCopyType == null || taskCopyType.equals(CopyType.copy)) {
+				//copy tasks
+				File sourceTaskDirectory = gtaManager.getTasksDirectory(sourceCourse.getCourseEnvironment(), this);
+				File copyTaskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
+				FileUtils.copyDirContentsToDir(sourceTaskDirectory, copyTaskDirectory, false, "copy task course node");
+				
+				File taskDefinitions = new File(sourceTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+				if(taskDefinitions.exists()) {
+					File copyTaskDefinitions = new File(copyTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+					FileUtils.copyFileToFile(taskDefinitions, copyTaskDefinitions, false);
+				}
+				
+				//copy solutions
+				File sourceSolutionsDirectory = gtaManager.getSolutionsDirectory(sourceCourse.getCourseEnvironment(), this);
+				File copySolutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
+				FileUtils.copyDirContentsToDir(sourceSolutionsDirectory, copySolutionsDirectory, false, "copy task course node solutions");
+		
+				File solutionDefinitions = new File(sourceSolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+				if(solutionDefinitions.exists()) {
+					File copySolutionDefinitions = new File(copySolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+					FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
+				}
 			}
-		}
-		
-		// Move dates
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		Date assignmentDeadline = config.getDateValue(GTASK_ASSIGNMENT_DEADLINE);
-		Date submissionDeadline = config.getDateValue(GTASK_SUBMIT_DEADLINE);
-		Date visibleAfter = config.getDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-		
-		if (assignmentDeadline != null) {
-			assignmentDeadline.setTime(assignmentDeadline.getTime() + context.getDateDifference(getIdent()));
-			config.setDateValue(GTASK_ASSIGNMENT_DEADLINE, assignmentDeadline);
-		}
-		
-		if (submissionDeadline != null) {
-			submissionDeadline.setTime(submissionDeadline.getTime() + context.getDateDifference(getIdent()));
-			config.setDateValue(GTASK_SUBMIT_DEADLINE, submissionDeadline);
-		}
-		
-		if (visibleAfter != null) {
-			visibleAfter.setTime(visibleAfter.getTime() + context.getDateDifference(getIdent()));
-			config.setDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, visibleAfter);
+			
+			// Move dates
+			ModuleConfiguration config = getModuleConfiguration();
+			
+			Date assignmentDeadline = config.getDateValue(GTASK_ASSIGNMENT_DEADLINE);
+			Date submissionDeadline = config.getDateValue(GTASK_SUBMIT_DEADLINE);
+			Date visibleAfter = config.getDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+			
+			if (assignmentDeadline != null) {
+				assignmentDeadline.setTime(assignmentDeadline.getTime() + context.getDateDifference(getIdent()));
+				config.setDateValue(GTASK_ASSIGNMENT_DEADLINE, assignmentDeadline);
+			}
+			
+			if (submissionDeadline != null) {
+				submissionDeadline.setTime(submissionDeadline.getTime() + context.getDateDifference(getIdent()));
+				config.setDateValue(GTASK_SUBMIT_DEADLINE, submissionDeadline);
+			}
+			
+			if (visibleAfter != null) {
+				visibleAfter.setTime(visibleAfter.getTime() + context.getDateDifference(getIdent()));
+				config.setDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, visibleAfter);
+			}
 		}
 		
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

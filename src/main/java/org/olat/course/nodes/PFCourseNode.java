@@ -94,19 +94,21 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
 		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 		
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		Date uploadStart = config.getDateValue(CONFIG_KEY_DATESTART);
-		Date uploadEnd = config.getDateValue(CONFIG_KEY_DATEEND);
-		
-		if (uploadStart != null) {
-			uploadStart.setTime(uploadStart.getTime() + context.getDateDifference(getIdent()));
-			config.setDateValue(CONFIG_KEY_DATESTART, uploadStart);
-		}
-		
-		if (uploadEnd != null) {
-			uploadEnd.setTime(uploadEnd.getTime() + context.getDateDifference(getIdent()));
-			config.setDateValue(CONFIG_KEY_DATEEND, uploadEnd);
+		if (context != null) {
+			ModuleConfiguration config = getModuleConfiguration();
+			
+			Date uploadStart = config.getDateValue(CONFIG_KEY_DATESTART);
+			Date uploadEnd = config.getDateValue(CONFIG_KEY_DATEEND);
+			
+			if (uploadStart != null) {
+				uploadStart.setTime(uploadStart.getTime() + context.getDateDifference(getIdent()));
+				config.setDateValue(CONFIG_KEY_DATESTART, uploadStart);
+			}
+			
+			if (uploadEnd != null) {
+				uploadEnd.setTime(uploadEnd.getTime() + context.getDateDifference(getIdent()));
+				config.setDateValue(CONFIG_KEY_DATEEND, uploadEnd);
+			}
 		}
 	}
 
