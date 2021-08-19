@@ -109,6 +109,9 @@ public class CopyCourseGeneralStep extends BasicStep {
 			listenTo(lifecycleController);
 			
 			initForm(ureq);
+			
+			checkCourseAvailability(ureq, displayNameEl);
+			checkCourseAvailability(ureq, externalRefEl);
 		}
 
 		@Override
@@ -195,8 +198,10 @@ public class CopyCourseGeneralStep extends BasicStep {
 				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			} else if (source == displayNameEl) {
 				checkCourseAvailability(ureq, displayNameEl);
+				checkCourseAvailability(ureq, externalRefEl);
 			} else if (source == externalRefEl) {
 				checkCourseAvailability(ureq, externalRefEl);
+				checkCourseAvailability(ureq, displayNameEl);
 			}
 		};
 		

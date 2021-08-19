@@ -159,11 +159,6 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.setAssessmentModes(hasAssessmentModes(sourceEntry));
 		copyContext.setNewCoaches(getCoaches(sourceEntry));
 		
-		
-		copySteps.setEditLectureBlocks(copyContext.hasLectureBlocks());
-		copySteps.setEditReminders(copyContext.hasDateDependantReminders());
-		copySteps.setEditAssessmentModes(copyContext.hasAssessmentModes());
-
         CopyCourseGeneralStep copyCourseStep = new CopyCourseGeneralStep(ureq, copySteps, copyContext);
         
         copyWizardController = new StepsMainRunController(ureq, getWindowControl(), copyCourseStep, finish, cancel, translate("course.copy"), null);

@@ -242,6 +242,7 @@ public class CourseOverviewStep extends BasicStep {
 							startDateChooser.setUserObject(row);
 							startDateChooser.addActionListener(FormEvent.ONCHANGE);
 							startDateChooser.setInitialDate(startDate);
+							startDateChooser.setDateChooserTimeEnabled(true);
 							row.setStartChooser(startDateChooser);
 						}
 						
@@ -252,6 +253,7 @@ public class CourseOverviewStep extends BasicStep {
 							endDateChooser.setUserObject(row);
 							endDateChooser.addActionListener(FormEvent.ONCHANGE);
 							endDateChooser.setInitialDate(endDate);
+							endDateChooser.setDateChooserTimeEnabled(true);
 							endDateChooser.setVisible(row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name()));
 							row.setEndChooser(endDateChooser);
 						}

@@ -496,8 +496,12 @@ public class CourseHandler implements RepositoryHandler {
 			
 		ICourse course = CourseFactory.loadCourse(target);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
-		CourseEnvironmentMapper envMapper = cgm.getBusinessGroupEnvironment();
+		//CourseEnvironmentMapper envMapper = cgm.getBusinessGroupEnvironment();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		envMapper.getGroups().addAll(context.getNewGroupReferences());
+		
 		envMapper.setAuthor(context.getExecutingIdentity());
+		
 
 		//upgrade to the current version of the course
 		course = CourseFactory.loadCourse(cgm.getCourseResource());

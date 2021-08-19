@@ -33,6 +33,7 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.reminder.model.ReminderRow;
 import org.olat.course.wizard.CourseDisclaimerContext;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.group.ui.main.BGTableItem;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.repository.RepositoryEntry;
@@ -83,6 +84,7 @@ public class CopyCourseContext {
 	private CopyType groupCopyType;			 // 
 	private CopyType customGroupCopyType;
 	private List<BGTableItem> groups;
+	private List<BusinessGroupReference> newGroupReferences = new ArrayList<>();
 	
 	// OwnersStep
 	private CopyType ownersCopyType;	//
@@ -393,6 +395,14 @@ public class CopyCourseContext {
 	
 	public void setGroups(List<BGTableItem> groups) {
 		this.groups = groups;
+	}
+	
+	public List<BusinessGroupReference> getNewGroupReferences() {
+		return newGroupReferences;
+	}
+	
+	public void setNewGroupReferences(List<BusinessGroupReference> newGroupReferences) {
+		this.newGroupReferences = newGroupReferences;
 	}
 	
 	public CopyType getOwnersCopyType() {

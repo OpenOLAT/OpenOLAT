@@ -56,6 +56,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -251,10 +252,13 @@ public class CopyServiceImpl implements CopyService {
 		switch (context.getGroupCopyType()) {
 		case copy:
 			List<BusinessGroup> copiedGroups = new ArrayList<>();
+			List<BusinessGroupReference> copiedGroupReferences = new ArrayList<>();
 			for (BusinessGroup group : businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1)) {
 				BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, true, false, true, true, false, null);
 				copiedGroups.add(copiedGroup);
+				copiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group.getKey(), group.getName()));
 			}
+			context.setNewGroupReferences(copiedGroupReferences);
 			businessGroupService.addResourcesTo(copiedGroups, Collections.singletonList(target));
 			break;
 		case ignore: 
@@ -267,12 +271,15 @@ public class CopyServiceImpl implements CopyService {
 			switch (context.getCustomGroupCopyType()) {
 				case copy:
 					List<BusinessGroup> groupsToCopy = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(group -> group.getKey()).collect(Collectors.toList()));
-					List<BusinessGroup> cusomCopiedGroups = new ArrayList<>();
+					List<BusinessGroup> customCopiedGroups = new ArrayList<>();
+					List<BusinessGroupReference> customCopiedGroupReferences = new ArrayList<>();
 					for (BusinessGroup group : groupsToCopy) {
 						BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, true, false, true, true, false, null);
-						cusomCopiedGroups.add(copiedGroup);
+						customCopiedGroups.add(copiedGroup);
+						customCopiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group.getKey(), group.getName()));
 					}
-					businessGroupService.addResourcesTo(cusomCopiedGroups, Collections.singletonList(target));
+					context.setNewGroupReferences(customCopiedGroupReferences);
+					businessGroupService.addResourcesTo(customCopiedGroups, Collections.singletonList(target));
 					break;
 				case reference:
 					List<BusinessGroup> groupsToReference = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(group -> group.getKey()).collect(Collectors.toList()));
@@ -540,12 +547,33 @@ public class CopyServiceImpl implements CopyService {
 				LectureBlockImpl original = (LectureBlockImpl) lectureBlockWithTeachers.getLectureBlock();
 				LectureBlockImpl copy = (LectureBlockImpl) lectureService.createLectureBlock(target);
 				
-				// TODO apply date difference
-				LectureBlock result = copyLectureBlockDetails(copy, original, original.getLocation(), original.getStartDate(), original.getEndDate(), original.getEffectiveEndDate(), original.getAutoClosedDate());
+				Date startDate = original.getStartDate();
+				Date endDate = original.getEndDate();
+				Date effectiveEndDate = original.getEffectiveEndDate();
+				Date autoCloseDate = original.getAutoClosedDate();
+				
+				if (startDate != null) {
+					startDate = new Date(startDate.getTime() + context.getDateDifference());
+				}
+				
+				if (endDate != null) {
+					endDate = new Date(endDate.getTime() + context.getDateDifference());
+				}
+				
+				if (effectiveEndDate != null) {
+					effectiveEndDate = new Date(effectiveEndDate.getTime() + context.getDateDifference());
+				}
+				
+				if (autoCloseDate != null) {
+					autoCloseDate = new Date(autoCloseDate.getTime() + context.getDateDifference());
+				}
+				
+				LectureBlock result = copyLectureBlockDetails(copy, original, original.getLocation(), startDate, endDate, effectiveEndDate, autoCloseDate);
 				
 				for (Identity coach : lectureService.getTeachers(original)) {
-					if (coaches.contains(coach));
-					lectureService.addTeacher(result, coach);
+					if (coaches.contains(coach)) {
+						lectureService.addTeacher(result, coach);
+					}
 				}
 			}
 		} else if (context.getLectureBlockCopyType().equals(CopyType.custom) && context.getLectureBlockRows() != null) {
@@ -556,8 +584,26 @@ public class CopyServiceImpl implements CopyService {
 				Date startDate = lectureBlockRow.getDateChooser().getDate();
 				Date endDate = lectureBlockRow.getDateChooser().getSecondDate();
 				
-				// TODO How to deal with effective and closing date?
-				LectureBlock result = copyLectureBlockDetails(copy, original, lectureBlockRow.getLocationElement().getValue(), startDate, endDate, null, null);
+				long dateDifference = context.getDateDifference();
+				
+				if (startDate != null && original.getStartDate() != null) {
+					dateDifference = startDate.getTime() - original.getStartDate().getTime();
+				} else if (endDate != null && original.getEndDate() != null) {
+					dateDifference = endDate.getTime() - original.getEndDate().getTime();
+				}
+				
+				Date effectiveEndDate = original.getEffectiveEndDate();
+				Date autoClosingDate = original.getAutoClosedDate();
+				
+				if (effectiveEndDate != null) {
+					effectiveEndDate = new Date(effectiveEndDate.getTime() + dateDifference);
+				}
+				
+				if (autoClosingDate != null) {
+					autoClosingDate = new Date(autoClosingDate.getTime() + dateDifference);
+				}
+				
+				LectureBlock result = copyLectureBlockDetails(copy, original, lectureBlockRow.getLocationElement().getValue(), startDate, endDate, effectiveEndDate, autoClosingDate);
 				
 				for (Identity coach : lectureBlockRow.getTeachersList()) {
 					lectureService.addTeacher(result, coach);
@@ -590,7 +636,8 @@ public class CopyServiceImpl implements CopyService {
 		copy.setRollCallStatus(LectureRollCallStatus.open);
 		
 		copy.setReasonEffectiveEnd(original.getReasonEffectiveEnd());
-		copy.setTaxonomyLevels(original.getTaxonomyLevels());
+		// TODO How to handle taxonomy levles?
+		// copy.setTaxonomyLevels(original.getTaxonomyLevels());
 		
 		// TODO Urs: How to handle lecture block groups?
 		
