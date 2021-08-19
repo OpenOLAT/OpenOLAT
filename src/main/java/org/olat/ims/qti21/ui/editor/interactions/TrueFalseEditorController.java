@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.ResourcesMapper;
@@ -64,9 +66,16 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class TrueFalseEditorController extends FormBasicController {
 
+	private static final String[] yesnoKeys = new String[]{ "y", "n"};
+	private static final String[] layoutKeys = new String[] {
+			QTI21Constants.CSS_MATCH_SOURCE_LEFT, QTI21Constants.CSS_MATCH_SOURCE_RIGHT
+		};
+	
 	private TextElement titleEl;
 	private FormLink addRowButton;
 	private RichTextElement textEl;
+	private SingleSelection shuffleEl;
+	private SingleSelection layoutEl;
 	private FormLayoutContainer answersCont;
 	
 	private int count = 0;
@@ -134,6 +143,32 @@ public class TrueFalseEditorController extends FormBasicController {
 			textReadOnlyEl.setMapperUri(mapperUri);
 			metadata.add(textReadOnlyEl);
 		}
+		
+		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
+		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", metadata, yesnoKeys, yesnoValues);
+		shuffleEl.setEnabled(!restrictedEdit && !readOnly);
+		if (itemBuilder.isShuffle()) {
+			shuffleEl.select("y", true);
+		} else {
+			shuffleEl.select("n", true);
+		}
+		
+		String[] layoutValues = new String[]{
+				translate("form.imd.layout.left"), translate("form.imd.layout.right")
+			};
+		layoutEl = uifactory.addRadiosHorizontal("layout", "form.imd.layout", metadata, layoutKeys, layoutValues);
+		layoutEl.setElementCssClass("o_sel_match_layout");
+		layoutEl.setEnabled(!restrictedEdit && !readOnly);
+		boolean found = false;
+		for(String layoutKey:layoutKeys) {
+			if(itemBuilder.hasMatchInteractionClass(layoutKey)) {
+				layoutEl.select(layoutKey, true);
+				found = true;
+			}
+		}
+		if(!found) {
+			layoutEl.select(QTI21Constants.CSS_MATCH_SOURCE_RIGHT, true);
+		}
 
 		//responses
 		String page = velocity_root + "/match_truefalse.html";
@@ -150,7 +185,7 @@ public class TrueFalseEditorController extends FormBasicController {
 				wrapSource(ureq, sourceChoice, sourceWrappers);
 			}
 			List<TargetWrapper> targetChoices = itemBuilder.getTargetChoices()
-					.stream().map(c -> new TargetWrapper(c)).collect(Collectors.toList());
+					.stream().map(TargetWrapper::new).collect(Collectors.toList());
 			answersCont.contextPut("targetChoices", targetChoices);
 		}
 		answersCont.contextPut("sourceChoices", sourceWrappers);
@@ -229,6 +264,14 @@ public class TrueFalseEditorController extends FormBasicController {
 				}
 			}
 		}
+		
+		if(layoutEl != null) {
+			layoutEl.clearError();
+			if(!layoutEl.isOneSelected()) {
+				layoutEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 
 		return allOk;
 	}
@@ -262,7 +305,11 @@ public class TrueFalseEditorController extends FormBasicController {
 		
 		if(!restrictedEdit) {
 			itemBuilder.setMultipleChoice(false);
-			itemBuilder.setShuffle(false);
+			itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+
+			itemBuilder.removeMatchInteractionClass(layoutKeys);
+			String cssClass = layoutEl.getSelectedKey();
+			itemBuilder.addMatchInteractionClass(cssClass);
 		}
 		
 		//update 

@@ -438,14 +438,19 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
 		
 		int sourceMatchMax = multipleChoice ? 0 : 1;
-		getSourceMatchSet().getSimpleAssociableChoices().forEach((choice) -> {
+		getSourceMatchSet().getSimpleAssociableChoices().forEach(choice -> {
 			choice.setMatchMin(0);
 			choice.setMatchMax(sourceMatchMax);
 		});
-		
-		getTargetMatchSet().getSimpleAssociableChoices().forEach((choice) -> {
+
+		boolean trueFalse = getQuestionType() == QTI21QuestionType.matchtruefalse;
+		Boolean fixed = isShuffle() ? Boolean.TRUE : null;
+		getTargetMatchSet().getSimpleAssociableChoices().forEach(choice -> {
 			choice.setMatchMin(0);
 			choice.setMatchMax(0);
+			if(trueFalse) {
+				choice.setFixed(fixed);
+			}
 		});
 		
 		matchInteraction.setMaxAssociations(0);

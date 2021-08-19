@@ -1141,14 +1141,27 @@ public class QTI21WordExport implements MediaResource {
 			int columnWidthDxa = halfTableWidthDxa / numOfColumns;
 			int columnWidthPct = halfTableWidthPct / numOfColumns;
 			
+			boolean sourceLeft = hasClass(matchInteraction, QTI21Constants.CSS_MATCH_SOURCE_LEFT);
+			
 			Integer[] columnsWidth = new Integer[numOfColumns + 1];
+			if(sourceLeft) {
+				columnsWidth[numOfColumns] = halfTableWidthDxa;
+			}
 			for(int i=numOfColumns; i-->0; ) {
 				columnsWidth[i] = columnWidthDxa;
 			}
-			columnsWidth[numOfColumns] = halfTableWidthDxa;
+			if(!sourceLeft) {
+				columnsWidth[numOfColumns] = halfTableWidthDxa;
+			}
 			startTable(Columns.valueOf(columnsWidth));
 
 			getCurrentTable().addRowEl();
+			
+			if(sourceLeft) {
+				// white corner (left aligned)
+				Node emptyCell = getCurrentTable().addCellEl(factory.createTableCell(null, halfTableWidthDxa, Unit.dxa), 1);
+				emptyCell.appendChild(factory.createParagraphEl(""));
+			}
 			
 			// horizontal headers
 			Element noAnswerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", columnWidthPct, Unit.pct), 1);
@@ -1158,22 +1171,34 @@ public class QTI21WordExport implements MediaResource {
 			Element wrongAnswerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", columnWidthPct, Unit.pct), 1);
 			wrongAnswerCell.appendChild(factory.createParagraphEl(translator.translate("match.false")));
 			
-			// white corner
-			Node emptyCell = getCurrentTable().addCellEl(factory.createTableCell(null, halfTableWidthDxa, Unit.dxa), 1);
-			emptyCell.appendChild(factory.createParagraphEl(""));
+			if(sourceLeft) {
+				// white corner (standrad right aligned)
+				Node emptyCell = getCurrentTable().addCellEl(factory.createTableCell(null, halfTableWidthDxa, Unit.dxa), 1);
+				emptyCell.appendChild(factory.createParagraphEl(""));
+			}
+			
 			getCurrentTable().closeRow();
 
 			for(SimpleAssociableChoice choice:verticalAssociableChoices) {
 				getCurrentTable().addRowEl();
+
+				//answer (answer left aligned)
+				if(sourceLeft) {
+					Element answerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", halfTableWidthPct, Unit.pct), 1);
+					appendSimpleAssociableChoice(choice, answerCell) ;
+				}
+				
 				//checkbox
 				for(SimpleAssociableChoice horizontalChoice:horizontalAssociableChoices) {
 					boolean correct = isCorrectMatchResponse(choice.getIdentifier(), horizontalChoice.getIdentifier(), matchInteraction);
 					appendMatchCheckBox(correct, columnWidthPct, factory);
 				}
-				//answer
-				Element answerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", halfTableWidthPct, Unit.pct), 1);
-				appendSimpleAssociableChoice(choice, answerCell) ;
-				
+
+				//answer (standard layout)
+				if(!sourceLeft) {
+					Element answerCell = getCurrentTable().addCellEl(factory.createTableCell("E9EAF2", halfTableWidthPct, Unit.pct), 1);
+					appendSimpleAssociableChoice(choice, answerCell) ;
+				}
 				getCurrentTable().closeRow();
 			}
 			
