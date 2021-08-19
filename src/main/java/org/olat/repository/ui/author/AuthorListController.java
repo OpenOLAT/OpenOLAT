@@ -1054,6 +1054,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else {
 				toolsCtrl = new ToolsController(ureq, getWindowControl(), row, entry);
 			}
+			listenTo(toolsCtrl);
 			
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
