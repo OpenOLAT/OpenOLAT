@@ -252,7 +252,7 @@ public class CopyServiceImpl implements CopyService {
 		case copy:
 			List<BusinessGroup> copiedGroups = new ArrayList<>();
 			for (BusinessGroup group : businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1)) {
-				BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, true, true, true, true, false, null);
+				BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, true, false, true, true, false, null);
 				copiedGroups.add(copiedGroup);
 			}
 			businessGroupService.addResourcesTo(copiedGroups, Collections.singletonList(target));
@@ -269,7 +269,7 @@ public class CopyServiceImpl implements CopyService {
 					List<BusinessGroup> groupsToCopy = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(group -> group.getKey()).collect(Collectors.toList()));
 					List<BusinessGroup> cusomCopiedGroups = new ArrayList<>();
 					for (BusinessGroup group : groupsToCopy) {
-						BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, true, true, true, true, false, null);
+						BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, true, false, true, true, false, null);
 						cusomCopiedGroups.add(copiedGroup);
 					}
 					businessGroupService.addResourcesTo(cusomCopiedGroups, Collections.singletonList(target));
@@ -296,30 +296,21 @@ public class CopyServiceImpl implements CopyService {
 			List<Identity> ownersToCopy = repositoryService.getMembers(context.getSourceRepositoryEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
 			
 			if (ownersToCopy.isEmpty()) {
-				return;
+				break;
 			}
 			
 			IdentitiesAddEvent identitiesAddEvent = new IdentitiesAddEvent(ownersToCopy);
 			repositoryManager.addOwners(context.getExecutingIdentity(), identitiesAddEvent, target, new MailPackage(false));
 			break;
 		case custom:
-			switch (context.getCustomOwnersCopyType()) {
-				case copy:
-					List<Identity> customOwnersToCopy = context.getNewOwners();
-					
-					if (customOwnersToCopy == null  || customOwnersToCopy.isEmpty()) {
-						return;
-					}
-					
-					IdentitiesAddEvent customIdentitiesAddEvent = new IdentitiesAddEvent(customOwnersToCopy);
-					repositoryManager.addOwners(context.getExecutingIdentity(), customIdentitiesAddEvent, target, new MailPackage(false));
-					break;
-				case replace:
-					IdentitiesAddEvent replaceOwnersEvent = new IdentitiesAddEvent(Collections.singletonList(context.getExecutingIdentity()));
-					repositoryManager.addOwners(context.getExecutingIdentity(), replaceOwnersEvent, target, new MailPackage(false));
-				default:
-					break;	
+			List<Identity> customOwnersToCopy = context.getNewOwners();
+			
+			if (customOwnersToCopy == null  || customOwnersToCopy.isEmpty()) {
+				break;
 			}
+			
+			IdentitiesAddEvent customIdentitiesAddEvent = new IdentitiesAddEvent(customOwnersToCopy);
+			repositoryManager.addOwners(context.getExecutingIdentity(), customIdentitiesAddEvent, target, new MailPackage(false));
 			break;
 		default: 
 			break;
@@ -601,7 +592,7 @@ public class CopyServiceImpl implements CopyService {
 		copy.setReasonEffectiveEnd(original.getReasonEffectiveEnd());
 		copy.setTaxonomyLevels(original.getTaxonomyLevels());
 		
-		// TODO How to handle lecture block groups?
+		// TODO Urs: How to handle lecture block groups?
 		
 		return lectureService.save(copy, null);
 	}

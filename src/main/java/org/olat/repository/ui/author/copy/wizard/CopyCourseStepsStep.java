@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -42,7 +43,8 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
-import org.olat.repository.ui.author.copy.wizard.general.CourseOverviewStep;
+import org.olat.repository.ui.author.copy.wizard.general.OwnersStep;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 22.02.2021<br>
@@ -55,7 +57,7 @@ public class CopyCourseStepsStep extends BasicStep {
 		if (steps.isAdvancedMode()) {
 			return new CopyCourseStepsStep(ureq, steps);
 		} else {
-			return CourseOverviewStep.create(ureq, steps);
+			return OwnersStep.create(ureq, steps);
 		}
 	}
 	
@@ -67,7 +69,8 @@ public class CopyCourseStepsStep extends BasicStep {
 		this.steps = steps;
 		
 		setI18nTitleAndDescr("wizard.copy.course.steps", null);
-		setNextStep(steps.showNodesOverview() ? CourseOverviewStep.create(ureq, steps) : NOSTEP);
+		setNextStep(OwnersStep.create(ureq, steps));
+		//setNextStep(steps.showNodesOverview() ? CourseOverviewStep.create(ureq, steps) : NOSTEP);
 	}
 
 	@Override
@@ -101,14 +104,18 @@ public class CopyCourseStepsStep extends BasicStep {
 		
 		private List<SingleSelection> allOptions;
 		private FormLink customizeAllLink;
+		private FormLink resetToDefaultLink;
+		
+		@Autowired
+		private CopyCourseWizardModule wizardModule;
 
 		public CopyCourseStepsStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
-			super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT_2_10, null);
+			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 			
 			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
 
 			initForm(ureq);
-			loadDefaultConfig();
+			loadConfigFromContext(ureq);
 		}
 
 		@Override
@@ -124,86 +131,75 @@ public class CopyCourseStepsStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			// Help text
+			setFormDescription("copy.steps.info");
+			
 			// Create new list for all options
 			allOptions = new ArrayList<>();
 			
 			// Copy options
-			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"), "o_light_green", true);
-			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.ignore"), "o_red", true);
-			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"), "o_light_blue", true);
-			SelectionValue customize = new SelectionValue(CopyType.custom.name(), translate("options.customize"), "o_yellow", true);
-			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"), "o_purple", true);
-			SelectionValue configureLater = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"), "o_orange", true);
+			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"), "o_primary", true);
+			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.ignore"), "o_primary", true);
+			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"), "o_primary", true);
+			SelectionValue customize = new SelectionValue(CopyType.custom.name(), translate("options.customize"), "o_primary", true);
+			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"), "o_primary", true);
+			SelectionValue configureLater = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"), "o_primary", true);
 
+			// Members management
+			FormLayoutContainer memebersManagementLayout = FormLayoutContainer.createDefaultFormLayout_2_10("memebersManagementLayout", getTranslator());
+			memebersManagementLayout.setRootForm(mainForm);
+			memebersManagementLayout.setFormTitle(translate("members.management"));
+			formLayout.add(memebersManagementLayout);
+			
+			// Owner settings
+			SelectionValues ownerSettings = new SelectionValues(customize, copy, ignore);
+			ownerSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("owners", memebersManagementLayout, ownerSettings);
+			ownerSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(ownerSettingsEl);
+			
+			// Coach settings
+			SelectionValues coachSettings = new SelectionValues(customize, copy, ignore);
+			coachSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("coaches", memebersManagementLayout, coachSettings);
+			coachSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(coachSettingsEl);
+			
 			// Group settings
 			SelectionValues groupSettings = new SelectionValues(customize, copy, ignore, reference);
-			groupSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("groups", formLayout, groupSettings);
+			groupSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("groups", memebersManagementLayout, groupSettings);
 			groupSettingsEl.addActionListener(FormEvent.ONCHANGE);
 			allOptions.add(groupSettingsEl);
 
-			// Owner settings
-			disableOptions(reference);
-			SelectionValues ownerSettings = new SelectionValues(copy, ignore, reference, customize);
-			ownerSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("owners", formLayout, ownerSettings);
-			ownerSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(ownerSettingsEl);
-
-			// Coach settings
-			SelectionValues coachSettings = new SelectionValues(copy, ignore, reference, customize);
-			coachSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("coaches", formLayout, coachSettings);
-			coachSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(coachSettingsEl);
-
-			// Publication settings
-			SelectionValues publicationSettings = new SelectionValues(copy, ignore, reference, customize);
-			publicationSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("publication", formLayout, publicationSettings);
-			publicationSettingsEl.setHelpTextKey("publication.help", null);
-			publicationSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(publicationSettingsEl);
-
-			// Disclaimer settings
-			SelectionValues disclaimerSettings = new SelectionValues(copy, ignore, reference, customize);
-			disclaimerSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("disclaimer", formLayout, disclaimerSettings);
-			disclaimerSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(disclaimerSettingsEl);
-			
-			// Reset enabled states
-			enableOptions(reference);
-
 			// Node specific settings
 			if (context.hasNodeSpecificSettings()) {
-				uifactory.addSpacerElement("spacer", formLayout, false);
+				FormLayoutContainer nodeSettingsLayout = FormLayoutContainer.createDefaultFormLayout_2_10("nodeSettingsLayout", getTranslator());
+				nodeSettingsLayout.setRootForm(mainForm);
+				nodeSettingsLayout.setFormTitle(translate("course.node.settings"));
+				formLayout.add(nodeSettingsLayout);
 
 				if (context.hasTask()) {
-					SelectionValue copyAssignmentAndSolution = new SelectionValue(CopyType.copy.name(), translate("options.copy.assignment.solution"), "o_light_green", true);
-					SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"), "o_red", true);
+					SelectionValue copyAssignmentAndSolution = new SelectionValue(CopyType.copy.name(), translate("options.copy.assignment.solution"), "o_primary", true);
+					SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"), "o_primary", true);
 					SelectionValues taskSettings = new SelectionValues(copyAssignmentAndSolution, ignoreAssignmentAndSolution);
-					taskSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("tasks", formLayout, taskSettings);
+					taskSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("tasks", nodeSettingsLayout, taskSettings);
 					taskSettingsEl.addActionListener(FormEvent.ONCHANGE);
 					allOptions.add(taskSettingsEl);
 					
-					if (context.hasFolder() || context.hasBlog() || context.hasWiki()) {
-						uifactory.addSpacerElement("spacer", formLayout, false);
-					}
 				}
 				
 				if (context.hasFolder()) {
-					SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"), "o_light_green", true);
-					SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"), "o_red", true);
+					SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"), "o_primary", true);
+					SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"), "o_primary", true);
 					SelectionValues folderSettings = new SelectionValues(copyContent, ignoreContent);
-					folderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("folders", formLayout, folderSettings);
+					folderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("folders", nodeSettingsLayout, folderSettings);
 					folderSettingsEl.setHelpTextKey("folders.help", null);
 					folderSettingsEl.addActionListener(FormEvent.ONCHANGE);
 					allOptions.add(folderSettingsEl);
 					
-					if (context.hasBlog() || context.hasWiki()) {
-						uifactory.addSpacerElement("spacer", formLayout, false);
-					}
 				}
 				
 				if (context.hasBlog()) {
-					SelectionValues blogSettings = new SelectionValues(createNew, reference, configureLater);
-					blogSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("blogs", formLayout, blogSettings);
+					SelectionValues blogSettings = new SelectionValues(reference, configureLater, createNew);
+					blogSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("blogs", nodeSettingsLayout, blogSettings);
 					blogSettingsEl.setHelpTextKey("blogs.help", null);
 					blogSettingsEl.addActionListener(FormEvent.ONCHANGE);
 					allOptions.add(blogSettingsEl);
@@ -211,78 +207,122 @@ public class CopyCourseStepsStep extends BasicStep {
 
 
 				if (context.hasWiki()) {
-					SelectionValues wikiSettings = new SelectionValues(createNew, reference, configureLater);
-					wikiSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("wikis", formLayout, wikiSettings);
+					SelectionValues wikiSettings = new SelectionValues(reference, configureLater, createNew);
+					wikiSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("wikis", nodeSettingsLayout, wikiSettings);
 					wikiSettingsEl.setHelpTextKey("wikis.help", null);
 					wikiSettingsEl.addActionListener(FormEvent.ONCHANGE);
 					allOptions.add(wikiSettingsEl);
 				}
 			}
-
+			
 			// Additional settings
-			if (context.hasAdditionalSettings()) {
-				uifactory.addSpacerElement("spacer", formLayout, false);
+			FormLayoutContainer additionalSettingsLayout = FormLayoutContainer.createDefaultFormLayout_2_10("additionalSettingsLayout", getTranslator());
+			additionalSettingsLayout.setRootForm(mainForm);
+			additionalSettingsLayout.setFormTitle(translate("additional.settings"));
+			formLayout.add(additionalSettingsLayout);
+			
+			// Publication settings
+			SelectionValues publicationSettings = new SelectionValues(customize, copy, ignore);
+			publicationSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("publication", additionalSettingsLayout, publicationSettings);
+			publicationSettingsEl.setHelpTextKey("publication.help", null);
+			publicationSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(publicationSettingsEl);
 
-				// Reminder steps
-				if (context.hasReminders()) {
-					SelectionValues reminderSettings = new SelectionValues(copy, ignore, customize);
-					
-					if (!context.hasDateDependantReminders()) {
-						disableOptions(customize);
-					}
-					
-					reminderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("reminders", formLayout, reminderSettings);
-					reminderSettingsEl.addActionListener(FormEvent.ONCHANGE);
-					allOptions.add(reminderSettingsEl);
-					
-					if (!context.hasDateDependantReminders()) {
-						enableOptions(customize);
-					}
-				}
+			// Disclaimer settings
+			SelectionValues disclaimerSettings = new SelectionValues(customize, copy, ignore);
+			disclaimerSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("disclaimer", additionalSettingsLayout, disclaimerSettings);
+			disclaimerSettingsEl.addActionListener(FormEvent.ONCHANGE);
+			allOptions.add(disclaimerSettingsEl);
 
-				// Assessment mode steps
-				if (context.hasAssessmentModes()) {
-					SelectionValues assessmentModeSettings = new SelectionValues(copy, ignore, customize);
-					assessmentModeSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("assessment.modes", formLayout, assessmentModeSettings);
-					assessmentModeSettingsEl.addActionListener(FormEvent.ONCHANGE);
-					allOptions.add(assessmentModeSettingsEl);
+			// Reminder steps
+			if (context.hasReminders()) {
+				SelectionValues reminderSettings = null;
+				
+				if (context.hasDateDependantReminders()) {
+					reminderSettings = new SelectionValues(customize, copy, ignore);
+				} else {
+					reminderSettings = new SelectionValues(copy, ignore);
 				}
-
-				// Lecture block steps
-				if (context.hasLectureBlocks()) {
-					SelectionValues lectureBlockSettings = new SelectionValues(copy, ignore, customize);
-					lectureBlockSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("lecture.blocks", formLayout, lectureBlockSettings);
-					lectureBlockSettingsEl.addActionListener(FormEvent.ONCHANGE);
-					allOptions.add(lectureBlockSettingsEl);
-				}
+				
+				reminderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("reminders", additionalSettingsLayout, reminderSettings);
+				reminderSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(reminderSettingsEl);
 			}
 			
-			uifactory.addSpacerElement("spacer", formLayout, false);
+			// Lecture block steps
+			if (context.hasLectureBlocks()) {
+				SelectionValues lectureBlockSettings = new SelectionValues(customize, copy, ignore);
+				lectureBlockSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("lecture.blocks", additionalSettingsLayout, lectureBlockSettings);
+				lectureBlockSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(lectureBlockSettingsEl);
+			}
+						
+			// Assessment mode steps
+			if (context.hasAssessmentModes()) {
+				SelectionValues assessmentModeSettings = new SelectionValues(customize, copy, ignore);
+				assessmentModeSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("assessment.modes", additionalSettingsLayout, assessmentModeSettings);
+				assessmentModeSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(assessmentModeSettingsEl);
+			}
+
+			// Buttons
+			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+			additionalSettingsLayout.add(buttonLayout);
 			
-			customizeAllLink = uifactory.addFormLink("customize.all", formLayout, Link.BUTTON_XSMALL);
+			customizeAllLink = uifactory.addFormLink("customize.all", buttonLayout, Link.BUTTON);
+			resetToDefaultLink = uifactory.addFormLink("default.all", buttonLayout, Link.BUTTON);
 		}
 		
-		private void enableOptions(SelectionValue... options) {
-			if (options == null || options.length == 0) {
-				return;
+		private void loadDefaultConfig(UserRequest ureq) {
+			if (groupSettingsEl != null) {
+				groupSettingsEl.select(wizardModule.getGroupsCopyType().name(), true);
+			}
+			if (ownerSettingsEl != null) {
+				ownerSettingsEl.select(wizardModule.getOwnersCopyType().name(), true);
+			}
+			if (coachSettingsEl != null) {
+				coachSettingsEl.select(wizardModule.getCoachesCopyType().name(), true);
+			}
+			if (publicationSettingsEl != null) {
+				publicationSettingsEl.select(wizardModule.getCatalogCopyType().name(), true);
+			}
+			if (disclaimerSettingsEl != null) {
+				disclaimerSettingsEl.select(wizardModule.getDisclaimerCopyType().name(), true);
 			}
 			
-			for (SelectionValue option : options) {
-				option.setEnabled(true);
+			if (taskSettingsEl != null) {
+				taskSettingsEl.select(wizardModule.getTaskCopyType().name(), true);
 			}
-		}
-		
-		private void disableOptions(SelectionValue... options) {
-			if (options == null || options.length == 0) {
-				return;
+			if (blogSettingsEl != null) {
+				blogSettingsEl.select(wizardModule.getBlogCopyType().name(), true);
+			}
+			if (wikiSettingsEl != null) {
+				wikiSettingsEl.select(wizardModule.getWikiCopyType().name(), true);
+			}
+			if (folderSettingsEl != null) {
+				folderSettingsEl.select(wizardModule.getFolderCopyType().name(), true);
+			}
+
+			if (lectureBlockSettingsEl != null) {
+				lectureBlockSettingsEl.select(wizardModule.getLectureBlockCopyType().name(), true);
+			}
+			if (reminderSettingsEl != null) {
+				String copyMode = wizardModule.getReminderCopyType().name();
+				
+				if (copyMode.equals(CopyType.custom.name()) && !context.hasDateDependantReminders()) {
+					copyMode = CopyType.copy.name();
+				}
+				
+				reminderSettingsEl.select(copyMode, true);
+			}
+			if (assessmentModeSettingsEl != null) {
+				assessmentModeSettingsEl.select(wizardModule.getAssessmentCopyType().name(), true);
 			}
 			
-			for (SelectionValue option : options) {
-				option.setEnabled(false);
-			}
+			saveStepConfig(ureq);
 		}
 		
-		private void loadDefaultConfig() {
+		private void loadConfigFromContext(UserRequest ureq) {
 			if (groupSettingsEl != null) {
 				groupSettingsEl.select(context.getGroupCopyType().name(), true);
 			}
@@ -327,16 +367,26 @@ public class CopyCourseStepsStep extends BasicStep {
 			if (assessmentModeSettingsEl != null) {
 				assessmentModeSettingsEl.select(context.getAssessmentModeCopyType().name(), true);
 			}
+			
+			saveStepConfig(ureq);
+		}
+		
+		private void customizeAllOptions(UserRequest ureq) {
+			for (SingleSelection option : allOptions) {
+				if (option.containsKey(CopyType.custom.name())) {
+					option.select(CopyType.custom.name(), true);
+				}
+			}
+			
+			saveStepConfig(ureq);
 		}
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == customizeAllLink) {
-				for (SingleSelection option : allOptions) {
-					if (option.containsKey(CopyType.custom.name())) {
-						option.select(CopyType.custom.name(), true);
-					}
-				}
+				customizeAllOptions(ureq);
+			} else if (source == resetToDefaultLink) {
+				loadDefaultConfig(ureq);
 			} else if (source instanceof SingleSelection) {
 				saveStepConfig(ureq);
 			}
@@ -401,7 +451,7 @@ public class CopyCourseStepsStep extends BasicStep {
 				steps.setEditAssessmentModes(assessmentModeSettingsEl.isKeySelected(CopyType.custom.name()));
 			}
 
-			setNextStep(CourseOverviewStep.create(ureq, steps));
+			setNextStep(OwnersStep.create(ureq, steps));
 			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 		}
 	}

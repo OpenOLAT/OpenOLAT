@@ -95,27 +95,6 @@ public class CourseNodeDatesListController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	private void moveDates(long dateDifference, List<DateChooser> datesToUpdate) {
-		if (datesToUpdate.isEmpty()) {
-			return;
-		}
-		
-		for (DateChooser dateToUpdate : datesToUpdate) {
-			Date date = dateToUpdate.getDate();
-			Date secondDate = dateToUpdate.getSecondDate();
-
-			if (date != null) {
-				
-				dateToUpdate.setDate(date);
-			}
-			
-			if (secondDate != null) {
-				secondDate.setTime(secondDate.getTime() + dateDifference);
-				dateToUpdate.setSecondDate(date);
-			}			
-		}
-	}
-	
 	@Override
 	protected void doDispose() {
 		// Nothing to do here

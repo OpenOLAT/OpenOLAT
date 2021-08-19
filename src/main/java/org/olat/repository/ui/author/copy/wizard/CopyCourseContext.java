@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -251,7 +252,7 @@ public class CopyCourseContext {
 	}
 	
 	public boolean hasNodeSpecificSettings() {
-		return hasFolder || hasWiki || hasWiki;
+		return hasFolder || hasWiki || hasBlog || hasTask;
 	}
 	
 	public RepositoryEntryLifecycle getRepositoryLifeCycle() {
@@ -435,6 +436,10 @@ public class CopyCourseContext {
 	}
 	
 	public List<Identity> getNewCoaches() {
+		if (getCoachesCopyType().equals(CopyType.ignore)) {
+			return new ArrayList<>();
+		}
+		
 		return newCoaches;
 	}
 	

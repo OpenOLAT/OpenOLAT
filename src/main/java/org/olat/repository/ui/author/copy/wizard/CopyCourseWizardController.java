@@ -21,7 +21,11 @@ package org.olat.repository.ui.author.copy.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.olat.admin.user.UserTableDataModel;
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -33,6 +37,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
@@ -55,6 +60,9 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.group.manager.MemberViewQueries;
+import org.olat.group.model.MemberView;
+import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -70,6 +78,8 @@ import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -101,6 +111,12 @@ public class CopyCourseWizardController extends BasicController {
 	private ReminderService reminderManager;
 	@Autowired
 	private ReminderModule reminderModule;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private MemberViewQueries memberViewQueries;
+	@Autowired
+	private BaseSecurityManager securityManager;
 
 	public CopyCourseWizardController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course) {
 		super(ureq, wControl);
@@ -141,6 +157,8 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.setDateDependantReminders(hasDateDependantReminders(sourceEntry));
 		copyContext.setHasReminders(hasReminders(sourceEntry));
 		copyContext.setAssessmentModes(hasAssessmentModes(sourceEntry));
+		copyContext.setNewCoaches(getCoaches(sourceEntry));
+		
 		
 		copySteps.setEditLectureBlocks(copyContext.hasLectureBlocks());
 		copySteps.setEditReminders(copyContext.hasDateDependantReminders());
@@ -349,6 +367,17 @@ public class CopyCourseWizardController extends BasicController {
 		List<ReminderInfos> reminders = reminderManager.getReminderInfos(repositoryEntry);
 		
 		return reminders != null && !reminders.isEmpty();
+	}
+	
+	private List<Identity> getCoaches(RepositoryEntry sourceEntry) {
+		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
+		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.coach);
+		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());
+		List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
+		List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
+		
+		return coaches;
 	}
 	
 	private class FinishCallback implements StepRunnerCallback {

@@ -83,7 +83,7 @@ public class GroupStep extends BasicStep {
 		if (steps.isEditGroups()) {
 			return new GroupStep(ureq, stepCollection, steps);
 		} else {
-			return OwnersStep.create(ureq, stepCollection, steps);
+			return CourseOverviewStep.create(ureq, steps);
 		}
 	}
 	
@@ -95,11 +95,11 @@ public class GroupStep extends BasicStep {
 		
 		if (stepCollection == null) {
 			stepCollection = new BasicStepCollection();
-			stepCollection.setTitle(getTranslator(), "steps.general.title");
+			stepCollection.setTitle(getTranslator(), "members.management");
 		}
 		setStepCollection(stepCollection);
 		
-		setNextStep(OwnersStep.create(ureq, stepCollection, steps));
+		setNextStep(CourseOverviewStep.create(ureq, steps));
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public class GroupStep extends BasicStep {
 		private BusinessGroupService businessGroupService;
 		
 		public GroupStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
-			super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT_2_10, null);
+			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 			
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(CourseBusinessGroupListController.class, getLocale(), getTranslator()));
@@ -182,6 +182,12 @@ public class GroupStep extends BasicStep {
 						}
 					}
 				}
+			} else if (source == copyGroupsModeEl) {
+				if (copyGroupsModeEl.getSelectedKey().equals(CopyType.ignore.name())) {
+					tableEl.setVisible(false);
+				} else {
+					tableEl.setVisible(true);
+				}
 			}
 		}
 
@@ -194,6 +200,7 @@ public class GroupStep extends BasicStep {
 			SelectionValues copyGroupModes = new SelectionValues(copy, reference, ignore);
 			
 			copyGroupsModeEl = uifactory.addRadiosHorizontal("groups", formLayout, copyGroupModes.keys(), copyGroupModes.values());
+			copyGroupsModeEl.addActionListener(FormEvent.ONCHANGE);
 			copyGroupsModeEl.setAllowNoSelection(false);
 			
 			// Group table

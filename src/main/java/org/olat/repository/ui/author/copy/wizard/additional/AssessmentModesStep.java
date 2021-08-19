@@ -89,7 +89,7 @@ public class AssessmentModesStep extends BasicStep {
 		// Stepcollection
 		if (stepCollection == null) {
 			stepCollection = new BasicStepCollection();
-			stepCollection.setTitle(getTranslator(), "steps.additional");
+			stepCollection.setTitle(getTranslator(), "additional.settings");
 		}
 		setStepCollection(stepCollection);
 		

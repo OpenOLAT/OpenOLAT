@@ -87,7 +87,7 @@ public class CourseOverviewStep extends BasicStep {
 		if (steps.isAdvancedMode() && steps.showNodesOverview()) {
 			return new CourseOverviewStep(ureq, steps);
 		} else {
-			return GroupStep.create(ureq, null, steps);
+			return CatalogStep.create(ureq, null, steps);
 		}
 	}
 	
@@ -99,7 +99,7 @@ public class CourseOverviewStep extends BasicStep {
 		setI18nTitleAndDescr("steps.move.dates.title", null);
 		
 		// Next step
-		setNextStep(GroupStep.create(ureq, null, steps));
+		setNextStep(CatalogStep.create(ureq, null, steps));
 	}
 
 	@Override

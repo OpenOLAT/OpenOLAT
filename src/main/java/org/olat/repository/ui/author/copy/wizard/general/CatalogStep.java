@@ -76,7 +76,7 @@ public class CatalogStep extends BasicStep {
 
 		if (stepCollection == null) {
 			stepCollection = new BasicStepCollection();
-			stepCollection.setTitle(getTranslator(), "steps.general.title");
+			stepCollection.setTitle(getTranslator(), "additional.settings");
 		}
 		setStepCollection(stepCollection);
 		

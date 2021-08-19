@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
@@ -80,7 +81,7 @@ public class LectureBlocksStep extends BasicStep {
 		if (steps.isEditLectureBlocks()) {
 			return new LectureBlocksStep(ureq, stepCollection, steps);
 		} else {
-			return AssessmentModesStep.create(ureq, stepCollection, steps);
+			return RemindersStep.create(ureq, stepCollection, steps);
 		}
 	}
 	
@@ -94,11 +95,11 @@ public class LectureBlocksStep extends BasicStep {
 		// Stepcollection
 		if (stepCollection == null) {
 			stepCollection = new BasicStepCollection();
-			stepCollection.setTitle(getTranslator(), "steps.additional");
+			stepCollection.setTitle(getTranslator(), "additional.settings");
 		}
 		setStepCollection(stepCollection);
 		
-		setNextStep(AssessmentModesStep.create(ureq, stepCollection, steps));
+		setNextStep(RemindersStep.create(ureq, stepCollection, steps));
 	}
 
 	@Override
@@ -159,6 +160,7 @@ public class LectureBlocksStep extends BasicStep {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.compulsory, new YesNoCellRenderer(getTranslator())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.locationElement));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.dateChooser));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.chosenTeachers));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teacherChooser));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
 
@@ -220,7 +222,7 @@ public class LectureBlocksStep extends BasicStep {
 					teachersLink.setUserObject(row);
 					
 					row.setTeacherChooserLink(teachersLink);
-					row.setTeachersList(block.getTeachers());
+					row.setTeachersList(filterTeachers(block.getTeachers(), context.getNewCoaches()));
 					
 					rows.add(row);
 				}
@@ -230,6 +232,23 @@ public class LectureBlocksStep extends BasicStep {
 			
 			tableModel.setObjects(context.getLectureBlockRows());
 			tableEl.reset(true, true, true);
+		}
+		
+		private List<Identity> filterTeachers(List<Identity> teachers, List<Identity> newCoaches) {
+			List<Identity> filteredTeachers = new ArrayList<>();
+			
+			if (teachers == null || teachers.isEmpty() || newCoaches == null || newCoaches.isEmpty()) {
+				return filteredTeachers;
+			}
+			
+			for (Identity teacher : teachers) {
+				if (newCoaches.contains(teacher)) {
+					filteredTeachers.add(teacher);
+				}
+			}
+			
+			
+			return filteredTeachers;
 		}
 		
 		@Override
@@ -285,6 +304,7 @@ public class LectureBlocksStep extends BasicStep {
 				cleanUp();
 			} else if (source == calloutCtrl) {
 				teacherCtrl.saveToContext();
+				tableEl.reloadData();
 				cleanUp();
 			}
 		}

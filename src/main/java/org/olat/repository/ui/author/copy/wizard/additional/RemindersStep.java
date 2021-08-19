@@ -75,15 +75,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RemindersStep extends BasicStep {
 
-	public static Step create(UserRequest ureq, CopyCourseSteps steps) {
+	public static Step create(UserRequest ureq, BasicStepCollection stepCollection, CopyCourseSteps steps) {
 		if (steps.isEditReminders()) {
-			return new RemindersStep(ureq, steps);
+			return new RemindersStep(ureq, steps, stepCollection);
 		} else {
-			return LectureBlocksStep.create(ureq, null, steps);
+			return AssessmentModesStep.create(ureq, stepCollection, steps);
 		}
 	}
 	
-	public RemindersStep(UserRequest ureq, CopyCourseSteps steps) {
+	public RemindersStep(UserRequest ureq, CopyCourseSteps steps, BasicStepCollection stepCollection) {
 		super(ureq);
 		
 		// Translator and title
@@ -91,11 +91,14 @@ public class RemindersStep extends BasicStep {
 		setI18nTitleAndDescr("reminders", null);
 	
 		// Stepcollection
-		BasicStepCollection stepCollection = new BasicStepCollection();
-		stepCollection.setTitle(getTranslator(), "steps.additional");
+		if (stepCollection == null) {
+			stepCollection = new BasicStepCollection();
+			stepCollection.setTitle(getTranslator(), "additional.settings");
+		}
+		
 		setStepCollection(stepCollection);
 		
-		setNextStep(LectureBlocksStep.create(ureq, stepCollection, steps));
+		setNextStep(AssessmentModesStep.create(ureq, stepCollection, steps));
 	}
 
 	@Override

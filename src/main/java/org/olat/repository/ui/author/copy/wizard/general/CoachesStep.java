@@ -22,13 +22,10 @@ package org.olat.repository.ui.author.copy.wizard.general;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserSearchFlexiController;
 import org.olat.admin.user.UserSearchFlexiTableModel;
 import org.olat.admin.user.UserTableDataModel;
-import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
@@ -61,9 +58,6 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.group.manager.MemberViewQueries;
-import org.olat.group.model.MemberView;
-import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
@@ -83,7 +77,7 @@ public class CoachesStep extends BasicStep {
 		if (steps.isEditCoaches()) {
 			return new CoachesStep(ureq, stepCollection, steps);
 		} else {
-			return CatalogStep.create(ureq, stepCollection, steps);
+			return GroupStep.create(ureq, stepCollection, steps);
 		}
 	}
 	
@@ -95,11 +89,11 @@ public class CoachesStep extends BasicStep {
 		
 		if (stepCollection == null) {
 			stepCollection = new BasicStepCollection();
-			stepCollection.setTitle(getTranslator(), "steps.general.title");
+			stepCollection.setTitle(getTranslator(), "members.management");
 		}
 		setStepCollection(stepCollection);
 		
-		setNextStep(CatalogStep.create(ureq, stepCollection, steps));
+		setNextStep(GroupStep.create(ureq, stepCollection, steps));
 	}
 
 	@Override
@@ -129,13 +123,9 @@ public class CoachesStep extends BasicStep {
 		
 		@Autowired
 		private UserManager userManager;
-		@Autowired
-		private MemberViewQueries memberViewQueries;
-		@Autowired
-		private BaseSecurityManager securityManager;
 				
 		public CoachesStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
-			super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT_2_10, null);
+			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 			
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
@@ -181,6 +171,7 @@ public class CoachesStep extends BasicStep {
 			SelectionValues copyCoachesModes = new SelectionValues(copy, replace);
 			
 			coachesCopyModeEl = uifactory.addRadiosHorizontal("coaches", formLayout, copyCoachesModes.keys(), copyCoachesModes.values());
+			coachesCopyModeEl.addActionListener(FormEvent.ONCHANGE);
 			coachesCopyModeEl.setAllowNoSelection(false);
 			
 			addCoachesLink = uifactory.addFormLink("coaches.add.new", formLayout, Link.BUTTON_XSMALL);
@@ -217,14 +208,6 @@ public class CoachesStep extends BasicStep {
 			
 			if (context.getNewCoaches() != null) {
 				reloadModel(context.getNewCoaches());
-			} else {
-				List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
-				SearchMembersParams params = new SearchMembersParams(false, GroupRoles.coach);
-				List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(context.getSourceRepositoryEntry(), params, userPropertyHandlers, getLocale());
-				List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
-				List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
-				
-				reloadModel(coaches);
 			}	
 		}
 		
@@ -237,6 +220,14 @@ public class CoachesStep extends BasicStep {
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == addCoachesLink) {
 				showUserSelector(ureq);
+			} else if (source ==  coachesCopyModeEl) {
+				if (coachesCopyModeEl.getSelectedKey().equals(CopyType.ignore.name())) {
+					tableEl.setVisible(false);
+					addCoachesLink.setVisible(false);
+				} else {
+					tableEl.setVisible(true);
+					addCoachesLink.setVisible(true);
+				}
 			} else if (source == tableEl) {
 				if (event.getCommand().equals("remove")) {
 					SelectionEvent se = (SelectionEvent) event;

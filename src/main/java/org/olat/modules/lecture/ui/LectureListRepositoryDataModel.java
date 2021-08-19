@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.id.Identity;
 import org.olat.modules.lecture.model.LectureBlockRow;
 
 /**
@@ -74,8 +77,25 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case dateChooser: return row.getDateChooser();
 			case teacherChooser: return row.getTeacherChooserLink();
 			case locationElement: return row.getLocationElement();
+			case chosenTeachers: return transformIdentitiesToString(row.getTeachersList());
 			default: return null;
 		}
+	}
+	
+	private String transformIdentitiesToString(List<Identity> identities) {
+		if (identities == null || identities.isEmpty()) {
+			return null;
+		}
+		
+		List<String> names = new ArrayList<>();
+		
+		for (Identity identity : identities) {
+			names.add(identity.getUser().getFirstName() + " " + identity.getUser().getLastName());
+		}
+		
+		Collections.sort(names);
+		
+		return String.join(", ", names);
 	}
 	
 	@Override
@@ -96,7 +116,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		compulsory("table.header.compulsory.long"),
 		assessmentMode("table.header.assessment.mode"),
 		dateChooser("lecture.date"),
-		teacherChooser("table.header.teachers"),
+		chosenTeachers("table.header.teachers"),
+		teacherChooser("table.header.teachers.edit"),
 		locationElement("lecture.location");
 		
 		private final String i18nKey;

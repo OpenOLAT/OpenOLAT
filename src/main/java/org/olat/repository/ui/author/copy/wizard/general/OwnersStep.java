@@ -36,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -44,8 +43,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -65,7 +62,6 @@ import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.MemberView;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
-import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
 import org.olat.user.UserManager;
@@ -79,11 +75,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OwnersStep extends BasicStep {
 
-	public static Step create(UserRequest ureq, BasicStepCollection stepCollection, CopyCourseSteps steps) {
+	public static Step create(UserRequest ureq, CopyCourseSteps steps) {
 		if (steps.isEditOwners()) {
-			return new OwnersStep(ureq, stepCollection, steps);
+			return new OwnersStep(ureq, null, steps);
 		} else {
-			return CoachesStep.create(ureq, stepCollection, steps);
+			return CoachesStep.create(ureq, null, steps);
 		}
 	}
 	
@@ -95,7 +91,7 @@ public class OwnersStep extends BasicStep {
 		
 		if (stepCollection == null) {
 			stepCollection = new BasicStepCollection();
-			stepCollection.setTitle(getTranslator(), "steps.general.title");
+			stepCollection.setTitle(getTranslator(), "members.management");
 		}
 		setStepCollection(stepCollection);
 		
@@ -118,8 +114,6 @@ public class OwnersStep extends BasicStep {
 		
 		private CopyCourseContext context;
 		
-		private SingleSelection ownersCopyModeEl;
-		
 		private FormLink addOwnersLink;
 		private FlexiTableElement tableEl;
 		private UserSearchFlexiTableModel tableModel;
@@ -135,7 +129,7 @@ public class OwnersStep extends BasicStep {
 		private BaseSecurityManager securityManager;
 				
 		public OwnersStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
-			super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT_2_10, null);
+			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 			
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
@@ -152,22 +146,7 @@ public class OwnersStep extends BasicStep {
 		}
 		
 		@Override
-		protected boolean validateFormLogic(UserRequest ureq) {
-			boolean allOk = super.validateFormLogic(ureq);
-			
-			ownersCopyModeEl.clearError();
-			
-			if (!ownersCopyModeEl.isOneSelected()) {
-				allOk &= false;
-				ownersCopyModeEl.setErrorKey("error.select", null);
-			}
-			
-			return allOk;
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
-			context.setCustomOwnersCopyType(CopyType.valueOf(ownersCopyModeEl.getSelectedKey()));
 			context.setNewOwners(tableModel.getObjects());
 			
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
@@ -175,15 +154,6 @@ public class OwnersStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"));
-			SelectionValue replace = new SelectionValue(CopyType.replace.name(), translate("owners.options.replace", new String[] { ureq.getUserSession().getIdentity().getUser().getFirstName() + " " + ureq.getUserSession().getIdentity().getUser().getLastName() }));
-			
-			SelectionValues copyOwnerModes = new SelectionValues(copy, replace);
-			
-			ownersCopyModeEl = uifactory.addRadiosHorizontal("owners", formLayout, copyOwnerModes.keys(), copyOwnerModes.values());
-			ownersCopyModeEl.setAllowNoSelection(false);
-			ownersCopyModeEl.addActionListener(FormEvent.ONCHANGE);
-			
 			addOwnersLink = uifactory.addFormLink("owners.add.new", formLayout, Link.BUTTON_XSMALL);
 			
 			FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -201,7 +171,9 @@ public class OwnersStep extends BasicStep {
 			}
 			
 			// Remove column
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
+			DefaultFlexiColumnModel removeColumn = new DefaultFlexiColumnModel("remove", translate("remove"), "remove");
+			removeColumn.setCellRenderer(new OwnersRemoveRenderer(getIdentity(), translate("remove"), "remove"));
+			tableColumnModel.addFlexiColumnModel(removeColumn);
 			
 			Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 			tableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, getLocale(), tableColumnModel);
@@ -210,12 +182,6 @@ public class OwnersStep extends BasicStep {
 		}
 		
 		private void loadData() {
-			if (context.getCustomOwnersCopyType() != null) {
-				ownersCopyModeEl.select(context.getCustomOwnersCopyType().name(), true);
-			} else {
-				ownersCopyModeEl.select(CopyType.copy.name(), true);
-			}
-			
 			if (context.getNewOwners() != null) {
 				reloadModel(context.getNewOwners());
 			} else {
@@ -223,9 +189,15 @@ public class OwnersStep extends BasicStep {
 				SearchMembersParams params = new SearchMembersParams(false, GroupRoles.owner);
 				List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(context.getSourceRepositoryEntry(), params, userPropertyHandlers, getLocale());
 				List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
-				List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
+				List<Identity> owners = securityManager.loadIdentityByKeys(identityKeys);
 				
-				reloadModel(coaches);
+				if (owners.contains(getIdentity())) {
+					owners.remove(getIdentity());
+				} 
+				
+				owners.add(0, getIdentity());
+				
+				reloadModel(owners);
 			}	
 		}
 		
@@ -246,9 +218,6 @@ public class OwnersStep extends BasicStep {
 					tableModel.setObjects(identities);
 					tableEl.reset();
 				}
-			} else if (source == ownersCopyModeEl) {
-				tableEl.setVisible(!ownersCopyModeEl.isKeySelected(CopyType.replace.name()));
-				addOwnersLink.setVisible(!ownersCopyModeEl.isKeySelected(CopyType.replace.name()));
 			}
 			
 			super.formInnerEvent(ureq, source, event);

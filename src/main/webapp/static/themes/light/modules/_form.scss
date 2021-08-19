@@ -315,6 +315,10 @@
 	}
 	
 	.btn.active {
+		&.o_primary {
+			color: $btn-primary-color;
+			background-color: $btn-primary-bg;
+		}
 		&.o_dark_blue {
 			background-color: $o-selection-dark-blue;
 		}
