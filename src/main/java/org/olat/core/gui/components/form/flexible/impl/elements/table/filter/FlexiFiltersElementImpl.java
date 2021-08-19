@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.choice.Choice;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -38,7 +41,9 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabsElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.RemoveFiltersEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -47,6 +52,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -58,21 +64,29 @@ import org.olat.core.gui.translator.Translator;
 public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCollection, ControllerEventListener, ComponentEventListener {
 
 	private final WindowControl wControl;
+	private final DropdownItem moreMenu;
 	private final FormLink addFiltersButton;
 	private final FormLink resetFiltersButton;
 	private final FormLink collpaseFiltersButton;
+	private final FormLink saveFilterLink;
+	private final FormLink updateFilterLink;
+	private final FormLink deleteFilterLink;
 	private final FlexiFiltersComponent component;
 	private final List<FlexiFilterButton> filterButtons = new ArrayList<>();
 	private Map<String,FormItem> components = new HashMap<>();
 	private final FlexiTableElementImpl tableEl;
 	
 	private Controller filterCtrl;
+	private CloseableModalController cmc;
+	private SaveFilterController saveCtrl;
+	private UpdateFilterController updateCtrl;
+	private ConfirmDeleteFilterController deleteCtrl;
 	private CloseableCalloutWindowController filtersCallout;
 	private CloseableCalloutWindowController addFiltersCallout;
 	
 	private int count = 0;
 	private boolean alwaysOn;
-	private boolean expanded = true;
+	private boolean expanded = false;
 	
 	public FlexiFiltersElementImpl(WindowControl wControl, String name, FlexiTableElementImpl tableEl, Translator translator) {
 		super(name);
@@ -99,6 +113,31 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		collpaseFiltersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details_collaps");
 		collpaseFiltersButton.setTranslator(translator);
 		components.put("rCollpaseFiltersButton", collpaseFiltersButton);
+		
+		saveFilterLink = new FormLinkImpl(dispatchId.concat("_saveFilterLink"), "rSaveFilterLink", "custom.filter.save", Link.LINK);
+		saveFilterLink.setDomReplacementWrapperRequired(false);
+		saveFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_save");
+		saveFilterLink.setTranslator(translator);
+		components.put("rSaveFilterLink", saveFilterLink);
+		
+		updateFilterLink = new FormLinkImpl(dispatchId.concat("_updateFilterLink"), "rUpdateFilterLink", "custom.filter.update", Link.LINK);
+		updateFilterLink.setDomReplacementWrapperRequired(false);
+		updateFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_update");
+		updateFilterLink.setTranslator(translator);
+		components.put("rUpdateFilterLink", updateFilterLink);
+		
+		deleteFilterLink = new FormLinkImpl(dispatchId.concat("_deleteFilterLink"), "rDeleteFilterLink", "custom.filter.delete", Link.LINK);
+		deleteFilterLink.setDomReplacementWrapperRequired(false);
+		deleteFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		deleteFilterLink.setTranslator(translator);
+		components.put("rDeleteFilterLink", deleteFilterLink);
+		
+		moreMenu = new DropdownItem(dispatchId.concat("_moreMenu"), "", component.getTranslator());
+		moreMenu.setCarretIconCSS("o_icon o_icon_commands");
+		moreMenu.setOrientation(DropdownOrientation.right);
+		moreMenu.setExpandContentHeight(true);
+		moreMenu.setEmbbeded(true);
+		moreMenu.setButton(true);
 	}
 	
 	public boolean isExpanded() {
@@ -141,6 +180,21 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		return collpaseFiltersButton;
 	}
 	
+	protected DropdownItem getMoreMenu() {
+		if(moreMenu.size() == 0) {
+			moreMenu.addElement(saveFilterLink);
+			moreMenu.addElement(deleteFilterLink);
+			moreMenu.addElement(updateFilterLink);
+		}
+		if(tableEl.getFilterTabsElement() != null) {
+			FlexiFiltersTab selectTab = tableEl.getFilterTabsElement().getSelectedTab();
+			deleteFilterLink.setVisible(selectTab.getId().startsWith("custom_"));
+			updateFilterLink.setVisible(selectTab.getId().startsWith("custom_"));
+		}
+		
+		return moreMenu;
+	}
+	
 	public List<FlexiFilterButton> getFiltersButtons() {
 		for(FlexiFilterButton filterButton:filterButtons) {
 			boolean visible = filterButton.isEnabled() && !filterButton.isImplicit();
@@ -176,6 +230,43 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			selectedFilters.add((FlexiTableFilter)filterButton.getFilter());
 		}
 		return selectedFilters;
+	}
+	
+	/**
+	 * Save the current filters settings to a preset.
+	 * 
+	 * @param preset The target to save the settings to
+	 * @param implicit true to save implicit list too
+	 */
+	public void saveCurrentSettingsTo(FlexiFilterTabPreset preset, boolean implicit) {
+		List<String> enabledFilters = new ArrayList<>();
+		List<String> implicitFilters = new ArrayList<>();
+		List<FlexiTableFilterValue> filterValues = new ArrayList<>();
+		
+		for(FlexiFilterButton filterButton:getFiltersButtons()) {
+			filterButton.setChanged(false);
+			
+			FlexiTableExtendedFilter filter = filterButton.getFilter();
+			if(filterButton.isEnabled()) {
+				enabledFilters.add(filter.getFilter());
+			}
+			if(implicit && filterButton.isImplicit()) {
+				implicitFilters.add(filter.getFilter());
+			}
+			
+			Serializable val;
+			if(filter instanceof FlexiTableMultiSelectionFilter) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				val = values == null ? null : new ArrayList<>(values);
+			} else {
+				val = filter.getValue();
+			}
+			filterValues.add(new FlexiTableFilterValue(filter.getFilter(), val));
+		}
+		
+		preset.setImplicitFilters(implicitFilters);
+		preset.setEnabledFilters(enabledFilters);
+		preset.setDefaultFiltersValues(filterValues);
 	}
 	
 	public void setFilters(List<FlexiTableExtendedFilter> filters) {
@@ -220,9 +311,19 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 				&& collpaseFiltersButton.getFormDispatchId().equals(dispatchuri)) {
 			expand(!expanded);
 			component.fireEvent(ureq, new ExpandFiltersEvent(expanded));
+		} else if(saveFilterLink != null
+				&& saveFilterLink.getFormDispatchId().equals(dispatchuri)) {
+			doSaveFilter(ureq);
+		} else if(updateFilterLink != null
+				&& updateFilterLink.getFormDispatchId().equals(dispatchuri)) {
+			doUpdateFilter(ureq);
+		} else if(deleteFilterLink != null
+				&& deleteFilterLink.getFormDispatchId().equals(dispatchuri)) {
+			doDeleteFilter(ureq);
 		} else {
 			for(FlexiFilterButton filterButton:filterButtons) {
 				if(filterButton.getButton().getFormDispatchId().equals(dispatchuri)) {
+					
 					doOpenFilter(ureq, filterButton.getButton(), filterButton.getFilter());
 				}
 			}
@@ -256,14 +357,36 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 				filtersCallout.deactivate();
 				cleanUp();
 			}
+		} else if(saveCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				component.fireEvent(ureq, new SaveCurrentPresetEvent(saveCtrl.getName()));
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(updateCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				component.fireEvent(ureq, new UpdateCurrentPresetEvent());
+			}
+			cmc.deactivate();
+			cleanUp();
+		}  else if(deleteCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				component.fireEvent(ureq, new DeleteCurrentPresetEvent());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(filtersCallout == source) {
 			cleanUp();
 		} else if(addFiltersCallout == source) {
+			cleanUp();
+		} else if(cmc == source) {
 			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
+		cmc = cleanUp(cmc);
+		saveCtrl = cleanUp(saveCtrl);
 		filterCtrl = cleanUp(filterCtrl);
 		filtersCallout = cleanUp(filtersCallout);
 		addFiltersCallout = cleanUp(addFiltersCallout);
@@ -297,6 +420,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		rootFormAvailable(addFiltersButton);
 		rootFormAvailable(resetFiltersButton);
 		rootFormAvailable(collpaseFiltersButton);
+		
+		rootFormAvailable(moreMenu);
+		rootFormAvailable(saveFilterLink);
+		rootFormAvailable(updateFilterLink);
+		rootFormAvailable(deleteFilterLink);
 		for(FormItem item:getFormItems()) {
 			rootFormAvailable(item);
 		}
@@ -313,11 +441,15 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		//
 	}
 	
-	public void setFiltersValues(List<String> implicitFilters, List<FlexiTableFilterValue> values, boolean reset) {
+	public void setFiltersValues(List<String> enabledFilters, List<String> implicitFilters, List<FlexiTableFilterValue> values, boolean reset) {
 		for(FlexiFilterButton filterButton:filterButtons) {
+			filterButton.setChanged(false);
 			FlexiTableExtendedFilter filter = filterButton.getFilter();
 			boolean implicit = (implicitFilters != null && implicitFilters.contains(filterButton.getFilter().getFilter()));
 			filterButton.setImplicit(implicit);
+			if(enabledFilters != null) {
+				filterButton.setEnabled(enabledFilters.contains(filter.getFilter()));
+			}
 			
 			boolean resetFilter = reset;
 			
@@ -347,7 +479,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private void doOpenFilter(UserRequest ureq, FormItem button, FlexiTableExtendedFilter filter) {
 		filterCtrl = filter.getController(ureq, wControl);
 		filterCtrl.addControllerListener(this);
-		
+
 		filtersCallout = new CloseableCalloutWindowController(ureq, wControl, filterCtrl.getInitialComponent(),
 				button.getFormDispatchId(), "", true, "", new CalloutSettings(false));
 		filtersCallout.addControllerListener(this);
@@ -357,11 +489,42 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private void doFilter(UserRequest ureq, FlexiTableExtendedFilter filter) {
 		for(FlexiFilterButton filterButton:filterButtons) {
 			if(filterButton.getFilter() == filter) {
+				filterButton.setChanged(true);
 				String label = filter.isSelected() ? filter.getDecoratedLabel() : filter.getLabel();
 				filterButton.getButton().getComponent().setCustomDisplayText(label);
 			}
 		}
 		component.fireEvent(ureq, new ChangeFilterEvent(filter));
+	}
+	
+	private void doSaveFilter(UserRequest ureq) {
+		saveCtrl = new SaveFilterController(ureq, wControl);
+		saveCtrl.addControllerListener(this);
+
+		String title = component.getTranslator().translate("custom.filter.save.title");
+		cmc = new CloseableModalController(wControl, "close", saveCtrl.getInitialComponent(), true, title, true);
+		cmc.activate();
+		cmc.addControllerListener(this);
+	}
+	
+	private void doUpdateFilter(UserRequest ureq) {
+		updateCtrl = new UpdateFilterController(ureq, wControl);
+		updateCtrl.addControllerListener(this);
+
+		String title = component.getTranslator().translate("custom.filter.update.title");
+		cmc = new CloseableModalController(wControl, "close", updateCtrl.getInitialComponent(), true, title, true);
+		cmc.activate();
+		cmc.addControllerListener(this);
+	}
+	
+	private void doDeleteFilter(UserRequest ureq) {
+		deleteCtrl = new ConfirmDeleteFilterController(ureq, wControl);
+		deleteCtrl.addControllerListener(this);
+
+		String title = component.getTranslator().translate("custom.filter.delete.title");
+		cmc = new CloseableModalController(wControl, "close", deleteCtrl.getInitialComponent(), true, title, true);
+		cmc.activate();
+		cmc.addControllerListener(this);
 	}
 	
 	private void doOpenAddFilter(UserRequest ureq, FormLink customButton) {

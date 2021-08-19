@@ -57,9 +57,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
@@ -303,30 +304,32 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 	
 	private void initFiltersPresets() {
-		List<String> filters = List.of();
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		// bookmarks
 		if(!guestOnly) {
 			bookmarkTab = FlexiFilterTabPreset.presetWithImplicitFilters("Bookmarks", translate("search.mark"),
-					filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")));
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")));
 			bookmarkTab.setElementCssClass("o_sel_mycourses_fav");
 			tabs.add(bookmarkTab);
 		}
 		
 		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.mycourses.student"),
-				filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		myTab.setElementCssClass("o_sel_mycourses_my");
 		tabs.add(myTab);
 		
 		closedTab = FlexiFilterTabPreset.presetWithImplicitFilters("Closed", translate("search.courses.closed"),
-				filters, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		closedTab.setElementCssClass("o_sel_mycourses_closed");
 		tabs.add(closedTab);
 		
 		// search
-		searchTab = new FlexiFilterTabPreset("Search", translate("search.courses.student"), filters);
+		searchTab = new FlexiFilterTabPreset("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
 		searchTab.setElementCssClass("o_sel_mycourses_search");
+		searchTab.setPosition(FlexiFilterTabPosition.right);
+		searchTab.setFiltersExpanded(true);
+		searchTab.setLargeSearch(true);
 		tabs.add(searchTab);
 		
 		tableEl.setFilterTabs(true, tabs);
@@ -507,8 +510,6 @@ public class RepositoryEntryListController extends FormBasicController
 			} else if(event instanceof FlexiTableFilterEvent) {
 				FlexiTableFilterEvent ftfe = (FlexiTableFilterEvent)event;
 				saveFilterPreferences(ureq, ftfe.getFilters());
-			} else if(event instanceof FlexiTableFilterTabEvent) {
-				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -645,22 +646,7 @@ public class RepositoryEntryListController extends FormBasicController
 	
 	protected void selectFilterTab(FlexiFiltersTab tab) {
 		if(tab == null) return;
-		
 		tableEl.setSelectedFilterTab(tab);
-		doSelectFilterTab(tab);
-	}
-	
-	private void doSelectFilterTab(FlexiFiltersTab tab) {
-		if(searchTab == tab) {
-			tableEl.expandFilters(true);
-			tableEl.setSearchEnabled(true, true);
-			model.clear();
-			tableEl.reset(true, true, false);
-		} else {
-			tableEl.expandFilters(false);
-			tableEl.setSearchEnabled(true, false);
-			tableEl.reloadData();
-		}
 	}
 	
 	private void doFilter(List<Filter> filters) {	

@@ -46,38 +46,64 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		
 		FlexiFilterTabsComponent tabCmp = (FlexiFilterTabsComponent)source;
 		FlexiFilterTabsElementImpl tabEl = tabCmp.getFlexiFilterTabsElement();
-		
-		Form theForm = tabEl.getRootForm();
-		String dispatchId = tabEl.getFormDispatchId();
-		FlexiFiltersTab selectedTab = tabEl.getSelectedTab();
-		
+
 		List<FlexiFiltersTab> tabs = tabEl.getFilterTabs();
+		List<FlexiFilterTabPreset> customTabs = tabEl.getCustomFilterTabs();
+		
 		sb.append("<div id=\"o_c").append(tabCmp.getDispatchID()).append("\" class='o_table_tabs'>")
 		  .append("<ul class='o_segments o_segments_tab btn-group' role='navigation'>");
-		for(FlexiFiltersTab tab:tabs) {
-			sb.append("<li>");
-			
-			String id = tabEl.getFormDispatchId();
-			String elementCssClass = tab.getElementCssClass();
-			
-			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
-			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, false, false, false,
-					  new NameValuePair("tab", tab.getId())))
-			  .append("\" class='btn btn-default").append(" btn-primary", selectedTab == tab)
-			  .append(" ", elementCssClass != null).append(elementCssClass, elementCssClass != null)
-			  .append("'><span>").append(tab.getLabel())
-			  .append("</span></a>");
-
-			sb.append("</li>");
+		if(tabs != null && !tabs.isEmpty()) {
+			for(FlexiFiltersTab tab:tabs) {
+				if(tab.getPosition() == null || tab.getPosition() == FlexiFilterTabPosition.left) {
+					renderTab(sb, tabEl, tab, false);
+				}
+			}
+		}
+		if(customTabs != null && !customTabs.isEmpty()) {
+			FlexiFiltersTab selectedTab = tabEl.getSelectedTab();
+			for(FlexiFiltersTab customTab:customTabs) {
+				boolean update = customTab == selectedTab && tabEl.hasFilterChanges();
+				renderTab(sb, tabEl, customTab, update);
+			}
+		}
+		if(tabs != null && !tabs.isEmpty()) {
+			for(FlexiFiltersTab tab:tabs) {
+				if(tab.getPosition() == FlexiFilterTabPosition.right) {
+					renderTab(sb, tabEl, tab, false);
+				}
+			}
 		}
 		sb.append("</ul>");
 		
 		Component cmp = tabEl.getRemoveFiltersButton().getComponent();
-		if(tabEl.hasNonImplicitFiltersSet()) {
+		if(tabEl.hasFilterChanges()) {
 			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, cmp.getTranslator(), renderResult, args);
 		}
 		cmp.setDirty(false);
 		
 		sb.append("</div>");	
+	}
+	
+	private void renderTab(StringOutput sb, FlexiFilterTabsElementImpl tabEl, FlexiFiltersTab tab, boolean update) {
+		Form theForm = tabEl.getRootForm();
+		String dispatchId = tabEl.getFormDispatchId();
+		FlexiFiltersTab selectedTab = tabEl.getSelectedTab();
+
+		sb.append("<li>");
+		
+		String id = tabEl.getFormDispatchId();
+		String elementCssClass = tab.getElementCssClass();
+		
+		sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, false, false, false,
+				  new NameValuePair("tab", tab.getId())))
+		  .append("\" class='btn btn-default").append(" btn-primary", selectedTab == tab)
+		  .append(" ", elementCssClass != null).append(elementCssClass, elementCssClass != null)
+		  .append("'><span>").append(tab.getLabel())
+		  .append("</span>")
+		  .append(" <i class='o_icon o_icon_update'> </i>", update)
+		  .append("</a>");
+
+		sb.append("</li>");
 	}
 }

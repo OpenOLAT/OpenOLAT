@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
@@ -31,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -60,8 +60,9 @@ public class AssessedIdentityListTableModel extends DefaultFlexiTableDataModel<A
 
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
-		if(StringHelper.containsNonWhitespace(key)) {
+		FlexiTableFilter filter = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0);
+		if(filter != null && filter.isSelected()) {
+			String key = ((FlexiTableExtendedFilter)filter).getValue();
 			List<AssessedIdentityElementRow> filteredRows = new ArrayList<>();
 			if("passed".equals(key)) {
 				for(AssessedIdentityElementRow row:backups) {

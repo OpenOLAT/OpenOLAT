@@ -278,8 +278,6 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public void setSearchEnabled(boolean enable);
 	
-	public void setSearchEnabled(boolean enable, boolean large);
-	
 	/**
 	 * Enable the search with a suggestions provider.
 	 * 

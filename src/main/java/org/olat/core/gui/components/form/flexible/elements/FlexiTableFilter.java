@@ -82,6 +82,10 @@ public class FlexiTableFilter {
 	public String getFilter() {
 		return filter;
 	}
+	
+	public String getValue() {
+		return selected ? filter : null; 
+	}
 
 	public boolean isShowAll() {
 		return showAll;

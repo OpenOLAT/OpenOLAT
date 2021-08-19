@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -52,6 +53,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 	private final FlexiFilterTabsComponent component;
 	
 	private List<FlexiFiltersTab> tabs;
+	private final List<FlexiFilterTabPreset> customTabs = new ArrayList<>();
 	private FlexiFiltersTab selectedTab;
 	private final FormLink removeFiltersButton;
 	private final FlexiTableElementImpl tableEl;
@@ -81,7 +83,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		return filtersEl != null && filtersEl.isEnabled() && filtersEl.isExpanded();
 	}
 	
-	protected boolean hasNonImplicitFiltersSet() {
+	protected boolean hasFilterChanges() {
 		FlexiFiltersElementImpl filtersEl = tableEl.getFiltersElement();
 		if(filtersEl == null) {
 			return false;
@@ -89,7 +91,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		
 		List<FlexiFilterButton> filterButtons = filtersEl.getFiltersButtons();
 		for(FlexiFilterButton filterButton:filterButtons) {
-			if(!filterButton.isImplicit() && filterButton.getFilter().isSelected()) {
+			if(!filterButton.isImplicit() && filterButton.isChanged()) {
 				return true;
 			}
 		}
@@ -108,12 +110,26 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		this.tabs = new ArrayList<>(tabs);
 	}
 	
+	public List<FlexiFilterTabPreset> getCustomFilterTabs() {
+		return customTabs;
+	}
+	
+	public void addCustomFilterTab(FlexiFilterTabPreset customPreset) {
+		customTabs.add(customPreset);
+		component.setDirty(true);
+	}
+	
 	public FlexiFiltersTab getSelectedTab() {
 		return selectedTab;
 	}
 	
 	public void setSelectedTab(FlexiFiltersTab selectedTab) {
 		this.selectedTab = selectedTab;
+		component.setDirty(true);
+	}
+	
+	public void removeSelectedTab(FlexiFiltersTab tab) {
+		customTabs.remove(tab);
 		component.setDirty(true);
 	}
 	
@@ -128,15 +144,33 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		} else if(getFormDispatchId().equals(dispatchuri)) {
 			String selectTabId = form.getRequestParameter("tab");
 			if(selectTabId != null) {
-				for(FlexiFiltersTab tab:tabs) {
-					if(tab.getId().equals(selectTabId)) {
-						setSelectedTab(tab);
-						component.fireEvent(ureq, new SelectFilterTabEvent(tab));
-						component.setDirty(true);
-					}
+				FlexiFiltersTab tab = getTabById(selectTabId);
+				if(tab != null) {
+					setSelectedTab(tab);
+					component.fireEvent(ureq, new SelectFilterTabEvent(tab));
+					component.setDirty(true);
 				}
 			}
 		}
+	}
+	
+	private FlexiFiltersTab getTabById(String id) {
+		if(!StringHelper.containsNonWhitespace(id)) {
+			return null;
+		}
+		
+		for(FlexiFiltersTab tab:tabs) {
+			if(tab.getId().equals(id)) {
+				return tab;
+			}
+		}
+		
+		for(FlexiFiltersTab tab:customTabs) {
+			if(tab.getId().equals(id)) {
+				return tab;
+			}
+		}
+		return null;
 	}
 	
 	@Override

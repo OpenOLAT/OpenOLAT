@@ -17,41 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.author;
+package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableStateEntry;
-import org.olat.core.id.context.StateEntry;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 02.09.2014<br>
+ * Initial date: 18 août 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthorListState implements StateEntry {
+public class UpdateCurrentPresetEvent extends Event {
 
-	private static final long serialVersionUID = 8818839391972945659L;
-	
-	private FlexiTableStateEntry tableState;
-	
-	public AuthorListState() {
-		//
-	}
+	private static final long serialVersionUID = 1908474938399012369L;
+	public static final String UPDATE_CURRENT_PRESET = "update-current-preset";
 
-	public FlexiTableStateEntry getTableState() {
-		return tableState;
-	}
-
-	public void setTableState(FlexiTableStateEntry tableState) {
-		this.tableState = tableState;
-	}
-
-	@Override
-	public AuthorListState clone() {
-		AuthorListState clone = new AuthorListState();
-		if(tableState != null) {
-			clone.tableState = tableState.clone();
-		}
-		return clone;
+	public UpdateCurrentPresetEvent() {
+		super(UPDATE_CURRENT_PRESET);
 	}
 }

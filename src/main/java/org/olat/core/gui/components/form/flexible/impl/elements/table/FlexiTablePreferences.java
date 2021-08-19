@@ -22,6 +22,8 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import java.io.Serializable;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
+
 /**
  * 
  * Initial date: 27.05.2014<br>
@@ -36,14 +38,17 @@ public class FlexiTablePreferences implements Serializable {
 	private boolean sortDirection;
 	private String sortedColumnKey;
 	private List<String> enabledColumnKey;
+	private List<FlexiFilterTabPreset> customTabs;
 	private FlexiTableRendererType rendererType;
 	
 	public FlexiTablePreferences(int pageSize, String sortedColumnKey, boolean sortDirection,
-			List<String> enabledColumnKey, FlexiTableRendererType rendererType) {
+			List<String> enabledColumnKey, List<FlexiFilterTabPreset> customTabs,
+			FlexiTableRendererType rendererType) {
 		this.pageSize = pageSize;
 		this.sortedColumnKey = sortedColumnKey;
 		this.sortDirection = sortDirection;
 		this.enabledColumnKey = enabledColumnKey;
+		this.customTabs = customTabs;
 		this.rendererType = rendererType;
 	}
 
@@ -77,6 +82,10 @@ public class FlexiTablePreferences implements Serializable {
 
 	public void setEnabledColumnKeys(List<String> enabledColumnKey) {
 		this.enabledColumnKey = enabledColumnKey;
+	}
+	
+	public List<FlexiFilterTabPreset> getCustomTabs() {
+		return customTabs;
 	}
 
 	public FlexiTableRendererType getRendererType() {

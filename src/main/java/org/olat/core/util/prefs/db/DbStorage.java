@@ -113,7 +113,8 @@ public class DbStorage implements PreferencesStorage {
 			// OLAT-6429 detect and delete multiple prefs objects, keep the first one only 
 			List<Property> guiPropertyList = PropertyManager.getInstance().findProperties(identity, null, null, null, USER_PROPERTY_KEY); 
 			if (guiPropertyList != null && !guiPropertyList.isEmpty()) {
-				 log.warn("Found more than 1 entry for " + USER_PROPERTY_KEY + " in o_property table for identity " + identity.getKey() + ". Use first of them, deleting the others!", e); 
+				 log.warn("Found more than 1 entry for {} in o_property table for identity {}. Use first of them, deleting the others!",
+						 USER_PROPERTY_KEY, identity.getKey(), e); 
 				 Iterator<Property> iterator = guiPropertyList.iterator();
 				 guiProperty = iterator.next();
 				 while (iterator.hasNext()) { 
@@ -131,6 +132,7 @@ public class DbStorage implements PreferencesStorage {
 		try {
 			prefs = createDbPrefsFrom(identity, guiProperty.getTextValue());
 		} catch (Exception e) {
+			log.error("", e);
 			prefs = doGuiPrefsMigration( guiProperty, identity);
 		}
 		return prefs;
@@ -151,7 +153,7 @@ public class DbStorage implements PreferencesStorage {
 
 	private DbPrefs doGuiPrefsMigration(Property guiProperty, Identity identity) {
 		String migratedTextValue = doCalendarRefactoringMigration(guiProperty.getTextValue());
-		// add new migration methode here 
+		// add new migration method here 
 		try {
 			return createDbPrefsFrom(identity, migratedTextValue);
 		} catch (Exception e) {

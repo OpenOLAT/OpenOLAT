@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -41,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.Resourceable;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -70,6 +72,8 @@ import org.olat.user.UserManager;
  *
  */
 public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<AuthoringEntryRow> {
+	
+	private static final Logger log = Tracing.createLoggerFor(AuthoringEntryDataSource.class);
 
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
 	
@@ -239,7 +243,9 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 					searchParams.setResourceUsage(null);
 				}
 				break;
-				
+			default:
+				log.warn("Unkown author filter: {}", filter.getFilter());
+				break;	
 		}
 	}
 

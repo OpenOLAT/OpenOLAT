@@ -34,6 +34,7 @@ public class FlexiFilterButton {
 	private final FlexiTableExtendedFilter filter;
 	
 	private boolean enabled;
+	private boolean changed = false;
 	private boolean implicit = false;
 	
 	public FlexiFilterButton(FormLink button, FlexiTableExtendedFilter filter, boolean enabled) {
@@ -44,6 +45,14 @@ public class FlexiFilterButton {
 	
 	public boolean isEnabled() {
 		return enabled;
+	}
+
+	public boolean isChanged() {
+		return changed;
+	}
+
+	public void setChanged(boolean changed) {
+		this.changed = changed;
 	}
 
 	/**

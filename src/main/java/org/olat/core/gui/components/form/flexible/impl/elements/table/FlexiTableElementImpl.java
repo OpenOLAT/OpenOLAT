@@ -60,14 +60,19 @@ import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleterImp
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.ChangeFilterEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.DeleteCurrentPresetEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.ExpandFiltersEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFiltersElementImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.SaveCurrentPresetEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.UpdateCurrentPresetEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabsElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.RemoveFiltersEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.SelectFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -80,6 +85,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -160,7 +166,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FlexiTableSortOptions sortOptions;
 	private List<FlexiTableFilter> filters;
 	private boolean multiFilterSelection = false;
-	private Object selectedObj;
 	private boolean allSelectedNeedLoadOfWholeModel = false;
 	private Map<Integer,Object> multiSelectedIndex;
 	private boolean multiDetails = false;
@@ -624,13 +629,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public void setSearchEnabled(boolean enable) {
-		setSearchEnabled(enable, false);
-	}
-
-	@Override
-	public void setSearchEnabled(boolean enable, boolean large) {
 		this.searchEnabled = enable;
-		this.searchLarge = large;
 		if(searchEnabled) {
 			String dispatchId = component.getDispatchID();
 			if(searchFieldEl == null) {
@@ -759,10 +758,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	@Override
 	public void setFiltersValues(String quickSearch, List<FlexiTableFilterValue> values) {
-		setFiltersValues(quickSearch, null, values);
+		setFiltersValues(quickSearch, null, null, values);
 	}
 	
-	private void setFiltersValues(String quickSearch, List<String> implicitFilters, List<FlexiTableFilterValue> values) {
+	private void setFiltersValues(String quickSearch, List<String> enabledFilters, List<String> implicitFilters, List<FlexiTableFilterValue> values) {
 		if(searchFieldEl != null) {
 			if(StringHelper.containsNonWhitespace(quickSearch)) {
 				searchFieldEl.setValue(quickSearch);
@@ -771,13 +770,38 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		}
 		if(filtersEl != null) {
-			filtersEl.setFiltersValues(implicitFilters, values, true);
+			filtersEl.setFiltersValues(enabledFilters, implicitFilters, values, true);
 		}
 	}
 
 	@Override
 	public void expandFilters(boolean expand) {
 		filtersEl.expand(expand);
+	}
+	
+	private void doSaveCurrentPreset(UserRequest ureq, String name) {
+		if(filterTabsEl == null || filtersEl == null) return;
+
+		String id = "custom_" + CodeHelper.getForeverUniqueID();
+		FlexiFilterTabPreset newPreset = new FlexiFilterTabPreset(id, name, TabSelectionBehavior.reloadData);
+		filtersEl.saveCurrentSettingsTo(newPreset, false);
+		filterTabsEl.addCustomFilterTab(newPreset);
+		filterTabsEl.setSelectedTab(newPreset);
+		saveCustomSettings(ureq);
+	}
+	
+	private void doUpdateCurrentPreset(UserRequest ureq) {
+		if(filterTabsEl == null || !(filterTabsEl.getSelectedTab() instanceof FlexiFilterTabPreset) || filtersEl == null) return;
+		
+		FlexiFilterTabPreset preset = (FlexiFilterTabPreset)filterTabsEl.getSelectedTab();
+		filtersEl.saveCurrentSettingsTo(preset, false);
+		saveCustomSettings(ureq);
+	}
+	
+	private void doDeleteCurrentPreset(UserRequest ureq) {
+		FlexiFiltersTab selectedTab = filterTabsEl.getSelectedTab();
+		filterTabsEl.removeSelectedTab(selectedTab);
+		saveCustomSettings(ureq);
 	}
 
 	public FlexiFilterTabsElementImpl getFilterTabsElement() {
@@ -811,9 +835,23 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void setSelectedFilterTab(FlexiFiltersTab tab) {
 		doUnSelectAll();
 		filterTabsEl.setSelectedTab(tab);
+		if(tab.isFiltersExpanded() && filtersEl != null) {
+			filtersEl.expand(true);
+		}
+		searchLarge = tab.isLargeSearch();
+
 		if(tab instanceof FlexiFiltersPreset) {
 			FlexiFiltersPreset preset = (FlexiFiltersPreset)tab;
-			setFiltersValues(null, preset.getImplicitFilters(), preset.getDefaultFiltersValues());
+			setFiltersValues(null, preset.getEnabledFilters(), preset.getImplicitFilters(), preset.getDefaultFiltersValues());
+		}
+		
+		if(tab.getSelectionBehavior() == TabSelectionBehavior.reloadData) {
+			reloadData();
+		} else if(tab.getSelectionBehavior() == TabSelectionBehavior.clear) {
+			if(dataModel instanceof FlexiTableDataSource) {
+				((FlexiTableDataSource<?>)dataModel).clear();
+				reset(true, true, false);
+			}
 		}
 	}
 
@@ -905,14 +943,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	public FormItem getCustomButton() {
 		return customButton;
-	}
-
-	public Object getSelectedObj() {
-		return selectedObj;
-	}
-
-	public void setSelectedObj(Object selectedObj) {
-		this.selectedObj = selectedObj;
 	}
 
 	@Override
@@ -1066,9 +1096,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			int index = selectedIndex.lastIndexOf('-');
 			if(index > 0 && index+1 < selectedIndex.length()) {
 				String pos = selectedIndex.substring(index+1);
-				int selectedPosition = Integer.parseInt(pos);
-				selectedObj = dataModel.getObject(selectedPosition);
-				doSelect(ureq, selectedPosition);
+				doSelect(ureq, Integer.parseInt(pos));
 			}
 		} else if(StringHelper.containsNonWhitespace(resetQuickSearch)) {
 			resetQuickSearch(ureq);
@@ -1198,6 +1226,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				filterTabsEl.getComponent().setDirty(true);
 			} else if(event instanceof RemoveFiltersEvent) {
 				resetFiltersSearch(ureq);
+			} else if(event instanceof SaveCurrentPresetEvent) {
+				doSaveCurrentPreset(ureq, ((SaveCurrentPresetEvent)event).getName());
+			} else if(event instanceof UpdateCurrentPresetEvent) {
+				doUpdateCurrentPreset(ureq);
+			} else if(event instanceof DeleteCurrentPresetEvent) {
+				doDeleteCurrentPreset(ureq);
 			}
 		} else if(source instanceof Choice) {
 			if(Choice.EVNT_VALIDATION_OK.equals(event)) {
@@ -1599,10 +1633,19 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					}
 				}
 			}
+			
+			List<FlexiFilterTabPreset> presets = null;
+			if(filterTabsEl != null) {
+				List<FlexiFilterTabPreset> customTabs = filterTabsEl.getCustomFilterTabs();
+				presets = new ArrayList<>(customTabs.size());
+				for(FlexiFilterTabPreset customTab:customTabs) {
+					presets.add(customTab);
+				}
+			}
 
 			FlexiTablePreferences tablePrefs =
 					new FlexiTablePreferences(getPageSize(), sortedColKey, sortDirection,
-							convertColumnIndexToKeys(enabledColumnIndex), rendererType);
+							convertColumnIndexToKeys(enabledColumnIndex), presets, rendererType);
 			prefs.putAndSave(FlexiTableElement.class, persistentId, tablePrefs);
 		}
 	}
@@ -1621,26 +1664,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 				
 				if(StringHelper.containsNonWhitespace(tablePrefs.getSortedColumnKey())) {
-					String sortKey = null;
-					String columnKey = tablePrefs.getSortedColumnKey();
-					FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
-					for(int i=colModel.getColumnCount(); i-->0; ) {
-						FlexiColumnModel col = colModel.getColumnModel(i);
-						if(columnKey.equals(col.getColumnKey()) && col.isSortable()) {
-							sortKey = col.getSortKey();
-						}
-					}
-					if(sortKey == null && sortOptions != null && sortOptions.getSorts() != null) {
-						for(FlexiTableSort sortOption :sortOptions.getSorts()) {
-							if(sortOption.getSortKey().getKey().equals(columnKey)) {
-								sortKey = columnKey;
-							}
-						}
-					}
-					
-					if(sortKey != null) {
-						orderBy = new SortKey[]{ new SortKey(sortKey, tablePrefs.isSortDirection()) };
-						selectSortOption(sortKey, tablePrefs.isSortDirection());
+					loadCustomColumnsSettings(tablePrefs);
+				}
+				
+				if(tablePrefs.getCustomTabs() != null && filterTabsEl != null) {
+					for(FlexiFilterTabPreset customTab:tablePrefs.getCustomTabs()) {
+						filterTabsEl.addCustomFilterTab(customTab);
 					}
 				}
 
@@ -1648,6 +1677,30 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					setRendererType(tablePrefs.getRendererType());
 				}
 			}
+		}
+	}
+	
+	private void loadCustomColumnsSettings(FlexiTablePreferences tablePrefs) {
+		String sortKey = null;
+		String columnKey = tablePrefs.getSortedColumnKey();
+		FlexiTableColumnModel colModel = dataModel.getTableColumnModel();
+		for(int i=colModel.getColumnCount(); i-->0; ) {
+			FlexiColumnModel col = colModel.getColumnModel(i);
+			if(columnKey.equals(col.getColumnKey()) && col.isSortable()) {
+				sortKey = col.getSortKey();
+			}
+		}
+		if(sortKey == null && sortOptions != null && sortOptions.getSorts() != null) {
+			for(FlexiTableSort sortOption :sortOptions.getSorts()) {
+				if(sortOption.getSortKey().getKey().equals(columnKey)) {
+					sortKey = columnKey;
+				}
+			}
+		}
+		
+		if(sortKey != null) {
+			orderBy = new SortKey[]{ new SortKey(sortKey, tablePrefs.isSortDirection()) };
+			selectSortOption(sortKey, tablePrefs.isSortDirection());
 		}
 	}
 	
@@ -1882,7 +1935,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			FlexiFiltersTab tab = filterTabsEl.getSelectedTab();
 			if(tab instanceof FlexiFiltersPreset) {
 				FlexiFiltersPreset preset = (FlexiFiltersPreset)tab;
-				filtersEl.setFiltersValues(preset.getImplicitFilters(), preset.getDefaultFiltersValues(), true);
+				filtersEl.setFiltersValues(preset.getEnabledFilters(), preset.getImplicitFilters(), preset.getDefaultFiltersValues(), true);
 			}
 			filterTabsEl.getComponent().setDirty(true);
 		}

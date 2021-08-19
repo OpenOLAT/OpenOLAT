@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.render.RenderResult;
@@ -65,6 +66,8 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 				ffE.getAddFiltersButton().getComponent().setDirty(false);
 			} else {
 				sb.append("<ul class='nav nav-pills o_table_filters_config'>");
+				DropdownItem moreMenu = ffE.getMoreMenu();
+				renderFormItem(renderer, sb, moreMenu, "pull-right", args);
 				FormLink resetLink = ffE.getResetFiltersButton();
 				resetLink.setVisible(!ffE.isTabsEnabled());
 				renderFormItem(renderer, sb, resetLink, "pull-right", args);

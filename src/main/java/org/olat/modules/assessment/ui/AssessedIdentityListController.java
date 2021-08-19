@@ -257,18 +257,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 		params.setAssessmentStatus(assessmentStatus);
 		
+		// learn resources cannot have business groups or curriculums
 		List<Long> businessGroupKeys = null;
-		//TODO table
-		/*
-		if(extendedFilters != null && !extendedFilters.isEmpty()) {
-			businessGroupKeys = new ArrayList<>(extendedFilters.size());
-			for(FlexiTableFilter extendedFilter:extendedFilters) {
-				if(StringHelper.isLong(extendedFilter.getFilter())) {
-					businessGroupKeys.add(Long.parseLong(extendedFilter.getFilter()));
-				}
-			}
-		}
-		*/
 		params.setBusinessGroupKeys(businessGroupKeys);
 		params.setSearchString(searchString);
 		
@@ -293,7 +283,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
 			usersTableModel.filter(tableEl.getQuickSearchString(), Collections.singletonList(filters.get(0)));
 		}
-		tableEl.reloadData();
+		tableEl.reset(true, true, true);
 		searchParams = params;
 		updateTools(assessedIdentities);
 	}
@@ -312,7 +302,6 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		if(state instanceof AssessedIdentityListState) {
 			AssessedIdentityListState listState = (AssessedIdentityListState)state;
 			listState.setValuesToFilter(tableEl.getExtendedFilters());
-			//TODO table
 		}
 
 		updateModel(null, tableEl.getSelectedFilters());

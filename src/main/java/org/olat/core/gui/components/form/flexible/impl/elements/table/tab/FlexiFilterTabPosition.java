@@ -17,41 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.ui.author;
-
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableStateEntry;
-import org.olat.core.id.context.StateEntry;
+package org.olat.core.gui.components.form.flexible.impl.elements.table.tab;
 
 /**
  * 
- * Initial date: 02.09.2014<br>
+ * Initial date: 19 août 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AuthorListState implements StateEntry {
-
-	private static final long serialVersionUID = 8818839391972945659L;
+public enum FlexiFilterTabPosition {
 	
-	private FlexiTableStateEntry tableState;
-	
-	public AuthorListState() {
-		//
-	}
+	left,
+	right
 
-	public FlexiTableStateEntry getTableState() {
-		return tableState;
-	}
-
-	public void setTableState(FlexiTableStateEntry tableState) {
-		this.tableState = tableState;
-	}
-
-	@Override
-	public AuthorListState clone() {
-		AuthorListState clone = new AuthorListState();
-		if(tableState != null) {
-			clone.tableState = tableState.clone();
-		}
-		return clone;
-	}
 }

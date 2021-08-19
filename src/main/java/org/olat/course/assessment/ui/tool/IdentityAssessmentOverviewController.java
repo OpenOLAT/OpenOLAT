@@ -324,7 +324,6 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if(state instanceof AssessedIdentityListState) {
 			AssessedIdentityListState listState = (AssessedIdentityListState)state;
 			listState.setValuesToFilter(tableEl.getExtendedFilters());
-			//TODO table
 			loadModel();
 		}	
 	}

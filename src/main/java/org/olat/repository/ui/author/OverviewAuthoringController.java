@@ -46,16 +46,11 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
  *
  */
 public class OverviewAuthoringController extends BasicController implements Activateable2, GenericEventListener {
-	
-	private static final String REPOSITORY_PATH = "[RepositorySite:0]";
-	
+
 	private final AuthorListController authorListCtrl;
 
-	private final boolean isAdministrator;
+	private boolean entriesDirty;
 	private final boolean isGuestOnly;
-	private boolean myDirty;
-	private boolean favoritDirty;
-	private boolean deletedDirty;
 	private final EventBus eventBus;
 	
 	public OverviewAuthoringController(UserRequest ureq, WindowControl wControl) {
@@ -64,7 +59,6 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isGuestOnly = roles.isGuestOnly();
-		isAdministrator = roles.isAdministrator() || roles.isLearnResourceManager();
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
@@ -86,41 +80,12 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	public void event(Event event) {
 		if(EntryChangedEvent.CHANGE_CMD.equals(event.getCommand()) && event instanceof EntryChangedEvent) {
 			EntryChangedEvent ece = (EntryChangedEvent)event;
-			if(ece.getChange() == Change.addBookmark
-					|| ece.getChange() == Change.removeBookmark
-					|| ece.getChange() == Change.added
-					|| ece.getChange() == Change.deleted) {
-				/*
-				if(markedCtrl != null && !markedCtrl.getI18nName().equals(ece.getSource())) {
-					favoritDirty = true;
-				}
-				if(myEntriesCtrl != null && !myEntriesCtrl.getI18nName().equals(ece.getSource())) {
-					myDirty = true;
-				}
-				if(deletedEntriesCtrl != null && !deletedEntriesCtrl.getI18nName().equals(ece.getSource())) {
-					deletedDirty = true;
-				}
-				*/
-			} else if(ece.getChange() == Change.modifiedAccess
+			if(ece.getChange() == Change.modifiedAccess
 					|| ece.getChange() == Change.modifiedAtPublish
 					|| ece.getChange() == Change.modifiedDescription) {
-				/*
-				if(markedCtrl != null) {
-					markedCtrl.addDirtyRows(ece.getRepositoryEntryKey());
-				}
-				if(myEntriesCtrl != null) {
-					myEntriesCtrl.addDirtyRows(ece.getRepositoryEntryKey());
-				}
-				if(deletedEntriesCtrl != null) {
-					deletedEntriesCtrl.addDirtyRows(ece.getRepositoryEntryKey());
-				}
-				*/
+				authorListCtrl.addDirtyRows(ece.getRepositoryEntryKey());
 			} else if(ece.getChange() == Change.restored) {
-				/*
-				if(deletedEntriesCtrl != null) {
-					deletedDirty = true;
-				}
-				*/
+				entriesDirty = true;
 			}
 		}
 	}
@@ -135,6 +100,12 @@ public class OverviewAuthoringController extends BasicController implements Acti
 				if(authorListCtrl.isEmpty()) {
 					authorListCtrl.selectFilterTab(authorListCtrl.getMyTab());
 				}
+			}
+			
+			if(entriesDirty) {
+				authorListCtrl.reloadRows();
+			} else {
+				authorListCtrl.reloadDirtyRows();
 			}
 		} else {
 			ContextEntry entry = entries.get(0);

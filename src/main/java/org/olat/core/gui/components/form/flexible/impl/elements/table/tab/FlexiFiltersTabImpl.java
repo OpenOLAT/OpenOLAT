@@ -30,11 +30,20 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 	private final String id;
 	private final String label;
 	private String elementCssClass;
-	private boolean selected;
+	private FlexiFilterTabPosition position = FlexiFilterTabPosition.left;
+	
+	private boolean filtersExpanded;
+	private boolean largeSearch;
+	private TabSelectionBehavior selectionBehavior = TabSelectionBehavior.nothing;
 	
 	public FlexiFiltersTabImpl(String id, String label) {
+		this(id, label, TabSelectionBehavior.nothing);
+	}
+	
+	public FlexiFiltersTabImpl(String id, String label, TabSelectionBehavior selectionBehavior) {
 		this.id = id;
 		this.label = label;
+		this.selectionBehavior = selectionBehavior;
 	}
 	
 	@Override
@@ -57,13 +66,38 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 	}
 
 	@Override
-	public boolean isSelected() {
-		return selected;
+	public FlexiFilterTabPosition getPosition() {
+		return position;
+	}
+
+	public void setPosition(FlexiFilterTabPosition position) {
+		this.position = position;
 	}
 
 	@Override
-	public void setSelected(boolean selected) {
-		this.selected = selected;
+	public boolean isFiltersExpanded() {
+		return filtersExpanded;
 	}
 
+	public void setFiltersExpanded(boolean filtersExpanded) {
+		this.filtersExpanded = filtersExpanded;
+	}
+
+	@Override
+	public boolean isLargeSearch() {
+		return largeSearch;
+	}
+
+	public void setLargeSearch(boolean largeSearch) {
+		this.largeSearch = largeSearch;
+	}
+
+	@Override
+	public TabSelectionBehavior getSelectionBehavior() {
+		return selectionBehavior;
+	}
+
+	public void setSelectionBehavior(TabSelectionBehavior selectionBehavior) {
+		this.selectionBehavior = selectionBehavior;
+	}
 }

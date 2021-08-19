@@ -19,27 +19,33 @@
  */
 package org.olat.core.gui.components.form.flexible.elements;
 
+import java.io.Serializable;
+
 /**
+ * 
+ * 
  * 
  * Initial date: 10 août 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FlexiTableFilterValue {
+public class FlexiTableFilterValue implements Serializable {
+
+	private static final long serialVersionUID = 8328393974165121258L;
 	
 	private String filter;
-	private Object value;
+	private Serializable value;
 	
-	public FlexiTableFilterValue(String filter, Object value) {
+	public FlexiTableFilterValue(String filter, Serializable value) {
 		this.filter = filter;
 		this.value = value;
 	}
 	
-	public static final FlexiTableFilterValue valueOf(Enum<?> filter, Object value) {
+	public static final FlexiTableFilterValue valueOf(Enum<?> filter, Serializable value) {
 		return new FlexiTableFilterValue(filter.name(), value);
 	}
 	
-	public static final FlexiTableFilterValue valueOf(String filter, Object value) {
+	public static final FlexiTableFilterValue valueOf(String filter, Serializable value) {
 		return new FlexiTableFilterValue(filter, value);
 	}
 	
@@ -55,7 +61,7 @@ public class FlexiTableFilterValue {
 		return value;
 	}
 	
-	public void setValue(Object value) {
+	public void setValue(Serializable value) {
 		this.value = value;
 	}
 }

@@ -33,7 +33,13 @@ public interface FlexiFiltersPreset {
 
 	public List<String> getImplicitFilters();
 	
-	public List<String> getDefaultFilters();
+	/**
+	 * defined the list of visible filter buttons. If NULL, fallback
+	 * to the preferences of the filters.
+	 * 
+	 * @return List of visible filter buttons.
+	 */
+	public List<String> getEnabledFilters();
 	
 	public List<FlexiTableFilterValue> getDefaultFiltersValues();
 

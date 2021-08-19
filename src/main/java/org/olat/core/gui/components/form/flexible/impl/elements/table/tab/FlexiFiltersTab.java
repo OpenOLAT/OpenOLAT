@@ -30,14 +30,16 @@ public interface FlexiFiltersTab {
 	public String getId();
 	
 	public String getLabel();
+	
+	public FlexiFilterTabPosition getPosition();
 
 	public String getElementCssClass();
 	
-	public boolean isSelected();
-
-	public void setSelected(boolean selected);
 	
+	public boolean isFiltersExpanded();
 	
+	public boolean isLargeSearch();
 	
+	public TabSelectionBehavior getSelectionBehavior();
 
 }

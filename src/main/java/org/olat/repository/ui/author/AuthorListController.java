@@ -79,9 +79,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiC
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -189,7 +191,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	private SendMailController sendMailCtrl;
 	private StepsMainRunController wizardCtrl;
 	private StepsMainRunController modifyOwnersWizardCtrl;
-	private AuthorSearchController searchCtrl;
 	private UserSearchController userSearchCtr;
 	private DialogBoxController copyDialogCtrl;
 	private ReferencesController referencesCtrl;
@@ -262,7 +263,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		super(ureq, wControl, "entries");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
-		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("RepositorySite");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
@@ -360,32 +360,7 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//TODO table search form
 
-		/*
-		if(withSearch) {
-			setFormDescription("table.search.author.desc");
-			searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, mainForm);
-			searchCtrl.setEnabled(false);
-			listenTo(searchCtrl);
-		}
-		*/
-		/*
-		if(withClosedfilter) {
-			String[] statusValues = new String[] {
-					translate("cif.resources.status.all"),
-					translate("cif.resources.status.active"),
-					translate("cif.resources.status.closed")
-				};
-			closedEl = uifactory.addRadiosHorizontal("cif_status", "cif.resources.status", formLayout, statusKeys, statusValues);
-			closedEl.addActionListener(FormEvent.ONCHANGE);
-			closedEl.setDomReplacementWrapperRequired(false);
-			closedEl.select(statusKeys[1], true);
-			searchParams.setClosed(Boolean.FALSE);
-		}
-		*/
-		
-		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(true, Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
@@ -472,16 +447,16 @@ public class AuthorListController extends FormBasicController implements Activat
 		initFilters();
 		tableEl.setCssDelegate(this);
 		tableEl.setExportEnabled(true);
-		tableEl.setExtendedSearch(searchCtrl);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setSortSettings(new FlexiTableSortOptions(true, new SortKey(OrderBy.displayname.name(), true)));
-		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-v2");
-
+		
 		initBatchButtons(formLayout);
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "authors-list-v2");
 	}
 	
 	protected void initActionsColumns(FlexiTableColumnModel columnsModel) {
@@ -503,28 +478,30 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected void initFilterTabs() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
-		List<String> filters = List.of();
-		
 		if(!isGuestOnly) {
 			bookmarkTab = FlexiFilterTabPreset.presetWithImplicitFilters("Bookmarks", translate("search.mark"),
-					filters, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.MARKED, "marked")));
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.MARKED, "marked")));
 			bookmarkTab.setElementCssClass("o_sel_author_bookmarks");
 			tabs.add(bookmarkTab);
 		}
 		
 		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.my"),
-				filters, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned")));
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned")));
 		myTab.setElementCssClass("o_sel_author_my");
 		tabs.add(myTab);
 		
-		searchTab = new FlexiFilterTabPreset("Search", translate("search.generic"), filters);
+		searchTab = new FlexiFilterTabPreset("Search", translate("search.generic"), TabSelectionBehavior.clear);
 		searchTab.setElementCssClass("o_sel_author_search");
+		searchTab.setPosition(FlexiFilterTabPosition.right);
+		searchTab.setLargeSearch(true);
+		searchTab.setFiltersExpanded(true);
 		tabs.add(searchTab);
 		
 		if(roles.isAuthor() || hasAdministratorRight) {
 			deletedTab = FlexiFilterTabPreset.presetWithImplicitFilters("Deleted", translate("search.deleted"),
-					filters, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, "deleted")));
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, "deleted")));
 			deletedTab.setElementCssClass("o_sel_author_deleted");
+			deletedTab.setPosition(FlexiFilterTabPosition.right);
 			tabs.add(deletedTab);
 		}
 		
@@ -740,10 +717,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			if(se.getTableState() != null) {
 				tableEl.setStateEntry(ureq, se.getTableState());
 			}
-			if(se.getSearchEvent() != null) {
-				searchCtrl.update(se.getSearchEvent());
-				doExtendedSearch(ureq, se.getSearchEvent());
-			}
 		}
 	}
 	
@@ -814,13 +787,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				
 				reloadRows();
 				cleanUp();
-			}
-		} else if(searchCtrl == source) {
-			if(event instanceof SearchEvent) {
-				SearchEvent se = (SearchEvent)event;
-				doExtendedSearch(ureq, se);
-			} else if(event == Event.CANCELLED_EVENT) {
-				doResetExtendedSearch(ureq);
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
@@ -1196,52 +1162,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		lockResult = null;
 	}
 	
-	private void doResetExtendedSearch(UserRequest ureq) {
-		searchParams.setResourceTypes(null);
-		searchParams.setEducationalTypeKeys(null);
-		searchParams.setIdAndRefs(null);
-		searchParams.setAuthor(null);
-		searchParams.setOwnedResourcesOnly(false);
-		searchParams.setResourceUsage(ResourceUsage.all);
-		searchParams.setClosed(null);
-		searchParams.setDisplayname(null);
-		searchParams.setDescription(null);
-		searchParams.setLicenseTypeKeys(null);
-		searchParams.setEntryOrganisations(null);
-		searchParams.setTaxonomyLevels(null);
-		
-		tableEl.resetSearch(ureq);
-		flc.setDirty(true);
-	}
-	
-	private void doExtendedSearch(UserRequest ureq, SearchEvent se) {
-		if(se.getTypes() != null && !se.getTypes().isEmpty()) {
-			searchParams.setResourceTypes(new ArrayList<>(se.getTypes()));
-		} else {
-			searchParams.setResourceTypes(null);
-		}
-		searchParams.setTechnicalTypes(se.getTechnicalTypes());
-		searchParams.setEducationalTypeKeys(se.getEducationalTypeKeys());
-
-		searchParams.setIdAndRefs(se.getId());
-		searchParams.setAuthor(se.getAuthor());
-		searchParams.setOwnedResourcesOnly(se.isOwnedResourcesOnly());
-		searchParams.setResourceUsage(se.getResourceUsage());
-		searchParams.setClosed(se.getClosed());
-		searchParams.setDisplayname(se.getDisplayname());
-		searchParams.setDescription(se.getDescription());
-		searchParams.setLicenseTypeKeys(se.getLicenseTypeKeys());
-		searchParams.setEntryOrganisations(se.getEntryOrganisations());
-		searchParams.setTaxonomyLevels(se.getTaxonomyLevels());
-		tableEl.reset(true, true, true);
-		flc.setDirty(true);
-
-		AuthorListState stateEntry = new AuthorListState();
-		stateEntry.setSearchEvent(se);
-		stateEntry.setTableState(tableEl.getStateEntry());
-		addToHistory(ureq, stateEntry);
-	}
-	
 	protected List<AuthoringEntryRow> getMultiSelectedRows() {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		List<AuthoringEntryRow> rows = new ArrayList<>(selections.size());
@@ -1277,7 +1197,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
-
 		copyButton.setVisible(deletedTab != tab);
 		deleteButton.setVisible(deletedTab != tab);
 		restoreButton.setVisible(deletedTab != tab);
@@ -1285,18 +1204,11 @@ public class AuthorListController extends FormBasicController implements Activat
 		modifyOwnersButton.setVisible(deletedTab != tab);
 		restoreButton.setVisible(deletedTab == tab);
 		deletePermanentlyButton.setVisible(deletedTab == tab);
-
-		tableEl.expandFilters(searchTab == tab);
 		
 		if(searchTab == tab) {
 			tableEl.setEmptyTableSettings("author.search.empty", "author.search.empty.hint", "o_CourseModule_icon");
-			tableEl.setSearchEnabled(true, true);
-			model.clear();
-			tableEl.reset(true, true, false);
 		} else {
 			tableEl.setEmptyTableSettings("author.list.empty", "author.list.empty.hint", "o_CourseModule_icon");
-			tableEl.setSearchEnabled(true, false);
-			tableEl.reloadData();
 		}
 	}
 	
@@ -1962,6 +1874,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		public DeletedToolsController(UserRequest ureq, WindowControl wControl, AuthoringEntryRow row, RepositoryEntry entry) {
 			super(ureq, wControl);
 			this.row = row;
+			setTranslator(AuthorListController.this.getTranslator());
 			
 			boolean isManager = repositoryService.hasRoleExpanded(getIdentity(), entry,
 					OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());

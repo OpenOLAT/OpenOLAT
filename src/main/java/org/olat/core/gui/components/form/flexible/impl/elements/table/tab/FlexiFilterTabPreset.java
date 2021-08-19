@@ -32,19 +32,21 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
  */
 public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFiltersPreset {
 	
-	private List<String> defaultFilters;
+	private List<String> enabledFilters;
 	private List<String> implicitFilters;
 	private List<FlexiTableFilterValue> filtersValues;
 	
-	public FlexiFilterTabPreset(String id, String label,
-			List<String> defaultFilters) {
+	public FlexiFilterTabPreset(String id, String label) {
 		super(id, label);
-		this.defaultFilters = (defaultFilters == null ? null : List.copyOf(defaultFilters));
 	}
 	
+	public FlexiFilterTabPreset(String id, String label, TabSelectionBehavior selectionBehavior) {
+		super(id, label, selectionBehavior);
+	}
+
 	public static FlexiFilterTabPreset presetWithImplicitFilters(String id, String label,
-			List<String> defaultFilters, List<FlexiTableFilterValue> implicitValueFilters) {
-		FlexiFilterTabPreset preset = new FlexiFilterTabPreset(id, label, defaultFilters);
+			TabSelectionBehavior selectionBehavior, List<FlexiTableFilterValue> implicitValueFilters) {
+		FlexiFilterTabPreset preset = new FlexiFilterTabPreset(id, label, selectionBehavior);
 		
 		List<String> implicitFilters = new ArrayList<>(implicitValueFilters.size());
 		for(FlexiTableFilterValue implicitValueFilter:implicitValueFilters) {
@@ -54,10 +56,27 @@ public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFi
 		preset.filtersValues = implicitValueFilters;
 		return preset;
 	}
+	
+	public static FlexiFilterTabPreset copyOf(FlexiFilterTabPreset preset) {
+		FlexiFilterTabPreset copy = new FlexiFilterTabPreset(preset.getId(), preset.getLabel());
+		copy.setElementCssClass(preset.getElementCssClass());
+
+		List<String> enabled = preset.enabledFilters == null ? null : new ArrayList<>(preset.enabledFilters);
+		copy.setEnabledFilters(enabled);
+		List<String> impFilters = preset.implicitFilters == null ? null : new ArrayList<>(preset.implicitFilters);
+		copy.setImplicitFilters(impFilters);
+		List<FlexiTableFilterValue> values = preset.filtersValues == null ? null : new ArrayList<>(preset.filtersValues);
+		copy.setDefaultFiltersValues(values);
+		return copy;
+	}
 
 	@Override
-	public List<String> getDefaultFilters() {
-		return defaultFilters;
+	public List<String> getEnabledFilters() {
+		return enabledFilters;
+	}
+	
+	public void setEnabledFilters(List<String> enabledFilters) {
+		this.enabledFilters = enabledFilters;
 	}
 
 	@Override
@@ -65,8 +84,16 @@ public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFi
 		return implicitFilters;
 	}
 
+	public void setImplicitFilters(List<String> implicitFilters) {
+		this.implicitFilters = implicitFilters;
+	}
+
 	@Override
 	public List<FlexiTableFilterValue> getDefaultFiltersValues() {
 		return filtersValues;
+	}
+	
+	public void setDefaultFiltersValues(List<FlexiTableFilterValue> filtersValues) {
+		this.filtersValues = filtersValues;
 	}
 }
