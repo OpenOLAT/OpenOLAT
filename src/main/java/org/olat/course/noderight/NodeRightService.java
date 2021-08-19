@@ -57,5 +57,7 @@ public interface NodeRightService {
 	public void addGrants(NodeRight nodeRight, Collection<NodeRightGrant> grants);
 
 	public void removeGrant(NodeRight nodeRight, NodeRightGrant grant);
+	
+	boolean isSame(NodeRightGrant grant1, NodeRightGrant grant2);
 
 }

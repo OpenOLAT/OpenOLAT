@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -62,7 +63,7 @@ implements SortableFlexiTableDataModel<NodeRightGrantRow> {
 			case name: return row.getName();
 			case start: return row.getStartEl();
 			case end: return row.getEndEl();
-			case delete: return Boolean.TRUE;
+			case delete: return row.getDeleteLink();
 			default: return null;
 		}
 	}
@@ -115,6 +116,7 @@ implements SortableFlexiTableDataModel<NodeRightGrantRow> {
 		private String name;
 		private DateChooser startEl;
 		private DateChooser endEl;
+		private FormLink deleteLink;
 
 		public NodeRightGrantRow(NodeRightGrant grant) {
 			this.grant = grant;
@@ -162,6 +164,14 @@ implements SortableFlexiTableDataModel<NodeRightGrantRow> {
 
 		public void setEndEl(DateChooser endEl) {
 			this.endEl = endEl;
+		}
+
+		public FormLink getDeleteLink() {
+			return deleteLink;
+		}
+
+		public void setDeleteLink(FormLink deleteLink) {
+			this.deleteLink = deleteLink;
 		}
 
 	}
