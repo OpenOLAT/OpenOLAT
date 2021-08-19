@@ -41,7 +41,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -85,7 +84,7 @@ public class NodeRightsController extends FormBasicController {
 	private static final String CMD_ADD_ROLES = "add.roles";
 	private static final String CMD_ADD_IDENTITIES = "add.identities";
 	private static final String CMD_ADD_GROUPS = "add.groups";
-	private static final String CMD_DELETE = "delete";
+	private static final String CMD_DELETE = "delete_";
 	private static final String EL_NAME_START = "nr_start_";
 	private static final String EL_NAME_END = "nr_end_";
 	private static final NodeRightGrantRowComparator ROWS_COMPARATOR = new NodeRightGrantRowComparator();
@@ -253,7 +252,7 @@ public class NodeRightsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GrantCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GrantCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GrantCols.end));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CMD_DELETE, translate(GrantCols.delete.i18nHeaderKey()), CMD_DELETE));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GrantCols.delete));
 		
 		NodeRightGrantDataModel dataModel = new NodeRightGrantDataModel(columnsModel, getLocale());
 		wrapper.setDataModel(dataModel);
@@ -271,51 +270,76 @@ public class NodeRightsController extends FormBasicController {
 	private void loadModel(NodeRightWrapper wrapper) {
 		Collection<NodeRightRole> roles = wrapper.getType().getRoles();
 		Collection<NodeRightGrant> grants = wrapper.getNodeRight().getGrants();
-		List<NodeRightGrantRow> rows = new ArrayList<>(grants.size());
+		List<NodeRightGrantRow> rows = wrapper.getDataModel().getObjects();
 			
 		for (NodeRightGrant grant : grants) {
-			NodeRightGrantRow row = new NodeRightGrantRow(grant);
-			row.setWrapper(wrapper);
-			String name = null;
-			
-			if (grant.getIdentityRef() != null) {
-				name = userManager.getUserDisplayName(grant.getIdentityRef());
-				row.setType(translate("grant.type.identity"));
-			} else if (grant.getRole() != null && roles.contains(grant.getRole())) {
-				name = translateRole(grant.getRole());
-				row.setType(translate("grant.type.role"));
-			} else if (grant.getBusinessGroupRef() != null) {
-				BusinessGroup group = businessGroupService.loadBusinessGroup(grant.getBusinessGroupRef().getKey());
-				if (group != null) {
-					name = group.getName();
-					row.setType(translate("grant.type.group"));
+			if (!containsGrant(rows, grant)) {
+				NodeRightGrantRow row = new NodeRightGrantRow(grant);
+				row.setWrapper(wrapper);
+				String name = null;
+				
+				if (grant.getIdentityRef() != null) {
+					name = userManager.getUserDisplayName(grant.getIdentityRef());
+					row.setType(translate("grant.type.identity"));
+				} else if (grant.getRole() != null && roles.contains(grant.getRole())) {
+					name = translateRole(grant.getRole());
+					row.setType(translate("grant.type.role"));
+				} else if (grant.getBusinessGroupRef() != null) {
+					BusinessGroup group = businessGroupService.loadBusinessGroup(grant.getBusinessGroupRef().getKey());
+					if (group != null) {
+						name = group.getName();
+						row.setType(translate("grant.type.group"));
+					}
 				}
-			}
-			
-			if (!StringHelper.containsNonWhitespace(name)) {
-				continue;
-			}
-			row.setName(name);
+				
+				if (!StringHelper.containsNonWhitespace(name)) {
+					continue;
+				}
+				row.setName(name);
 
-			DateChooser startEl = uifactory.addDateChooser(EL_NAME_START + counter++, null, grant.getStart(), wrapper.getContainer());
-			startEl.setDateChooserTimeEnabled(true);
-			startEl.addActionListener(FormEvent.ONCHANGE);
-			startEl.setUserObject(row);
-			row.setStartEl(startEl);
-			DateChooser endEl = uifactory.addDateChooser(EL_NAME_END + counter++, null, grant.getEnd(), wrapper.getContainer());
-			endEl.setDateChooserTimeEnabled(true);
-			endEl.addActionListener(FormEvent.ONCHANGE);
-			endEl.setUserObject(row);
-			row.setEndEl(endEl);
-
-			rows.add(row);
+				DateChooser startEl = uifactory.addDateChooser(EL_NAME_START + counter++, null, grant.getStart(), wrapper.getContainer());
+				startEl.setDateChooserTimeEnabled(true);
+				startEl.addActionListener(FormEvent.ONCHANGE);
+				startEl.setUserObject(row);
+				row.setStartEl(startEl);
+				DateChooser endEl = uifactory.addDateChooser(EL_NAME_END + counter++, null, grant.getEnd(), wrapper.getContainer());
+				endEl.setDateChooserTimeEnabled(true);
+				endEl.addActionListener(FormEvent.ONCHANGE);
+				endEl.setUserObject(row);
+				row.setEndEl(endEl);
+				
+				FormLink link = uifactory.addFormLink(CMD_DELETE + counter++, CMD_DELETE, "delete", null, wrapper.getContainer(), Link.LINK);
+				link.setUserObject(row);
+				row.setDeleteLink(link);
+				
+				rows.add(row);
+			}
 		}
+		rows.removeIf(row -> !containsGrant(grants, row));
 		
 		rows.sort(ROWS_COMPARATOR);
 		wrapper.getDataModel().setObjects(rows);
 		wrapper.getTableEl().reset(true, true, true);
 	}
-	
+
+	private boolean containsGrant(List<NodeRightGrantRow> rows, NodeRightGrant grant) {
+		for (NodeRightGrantRow row : rows) {
+			if (nodeRightService.isSame(row.getGrant(), grant)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean containsGrant(Collection<NodeRightGrant> grants, NodeRightGrantRow row) {
+		for (NodeRightGrant grant : grants) {
+			if (nodeRightService.isSame(row.getGrant(), grant)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private void updateUI(NodeRightWrapper wrapper) {
 		List<NodeRightRole> selectedRoles = wrapper.getNodeRight().getGrants().stream()
 				.map(NodeRightGrant::getRole)
@@ -349,6 +373,9 @@ public class NodeRightsController extends FormBasicController {
 			} else if (CMD_ADD_GROUPS.equals(cmd)) {
 				NodeRightWrapper wrapper = (NodeRightWrapper)source.getUserObject();
 				doAddGroups(ureq, wrapper);
+			} else if (CMD_DELETE.equals(cmd)) {
+				NodeRightGrantRow row = (NodeRightGrantRow)source.getUserObject();
+				doDeleteGrant(ureq, row.getWrapper(), row.getGrant());
 			}
 		} else if (source instanceof MultipleSelectionElement) {
 			MultipleSelectionElement rolesEl = (MultipleSelectionElement)source;
@@ -359,22 +386,18 @@ public class NodeRightsController extends FormBasicController {
 			String name = dateChooser.getName();
 			if (name.startsWith(EL_NAME_START)) {
 				NodeRightGrantRow row = (NodeRightGrantRow)source.getUserObject();
-				row.getGrant().setStart(dateChooser.getDate());
-				NodeRight nodeRight = row.getWrapper().getNodeRight();
-				doSave(ureq, nodeRight);
+				if (validate(row.getWrapper())) {
+					row.getGrant().setStart(dateChooser.getDate());
+					NodeRight nodeRight = row.getWrapper().getNodeRight();
+					doSave(ureq, nodeRight);
+				}
 			} else if (name.startsWith(EL_NAME_END)) {
 				NodeRightGrantRow row = (NodeRightGrantRow)source.getUserObject();
-				row.getGrant().setEnd(dateChooser.getDate());
-				NodeRight nodeRight = row.getWrapper().getNodeRight();
-				doSave(ureq, nodeRight);
-			}
-		} else if (event instanceof SelectionEvent) {
-			SelectionEvent se = (SelectionEvent)event;
-			if(CMD_DELETE.equals(se.getCommand())) {
-				NodeRightWrapper wrapper = (NodeRightWrapper)source.getUserObject();
-				NodeRightGrantRow row = wrapper.getDataModel().getObject(se.getIndex());
-				NodeRightGrant grant = row.getGrant();
-				doDeleteGrant(ureq, wrapper, grant);
+				if (validate(row.getWrapper())) {
+					row.getGrant().setEnd(dateChooser.getDate());
+					NodeRight nodeRight = row.getWrapper().getNodeRight();
+					doSave(ureq, nodeRight);
+				}
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -533,6 +556,20 @@ public class NodeRightsController extends FormBasicController {
 		nodeRightService.removeGrant(nodeRight, grant);
 		doSave(ureq, nodeRight);
 		refreshTable(wrapper);
+		validate(wrapper);
+	}
+	
+	private boolean validate(NodeRightWrapper wrapper) {
+		wrapper.getTableEl().clearError();
+		for (NodeRightGrantRow nodeRightGrantRow : wrapper.getDataModel().getObjects()) {
+			Date start = nodeRightGrantRow.getStartEl().getDate();
+			Date end = nodeRightGrantRow.getEndEl().getDate();
+			if (start != null && end != null && start.after(end)) {
+				wrapper.getTableEl().setErrorKey("error.end.after.start", null);
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void doSave(UserRequest ureq, NodeRight nodeRight) {

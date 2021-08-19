@@ -224,7 +224,8 @@ public class NodeRightServiceImpl implements NodeRightService {
 		return grants.stream().filter(existingGrant -> isSame(existingGrant, grant)).findAny().isPresent();
 	}
 
-	boolean isSame(NodeRightGrant grant1, NodeRightGrant grant2) {
+	@Override
+	public boolean isSame(NodeRightGrant grant1, NodeRightGrant grant2) {
 		if (!Objects.equals(grant1.getStart(), grant2.getStart())) return false;
 		if (!Objects.equals(grant1.getEnd(), grant2.getEnd())) return false;
 		if (!Objects.equals(grant1.getRole(), grant2.getRole())) return false;

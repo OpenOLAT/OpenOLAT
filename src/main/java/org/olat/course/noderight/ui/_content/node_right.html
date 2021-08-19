@@ -14,6 +14,9 @@
 		#if($advanced)
 			$r.render("buttons.top")
 			$r.render("table")
+			#if($f.hasError("table"))
+				$r.render("table_ERROR")
+			#end
 		#else
 			$r.render($rolesName)
 		#end

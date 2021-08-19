@@ -1,6 +1,7 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($orderedSet1 = $r.getVisibleOrderedChoices($interaction,0))
 #set($orderedSet2 = $r.getVisibleOrderedChoices($interaction,1))
+#set($sourceLeft = $r.hasCssClass($interaction, "source-left"))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName match_true_false">
@@ -14,6 +15,10 @@
 	<table id="qti_container_${responseIdentifier}" class="table">
 		<thead>
 			<tr>
+				#if($sourceLeft)
+					<th scope="col" class="o_match_true_false_answer"> </th>
+				#end
+				
             	#foreach($choice2 in $orderedSet2)
 				<th scope="col" class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">
 				#if($foreach.index == 0)
@@ -24,13 +29,20 @@
 					$r.translate("match.false")
 				#end</th>
 				#end
-				<th scope="col" class="o_match_true_false_answer"> </th>
+				
+				#if(!$sourceLeft)
+					<th scope="col" class="o_match_true_false_answer"> </th>
+				#end
 			</tr>
         </thead>
 		<tbody>
 		#foreach($choice1 in $orderedSet1)
 			#set($set1Identifier = $r.toString($choice1.identifier))
             <tr>
+            	#if($sourceLeft)
+            		<td class="o_match_true_false_answer">$r.renderFlowStatics($choice1.getFlowStatics())</td>
+            	#end
+            
 				#foreach($choice2 in $orderedSet2)
 					#set($set2Identifier = $r.toString($choice2.identifier))
 					#set($responseValue = $set1Identifier + " " + $set2Identifier)
@@ -40,7 +52,10 @@
                 		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
                 	</td>
 				#end
-				<td class="o_match_true_false_answer">$r.renderFlowStatics($choice1.getFlowStatics())</td>
+				
+				#if(!$sourceLeft)
+					<td class="o_match_true_false_answer">$r.renderFlowStatics($choice1.getFlowStatics())</td>
+				#end
             </tr>
 		#end
 		</tbody>

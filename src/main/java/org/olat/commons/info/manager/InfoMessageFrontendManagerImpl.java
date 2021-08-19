@@ -196,7 +196,12 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 			Set<Long> identityKeySet = new HashSet<>();
 			ContactList contactList = new ContactList("Infos");
 			for(Identity to:tos) {
-				if(identityKeySet.contains(to.getKey())) continue;
+				// don't sent E-mail to pending, inactive or blocked users
+				if(identityKeySet.contains(to.getKey())
+						|| to.getStatus().intValue() >= Identity.STATUS_VISIBLE_LIMIT) {
+					continue;
+				}
+
 				contactList.add(to);
 				identityKeySet.add(to.getKey());
 			}
