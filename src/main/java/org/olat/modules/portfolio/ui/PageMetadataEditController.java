@@ -361,6 +361,7 @@ public class PageMetadataEditController extends FormBasicController {
 		openCompetenceBrowserLink = uifactory.addFormLink("open.browser.link", formLayout, Link.BUTTON_XSMALL);
 		openCompetenceBrowserLink.setLabel("no.label", null);
 		openCompetenceBrowserLink.setPopup(new LinkPopupSettings(800, 600, "Open"));
+		openCompetenceBrowserLink.setVisible(portfolioV2Module.isTaxonomyLinkingReady());
 		
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
 		
