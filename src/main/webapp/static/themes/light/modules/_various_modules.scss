@@ -650,6 +650,11 @@ div.o_assessment_mode_row {
 /* Reminders rules */
 .o_reminder_rule {
 	padding: 5px 0;
+	.o_rule_passed {
+		& > div {
+			display: inline-block;
+		}
+	}
 }
 .o_reminder_rules_view {
 	td {
