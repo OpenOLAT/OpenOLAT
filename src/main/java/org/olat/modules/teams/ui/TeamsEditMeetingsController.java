@@ -162,9 +162,7 @@ public class TeamsEditMeetingsController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, "teams-edit-meetings-list-v2");
 		tableEl.setMultiSelect(!readOnly);
 		tableEl.setSelectAllEnable(true);
-		if(deleteButton != null) {
-			tableEl.addBatchButton(deleteButton);
-		}
+		tableEl.addBatchButton(deleteButton);
 	}
 	
 	private void loadModel() {

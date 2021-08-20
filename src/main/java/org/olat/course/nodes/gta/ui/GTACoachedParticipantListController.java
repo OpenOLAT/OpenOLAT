@@ -221,7 +221,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-v3-" + markedOnly);
 		if(gtaManager.isDueDateEnabled(gtaNode) && !gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
 			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
 			extendButton = uifactory.addFormLink("extend.list", "duedates", "duedates", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(extendButton);
 		}
 	}
 	

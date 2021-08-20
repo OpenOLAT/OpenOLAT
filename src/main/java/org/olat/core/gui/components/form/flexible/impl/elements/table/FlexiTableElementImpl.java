@@ -795,6 +795,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		
 		FlexiFilterTabPreset preset = (FlexiFilterTabPreset)filterTabsEl.getSelectedTab();
 		filtersEl.saveCurrentSettingsTo(preset, false);
+		filterTabsEl.getComponent().setDirty(true);
 		saveCustomSettings(ureq);
 	}
 	
@@ -2122,6 +2123,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rowCount = -1;
 		component.setDirty(true);
 		multiSelectedIndex = null;
+		allSelectedNeedLoadOfWholeModel = false;
 		detailsIndex = null;
 	}
 	
@@ -2129,6 +2131,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void deselectAll() {
 		component.setDirty(true);
 		multiSelectedIndex = null;
+		allSelectedNeedLoadOfWholeModel = false;
 	}
 
 	@Override

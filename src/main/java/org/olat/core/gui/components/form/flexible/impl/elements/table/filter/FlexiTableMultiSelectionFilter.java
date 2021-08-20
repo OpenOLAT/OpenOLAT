@@ -39,6 +39,8 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements FlexiTableExtendedFilter {
+
+	private static final int MAX_EXPLANATION_LENGTH = 32;
 	
 	private final SelectionValues availableValues;
 	
@@ -115,25 +117,39 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 	}
 	
 	@Override
-	public String getDecoratedLabel() {
+	public String getDecoratedLabel(boolean withHtml) {
 		StringBuilder label = new StringBuilder(getLabel());
 		if(value != null && !value.isEmpty()) {
-			boolean first = true;
+			int currentLength = 0;
 			for(String val:value) {
-				if(first) {
-					label.append(": <small>\"");
-					first = false;
-				} else {
-					label.append(", ");
-				}
 				SelectionValue selectionValue = getSelectionValue(val);
-				if(selectionValue != null) {
-					label.append(selectionValue.getValue());
-				} else {
-					label.append(val);
+				String valForLabel = selectionValue == null ? val : selectionValue.getValue();
+				if(valForLabel != null) {
+					if(currentLength == 0) {
+						label.append(": ");
+						if(withHtml) {
+							label.append("<small>");
+						}
+						label.append("\"");
+					} else {
+						if(withHtml && currentLength + valForLabel.length() > MAX_EXPLANATION_LENGTH) {
+							label.append("\u2026");
+							break;
+						}
+						label.append(", ");
+					}
+
+					label.append(StringHelper.escapeHtml(valForLabel));
+					currentLength += valForLabel.length();
 				}
 			}
-			label.append("\"</small>");
+			
+			if(currentLength > 0) {
+				label.append("\"");
+				if(withHtml) {
+					label.append("</small>");
+				}
+			}
 		}
 		return label.toString();
 	}

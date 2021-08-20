@@ -40,10 +40,13 @@ public interface FlexiTableExtendedFilter {
 	
 	public String getLabel();
 	
-	public String getDecoratedLabel();
-	
+	/**
+	 * 
+	 * @param withHtml true if tags are allowed to beautify the output
+	 * @return The label with the selected values.
+	 */
+	public String getDecoratedLabel(boolean withHtml);
 
-	
 	public boolean isDefaultVisible();
 	
 	public boolean isSelected();

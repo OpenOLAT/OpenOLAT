@@ -154,8 +154,12 @@ public class UserRelationsController extends FormBasicController {
 		tableModel = new UserRelationsTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setMultiSelect(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "relations-u-to-u-v2");
+		if(removeButton != null) {
+			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
+			tableEl.addBatchButton(removeButton);
+		}
 	}
 	
 	protected void loadModel() {

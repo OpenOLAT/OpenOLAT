@@ -10,18 +10,4 @@
 	</div>
 	#end
 	$r.render("table")
-	<div class="o_button_group">
-		#if($r.available("type.taxonomy.level"))
-			$r.render("type.taxonomy.level")
-		#end
-		#if($r.available("move.taxonomy.level"))
-			$r.render("move.taxonomy.level")
-		#end
-		#if($r.available("merge.taxonomy.level"))
-			$r.render("merge.taxonomy.level")
-		#end
-		#if($r.available("delete"))
-			$r.render("delete")
-		#end
-	</div>
 </div>

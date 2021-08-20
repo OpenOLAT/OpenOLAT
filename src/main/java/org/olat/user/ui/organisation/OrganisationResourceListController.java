@@ -126,6 +126,7 @@ public class OrganisationResourceListController extends FormBasicController impl
 		tableEl.setMultiSelect(true);
 		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "organisation-resources-list");
+		tableEl.addBatchButton(removeResourcesButton);
 	}
 	
 	@Override

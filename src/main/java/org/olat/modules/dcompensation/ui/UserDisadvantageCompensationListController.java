@@ -106,10 +106,10 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		addCompensationButton = uifactory.addFormLink("add.compensation", formLayout, Link.BUTTON);
 		addCompensationButton.setIconLeftCSS("o_icon o_icon_disadvantage_compensation");
 		addCompensationButton.setVisible(canModify);
-		
+
 		batchDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		batchDeleteButton.setVisible(canModify);
-
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompensationCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompensationCols.creationDate));
@@ -149,6 +149,9 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 		tableEl.setFilters("status", filters, false);
 		tableEl.setSelectedFilterKey(DisadvantageCompensationStatusEnum.active.name());
 		tableEl.setAndLoadPersistedPreferences(ureq, "user-disadvantage-compensations-list-v3");
+		if(canModify) {
+			tableEl.addBatchButton(batchDeleteButton);
+		}
 	}
 
 	@Override

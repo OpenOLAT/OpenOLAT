@@ -143,6 +143,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "organisation-user-list-v2");
+		tableEl.addBatchButton(removeMembershipButton);
 	}
 	
 	private void loadModel(boolean reset) {

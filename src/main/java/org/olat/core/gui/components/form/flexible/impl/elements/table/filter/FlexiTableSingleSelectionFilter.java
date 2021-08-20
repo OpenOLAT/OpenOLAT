@@ -81,21 +81,28 @@ public class FlexiTableSingleSelectionFilter extends FlexiTableFilter implements
 	}
 	
 	@Override
-	public String getDecoratedLabel() {
+	public String getDecoratedLabel(boolean withHtml) {
 		StringBuilder label = new StringBuilder(getLabel());
 		if(StringHelper.containsNonWhitespace(value)) {
-			label.append(": <small>\"");
+			label.append(": ");
+			if(withHtml) {
+				label.append("<small>");
+			}
+			label.append("\"");
 			SelectionValue selectionValue = getSelectionValue(value);
 			if(selectionValue != null) {
-				label.append(selectionValue.getValue());
+				label.append(StringHelper.escapeHtml(selectionValue.getValue()));
 			} else {
-				label.append(value);
+				label.append(StringHelper.escapeHtml(value));
 			}
-			label.append("\"</small>");
+			label.append("\"");
+			if(withHtml) {
+				label.append("</small>");
+			}
 		}
 		return label.toString();
 	}
-	
+
 	private SelectionValue getSelectionValue(String key) {
 		List<SelectionValue> selectionValues = availableValues.keyValues();
 		for(SelectionValue val:selectionValues) {

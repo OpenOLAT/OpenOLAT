@@ -115,9 +115,7 @@ public class TeamsAdminMeetingsController extends FormBasicController {
 		tableEl.setMultiSelect(!readOnly);
 		tableEl.setSelectAllEnable(!readOnly);
 		tableEl.setSearchEnabled(true);
-		if(deleteButton != null) {
-			tableEl.addBatchButton(deleteButton);
-		}
+		tableEl.addBatchButton(deleteButton);
 	}
 	
 	protected void reloadRows() {

@@ -195,6 +195,7 @@ public class AppealListRepositoryController extends FormBasicController {
 			tableEl.setSelectAllEnable(true);
 			batchUpdateButton = uifactory.addFormLink("appeal.batch.update", formLayout, Link.BUTTON);
 			batchUpdateButton.setVisible(false);
+			tableEl.addBatchButton(batchUpdateButton);
 		}
 	}
 	

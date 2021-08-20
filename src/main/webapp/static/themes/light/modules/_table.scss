@@ -21,6 +21,11 @@
 			width: 20px;
 			text-align: center;
 		}
+		
+		.o_table_pagination {
+			display: flex;
+			justify-content: space-between;
+		}
 	}
 	
 	&.o_table_edit table tbody {
@@ -453,13 +458,6 @@ a.o_orderby, a.o_orderby:hover {
 			font-weight: normal;
 		}
 	}
-}
-
-.o_table_flexi .o_table_pagination {
-	ul {
-	
-	}
-	
 }
 
  table tr.o_no_border td,

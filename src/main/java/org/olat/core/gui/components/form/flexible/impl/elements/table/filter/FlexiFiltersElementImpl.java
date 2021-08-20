@@ -281,20 +281,25 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private FlexiFilterButton forgeFormLink(FlexiTableExtendedFilter filter, boolean enabled) {
 		String dispatchId = component.getDispatchID();
 		String id = dispatchId + "_filterButton-" + (count++);
+
 		String label;
+		String title;
 		if(filter.isSelected()) {
-			label = filter.getDecoratedLabel();
+			label = filter.getDecoratedLabel(true);
+			title = filter.getDecoratedLabel(false);
 		} else {
-			label = filter.getLabel();
+			label = title = filter.getLabel();
 		}
-		FormLink filterButton = new FormLinkImpl(id, id, label, Link.BUTTON | Link.NONTRANSLATED);
-		filterButton.setDomReplacementWrapperRequired(false);
-		filterButton.setTranslator(translator);
-		filterButton.setIconRightCSS("o_icon o_icon_caret");
-		filterButton.setVisible(enabled);
-		components.put(id, filterButton);
-		rootFormAvailable(filterButton);
-		return new FlexiFilterButton(filterButton, filter, enabled);
+		
+		FormLink button = new FormLinkImpl(id, id, label, Link.BUTTON | Link.NONTRANSLATED);
+		button.setDomReplacementWrapperRequired(false);
+		button.setTranslator(translator);
+		button.setIconRightCSS("o_icon o_icon_caret");
+		button.setVisible(enabled);
+		button.setTitle(title);
+		components.put(id, button);
+		rootFormAvailable(button);
+		return new FlexiFilterButton(button, filter, enabled);
 	}
 
 	@Override
@@ -452,16 +457,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			}
 			
 			boolean resetFilter = reset;
-			
 			if(values != null) {
 				for(FlexiTableFilterValue value:values) {
 					if(value.getFilter().equals(filter.getFilter())) {
 						filter.setValue(value.getValue());
-						if(filter.isSelected()) {
-							filterButton.getButton().getComponent().setCustomDisplayText(filter.getDecoratedLabel());
-						} else {
-							filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
-						}
+						decorateFilterButton(filter, filterButton);
 						resetFilter = false;
 					}
 				}
@@ -490,11 +490,23 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		for(FlexiFilterButton filterButton:filterButtons) {
 			if(filterButton.getFilter() == filter) {
 				filterButton.setChanged(true);
-				String label = filter.isSelected() ? filter.getDecoratedLabel() : filter.getLabel();
-				filterButton.getButton().getComponent().setCustomDisplayText(label);
+				decorateFilterButton(filter, filterButton);
 			}
 		}
 		component.fireEvent(ureq, new ChangeFilterEvent(filter));
+	}
+	
+	private void decorateFilterButton(FlexiTableExtendedFilter filter, FlexiFilterButton filterButton) {
+		String label;
+		String title;
+		if(filter.isSelected()) {
+			label = filter.getDecoratedLabel(true);
+			title = filter.getDecoratedLabel(false);
+		} else {
+			label = title = filter.getLabel();
+		}
+		filterButton.getButton().getComponent().setCustomDisplayText(label);
+		filterButton.getButton().getComponent().setTitle(title);
 	}
 	
 	private void doSaveFilter(UserRequest ureq) {
@@ -518,13 +530,17 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	private void doDeleteFilter(UserRequest ureq) {
-		deleteCtrl = new ConfirmDeleteFilterController(ureq, wControl);
-		deleteCtrl.addControllerListener(this);
-
-		String title = component.getTranslator().translate("custom.filter.delete.title");
-		cmc = new CloseableModalController(wControl, "close", deleteCtrl.getInitialComponent(), true, title, true);
-		cmc.activate();
-		cmc.addControllerListener(this);
+		FlexiFilterTabsElementImpl tabEl = tableEl.getFilterTabsElement();
+		if(tabEl != null && tabEl.getSelectedTab() != null) {
+			String name = tabEl.getSelectedTab().getLabel();
+			deleteCtrl = new ConfirmDeleteFilterController(ureq, wControl, name);
+			deleteCtrl.addControllerListener(this);
+	
+			String title = component.getTranslator().translate("custom.filter.delete.title");
+			cmc = new CloseableModalController(wControl, "close", deleteCtrl.getInitialComponent(), true, title, true);
+			cmc.activate();
+			cmc.addControllerListener(this);
+		}
 	}
 	
 	private void doOpenAddFilter(UserRequest ureq, FormLink customButton) {

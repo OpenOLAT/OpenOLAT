@@ -49,10 +49,17 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 	}
 
 	@Override
-	public String getDecoratedLabel() {
+	public String getDecoratedLabel(boolean withHtml) {
 		StringBuilder label = new StringBuilder(getLabel());
 		if(StringHelper.containsNonWhitespace(value)) {
-			label.append(": <small>\"").append(value).append("\"</small>");
+			label.append(": ");
+			if(withHtml) {
+				label.append("<small>");
+			}
+			label.append("\"").append(StringHelper.escapeHtml(value)).append("\"");
+			if(withHtml) {
+				label.append("</small>");
+			}
 		}
 		return label.toString();
 	}

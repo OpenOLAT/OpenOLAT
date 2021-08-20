@@ -118,14 +118,6 @@ public class CurriculumUserManagementController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!membersManaged && secCallback.canManagerCurriculumUsers()) {
-			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
-			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
-			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
-		
-			removeMembershipButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
-		}
-		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		int colIndex = USER_PROPS_OFFSET;
@@ -145,6 +137,15 @@ public class CurriculumUserManagementController extends FormBasicController {
 		tableEl.setMultiSelect(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "curriculum-element-user-list-v2");
+		
+		if(!membersManaged && secCallback.canManagerCurriculumUsers()) {
+			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
+			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
+			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
+		
+			removeMembershipButton = uifactory.addFormLink("remove.memberships", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(removeMembershipButton);
+		}
 	}
 	
 	private void loadModel(boolean reset) {

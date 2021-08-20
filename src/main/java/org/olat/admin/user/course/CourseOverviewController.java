@@ -186,7 +186,9 @@ public class CourseOverviewController extends FormBasicController  {
 		
 		if(canModify) {
 			tableEl.setMultiSelect(true);
+			tableEl.setSelectAllEnable(true);
 			leaveButton = uifactory.addFormLink("table.header.leave", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(leaveButton);
 			
 			addAsOwner = uifactory.addFormLink("add.course.owner", formLayout, Link.BUTTON);
 			addAsTutor = uifactory.addFormLink("add.course.tutor", formLayout, Link.BUTTON);

@@ -175,6 +175,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
 		tableEl.setSortSettings(options);
 		tableEl.setAndLoadPersistedPreferences(ureq, "repo-lecture-block-list-v2");
+		tableEl.addBatchButton(deleteLecturesButton);
 	}
 	
 	private void loadModel() {

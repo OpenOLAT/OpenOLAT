@@ -163,9 +163,15 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(24);
 		tableEl.setMultiSelect(true);
+		tableEl.setSelectAllEnable(true);
 		tableEl.setFilters(null, getFilters(), true);
 		tableEl.setRootCrumb(new TaxonomyCrumb(taxonomy.getDisplayName()));
 		tableEl.setAndLoadPersistedPreferences(ureq, "tax-tree-" + taxonomy.getKey());
+
+		tableEl.addBatchButton(typeButton);
+		tableEl.addBatchButton(moveButton);
+		tableEl.addBatchButton(mergeButton);
+		tableEl.addBatchButton(deleteButton);
 	}
 	
 	private List<FlexiTableFilter> getFilters() {

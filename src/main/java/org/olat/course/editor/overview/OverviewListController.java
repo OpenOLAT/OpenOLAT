@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -100,7 +99,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 	private NodeAccessService nodeAccessService;
 
 	public OverviewListController(UserRequest ureq, WindowControl wControl, ICourse course) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "overview_list");
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
 		this.course = course;
@@ -307,12 +306,8 @@ public class OverviewListController extends FormBasicController implements Flexi
 	}
 
 	private void initButtons(FormItemContainer formLayout) {
-		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonCont.setElementCssClass("o_button_group");
-		buttonCont.setRootForm(mainForm);
-		formLayout.add("buttons", buttonCont);
-		
-		bulkLink = uifactory.addFormLink("command.bulk", buttonCont, Link.BUTTON);
+		bulkLink = uifactory.addFormLink("command.bulk", formLayout, Link.BUTTON);
+		tableEl.addBatchButton(bulkLink);
 	}
 	
 	@Override

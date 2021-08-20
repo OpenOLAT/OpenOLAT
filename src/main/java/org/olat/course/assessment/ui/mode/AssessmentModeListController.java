@@ -114,7 +114,8 @@ public class AssessmentModeListController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(secCallback.canEditAssessmentMode()) {
+		boolean canEditassessmentMode = secCallback.canEditAssessmentMode();
+		if(canEditassessmentMode) {
 			addLink = uifactory.addFormLink("add", "add", "add.mode", null, formLayout, Link.BUTTON);
 			addLink.setElementCssClass("o_sel_assessment_mode_add");
 			addLink.setIconLeftCSS("o_icon o_icon_add");
@@ -146,8 +147,12 @@ public class AssessmentModeListController extends FormBasicController implements
 		
 		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
-		tableEl.setMultiSelect(secCallback.canEditAssessmentMode());
-		tableEl.setSelectAllEnable(secCallback.canEditAssessmentMode());
+		
+		tableEl.setMultiSelect(canEditassessmentMode);
+		tableEl.setSelectAllEnable(canEditassessmentMode);
+		if(canEditassessmentMode && deleteLink != null) {
+			tableEl.addBatchButton(deleteLink);
+		}
 	}
 	
 	private void loadModel() {

@@ -31,6 +31,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -99,7 +100,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 				  new NameValuePair("tab", tab.getId())))
 		  .append("\" class='btn btn-default").append(" btn-primary", selectedTab == tab)
 		  .append(" ", elementCssClass != null).append(elementCssClass, elementCssClass != null)
-		  .append("'><span>").append(tab.getLabel())
+		  .append("'><span>").append(StringHelper.escapeHtml(tab.getLabel()))
 		  .append("</span>")
 		  .append(" <i class='o_icon o_icon_update'> </i>", update)
 		  .append("</a>");

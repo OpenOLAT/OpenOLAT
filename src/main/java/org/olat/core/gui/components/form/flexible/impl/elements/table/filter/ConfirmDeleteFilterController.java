@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -37,8 +38,11 @@ import org.olat.core.util.Util;
  */
 public class ConfirmDeleteFilterController extends FormBasicController {
 	
-	public ConfirmDeleteFilterController(UserRequest ureq, WindowControl wControl) {
+	private final String filterName;
+	
+	public ConfirmDeleteFilterController(UserRequest ureq, WindowControl wControl, String filterName) {
 		super(ureq, wControl, "delete_filter", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
+		this.filterName = filterName;
 
 		initForm(ureq);
 	}
@@ -48,7 +52,7 @@ public class ConfirmDeleteFilterController extends FormBasicController {
 		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("filterName", "The name of the f.");//TODO table
+			layoutCont.contextPut("filterName", StringHelper.escapeHtml(filterName));
 		}
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
