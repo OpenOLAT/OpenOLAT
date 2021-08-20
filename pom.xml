@@ -70,7 +70,7 @@
 		<apache.log4j>2.14.1</apache.log4j>
 		<org.slf4j>1.7.32</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
-		<io.undertow>2.2.9.Final</io.undertow>
+		<io.undertow>2.2.10.Final</io.undertow>
 		<jackson.version>2.12.4</jackson.version>
 		<org.mysql.version>8.0.26</org.mysql.version>
 		<org.postgresql.version>42.2.23</org.postgresql.version>
@@ -78,7 +78,7 @@
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.2</version.drone>
-		<activemq.version>5.16.2</activemq.version>
+		<activemq.version>5.16.3</activemq.version>
 		<qtiworks.version>1.0.25</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -2324,7 +2324,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.19.0-SNAPSHOT</version>
+			<version>0.23.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Overwrite selenium dependency to okhttp v3 -->
 		<dependency>
@@ -2474,7 +2474,7 @@
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>
 			<artifactId>checkout-sdk</artifactId>
-			<version>1.0.3</version>
+			<version>1.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>
