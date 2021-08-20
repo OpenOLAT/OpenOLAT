@@ -2069,7 +2069,14 @@ function o_ffSetFocus(formId, formItemId){
 	if (o_info.lastFormFocusEl) {
 		var lastEl = jQuery('#' + o_info.lastFormFocusEl);
 		if (lastEl.length > 0) {
-			lastEl[0].focus();
+			var jLastEl = jQuery(lastEl[0]);
+			if(jLastEl.hasClass('hasDatepicker')) {
+				jLastEl.datepicker('option', 'showOn', '');
+				jLastEl.focus();
+				jLastEl.datepicker('option', 'showOn', 'focus');
+			} else {
+				jLastEl.focus();
+			}
 		} else {
 			o_info.lastFormFocusEl = 0;
 		}

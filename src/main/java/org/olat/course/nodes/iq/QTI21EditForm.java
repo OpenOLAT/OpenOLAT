@@ -230,6 +230,7 @@ public class QTI21EditForm extends FormBasicController {
 		startTestDateElement.setElementCssClass("o_qti_21_datetest_start");
 		startTestDateElement.setDateChooserTimeEnabled(true);
 		startTestDateElement.setMandatory(true);
+		startTestDateElement.addActionListener(FormEvent.ONCHANGE);
 		
 		Date endTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
 		endTestDateElement = uifactory.addDateChooser("qti_form_end_test_date", "qti.form.date.end", endTestDate, formLayout);
@@ -516,7 +517,9 @@ public class QTI21EditForm extends FormBasicController {
 				update();
 				updateAssessmentModeVisibility();
 			}
-		} else if(correctionModeEl == source) {
+		} else if(startTestDateElement == source) {
+			updateEndTestDate();
+ 		} else if(correctionModeEl == source) {
 			updateScoreVisibility();
 		} else if (assessmentModeEl == source) {
 			updateAssessmentModeVisibility();
@@ -544,6 +547,12 @@ public class QTI21EditForm extends FormBasicController {
 				leadTimeEl.setVisible(false);
 				followupTimeEl.setVisible(false);
 			}
+		}
+	}
+	
+	private void updateEndTestDate() {
+		if (endTestDateElement.isVisible() && endTestDateElement.getDate() == null) {
+			endTestDateElement.setDate(startTestDateElement.getDate());
 		}
 	}
 

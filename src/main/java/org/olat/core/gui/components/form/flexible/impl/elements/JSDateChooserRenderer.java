@@ -127,6 +127,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			.append("jQuery(function(){ jQuery('#").append(receiverId).append("').datepicker({\n")
 			.append("  dateFormat:'").append(format).append("',\n")
 			.append("  firstDay:1,\n")
+			.append("  showOn:'focus',\n")
 			.append("  monthNames:[")
 			  .append("'").append(dateTranslator.translate("month.long.jan")).append("',")
 			  .append("'").append(dateTranslator.translate("month.long.feb")).append("',")
