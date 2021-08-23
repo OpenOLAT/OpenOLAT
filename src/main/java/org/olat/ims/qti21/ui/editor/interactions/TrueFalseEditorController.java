@@ -68,7 +68,7 @@ public class TrueFalseEditorController extends FormBasicController {
 
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	private static final String[] layoutKeys = new String[] {
-			QTI21Constants.CSS_MATCH_SOURCE_LEFT, QTI21Constants.CSS_MATCH_SOURCE_RIGHT
+			QTI21Constants.CSS_MATCH_SOURCE_RIGHT, QTI21Constants.CSS_MATCH_SOURCE_LEFT
 		};
 	
 	private TextElement titleEl;
@@ -154,9 +154,11 @@ public class TrueFalseEditorController extends FormBasicController {
 		}
 		
 		String[] layoutValues = new String[]{
+				// the label are reverted because the label is the one choices (align checkbox), but
+				// it's a match interaction (align answers)
 				translate("form.imd.layout.left"), translate("form.imd.layout.right")
 			};
-		layoutEl = uifactory.addRadiosHorizontal("layout", "form.imd.layout", metadata, layoutKeys, layoutValues);
+		layoutEl = uifactory.addRadiosHorizontal("layout", "form.imd.alignment", metadata, layoutKeys, layoutValues);
 		layoutEl.setElementCssClass("o_sel_match_layout");
 		layoutEl.setEnabled(!restrictedEdit && !readOnly);
 		boolean found = false;
