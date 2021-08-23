@@ -16,7 +16,7 @@
 <tbody>
 #foreach ($item in $formitemnames)
 	#if ($f.isVisible($item))
-	<tr class="$f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end">
+	<tr class="$f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #elseif($f.hasWarning($item)) has-feedback has-warning #end">
 		<th class="col-left">#if ($f.hasLabel($item))
 			$r.render("${item}_LABEL", "$f.getItemId($item)")
 		#end
@@ -24,11 +24,13 @@
 			$r.render(${item}, "form")
 			#if($f.hasError($item))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#elseif($f.hasWarning($item))
+				<span class="o_icon o_icon_warn form-control-feedback"></span>
 			#end
 			#if($f.hasExample($item))
 			<div class="help-block">$r.render("${item}_EXAMPLE")</div>
 			#end
-			#if($f.hasError($item))
+			#if($f.hasError($item) || $f.hasWarning($item))
 				<div>$r.render("${item}_ERROR")</div>
 			#end
 		</td>

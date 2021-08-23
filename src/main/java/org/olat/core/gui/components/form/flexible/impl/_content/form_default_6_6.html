@@ -24,7 +24,7 @@
 
 #foreach ($item in $formitemnames)
 	#if ($f.isVisible($item))
-	<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end clearfix">
+	<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #elseif($f.hasWarning($item)) has-feedback has-warning #end clearfix">
 		#if ($f.hasLabel($item))
 			$r.render("${item}_LABEL", "$f.getItemId($item)", "col-sm-6")
 		#end
@@ -32,6 +32,8 @@
 			$r.render(${item}, "form")
 			#if($f.hasError($item))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#elseif($f.hasWarning($item))
+				<span class="o_icon o_icon_warn form-control-feedback"></span>
 			#end
 		</div>
 		#if($f.hasExample($item))
@@ -39,7 +41,7 @@
 				$r.render("${item}_EXAMPLE")
 			</div>
 		#end
-		#if($f.hasError($item))
+		#if($f.hasError($item) || $f.hasWarning($item))
 			<div class="col-sm-offset-6 col-sm-6">
 				$r.render("${item}_ERROR")
 			</div>

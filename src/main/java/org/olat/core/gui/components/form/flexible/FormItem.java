@@ -133,7 +133,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public final static String EXAMPLEC = "_EXAMPLE";
 
 	public final static String LABELC = "_LABEL";
-
+	
 	/**
 	 * called if just the form values must be remembered for the next render
 	 * process. Do not validate data and create error messages.
@@ -282,7 +282,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @param isMandatory Whether this form item should have a <i>mandatory</i> icon.
 	 */
 	public void setMandatory(boolean isMandatory);
-
+	
 	/**
 	 * Sets the i18n key for this form item's error message and displays the error message if showErro(true) is set.
 	 * 
@@ -291,6 +291,16 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 */
 	public void setErrorKey(String errorKey, String[] params);
 
+	/**
+	 * Sets the i18n key for this form item's error message and displays the error message if showErro(true) is set.
+	 * Further you can specify whether it is a warning or an error
+	 * 
+	 * @param errorKey
+	 * @param isWarning
+	 * @param params
+	 */
+	public void setErrorKey(String errorKey, boolean isWarning, String... params);
+	
 	/**
 	 * a complex "error" message, or a helper wizard to fix the error.<br>
 	 * It must be a form item itself, that starting the fixing workflow let the
@@ -310,7 +320,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * This method is used by a form infrastructure provider. <code>null</code>
 	 */
 	public Component getErrorC();
-
+	
 	/**
 	 * translated example text, wrapped in component
 	 * <p>
@@ -431,6 +441,12 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * 
 	 * @return
 	 */
+	public boolean hasWarning();
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public boolean hasLabel();
 
 	/**
@@ -456,7 +472,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @param show
 	 */
 	public void showError(boolean show);
-
+	
 	/**
 	 * error is resolved, e.g. hasError() should return false
 	 * and the error component gets invisible (and resetted)

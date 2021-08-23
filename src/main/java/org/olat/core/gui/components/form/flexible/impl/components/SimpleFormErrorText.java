@@ -42,7 +42,7 @@ import org.olat.core.util.StringHelper;
  * @author patrickb
  */
 public class SimpleFormErrorText extends FormBaseComponentImpl {
-	private static final ComponentRenderer RENDERER = new DefaultComponentRenderer() {
+	private static final ComponentRenderer ERROR_RENDERER = new DefaultComponentRenderer() {
 		@Override
 		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
@@ -55,14 +55,34 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 			}
 		}
 	};
+	
+	private static final ComponentRenderer WARNING_RENDERER = new DefaultComponentRenderer() {
+		@Override
+		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+				RenderResult renderResult, String[] args) {
+			SimpleFormErrorText stc = (SimpleFormErrorText) source;
+			if(StringHelper.containsNonWhitespace(stc.getText())) {
+			// error component only
+				sb.append("<div class='o_warning' id='o_c").append(source.getDispatchID()).append("'>")
+				  .append(stc.getText())
+				  .append("</div>");
+			}
+		}
+	};
 
 	private final String text;
+	private final boolean isWarning;
 
-	public SimpleFormErrorText(String name, String text) {
+	public SimpleFormErrorText(String name, String text, boolean isWarning) {
 		super(name);
 		this.text = text;
 		this.setDomReplacementWrapperRequired(false);
+		this.isWarning = isWarning;
 		setDirty(true);
+	}
+	
+	public SimpleFormErrorText(String name, String text) { 
+		this(name, text, false);
 	}
 	
 	public String getText() {
@@ -74,6 +94,6 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+		return isWarning ? WARNING_RENDERER : ERROR_RENDERER;
 	}
 }

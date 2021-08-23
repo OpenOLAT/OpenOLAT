@@ -78,6 +78,7 @@ public abstract class FormItemImpl implements InlineElement {
 	private boolean hasLabel = false;
 	private boolean hasExample = false;
 	protected boolean hasError = false;
+	protected boolean hasWarning = false;
 	private Form rootForm = null;
 	protected int action;
 	private Object userObject;
@@ -229,7 +230,7 @@ public abstract class FormItemImpl implements InlineElement {
 			labelPanel.setContent(labelC);
 		}
 		if(errorKey != null) {
-			errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams));
+			errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams), hasWarning());
 			errorPanel.setContent(errorComponent);
 		}
 		if(exampleKey != null) {
@@ -403,14 +404,26 @@ public abstract class FormItemImpl implements InlineElement {
 	 */
 	@Override
 	public void setErrorKey(String errorKey, String[] params) {
-		this.hasError = true;
+		setErrorKey(errorKey, false, params);
+	}
+	
+	@Override
+	public void setErrorKey(String errorKey, boolean isWarning, String... params) {
+		this.hasError = !isWarning;
+		this.hasWarning = isWarning;
 		this.errorKey = errorKey;
-		this.errorParams = params;
+		
+		// legacy check to prevent NPE when passing null to params instead of nothing
+		if (params != null && params.length == 1 && params[0] == null) {
+			this.errorParams = null;
+		} else {
+			this.errorParams = params;
+		}
 		if (getTranslator() != null) {
-			errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams));		
+			errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams), isWarning);		
 			errorPanel.setContent(errorComponent);
 		}
-		showError(hasError);
+		showError(true);
 		getRootForm().getInitialComponent().setDirty(true);
 	}
 
@@ -449,7 +462,7 @@ public abstract class FormItemImpl implements InlineElement {
 	public Component getErrorC() {
 		return errorPanel;
 	}
-
+	
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		getErrorC().setEnabled(isEnabled);
@@ -464,6 +477,7 @@ public abstract class FormItemImpl implements InlineElement {
 		if(labelC!=null) {
 			labelC.setEnabled(isEnabled);
 		}
+		
 		formItemIsEnabled = isEnabled;
 		if(getComponent()==null) return;
 		getComponent().setEnabled(isEnabled);
@@ -503,6 +517,11 @@ public abstract class FormItemImpl implements InlineElement {
 	public boolean hasExample(){
 		return hasExample;
 	}
+	
+	@Override
+	public boolean hasWarning() {
+		return hasWarning;
+	}
 
 	@Override
 	public void showLabel(boolean show){
@@ -530,7 +549,9 @@ public abstract class FormItemImpl implements InlineElement {
 	public void clearError(){
 		showError(false);
 		hasError = false;
+		hasWarning = false;
 	}
+	
 
 	@Override
 	public void showExample(boolean show){
@@ -637,6 +658,7 @@ public abstract class FormItemImpl implements InlineElement {
 		"[ena:"+isEnabled()+
 		", vis:"+isVisible()+
 		", err:"+hasError()+
+		", warn:"+hasWarning()+
 		", exa:"+hasExample()+
 		", lab:"+hasLabel();
 	}

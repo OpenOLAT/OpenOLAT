@@ -4,6 +4,9 @@
 	}
 	.o_warning {
 		@extend %o_warning;
+		margin-top: 1px;
+		margin-bottom: 0;
+		padding: 10px;
 	}
 	.o_info {
 		@extend %o_info;	

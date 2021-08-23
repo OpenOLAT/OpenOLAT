@@ -59,6 +59,12 @@ public class FormDecorator {
 		FormItem foco = getFormItem(formItemName);
 		return foco == null ? false : foco.hasError();
 	}
+	
+	public boolean hasWarning(String formItemName) {
+		FormItem foco = getFormItem(formItemName);
+		return foco == null ? false : foco.hasWarning();
+	}
+	
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormDecorator#hasExample(java.lang.String)
