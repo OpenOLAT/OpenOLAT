@@ -110,7 +110,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		collpaseFiltersButton = new FormLinkImpl(dispatchId.concat("_collapseFiltersButton"), "rCollapseFiltersButton", "collpase.filters", Link.BUTTON);
 		collpaseFiltersButton.setElementCssClass("o_button_details");
 		collpaseFiltersButton.setDomReplacementWrapperRequired(false);
-		collpaseFiltersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details_collaps");
+		collpaseFiltersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details_expand");
 		collpaseFiltersButton.setTranslator(translator);
 		components.put("rCollpaseFiltersButton", collpaseFiltersButton);
 		

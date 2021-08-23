@@ -201,6 +201,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	private void renderLargeSearch(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult) {
+		
+		Form theForm = ftE.getRootForm();
+		String dispatchId = ftE.getFormDispatchId();
 
 		sb.append("<div class='o_table_large_search o_noprint'>");
 		TextElement searchEl = ftE.getSearchElement();
@@ -211,6 +214,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			searchEl.setPlaceholderKey("search.placeholder", null);
 		}
 		renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
+		
+		// reset quick search
+		String id = ftE.getSearchElement().getFormDispatchId();
+		sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+				  new NameValuePair("reset-search", "true")))
+		  .append("\" class='btn btn-default o_reset_quick_search'><i class='o_icon o_icon_remove_filters' aria-label='")
+		  .append(translator.translate("aria.reset.search")).append("'> </i></a>");
+		
 		renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 		
 		// num. of entries
@@ -229,7 +241,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	private void renderSearchAndOptions(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-
+		
+		Form theForm = ftE.getRootForm();
+		String dispatchId = ftE.getFormDispatchId();
 		Component searchCmp = ftE.getExtendedSearchComponent();
 		
 		boolean empty = ftE.getTableDataModel().getRowCount() == 0;
@@ -252,6 +266,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				searchEl.setPlaceholderKey(null, null);
 			}
 			renderFormItem(renderer, sb, searchEl, ubu, translator, renderResult, null);
+			
+			// reset quick search
+			String id = ftE.getSearchElement().getFormDispatchId();
+			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
+			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+					  new NameValuePair("reset-search", "true")))
+			  .append("\" class='btn btn-default o_reset_quick_search'><i class='o_icon o_icon_remove_filters' aria-label='")
+			  .append(translator.translate("aria.reset.search")).append("'> </i></a>");
 			
 			if(ftE.getExtendedSearchButton() != null) {
 				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
@@ -321,9 +343,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		
 		if(StringHelper.containsNonWhitespace(filterIndication)) {
-			Form theForm = ftE.getRootForm();
-			String dispatchId = ftE.getFormDispatchId();
-			
 			sb.append("<div class='o_table_tools_indications'>").append(filterIndication)
 				// remove filter
 			  .append(" <a href=\"javascript:")
@@ -374,7 +393,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("reset-search", "true")))
-				  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters' aria-label='")
+				  .append("\" class='btn btn-default o_reset_quick_search'><i class='o_icon o_icon_remove_filters' aria-label='")
 				  .append(translator.translate("aria.reset.search")).append("'> </i></a>");
 							
 				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);

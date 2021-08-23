@@ -1949,12 +1949,19 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		currentPage = 0;
 		if(dataSource != null) {
 			resetInternComponents();
+			boolean clear = this.filterTabsEl != null && filterTabsEl.getSelectedTab() != null
+					&& filterTabsEl.getSelectedTab().getSelectionBehavior() == TabSelectionBehavior.clear;
+			
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
-				((FlexiTableDataSource<?>)dataModel).load(null, getSelectedFilters(), 0, getPageSize(), orderBy);
+				if(!clear) {
+					((FlexiTableDataSource<?>)dataModel).load(null, getSelectedFilters(), 0, getPageSize(), orderBy);
+				}
 			} else {
 				dataSource.clear();
-				dataSource.load(null, null, 0, getPageSize(), orderBy);
+				if(!clear) {
+					dataSource.load(null, null, 0, getPageSize(), orderBy);
+				}
 			}
 		} else {
 			getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(this, FormEvent.ONCLICK));

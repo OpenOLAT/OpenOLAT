@@ -179,6 +179,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private final TooledStackedPanel stackPanel;
 	
 	private FlexiFilterTabPreset myTab;
+	private FlexiFilterTabPreset myCoursesTab;
 	private FlexiFilterTabPreset bookmarkTab;
 	private FlexiFilterTabPreset searchTab;
 	private FlexiFilterTabPreset deletedTab;
@@ -485,6 +486,12 @@ public class AuthorListController extends FormBasicController implements Activat
 			tabs.add(bookmarkTab);
 		}
 		
+		myCoursesTab = FlexiFilterTabPreset.presetWithImplicitFilters("MyCourses", translate("search.my.courses"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned"),
+						FlexiTableFilterValue.valueOf(AuthorSourceFilter.TYPE, "CourseModule")));
+		myCoursesTab.setElementCssClass("o_sel_author_courses");
+		tabs.add(myCoursesTab);
+		
 		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.my"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned")));
 		myTab.setElementCssClass("o_sel_author_my");
@@ -574,7 +581,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			resourceValues.add(new SelectionValue(type, translate(type), null, "o_icon o_icon-fw ".concat(iconLeftCss), null, true));
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"),
-				AuthorSourceFilter.TYPE.name(), resourceValues, false));
+				AuthorSourceFilter.TYPE.name(), resourceValues, true));
 		
 		// taxonomy
 		SelectionValues taxonomyValues = getTaxonomyLevels();
