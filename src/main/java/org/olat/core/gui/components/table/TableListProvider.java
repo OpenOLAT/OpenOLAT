@@ -41,7 +41,7 @@ public class TableListProvider implements ListProvider {
 	/**
 	 * Limit the number of search-suggestions in table-search-popup
 	 */
-	private static final int MAX_TABLE_SEARCH_RESULT_ENTRIES = 20;
+	private static final int MAX_TABLE_SEARCH_RESULT_ENTRIES = 15;
 	
 	private final Table table;
 	
@@ -60,6 +60,7 @@ public class TableListProvider implements ListProvider {
 		Set<String> searchEntries = new TreeSet<>();
 		int entryCounter = 1;
 		// loop over whole data-model
+		String lowerSearchValue = searchValue.toLowerCase();
 		
 		TableDataModel<?> unfilteredModel = table.getUnfilteredTableDataModel();
 		
@@ -95,22 +96,25 @@ public class TableListProvider implements ListProvider {
 
 					if (obj instanceof String) {
 						String valueString = (String)obj;
+
 						// Remove any HTML markup from the value
-						valueString = htmlFilter.filter(valueString);
+						String filteredValueString = htmlFilter.filter(valueString);
 						// Finally compare with search value based on a simple lowercase match
-						if (valueString.toLowerCase().indexOf(searchValue.toLowerCase()) != -1) {
+						if (filteredValueString.toLowerCase().contains(lowerSearchValue)
+								|| valueString.toLowerCase().contains(lowerSearchValue)) {
 							if (searchEntries.add(valueString) ) {
 								// Add to receiver list same entries only once
 								if (searchEntries.size() == 1) {
 									// before first entry, add searchValue. But add only when one search match
-									receiver.addEntry( searchValue, searchValue );
+									receiver.addEntry(searchValue, searchValue);
 								}
 								// limit the number of entries
 								if (entryCounter++ > MAX_TABLE_SEARCH_RESULT_ENTRIES) {
 									receiver.addEntry("...", "...");
 									break a_a;
 								}
-								receiver.addEntry(valueString, valueString);
+								String val = StringHelper.xssScan(valueString);
+								receiver.addEntry(val, val);
 							}								
 						}
 					}
