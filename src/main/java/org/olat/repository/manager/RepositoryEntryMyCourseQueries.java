@@ -530,61 +530,61 @@ public class RepositoryEntryMyCourseQueries {
 			switch(orderBy) {
 				case automatic://! the sorting is reverse
 					if(asc) {
-						sb.append(" order by recentLaunch desc nulls last, lifecycle.validFrom desc nulls last, marks desc nulls last, lower(v.displayname) asc ");
+						sb.append(" order by recentLaunch desc nulls last, lifecycle.validFrom desc nulls last, marks desc nulls last, lower(v.displayname) asc, v.key asc ");
 					} else {
-						sb.append(" order by recentLaunch asc nulls last, lifecycle.validFrom asc nulls last, marks asc nulls last, lower(v.displayname) desc ");
+						sb.append(" order by recentLaunch asc nulls last, lifecycle.validFrom asc nulls last, marks asc nulls last, lower(v.displayname) desc, v.key desc ");
 					}
 					break;
 				case favorit:
 					if(asc) {
-						sb.append(" order by marks asc, lower(v.displayname) asc");
+						sb.append(" order by marks asc, lower(v.displayname) asc, v.key asc");
 					} else {
-						sb.append(" order by marks desc, lower(v.displayname) desc");
+						sb.append(" order by marks desc, lower(v.displayname) desc, v.key desc");
 					}
 					break;
 				case lastVisited:
 					sb.append(" order by recentLaunch ");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case passed:
 					sb.append(" order by passed ");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case score:
 					sb.append(" order by score ");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case completion:
 					sb.append(" order by completion ");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case title:
 					//life cycle always sorted from the newer to the older.
 					if(asc) {
-						sb.append(" order by lower(v.displayname) asc, lifecycle.validFrom desc nulls last, lower(v.externalRef) asc nulls last");
+						sb.append(" order by lower(v.displayname) asc, lifecycle.validFrom desc nulls last, lower(v.externalRef) asc nulls last, v.key asc");
 					} else {
-						sb.append(" order by lower(v.displayname) desc, lifecycle.validFrom desc nulls last, lower(v.externalRef) desc nulls last");
+						sb.append(" order by lower(v.displayname) desc, lifecycle.validFrom desc nulls last, lower(v.externalRef) desc nulls last, v.key desc");
 					}
 					break;
 				case lifecycle:
 					sb.append(" order by lifecycle.validFrom ");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case author:
 					sb.append(" order by lower(v.authors)");
-					appendAsc(sb, asc).append(" nulls last");
+					appendAsc(sb, asc).append(" nulls last, v.key asc");
 					break;
 				case location:
 					sb.append(" order by lower(v.location)");
-					appendAsc(sb, asc).append(" nulls last");
+					appendAsc(sb, asc).append(" nulls last, v.key asc");
 					break;	
 				case creationDate:
 					sb.append(" order by v.creationDate ");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc, v.key asc");
 					break;
 				case lastModified:
 					sb.append(" order by v.lastModified ");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc, v.key asc");
 					break;
 				case rating:
 					sb.append(" order by v.statistics.rating ");
@@ -593,7 +593,7 @@ public class RepositoryEntryMyCourseQueries {
 					} else {
 						sb.append(" desc nulls last");
 					}
-					sb.append(", lower(v.displayname) asc");
+					sb.append(", lower(v.displayname) asc, v.key asc");
 					break;
 				case launchCounter:
 					sb.append(" order by v.statistics.launchCounter ");
@@ -602,7 +602,7 @@ public class RepositoryEntryMyCourseQueries {
 					} else {
 						sb.append(" desc nulls last");
 					}
-					sb.append(", lower(v.displayname) asc");
+					sb.append(", lower(v.displayname) asc, v.key asc");
 					break;
 				case key:
 					sb.append(" order by v.key");
@@ -610,35 +610,35 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				case displayname:
 					sb.append(" order by lower(v.displayname)");
-					appendAsc(sb, asc);	
+					appendAsc(sb, asc).append(", v.key asc");	
 					break;
 				case externalRef:
 					sb.append(" order by lower(v.externalRef)");
-					appendAsc(sb, asc);	
+					appendAsc(sb, asc).append(", v.key asc");
 					break;
 				case externalId:
 					sb.append(" order by lower(v.externalId)");
-					appendAsc(sb, asc);	
+					appendAsc(sb, asc).append(", v.key asc");
 					break;
 				case lifecycleLabel:
 					sb.append(" order by lifecycle.label");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case lifecycleSoftkey:
 					sb.append(" order by lifecycle.softKey");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case lifecycleStart:
 					sb.append(" order by lifecycle.validFrom ")
-					  .appendAsc(asc).append(" nulls last, lower(v.displayname) asc");
+					  .appendAsc(asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case lifecycleEnd:
 					sb.append(" order by lifecycle.validTo ");
-					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc, v.key asc");
 					break;
 				case type:
 					sb.append(" order by res.resName ");
-					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc, v.key asc");
 					break;
 				case custom: 
 					if (params.getParentEntry() != null) {
@@ -662,9 +662,9 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				default:
 					if(asc) {
-						sb.append(" order by lower(v.displayname) asc, lifecycle.validFrom desc nulls last, lower(v.externalRef) asc nulls last");
+						sb.append(" order by lower(v.displayname) asc, lifecycle.validFrom desc nulls last, lower(v.externalRef) asc nulls last, v.key asc");
 					} else {
-						sb.append(" order by lower(v.displayname) desc, lifecycle.validFrom desc nulls last, lower(v.externalRef) desc nulls last");
+						sb.append(" order by lower(v.displayname) desc, lifecycle.validFrom desc nulls last, lower(v.externalRef) desc nulls last, v.key asc");
 					}
 					break;
 			}
