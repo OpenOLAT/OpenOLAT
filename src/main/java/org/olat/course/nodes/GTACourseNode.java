@@ -70,7 +70,6 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.LearningPathNodeHandler;
@@ -98,6 +97,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.user.UserManager;
 
 /**
@@ -484,10 +484,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		if (context != null) {
 			CopyType taskCopyType = null;
 			if (context.isCustomConfigsLoaded()) {
-				OverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
+				CopyCourseOverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
 				
-				if (nodeSettings != null && nodeSettings.getResourceChooser() != null) {
-					taskCopyType = CopyType.valueOf(nodeSettings.getResourceChooser().getSelectedKey());
+				if (nodeSettings != null) {
+					taskCopyType = nodeSettings.getResourceCopyType();
 				}
 			} else if (context.getTaskCopyType() != null) {
 				taskCopyType = context.getTaskCopyType();				

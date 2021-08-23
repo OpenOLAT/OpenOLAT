@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.Util;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.general.OwnersStep;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,6 @@ public class CopyCourseStepsStep extends BasicStep {
 		
 		setI18nTitleAndDescr("wizard.copy.course.steps", null);
 		setNextStep(OwnersStep.create(ureq, steps));
-		//setNextStep(steps.showNodesOverview() ? CourseOverviewStep.create(ureq, steps) : NOSTEP);
 	}
 
 	@Override
@@ -134,6 +134,20 @@ public class CopyCourseStepsStep extends BasicStep {
 			// Help text
 			setFormDescription("copy.steps.info");
 			
+			// Buttons
+			FormLayoutContainer buttonWrapperLayout = FormLayoutContainer.createDefaultFormLayout_2_10("buttonWrapperLayout", getTranslator());
+			buttonWrapperLayout.setRootForm(mainForm);
+			formLayout.add(buttonWrapperLayout);
+			
+			String page = Util.getPackageVelocityRoot(getClass()) + "/buttons_pull_right.html";
+			FormLayoutContainer buttonLayout = FormLayoutContainer.createCustomFormLayout("buttonLayout", getTranslator(), page);
+			buttonWrapperLayout.add(buttonLayout);
+			
+			customizeAllLink = uifactory.addFormLink("customize.all", buttonLayout, Link.BUTTON);
+			customizeAllLink.setElementCssClass("pull-right");
+			resetToDefaultLink = uifactory.addFormLink("default.all", buttonLayout, Link.BUTTON);
+			resetToDefaultLink.setElementCssClass("pull-right");
+			
 			// Create new list for all options
 			allOptions = new ArrayList<>();
 			
@@ -152,22 +166,28 @@ public class CopyCourseStepsStep extends BasicStep {
 			formLayout.add(memebersManagementLayout);
 			
 			// Owner settings
-			SelectionValues ownerSettings = new SelectionValues(customize, copy, ignore);
-			ownerSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("owners", memebersManagementLayout, ownerSettings);
-			ownerSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(ownerSettingsEl);
+			if (context.hasOwners()) {
+				SelectionValues ownerSettings = new SelectionValues(customize, copy, ignore);
+				ownerSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("owners", memebersManagementLayout, ownerSettings);
+				ownerSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(ownerSettingsEl);
+			}
 			
 			// Coach settings
-			SelectionValues coachSettings = new SelectionValues(customize, copy, ignore);
-			coachSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("coaches", memebersManagementLayout, coachSettings);
-			coachSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(coachSettingsEl);
+			if (context.hasCoaches()) {
+				SelectionValues coachSettings = new SelectionValues(customize, copy, ignore);
+				coachSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("coaches", memebersManagementLayout, coachSettings);
+				coachSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(coachSettingsEl);
+			}
 			
 			// Group settings
-			SelectionValues groupSettings = new SelectionValues(customize, copy, ignore, reference);
-			groupSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("groups", memebersManagementLayout, groupSettings);
-			groupSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(groupSettingsEl);
+			if (context.hasGroups()) {
+				SelectionValues groupSettings = new SelectionValues(customize, copy, ignore, reference);
+				groupSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("groups", memebersManagementLayout, groupSettings);
+				groupSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(groupSettingsEl);
+			}
 
 			// Node specific settings
 			if (context.hasNodeSpecificSettings()) {
@@ -222,17 +242,21 @@ public class CopyCourseStepsStep extends BasicStep {
 			formLayout.add(additionalSettingsLayout);
 			
 			// Publication settings
-			SelectionValues publicationSettings = new SelectionValues(customize, copy, ignore);
-			publicationSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("publication", additionalSettingsLayout, publicationSettings);
-			publicationSettingsEl.setHelpTextKey("publication.help", null);
-			publicationSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(publicationSettingsEl);
+			if (context.hasCatalogEntry()) {
+				SelectionValues publicationSettings = new SelectionValues(customize, copy, ignore);
+				publicationSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("publication", additionalSettingsLayout, publicationSettings);
+				publicationSettingsEl.setHelpTextKey("publication.help", null);
+				publicationSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(publicationSettingsEl);
+			}
 
 			// Disclaimer settings
-			SelectionValues disclaimerSettings = new SelectionValues(customize, copy, ignore);
-			disclaimerSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("disclaimer", additionalSettingsLayout, disclaimerSettings);
-			disclaimerSettingsEl.addActionListener(FormEvent.ONCHANGE);
-			allOptions.add(disclaimerSettingsEl);
+			if (context.hasDisclaimer()) {
+				SelectionValues disclaimerSettings = new SelectionValues(customize, copy, ignore);
+				disclaimerSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("disclaimer", additionalSettingsLayout, disclaimerSettings);
+				disclaimerSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(disclaimerSettingsEl);
+			}
 
 			// Reminder steps
 			if (context.hasReminders()) {
@@ -264,13 +288,12 @@ public class CopyCourseStepsStep extends BasicStep {
 				assessmentModeSettingsEl.addActionListener(FormEvent.ONCHANGE);
 				allOptions.add(assessmentModeSettingsEl);
 			}
-
-			// Buttons
-			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-			additionalSettingsLayout.add(buttonLayout);
 			
-			customizeAllLink = uifactory.addFormLink("customize.all", buttonLayout, Link.BUTTON);
-			resetToDefaultLink = uifactory.addFormLink("default.all", buttonLayout, Link.BUTTON);
+			additionalSettingsLayout.setVisible(false);
+			for (FormItem item : additionalSettingsLayout.getFormItems()) {
+				additionalSettingsLayout.setVisible(true);
+				break;
+			}
 		}
 		
 		private void loadDefaultConfig(UserRequest ureq) {
@@ -394,59 +417,69 @@ public class CopyCourseStepsStep extends BasicStep {
 		
 		private void saveStepConfig(UserRequest ureq) {
 			// Group settings
-			context.setGroupCopyType(context.getCopyType(groupSettingsEl.getSelectedKey()));
-			steps.setEditGroups(groupSettingsEl.isKeySelected(CopyType.custom.name()));
+			if (groupSettingsEl != null) {
+				context.setGroupCopyType(context.getCopyType(groupSettingsEl.getSelectedKey()));
+				steps.setEditGroups(groupSettingsEl.isKeySelected(CopyType.custom.name()));
+			}
 
 			// Owner settings
-			context.setOwnersCopyType(context.getCopyType(ownerSettingsEl.getSelectedKey()));
-			steps.setEditOwners(ownerSettingsEl.isKeySelected(CopyType.custom.name()));
+			if (ownerSettingsEl != null) {
+				context.setOwnersCopyType(context.getCopyType(ownerSettingsEl.getSelectedKey()));
+				steps.setEditOwners(ownerSettingsEl.isKeySelected(CopyType.custom.name()));
+			}
 
 			// Coach settings
-			context.setCoachesCopyType(context.getCopyType(coachSettingsEl.getSelectedKey()));
-			steps.setEditCoaches(coachSettingsEl.isKeySelected(CopyType.custom.name()));
+			if (coachSettingsEl != null) {
+				context.setCoachesCopyType(context.getCopyType(coachSettingsEl.getSelectedKey()));
+				steps.setEditCoaches(coachSettingsEl.isKeySelected(CopyType.custom.name()));
+			}
 
 			// Publication settings
-			context.setCatalogCopyType(context.getCopyType(publicationSettingsEl.getSelectedKey()));
-			steps.setEditCatalog(publicationSettingsEl.isKeySelected(CopyType.custom.name()));
+			if (publicationSettingsEl != null) {
+				context.setCatalogCopyType(context.getCopyType(publicationSettingsEl.getSelectedKey()));
+				steps.setEditCatalog(publicationSettingsEl.isKeySelected(CopyType.custom.name()));
+			}
 
 			// Disclaimer settings
-			context.setDisclaimerCopyType(context.getCopyType(disclaimerSettingsEl.getSelectedKey()));
-			steps.setEditDisclaimer(disclaimerSettingsEl.isKeySelected(CopyType.custom.name()));
+			if (disclaimerSettingsEl != null) {
+				context.setDisclaimerCopyType(context.getCopyType(disclaimerSettingsEl.getSelectedKey()));
+				steps.setEditDisclaimer(disclaimerSettingsEl.isKeySelected(CopyType.custom.name()));
+			}
 
 			// Task settings
-			if (context.hasTask()) {
+			if (taskSettingsEl != null) {
 				context.setTaskCopyType(context.getCopyType(taskSettingsEl.getSelectedKey()));
 			}
 			
 			// Blog settings
-			if (context.hasBlog()) {
+			if (blogSettingsEl != null) {
 				context.setBlogCopyType(context.getCopyType(blogSettingsEl.getSelectedKey()));
 			}
 
 			// Wiki settings
-			if (context.hasWiki()) {
+			if (wikiSettingsEl != null) {
 				context.setWikiCopyType(context.getCopyType(wikiSettingsEl.getSelectedKey()));
 			}
 
 			// Folder settings
-			if (context.hasFolder()) {
+			if (folderSettingsEl != null) {
 				context.setFolderCopyType(context.getCopyType(folderSettingsEl.getSelectedKey()));
 			}
 
 			// Lecture block settings
-			if (context.hasLectureBlocks()) {
+			if (lectureBlockSettingsEl != null) {
 				context.setLectureBlockCopyType(context.getCopyType(lectureBlockSettingsEl.getSelectedKey()));
 				steps.setEditLectureBlocks(lectureBlockSettingsEl.isKeySelected(CopyType.custom.name()));
 			}
 
 			// Reminder settings
-			if (context.hasDateDependantReminders()) {
+			if (reminderSettingsEl != null) {
 				context.setReminderCopyType(context.getCopyType(reminderSettingsEl.getSelectedKey()));
 				steps.setEditReminders(reminderSettingsEl.isKeySelected(CopyType.custom.name()));
 			}
 
 			// Assessment mode settings
-			if (context.hasAssessmentModes()) {
+			if (assessmentModeSettingsEl != null) {
 				context.setAssessmentModeCopyType(context.getCopyType(assessmentModeSettingsEl.getSelectedKey()));
 				steps.setEditAssessmentModes(assessmentModeSettingsEl.isKeySelected(CopyType.custom.name()));
 			}

@@ -58,9 +58,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.editor.EditorMainController;
-import org.olat.course.editor.overview.OverviewDataModel;
-import org.olat.course.editor.overview.OverviewDataModel.OverviewCols;
-import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BlogCourseNode;
@@ -71,6 +68,9 @@ import org.olat.course.nodes.WikiCourseNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewDataModel;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewDataModel.CopyCourseOverviewCols;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
 import org.olat.repository.ui.author.copy.wizard.dates.MoveDateConfirmController;
@@ -117,7 +117,7 @@ public class CourseOverviewStep extends BasicStep {
 		private CopyCourseContext context;
 		
 		private FlexiTableElement tableEl;
-		private OverviewDataModel dataModel;
+		private CopyCourseOverviewDataModel dataModel;
 		
 		private CloseableModalController cmc;
 		private MoveDateConfirmController moveDateConfirmController;
@@ -145,7 +145,49 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void formOK(UserRequest ureq) {			
+			saveDatesToContext(context, dataModel.getObjects());
+			removeFormElementsFromContext(context);
+			
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);			
+		}
+		
+		private void saveDatesToContext(CopyCourseContext context, List<CopyCourseOverviewRow> rows) {
+			for (CopyCourseOverviewRow row : rows) {
+				if (row.getObligationChooser() != null) {
+					row.setAssesssmentObligation(AssessmentObligation.valueOf(row.getObligationChooser().getSelectedKey()));
+				}
+				
+				if (row.getResourceCopyType() != null) {
+					row.setResourceCopyType(CopyType.valueOf(row.getResourceChooser().getSelectedKey()));
+				}
+				
+				if (row.getNewStartDateChooser() != null) {
+					row.setNewStartDate(row.getNewStartDateChooser().getDate());
+				}
+				
+				if (row.getNewEndDateChooser() != null ) {
+					row.setNewEndDate(row.getNewEndDateChooser().getDate());
+				}
+			}
+			
+			context.setCourseNodes(rows);
+		}
+		
+		private void removeFormElementsFromContext(CopyCourseContext context) {
+			List<CopyCourseOverviewRow> rows = context.getCourseNodes();
+			
+			if (rows == null || rows.isEmpty()) {
+				return;
+			}
+			
+			for (CopyCourseOverviewRow row : rows) {
+				row.setObligationChooser(null);
+				row.setResourceChooser(null);
+				row.setNewEndDateChooser(null);
+				row.setNewStartDateChooser(null);
+			}
+			
+			context.setCourseNodes(rows);
 		}
 
 		@Override
@@ -156,21 +198,21 @@ public class CourseOverviewStep extends BasicStep {
 			intendedNodeRenderer.setIndentationEnabled(false);
 			FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer);
 			
-			DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(OverviewCols.node, nodeRenderer);
+			DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(CopyCourseOverviewCols.node, nodeRenderer);
 			nodeModel.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(nodeModel);
 						
 			if (context.isLearningPath()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.obligationChooser));
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.startChooser));
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.endChooser));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.obligationChooser));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.startChooser));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.endChooser));
 			}
 			
 			if (context.hasNodeSpecificSettings()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.resourceChooser));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.resourceChooser));
 			}
 									
-			dataModel = new OverviewDataModel(columnsModel);
+			dataModel = new CopyCourseOverviewDataModel(columnsModel);
 			tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 			tableEl.setEmptyTableMessageKey("table.empty");
 			tableEl.setExportEnabled(false);
@@ -223,7 +265,7 @@ public class CourseOverviewStep extends BasicStep {
 			List<Integer> dateDependantNodesRows = new ArrayList<>();
 			int rowCount = 0;
 			
-			for (OverviewRow row : context.getCourseNodes()) {
+			for (CopyCourseOverviewRow row : context.getCourseNodes()) {
 				if (row.getLearningPathConfigs() != null) {
 					if (row.getLearningPathConfigs().getObligation() != null) {
 						// Obligation chooser
@@ -236,26 +278,28 @@ public class CourseOverviewStep extends BasicStep {
 						}
 						
 						// Start date chooser
-						if (row.getStartChooser() == null) {
-							Date startDate = calculateDate(row.getStart(), context.getDateDifference());
-							DateChooser startDateChooser = uifactory.addDateChooser("start_" + row.getCourseNode().getIdent(), startDate, tableItems);
-							startDateChooser.setUserObject(row);
-							startDateChooser.addActionListener(FormEvent.ONCHANGE);
-							startDateChooser.setInitialDate(startDate);
-							startDateChooser.setDateChooserTimeEnabled(true);
-							row.setStartChooser(startDateChooser);
+						Date startDate = calculateDate(row.getStart(), context.getDateDifference());
+						DateChooser startDateChooser = uifactory.addDateChooser("start_" + row.getCourseNode().getIdent(), startDate, tableItems);
+						startDateChooser.setUserObject(row);
+						startDateChooser.addActionListener(FormEvent.ONCHANGE);
+						startDateChooser.setInitialDate(startDate);
+						startDateChooser.setDateChooserTimeEnabled(true);
+						row.setNewStartDateChooser(startDateChooser);
+						if (row.getNewStartDate() != null) {
+							startDateChooser.setDate(row.getNewStartDate());
 						}
 						
 						// End date chooser
-						if (row.getEndChooser() == null) {
-							Date endDate = calculateDate(row.getEnd(), context.getDateDifference());
-							DateChooser endDateChooser = uifactory.addDateChooser("end_" + row.getCourseNode().getIdent(), endDate, tableItems);
-							endDateChooser.setUserObject(row);
-							endDateChooser.addActionListener(FormEvent.ONCHANGE);
-							endDateChooser.setInitialDate(endDate);
-							endDateChooser.setDateChooserTimeEnabled(true);
-							endDateChooser.setVisible(row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name()));
-							row.setEndChooser(endDateChooser);
+						Date endDate = calculateDate(row.getEnd(), context.getDateDifference());
+						DateChooser endDateChooser = uifactory.addDateChooser("end_" + row.getCourseNode().getIdent(), endDate, tableItems);
+						endDateChooser.setUserObject(row);
+						endDateChooser.addActionListener(FormEvent.ONCHANGE);
+						endDateChooser.setInitialDate(endDate);
+						endDateChooser.setDateChooserTimeEnabled(true);
+						endDateChooser.setVisible(row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name()));
+						row.setNewEndDateChooser(endDateChooser);
+						if (row.getNewEndDate() != null) {
+							endDateChooser.setDate(row.getNewEndDate());
 						}
 					}
 				}
@@ -341,7 +385,7 @@ public class CourseOverviewStep extends BasicStep {
 				if (event instanceof DetailsToggleEvent) {
 					DetailsToggleEvent dte = (DetailsToggleEvent)event;
 					if (dte.isVisible()) {
-						OverviewRow row = dataModel.getObject(dte.getRowIndex());
+						CopyCourseOverviewRow row = dataModel.getObject(dte.getRowIndex());
 						courseNodeDatesListController.updateCourseNode(row.getCourseNode(), ureq);
 					}
 				}
@@ -351,7 +395,7 @@ public class CourseOverviewStep extends BasicStep {
 				SingleSelection sourceSelection = (SingleSelection) source;
 				
 				if (sourceSelection.getName().startsWith("obligation")) {
-					OverviewRow row = (OverviewRow) sourceSelection.getUserObject();
+					CopyCourseOverviewRow row = (CopyCourseOverviewRow) sourceSelection.getUserObject();
 					updateVisibility(row);
 				}
 			} else if (source instanceof DateChooser) {
@@ -419,7 +463,7 @@ public class CourseOverviewStep extends BasicStep {
 			cmc.activate();
 		}
 		
-		private void moveAllDates(MoveDatesEvent moveDatesEvent, OverviewDataModel model) {
+		private void moveAllDates(MoveDatesEvent moveDatesEvent, CopyCourseOverviewDataModel model) {
 			DateChooser dateChooser = moveDatesEvent.getDateChooser();
 			
 			if (dateChooser == null || dateChooser.getInitialDate() == null || dateChooser.getDate() == null) {
@@ -428,9 +472,9 @@ public class CourseOverviewStep extends BasicStep {
 			
 			long difference = dateChooser.getDate().getTime() - dateChooser.getInitialDate().getTime();
 			
-			for (OverviewRow row : model.getObjects()) {
-				DateChooser start = row.getStartChooser();
-				DateChooser end = row.getEndChooser();
+			for (CopyCourseOverviewRow row : model.getObjects()) {
+				DateChooser start = row.getNewStartDateChooser();
+				DateChooser end = row.getNewEndDateChooser();
 				
 				if (start != null && !start.equals(dateChooser) && start.getDate() != null) {
 					if ((moveDatesEvent.isMoveAllAfterCurrentDate() && !start.getInitialDate().before(dateChooser.getInitialDate())) || !moveDatesEvent.isMoveAllAfterCurrentDate()) {
@@ -454,9 +498,9 @@ public class CourseOverviewStep extends BasicStep {
 			dateChooser.setInitialDate(dateChooser.getDate());
 		}
 		
-		private void updateVisibility(OverviewRow row) {
+		private void updateVisibility(CopyCourseOverviewRow row) {
 			boolean endChooserVisible = row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name());
-			row.getEndChooser().setVisible(endChooserVisible);
+			row.getNewEndDateChooser().setVisible(endChooserVisible);
 		}
 		
 	}

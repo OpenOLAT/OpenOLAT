@@ -103,7 +103,7 @@ public class CourseNodeDatesListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// If there are no dates, stop here
-		if (!courseNode.hasDates()) {
+		if (courseNode == null || !courseNode.hasDates()) {
 			return;
 		}
 		

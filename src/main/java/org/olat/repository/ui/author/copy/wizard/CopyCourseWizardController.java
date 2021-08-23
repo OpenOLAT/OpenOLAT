@@ -45,6 +45,7 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.learningpath.FullyAssessedTrigger;
@@ -60,9 +61,14 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.MemberViewQueries;
+import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.MemberView;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -74,9 +80,11 @@ import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.ReminderRules;
 import org.olat.modules.reminder.rule.BeforeDateRuleSPI;
 import org.olat.modules.reminder.rule.DateRuleSPI;
+import org.olat.repository.CatalogEntry;
 import org.olat.repository.CopyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -117,7 +125,11 @@ public class CopyCourseWizardController extends BasicController {
 	private MemberViewQueries memberViewQueries;
 	@Autowired
 	private BaseSecurityManager securityManager;
-
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CatalogManager catalogManager;
+	
 	public CopyCourseWizardController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, ICourse course) {
 		super(ureq, wControl);
 		
@@ -144,7 +156,7 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.loadFromWizardConfig(wizardModule);
 		
 		TreeNode rootNode = course.getEditorTreeModel().getRootNode();
-		List<OverviewRow> courseNodes = new ArrayList<>();
+		List<CopyCourseOverviewRow> courseNodes = new ArrayList<>();
 		forgeRows(courseNodes, rootNode, 0, null);
 		
 		copyContext.setCourseNodes(courseNodes);
@@ -158,6 +170,11 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.setHasReminders(hasReminders(sourceEntry));
 		copyContext.setAssessmentModes(hasAssessmentModes(sourceEntry));
 		copyContext.setNewCoaches(getCoaches(sourceEntry));
+		copyContext.setHasGroups(hasGroups(sourceEntry));
+		copyContext.setHasCoaches(!copyContext.getNewCoaches().isEmpty());
+		copyContext.setHasOwners(hasOwners(sourceEntry));
+		copyContext.setHasDisclaimer(hasDisclaimer(course));
+		copyContext.setHasCatalogEntry(hasCatalogEntry(sourceEntry));
 		
         CopyCourseGeneralStep copyCourseStep = new CopyCourseGeneralStep(ureq, copySteps, copyContext);
         
@@ -198,10 +215,10 @@ public class CopyCourseWizardController extends BasicController {
 		return copyEntry;
 	}
 	
-	private void forgeRows(List<OverviewRow> rows, INode node, int recursionLevel, OverviewRow parent) {
+	private void forgeRows(List<CopyCourseOverviewRow> rows, INode node, int recursionLevel, CopyCourseOverviewRow parent) {
 		if (node instanceof CourseEditorTreeNode) {
 			CourseEditorTreeNode editorNode = (CourseEditorTreeNode)node;
-			OverviewRow row = forgeRow(editorNode, recursionLevel, parent);
+			CopyCourseOverviewRow row = forgeRow(editorNode, recursionLevel, parent);
 			rows.add(row);
 			
 			int childCount = editorNode.getChildCount();
@@ -212,9 +229,9 @@ public class CopyCourseWizardController extends BasicController {
 		}
 	}
 
-	private OverviewRow forgeRow(CourseEditorTreeNode editorNode, int recursionLevel, OverviewRow parent) {
+	private CopyCourseOverviewRow forgeRow(CourseEditorTreeNode editorNode, int recursionLevel, CopyCourseOverviewRow parent) {
 		CourseNode courseNode = editorNode.getCourseNode();
-		OverviewRow row = new OverviewRow(editorNode, recursionLevel);
+		CopyCourseOverviewRow row = new CopyCourseOverviewRow(editorNode, recursionLevel);
 		row.setParent(parent);
 		row.setTranslatedDisplayOption(getTranslatedDisplayOption(courseNode));
 		if (copyContext.isLearningPath()) {
@@ -291,7 +308,7 @@ public class CopyCourseWizardController extends BasicController {
 		return null;
 	}
 	
-	private boolean hasCourseNode(List<OverviewRow> courseNodes, Class... courseNodeClasses) {
+	private boolean hasCourseNode(List<CopyCourseOverviewRow> courseNodes, Class... courseNodeClasses) {
 		if (courseNodes == null || courseNodes.size() == 0) {
 			return false;
 		} else {
@@ -307,7 +324,7 @@ public class CopyCourseWizardController extends BasicController {
 		}
 	}
 	
-	private boolean hasDateDependantNodes(List<OverviewRow> courseNodes) {
+	private boolean hasDateDependantNodes(List<CopyCourseOverviewRow> courseNodes) {
 		if (courseNodes == null || courseNodes.size() == 0) {
 			return false;
 		} else {
@@ -362,6 +379,38 @@ public class CopyCourseWizardController extends BasicController {
 		List<ReminderInfos> reminders = reminderManager.getReminderInfos(repositoryEntry);
 		
 		return reminders != null && !reminders.isEmpty();
+	}
+	
+	private boolean hasGroups(RepositoryEntry repositoryEntry) {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE));
+		params.setRepositoryEntry(repositoryEntry);
+		
+		List<StatisticsBusinessGroupRow> groups = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), params.getRepositoryEntry());
+		
+		return !groups.isEmpty();
+	}
+	
+	private boolean hasDisclaimer(ICourse course) {
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		
+		return courseConfig.isDisclaimerEnabled();
+	}
+	
+	private boolean hasOwners(RepositoryEntry repositoryEntry) {
+		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
+		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.owner);
+		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(repositoryEntry, params, userPropertyHandlers, getLocale());
+		List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
+		
+		return !identityKeys.isEmpty();
+	}
+	
+	private boolean hasCatalogEntry(RepositoryEntry repositoryEntry) {
+		List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(repositoryEntry);
+		
+		return !catalogEntries.isEmpty();
 	}
 	
 	private List<Identity> getCoaches(RepositoryEntry sourceEntry) {

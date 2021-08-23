@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.editor.overview;
+package org.olat.repository.ui.author.copy.wizard;
 
 import java.util.List;
 
@@ -29,14 +29,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 
 /**
- * 
- * Initial date: 16 Jan 2020<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 19.08.2021<br>
  *
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRow> {
+public class CopyCourseOverviewDataModel extends DefaultFlexiTreeTableDataModel<CopyCourseOverviewRow> {
 
-	public OverviewDataModel(FlexiTableColumnModel columnsModel) {
+	public CopyCourseOverviewDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
 	}
 
@@ -47,18 +46,18 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 	
 	@Override
 	public boolean hasChildren(int row) {
-		OverviewRow viewRow = getObject(row);
+		CopyCourseOverviewRow viewRow = getObject(row);
 		return viewRow.hasChildren();
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		OverviewRow reason = getObject(row);
+		CopyCourseOverviewRow reason = getObject(row);
 		return getValueAt(reason, col);
 	}
 
-	public Object getValueAt(OverviewRow row, int col) {
-		switch(OverviewCols.values()[col]) {
+	public Object getValueAt(CopyCourseOverviewRow row, int col) {
+		switch(CopyCourseOverviewCols.values()[col]) {
 			case node: return row;
 			case hints: return row.getEditorNode();
 			case dirty: return Boolean.valueOf(row.getEditorNode().isDirty());
@@ -97,16 +96,20 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case individualAsssessmentDocuments: return row.getAssessmentConfig().isAssessable()
 					? Boolean.valueOf(row.getAssessmentConfig().hasIndividualAsssessmentDocuments())
 					: null;
+			case startChooser: return row.getNewStartDateChooser();
+			case endChooser: return row.getNewEndDateChooser();
+			case obligationChooser: return row.getObligationChooser();
+			case resourceChooser: return row.getResourceChooser();
 			default: return null;
 		}
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<OverviewRow> createCopyWithEmptyList() {
-		return new OverviewDataModel(getTableColumnModel());
+	public DefaultFlexiTableDataModel<CopyCourseOverviewRow> createCopyWithEmptyList() {
+		return new CopyCourseOverviewDataModel(getTableColumnModel());
 	}
 	
-	public enum OverviewCols implements FlexiColumnDef {
+	public enum CopyCourseOverviewCols implements FlexiColumnDef {
 		node("table.header.node"),
 		hints("table.header.hints"),
 		dirty("table.header.dirty"),
@@ -128,11 +131,15 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		passesCut("table.header.passed.cut"),
 		ignoreInCourseAssessment("table.header.ignore.in.course.assessment"),
 		comment("table.header.comment"),
-		individualAsssessmentDocuments("table.header.individual.documents");
+		individualAsssessmentDocuments("table.header.individual.documents"),
+		startChooser("table.header.start"),
+		endChooser("table.header.end"),
+		obligationChooser("table.header.obligation"),
+		resourceChooser("table.header.resource");
 		
 		private final String i18nKey;
 		
-		private OverviewCols(String i18nKey) {
+		private CopyCourseOverviewCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

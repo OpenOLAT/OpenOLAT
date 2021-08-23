@@ -48,16 +48,13 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
-import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -80,6 +77,7 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.repository.ui.author.copy.wizard.additional.AssessmentModeCopyInfos;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -132,7 +130,7 @@ public class CopyServiceImpl implements CopyService {
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		
 		// For easier handling, put all nodes into a map with their identifier
-		Map<String, OverviewRow> sourceCourseNodesMap = context.getCourseNodesMap();
+		Map<String, CopyCourseOverviewRow> sourceCourseNodesMap = context.getCourseNodesMap();
 		
 		RepositoryEntry target = repositoryService.create(context.getExecutingIdentity(), null, sourceEntry.getResourcename(), context.getDisplayName(),
 				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, null);
@@ -168,10 +166,8 @@ public class CopyServiceImpl implements CopyService {
 
 		
 		target = dbInstance.getCurrentEntityManager().merge(target);
-
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
-		target = handler.copyCourse(context, target);
-		
+
 		// Copy the license
 		licenseService.copy(sourceResource, copyResource);
 		
@@ -219,6 +215,8 @@ public class CopyServiceImpl implements CopyService {
 		// Define publication in catalog
 		publishInCatalog(context, target);
 		
+		target = handler.copyCourse(context, target);
+		
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(target, OlatResourceableType.genRepoEntry));
 
@@ -265,7 +263,15 @@ public class CopyServiceImpl implements CopyService {
 			// Nothing to do here
 			break;
 		case reference: 
-			businessGroupService.addResourcesTo(businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1), Collections.singletonList(target));
+			List<BusinessGroup> referencedGroups = businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1);
+			businessGroupService.addResourcesTo(referencedGroups, Collections.singletonList(target));
+			
+			List<BusinessGroupReference> newReferencedGroups = new ArrayList<>();
+			for (BusinessGroup group : referencedGroups) {
+				newReferencedGroups.add(new BusinessGroupReference(group));
+			}
+			
+			context.setNewGroupReferences(newReferencedGroups);
 			break;
 		case custom:
 			switch (context.getCustomGroupCopyType()) {
@@ -284,6 +290,13 @@ public class CopyServiceImpl implements CopyService {
 				case reference:
 					List<BusinessGroup> groupsToReference = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(group -> group.getKey()).collect(Collectors.toList()));
 					businessGroupService.addResourcesTo(groupsToReference, Collections.singletonList(target));
+					
+					List<BusinessGroupReference> newCustomReferencedGroups = new ArrayList<>();
+					for (BusinessGroup group : groupsToReference) {
+						newCustomReferencedGroups.add(new BusinessGroupReference(group));
+					}
+					
+					context.setNewGroupReferences(newCustomReferencedGroups);
 					break;
 				case ignore:
 					// Nothing to do here
@@ -490,7 +503,7 @@ public class CopyServiceImpl implements CopyService {
 		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
 	}
 	
-	private void moveDates(CopyCourseContext context, RepositoryEntry target, Map<String, OverviewRow> sourceCourseNodesMap) {
+	private void moveDates(CopyCourseContext context, RepositoryEntry target, Map<String, CopyCourseOverviewRow> sourceCourseNodesMap) {
 		if (context.getCourseNodes() != null && (context.isCustomConfigsLoaded() || context.getDateDifference() != 0)) {
 			
 			OLATResourceable targetOres = target.getOlatResource();
@@ -498,26 +511,25 @@ public class CopyServiceImpl implements CopyService {
 			CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
 			
 			for (String ident : sourceCourseNodesMap.keySet()) {
-				CourseEditorTreeNode node = (CourseEditorTreeNode) editorTreeModel.getNodeById(ident);
 				LearningPathConfigs targetConfigs = learningPathService.getConfigs(editorTreeModel.getCourseNode(ident));
 				
 				// If the course overview step has been shown, the 
 				if (context.isCustomConfigsLoaded()) {
-					OverviewRow overviewRow = sourceCourseNodesMap.get(ident);
+					CopyCourseOverviewRow overviewRow = sourceCourseNodesMap.get(ident);
 					
 					// Obligation
-					if (overviewRow.getObligationChooser() != null) {
-						targetConfigs.setObligation(AssessmentObligation.valueOf(overviewRow.getObligationChooser().getSelectedKey()));
+					if (overviewRow.getAssesssmentObligation() != null) {
+						targetConfigs.setObligation(overviewRow.getAssesssmentObligation());
 					}
 					
 					// Start date
-					if (overviewRow.getStartChooser() != null) {
-						targetConfigs.setStartDate(overviewRow.getStartChooser().getDate());
+					if (overviewRow.getNewStartDate() != null) {
+						targetConfigs.setStartDate(overviewRow.getNewStartDate());
 					}
 				
 					// Due date
-					if (overviewRow.getEndChooser() != null) {
-						targetConfigs.setEndDate(overviewRow.getEndChooser().getDate());
+					if (overviewRow.getNewEndDate() != null) {
+						targetConfigs.setEndDate(overviewRow.getNewEndDate());
 					}
 				} else if (context.getDateDifference() != 0) {
 					if (targetConfigs.getStartDate() != null) {
@@ -613,10 +625,6 @@ public class CopyServiceImpl implements CopyService {
 	}
 	
 	private LectureBlock copyLectureBlockDetails(LectureBlockImpl copy, LectureBlockImpl original, String location, Date startDate, Date endDate, Date effectiveEndDate, Date autoClosedDate) {
-		// TODO Copy external ID?
-		copy.setExternalId(original.getExternalId());
-		copy.setManagedFlagsString(original.getManagedFlagsString());
-		
 		copy.setTitle(original.getTitle());
 		copy.setDescription(original.getDescription());
 		copy.setPreparation(original.getPreparation());

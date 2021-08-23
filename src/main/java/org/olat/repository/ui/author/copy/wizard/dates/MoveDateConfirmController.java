@@ -60,7 +60,7 @@ public class MoveDateConfirmController extends FormBasicController {
 	private FormLink applyToAllAfterCurrentDateLink;
 	
 	public MoveDateConfirmController(UserRequest ureq, WindowControl wControl, DateChooser sourceDateChooser) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 		
@@ -83,15 +83,16 @@ public class MoveDateConfirmController extends FormBasicController {
 		
 		setFormDescription("dates.confirm.move.others", dateArguments);
 		
-		SelectionValue rememberMyChoice = new SelectionValue(REMEMBER_ME, "");
+		SelectionValue rememberMyChoice = new SelectionValue(REMEMBER_ME, translate("dates.do.not.ask.again"));
 		SelectionValues dontAskAgainOptions = new SelectionValues(rememberMyChoice);
 		
-		dontAskAgainEl = uifactory.addCheckboxesHorizontal("dates.do.not.ask.again", formLayout, dontAskAgainOptions.keys(), dontAskAgainOptions.values());
+		dontAskAgainEl = uifactory.addCheckboxesHorizontal("dates.do.not.ask.again", "no.text", formLayout, dontAskAgainOptions.keys(), dontAskAgainOptions.values());
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("dates.update.all", buttonLayout);
 		applyToAllAfterCurrentDateLink = uifactory.addFormLink("dates.update.after.current", buttonLayout, Link.BUTTON);
+		applyToAllAfterCurrentDateLink.setI18nKey("dates.update.after.current", new String[] { dateArguments[0] });
 		dontApplyToAllLink = uifactory.addFormLink("dates.update.none", buttonLayout, Link.BUTTON);
 	}
 

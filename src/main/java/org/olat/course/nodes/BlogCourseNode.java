@@ -26,7 +26,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
-import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.feed.blog.BlogCourseNodeConfiguration;
 import org.olat.fileresource.types.BlogFileResource;
@@ -38,6 +37,7 @@ import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 
 /**
  * The blog course node.
@@ -96,10 +96,10 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 			CopyType resourceCopyType = null;
 			
 			if (context.isCustomConfigsLoaded()) {
-				OverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
+				CopyCourseOverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
 				
-				if (nodeSettings != null && nodeSettings.getResourceChooser() != null) {
-					resourceCopyType = CopyType.valueOf(nodeSettings.getResourceChooser().getSelectedKey());
+				if (nodeSettings != null) {
+					resourceCopyType = nodeSettings.getResourceCopyType();
 				}
 			} else if (context.getBlogCopyType() != null) {
 				resourceCopyType = context.getBlogCopyType();				

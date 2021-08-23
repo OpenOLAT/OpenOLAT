@@ -1,0 +1,125 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.repository.ui.author.copy.wizard;
+
+import java.util.Date;
+
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.course.editor.overview.OverviewRow;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+
+/**
+ * Initial date: 19.08.2021<br>
+ *
+ * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
+ */
+public class CopyCourseOverviewRow extends OverviewRow {
+
+	private LearningPathConfigs learningPathConfigs;
+	private Date newStartDate;
+	private Date newEndDate;
+	private DateChooser newStartDateChooser;
+	private DateChooser newEndDateChooser;
+	private AssessmentObligation assesssmentObligation;
+	private SingleSelection assessmentObligationChooser;
+	private CopyType resourceCopyType;
+	private SingleSelection resourceCopyTypeChooser;
+	
+	public CopyCourseOverviewRow(CourseEditorTreeNode editorNode, int recursionLevel) {
+		super(editorNode, recursionLevel);
+	}
+	
+	public LearningPathConfigs getLearningPathConfigs() {
+		return learningPathConfigs;
+	}
+	
+	public void setLearningPathConfigs(LearningPathConfigs learningPathConfigs) {
+		this.learningPathConfigs = learningPathConfigs;
+	}
+	
+	public Date getNewStartDate() {
+		return newStartDate;
+	}
+	
+	public void setNewStartDate(Date startDate) {
+		this.newStartDate = startDate;
+	}
+	
+	public Date getNewEndDate() {
+		return newEndDate;
+	}
+
+	public void setNewEndDate(Date endDate) {
+		this.newEndDate = endDate;
+	}
+	
+	public SingleSelection getObligationChooser() {
+		return assessmentObligationChooser;
+	}
+	
+	public void setObligationChooser(SingleSelection obligationChooser) {
+		this.assessmentObligationChooser = obligationChooser;
+	}
+	
+	public SingleSelection getResourceChooser() {
+		return resourceCopyTypeChooser;
+	}
+	
+	public void setResourceChooser(SingleSelection resourceChooser) {
+		this.resourceCopyTypeChooser = resourceChooser;
+	}
+	
+	public DateChooser getNewEndDateChooser() {
+		return newEndDateChooser;
+	}
+	
+	public void setNewEndDateChooser(DateChooser newEndDateChooser) {
+		this.newEndDateChooser = newEndDateChooser;
+	}
+	
+	public DateChooser getNewStartDateChooser() {
+		return newStartDateChooser;
+	}
+	
+	public void setNewStartDateChooser(DateChooser newStartDateChooser) {
+		this.newStartDateChooser = newStartDateChooser;
+	}
+	
+	public AssessmentObligation getAssesssmentObligation() {
+		return assesssmentObligation;
+	}
+	
+	public void setAssesssmentObligation(AssessmentObligation assesssmentObligation) {
+		this.assesssmentObligation = assesssmentObligation;
+	}
+	
+	public CopyType getResourceCopyType() {
+		return resourceCopyType;
+	}
+	
+	public void setResourceCopyType(CopyType resourceCopyType) {
+		this.resourceCopyType = resourceCopyType;
+	}
+	
+}

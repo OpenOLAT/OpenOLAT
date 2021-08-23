@@ -30,7 +30,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.reminder.model.ReminderRow;
 import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.model.BusinessGroupReference;
@@ -57,8 +56,8 @@ public class CopyCourseContext {
 	private RepositoryHandlerFactory handlerFactory;
 	private RepositoryEntry sourceRepositoryEntry;
 	private ICourse course;
-	private List<OverviewRow> courseNodes;
-	private Map<String, OverviewRow> courseNodesMap;
+	private List<CopyCourseOverviewRow> courseNodes;
+	private Map<String, CopyCourseOverviewRow> courseNodesMap;
 	private boolean customConfigsLoaded;
 	private boolean isLearningPath;
 	private boolean hasWiki;
@@ -72,29 +71,32 @@ public class CopyCourseContext {
 	private boolean hasAssessmentModes;
 
 	// Metadata
-	private String displayName; //
-	private String externalRef; //
-	private String authors; // 
+	private String displayName;
+	private String externalRef;
+	private String authors; 
 	private String licenseTypeKey;
 	private String licensor;
 	private String licenseFreetext;
 	private String expenditureOfWork;
 	
 	// GroupStep
-	private CopyType groupCopyType;			 // 
+	private CopyType groupCopyType;			 
 	private CopyType customGroupCopyType;
 	private List<BGTableItem> groups;
 	private List<BusinessGroupReference> newGroupReferences = new ArrayList<>();
+	private boolean hasGroups;
 	
 	// OwnersStep
-	private CopyType ownersCopyType;	//
+	private CopyType ownersCopyType;
 	private CopyType customOwnersCopyType;
 	private List<Identity> newOwners;
+	private boolean hasOwners;
 	
 	// CoachesStep
-	private CopyType coachesCopyType;	//
+	private CopyType coachesCopyType;
 	private CopyType customCoachesCopyType;
 	private List<Identity> newCoaches;
+	private boolean hasCoaches;
 	
 	// ExecutionStep
 	private ExecutionType executionType;
@@ -107,12 +109,15 @@ public class CopyCourseContext {
 	// CatalogStep
 	private CopyType catalogCopyType;
 	private CopyType customCatalogCopyType;
+	private boolean hasCatalogEntry;
 	
 	// DisclaimerStep
 	private CopyType disclaimerCopyType;
 	private CopyType customDisclaimerCopyType;
 	private CourseDisclaimerContext disclaimerCopyContext;
+	private boolean hasDisclaimer;
 	
+	// Learning resource copy types
 	private CopyType blogCopyType;
 	private CopyType folderCopyType;
 	private CopyType wikiCopyType;
@@ -183,25 +188,25 @@ public class CopyCourseContext {
 		this.course = course;
 	}
 	
-	public List<OverviewRow> getCourseNodes() {
+	public List<CopyCourseOverviewRow> getCourseNodes() {
 		return courseNodes;
 	}
 	
-	public void setCourseNodes(List<OverviewRow> courseNodes) {
+	public void setCourseNodes(List<CopyCourseOverviewRow> courseNodes) {
 		this.courseNodes = courseNodes;
 		
 		if (courseNodes != null && !courseNodes.isEmpty()) {
 			// For easier handling, put all nodes into a map with their identifier
-			Map<String, OverviewRow> sourceCourseNodesMap = getCourseNodes().stream().collect(Collectors.toMap(row -> row.getEditorNode().getIdent(), Function.identity()));
+			Map<String, CopyCourseOverviewRow> sourceCourseNodesMap = getCourseNodes().stream().collect(Collectors.toMap(row -> row.getEditorNode().getIdent(), Function.identity()));
 			setCourseNodesMap(sourceCourseNodesMap);
 		}
 	}
 	
-	public Map<String, OverviewRow> getCourseNodesMap() {
+	public Map<String, CopyCourseOverviewRow> getCourseNodesMap() {
 		return courseNodesMap;
 	}
 	
-	public void setCourseNodesMap(Map<String, OverviewRow> courseNodesMap) {
+	public void setCourseNodesMap(Map<String, CopyCourseOverviewRow> courseNodesMap) {
 		this.courseNodesMap = courseNodesMap;
 	}
 	
@@ -397,6 +402,14 @@ public class CopyCourseContext {
 		this.groups = groups;
 	}
 	
+	public boolean hasGroups() {
+		return hasGroups;
+	}
+	
+	public void setHasGroups(boolean hasGroups) {
+		this.hasGroups = hasGroups;
+	}
+	
 	public List<BusinessGroupReference> getNewGroupReferences() {
 		return newGroupReferences;
 	}
@@ -429,6 +442,14 @@ public class CopyCourseContext {
 		this.newOwners = newOwners;
 	}
 	
+	public boolean hasOwners() {
+		return hasOwners;
+	}
+	
+	public void setHasOwners(boolean hasOwners) {
+		this.hasOwners = hasOwners;
+	}
+	
 	public CopyType getCoachesCopyType() {
 		return coachesCopyType;
 	}
@@ -455,6 +476,14 @@ public class CopyCourseContext {
 	
 	public void setNewCoaches(List<Identity> newCoaches) {
 		this.newCoaches = newCoaches;
+	}
+	
+	public boolean hasCoaches() {
+		return hasCoaches;
+	}
+	
+	public void setHasCoaches(boolean hasCoaches) {
+		this.hasCoaches = hasCoaches;
 	}
 	
 	public ExecutionType getExecutionType() {
@@ -523,6 +552,14 @@ public class CopyCourseContext {
 		this.catalogCopyType = catalogCopyType;
 	}
 	
+	public boolean hasCatalogEntry() {
+		return hasCatalogEntry;
+	}
+	
+	public void setHasCatalogEntry(boolean hasCatalogEntry) {
+		this.hasCatalogEntry = hasCatalogEntry;
+	}
+	
 	public CopyType getCustomCatalogCopyType() {
 		return customCatalogCopyType;
 	}
@@ -553,6 +590,14 @@ public class CopyCourseContext {
 	
 	public void setDisclaimerCopyContext(CourseDisclaimerContext disclaimerCopyContext) {
 		this.disclaimerCopyContext = disclaimerCopyContext;
+	}
+	
+	public boolean hasDisclaimer() {
+		return hasDisclaimer;
+	}
+	
+	public void setHasDisclaimer(boolean hasDisclaimer) {
+		this.hasDisclaimer = hasDisclaimer;
 	}
 	
 	public CopyType getBlogCopyType() {
@@ -694,21 +739,17 @@ public class CopyCourseContext {
 	}
 	
 	public long getDateDifference(String courseNodeIdent) {
-		long dateDifference = 0;
+		long dateDifference = getDateDifference();
 		
 		if (getCourseNodesMap() != null) {
-			OverviewRow overviewRow = getCourseNodesMap().get(courseNodeIdent);
+			CopyCourseOverviewRow overviewRow = getCourseNodesMap().get(courseNodeIdent);
 			
-			if (overviewRow.getStartChooser() != null && overviewRow.getStart() != null) {
-				dateDifference = overviewRow.getStartChooser().getDate().getTime() - overviewRow.getStart().getTime();
-			} else if (overviewRow.getEndChooser() != null && overviewRow.getEnd() != null) {
-				dateDifference = overviewRow.getEndChooser().getDate().getTime() - overviewRow.getEnd().getTime();
-			} else {
-				dateDifference = getDateDifference();
+			if (overviewRow.getNewStartDate() != null && overviewRow.getStart() != null) {
+				dateDifference = overviewRow.getNewStartDate().getTime() - overviewRow.getStart().getTime();
+			} else if (overviewRow.getNewEndDate() != null && overviewRow.getEnd() != null) {
+				dateDifference = overviewRow.getNewEndDate().getTime() - overviewRow.getEnd().getTime();
 			}
-		} else {
-			dateDifference = getDateDifference();
-		}
+		} 
 		
 		return dateDifference;
 	}
