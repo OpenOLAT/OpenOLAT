@@ -188,8 +188,9 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		}
 		if(tableEl.getFilterTabsElement() != null) {
 			FlexiFiltersTab selectTab = tableEl.getFilterTabsElement().getSelectedTab();
-			deleteFilterLink.setVisible(selectTab.getId().startsWith("custom_"));
-			updateFilterLink.setVisible(selectTab.getId().startsWith("custom_"));
+			boolean show = selectTab != null && selectTab.getId().startsWith("custom_");
+			deleteFilterLink.setVisible(show);
+			updateFilterLink.setVisible(show);
 		}
 		
 		return moreMenu;
@@ -294,7 +295,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		FormLink button = new FormLinkImpl(id, id, label, Link.BUTTON | Link.NONTRANSLATED);
 		button.setDomReplacementWrapperRequired(false);
 		button.setTranslator(translator);
-		button.setIconRightCSS("o_icon o_icon_caret");
+		button.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
 		button.setVisible(enabled);
 		button.setTitle(title);
 		components.put(id, button);
