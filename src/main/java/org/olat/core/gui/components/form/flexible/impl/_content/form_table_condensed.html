@@ -30,7 +30,7 @@
 			#if($f.hasExample($item))
 			<div class="help-block">$r.render("${item}_EXAMPLE")</div>
 			#end
-			#if($f.hasError($item) || $f.hasWarning($item))
+			#if($f.hasError($item) || $f.hasWarning($item))
 				<div>$r.render("${item}_ERROR")</div>
 			#end
 		</td>
