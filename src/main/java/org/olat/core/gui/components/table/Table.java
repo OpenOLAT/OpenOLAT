@@ -892,16 +892,16 @@ public class Table extends AbstractComponent {
 
 	private void buildFilteredTableDataModel(final String searchString) {
 		List<Object> filteredElementList = new ArrayList<>();
-		log.debug("buildFilteredTableDataModel: tableDataModel.getRowCount()=" + tableDataModel.getRowCount());
+		log.debug("buildFilteredTableDataModel: tableDataModel.getRowCount()={}", tableDataModel.getRowCount());
 		if (tableDataModel.getRowCount() > 0) {
-			log.debug("buildFilteredTableDataModel: tableDataModel.getObject(0)=" + tableDataModel.getObject(0));
+			log.debug("buildFilteredTableDataModel: tableDataModel.getObject(0)={}", tableDataModel.getObject(0));
 		}
 		for (int row = 0; row < tableDataModel.getRowCount(); row++) {
 			if (matchRowWithSearchString(row, searchString)) {
 				filteredElementList.add(tableDataModel.getObject(row));
 			}
 		}
-		log.debug("buildFilteredTableDataModel: unfiltered-row-count=" + tableDataModel.getRowCount() + " filtered-row-count=" + filteredElementList.size());
+		log.debug("buildFilteredTableDataModel: unfiltered-row-count={} filtered-row-count={}", tableDataModel.getRowCount(), filteredElementList.size());
 		getFilteredTableDataModel().setObjects(filteredElementList);
 	}
 
@@ -912,12 +912,15 @@ public class Table extends AbstractComponent {
 	 * @return
 	 */
 	private boolean matchRowWithSearchString(final int row, final String tableSearchString2) {
-		log.debug("matchRowWithFilter:  row=" + row + " tableFilterString=" + tableSearchString);
+		log.debug("matchRowWithFilter: row={} tableFilterString={}", row, tableSearchString2);
 		if ( !isTableFiltered() ) {
 			return true;
 		}
+		
+		final String loweredSearchString = tableSearchString2.toLowerCase();
+		
 		// loop over all columns
-		TableDataModel unfilteredModel = getUnfilteredTableDataModel();
+		final TableDataModel unfilteredModel = getUnfilteredTableDataModel();
 		
 		Filter htmlFilter = FilterFactory.getHtmlTagsFilter();
 		for (int colIndex = getColumnCountFromAllCDs(); colIndex-->0; ) {
@@ -948,9 +951,10 @@ public class Table extends AbstractComponent {
 				if (value instanceof String) {
 					String valueAsString = (String)value;
 					// Remove any HTML markup from the value
-					valueAsString = htmlFilter.filter(valueAsString);
+					String valueAsHtml = htmlFilter.filter(valueAsString);
 					// Finally compare with search value based on a simple lowercase match
-					if (valueAsString.toLowerCase().indexOf(tableSearchString2.toLowerCase()) != -1 ) {
+					if (valueAsString.toLowerCase().contains(loweredSearchString)
+							|| valueAsHtml.toLowerCase().contains(loweredSearchString)) {
 						return true;
 					}
 				}
