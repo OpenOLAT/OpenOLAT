@@ -39,7 +39,7 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 		
 	private final String nodeIdent;
 	private final ModuleConfiguration config;
-	private final AssessmentReminderProvider assessmentReminderProvider;
+	private AssessmentReminderProvider assessmentReminderProvider;
 	private List<String> mainTypes;
 	
 	public GTAReminderProvider(GTACourseNode gtaNode) {
@@ -90,7 +90,7 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 	
 	@Override
 	public void refresh() {
-		assessmentReminderProvider.refresh();
+		assessmentReminderProvider = new AssessmentReminderProvider(nodeIdent, new GTAAssessmentConfig(config));
 		mainTypes = null;
 	}
 	

@@ -162,6 +162,7 @@ public class CourseReminderSendController extends FormBasicController {
 		flc.contextPut("unsent", String.valueOf(unsent));
 		if (!readonly) {
 			sendAllLink.setI18nKey("send.all", new String[] { String.valueOf(identites.size()) } );
+			sendAllLink.setEnabled(!identites.isEmpty());
 			sendUnsentLink.setI18nKey("send.unsent", new String[] { String.valueOf(unsent) } );
 			sendUnsentLink.setEnabled(unsent > 0);
 			sendUnsentLink.setSubmitAndValidate(unsent > 0);
