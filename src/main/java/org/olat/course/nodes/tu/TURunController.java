@@ -35,7 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.TUCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
-import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.tu.IframeTunnelController;
 import org.olat.modules.tu.TunnelController;
@@ -54,7 +54,7 @@ public class TURunController extends BasicController {
 	private TUCourseNode courseNode;
 	private Panel main;	
 	private ModuleConfiguration config;
-	private CourseEnvironment courseEnv;	
+	private UserCourseEnvironment userCourseEnv;
 
 	/**
  	 * Constructor for tunneling run controller
@@ -62,13 +62,14 @@ public class TURunController extends BasicController {
 	 * @param config The module configuration
 	 * @param ureq The user request
 	 * @param tuCourseNode The current course node
-	 * @param cenv the course environment
+	 * @param userCourseEnv the course environment
 	 */
-	public TURunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq, TUCourseNode tuCourseNode, CourseEnvironment cenv) { 
+	public TURunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq,
+			TUCourseNode tuCourseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.courseNode = tuCourseNode;
 		this.config = config;
-		this.courseEnv = cenv;
+		this.userCourseEnv = userCourseEnv;
 		
 		main = new Panel("turunmain");
 		if (config.getBooleanSafe(TUConfigForm.CONFIG_EXTERN, false)) {
@@ -100,7 +101,7 @@ public class TURunController extends BasicController {
 	
 	private void doStartPage(UserRequest ureq) {		
 		Controller startPageInner = new TUStartController(ureq, getWindowControl(), config);
-		startPage = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), startPageInner, courseNode, "o_tu_icon");
+		startPage = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), startPageInner, userCourseEnv, courseNode, "o_tu_icon");
 		listenTo(startPage);
 		main.setContent(startPage.getInitialComponent());
 	}
@@ -116,7 +117,7 @@ public class TURunController extends BasicController {
 		}
 		listenTo(controller);
 		
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), controller, courseNode, "o_tu_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), controller, userCourseEnv, courseNode, "o_tu_icon");
 		main.setContent(ctrl.getInitialComponent());
 	}
 	

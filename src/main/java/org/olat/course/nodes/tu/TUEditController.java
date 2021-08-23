@@ -38,10 +38,9 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.TUCourseNode;
-import org.olat.course.run.preview.PreviewConfigHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.tu.IframeTunnelController;
 
@@ -69,16 +68,16 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 	private TabbedPane myTabbedPane;
 	private LayoutMain3ColsController previewLayoutCtr;
 	private Link previewButton;
-	private ICourse course; //used only for preview of the current node
+	private final UserCourseEnvironment euce;
 
 	public TUEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			TUCourseNode tuCourseNode, ICourse course) {
+			TUCourseNode tuCourseNode, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		
 		this.config = config;
 		this.courseNode = tuCourseNode;
-		this.course = course;
 		this.stackPanel = stackPanel;
+		this.euce = euce;
 		
 		myContent = createVelocityContainer("edit");
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
@@ -101,7 +100,7 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 			if (config.getBooleanSafe(TUConfigForm.CONFIG_IFRAME)) {  
 				tunnelRunCtr = new IframeTunnelController(ureq, getWindowControl(), config);
 			} else {					
-				tunnelRunCtr = new TURunController(getWindowControl(), config, ureq, courseNode, PreviewConfigHelper.getPreviewCourseEnvironment(true, true, course));
+				tunnelRunCtr = new TURunController(getWindowControl(), config, ureq, courseNode, euce);
 			}
 			if (previewLayoutCtr != null) previewLayoutCtr.dispose();
 			// preview layout: only center column (col3) used

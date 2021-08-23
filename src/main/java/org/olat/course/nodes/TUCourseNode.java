@@ -71,7 +71,7 @@ public class TUCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		TUEditController childTabCntrllr = new TUEditController(getModuleConfiguration(), ureq, wControl, stackPanel, this, course);
+		TUEditController childTabCntrllr = new TUEditController(getModuleConfiguration(), ureq, wControl, stackPanel, this, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 	}
@@ -84,7 +84,7 @@ public class TUCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		return new NodeRunConstructionResult(new TURunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv.getCourseEnvironment()));
+		return new NodeRunConstructionResult(new TURunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv));
 	}
 
 	@Override

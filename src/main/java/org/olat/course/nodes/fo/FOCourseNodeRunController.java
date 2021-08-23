@@ -38,6 +38,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.ui.ForumController;
@@ -62,9 +63,10 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 	 * @param forum The forum to be displayed
 	 * @param foCallback The forum security callback
 	 * @param foCourseNode The current course node
+	 * @param userCourseEnv 
 	 */
 	public FOCourseNodeRunController(UserRequest ureq, WindowControl wControl, Forum forum,
-			ForumCallback foCallback, FOCourseNode courseNode) {
+			ForumCallback foCallback, FOCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 
 		// set logger on this run controller
@@ -72,7 +74,7 @@ public class FOCourseNodeRunController extends BasicController implements Activa
 		
 		forumCtrl = new ForumController(ureq, getWindowControl(), forum, foCallback, true);
 		listenTo(forumCtrl);
-		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), forumCtrl, courseNode, "o_fo_icon");
+		Controller titledCtrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), forumCtrl, userCourseEnv, courseNode, "o_fo_icon");
 		listenTo(titledCtrl);
 		putInitialPanel(titledCtrl.getInitialComponent());
 	}

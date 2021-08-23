@@ -206,7 +206,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 				? new ReadOnlyForumCallback(moderator, isAdministrator, isGuestOnly)
 				: new ForumNodeForumCallback(poster, moderator, isAdministrator, isGuestOnly, guestPostAllowed,
 						pseudonymPostAllowed, defaultPseudonym, forumSubContext);
-		FOCourseNodeRunController forumC = new FOCourseNodeRunController(ureq, wControl, theForum, foCallback, this);
+		FOCourseNodeRunController forumC = new FOCourseNodeRunController(ureq, wControl, theForum, foCallback, this, userCourseEnv);
 		return new NodeRunConstructionResult(forumC);
 	}
 
