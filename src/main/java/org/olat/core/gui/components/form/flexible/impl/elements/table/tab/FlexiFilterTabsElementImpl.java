@@ -133,6 +133,25 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		component.setDirty(true);
 	}
 	
+	public FlexiFiltersTab getFilterTabById(String id) {
+		if(id == null) return null;
+		
+		for(FlexiFilterTabPreset preset:customTabs) {
+			if(id.equals(preset.getId())) {
+				return preset;
+			}
+		}
+		
+		if(tabs != null) {
+			for(FlexiFiltersTab tab:tabs) {
+				if(id.equals(tab.getId())) {
+					return tab;
+				}
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		Form form = getRootForm();

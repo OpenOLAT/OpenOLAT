@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -56,6 +57,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -137,7 +142,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class IdentityListCourseNodeController extends FormBasicController
 	implements GenericEventListener, AssessmentCourseNodeController {
-	
+
+	public static final String PASSED_TAB_ID = "Passed";
+	public static final String FAILED_TAB_ID = "Failed";
+	public static final String ALL_TAB_ID = "All";
 
 	private int counter = 0;
 	protected final BusinessGroup group;
@@ -149,6 +157,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final boolean showTitle;
+
+	private FlexiFilterTabPreset passedTab;
+	private FlexiFilterTabPreset failedTab;
+	private FlexiFilterTabPreset allTab;
 	
 	private Link nextLink;
 	private Link previousLink;
@@ -246,8 +258,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 	@Override
 	public AssessedIdentityListState getListState() {
+		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
 		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
-		return AssessedIdentityListState.valueOf(filters);
+		return AssessedIdentityListState.valueOf(selectedTab, filters, tableEl.isFiltersExpanded());
 	}
 
 	@Override
@@ -317,8 +330,31 @@ public class IdentityListCourseNodeController extends FormBasicController
 		tableEl.setSortSettings(options);
 		tableEl.setSelectAllEnable(true);
 		initFilters();
-		
+		initFiltersPresets(assessmentConfig);
 		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());
+	}
+	
+	protected void initFiltersPresets(AssessmentConfig assessmentConfig) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		if(Mode.none != assessmentConfig.getPassedMode()) {
+			passedTab = FlexiFilterTabPreset.presetWithImplicitFilters(PASSED_TAB_ID, translate("filter.passed"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "passed")));
+			passedTab.setElementCssClass("o_sel_assessment_passed");
+			tabs.add(passedTab);
+			
+			failedTab = FlexiFilterTabPreset.presetWithImplicitFilters(FAILED_TAB_ID, translate("filter.failed"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "failed")));
+			failedTab.setElementCssClass("o_sel_assessment_failed");
+			tabs.add(failedTab);
+		}
+		
+		allTab = FlexiFilterTabPreset.presetWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		allTab.setElementCssClass("o_sel_assessment_all");
+		tabs.add(allTab);
+
+		tableEl.setFilterTabs(true, tabs);
 	}
 	
 	protected void initFilters() {
@@ -350,7 +386,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 					groupValues.add(new SelectionValue("businessgroup-" + coachedGroup.getKey(), groupName, null,
 							"o_icon o_icon_group", null, true));
 				}
-				
 			}
 		}
 		
@@ -376,7 +411,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 					AssessedIdentityListState.FILTER_GROUPS, groupValues, true));
 		}
 
-		tableEl.setFilters(true, filters, true);
+		tableEl.setFilters(true, filters, false);
+	}
+	
+	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		if(tab == null) return;
+		
+		tableEl.setSelectedFilterTab(tab);
+		reload(ureq);
 	}
 	
 	protected String getTableId() {
@@ -653,9 +695,17 @@ public class IdentityListCourseNodeController extends FormBasicController
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(state instanceof AssessedIdentityListState) {
 			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+			FlexiFiltersTab tab = tableEl.getFilterTabById(listState.getTabId());
+			if(tab != null) {
+				tableEl.setSelectedFilterTab(tab);
+			}
+			
 			List<FlexiTableExtendedFilter> filters = tableEl.getExtendedFilters();
 			listState.setValuesToFilter(filters);
-			tableEl.setFilters(true, filters, true);
+			tableEl.setFilters(true, filters, false);
+			tableEl.expandFilters(showTitle);
+		} else {
+			tableEl.setSelectedFilterTab(allTab);
 		}
 
 		reload(ureq);
@@ -771,7 +821,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				if("select".equals(cmd)) {
 					doSelect(ureq, row);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
+			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				reload(ureq);
 			}
 		} else if(bulkDoneButton == source) {

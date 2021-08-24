@@ -27,8 +27,17 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table.tab;
  */
 public enum TabSelectionBehavior {
 	
+	/**
+	 * The table do nothing to reload the data and delegate the work to the controller
+	 */
 	nothing,
-	clear, // clear data source
+	/**
+	 * The model are cleared
+	 */
+	clear,
+	/**
+	 * Equivalent to call reloadData
+	 */
 	reloadData
 
 }

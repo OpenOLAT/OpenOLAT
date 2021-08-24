@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -44,6 +45,8 @@ public class AssessedIdentityListState implements StateEntry {
 	public static final String FILTER_STATUS = "status";
 	public static final String FILTER_GROUPS = "groups";
 	
+	private String tabId;
+	private boolean filtersExpanded;
 	private String status;
 	private List<String> groupKeys;
 	
@@ -51,17 +54,21 @@ public class AssessedIdentityListState implements StateEntry {
 		//
 	}
 	
-	public AssessedIdentityListState(String status, List<String> groupKeys) {
+	public AssessedIdentityListState(String status, List<String> groupKeys, String tabId, boolean filtersExpanded) {
+		this.tabId = tabId;
 		this.status = status;
 		this.groupKeys = groupKeys;
+		this.filtersExpanded = filtersExpanded;
 	}
 	
 	public static AssessedIdentityListState valueOf(String statusValue) {
-		return new AssessedIdentityListState(statusValue, null);
+		return new AssessedIdentityListState(statusValue, null, null, false);
 	}
 	
-	public static AssessedIdentityListState valueOf(List<FlexiTableFilter> filters) {
+	public static AssessedIdentityListState valueOf(FlexiFiltersTab tab, List<FlexiTableFilter> filters, boolean filtersExpanded) {
 		AssessedIdentityListState state = new AssessedIdentityListState();
+		state.tabId = tab == null ? null : tab.getId();
+		state.filtersExpanded = filtersExpanded;
 		for(FlexiTableFilter filter:filters) {
 			if(FILTER_STATUS.equals(filter.getFilter()) && filter.isSelected()) {
 				if(filter instanceof FlexiTableSingleSelectionFilter) {
@@ -93,6 +100,14 @@ public class AssessedIdentityListState implements StateEntry {
 			}
 		}
 	}
+	
+	public String getTabId() {
+		return tabId;
+	}
+	
+	public boolean isFiltersExpanded() {
+		return filtersExpanded;
+	}
 
 	public String getStatus() {
 		return status;
@@ -112,6 +127,6 @@ public class AssessedIdentityListState implements StateEntry {
 
 	@Override
 	public AssessedIdentityListState clone() {
-		return new AssessedIdentityListState(status, groupKeys);
+		return new AssessedIdentityListState(status, groupKeys, tabId, filtersExpanded);
 	}
 }

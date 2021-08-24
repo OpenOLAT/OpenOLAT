@@ -773,6 +773,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			filtersEl.setFiltersValues(enabledFilters, implicitFilters, values, true);
 		}
 	}
+	
+	@Override
+	public boolean isFiltersExpanded() {
+		return filtersEl != null && filtersEl.isExpanded();
+	}
 
 	@Override
 	public void expandFilters(boolean expand) {
@@ -831,7 +836,19 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			components.remove(dispatchId);
 		}
 	}
-	
+
+	@Override
+	public FlexiFiltersTab getFilterTabById(String id) {
+		if(filterTabsEl == null) return null;
+		return filterTabsEl.getFilterTabById(id);
+	}
+
+	@Override
+	public FlexiFiltersTab getSelectedFilterTab() {
+		if(filterTabsEl == null) return null;
+		return filterTabsEl.getSelectedTab();
+	}
+
 	@Override
 	public void setSelectedFilterTab(FlexiFiltersTab tab) {
 		doUnSelectAll();
