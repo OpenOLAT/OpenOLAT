@@ -67,7 +67,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		listenTo(authorListCtrl);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
-		putInitialPanel(authorListCtrl.getStackPanel());
+		putInitialPanel(authorListCtrl.getInitialComponent());
 	}
 	
 	@Override

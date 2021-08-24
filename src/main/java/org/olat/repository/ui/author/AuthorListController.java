@@ -50,7 +50,8 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
-import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
+import org.olat.core.gui.components.dropdown.Dropdown.SpacerItem;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -62,6 +63,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -86,8 +88,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -176,7 +176,6 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	private SingleSelection closedEl;
 	private FlexiTableElement tableEl;
-	private final TooledStackedPanel stackPanel;
 	
 	private FlexiFilterTabPreset myTab;
 	private FlexiFilterTabPreset myCoursesTab;
@@ -210,8 +209,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private boolean hasAuthorRight;
 	private boolean hasAdministratorRight;
 	
-	private Link importLink;
-	private Link importUrlLink;
+	private FormLink importLink;
+	private FormLink importUrlLink;
 	private FormLink copyButton;
 	private FormLink deleteButton;
 	private FormLink restoreButton;
@@ -262,7 +261,8 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	public AuthorListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "entries");
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(),
+				Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator())));
 
 		OLATResourceable ores = OresHelper.createOLATResourceableType("RepositorySite");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -279,64 +279,53 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		dataSource = new AuthoringEntryDataSource(searchParams, this, taxonomyEnabled);
 		initForm(ureq);
-
-		stackPanel = new TooledStackedPanel("author.title", getTranslator(), this);
-		stackPanel.pushController(translate("author.title"), this);
-		initTools(ureq);
+		initTools(ureq, flc);
 	}
 	
-	protected void initTools(UserRequest ureq) {
+	protected void initTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		if(hasAuthorRight) {
-			importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
+			importLink = uifactory.addFormLink("cmd.import.ressource", "cmd.import.ressource", null, formLayout, Link.BUTTON);
 			importLink.setDomReplacementWrapperRequired(false);
 			importLink.setIconLeftCSS("o_icon o_icon_import");
 			importLink.setElementCssClass("o_sel_author_import");
-			stackPanel.addTool(importLink, Align.left);
 			
-			importUrlLink = LinkFactory.createLink("cmd.import.url.ressource", getTranslator(), this);
+			importUrlLink = uifactory.addFormLink("cmd.import.url.ressource", "cmd.import.url.ressource", null, formLayout, Link.BUTTON);
 			importUrlLink.setDomReplacementWrapperRequired(false);
 			importUrlLink.setIconLeftCSS("o_icon o_icon_import");
 			importUrlLink.setElementCssClass("o_sel_author_url_import");
-			stackPanel.addTool(importUrlLink, Align.left);
 			
 			List<OrderedRepositoryHandler> handlers = repositoryHandlerFactory.getOrderRepositoryHandlers();
-			Dropdown createDropdown = new Dropdown("cmd.create.ressource", "cmd.create.ressource", false, getTranslator());
+			DropdownItem createDropdown = uifactory.addDropdownMenu("cmd.create.ressource", "cmd.create.ressource", null, formLayout,getTranslator());
 			createDropdown.setElementCssClass("o_sel_author_create");
 			createDropdown.setIconCSS("o_icon o_icon_add");
 			int lastGroup = 0;
 			for(OrderedRepositoryHandler orderedHandler:handlers) {
 				RepositoryHandler handler = orderedHandler.getHandler();
-				
 				if(handler != null && handler.supportCreate(getIdentity(), ureq.getUserSession().getRoles())) {
 					// for each 10-group, create a separator
 					int group = orderedHandler.getOrder() / 10;
 					if (group > lastGroup) {
-						createDropdown.addComponent(new Spacer("spacer" + orderedHandler.getOrder()));
+						createDropdown.addElement(new SpacerItem("spacer" + orderedHandler.getOrder()));
 						lastGroup = group;
 					}
 					addCreateLink(handler, createDropdown);
 				}
 			}
-			stackPanel.addTool(createDropdown, Align.left);
 			
 			// Help module
 			if (helpModule.isHelpEnabled()) {
-				VelocityContainer helpVC = createVelocityContainer("help");
-				helpVC.setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale()));
 				List<HelpLinkSPI> helpLinks = helpModule.getAuthorSiteHelpPlugins();
-				
 				if (helpLinks.size() == 1) {
-					stackPanel.addTool(helpLinks.get(0).getHelpUserTool(getWindowControl()).getMenuComponent(ureq, helpVC), Align.right);
+					Component helpCmp = helpLinks.get(0).getHelpUserTool(getWindowControl()).getMenuComponent(ureq, formLayout.getFormItemComponent());
+					formLayout.getFormItemComponent().put("help.single", helpCmp);
 				} else if (helpLinks.size() > 1) {
-					Dropdown helpDropdown = new Dropdown("help.list", "help.authoring", false, Util.createPackageTranslator(HelpAdminController.class, getLocale()));
+					DropdownItem helpDropdown = uifactory.addDropdownMenu("help.list", "help.authoring", "help.authoring", formLayout, getTranslator());
 					helpDropdown.setIconCSS("o_icon o_icon_help");
 					helpDropdown.setOrientation(DropdownOrientation.right);
-					
 					for (HelpLinkSPI helpLinkSPI : helpLinks) {
-						helpDropdown.addComponent(helpLinkSPI.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, helpVC));
+						((Dropdown)helpDropdown.getComponent()).addComponent(helpLinkSPI
+								.getHelpUserTool(getWindowControl()).getMenuComponent(ureq, formLayout.getFormItemComponent()));
 					}
-					
-					stackPanel.addTool(helpDropdown, Align.right);
 				}
 			}
 		}
@@ -347,12 +336,12 @@ public class AuthorListController extends FormBasicController implements Activat
 		return super.getTranslator();
 	}
 
-	private void addCreateLink(RepositoryHandler handler, Dropdown dropdown) {
-		Link createLink = LinkFactory.createLink(handler.getSupportedType(), getTranslator(), this);
+	private void addCreateLink(RepositoryHandler handler, DropdownItem dropdown) {
+		FormLink createLink = uifactory.addFormLink(handler.getSupportedType(), flc, Link.LINK);
 		createLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(handler.getSupportedType()));
 		createLink.setElementCssClass("o_sel_author_create-" + handler.getSupportedType());
 		createLink.setUserObject(handler);
-		dropdown.addComponent(createLink);
+		dropdown.addElement(createLink);
 	}
 	
 	public boolean isEmpty() {
@@ -708,10 +697,6 @@ public class AuthorListController extends FormBasicController implements Activat
 		return deletedTab;
 	}
 
-	public TooledStackedPanel getStackPanel() {
-		return stackPanel;
-	}
-
 	@Override
 	protected void doDispose() {
 		//
@@ -729,16 +714,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(importLink == source) {
-			doImport(ureq);
-		} else if(importUrlLink == source) {
-			doImportUrl(ureq);
-		} else if(source instanceof Link && ((Link)source).getUserObject() instanceof RepositoryHandler) {
-			RepositoryHandler handler = (RepositoryHandler)((Link)source).getUserObject();
-			if(handler != null) {
-				doCreate(ureq, handler);
-			}
-		}
 		super.event(ureq, source, event);
 	}
 	
@@ -951,6 +926,10 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		} else if(closedEl == source) {
 			doSetClosedFilter();
+		} else if(importLink == source) {
+			doImport(ureq);
+		} else if(importUrlLink == source) {
+			doImportUrl(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -967,6 +946,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else if("references".equals(cmd)) {
 				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
 				doOpenReferences(ureq, row, link);
+			} else if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof RepositoryHandler) {
+				RepositoryHandler handler = (RepositoryHandler)((FormLink)source).getUserObject();
+				if(handler != null) {
+					doCreate(ureq, handler);
+				}
 			}
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent) {

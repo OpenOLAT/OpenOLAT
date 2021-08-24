@@ -40,7 +40,6 @@ import org.openqa.selenium.WebElement;
  */
 public class AuthoringEnvPage {
 	
-	public static final By createMenuCaretBy = By.cssSelector("a.o_sel_author_create");
 	public static final By createMenuBy = By.cssSelector("ul.o_sel_author_create");
 	public static final By generaltabBy = By.className("o_sel_edit_repositoryentry");
 	
@@ -112,6 +111,7 @@ public class AuthoringEnvPage {
 	 * @return
 	 */
 	public AuthoringEnvPage openCreateDropDown() {
+		By createMenuCaretBy = By.cssSelector("button.o_sel_author_create");
 		OOGraphene.waitElement(createMenuCaretBy, browser);
 		browser.findElement(createMenuCaretBy).click();
 		OOGraphene.waitElement(createMenuBy, browser);

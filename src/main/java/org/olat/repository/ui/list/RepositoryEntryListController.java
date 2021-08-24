@@ -313,7 +313,7 @@ public class RepositoryEntryListController extends FormBasicController
 			tabs.add(bookmarkTab);
 		}
 		
-		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.mycourses.student"),
+		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.current.courses"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		myTab.setElementCssClass("o_sel_mycourses_my");
 		tabs.add(myTab);

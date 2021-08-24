@@ -1,5 +1,25 @@
 <div class="o_sel_author_env">
-	<h2>$r.translate("author.title")</h2>
+	<div class="o_header_with_buttons">
+		<h2>$r.translate("author.title")</h2>
+		<div class="o_button_group o_button_group_right">
+			<div class="btn-group">
+				#if($r.visible("cmd.import.ressource"))
+					$r.render("cmd.import.ressource")
+				#end
+				#if($r.visible("cmd.import.url.ressource")) 
+					$r.render("cmd.import.url.ressource")
+				#end
+			</div>
+			#if($r.visible("cmd.create.ressource")) 
+				$r.render("cmd.create.ressource")
+			#end
+			#if($r.visible("help.single"))
+				$r.render("help.single")
+			#elseif($r.visible("help.list")) 
+				$r.render("help.list")
+			#end
+		</div>
+	</div>
 	#if ($off_desc)
 		<div class="o_info">$off_desc</div>
 	#end

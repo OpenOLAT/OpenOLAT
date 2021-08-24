@@ -49,12 +49,13 @@ public class CustomLink3SPI implements HelpLinkSPI  {
 	
 	@Override
 	public UserTool getHelpUserTool(WindowControl wControl) {
-		return new Custom3LinkUserTool(wControl);
+		return new Custom3LinkUserTool();
 	}
 	
 	public class Custom3LinkUserTool implements UserTool {
 		
-		public Custom3LinkUserTool(WindowControl wControl) {
+		public Custom3LinkUserTool() {
+			//
 		}
 
 		@Override

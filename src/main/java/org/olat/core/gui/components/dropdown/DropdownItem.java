@@ -65,6 +65,14 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		dropdown.setOrientation(orientation);
 	}
 	
+	public String getIconCSS() {
+		return dropdown.getIconCSS();
+	}
+	
+	public void setIconCSS(String iconCSS) {
+		dropdown.setIconCSS(iconCSS);
+	}
+	
 	public String getCarretIconCSS() {
 		return dropdown.getCarretIconCSS();
 	}
@@ -83,12 +91,15 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		super.setElementCssClass(elementCssClass);
 	}
 
-	public void addElement(FormLink link) {
-		items.add(link);
-		
-		Link linkCmp = link.getComponent();
-		linkCmp.setDomReplacementWrapperRequired(false);
-		dropdown.addComponent(linkCmp);
+	public void addElement(FormItem item) {
+		items.add(item);
+		if(item instanceof FormLink) {
+			Link linkCmp =((FormLink)item).getComponent();
+			linkCmp.setDomReplacementWrapperRequired(false);
+			dropdown.addComponent(linkCmp);
+		} else {
+			dropdown.addComponent(item.getComponent());
+		}
 	}
 	
 	public void removeAllFormItems() {

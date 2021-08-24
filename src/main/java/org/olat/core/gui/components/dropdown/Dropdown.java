@@ -28,6 +28,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -305,6 +306,36 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	 */
 	public boolean isExpandContentHeight() {
 		return expandContentHeight;
+	}
+	
+	public static class SpacerItem extends FormItemImpl {
+		
+		private final Spacer spacerComponent;
+		
+		public SpacerItem(String name) {
+			super(name);
+			spacerComponent = new Spacer(name);
+		}
+
+		@Override
+		public void evalFormRequest(UserRequest ureq) {
+			//
+		}
+
+		@Override
+		public void reset() {
+			//
+		}
+
+		@Override
+		protected Component getFormItemComponent() {
+			return spacerComponent;
+		}
+
+		@Override
+		protected void rootFormAvailable() {
+			//
+		}
 	}
 
 	public static class Spacer extends AbstractComponent {
