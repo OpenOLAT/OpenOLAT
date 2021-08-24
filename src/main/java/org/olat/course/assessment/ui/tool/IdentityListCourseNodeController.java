@@ -337,6 +337,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initFiltersPresets(AssessmentConfig assessmentConfig) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
+		allTab = FlexiFilterTabPreset.presetWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		allTab.setElementCssClass("o_sel_assessment_all");
+		tabs.add(allTab);
+		
 		if(Mode.none != assessmentConfig.getPassedMode()) {
 			passedTab = FlexiFilterTabPreset.presetWithImplicitFilters(PASSED_TAB_ID, translate("filter.passed"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "passed")));
@@ -348,11 +353,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 			failedTab.setElementCssClass("o_sel_assessment_failed");
 			tabs.add(failedTab);
 		}
-		
-		allTab = FlexiFilterTabPreset.presetWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
-				TabSelectionBehavior.nothing, List.of());
-		allTab.setElementCssClass("o_sel_assessment_all");
-		tabs.add(allTab);
 
 		tableEl.setFilterTabs(true, tabs);
 	}
@@ -411,7 +411,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					AssessedIdentityListState.FILTER_GROUPS, groupValues, true));
 		}
 
-		tableEl.setFilters(true, filters, false);
+		tableEl.setFilters(true, filters, false, false);
 	}
 	
 	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
@@ -698,12 +698,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 			FlexiFiltersTab tab = tableEl.getFilterTabById(listState.getTabId());
 			if(tab != null) {
 				tableEl.setSelectedFilterTab(tab);
+			} else {
+				tableEl.setSelectedFilterTab(allTab);
 			}
 			
 			List<FlexiTableExtendedFilter> filters = tableEl.getExtendedFilters();
 			listState.setValuesToFilter(filters);
-			tableEl.setFilters(true, filters, false);
-			tableEl.expandFilters(showTitle);
+			tableEl.setFilters(true, filters, false, false);
+			tableEl.expandFilters(listState.isFiltersExpanded());
 		} else {
 			tableEl.setSelectedFilterTab(allTab);
 		}

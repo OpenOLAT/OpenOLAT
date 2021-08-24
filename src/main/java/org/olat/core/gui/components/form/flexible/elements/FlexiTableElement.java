@@ -386,7 +386,14 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	
 	public List<FlexiTableExtendedFilter> getExtendedFilters();
 	
-	public void setFilters(boolean enable, List<FlexiTableExtendedFilter> filters, boolean alwaysOn);
+	/**
+	 * 
+	 * @param enable true to enable the filter buttons are enable
+	 * @param filters The list of filters
+	 * @param customPresets If the user can save custom filters presets (if tab enabled)
+	 * @param alwaysExpanded The filters are always expanded
+	 */
+	public void setFilters(boolean enable, List<FlexiTableExtendedFilter> filters, boolean customPresets, boolean alwaysExpanded);
 	
 	public void setFiltersValues(String quickSearch, List<FlexiTableFilterValue> values);
 	

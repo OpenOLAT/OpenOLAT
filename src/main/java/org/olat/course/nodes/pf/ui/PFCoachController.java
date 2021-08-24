@@ -319,7 +319,7 @@ public class PFCoachController extends FormBasicController {
 		
 		if(!groupValues.isEmpty()) {
 			FlexiTableExtendedFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.groups"), "groups", groupValues, true);
-			dropboxTable.setFilters(true, List.of(filter), true);
+			dropboxTable.setFilters(true, List.of(filter), false, true);
 		}
 	}
 	

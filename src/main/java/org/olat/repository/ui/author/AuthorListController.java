@@ -592,7 +592,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.owned.resources.usage"),
 				AuthorSourceFilter.USAGE.name(), usageValues, false));
 
-		tableEl.setFilters(true, filters, false);
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	private SelectionValues getTaxonomyLevels() {

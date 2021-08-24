@@ -46,7 +46,7 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 		
 		FlexiFiltersComponent ffC = (FlexiFiltersComponent)source;
 		FlexiFiltersElementImpl ffE = ffC.getFlexiFiltersElement();
-		boolean alwaysOn = ffE.isAlwaysOn();
+		boolean alwaysOn = ffE.isAlwaysExpanded();
 		boolean expanded = ffE.isExpanded();
 		
 		sb.append("<div id='o_c").append(ffC.getDispatchID()).append("' class='o_table_filters_wrapper")

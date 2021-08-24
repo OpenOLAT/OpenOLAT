@@ -228,7 +228,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			}
 		}
 
-		tableEl.setFilters(true, filters, true);
+		tableEl.setFilters(true, filters, false, true);
 	}
 	
 	public class AToolsOptions extends AssessmentToolOptions {

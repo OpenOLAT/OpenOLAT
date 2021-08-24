@@ -736,7 +736,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void setFilters(boolean enable, List<FlexiTableExtendedFilter> filters, boolean alwaysOn) {
+	public void setFilters(boolean enable, List<FlexiTableExtendedFilter> filters, boolean customPresets, boolean alwaysExpanded) {
 		String dispatchId = component.getDispatchID().concat("_extFiltersSet");
 		if(enable) {
 			if(filtersEl == null) {
@@ -744,7 +744,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				filtersEl.getComponent().addListener(this);
 				components.put(dispatchId, filtersEl);
 			}
-			filtersEl.setAlwaysOn(alwaysOn);
+			filtersEl.setAlwaysExpanded(alwaysExpanded);
+			filtersEl.setCustomPresets(customPresets);
 			if(getRootForm() != null) {
 				rootFormAvailable(filtersEl);
 			}
@@ -1823,10 +1824,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	private void updateSelectAllToggle() {
 		if (isMultiSelect() && multiSelectedIndex != null) {
-			int rowCount = dataModel.getRowCount();
+			int count = dataModel.getRowCount();
 			int selectCount = multiSelectedIndex.size();
 			boolean showSelectAll = (selectCount == 0);
-			boolean showDeselectAll = (rowCount != 0 && rowCount == selectCount);
+			boolean showDeselectAll = (count != 0 && count == selectCount);
 			
 			String selectedEntriesInfo;
 			if(selectCount <= 1) {

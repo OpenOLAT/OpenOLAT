@@ -382,7 +382,7 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"),
 				FilterButton.STATUS.name(), lifecycleValues, true));
 		
-		tableEl.setFilters(true, filters, false);
+		tableEl.setFilters(true, filters, true, false);
 		
 	}
 	

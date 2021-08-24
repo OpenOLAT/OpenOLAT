@@ -85,8 +85,9 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private CloseableCalloutWindowController addFiltersCallout;
 	
 	private int count = 0;
-	private boolean alwaysOn;
+	private boolean alwaysExpanded;
 	private boolean expanded = false;
+	private boolean customPresets = true;
 	
 	public FlexiFiltersElementImpl(WindowControl wControl, String name, FlexiTableElementImpl tableEl, Translator translator) {
 		super(name);
@@ -141,11 +142,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	public boolean isExpanded() {
-		return expanded || alwaysOn;
+		return expanded || alwaysExpanded;
 	}
 
-	public void expand(boolean expanded) {
-		this.expanded = expanded;
+	public void expand(boolean expand) {
+		this.expanded = expand;
 		if(this.expanded) {
 			collpaseFiltersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details_collaps");
 		} else {
@@ -154,15 +155,23 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		component.setDirty(true);
 	}
 
-	public boolean isAlwaysOn() {
-		return alwaysOn;
+	public boolean isAlwaysExpanded() {
+		return alwaysExpanded;
 	}
 
-	public void setAlwaysOn(boolean alwaysOn) {
-		this.alwaysOn = alwaysOn;
+	public void setAlwaysExpanded(boolean alwaysExpanded) {
+		this.alwaysExpanded = alwaysExpanded;
 		component.setDirty(true);
 	}
-	
+
+	public boolean isCustomPresets() {
+		return customPresets;
+	}
+
+	public void setCustomPresets(boolean customPresets) {
+		this.customPresets = customPresets;
+	}
+
 	public boolean isTabsEnabled() {
 		FlexiFilterTabsElementImpl tabsEl = tableEl.getFilterTabsElement();
 		return tabsEl != null && tabsEl.isVisible();
@@ -187,12 +196,15 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			moreMenu.addElement(updateFilterLink);
 		}
 		if(tableEl.getFilterTabsElement() != null) {
+			saveFilterLink.setVisible(customPresets);
 			FlexiFiltersTab selectTab = tableEl.getFilterTabsElement().getSelectedTab();
-			boolean show = selectTab != null && selectTab.getId().startsWith("custom_");
+			boolean show = selectTab != null && selectTab.getId().startsWith("custom_") && customPresets;
 			deleteFilterLink.setVisible(show);
 			updateFilterLink.setVisible(show);
+			moreMenu.setVisible(customPresets);
+		} else {
+			moreMenu.setVisible(false);
 		}
-		
 		return moreMenu;
 	}
 	
