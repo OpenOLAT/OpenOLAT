@@ -46,6 +46,10 @@ public class RepositoryEntryEducationalTypeDAO {
 	public RepositoryEntryEducationalType create(String identifier) {
 		return create(identifier, false, null);
 	}
+
+	public RepositoryEntryEducationalType create(String identifier, String cssClass) {
+		return create(identifier, false, cssClass);
+	}
 	
 	public RepositoryEntryEducationalType createPredefined(String identifier, String cssClass) {
 		return create(identifier, true, cssClass);

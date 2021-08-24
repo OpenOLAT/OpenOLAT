@@ -77,6 +77,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String LIFECYCLE_NOTIFICATION_CLOSE_DELETE = "rrepo.lifecylce.notification.close.delete";
 	
 	private static final String WIZARD_TYPES_ENABLED = "wizard.types.enabled";
+	private static final String EDUCATIONAL_DEFAULT_TYPES_ENABLED = "educational.default.types.enabled";
 	private static final String TAXONOMY_TREE_KEY = "taxonomy.tree.key";
 
 	@Value("${site.catalog.enable:true}")
@@ -118,6 +119,10 @@ public class RepositoryModule extends AbstractSpringModule {
 	@Value("${repo.wizards.enabled}")
 	private String wizardTypesEnabledConfig;
 	private Set<String> wizardTypesEnabled;
+
+	@Value("${educational.default.types.enabled}")
+	private String educationalDefaultTypesConfig;
+	private Set<String> educationalDefaultTypesEnabled;
 	
 	private String taxonomyTreeKey;
 	
@@ -239,6 +244,12 @@ public class RepositoryModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(wizardTypeEnabledObj)) {
 			wizardTypesEnabledConfig = wizardTypeEnabledObj;
 			wizardTypesEnabled = null;
+		}
+
+		String educationalDefaultTypesEnabledObj = getStringPropertyValue(EDUCATIONAL_DEFAULT_TYPES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(educationalDefaultTypesEnabledObj)) {
+			educationalDefaultTypesConfig = educationalDefaultTypesEnabledObj;
+			educationalDefaultTypesEnabled = null;
 		}
 
 		// 0 -> Alphabetical
@@ -454,4 +465,21 @@ public class RepositoryModule extends AbstractSpringModule {
 		this.wizardTypesEnabled = null;
 		setStringProperty(WIZARD_TYPES_ENABLED, wizardTypesEnabledConfig, true);
 	}
+
+	
+	public Set<String> getEnabledEducationalDefaultTypes() {
+		if (educationalDefaultTypesEnabled == null) {
+			educationalDefaultTypesEnabled = StringHelper.containsNonWhitespace(educationalDefaultTypesConfig)
+					? Arrays.stream(educationalDefaultTypesConfig.replace(" ", "").split(",")).collect(Collectors.toSet())
+					: Collections.emptySet();
+		}
+		return educationalDefaultTypesEnabled;
+	}
+	
+	public void setEnabledEducationalDefaultTypes(Set<String> types) {
+		this.educationalDefaultTypesConfig = types.stream().collect(Collectors.joining(","));
+		this.educationalDefaultTypesEnabled = null;
+		setStringProperty(EDUCATIONAL_DEFAULT_TYPES_ENABLED, wizardTypesEnabledConfig, true);
+	}
+
 }

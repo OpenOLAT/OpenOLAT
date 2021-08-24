@@ -256,6 +256,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			if (entry.getEducationalType() != null) {
 				String educationalType = translate(RepositoyUIFactory.getI18nKey(entry.getEducationalType()));
 				setText(educationalType, "educationalType", layoutCont);
+				layoutCont.contextPut("educationalTypeClass", entry.getEducationalType().getCssClass());				
 			}
 			
 			//thumbnail and movie

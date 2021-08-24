@@ -35,6 +35,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.RepositoyUIFactory;
 
 /**
  * 
@@ -376,6 +377,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public RepositoryEntryEducationalType getEducationalType() {
 		return educationalType;
+	}
+
+	public String getEducationalTypei18nKey() {
+		return RepositoyUIFactory.getI18nKey(educationalType);
 	}
 
 	public String getExpenditureOfWork() {

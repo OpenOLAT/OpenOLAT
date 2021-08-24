@@ -149,13 +149,25 @@ public class RepositoryManager {
 	
 	@PostConstruct
 	public void init() {
-		initEducationalType("exam.course", "o_exam_course");
+		// Mandatory default type
+		initEducationalType("exam.course", "o_exam_course", false);
+		// Optional default types that can be deleted by admin user
+		Set<String> educationalTypes = repositoryModule.getEnabledEducationalDefaultTypes();
+		for (String educationalType : educationalTypes) {
+			// remove unwanted input
+			educationalType = educationalType.trim().toLowerCase().replaceAll("[^a-z]", "");
+			initEducationalType(educationalType + ".course", "o_" + educationalType + "_course", true);
+		}
 	}
 
-	private void initEducationalType(String identifier, String cssClass) {
+	private void initEducationalType(String identifier, String cssClass, boolean deletable) {
 		RepositoryEntryEducationalType type = repositoryEntryEducationalTypeDao.loadByIdentifier(identifier);
 		if (type == null) {
-			repositoryEntryEducationalTypeDao.createPredefined(identifier, cssClass);
+			if (deletable) {
+				repositoryEntryEducationalTypeDao.create(identifier, cssClass);      				
+			} else {				
+				repositoryEntryEducationalTypeDao.createPredefined(identifier, cssClass);      
+			}
 		}
 	}
 

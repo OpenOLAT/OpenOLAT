@@ -17,6 +17,13 @@
 				<small>$r.escapeHtml($row.getExternalRef())</small>
 			#end
 		</h4>
+		
+		#if($row.getEducationalType())
+		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
+			<span>$r.translate($row.getEducationalTypei18nKey())</span>
+		</span>
+		#end
+		
 		#if($row.authors && !$row.authors.empty)
 			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
 		#end

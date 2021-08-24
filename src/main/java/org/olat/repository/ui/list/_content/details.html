@@ -1,4 +1,4 @@
-<div class="o_repo_details o_block_large_bottom">
+<div class="o_repo_details o_block_large_bottom  #if($educationalTypeClass) $educationalTypeClass #end ">
 	<div class="o_lead clearfix">					
 		<h1>
 			<i class="o_icon $cssClass o_icon-lg"></i>
@@ -7,6 +7,13 @@
 				<small>$r.escapeHtml($v.getExternalRef())</small>
 			#end
 		</h1>
+		
+		#if($educationalType)
+		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
+			<span>$educationalType</span>
+		</span>
+		#end
+		
 		#if($v.authors && !$v.authors.empty)
 		<div class="o_author o_block">
 			<span class="text-muted">$r.translate("course.made.by")</span> 

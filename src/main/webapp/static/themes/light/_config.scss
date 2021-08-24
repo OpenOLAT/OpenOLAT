@@ -1006,4 +1006,11 @@ $o-selection-yellow		: #FFD70033;
 $o-selection-light-green: #32CD3233;
 $o-selection-dark-green : #228B2233;
 
-
+/* Educational course types */
+$o-edu-type-standard-course-color 			: $gray !default;
+$o-edu-type-exam-course-color 				: $o-cn-style-cat-red-color !default;
+$o-edu-type-certification-course-color		: $o-cn-style-cat-orange-color !default;
+$o-edu-type-date-course-color				: $o-cn-style-cat-purple-color !default;
+$o-edu-type-seminar-course-color			: $o-cn-style-cat-light-blue-color !default;
+$o-edu-type-blendedlearning-course-color	: $o-cn-style-cat-yellow-color !default;
+$o-edu-type-selfstudy-course-color			: $o-cn-style-cat-dark-green-color !default;

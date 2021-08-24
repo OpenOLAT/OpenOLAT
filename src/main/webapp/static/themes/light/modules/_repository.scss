@@ -7,8 +7,6 @@
 		.o_author{
 			margin-top: 0.5em;
 			margin-bottom: 1em;
-			font-size: 120%;
-			@include text-overflow();
 			color: $o-coursesite-meta-author-color;
 		}
 		.o_media {
