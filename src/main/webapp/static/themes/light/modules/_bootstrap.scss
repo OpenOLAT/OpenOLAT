@@ -142,3 +142,8 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 .dropdown-header {
 	padding: 3px 10px;
 }
+
+/* more padding between inline checkboxes / radios */
+.form-horizontal .radio-inline, .form-horizontal .checkbox-inline {
+	margin-right: 10px;
+}
