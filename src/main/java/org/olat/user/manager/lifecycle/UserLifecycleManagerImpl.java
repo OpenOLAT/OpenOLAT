@@ -45,11 +45,13 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityLifecycle;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
@@ -291,6 +293,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			for(Identity identity:warnedIdentities) {
 				if(identity.getLastLogin() != null && (vetoed.isEmpty() || !vetoed.contains(identity))) {
 					sendEmail(identity, "mail.before.expiration.subject", "mail.before.expiration.body", "before expiration");
+					sendEmailCopy(userModule.getMailCopyBeforeExpiration(), "mail.before.expiration.subject", "mail.before.expiration.body", "before expiration", identity);
 					identity = setIdentityExpirationMail(identity);
 					vetoed.add(identity);
 				}
@@ -304,6 +307,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 				identity = setIdentityAsInactive(identity);
 				if(identity.getLastLogin() != null && userModule.isMailAfterExpiration()) {
 					sendEmail(identity, "mail.after.expiration.subject", "mail.after.expiration.body", "after expiration");
+					sendEmailCopy(userModule.getMailCopyAfterExpiration(), "mail.after.expiration.subject", "mail.after.expiration.body", "after expiration", identity);
 				}
 				vetoed.add(identity);
 			}
@@ -327,6 +331,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 				for(Identity identity:identities) {
 					if(identity.getLastLogin() != null && (vetoed.isEmpty() || !vetoed.contains(identity))) {
 						sendEmail(identity, "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation");
+						sendEmailCopy(userModule.getMailCopyBeforeDeactivation(), "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation", identity);
 						identity = setIdentityInactivationMail(identity);
 						vetoed.add(identity);
 					}
@@ -348,6 +353,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 				identity = setIdentityAsInactive(identity);
 				if(identity.getLastLogin() != null && userModule.isMailAfterDeactivation()) {
 					sendEmail(identity, "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation");
+					sendEmailCopy(userModule.getMailCopyAfterDeactivation(), "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation", identity);
 				}
 				vetoed.add(identity);
 			}
@@ -369,6 +375,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 				for(Identity identity:identities) {
 					if(identity.getLastLogin() != null) {
 						sendEmail(identity, "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion");
+						sendEmailCopy(userModule.getMailCopyBeforeDeletion(), "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion", identity);
 						identity = setIdentityDeletionMail(identity);
 						vetoed.add(identity);
 					}
@@ -389,6 +396,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 				if(!vetoed.contains(identity)) {
 					if(identity.getLastLogin() != null && userModule.isMailAfterDeletion()) {
 						sendEmail(identity, "mail.after.deletion.subject", "mail.after.deletion.body", "after deletion");
+						sendEmailCopy(userModule.getMailCopyAfterDeletion(), "mail.after.deletion.subject", "mail.after.deletion.body", "after deletion", identity);
 					}
 					deleteIdentity(identity, null);
 				}
@@ -481,6 +489,26 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		sendUserEmailTo(identity, template, type);
 	}
 	
+	private void sendEmailCopy(List<String> receivers, String subjectI18nKey, String bodyI18nKey, String type, Identity identity) {
+		if (receivers == null || receivers.isEmpty()) {
+			return;
+		}
+		
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(null);
+		Translator translator = Util.createPackageTranslator(UserAdminLifecycleConfigurationController.class, locale);
+		User user = identity.getUser();
+		
+		String subject = translator.translate(subjectI18nKey);
+		String body = translator.translate("mail.copy.addition", new String[] {user.getFirstName(), user.getLastName(), user.getEmail()}) + translator.translate(bodyI18nKey);
+		LifecycleMailTemplate template = new LifecycleMailTemplate(subject, body, locale);
+		
+		for (String receiver : receivers) {
+			if (MailHelper.isValidEmailAddress(receiver)) {
+				sendUserEmailCopyTo(receiver, template, type, identity);
+			}
+		}
+	}
+	
 	private void sendUserEmailTo(Identity identity, MailTemplate template, String type) {
 		// for backwards compatibility
 		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
@@ -491,6 +519,20 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			mailManager.sendMessage(bundle);
 		}
 		log.info(Tracing.M_AUDIT, "User lifecycle {} send to identity={} with email={}", type, identity.getKey(), identity.getUser().getProperty(UserConstants.EMAIL, null));
+	}
+	
+	private void sendUserEmailCopyTo(String receiver, MailTemplate template, String type, Identity identity) {
+		// for backwards compatibility
+		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
+
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(null, null, template, null, null, result);
+		bundle.setTo(receiver);
+		
+		if(bundle != null) {
+			mailManager.sendExternMessage(bundle, result, true);
+		}
+		log.info(Tracing.M_AUDIT, "User lifecycle {} send copy regarding identity={} to email={}", type, identity.getKey(), receiver);
 	}
 	
 	private Date getDate(int days) {

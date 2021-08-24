@@ -19,6 +19,10 @@
  */
 package org.olat.user.ui.admin.lifecycle;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -54,12 +58,16 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	private MultipleSelectionElement enableDeactivationEl;
 	private TextElement numberOfInactiveDayDeactivationEl;
 	private TextElement numberOfDayBeforeDeactivationMailEl;
+	private TextElement copyMailBeforeDeactivationEl;
+	private TextElement copyMailAfterDeactivationEl;
 	private MultipleSelectionElement enableMailBeforeDeactivationEl;
 	private MultipleSelectionElement enableMailAfterDeactivationEl;
 	private TranslationBundles mailBeforeDeactivationBundles;
 	private TranslationBundles mailAfterDeactivationBundles;
 	
 	private TextElement numberOfDayBeforeExpirationMailEl;
+	private TextElement copyMailBeforeExpirationEl;
+	private TextElement copyMailAfterExpirationEl;
 	private MultipleSelectionElement enableMailBeforeExpirationEl;
 	private MultipleSelectionElement enableMailAfterExpirationEl;
 	private TranslationBundles mailBeforeExpirationBundles;
@@ -68,6 +76,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 	private MultipleSelectionElement enableDeletionEl;
 	private TextElement numberOfInactiveDayDeletionEl;
 	private TextElement numberOfDayBeforeDeletionMailEl;
+	private TextElement copyMailBeforeDeletionEl;
+	private TextElement copyMailAfterDeletionEl;
 	private MultipleSelectionElement enableMailBeforeDeletionEl;
 	private MultipleSelectionElement enableMailAfterDeletionEl;
 	private TranslationBundles mailBeforeDeletionBundles;
@@ -115,6 +125,10 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		numberOfDayBeforeExpirationMailEl = uifactory.addTextElement("num.day.before.mail.expiration", "num.day.before.mail.expiration", 4, daysBefore, formLayout);
 		initDays(numberOfDayBeforeExpirationMailEl);
 		
+		// Copy mail before expiration 
+		copyMailBeforeExpirationEl = uifactory.addTextElement("copy.mail.before.expiration", -1, StringUtils.join(userModule.getMailCopyBeforeExpiration(), ", "), formLayout);
+		copyMailBeforeExpirationEl.setHelpTextKey("copy.mail.help", null);
+		
 		// subject + content mail
 		TranslationBundle beforeBundleSubject = initForm("mail.before.expiration.subject.label", "mail.before.expiration.subject", false, formLayout);
 		TranslationBundle beforeBundle = initForm("mail.before.expiration.body.label", "mail.before.expiration.body", true, formLayout);
@@ -124,6 +138,10 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		enableMailAfterExpirationEl = uifactory.addCheckboxesHorizontal("enable.mail.after.expiration", "enable.mail.after.expiration", formLayout, onKeys, onValues);
 		enableMailAfterExpirationEl.addActionListener(FormEvent.ONCHANGE);
 		enableMailAfterExpirationEl.select(onKeys[0], userModule.isMailAfterExpiration());
+		
+		// Copy mail after expiration 
+		copyMailAfterExpirationEl = uifactory.addTextElement("copy.mail.after.expiration", -1, StringUtils.join(userModule.getMailCopyAfterExpiration(), ", "), formLayout);
+		copyMailAfterExpirationEl.setHelpTextKey("copy.mail.help", null);
 
 		// subject + content mail
 		TranslationBundle afterBundleSubject = initForm("mail.after.expiration.subject.label", "mail.after.expiration.subject", false, formLayout);
@@ -152,6 +170,10 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		numberOfDayBeforeDeactivationMailEl = uifactory.addTextElement("num.day.before.mail.deactivation", "num.day.before.mail.deactivation", 4, daysBeforeMail, formLayout);
 		initDays(numberOfDayBeforeDeactivationMailEl);
 		
+		// Copy mail before deactivation 
+		copyMailBeforeDeactivationEl = uifactory.addTextElement("copy.mail.before.deactivation", -1, StringUtils.join(userModule.getMailCopyBeforeDeactivation(), ", "), formLayout);
+		copyMailBeforeDeactivationEl.setHelpTextKey("copy.mail.help", null);
+		
 		// subject + content mail
 		TranslationBundle beforeBundleSubject = initForm("mail.before.deactivation.subject.label", "mail.before.deactivation.subject", false, formLayout);
 		TranslationBundle beforeBundle = initForm("mail.before.deactivation.body.label", "mail.before.deactivation.body", true, formLayout);
@@ -161,6 +183,10 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		enableMailAfterDeactivationEl = uifactory.addCheckboxesHorizontal("enable.mail.after.deactivation", "enable.mail.after.deactivation", formLayout, onKeys, onValues);
 		enableMailAfterDeactivationEl.addActionListener(FormEvent.ONCHANGE);
 		enableMailAfterDeactivationEl.select(onKeys[0], userModule.isMailAfterDeactivation());
+		
+		// Copy mail after deactivation 
+		copyMailAfterDeactivationEl = uifactory.addTextElement("copy.mail.after.deactivation", -1, StringUtils.join(userModule.getMailCopyAfterDeactivation(), ", "), formLayout);
+		copyMailAfterDeactivationEl.setHelpTextKey("copy.mail.help", null);
 
 		// subject + content mail
 		TranslationBundle afterBundleSubject = initForm("mail.after.deactivation.subject.label", "mail.after.deactivation.subject", false, formLayout);
@@ -188,6 +214,10 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		numberOfDayBeforeDeletionMailEl = uifactory.addTextElement("num.day.before.mail.deletion", "num.day.before.mail.deletion", 4, daysBeforeMail, formLayout);
 		initDays(numberOfDayBeforeDeletionMailEl);
 		
+		// Copy mail before deletion 
+		copyMailBeforeDeletionEl = uifactory.addTextElement("copy.mail.before.deletion", -1, StringUtils.join(userModule.getMailCopyBeforeDeletion(), ", "), formLayout);
+		copyMailBeforeDeletionEl.setHelpTextKey("copy.mail.help", null);
+		
 		// subject + content mail
 		TranslationBundle beforeBundleSubject = initForm("mail.before.deletion.subject.label", "mail.before.deletion.subject", false, formLayout);
 		TranslationBundle beforeBundle = initForm("mail.before.deletion.body.label", "mail.before.deletion.body", true, formLayout);
@@ -197,6 +227,10 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		enableMailAfterDeletionEl = uifactory.addCheckboxesHorizontal("enable.mail.after.deletion", "enable.mail.after.deletion", formLayout, onKeys, onValues);
 		enableMailAfterDeletionEl.addActionListener(FormEvent.ONCHANGE);
 		enableMailAfterDeletionEl.select(onKeys[0], userModule.isMailAfterDeletion());
+		
+		// Copy mail after deletion 
+		copyMailAfterDeletionEl = uifactory.addTextElement("copy.mail.after.deletion", -1, StringUtils.join(userModule.getMailCopyAfterDeletion(), ", "), formLayout);
+		copyMailAfterDeletionEl.setHelpTextKey("copy.mail.help", null);
 		
 		// subject + content mail
 		TranslationBundle afterBundleSubject = initForm("mail.after.deletion.subject.label", "mail.after.deletion.subject", false, formLayout);
@@ -225,26 +259,35 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		// expiration
 		boolean enableMailBeforeExpiration = enableMailBeforeExpirationEl.isAtLeastSelected(1);
 		numberOfDayBeforeExpirationMailEl.setVisible(enableMailBeforeExpiration);
+		copyMailBeforeExpirationEl.setVisible(enableMailBeforeExpiration);
 		mailBeforeExpirationBundles.setVisible(enableMailBeforeExpiration);
-		mailAfterExpirationBundles.setVisible(enableMailAfterExpirationEl.isAtLeastSelected(1)); 
+		boolean enableMailAfterExpiration = enableMailAfterExpirationEl.isAtLeastSelected(1);
+		copyMailAfterExpirationEl.setVisible(enableMailAfterExpiration);
+		mailAfterExpirationBundles.setVisible(enableMailAfterExpiration); 
 
 		// deactivation
 		boolean enableDeactivation = enableDeactivationEl.isAtLeastSelected(1);
 		enableMailBeforeDeactivationEl.setVisible(enableDeactivation);
 		boolean enableMailBeforeDeactiviation = enableDeactivation && enableMailBeforeDeactivationEl.isAtLeastSelected(1);
 		numberOfDayBeforeDeactivationMailEl.setVisible(enableMailBeforeDeactiviation);
+		copyMailBeforeDeactivationEl.setVisible(enableMailBeforeDeactiviation);
 		mailBeforeDeactivationBundles.setVisible(enableMailBeforeDeactiviation);
 		enableMailAfterDeactivationEl.setVisible(enableDeactivation);
-		mailAfterDeactivationBundles.setVisible(enableDeactivation && enableMailAfterDeactivationEl.isAtLeastSelected(1));
+		boolean enableMailAfterDeactiviation = enableDeactivation && enableMailAfterDeactivationEl.isAtLeastSelected(1);
+		copyMailAfterDeactivationEl.setVisible(enableMailAfterDeactiviation);
+		mailAfterDeactivationBundles.setVisible(enableMailAfterDeactiviation);
 		
 		// deletion
 		boolean enableDeletion = enableDeletionEl.isAtLeastSelected(1);
 		enableMailBeforeDeletionEl.setVisible(enableDeletion);
 		boolean enableMailBeforeDeletion = enableDeletion && enableMailBeforeDeletionEl.isAtLeastSelected(1);
 		numberOfDayBeforeDeletionMailEl.setVisible(enableMailBeforeDeletion);
+		copyMailBeforeDeletionEl.setVisible(enableMailBeforeDeletion);
 		mailBeforeDeletionBundles.setVisible(enableMailBeforeDeletion);
 		enableMailAfterDeletionEl.setVisible(enableDeletion);
-		mailAfterDeletionBundles.setVisible(enableDeletion && enableMailAfterDeletionEl.isAtLeastSelected(1));
+		boolean enableMailAfterDeletion = enableDeletion && enableMailAfterDeletionEl.isAtLeastSelected(1);
+		copyMailAfterDeletionEl.setVisible(enableMailAfterDeletion);
+		mailAfterDeletionBundles.setVisible(enableMailAfterDeletion);
 	}
 
 	@Override
@@ -294,6 +337,12 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		allOk &= validateInteger(numberOfDayBeforeDeactivationMailEl);
 		allOk &= validateInteger(numberOfInactiveDayDeletionEl);
 		allOk &= validateInteger(numberOfDayBeforeDeletionMailEl);
+		allOk &= validateEmail(copyMailAfterDeactivationEl);
+		allOk &= validateEmail(copyMailBeforeDeactivationEl);
+		allOk &= validateEmail(copyMailAfterDeletionEl);
+		allOk &= validateEmail(copyMailBeforeDeletionEl);
+		allOk &= validateEmail(copyMailAfterExpirationEl);
+		allOk &= validateEmail(copyMailBeforeExpirationEl);
 		return allOk;
 	}
 	
@@ -322,6 +371,18 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		return allOk;
 	}
 	
+	private boolean validateEmail(TextElement element) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if (element.isVisible() && formatAndCheckMails(element.getValue()) == null) {
+			allOk &= false;
+			element.setErrorKey("form.error.nomail", null);
+		}
+		
+		return allOk;
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// expiration
@@ -332,6 +393,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 			userModule.setNumberOfDayBeforeExpirationMail(daysBeforeExpiration);
 		}
 		userModule.setMailAfterExpiration(enableMailAfterExpirationEl.isAtLeastSelected(1)); 
+		userModule.setMailCopyAfterExpiration(formatAndCheckMails(copyMailAfterExpirationEl.getValue()));
+		userModule.setMailCopyBeforeExpiration(formatAndCheckMails(copyMailBeforeExpirationEl.getValue()));
 		
 		// deactivation
 		boolean automaticDeactivation = enableDeactivationEl.isAtLeastSelected(1);
@@ -346,6 +409,8 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 			}
 			userModule.setMailAfterDeactivation(enableMailAfterDeactivationEl.isAtLeastSelected(1));
 		}
+		userModule.setMailCopyAfterDeactivation(formatAndCheckMails(copyMailAfterDeactivationEl.getValue()));
+		userModule.setMailCopyBeforeDeactivation(formatAndCheckMails(copyMailBeforeDeactivationEl.getValue()));
 		
 		// deletion
 		boolean automaticDeletion = enableDeletionEl.isAtLeastSelected(1);
@@ -360,6 +425,35 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 			}
 			userModule.setMailAfterDeletion(enableMailAfterDeletionEl.isAtLeastSelected(1));
 		}
+		userModule.setMailCopyAfterDeletion(formatAndCheckMails(copyMailAfterDeletionEl.getValue()));
+		userModule.setMailCopyBeforeDeletion(formatAndCheckMails(copyMailBeforeDeletionEl.getValue()));
+	}
+	
+	/**
+	 * Checks a comma separated list of mails for validity
+	 * Returns null if there is an error
+	 * 
+	 * @param mails
+	 * @return
+	 */
+	private String formatAndCheckMails(String mailString) {
+		if (!StringHelper.containsNonWhitespace(mailString)) {
+			return "";
+		}
+		
+		// Remove any whitespaces
+		mailString = mailString.replace(" ", "");
+		
+		// Convert to list for easier handling
+		List<String> mails = Arrays.asList(mailString.split(","));
+		
+		for (String mail : mails) {
+			if (!MailHelper.isValidEmailAddress(mail)) {
+				return null;
+			}
+		}
+		
+		return mailString;
 	}
 	
 	private void doTranslate(UserRequest ureq, TranslationBundle bundle) {

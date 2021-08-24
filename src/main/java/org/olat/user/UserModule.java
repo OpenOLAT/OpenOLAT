@@ -26,6 +26,7 @@
 package org.olat.user;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -80,15 +81,21 @@ public class UserModule extends AbstractSpringModule {
 	private static final String USER_MAIL_BEFORE_AUTOMATIC_DEACTIVATION = "user.mail.before.automatic.deactivation";
 	private static final String USER_MAIL_AFTER_AUTOMATIC_DEACTIVATION = "user.mail.after.automatic.deactivation";
 	private static final String USER_NUM_OF_DAYS_BEFORE_MAIL_AUTOMATIC_DEACTIVATION = "user.days.before.mail.automatic.deactivation";
+	private static final String USER_MAIL_COPY_AFTER_AUTOMATIC_DEACTIVATION = "user.mail.copy.after.automatic.deactivation";
+	private static final String USER_MAIL_COPY_BEFORE_AUTOMATIC_DEACTIVATION = "user.mail.copy.before.automatic.deactivation";
 	
 	private static final String USER_NUM_OF_DAYS_BEFORE_MAIL_EXPIRATION = "user.days.before.mail.expiration";
 	private static final String USER_MAIL_BEFORE_EXPIRATION = "user.mail.before.expiration";
 	private static final String USER_MAIL_AFTER_EXPIRATION = "user.mail.after.expiration";
+	private static final String USER_MAIL_COPY_AFTER_AUTOMATIC_EXPIRATION = "user.mail.copy.after.automatic.expiration";
+	private static final String USER_MAIL_COPY_BEFORE_AUTOMATIC_EXPIRATION = "user.mail.copy.before.automatic.expiration";
 	
 	private static final String USER_NUM_OF_DAYS_BEFORE_AUTOMATIC_DELETION = "user.days.before.deletion";
 	private static final String USER_MAIL_BEFORE_AUTOMATIC_DELETION = "user.mail.before.automatic.deletion";
 	private static final String USER_MAIL_AFTER_AUTOMATIC_DELETION = "user.mail.after.automatic.deletion";
 	private static final String USER_NUM_OF_DAYS_BEFORE_MAIL_AUTOMATIC_DELETION = "user.days.before.mail.automatic.deletion";
+	private static final String USER_MAIL_COPY_AFTER_AUTOMATIC_DELETION = "user.mail.copy.after.automatic.deletion";
+	private static final String USER_MAIL_COPY_BEFORE_AUTOMATIC_DELETION = "user.mail.copy.before.automatic.deletion";
 	
 	
 	@Autowired @Qualifier("loginBlacklist")
@@ -134,6 +141,10 @@ public class UserModule extends AbstractSpringModule {
 	private int numberOfDayBeforeDeactivationMail;
 	@Value("${user.days.reactivation.period:30}")
 	private int numberOfDayReactivationPeriod;
+	@Value("${user.mail.copy.after.automatic.deactivation:}")
+	private String mailCopyAfterDeactivation;
+	@Value("${user.mail.copy.before.automatic.deactivation:}")
+	private String mailCopyBeforeDeactivation;
 	
 	@Value("${user.days.before.mail.expiration:0}")
 	private int numberOfDayBeforeExpirationMail;
@@ -141,6 +152,10 @@ public class UserModule extends AbstractSpringModule {
 	private boolean mailBeforeExpiration;
 	@Value("${user.mail.after.expiration:false}")
 	private boolean mailAfterExpiration;
+	@Value("${user.mail.copy.after.automatic.expiration:}")
+	private String mailCopyAfterExpiration;
+	@Value("${user.mail.copy.before.automatic.expiration:}")
+	private String mailCopyBeforeExpiration;
 	
 	@Value("${user.automatic.deletion:false}")
 	private boolean userAutomaticDeletion;
@@ -154,6 +169,10 @@ public class UserModule extends AbstractSpringModule {
 	private boolean mailAfterDeletion;
 	@Value("${user.days.before.mail.automatic.deletion:30}")
 	private int numberOfDayBeforeDeletionMail;
+	@Value("${user.mail.copy.after.automatic.deletion:}")
+	private String mailCopyAfterDeletion;
+	@Value("${user.mail.copy.before.automatic.deletion:}")
+	private String mailCopyBeforeDeletion;
 
 	@Autowired
 	private UserPropertiesConfig userPropertiesConfig;
@@ -257,6 +276,9 @@ public class UserModule extends AbstractSpringModule {
 			mailAfterDeactivation = "true".equalsIgnoreCase(mailAfterDeactivationObj);
 		}
 		
+		mailCopyAfterDeactivation = getStringPropertyValue(USER_MAIL_COPY_AFTER_AUTOMATIC_DEACTIVATION, mailCopyAfterDeactivation);
+		mailCopyBeforeDeactivation = getStringPropertyValue(USER_MAIL_COPY_BEFORE_AUTOMATIC_DEACTIVATION, mailCopyBeforeDeactivation);
+		
 		// expiration
 		numberOfDayBeforeExpirationMail = getIntPropertyValue(USER_NUM_OF_DAYS_BEFORE_MAIL_EXPIRATION, numberOfDayBeforeExpirationMail);
 		
@@ -269,6 +291,9 @@ public class UserModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(mailAfterExpirationObj)) {
 			mailAfterExpiration = "true".equalsIgnoreCase(mailAfterExpirationObj);
 		}
+		
+		mailCopyAfterExpiration = getStringPropertyValue(USER_MAIL_COPY_AFTER_AUTOMATIC_EXPIRATION, mailCopyAfterExpiration);
+		mailCopyBeforeExpiration = getStringPropertyValue(USER_MAIL_COPY_BEFORE_AUTOMATIC_EXPIRATION, mailCopyBeforeExpiration);
 		
 		// deletion
 		String userAutoDeletionObj = getStringPropertyValue(USER_AUTOMATIC_DELETION, false);
@@ -289,6 +314,9 @@ public class UserModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(mailAfterDeletionObj)) {
 			mailAfterDeletion = "true".equalsIgnoreCase(mailAfterDeletionObj);
 		}
+		
+		mailCopyAfterDeletion = getStringPropertyValue(USER_MAIL_COPY_AFTER_AUTOMATIC_DELETION, mailCopyAfterDeletion);
+		mailCopyBeforeDeletion = getStringPropertyValue(USER_MAIL_COPY_BEFORE_AUTOMATIC_DELETION, mailCopyBeforeDeletion);
 	}
 
 	private void checkMandatoryUserProperty(String userPropertyIdentifyer) {
@@ -589,6 +617,76 @@ public class UserModule extends AbstractSpringModule {
 		setIntProperty(USER_NUM_OF_DAYS_BEFORE_MAIL_AUTOMATIC_DELETION, days, true);
 	}
 	
+	public void setMailCopyAfterDeactivation(String mailCopyAfterDeactivation) {
+		this.mailCopyAfterDeactivation = cleanStringProperty(mailCopyAfterDeactivation);
+		setStringProperty(USER_MAIL_COPY_AFTER_AUTOMATIC_DEACTIVATION, this.mailCopyAfterDeactivation, true);
+	}
 	
+	public List<String> getMailCopyAfterDeactivation() {
+		return convertStringToList(mailCopyAfterDeactivation);
+	}
+	
+	public void setMailCopyBeforeDeactivation(String mailCopyBeforeDeactivation) {
+		this.mailCopyBeforeDeactivation = cleanStringProperty(mailCopyBeforeDeactivation);
+		setStringProperty(USER_MAIL_COPY_BEFORE_AUTOMATIC_DEACTIVATION, this.mailCopyBeforeDeactivation, true);
+	}
+	
+	public List<String> getMailCopyBeforeDeactivation() {
+		return convertStringToList(mailCopyBeforeDeactivation);
+	}
+	
+	public void setMailCopyAfterDeletion(String mailCopyAfterDeletion) {
+		this.mailCopyAfterDeletion = cleanStringProperty(mailCopyAfterDeletion);
+		setStringProperty(USER_MAIL_COPY_AFTER_AUTOMATIC_DELETION, this.mailCopyAfterDeletion, true);
+	}
+	
+	public List<String> getMailCopyAfterDeletion() {
+		return convertStringToList(mailCopyAfterDeletion);
+	}
+	
+	public void setMailCopyBeforeDeletion(String mailCopyBeforeDeletion) {
+		this.mailCopyBeforeDeletion = cleanStringProperty(mailCopyBeforeDeletion);
+		setStringProperty(USER_MAIL_COPY_BEFORE_AUTOMATIC_DELETION, this.mailCopyBeforeDeletion, true);
+	}
+	
+	public List<String> getMailCopyBeforeDeletion() {
+		return convertStringToList(mailCopyBeforeDeletion);
+	}
+	
+	public void setMailCopyAfterExpiration(String mailCopyAfterExpiration) {
+		this.mailCopyAfterExpiration = cleanStringProperty(mailCopyAfterExpiration);
+		setStringProperty(USER_MAIL_COPY_AFTER_AUTOMATIC_EXPIRATION, this.mailCopyAfterExpiration, true);
+	}
+	
+	public List<String> getMailCopyAfterExpiration() {
+		return convertStringToList(mailCopyAfterExpiration);
+	}
+	
+	public void setMailCopyBeforeExpiration(String mailCopyBeforeExpiration) {
+		this.mailCopyBeforeExpiration = cleanStringProperty(mailCopyBeforeExpiration);
+		setStringProperty(USER_MAIL_COPY_BEFORE_AUTOMATIC_EXPIRATION, this.mailCopyBeforeExpiration, true);
+	}
+	
+	public List<String> getMailCopyBeforeExpiration() {
+		return convertStringToList(mailCopyBeforeExpiration);
+	}
+	
+	private String cleanStringProperty(String stringToClean) {
+		if (stringToClean == null) {
+			return null;
+		}
+		
+		return stringToClean.replace(" ", "");
+	}
+	
+	private List<String> convertStringToList(String toList) {
+		if (!StringHelper.containsNonWhitespace(toList)) {
+			return new ArrayList<>();
+		}
+		
+		toList = toList.replace(" ", "");
+		
+		return Arrays.asList(toList.split(","));
+	}
 
 }
