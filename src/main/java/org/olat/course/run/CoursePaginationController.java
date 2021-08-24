@@ -46,6 +46,7 @@ public class CoursePaginationController extends FormBasicController {
 	private FormLink previousButton;
 	private FormLink nextButton;
 	private FormLink confirmButton;
+	private boolean largeStyle = false;
 	
 	public CoursePaginationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "pagination");
@@ -66,9 +67,27 @@ public class CoursePaginationController extends FormBasicController {
 		
 		nextButton = uifactory.addFormLink("next", "next", "", null, formLayout, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
 		nextButton.setDomReplacementWrapperRequired(false);
-		nextButton.setIconLeftCSS("o_icon o_icon-fw o_icon_course_next");
+		nextButton.setIconRightCSS("o_icon o_icon-fw o_icon_course_next");
 		nextButton.setLinkTitle(translate("command.next"));
 		nextButton.setAriaLabel(translate("command.next"));
+	}
+	
+	public void enableLargeStyleRendering() {
+		this.largeStyle =  true;		
+		
+		// Change button text 
+		previousButton.setI18nKey(translate("command.previous"));		
+		nextButton.setI18nKey(translate("command.next"));
+		
+		// Button style
+		String styleEnabled = "btn btn-default";
+		String styleDisabled = styleEnabled + (" o_disabled disabled");			
+		confirmButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);		
+		confirmButton.getComponent().setCustomDisabledLinkCSS(styleDisabled);		
+		previousButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);
+		previousButton.getComponent().setCustomDisabledLinkCSS(styleDisabled);
+		nextButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);
+		nextButton.getComponent().setCustomDisabledLinkCSS(styleDisabled);
 	}
 
 	public void updateNextPreviousUI(boolean previousEnabled, boolean nextEnabled) {
@@ -83,7 +102,13 @@ public class CoursePaginationController extends FormBasicController {
 		confirmButton.setIconLeftCSS(doConfirm? "o_icon o_icon_status_undone": "o_icon o_icon_status_done");
 		confirmButton.setUserObject(doConfirm? Boolean.TRUE: Boolean.FALSE);
 		confirmButton.setElementCssClass(doConfirm ? "o_course_pagination_status_undone" : "o_course_pagination_status_done");
-		confirmButton.setPrimary(doConfirm);
+		if (largeStyle) {
+			String styleEnabled = "btn btn-default" + (doConfirm ? " btn-primary" : " btn-success");
+			confirmButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);		
+		} else {			
+			confirmButton.setPrimary(doConfirm);
+		}
+		
 		confirmButton.setVisible(confirmVisible);
 		flc.setDirty(true);
 	}

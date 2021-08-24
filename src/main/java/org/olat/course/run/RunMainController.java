@@ -37,6 +37,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.ListPanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
@@ -149,7 +150,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private LayoutMain3ColsController columnLayoutCtr;
 	private CourseDisclaimerConsentController disclaimerController;
 	
-	private CoursePaginationController paginationCtrl;
+	private CoursePaginationController topPaginationCtrl, bottomPaginationCtrl;
 	private ProgressBar courseProgress;
 	private Controller currentNodeController;
 
@@ -219,9 +220,16 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree.setElementCssClass("o_course_menu " + treeCssClass);
 		contentP = new Panel("building_block_content");
 
-		paginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
-		if (paginationCtrl != null) {
-			listenTo(paginationCtrl);
+		// Legacy pagination in header
+		topPaginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
+		if (topPaginationCtrl != null) {
+			listenTo(topPaginationCtrl);
+			// Regulat pagination at bottom of course content
+			bottomPaginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
+			if (bottomPaginationCtrl != null) {
+				bottomPaginationCtrl.enableLargeStyleRendering();
+				listenTo(bottomPaginationCtrl);
+			}
 		}
 
 		// build up the running structure for this user
@@ -275,6 +283,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				glossaryMarkerCtr.setTextMarkingEnabled(state.booleanValue());
 			}
 			contentComp = glossaryMarkerCtr.getInitialComponent();
+		}
+		// Add paging navigation at bottom
+		if (bottomPaginationCtrl != null) {
+			ListPanel pagedContentPanel = new ListPanel("pagedCourseContent", "o_main_center_with_paging");
+			pagedContentPanel.addContent(contentComp);
+			pagedContentPanel.addContent(bottomPaginationCtrl.getInitialComponent());		
+			contentComp = pagedContentPanel;			
 		}
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree,
 				contentComp, "courseRun" + course.getResourceableId());
@@ -371,9 +386,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	protected void initToolbarAndProgressbar() {
 		// Progress bar only for learning path courses
-		if (paginationCtrl != null) {
-			toolbarPanel.setNavigationComponent(paginationCtrl.getInitialComponent(), this);
-			
+		if (topPaginationCtrl != null) {
+			toolbarPanel.setNavigationComponent(topPaginationCtrl.getInitialComponent(), this);			
 			courseProgress = new ProgressBar("courseProgress");	
 			courseProgress.setWidth(100);
 			courseProgress.setMax(100);
@@ -493,8 +507,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (nextLink != null) {
 			nextLink.setEnabled(hasNext);
 		}
-		if (paginationCtrl != null) {
-			paginationCtrl.updateNextPreviousUI(hasPrevious, hasNext);
+		if (topPaginationCtrl != null) {
+			topPaginationCtrl.updateNextPreviousUI(hasPrevious, hasNext);
+		}
+		if (bottomPaginationCtrl != null) {
+			bottomPaginationCtrl.updateNextPreviousUI(hasPrevious, hasNext);
 		}
 	}
 	
@@ -628,7 +645,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void updateAssessmentConfirmUI(CourseNode calledCourseNode) {
-		if (paginationCtrl != null) {
+		if (topPaginationCtrl != null) {
 			boolean confirmVisible = false;
 			boolean showDone = false;
 			if (calledCourseNode != null) {
@@ -640,7 +657,10 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					showDone = !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
 				}
 			}
-			paginationCtrl.updateAssessmentConfirmUI(confirmVisible, showDone);
+			topPaginationCtrl.updateAssessmentConfirmUI(confirmVisible, showDone);
+			if (bottomPaginationCtrl != null) {
+				bottomPaginationCtrl.updateAssessmentConfirmUI(confirmVisible, showDone);
+			}
 			updateProgressUI();
 		}
 	}
@@ -815,7 +835,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				fireEvent(ureq, event);
 				updateTreeAndContent(ureq, currentCourseNode, null);
 			}
-		} else if (source == paginationCtrl) {
+		} else if (source == topPaginationCtrl || source == bottomPaginationCtrl) {
 			if (event == CoursePaginationController.NEXT_EVENT) {
 				doNext(ureq);
 			} else if (event == CoursePaginationController.PREVIOUS_EVENT) {

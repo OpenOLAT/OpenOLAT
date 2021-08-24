@@ -569,8 +569,8 @@
 	}
 }
 
-/* pagination */
-.o_course_pagination {
+/* pagination in toolbar */
+.o_toolbar_navigation .o_course_pagination {
 	position: absolute;
 	/* make it look like beeing part of the toolbar */
 	top: -($o-toolbar-margin-bottom + 1px);
@@ -605,7 +605,30 @@
 	.btn-xs {
 		padding: 0px 4px;
 	}
-	
+}
+/* pagination at bottom of content */
+.o_course_run .o_course_pagination {
+	border-top: 1px solid #e7e7e7;
+	margin-top: 50px;
+	padding-top: 20px;
+	display: flex;
+	justify-content: space-between;
+
+	.o_previous {
+		order: 1;	
+	}
+	.o_confirm {
+		order: 2;
+	}
+	.o_next {
+		order: 3;	
+	}
+
+	@media (max-width: $screen-xs-max) { 
+		.o_previous, .o_next {
+			span { display: none; }
+		}
+	}	
 }
 
 /* statistics */
