@@ -203,6 +203,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
+	private Link copyWithWizardLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 
@@ -1201,6 +1202,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			launchGlossary(ureq);
 		} else if(leaveLink == source) {
 			doConfirmLeave(ureq);
+		} else if(copyWithWizardLink == source) {
+			doCopyWithWizard(ureq);
 		} else if(source instanceof Link && "group".equals(((Link)source).getCommand())) {
 			BusinessGroupRef ref = (BusinessGroupRef)((Link)source).getUserObject();
 			launchGroup(ureq, ref.getKey());
@@ -2677,6 +2680,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(run != null) {
 			run.doDisposeAfterEvent();
 		}
+	}
+	
+	private void doCopyWithWizard(UserRequest ureq) {
+		removeAsListenerAndDispose(copyWrapperCtrl);
+
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, true);
+		listenTo(copyWrapperCtrl);
 	}
 	
 	private enum Delayed {

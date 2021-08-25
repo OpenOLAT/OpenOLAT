@@ -19,7 +19,8 @@
  */
 package org.olat.group.model;
 
-import org.olat.group.BusinessGroupShort;
+import org.olat.basesecurity.Group;
+import org.olat.group.BusinessGroup;
 
 /**
  * 
@@ -29,26 +30,39 @@ public class BusinessGroupReference {
 
 	private Long key;
 	private String name;
+	private Group group;
 	
 	private Long originalKey;
 	private String originalName;
+	private Group originalGroup;
 	
 	public BusinessGroupReference() {
 		//
 	}
 	
-	public BusinessGroupReference(BusinessGroupShort group) {
+	public BusinessGroupReference(BusinessGroup group) {
 		this.key = group.getKey();
 		this.name = group.getName();
+		this.group = group.getBaseGroup();
 		this.originalKey = group.getKey();
 		this.originalName = group.getName();
+		this.originalGroup = group.getBaseGroup();
 	}
 	
-	public BusinessGroupReference(BusinessGroupShort group, Long originalKey, String originalName) {
+	public BusinessGroupReference(BusinessGroup group, Long originalKey, String originalName) {
 		this.key = group.getKey();
 		this.name = group.getName();
 		this.originalKey = originalKey;
 		this.originalName = originalName;
+	}
+	
+	public BusinessGroupReference(BusinessGroup newGroup, BusinessGroup originalGroup) {
+		this.key = newGroup.getKey();
+		this.name = newGroup.getName();
+		this.group = newGroup.getBaseGroup();
+		this.originalKey = originalGroup.getKey();
+		this.originalName = originalGroup.getName();
+		this.originalGroup = originalGroup.getBaseGroup();
 	}
 	
 	public Long getKey() {
@@ -77,5 +91,21 @@ public class BusinessGroupReference {
 
 	public void setOriginalName(String originalName) {
 		this.originalName = originalName;
+	}
+	
+	public Group getGroup() {
+		return group;
+	}
+	
+	public void setGroup(Group group) {
+		this.group = group;
+	}
+	
+	public Group getOriginalGroup() {
+		return originalGroup;
+	}
+	
+	public void setOriginalGroup(Group originalGroup) {
+		this.originalGroup = originalGroup;
 	}
 }

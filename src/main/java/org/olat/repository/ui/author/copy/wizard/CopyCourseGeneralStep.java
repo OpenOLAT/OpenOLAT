@@ -95,6 +95,8 @@ public class CopyCourseGeneralStep extends BasicStep {
 		
 		@Autowired
 		private RepositoryService repositoryService;
+		@Autowired
+		private CopyCourseWizardModule wizardModule;
 		
 		public GeneralStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -193,7 +195,14 @@ public class CopyCourseGeneralStep extends BasicStep {
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == copyModeEl) {
-				steps.setAdvancedMode(copyModeEl.isKeySelected(CUSTOM_MODE));
+				if (copyModeEl.isKeySelected(AUTOMATIC_MODE)) {
+					steps.setAdvancedMode(false);
+					steps.loadFromWizardConfig(wizardModule);
+					context.loadFromWizardConfig(wizardModule);
+				} else if (copyModeEl.isKeySelected(CUSTOM_MODE)) {
+					steps.setAdvancedMode(true);
+				}
+				
 				setNextStep(CopyCourseStepsStep.create(ureq, steps));
 				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			} else if (source == displayNameEl) {

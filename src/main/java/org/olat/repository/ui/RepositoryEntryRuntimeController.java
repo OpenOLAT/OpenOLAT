@@ -117,7 +117,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private CloseableModalController cmc;
 	protected Controller accessController;
 	private OrdersAdminController ordersCtlr;
-	private CopyRepositoryEntryWrapperController copyWrapperCtrl;
+	protected CopyRepositoryEntryWrapperController copyWrapperCtrl;
 	private ConfirmCloseController confirmCloseCtrl;
 	private ConfirmRestoreController confirmRestoreCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
@@ -166,7 +166,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected boolean settingsChanged;
 	protected boolean overrideReadOnly = false;
 	protected final String businessPathEntry;
-	private RepositoryEntry re;
+	protected RepositoryEntry re;
 	private List<OrganisationRef> organisations;
 	private LockResult lockResult;
 	private boolean assessmentLock;// by Assessment mode
@@ -1084,7 +1084,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	private void doCopy(UserRequest ureq) {
 		removeAsListenerAndDispose(copyWrapperCtrl);
 
-		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re);
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), re, false);
 		listenTo(copyWrapperCtrl);
 	}
 	

@@ -29,8 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.id.Persistable;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.group.BusinessGroupManagedFlag;
-import org.olat.group.BusinessGroupShort;
+import org.olat.course.noderight.manager.NodeRightServiceImplTest.BusinessGroupMock;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BusinessGroupReference;
@@ -47,7 +46,7 @@ public class KeyAndNameConverterTest {
 	@Test
 	public void convertBusinessGroupNameToKey() {
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
-		MockBusinessGroup newGroup = new MockBusinessGroup(567l, "Group 1");
+		BusinessGroupMock newGroup = new BusinessGroupMock(567l, "Group 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, 345l, "Group 1");
 		envMapper.getGroups().add(bgRef);
 
@@ -58,7 +57,7 @@ public class KeyAndNameConverterTest {
 	@Test
 	public void convertBusinessGroupKeyToKey() {
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
-		MockBusinessGroup newGroup = new MockBusinessGroup(567l, "Group 1");
+		BusinessGroupMock newGroup = new BusinessGroupMock(567l, "Group 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, 345l, "Group 1");
 		envMapper.getGroups().add(bgRef);
 
@@ -69,7 +68,7 @@ public class KeyAndNameConverterTest {
 	@Test
 	public void convertBusinessGroupKeyToName() {
 		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
-		MockBusinessGroup newGroup = new MockBusinessGroup(567l, "Group 1");
+		BusinessGroupMock newGroup = new BusinessGroupMock(567l, "Group 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, null, null);
 		envMapper.getGroups().add(bgRef);
 
@@ -120,7 +119,7 @@ public class KeyAndNameConverterTest {
 		BGAreaReference areaRef = new BGAreaReference(newArea, 345l, "Test 1");
 		envMapper.getAreas().add(areaRef);
 		
-		MockBusinessGroup newGroup = new MockBusinessGroup(568l, "Test 1");
+		BusinessGroupMock newGroup = new BusinessGroupMock(568l, "Test 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, 346l, "Test 1");
 		envMapper.getGroups().add(bgRef);
 
@@ -135,7 +134,7 @@ public class KeyAndNameConverterTest {
 		BGAreaReference areaRef = new BGAreaReference(newArea, 345l, "Area 1");
 		envMapper.getAreas().add(areaRef);
 		
-		MockBusinessGroup newGroup = new MockBusinessGroup(568l, "Group 1");
+		BusinessGroupMock newGroup = new BusinessGroupMock(568l, "Group 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, 345l, "Group 1");
 		envMapper.getGroups().add(bgRef);
 
@@ -150,7 +149,7 @@ public class KeyAndNameConverterTest {
 		BGAreaReference areaRef = new BGAreaReference(newArea, null, null);
 		envMapper.getAreas().add(areaRef);
 		
-		MockBusinessGroup newGroup = new MockBusinessGroup(567l, "Group 1");
+		BusinessGroupMock newGroup = new BusinessGroupMock(567l, "Group 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, null, null);
 		envMapper.getGroups().add(bgRef);
 
@@ -213,42 +212,6 @@ public class KeyAndNameConverterTest {
 		@Override
 		public void setName(String name) {
 			//
-		}
-	}
-	
-	private static class MockBusinessGroup implements BusinessGroupShort {
-		
-		private final Long key;
-		private final String name;
-		
-		public MockBusinessGroup(Long key, String name) {
-			this.key = key;
-			this.name = name;
-		}
-
-		@Override
-		public Long getKey() {
-			return key;
-		}
-
-		@Override
-		public String getResourceableTypeName() {
-			return null;
-		}
-
-		@Override
-		public Long getResourceableId() {
-			return null;
-		}
-
-		@Override
-		public String getName() {
-			return name;
-		}
-
-		@Override
-		public BusinessGroupManagedFlag[] getManagedFlags() {
-			return new BusinessGroupManagedFlag[0];
 		}
 	}
 }

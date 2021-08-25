@@ -1187,14 +1187,20 @@ public class NodeRightServiceImplTest {
 		
 	}
 	
-	private static final class BusinessGroupMock implements BusinessGroup {
+	public static final class BusinessGroupMock implements BusinessGroup {
 
 		private static final long serialVersionUID = -3673696437941537988L;
 		
 		private final Long key;
+		private final String name;
 
 		public BusinessGroupMock(Long key) {
+			this(key, null);
+		}
+		
+		public BusinessGroupMock(Long key, String name) {
 			this.key = key;
+			this.name = name;
 		}
 
 		@Override
@@ -1239,7 +1245,7 @@ public class NodeRightServiceImplTest {
 
 		@Override
 		public String getName() {
-			return null;
+			return name;
 		}
 
 		@Override

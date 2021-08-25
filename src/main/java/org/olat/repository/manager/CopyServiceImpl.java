@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseService;
@@ -58,6 +59,8 @@ import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
+import org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAO;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
@@ -121,6 +124,12 @@ public class CopyServiceImpl implements CopyService {
 	private LectureService lectureService;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
+	@Autowired
+	private LectureBlockToGroupDAO lectureBlockToGroupDAO;
+	@Autowired
+	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyDAO;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 	
 	
 	@Override
@@ -264,7 +273,7 @@ public class CopyServiceImpl implements CopyService {
 			for (BusinessGroup group : businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1)) {
 				BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, false, false, true, false, false, null);
 				copiedGroups.add(copiedGroup);
-				copiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group.getKey(), group.getName()));
+				copiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group));
 			}
 			context.setNewGroupReferences(copiedGroupReferences);
 			businessGroupService.addResourcesTo(copiedGroups, Collections.singletonList(target));
@@ -292,7 +301,7 @@ public class CopyServiceImpl implements CopyService {
 					for (BusinessGroup group : groupsToCopy) {
 						BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, false, false, true, false, false, null);
 						customCopiedGroups.add(copiedGroup);
-						customCopiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group.getKey(), group.getName()));
+						customCopiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group));
 					}
 					context.setNewGroupReferences(customCopiedGroupReferences);
 					businessGroupService.addResourcesTo(customCopiedGroups, Collections.singletonList(target));
@@ -571,7 +580,7 @@ public class CopyServiceImpl implements CopyService {
 					autoCloseDate = new Date(autoCloseDate.getTime() + context.getDateDifference());
 				}
 				
-				LectureBlock result = copyLectureBlockDetails(copy, original, original.getLocation(), startDate, endDate, effectiveEndDate, autoCloseDate);
+				LectureBlock result = copyLectureBlockDetails(copy, original, context, original.getLocation(), startDate, endDate, effectiveEndDate, autoCloseDate);
 				
 				for (Identity coach : lectureService.getTeachers(original)) {
 					if (coaches.contains(coach)) {
@@ -606,7 +615,7 @@ public class CopyServiceImpl implements CopyService {
 					autoClosingDate = new Date(autoClosingDate.getTime() + dateDifference);
 				}
 				
-				LectureBlock result = copyLectureBlockDetails(copy, original, lectureBlockRow.getLocationElement().getValue(), startDate, endDate, effectiveEndDate, autoClosingDate);
+				LectureBlock result = copyLectureBlockDetails(copy, original, context, lectureBlockRow.getLocationElement().getValue(), startDate, endDate, effectiveEndDate, autoClosingDate);
 				
 				for (Identity coach : lectureBlockRow.getTeachersList()) {
 					lectureService.addTeacher(result, coach);
@@ -615,7 +624,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private LectureBlock copyLectureBlockDetails(LectureBlockImpl copy, LectureBlockImpl original, String location, Date startDate, Date endDate, Date effectiveEndDate, Date autoClosedDate) {
+	private LectureBlock copyLectureBlockDetails(LectureBlockImpl copy, LectureBlockImpl original, CopyCourseContext context, String location, Date startDate, Date endDate, Date effectiveEndDate, Date autoClosedDate) {
 		copy.setTitle(original.getTitle());
 		copy.setDescription(original.getDescription());
 		copy.setPreparation(original.getPreparation());
@@ -635,12 +644,37 @@ public class CopyServiceImpl implements CopyService {
 		copy.setRollCallStatus(LectureRollCallStatus.open);
 		
 		copy.setReasonEffectiveEnd(original.getReasonEffectiveEnd());
-		// TODO How to handle taxonomy levles?
-		// copy.setTaxonomyLevels(original.getTaxonomyLevels());
 		
-		// TODO Urs: How to handle lecture block groups?
+		copy = (LectureBlockImpl) lectureService.save(copy, null);
 		
-		return lectureService.save(copy, null);
+		// Copy taxonomy levels
+		for (TaxonomyLevel level : lectureBlockToTaxonomyDAO.getTaxonomyLevels(original)) {
+			lectureBlockToTaxonomyDAO.createRelation(copy, level);
+		}
+		
+		// Copy groups
+		List<Group> groups = lectureBlockToGroupDAO.getGroups(original);
+		for (RepositoryEntryToGroupRelation groupRelation : repositoryEntryRelationDAO.getRelations(groups)) {
+			if (groupRelation.isDefaultGroup()) {
+				Group newDefaultGroup = repositoryEntryRelationDAO.getDefaultGroup(copy.getEntry());
+				lectureBlockToGroupDAO.createAndPersist(copy, newDefaultGroup);
+				continue;
+			}
+			
+			List<BusinessGroupReference> groupReferences = context.getNewGroupReferences();
+			
+			if (groupReferences == null || groupReferences.isEmpty()) {
+				continue;
+			}
+			
+			BusinessGroupReference newGroupReference = groupReferences.stream().filter(reference -> reference.getOriginalGroup().equals(groupRelation.getGroup())).findFirst().orElse(null);
+			
+			if (newGroupReference != null && newGroupReference.getGroup() != null) {
+				lectureBlockToGroupDAO.createAndPersist(copy, newGroupReference.getGroup());
+			}
+		}
+		
+		return copy;
 	}
 	
 	private void copyAssessmentModes(CopyCourseContext context, RepositoryEntry target) {

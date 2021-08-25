@@ -159,6 +159,7 @@ import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
 import org.olat.repository.ui.author.AuthoringEntryDataSource.AuthorSourceFilter;
 import org.olat.repository.ui.author.copy.CopyRepositoryEntryController;
+import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.repository.wizard.RepositoryWizardProvider;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
@@ -195,6 +196,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private DialogBoxController copyDialogCtrl;
 	private ReferencesController referencesCtrl;
 	private CopyRepositoryEntryController copyCtrl;
+	private CopyRepositoryEntryWrapperController copyWrapperCtrl;
 	private ConfirmCloseController closeCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 	private ImportRepositoryEntryController importCtrl;
@@ -739,6 +741,11 @@ public class AuthorListController extends FormBasicController implements Activat
 				launchEditDescription(ureq, copyCtrl.getCopiedEntry());
 			}
 			cleanUp();
+		} else if(copyWrapperCtrl == source) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				reloadRows();
+			}
+			cleanUp();
 		} else if(importCtrl == source) {
 			cmc.deactivate();
 			if(Event.DONE_EVENT.equals(event)) {
@@ -850,6 +857,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(confirmRestoreCtrl);
 		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(copyWrapperCtrl);
 		removeAsListenerAndDispose(userSearchCtr);
 		removeAsListenerAndDispose(importUrlCtrl);
 		removeAsListenerAndDispose(sendMailCtrl);
@@ -864,6 +872,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		confirmRestoreCtrl = null;
 		confirmDeleteCtrl = null;
 		toolsCalloutCtrl = null;
+		copyWrapperCtrl = null;
 		userSearchCtr = null;
 		importUrlCtrl = null;
 		sendMailCtrl = null;
@@ -1370,6 +1379,14 @@ public class AuthorListController extends FormBasicController implements Activat
 		cmc.activate();
 	}
 	
+	protected void doCopyWithWizard(UserRequest ureq, AuthoringEntryRow row) {
+		removeAsListenerAndDispose(copyWrapperCtrl);
+
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		copyWrapperCtrl = new CopyRepositoryEntryWrapperController(ureq, getWindowControl(), entry, true);
+		listenTo(copyWrapperCtrl);
+	}
+	
 	private void doConvertToLearningPath(UserRequest ureq, AuthoringEntryRow row) {
 		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
 		ICourse course = CourseFactory.loadCourse(entry);
@@ -1749,11 +1766,14 @@ public class AuthorListController extends FormBasicController implements Activat
 			boolean canCopy = (isAuthor || isOwner) && (entry.getCanCopy() || isOwner) && !copyManaged;
 			
 			boolean canConvertLearningPath = false;
+			boolean isLearningPathCourse = false;
 			if (canCopy && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 				ICourse course = CourseFactory.loadCourse(entry);
 				if (course != null) {
 					if (!LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
 						canConvertLearningPath = true;
+					} else {
+						isLearningPathCourse = true;
 					}
 				}
 			}
@@ -1773,6 +1793,9 @@ public class AuthorListController extends FormBasicController implements Activat
 				links.add("-");
 				if (canCopy) {
 					addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", "/Infos/0", links);
+					if (isLearningPathCourse && canCopy) {
+						addLink("details.copy.with.wizard", "copy_with_wizard", "o_icon o_icon-fw o_icon_copy", "/Infos/0", links);
+					}
 				}
 				if (canConvertLearningPath) {
 					addLink("details.convert.learning.path", "convertLearningPath", "o_icon o_icon-fw o_icon_learning_path", null, links);
@@ -1834,6 +1857,8 @@ public class AuthorListController extends FormBasicController implements Activat
 					launchMembers(ureq, row);
 				} else if("copy".equals(cmd)) {
 					doCopy(ureq, row);
+				} else if("copy_with_wizard".equals(cmd)) {
+					doCopyWithWizard(ureq, row);
 				} else if("convertLearningPath".equals(cmd)) {
 					doConvertToLearningPath(ureq, row);
 				} else if("download".equals(cmd)) {

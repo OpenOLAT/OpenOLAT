@@ -52,14 +52,22 @@ public class CopyRepositoryEntryWrapperController extends BasicController {
 	
 	private RepositoryEntry repositoryEntry;
 
-	public CopyRepositoryEntryWrapperController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
+	/**
+	 * Beta features will become default and this flag can be removed in future releases
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param repositoryEntry
+	 * @param useBetaFeautres
+	 */
+	public CopyRepositoryEntryWrapperController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry, boolean useBetaFeautres) {
 		super(ureq, wControl);
 		
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		this.repositoryEntry = repositoryEntry;
 		
-		if (repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.ORES_TYPE_COURSE)) {
+		if (useBetaFeautres && repositoryEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.ORES_TYPE_COURSE)) {
 			ICourse course = CourseFactory.loadCourse(repositoryEntry);
 			
 			if (course != null && LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
