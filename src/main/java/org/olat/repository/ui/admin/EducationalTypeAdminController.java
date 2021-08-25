@@ -94,7 +94,8 @@ public class EducationalTypeAdminController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.identifier));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.translaton));
+		DefaultFlexiColumnModel transCol = new DefaultFlexiColumnModel(EducationalTypeCols.translaton, new EducationalTypeCellRenderer(getTranslator()));
+		columnsModel.addFlexiColumnModel(transCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.cssClass));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.numberOfCourses));
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(EducationalTypeCols.edit.i18nHeaderKey(),

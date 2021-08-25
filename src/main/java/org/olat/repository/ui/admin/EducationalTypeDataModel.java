@@ -62,7 +62,7 @@ implements SortableFlexiTableDataModel<EducationalTypeRow> {
 	public Object getValueAt(EducationalTypeRow row, int col) {
 		switch(COLS[col]) {
 			case identifier: return row.getEducationalType().getIdentifier();
-			case translaton: return row.getTranslation();
+			case translaton: return row.getEducationalType();
 			case cssClass: return row.getEducationalType().getCssClass();
 			case numberOfCourses: return row.getNumberOfCourse();
 			case edit: return Boolean.TRUE;

@@ -27,3 +27,10 @@
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='$basecolor', endColorstr='lighten($basecolor,20%)',GradientType=0 );
 }
 
+@mixin o-high-contrast-color($color) {
+	@if color.blackness($color) < 30 {
+		color: darken($color , 20%);
+	} @else {
+		color: $color;
+	} 
+}

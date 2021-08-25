@@ -939,46 +939,56 @@ div.o_correction_navigation {
 
 
 /* Educational course types */
-.o_standard_course .o_educational_type {
-    border-color: 		$o-edu-type-standard-course-color;
-    color: 				$o-edu-type-standard-course-color;
-}
-.o_exam_course .o_educational_type {
-    border-color: 		$o-edu-type-exam-course-color;
-    color: 				$o-edu-type-exam-course-color;
-}
-.o_certification_course .o_educational_type {
-    border-color: 		$o-edu-type-certification-course-color;
-    color: 				$o-edu-type-certification-course-color;
-}
-.o_date_course .o_educational_type {
-    border-color: 		$o-edu-type-date-course-color;
-    color: 				$o-edu-type-date-course-color;
-}
-.o_seminar_course .o_educational_type {
-    border-color: 		$o-edu-type-seminar-course-color;
-    color: 				$o-edu-type-seminar-course-color;
-}
-.o_blendedlearning_course .o_educational_type {
-    border-color: 		$o-edu-type-blendedlearning-course-color;
-    color: 				$o-edu-type-blendedlearning-course-color;
-}
-.o_selfstudy_course .o_educational_type {
-    border-color: 		$o-edu-type-selfstudy-course-color;
-    color: 				$o-edu-type-selfstudy-course-color;
-}
-
-/* in ".o_repo_details .o_lead" and ".o_coursetable .o_rendertype_custom" */
 .o_educational_type {
 	@extend %o_labeled;
 	background: transparent;
 	text-transform: none;
-
 	display: inline-block;
+	border-color: 		$o-edu-type-standard-course-color;
+    @include o-high-contrast-color($o-edu-type-standard-course-color);
+        
+}
+.o_standard_course .o_educational_type {
+    border-color: 		$o-edu-type-standard-course-color;
+    @include o-high-contrast-color($o-edu-type-standard-course-color);
+}
+.o_exam_course .o_educational_type {
+    border-color: 		$o-edu-type-exam-course-color;
+    @include o-high-contrast-color($o-edu-type-exam-course-color);
+}
+.o_certification_course .o_educational_type {
+    border-color: 		$o-edu-type-certification-course-color;
+    @include o-high-contrast-color($o-edu-type-certification-course-color);
+}
+.o_date_course .o_educational_type {
+    border-color: 		$o-edu-type-date-course-color;
+    @include o-high-contrast-color($o-edu-type-date-course-color);
+}
+.o_seminar_course .o_educational_type {
+    border-color: 		$o-edu-type-seminar-course-color;
+    @include o-high-contrast-color($o-edu-type-seminar-course-color);
+}
+.o_lecture_course .o_educational_type {
+    border-color: 		$o-edu-type-lecture-course-color;
+    @include o-high-contrast-color($o-edu-type-lecture-course-color);
+}
+.o_blendedlearning_course .o_educational_type {
+    border-color: 		$o-edu-type-blendedlearning-course-color;
+    @include o-high-contrast-color($o-edu-type-blendedlearning-course-color);
+}
+.o_selfstudy_course .o_educational_type {
+    border-color: 		$o-edu-type-selfstudy-course-color;
+    @include o-high-contrast-color($o-edu-type-selfstudy-course-color);
+}
+
+/* in ".o_repo_details .o_lead" and ".o_coursetable .o_rendertype_custom" */
+.o_repo_details .o_lead .o_educational_type,
+.o_coursetable.o_rendertype_custom .o_educational_type {
+	margin-right: 0.25em; 
 	margin-top: 0.5em;
-	margin-bottom: 1em;
-		
-	& + .o_author {
+	vertical-align: text-bottom;
+   	& + .o_author {
 		display: inline-block;
 	}
 }
+
