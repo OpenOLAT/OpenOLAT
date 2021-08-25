@@ -99,6 +99,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		String dispatchId = component.getDispatchID();
 		
 		addFiltersButton = new FormLinkImpl(dispatchId.concat("_addFiltersButton"), "rAddFiltersButton", "add.filters", Link.BUTTON);
+		addFiltersButton.setElementCssClass("o_table_add_filter");
 		addFiltersButton.setDomReplacementWrapperRequired(false);
 		addFiltersButton.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
 		addFiltersButton.setTranslator(translator);
@@ -306,6 +307,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		}
 		
 		FormLink button = new FormLinkImpl(id, id, label, Link.BUTTON | Link.NONTRANSLATED);
+		button.setElementCssClass("o_table_filter");
 		button.setDomReplacementWrapperRequired(false);
 		button.setTranslator(translator);
 		button.setIconRightCSS("o_icon o_icon-fw o_icon_caret");

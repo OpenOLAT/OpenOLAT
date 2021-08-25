@@ -59,6 +59,10 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 			for(FlexiFilterButton filterButton:filterButtons) {
 				renderFormItem(renderer, sb, filterButton.getButton(), "", args);
 			}
+			if (!alwaysOn) {
+				FormLink addLink = ffE.getAddFiltersButton();
+				renderFormItem(renderer, sb, addLink, null, args);				
+			}
 			sb.append("</ul>");
 			
 			if(alwaysOn) {
@@ -71,8 +75,6 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 				FormLink resetLink = ffE.getResetFiltersButton();
 				resetLink.setVisible(!ffE.isTabsEnabled());
 				renderFormItem(renderer, sb, resetLink, "pull-right", args);
-				FormLink addLink = ffE.getAddFiltersButton();
-				renderFormItem(renderer, sb, addLink, "pull-right", args);
 				sb.append("</ul>");
 			}
 			

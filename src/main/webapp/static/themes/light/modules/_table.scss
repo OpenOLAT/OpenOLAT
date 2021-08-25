@@ -192,9 +192,25 @@
 				margin-left: 0px;
 				margin-right: 2px;
 			}
+			.o_table_filter, .o_table_add_filter {
+				width: 200px;
+				text-align: left;
+				position: relative;
+				span + i {
+					position: absolute;
+					right: 5px;
+					top: 10px;
+				}
+				padding-right: 15px;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;		
+			}	
 		}
 		>ul.o_table_filters_config {
 			margin-left: 1em;
+			margin-top: 0;
+			margin-bottom: auto;
 		}
 		
 		a.btn {
@@ -229,19 +245,29 @@
 		
 		padding: 0px 8px;
 		border: $o-cn-style-border;
-		border-top: 0px;
-		border-top-left-radius: 0px;
-		border-top-right-radius: 0px;
 	
 		>span {
 			display: none;
 		}
 	}
+	&.o_collapsed {
+		margin-bottom: 5px;
+		.o_button_details {
+			border-top: 0px;
+			border-top-left-radius: 0px;
+			border-top-right-radius: 0px;
+		}
+	}
+
+	&.o_expanded .o_button_details {
+		position: relative;
+		top: -10px;
+	}
 }
 
 .o_table_batch_buttons {
 	margin-top: $line-height-computed;
-	margin-bottom: -$line-height-computed;
+	margin-bottom: -$line-height-computed; 
 	text-align: left;
 	
 	&.o_table_batch_hide {
@@ -252,9 +278,18 @@
 		display: inline-block;
 		vertical-align: middle;
 		margin-bottom: 0.5em;
+		@media (max-width: $screen-xs-max) { 
+			display: block;
+		}
 	}
 	.o_table_batch_label {
 		padding-right: 1em;
+		font-size: $font-size-small;
+		color: $text-muted;
+	}
+	.btn {
+		@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
+		font-size: $font-size-small;
 	}
 }
 
@@ -450,7 +485,7 @@ a.o_orderby, a.o_orderby:hover {
 	}
 }
 
-.o_table_filter {
+.o_table_filter, .o_table_add_filter {
 	.control-label {
 		margin-right: 0.5em;
 		&:after {
@@ -465,6 +500,16 @@ a.o_orderby, a.o_orderby:hover {
 			font-weight: normal;
 		}
 	}
+}
+
+/* Use special coloring for filter menu to better separate form normal forms    */
+/* Primary color for dark colors, otherwise use the text color                  */
+.o_table_filter {
+	@if color.blackness($btn-primary-border) < 30 {
+		@include button-variant($text-color, #fff, $btn-primary-border);
+	} @else {
+		@include button-variant($btn-primary-border, #fff, $btn-primary-border);
+	} 
 }
 
  table tr.o_no_border td,
