@@ -563,6 +563,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			initToolsMenuRuntime(toolsDropdown, uce);
 			initToolsMenuStatistics(toolsDropdown, course, uce);
 			initToolsMenuEdition(toolsDropdown);
+			initToolsBeta(toolsDropdown, course);
 			initToolsMenuDelete(toolsDropdown);
 		}
 	}
@@ -755,6 +756,19 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 							translate("tools.convert.course.learning.path"), this, "o_icon o_icon-fw  o_icon_learning_path");
 					toolsDropdown.addComponent(index.intValue() + 1, convertLearningPathLink);
 				}
+			}
+		}
+	}
+	
+	protected void initToolsBeta(Dropdown toolsDropdown, ICourse course) {
+		boolean copyManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.copy);
+		boolean canCopy = (isAuthor || reSecurity.isEntryAdmin()) && (re.getCanCopy() || reSecurity.isEntryAdmin()) && !copyManaged;
+		
+		if (canCopy && course != null && LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())) {
+			Integer index = toolsDropdown.getComponentIndex(copyLink);
+			if(index != null) {
+				copyWithWizardLink = LinkFactory.createToolLink("copy.course.with.wizard", translate("tools.copy.course.with.wizard"), this, "o_icon o_icon-fw  o_icon_copy");
+				toolsDropdown.addComponent(index.intValue() + 1, copyWithWizardLink);
 			}
 		}
 	}
