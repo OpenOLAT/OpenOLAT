@@ -51,7 +51,7 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<div id='o_c").append(ffC.getDispatchID()).append("' class='o_table_filters_wrapper")
 			.append(" always-on", alwaysOn)
-			.append(" o_expended", " o_collpased", expanded).append("'>");
+			.append(" o_expanded", " o_collapsed", expanded).append("'>");
 		if(expanded) {
 			sb.append("<div class='o_table_filters_row'>")
 			  .append("<ul class='nav nav-pills o_table_filters' role='navigation'>");

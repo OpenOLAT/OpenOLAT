@@ -94,6 +94,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		this.wControl = wControl;
 		this.tableEl = tableEl;
 		component = new FlexiFiltersComponent(this, translator);
+		component.setDomReplacementWrapperRequired(false);
 		
 		String dispatchId = component.getDispatchID();
 		
