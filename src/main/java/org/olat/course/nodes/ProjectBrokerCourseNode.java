@@ -751,41 +751,43 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			}
 
 			Long oldBrokerId = projectBrokerManager.getProjectBrokerId(oldCpm, this);
-			List<Project> projectsFromGroup = projectBrokerManager.getProjectListBy(oldBrokerId);
-			// loop create and configure the new Projects
-			for (Project project : projectsFromGroup) {
-				Long originalGroupKey = project.getProjectGroup().getKey();
-				Long copiedGroupKey = envMapper.toGroupKeyFromOriginalKey(originalGroupKey);
-
-				Identity author = envMapper.getAuthor();
-				BusinessGroup projectGroup = bgs.loadBusinessGroup(copiedGroupKey);
-				if (projectGroup == null) {
-					projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author,
-							project.getTitle(), project.getDescription(), course.getResourceableId());
-				}
-				if (author != null) {
-					bgs.addOwners(author, null, Collections.singletonList(author), projectGroup, null);
-				}
-
-				Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(),
-						project.getDescription(), projectBrokerId, projectGroup);
-				// copy all project configurations
-				newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
-				newProject.setMaxMembers(project.getMaxMembers());
-				for (int i = 0; i < project.getCustomFieldSize(); i++) {
-					newProject.setCustomFieldValue(i, project.getCustomFieldValue(i));
-				}
-				projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
-				projectBrokerManager.updateProject(newProject);
-				// attachment file
-				VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager
-						.getAttamchmentRelativeRootPath(project, sourceCourse.getCourseEnvironment(), this), null);
-				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
-				if (item instanceof VFSLeaf) {
-					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item,
-							course.getCourseEnvironment(), this, envMapper.getAuthor());
-					newProject.setAttachedFileName(project.getAttachmentFileName());
+			if(oldBrokerId != null) {
+				List<Project> projectsFromGroup = projectBrokerManager.getProjectListBy(oldBrokerId);
+				// loop create and configure the new Projects
+				for (Project project : projectsFromGroup) {
+					Long originalGroupKey = project.getProjectGroup().getKey();
+					Long copiedGroupKey = envMapper.toGroupKeyFromOriginalKey(originalGroupKey);
+	
+					Identity author = envMapper.getAuthor();
+					BusinessGroup projectGroup = bgs.loadBusinessGroup(copiedGroupKey);
+					if (projectGroup == null) {
+						projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author,
+								project.getTitle(), project.getDescription(), course.getResourceableId());
+					}
+					if (author != null) {
+						bgs.addOwners(author, null, Collections.singletonList(author), projectGroup, null);
+					}
+	
+					Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(),
+							project.getDescription(), projectBrokerId, projectGroup);
+					// copy all project configurations
+					newProject.setMailNotificationEnabled(project.isMailNotificationEnabled());
+					newProject.setMaxMembers(project.getMaxMembers());
+					for (int i = 0; i < project.getCustomFieldSize(); i++) {
+						newProject.setCustomFieldValue(i, project.getCustomFieldValue(i));
+					}
+					projectGroupManager.setDeselectionAllowed(newProject, project.getProjectGroup().isAllowToLeave());
 					projectBrokerManager.updateProject(newProject);
+					// attachment file
+					VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager
+							.getAttamchmentRelativeRootPath(project, sourceCourse.getCourseEnvironment(), this), null);
+					VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
+					if (item instanceof VFSLeaf) {
+						projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item,
+								course.getCourseEnvironment(), this, envMapper.getAuthor());
+						newProject.setAttachedFileName(project.getAttachmentFileName());
+						projectBrokerManager.updateProject(newProject);
+					}
 				}
 			}
 		}
