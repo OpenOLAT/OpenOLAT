@@ -296,8 +296,9 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		if(ftE.hasDetailsRenderer()) {
 			
 			target.append("<td>");
-			
-			if (ftE.getDetailsRows() == null || ftE.getDetailsRows().contains(row)) {
+
+			Object rowObject = ftE.getTableDataModel().getObject(row);
+			if (ftE.getComponentDelegate() != null && ftE.getComponentDelegate().isDetailsRow(row, rowObject)) {
 				String collapseIcon = ftE.isDetailsExpended(row)? "o_icon_details_collaps": "o_icon_details_expand";
 				target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
 				target.append("<a href='javascript:;' onclick=\"");

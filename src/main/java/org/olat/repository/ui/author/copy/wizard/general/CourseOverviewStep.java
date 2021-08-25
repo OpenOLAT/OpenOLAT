@@ -227,7 +227,16 @@ public class CourseOverviewStep extends BasicStep {
 			forgeRows(formLayout);
 			context.setCustomConfigsLoaded(true);
 		}
-		
+
+		@Override
+		public boolean isDetailsRow(int row, Object rowObject) {
+			if(rowObject instanceof CopyCourseOverviewRow) {
+				CopyCourseOverviewRow ccor = (CopyCourseOverviewRow)rowObject;
+				return ccor.getCourseNode() != null && ccor.getCourseNode().hasDates();
+			}
+			return false;
+		}
+
 		@Override
 		public Iterable<Component> getComponents(int row, Object rowObject) {
 			if (courseNodeDatesListController == null) {
@@ -261,9 +270,6 @@ public class CourseOverviewStep extends BasicStep {
 			SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"));
 			
 			SelectionValues copyModes = null;
-			
-			List<Integer> dateDependantNodesRows = new ArrayList<>();
-			int rowCount = 0;
 			
 			for (CopyCourseOverviewRow row : context.getCourseNodes()) {
 				if (row.getLearningPathConfigs() != null) {
@@ -319,16 +325,9 @@ public class CourseOverviewStep extends BasicStep {
 						row.setResourceChooser(resourceChooser);
 					}
 				}
-				
-				if (row.getCourseNode().hasDates()) {
-					dateDependantNodesRows.add(rowCount);
-				}
-				
-				rowCount++;
 			}
 			
 			dataModel.setObjects(context.getCourseNodes());
-			tableEl.setDetailsRows(dateDependantNodesRows);
 			tableEl.reset();
 		}
 		

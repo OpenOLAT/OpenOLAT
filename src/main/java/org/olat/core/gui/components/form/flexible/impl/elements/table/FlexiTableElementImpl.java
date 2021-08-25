@@ -137,8 +137,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	private VelocityContainer rowRenderer;
 	private VelocityContainer detailsRenderer;
-	
-	private List<Integer> detailsRows;
 
 	private FormLink customButton;
 	private FormLink exportButton;
@@ -430,16 +428,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void setDetailsRenderer(VelocityContainer detailsRenderer, FlexiTableComponentDelegate componentDelegate) {
 		this.detailsRenderer = detailsRenderer;
 		this.componentDelegate = componentDelegate;
-	}
-	
-	@Override
-	public void setDetailsRows(List<Integer> detailsRows) {
-		this.detailsRows = detailsRows;
-	}
-	
-	@Override
-	public List<Integer> getDetailsRows() {
-		return detailsRows;
 	}
 
 	@Override

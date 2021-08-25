@@ -29,6 +29,11 @@ import org.olat.core.gui.components.Component;
  */
 public interface FlexiTableComponentDelegate {
 	
+	@SuppressWarnings("unused")
+	public default boolean isDetailsRow(int row, Object rowObject) {
+		return false;
+	}
+	
 	public Iterable<Component> getComponents(int row, Object rowObject);
 	
 

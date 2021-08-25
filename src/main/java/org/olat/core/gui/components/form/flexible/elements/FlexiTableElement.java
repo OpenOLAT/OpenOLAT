@@ -101,18 +101,6 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void setDetailsRenderer(VelocityContainer rowRenderer, FlexiTableComponentDelegate componentDelegate);
 	
 	/**
-	 * Set the list of rows which have details
-	 * @param detailsRows
-	 */
-	public void setDetailsRows(List<Integer> detailsRows);
-	
-	/**
-	 * Get the list of rows which have details
-	 * @return
-	 */
-	public List<Integer> getDetailsRows();
-	
-	/**
 	 * @return Return true if the table has border on every cell.
 	 */
 	public boolean isBordered();

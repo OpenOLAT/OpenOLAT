@@ -245,6 +245,11 @@ public class CourseReminderListController extends FormBasicController
 	}
 
 	@Override
+	public boolean isDetailsRow(int row, Object rowObject) {
+		return true;
+	}
+
+	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> components = new ArrayList<>(1);
 		ReminderRow reminderRow = (ReminderRow)rowObject;

@@ -252,6 +252,11 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected abstract void initButtons(UserRequest ureq, FormItemContainer formLayout);
 
     @Override
+	public boolean isDetailsRow(int row, Object rowObject) {
+		return true;
+	}
+
+	@Override
 	public Iterable<Component> getComponents(int rowIndex, Object rowObject) {
     		List<Component> components = new ArrayList<>(2);
 		components.add(previewCtrl.getInitialComponent());
