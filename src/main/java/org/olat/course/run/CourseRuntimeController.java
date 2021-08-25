@@ -165,6 +165,7 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
+import org.olat.repository.ui.author.copy.CopyRepositoryEntryWrapperController;
 import org.olat.resource.OLATResource;
 import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
