@@ -70,6 +70,7 @@ import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
+import org.olat.user.propertyhandlers.DatePropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -467,11 +468,31 @@ class ImportStep00 extends BasicStep {
 						}
 					}
 				}
+				
+				// convert to date internal format
+				if(userPropertyHandler instanceof DatePropertyHandler) {
+					DatePropertyHandler dateHandler = (DatePropertyHandler)userPropertyHandler;
+					thisValue = encodeDateProperty(thisValue, dateHandler);
+				}
 
 				ud.getUser().setProperty(thisKey, thisValue);
 				columnId++;
 			}
 			return importDataError;
+		}
+		
+		private String encodeDateProperty(String thisValue, DatePropertyHandler handler) {
+			Date date = parseDate(thisValue, getLocale());
+			if(date == null) {
+				for(String languageKey:i18nModule.getEnabledLanguageKeys()) {
+					Locale locale = i18nManager.getLocaleOrDefault(languageKey);
+					date = parseDate(thisValue, locale);
+					if(date != null) {
+						break;
+					}
+				}
+			}
+			return date == null ? null : handler.encode(date);
 		}
 		
 		private boolean validatePassword(String password, Identity userIdentity, int i, List<ErrorLine> errors) {
