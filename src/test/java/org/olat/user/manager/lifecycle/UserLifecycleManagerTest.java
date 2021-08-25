@@ -383,6 +383,7 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		userModule.setMailBeforeDeactivation(true);
 		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
 		userModule.setNumberOfDayBeforeDeactivationMail(30);
+		userModule.setMailCopyAfterDeactivation(null);
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-12");
 		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
@@ -399,6 +400,34 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		// check mails sent
 		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
 		Assert.assertTrue(hasTo(id1.getUser().getEmail(), inactivedMessages));
+		Assert.assertFalse(hasTo("copy@openolat.org", inactivedMessages));
+		getSmtpServer().reset();
+	}
+	
+	@Test
+	public void inactivateASingleInformedIdentityWithCopyEmail() {
+		Assert.assertTrue(userModule.isUserAutomaticDeactivation());
+		userModule.setMailBeforeDeactivation(true);
+		userModule.setNumberOfInactiveDayBeforeDeactivation(720);
+		userModule.setNumberOfDayBeforeDeactivationMail(30);
+		userModule.setMailCopyAfterDeactivation("copy@openolat.org");
+		
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lifecycle-cc-12");
+		identityDao.setIdentityLastLogin(id1, DateUtils.addDays(new Date(), -1205));
+		id1 = securityManager.saveIdentityStatus(id1, Identity.STATUS_ACTIV, null);
+		// Artificially mail in past
+		((IdentityImpl)id1).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
+		id1 = identityDao.saveIdentity(id1);
+		dbInstance.commitAndCloseSession();
+		
+		Set<Identity> vetoed = new HashSet<>();
+		lifecycleManager.inactivateIdentities(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		// check mails sent
+		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertTrue(hasTo(id1.getUser().getEmail(), inactivedMessages));
+		Assert.assertTrue(hasTo("copy@openolat.org", inactivedMessages));
 		getSmtpServer().reset();
 	}
 	

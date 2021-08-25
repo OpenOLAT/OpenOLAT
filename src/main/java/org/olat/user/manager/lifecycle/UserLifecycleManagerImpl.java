@@ -527,9 +527,8 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, null, template, null, null, result);
-		bundle.setTo(receiver);
-		
 		if(bundle != null) {
+			bundle.setTo(receiver);
 			mailManager.sendExternMessage(bundle, result, true);
 		}
 		log.info(Tracing.M_AUDIT, "User lifecycle {} send copy regarding identity={} to email={}", type, identity.getKey(), receiver);
