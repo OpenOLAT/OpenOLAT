@@ -89,6 +89,8 @@ public class NodeLayoutController extends FormBasicController {
 	private static final String KEY_TITLE_LONG = "long";
 	private static final String KEY_TITLE_NONE = "none";
 	private static final String KEY_METADATA = "metadata";
+	private static final String TEASER_IMAGE_NODE = "node";
+	private static final String COLOR_CATEGORY_NODE = "node";
 	private static final String COLOR_CATEGORY_CUSTOM = "custom";
 	private static final ColorCategorySearchParams SEARCH_PARAMS_RESOLVER = ColorCategorySearchParams.builder()
 			.addType(Type.technical)
@@ -102,9 +104,11 @@ public class NodeLayoutController extends FormBasicController {
 	private SingleSelection displayTitleEl;
 	private MultipleSelectionElement displayMetadataEl;
 	private SingleSelection teaserImageTypeEl;
+	private SingleSelection teaserImageNodeEl;
 	private SingleSelection teaserImageSystemEl;
 	private FileElement teaserImageUploadEl;
-	private SingleSelection colorCategoryEl;
+	private SingleSelection colorCategoryTypeEl;
+	private SingleSelection colorCategoryNodeEl;
 	private FormLink colorCategorySelectionEl;
 	private FormLayoutContainer previewCont;
 	
@@ -140,7 +144,8 @@ public class NodeLayoutController extends FormBasicController {
 		if (teaserImageStyle == null) {
 			teaserImageStyle = TeaserImageStyle.gradient;
 		}
-		colorCategoryIdentifier = courseNode.getColorCategoryIdentifier();
+		// check if ColorCategory exists
+		colorCategoryIdentifier = courseStyleService.getColorCategory(courseNode.getColorCategoryIdentifier(), ColorCategory.IDENTIFIER_FALLBACK_COURSE_NODE).getIdentifier();
 		inSTOverview = isInSTOverview();
 		
 		initForm(ureq);
@@ -189,13 +194,27 @@ public class NodeLayoutController extends FormBasicController {
 		SelectionValues teaserImageTypeKV = new SelectionValues();
 		teaserImageTypeKV.add(entry(ImageSourceType.course.name(), translate("teaser.image.type.course")));
 		teaserImageTypeKV.add(entry(ImageSourceType.inherited.name(), translate("teaser.image.type.inherited")));
-		teaserImageTypeKV.add(entry(ImageSourceType.custom.name(), translate("teaser.image.type.upload")));
-		teaserImageTypeKV.add(entry(ImageSourceType.system.name(), translate("teaser.image.type.system")));
-		teaserImageTypeKV.add(entry(ImageSourceType.none.name(), translate("teaser.image.type.none")));
-		teaserImageTypeEl = uifactory.addRadiosHorizontal("teaser.image.type", formLayout, teaserImageTypeKV.keys(), teaserImageTypeKV.values());
+		teaserImageTypeKV.add(entry(TEASER_IMAGE_NODE, translate("teaser.image.type.node")));
+		teaserImageTypeEl = uifactory.addDropdownSingleselect("teaser.image.type", formLayout, teaserImageTypeKV.keys(), teaserImageTypeKV.values());
 		teaserImageTypeEl.addActionListener(FormEvent.ONCHANGE);
 		ImageSourceType type = teaserImageSource != null ? teaserImageSource.getType() : ImageSourceType.inherited;
-		teaserImageTypeEl.select(type.name(), true);
+		if (ImageSourceType.course == type || ImageSourceType.inherited == type) {
+			teaserImageTypeEl.select(type.name(), true);
+		} else {
+			teaserImageTypeEl.select(TEASER_IMAGE_NODE, true);
+		}
+		
+		SelectionValues teaserImageNodeKV = new SelectionValues();
+		teaserImageNodeKV.add(entry(ImageSourceType.custom.name(), translate("teaser.image.type.upload")));
+		teaserImageNodeKV.add(entry(ImageSourceType.system.name(), translate("teaser.image.type.system")));
+		teaserImageNodeKV.add(entry(ImageSourceType.none.name(), translate("teaser.image.type.none")));
+		teaserImageNodeEl = uifactory.addRadiosHorizontal("teaser.image.custom", null, formLayout, teaserImageNodeKV.keys(), teaserImageNodeKV.values());
+		teaserImageNodeEl.addActionListener(FormEvent.ONCHANGE);
+		if (ImageSourceType.custom == type || ImageSourceType.system == type || ImageSourceType.none == type) {
+			teaserImageNodeEl.select(type.name(), true);
+		} else {
+			teaserImageNodeEl.select(ImageSourceType.system.name(), true);
+		}
 		
 		SelectionValues teaserImageKV = new SelectionValues();
 		courseStyleService.getSystemTeaserImageSources().stream().forEach(
@@ -209,7 +228,7 @@ public class NodeLayoutController extends FormBasicController {
 			if (teaserImageSystemEl.containsKey(teaserImageSource.getFilename())) {
 				teaserImageSystemEl.select(teaserImageSource.getFilename(), true);
 			} else {
-				teaserImageTypeEl.select(ImageSourceType.course.name(), true);
+				teaserImageTypeEl.select(ImageSourceType.inherited.name(), true);
 				teaserImageSystemEl.setVisible(false);
 			}
 		}
@@ -222,7 +241,7 @@ public class NodeLayoutController extends FormBasicController {
 		teaserImageUploadEl.setExampleKey(teaserImageExampleKey, null);
 		teaserImageUploadEl.addActionListener(FormEvent.ONCHANGE);
 		teaserImageUploadEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
-		if (ImageSourceType.custom.name().equals(teaserImageTypeEl.getSelectedKey())) {
+		if (teaserImageSource != null && ImageSourceType.custom == teaserImageSource.getType()) {
 			ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry());
 			VFSLeaf image = courseStyleService.getImage(course, courseNode);
 			if (image instanceof LocalFileImpl) {
@@ -232,22 +251,27 @@ public class NodeLayoutController extends FormBasicController {
 		
 		uifactory.addStaticTextElement("teaser.image.style", translate(CourseStyleUIFactory.getI18nKey(teaserImageStyle)), formLayout);
 		
-		SelectionValues colorCategoryKV = new SelectionValues();
-		colorCategoryKV.add(entry(ColorCategory.IDENTIFIER_COURSE, translate("color.category.type.course")));
-		colorCategoryKV.add(entry(ColorCategory.IDENTIFIER_INHERITED, translate("color.category.type.inherited")));
-		colorCategoryKV.add(entry(COLOR_CATEGORY_CUSTOM, translate("color.category.type.custom")));
-		colorCategoryKV.add(entry(ColorCategory.IDENTIFIER_NO_COLOR, translate("color.category.type.none")));
-		colorCategoryEl = uifactory.addRadiosHorizontal("color.category", formLayout, colorCategoryKV.keys(), colorCategoryKV.values());
-		colorCategoryEl.addActionListener(FormEvent.ONCHANGE);
-		if (colorCategoryEl.containsKey(colorCategoryIdentifier)) {
-			colorCategoryEl.select(colorCategoryIdentifier, true);
+		SelectionValues colorCategoryTypeKV = new SelectionValues();
+		colorCategoryTypeKV.add(entry(ColorCategory.IDENTIFIER_COURSE, translate("color.category.type.course")));
+		colorCategoryTypeKV.add(entry(ColorCategory.IDENTIFIER_INHERITED, translate("color.category.type.inherited")));
+		colorCategoryTypeKV.add(entry(COLOR_CATEGORY_NODE, translate("color.category.type.node")));
+		colorCategoryTypeEl = uifactory.addDropdownSingleselect("color.category", formLayout, colorCategoryTypeKV.keys(), colorCategoryTypeKV.values());
+		colorCategoryTypeEl.addActionListener(FormEvent.ONCHANGE);
+		if (ColorCategory.IDENTIFIER_COURSE.equals(colorCategoryIdentifier) || ColorCategory.IDENTIFIER_INHERITED.equals(colorCategoryIdentifier)) {
+			colorCategoryTypeEl.select(colorCategoryIdentifier, true);
 		} else {
-			ColorCategory colorCategory = courseStyleService.getColorCategory(colorCategoryIdentifier, ColorCategory.IDENTIFIER_FALLBACK_COURSE_NODE);
-			if (colorCategoryEl.containsKey(colorCategory.getIdentifier())) {
-				colorCategoryEl.select(colorCategory.getIdentifier(), true);
-			} else {
-				colorCategoryEl.select(COLOR_CATEGORY_CUSTOM, true);
-			}
+			colorCategoryTypeEl.select(COLOR_CATEGORY_NODE, true);
+		}
+		
+		SelectionValues colorCategoryNodeKV = new SelectionValues();
+		colorCategoryNodeKV.add(entry(COLOR_CATEGORY_CUSTOM, translate("color.category.type.custom")));
+		colorCategoryNodeKV.add(entry(ColorCategory.IDENTIFIER_NO_COLOR, translate("color.category.type.none")));
+		colorCategoryNodeEl = uifactory.addRadiosHorizontal("color.category.node", null, formLayout, colorCategoryNodeKV.keys(), colorCategoryNodeKV.values());
+		colorCategoryNodeEl.addActionListener(FormEvent.ONCHANGE);
+		if (ColorCategory.IDENTIFIER_NO_COLOR.equals(colorCategoryIdentifier)) {
+			colorCategoryNodeEl.select(ColorCategory.IDENTIFIER_NO_COLOR, true);
+		} else {
+			colorCategoryNodeEl.select(COLOR_CATEGORY_CUSTOM, true);
 		}
 		
 		colorCategorySelectionEl = uifactory.addFormLink("color.category.selection", "color.category.selection", "",
@@ -274,11 +298,17 @@ public class NodeLayoutController extends FormBasicController {
 		} else if (source == teaserImageTypeEl) {
 			updateTeaserImageUI();
 			updatePreviewUI(ureq, true);
+		} else if (source == teaserImageNodeEl) {
+			updateTeaserImageUI();
+			updatePreviewUI(ureq, true);
 		} else if (source == teaserImageSystemEl) {
 			updatePreviewUI(ureq, true);
 		} else if (source == teaserImageUploadEl) {
 			updatePreviewUI(ureq, true);
-		} else if (source == colorCategoryEl) {
+		} else if (source == colorCategoryTypeEl) {
+			updateColorCategorySelectionUI();
+			updatePreviewUI(ureq, true);
+		} else if (source == colorCategoryNodeEl) {
 			updateColorCategorySelectionUI();
 			updatePreviewUI(ureq, true);
 		} else if (source == colorCategorySelectionEl) {
@@ -335,22 +365,29 @@ public class NodeLayoutController extends FormBasicController {
 		String displayOption = getDisplayOption();
 		courseNode.setDisplayOption(displayOption);
 		
-		ImageSourceType type =  teaserImageTypeEl.isOneSelected()
-				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
-				: ImageSourceType.inherited;
-		if (ImageSourceType.system == type && teaserImageSystemEl.isOneSelected()) {
-			teaserImageSource = courseStyleService.getSystemTeaserImageSource(teaserImageSystemEl.getSelectedKey());
-		} else if (ImageSourceType.custom == type) {
-			if (teaserImageUploadEl.getUploadFile() != null) {
-				teaserImageSource = courseStyleService.storeImage(course, courseNode, getIdentity(),
-						teaserImageUploadEl.getUploadFile(), teaserImageUploadEl.getUploadFileName());
+		teaserImageSource = null;
+		ImageSourceType type = ImageSourceType.inherited;
+		if (teaserImageNodeEl.isVisible() && teaserImageNodeEl.isOneSelected()) {
+			if (teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.none.name())) {
+				type = ImageSourceType.none;
+			} else if (teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.system.name())) {
+				teaserImageSource = courseStyleService.getSystemTeaserImageSource(teaserImageSystemEl.getSelectedKey());
+			} else if (teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.custom.name())) {
+				if (teaserImageUploadEl.getUploadFile() != null) {
+					teaserImageSource = courseStyleService.storeImage(course, courseNode, getIdentity(),
+							teaserImageUploadEl.getUploadFile(), teaserImageUploadEl.getUploadFileName());
+				}
 			}
-		} else {
+		} else if (teaserImageTypeEl.isOneSelected() && teaserImageTypeEl.getSelectedKey().equals(ImageSourceType.course.name())) {
+			type = ImageSourceType.course;
+		}
+		
+		if (teaserImageSource == null) {
 			teaserImageSource = courseStyleService.createEmptyImageSource(type);
 		}
 		courseNode.setTeaserImageSource(teaserImageSource);
 		
-		if (ImageSourceType.custom != type) {
+		if (ImageSourceType.custom != teaserImageSource.getType()) {
 			courseStyleService.deleteImage(course, courseNode);
 		}
 		
@@ -386,18 +423,20 @@ public class NodeLayoutController extends FormBasicController {
 	}
 	
 	private void updateTeaserImageUI() {
-		ImageSourceType type = teaserImageTypeEl.isOneSelected()
-				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
-				: ImageSourceType.inherited;
-		teaserImageUploadEl.setVisible(ImageSourceType.custom == type);
-		teaserImageSystemEl.setVisible(ImageSourceType.system == type);
+		teaserImageNodeEl.setVisible(teaserImageTypeEl.isOneSelected() && teaserImageTypeEl.getSelectedKey().equals(TEASER_IMAGE_NODE));
+		
+		boolean nodeImage = teaserImageNodeEl.isVisible() && teaserImageNodeEl.isOneSelected();
+		teaserImageUploadEl.setVisible(nodeImage && teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.custom.name()));
+		teaserImageSystemEl.setVisible(nodeImage && teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.system.name()));
 	}
 
 	private void updateColorCategorySelectionUI() {
-		if (colorCategoryEl.isOneSelected()) {
-			String selectedKey = colorCategoryEl.getSelectedKey();
-			if (!COLOR_CATEGORY_CUSTOM.equals(selectedKey)) {
+		if (colorCategoryTypeEl.isOneSelected()) {
+			String selectedKey = colorCategoryTypeEl.getSelectedKey();
+			if (ColorCategory.IDENTIFIER_COURSE.equals(selectedKey) || ColorCategory.IDENTIFIER_INHERITED.equals(selectedKey)) {
 				colorCategoryIdentifier = selectedKey;
+			} else if (colorCategoryNodeEl.isVisible() && colorCategoryNodeEl.isOneSelected() && colorCategoryNodeEl.getSelectedKey().equals(ColorCategory.IDENTIFIER_NO_COLOR)) {
+				colorCategoryIdentifier = ColorCategory.IDENTIFIER_NO_COLOR;
 			}
 			updateColorCategoryUI();
 		}
@@ -417,7 +456,12 @@ public class NodeLayoutController extends FormBasicController {
 	}
 	
 	private void updateColorCategoryUI() {
-		boolean custom = colorCategoryEl.isOneSelected() && COLOR_CATEGORY_CUSTOM.equals(colorCategoryEl.getSelectedKey());
+		boolean nodeVisible = colorCategoryTypeEl.isOneSelected() && colorCategoryTypeEl.getSelectedKey().equals(COLOR_CATEGORY_NODE);
+		colorCategoryNodeEl.setVisible(nodeVisible);
+		
+		boolean custom = colorCategoryNodeEl.isVisible()
+				&& colorCategoryNodeEl.isOneSelected()
+				&& COLOR_CATEGORY_CUSTOM.equals(colorCategoryNodeEl.getSelectedKey());
 		if (custom) {
 			ColorCategory colorCategory = colorCategoryResolver.getColorCategory(colorCategoryIdentifier, editorTreeNode);
 			colorCategoryIdentifier = colorCategory.getIdentifier();
