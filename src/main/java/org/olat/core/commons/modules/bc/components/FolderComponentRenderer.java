@@ -118,10 +118,10 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		ubu.buildURI(target, new String[] { VelocityContainer.COMMAND_ID }, new String[] {FolderRunController.FORM_ACTION }, iframePostEnabled ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 		target.append("\" ");
 		if (iframePostEnabled) { // add ajax iframe target
-			target.append("\" onsubmit=\"o_XHRSubmit('").append(formName).append("');\">");
+			target.append(" onsubmit=\"o_XHRSubmit('").append(formName).append("');\">");
 			target.append("<input id=\"o_mai_").append(formName).append("\" type=\"hidden\" name=\"multi_action_identifier\" value=\"\"").append(" />");
 		} else {
-			target.append("\" onsubmit=\"if ( b_briefcase_isChecked('").append(formName)
+			target.append(" onsubmit=\"if ( b_briefcase_isChecked('").append(formName)
 			  .append("', '").append(Formatter.escapeSingleAndDoubleQuotes(StringHelper.escapeHtml(translator.translate("alert")).toString())) 
 			  .append("')) { if(o_info.linkbusy) return false; else o_beforeserver(); return true; } else {return false; }\">");
 		}
@@ -176,7 +176,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		}
 		
 		//placeholder for the search
-		target.append("</ul></div>");
+		target.append("</ul></div>"); // END o_bc_createactions
 		
 		// add current file bread crumb path
 		crumbRenderer.render(fc, target, ubu, iframePostEnabled);			
@@ -223,8 +223,8 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 				      .append(FolderRunController.ACTION_PRE).append(FolderCommandFactory.COMMAND_UNZIP)
 			         .append("');\"><span>").append(StringHelper.escapeHtml(translator.translate("unzip"))).append("</span></button>");		
 			}
-			target.append("</div></div>");
+			target.append("</div>"); // END o_button_group
 		}
-		target.append("</div></form>");
+		target.append("</div></form>"); // END o_table_wrapper
 	}
 }
