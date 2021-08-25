@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
@@ -2061,7 +2062,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		
 		// update module
 		CourseNode parent = courseNode.getParent() instanceof CourseNode? (CourseNode)courseNode.getParent(): null;
-		courseNode.updateModuleConfigDefaults(false, parent);
+		courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(course));
 		
 		// report 
 		Boolean showResHomepage = moduleConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
@@ -2607,7 +2608,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 
 		@Override
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
-			newNode.updateModuleConfigDefaults(true, null);
+			newNode.updateModuleConfigDefaults(true, null, NodeAccessType.of(course));
 			if(text != null) {
 				moduleConfig.set(TACourseNode.CONF_TASK_TEXT, text);
 			}

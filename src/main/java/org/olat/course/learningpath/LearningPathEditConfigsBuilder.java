@@ -33,7 +33,6 @@ public class LearningPathEditConfigsBuilder {
 	private boolean triggerPassed;
 	private boolean triggerStatusInReview;
 	private boolean triggerStatusDone;
-	private FullyAssessedTrigger defaultTrigger = FullyAssessedTrigger.confirmed; // default if not set by course node
 	private LearningPathTranslationsBuilder translationsBuilder;
 	
 	LearningPathEditConfigsBuilder() {
@@ -69,12 +68,6 @@ public class LearningPathEditConfigsBuilder {
 		triggerStatusDone = true;
 		return this;
 	}
-
-	public LearningPathEditConfigsBuilder setDefaultTrigger(FullyAssessedTrigger defaultTrigger) {
-		this.defaultTrigger = defaultTrigger;
-		return this;
-	}
-
 	
 	public LearningPathTranslationsBuilder withTranslations(Class<?> translatorBaseClass) {
 		this.translationsBuilder = LearningPathTranslations.builder(this)
@@ -94,7 +87,6 @@ public class LearningPathEditConfigsBuilder {
 		private final boolean triggerPassed;
 		private final boolean triggerStatusInReview;
 		private final boolean triggerStatusDone;
-		private FullyAssessedTrigger defaultTrigger;
 		private final LearningPathTranslations translations;
 
 		private LearningPathEditConfigsImpl(LearningPathEditConfigsBuilder builder) {
@@ -104,7 +96,6 @@ public class LearningPathEditConfigsBuilder {
 			this.triggerPassed = builder.triggerPassed;
 			this.triggerStatusInReview = builder.triggerStatusInReview;
 			this.triggerStatusDone = builder.triggerStatusDone;
-			this.defaultTrigger = builder.defaultTrigger;
 			this.translations = builder.translationsBuilder.build();
 		}
 
@@ -137,11 +128,6 @@ public class LearningPathEditConfigsBuilder {
 		public boolean isTriggerStatusDone() {
 			return triggerStatusDone;
 		}
-		
-		@Override
-		public FullyAssessedTrigger getDefaultTrigger() {
-			return defaultTrigger;
-		}		
 
 		@Override
 		public LearningPathTranslations getTranslations() {

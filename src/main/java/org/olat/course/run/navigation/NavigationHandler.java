@@ -222,7 +222,7 @@ public class NavigationHandler implements Disposable {
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 				CourseNode parent = internCourseNode.getParent() instanceof CourseNode? (CourseNode)internCourseNode.getParent(): null;
-				internCourseNode.updateModuleConfigDefaults(false, parent);
+				internCourseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv));
 				nrcr = internCourseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, internNode, nodecmd);
 				// remember as instance variable for next click
 				subtreemodelListener = nrcr.getSubTreeListener();
@@ -379,7 +379,9 @@ public class NavigationHandler implements Disposable {
 				
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
+				CourseNode parent = courseNode.getParent() instanceof CourseNode? (CourseNode)courseNode.getParent(): null;
 				if (previewMode) {
+					courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv));
 					ncr = new NodeRunConstructionResult(courseNode.createPreviewController(ureq, bwControl, userCourseEnv, newCalledTreeNode));
 				} else {
 					// cleanup already existing controllers with external models for this node first, never disposed otherwise
@@ -392,8 +394,7 @@ public class NavigationHandler implements Disposable {
 						}
 					}
 					
-					CourseNode parent = courseNode.getParent() instanceof CourseNode? (CourseNode)courseNode.getParent(): null;
-					courseNode.updateModuleConfigDefaults(false, parent);
+					courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv));
 					ncr = courseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, newCalledTreeNode, nodecmd);
 
 					// remember as instance variable for next click

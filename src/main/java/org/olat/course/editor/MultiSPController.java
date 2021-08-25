@@ -49,6 +49,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -212,14 +213,14 @@ public class MultiSPController extends FormBasicController {
 			CourseNode newNode = null;
 			if(item instanceof VFSLeaf) {
 				//create node
-				newNode = createCourseNode(parentNode, item, "sp");
+				newNode = createCourseNode(course, parentNode, item, "sp");
 				ModuleConfiguration moduleConfig = newNode.getModuleConfiguration();
 				String path = VFSManager.getRelativeItemPath(item, rootContainer, null);
 				moduleConfig.set(SPEditController.CONFIG_KEY_FILE, path);
 				moduleConfig.setBooleanEntry(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, true);
 			} else if (item instanceof VFSContainer) {
 				//add structure
-				newNode = createCourseNode(parentNode, item, "st");
+				newNode = createCourseNode(course, parentNode, item, "st");
 			}
 			
 			int pos = -1;
@@ -245,9 +246,10 @@ public class MultiSPController extends FormBasicController {
 		}
 	}
 	
-	private CourseNode createCourseNode(CourseNode parent, VFSItem item, String type) {
+	private CourseNode createCourseNode(ICourse course, CourseNode parent, VFSItem item, String type) {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		CourseNode newNode = newNodeConfig.getInstance(parent);
+		CourseNode newNode = newNodeConfig.getInstance();
+		newNode.updateModuleConfigDefaults(true, parent, NodeAccessType.of(course));
 		String name = item.getName();
 		if (name.length() > NodeConfigController.SHORT_TITLE_MAX_LENGTH) {
 			String shortName = name.substring(0, NodeConfigController.SHORT_TITLE_MAX_LENGTH - 1);

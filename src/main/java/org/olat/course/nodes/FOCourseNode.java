@@ -66,6 +66,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
@@ -136,11 +137,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	private Condition preConditionReader, preConditionPoster, preConditionModerator;
 
 	public FOCourseNode() {
-		this(null);
-	}
-	
-	public FOCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -233,7 +230,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 */
 	public Forum loadOrCreateForum(final CourseEnvironment courseEnv) {
 		CourseNode parent = this.getParent() instanceof CourseNode? (CourseNode)this.getParent(): null;
-		updateModuleConfigDefaults(false, parent);
+		updateModuleConfigDefaults(false, parent, NodeAccessType.of(courseEnv));
 
 		Forum forum = null;
 		List<Property> forumKeyProps = courseEnv.getCoursePropertyManager().findCourseNodeProperties(this, null, null,
@@ -523,7 +520,9 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 *                  previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 

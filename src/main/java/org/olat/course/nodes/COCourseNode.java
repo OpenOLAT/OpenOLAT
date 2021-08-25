@@ -48,6 +48,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.co.COEditController;
 import org.olat.course.nodes.co.CORunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -75,11 +76,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "co";
 
 	public COCourseNode() {
-		this(null);
-	}
-	
-	public COCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
     @Override
@@ -223,8 +220,6 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 
     @Override
     public StatusDescription isConfigValid() {
-		CourseNode parent = this.getParent() instanceof CourseNode? (CourseNode)this.getParent(): null;
-    	updateModuleConfigDefaults(false, parent);
         if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
         /**
@@ -365,7 +360,9 @@ public class COCourseNode extends AbstractAccessableCourseNode {
     }
 
     @Override
-    public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+    public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
         ModuleConfiguration mc = getModuleConfiguration();
         int version = mc.getConfigurationVersion();
         

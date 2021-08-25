@@ -59,6 +59,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.cp.CPEditController;
 import org.olat.course.nodes.scorm.ScormAssessmentConfig;
 import org.olat.course.nodes.scorm.ScormEditController;
@@ -101,11 +102,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	private final static String CONFIG_HEIGHT_AUTO = "auto";
 	
 	public ScormCourseNode() {
-		this(null);
-	}
-
-	public ScormCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -235,7 +232,9 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

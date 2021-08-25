@@ -33,7 +33,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -69,16 +68,7 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 	private transient CourseGroupManager groupMgr;
 
 	public GoToMeetingCourseNode() {
-		this(null);
-	}
-
-	public GoToMeetingCourseNode(INode parent) {
-		super(TYPE, parent);
-	}
-
-	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
-		// no update to default config necessary
+		super(TYPE);
 	}
 	
 	@Override

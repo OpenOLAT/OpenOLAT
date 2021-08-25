@@ -22,7 +22,7 @@ package org.olat.course.nodes.iq;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
@@ -63,8 +63,19 @@ public class IQTESTLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
-	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), false);
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode) {
+		getLearningPathConfigs(courseNode, newNode);
+	}
+
+	@Override
+	public ModuleLearningPathConfigs getConfigs(CourseNode courseNode) {
+		return getLearningPathConfigs(courseNode, false);
+	}
+
+	private ModuleLearningPathConfigs getLearningPathConfigs(CourseNode courseNode, boolean newNode) {
+		ModuleLearningPathConfigs configs = new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), false);
+		configs.updateDefaults(newNode, FullyAssessedTrigger.statusDone);
+		return configs;
 	}
 
 	@Override

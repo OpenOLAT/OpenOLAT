@@ -59,6 +59,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCoachRunController;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
@@ -139,13 +140,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_INITIAL_STATUS = "initial.status";
 
 	public MSCourseNode() {
-		this(null);
+		super(TYPE);
 	}
 	
-	public MSCourseNode(INode parent) {
-		super(TYPE, parent);
-	}
-
 	/**
 	 * Adds to the given module configuration the default configuration for the
 	 * manual scoring
@@ -164,13 +161,20 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			initDefaultConfig(config);
 			config.setStringValue(CONFIG_KEY_SCORE, CONFIG_VALUE_SCORE_NONE);
 			config.setStringValue(CONFIG_KEY_INITIAL_STATUS, AssessmentEntryStatus.inReview.name());
 		}
+		updateModuleDefaults(config);
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
+
+	public void updateModuleDefaults(ModuleConfiguration config) {
 		if (config.getConfigurationVersion() < 2) {
 			// migrate legacy configs
 			boolean hasScoreFiled = config.getBooleanSafe(CONFIG_KEY_HAS_SCORE_FIELD, false);
@@ -190,7 +194,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 				config.setStringValue(CONFIG_KEY_INITIAL_STATUS, AssessmentEntryStatus.notStarted.name());
 			}
 		}
-		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 
 	@Override

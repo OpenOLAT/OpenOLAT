@@ -31,7 +31,6 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -70,16 +69,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	private transient CourseGroupManager groupMgr;
 
 	public OpenMeetingsCourseNode() {
-		this(null);
-	}
-	
-	public OpenMeetingsCourseNode(INode parent) {
-		super(TYPE, parent);
-	}
-
-	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
-		// no update to default config necessary
+		super(TYPE);
 	}
 	
 	@Override

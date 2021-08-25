@@ -48,6 +48,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -117,9 +118,10 @@ public abstract class AbstractCourseNodeWebService {
 				if(parentNode == null) {
 					return Response.serverError().status(Status.NOT_FOUND).build();
 				}
+				NodeAccessType nodeAccessType = NodeAccessType.of(course);
 				node = createCourseNode(type, shortTitle, longTitle, description, objectives, instruction,
 						instructionalDesign, visibilityExpertRules, accessExpertRules, config, editSession, parentNode,
-						position);
+						nodeAccessType, position);
 			}
 			return Response.ok(node).build();
 		} catch(Exception ex) {
@@ -175,10 +177,11 @@ public abstract class AbstractCourseNodeWebService {
 	private CourseNodeVO createCourseNode(String type, String shortTitle, String longTitle, String description,
 			String objectives, String instruction, String instructionalDesign, String visibilityExpertRules,
 			String accessExpertRules, CustomConfigDelegate delegateConfig, CourseEditSession editSession,
-			CourseEditorTreeNode parentNode, Integer position) {
+			CourseEditorTreeNode parentNode, NodeAccessType nodeAccessType, Integer position) {
 		
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		CourseNode insertedNode = newNodeConfig.getInstance(parentNode);
+		CourseNode insertedNode = newNodeConfig.getInstance();
+		insertedNode.updateModuleConfigDefaults(true, parentNode, nodeAccessType);
 		insertedNode.setShortTitle(shortTitle);
 		insertedNode.setLongTitle(longTitle);
 		insertedNode.setDescription(description);

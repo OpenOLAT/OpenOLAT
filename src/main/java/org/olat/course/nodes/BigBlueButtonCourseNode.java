@@ -62,11 +62,7 @@ public class BigBlueButtonCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
 	
 	public BigBlueButtonCourseNode() {
-		this(null);
-	}
-	
-	public BigBlueButtonCourseNode(CourseNode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 	
 	@Override

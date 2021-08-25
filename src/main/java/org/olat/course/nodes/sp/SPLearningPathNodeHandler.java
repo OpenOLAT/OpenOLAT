@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.learningpath.FullyAssessedTrigger;
-import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
@@ -45,7 +44,6 @@ public class SPLearningPathNodeHandler implements LearningPathNodeHandler {
 	private static final LearningPathEditConfigs EDIT_CONFIGS = LearningPathEditConfigs.builder()
 			.enableNodeVisited()
 			.enableConfirmed()
-			.setDefaultTrigger(FullyAssessedTrigger.nodeVisited)
 			.build();
 	
 	@Override
@@ -59,8 +57,19 @@ public class SPLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
-	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), true);
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode) {
+		getLearningPathConfigs(courseNode, newNode);
+	}
+
+	@Override
+	public ModuleLearningPathConfigs getConfigs(CourseNode courseNode) {
+		return getLearningPathConfigs(courseNode, false);
+	}
+
+	private ModuleLearningPathConfigs getLearningPathConfigs(CourseNode courseNode, boolean newNode) {
+		ModuleLearningPathConfigs configs = new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), true);
+		configs.updateDefaults(newNode, FullyAssessedTrigger.nodeVisited);
+		return configs;
 	}
 
 	@Override

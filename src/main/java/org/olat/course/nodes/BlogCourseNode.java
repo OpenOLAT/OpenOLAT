@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.feed.blog.BlogCourseNodeConfiguration;
@@ -56,8 +55,8 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 	
 	public static final String TYPE = FeedManager.KIND_BLOG;
 
-	public BlogCourseNode(INode parent) {
-		super(TYPE, parent);
+	public BlogCourseNode() {
+		super(TYPE);
 	}
 
 	@Override
@@ -120,9 +119,9 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 						Set<RepositoryEntryToOrganisation> organisations = blog.getOrganisations();
 						Organisation organisation = null;
 						if (organisations != null && organisations.size() > 1) {
-							organisation = organisations.stream().filter(rel -> rel.isMaster()).map(rel -> rel.getOrganisation()).findFirst().orElse(null);
+							organisation = organisations.stream().filter(RepositoryEntryToOrganisation::isMaster).map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
 						} else if (organisations != null) {
-							organisation = organisations.stream().map(rel -> rel.getOrganisation()).findFirst().orElse(null);
+							organisation = organisations.stream().map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
 						}
 						
 						RepositoryEntry newBlog = handlerFactory.getRepositoryHandler(blog).createResource(context.getExecutingIdentity(), blog.getDisplayname(), blog.getDescription(), null, organisation, null);

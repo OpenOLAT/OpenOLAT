@@ -59,11 +59,7 @@ public class TeamsCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
 	
 	public TeamsCourseNode() {
-		this(null);
-	}
-	
-	public TeamsCourseNode(CourseNode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 	
 	@Override

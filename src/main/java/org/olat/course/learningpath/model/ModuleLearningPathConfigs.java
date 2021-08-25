@@ -43,12 +43,14 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	
-	private static final String CONFIG_KEY_DURATION = "duration";
-	private static final String CONFIG_KEY_OBLIGATION = "obligation";
-	private static final String CONFIG_KEY_START = "start.date";
-	private static final String CONFIG_KEY_END = "end.date";
-	private static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
-	private static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
+	static final String CONFIG_VERSION = "lp.configversion";
+	static final int VERSION_CURRENT = 1;
+	static final String CONFIG_KEY_DURATION = "duration";
+	static final String CONFIG_KEY_OBLIGATION = "obligation";
+	static final String CONFIG_KEY_START = "start.date";
+	static final String CONFIG_KEY_END = "end.date";
+	static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
+	static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
 	
 	protected final ModuleConfiguration moduleConfiguration;
 	private final boolean doneOnFullyAssessed;
@@ -56,6 +58,29 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public ModuleLearningPathConfigs(ModuleConfiguration moduleConfiguration, boolean doneOnFullyAssessed) {
 		this.moduleConfiguration = moduleConfiguration;
 		this.doneOnFullyAssessed = doneOnFullyAssessed;
+	}
+
+	public void updateDefaults(boolean newNode, FullyAssessedTrigger trigger) {
+		if (newNode) {
+			setFullyAssessedTrigger(trigger);
+			if (isInitObligation()) {
+				setObligation(LearningPathConfigs.OBLIGATION_DEFAULT);
+			}
+		} else if (!moduleConfiguration.has(CONFIG_KEY_TRIGGER)) {
+			// Initialisation of existing course node. In the early days the configuration was not initialized
+			// when a new course node was created. A null trigger indicates that the user never saved
+			// the learning path configurations, so we have to initialize the old default values.
+			setFullyAssessedTrigger(LEGACY_TRIGGER_DEFAULT);
+			if (isInitObligation()) {
+				setObligation(LearningPathConfigs.OBLIGATION_DEFAULT);
+			}
+		}
+		
+		moduleConfiguration.setIntValue(CONFIG_VERSION, VERSION_CURRENT);
+	}
+
+	protected boolean isInitObligation() {
+		return true;
 	}
 
 	@Override
@@ -133,7 +158,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	private String getFullyAssessedTriggerConfig() {
-		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_VALUE_TRIGGER_CONFIRMED);
+		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, LEGACY_TRIGGER_DEFAULT.name());
 	}
 
 	@Override

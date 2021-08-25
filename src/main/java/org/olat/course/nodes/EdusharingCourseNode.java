@@ -44,6 +44,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.edusharing.ui.EdusharingEditController;
 import org.olat.course.nodes.edusharing.ui.EdusharingRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -98,11 +99,7 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_ES_RATIO = "es.ratio";
 	
 	public EdusharingCourseNode() {
-		this(null);
-	}
-	
-	public EdusharingCourseNode(CourseNode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -167,7 +164,9 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		
 		if (isNewNode) {

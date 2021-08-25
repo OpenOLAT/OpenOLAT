@@ -66,8 +66,8 @@ public class IQTESTNodeController extends StepFormBasicController {
 		context = (IQTESTCourseNodeContext)getOrCreateFromRunContext(nodeContextKey, IQTESTCourseNodeContext::new);
 		ModuleConfiguration moduleConfig = context.getModuleConfig();
 		if (moduleConfig == null) {
-			CourseNode courseNode = CourseNodeFactory.getInstance().getCourseNodeConfiguration(IQTESTCourseNode.TYPE).getInstance(null);
-			courseNode.updateModuleConfigDefaults(true, null);
+			CourseNode courseNode = CourseNodeFactory.getInstance().getCourseNodeConfiguration(IQTESTCourseNode.TYPE).getInstance();
+			courseNode.updateModuleConfigDefaults(true, course.getRunStructure().getRootNode(), nodeAccessType);
 			moduleConfig = courseNode.getModuleConfiguration();
 			moduleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, true);
 			context.setModuleConfig(moduleConfig);

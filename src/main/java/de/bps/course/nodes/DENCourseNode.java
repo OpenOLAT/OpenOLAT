@@ -32,7 +32,6 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -68,11 +67,7 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_COURSE_NODE_ID = "den_course_node_id";
 
 	public DENCourseNode() {
-		this(null);
-	}
-	
-	public DENCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 		initDefaultConfig();
 	}
 

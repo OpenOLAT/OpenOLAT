@@ -36,6 +36,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.info.InfoCourseNodeEditController;
 import org.olat.course.nodes.members.MembersCourseNodeEditController;
 import org.olat.course.nodes.members.MembersCourseNodeRunController;
@@ -94,11 +95,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 
 	public MembersCourseNode() {
-		this(null);
-	}
-
-	public MembersCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -160,7 +157,9 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		if(isNewNode){

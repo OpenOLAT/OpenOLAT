@@ -49,6 +49,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRightType;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -410,10 +411,11 @@ public interface CourseNode extends INode, ShortName {
 	 *          previous behavior.
 	 * @param parent Can be used to inherit default values.
 	 *          May be null if root node. Is of type CourseNode or CourseEditorTreeNode.
+	 * @param nodeAccessType Can be used if default values depend on nodeAccessType
 	 *          
 	 * This is the workflow:
 	 * On every click on a entry of the navigation tree, this method will be called
-	 * to ensure a valid configration of the depending module. This is only done in
+	 * to ensure a valid configuration of the depending module. This is only done in
 	 * RAM. If the user clicks on that node in course editor and publishes the course
 	 * after that, then the updated config will be persisted to disk. Otherwise
 	 * everything what is done here has to be done once at every course start.<br>
@@ -422,7 +424,7 @@ public interface CourseNode extends INode, ShortName {
 	 * otherwise the editortree.xml and runstructure.xml of old courses would no longer be compatible. 
 	 *  
 	 */
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType);
 	
 	/**
 	 * Calculate the access and the visibility in the conventional node access type.

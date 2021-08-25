@@ -37,6 +37,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.cal.CalSecurityCallback;
 import org.olat.course.nodes.cal.CalSecurityCallbackFactory;
 import org.olat.course.nodes.cal.CourseCalendars;
@@ -71,11 +72,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PLAYER_PROFILE = "playerProfile";
 
 	public LiveStreamCourseNode() {
-		this(null);
-	}
-
-	public LiveStreamCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -135,7 +132,9 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			LiveStreamModule liveStreamModule = CoreSpringFactory.getImpl(LiveStreamModule.class);

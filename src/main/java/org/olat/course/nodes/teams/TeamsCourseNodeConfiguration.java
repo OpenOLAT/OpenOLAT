@@ -24,7 +24,6 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -66,7 +65,7 @@ public class TeamsCourseNodeConfiguration extends AbstractCourseNodeConfiguratio
 	}
 
 	@Override
-	public CourseNode getInstance(INode parent) {
+	public CourseNode getInstance() {
 		return new TeamsCourseNode();
 	}
 

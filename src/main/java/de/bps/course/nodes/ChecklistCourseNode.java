@@ -46,7 +46,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -103,14 +102,10 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	public static final String PROPERTY_CHECKLIST_KEY = CONF_CHECKLIST;
 
 	public ChecklistCourseNode() {
-		this(null);
-	}
-	
-	public ChecklistCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 		initDefaultConfig();
 	}
-
+	
 	private void initDefaultConfig() {
 		ModuleConfiguration config = getModuleConfiguration();
 		// add an empty checkpoint entry as default if none existent

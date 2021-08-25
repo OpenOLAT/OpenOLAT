@@ -39,6 +39,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.tu.TUConfigForm;
 import org.olat.course.nodes.tu.TUEditController;
 import org.olat.course.nodes.tu.TURunController;
@@ -62,11 +63,7 @@ public class TUCourseNode extends AbstractAccessableCourseNode {
 	private static final String NLS_ERROR_HOSTMISSING_LONG = "error.hostmissing.long";
 
 	public TUCourseNode() {
-		this(null);
-	}
-	
-	public TUCourseNode(CourseNode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -145,7 +142,9 @@ public class TUCourseNode extends AbstractAccessableCourseNode {
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

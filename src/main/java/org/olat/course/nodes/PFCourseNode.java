@@ -52,6 +52,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.nodes.pf.ui.PFCoachController;
@@ -83,11 +84,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public static final long serialVersionUID = 1L;
 
 	public PFCourseNode() {
-		this(null);
-	}
-
-	public PFCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 	
 	@Override
@@ -113,7 +110,9 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		if (isNewNode) {
 			// default is to enable both boxes without restrictions
 			updateModuleConfig(true,true,true, false, 0, false, null, null);

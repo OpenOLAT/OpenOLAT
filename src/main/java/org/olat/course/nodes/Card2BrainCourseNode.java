@@ -30,7 +30,6 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -64,11 +63,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PRIVATE_SECRET = "privateSecret";
 	
 	public Card2BrainCourseNode() {
-		this(null);
-	}
-
-	public Card2BrainCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -69,16 +68,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_VC_CONFIGURATION = "vc_configuration";
 
 	public ViteroCourseNode() {
-		this(null);
-	}
-	
-	public ViteroCourseNode(INode parent) {
-		super(TYPE, parent);
-	}
-
-	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
-		// no update to default config necessary
+		super(TYPE);
 	}
 
 	@Override

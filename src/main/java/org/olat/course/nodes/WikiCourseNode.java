@@ -64,6 +64,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
@@ -120,14 +121,13 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	private Condition preConditionEdit;
 
 	public WikiCourseNode() {
-		this(null);
-	}
-	public WikiCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		
@@ -219,9 +219,9 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 						Set<RepositoryEntryToOrganisation> organisations = wiki.getOrganisations();
 						Organisation organisation = null;
 						if (organisations != null && organisations.size() > 1) {
-							organisation = organisations.stream().filter(rel -> rel.isMaster()).map(rel -> rel.getOrganisation()).findFirst().orElse(null);
+							organisation = organisations.stream().filter(RepositoryEntryToOrganisation::isMaster).map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
 						} else if (organisations != null) {
-							organisation = organisations.stream().map(rel -> rel.getOrganisation()).findFirst().orElse(null);
+							organisation = organisations.stream().map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
 						}
 						
 						RepositoryEntry newWiki = handlerFactory.getRepositoryHandler(wiki).createResource(context.getExecutingIdentity(), wiki.getDisplayname(), wiki.getDescription(), null, organisation, null);

@@ -44,6 +44,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -73,11 +74,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	private static final String PACKAGE_IQ = Util.getPackageName(QTI21AssessmentRunController.class);
 	
 	public IQSURVCourseNode() {
-		this(null);
-	}
-
-	public IQSURVCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -196,7 +193,9 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// add default module configuration

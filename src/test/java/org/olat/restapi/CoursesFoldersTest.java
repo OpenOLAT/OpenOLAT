@@ -55,6 +55,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -297,7 +298,8 @@ public class CoursesFoldersTest extends OlatRestTestCase {
 		//create a folder
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
-		CourseNode bcNode = newNodeConfig.getInstance(rootNode);
+		CourseNode bcNode = newNodeConfig.getInstance();
+		bcNode.updateModuleConfigDefaults(true, rootNode, NodeAccessType.of(course));
 		bcNode.setShortTitle("Folder");
 		bcNode.setNoAccessExplanation("You don't have access");
 		course.getEditorTreeModel().addCourseNode(bcNode, rootNode);

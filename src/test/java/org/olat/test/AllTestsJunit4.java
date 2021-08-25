@@ -547,6 +547,7 @@ import org.junit.runners.Suite;
 	org.olat.course.learningpath.evaluation.DefaultLearningPathStatusEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.LinearAccessEvaluatorTest.class,
 	org.olat.course.learningpath.manager.LearningPathNodeAccessProviderTest.class,
+	org.olat.course.learningpath.model.ModuleLearningPathConfigsTest.class,
 	org.olat.course.nodes.st.assessment.PassCounterTest.class,
 	org.olat.course.nodes.st.assessment.CumulatingDurationEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.CumulatingScoreEvaluatorTest.class,

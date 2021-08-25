@@ -36,6 +36,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.edubase.EdubaseEditController;
 import org.olat.course.nodes.edubase.EdubasePeekViewController;
 import org.olat.course.nodes.edubase.EdubaseRunController;
@@ -62,11 +63,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_BOOK_SECTIONS = "bookSections";
 	
 	public EdubaseCourseNode() {
-		this(null);
-	}
-	
-	public EdubaseCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -132,7 +129,9 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			config.setBooleanEntry(CONFIG_DESCRIPTION_ENABLED, Boolean.TRUE.booleanValue());

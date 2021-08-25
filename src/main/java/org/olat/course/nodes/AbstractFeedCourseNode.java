@@ -52,6 +52,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
@@ -110,8 +111,8 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	
 	protected Condition preConditionReader, preConditionPoster, preConditionModerator;
 
-	public AbstractFeedCourseNode(String type, INode parent) {
-		super(type, parent);
+	public AbstractFeedCourseNode(String type) {
+		super(type);
 	}
 	
 	protected abstract String getTranslatorPackage();
@@ -213,7 +214,9 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		

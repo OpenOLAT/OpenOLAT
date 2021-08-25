@@ -41,7 +41,6 @@ import org.olat.core.configuration.PreWarm;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.EditionSupport;
@@ -217,7 +216,7 @@ public class CourseNodeFactory implements PreWarm {
 		}
 
 		@Override
-		public CourseNode getInstance(INode parent) {
+		public CourseNode getInstance() {
 			return null;
 		}
 

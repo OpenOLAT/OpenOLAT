@@ -35,6 +35,8 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public interface LearningPathConfigs {
 	
 	public static final AssessmentObligation OBLIGATION_DEFAULT = AssessmentObligation.mandatory;
+	public static final FullyAssessedTrigger LEGACY_TRIGGER_DEFAULT = FullyAssessedTrigger.confirmed;
+
 	
 	public Boolean hasSequentialChildren();
 	

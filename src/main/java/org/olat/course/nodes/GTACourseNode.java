@@ -74,6 +74,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.gta.GTAAssessmentConfig;
 import org.olat.course.nodes.gta.GTALearningPathNodeHandler;
 import org.olat.course.nodes.gta.GTAManager;
@@ -172,11 +173,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE_INDIVIDUAL = "ita";
 
 	public GTACourseNode() {
-		this(TYPE_GROUP, null);
+		super(TYPE_GROUP);
 	}
 	
-	public GTACourseNode(String type, INode parent) {
-		super(type, parent);
+	public GTACourseNode(String type) {
+		super(type);
 	}
 
 	@Override
@@ -190,7 +191,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		if(isNewNode) {
 			//setup default configuration
 			ModuleConfiguration config = getModuleConfiguration();

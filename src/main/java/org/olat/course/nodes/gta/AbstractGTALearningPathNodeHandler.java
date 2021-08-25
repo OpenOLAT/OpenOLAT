@@ -22,9 +22,10 @@ package org.olat.course.nodes.gta;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -51,8 +52,19 @@ public abstract class AbstractGTALearningPathNodeHandler implements LearningPath
 	}
 
 	@Override
-	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return new GTALearningPathConfigs(courseNode.getModuleConfiguration());
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode) {
+		getLearningPathConfigs(courseNode, newNode);
+	}
+
+	@Override
+	public ModuleLearningPathConfigs getConfigs(CourseNode courseNode) {
+		return getLearningPathConfigs(courseNode, false);
+	}
+
+	private ModuleLearningPathConfigs getLearningPathConfigs(CourseNode courseNode, boolean newNode) {
+		ModuleLearningPathConfigs configs = new GTALearningPathConfigs(courseNode.getModuleConfiguration());
+		configs.updateDefaults(newNode, FullyAssessedTrigger.statusDone);
+		return configs;
 	}
 
 	@Override

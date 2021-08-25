@@ -455,7 +455,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 		//create the alternative node
 		CourseNodeConfiguration newConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(selectAlternative);
-		CourseNode newNode = newConfig.getInstance(parentNode);
+		CourseNode newNode = newConfig.getInstance();
+		newNode.updateModuleConfigDefaults(true, parentNode, NodeAccessType.of(course));
 		//copy configurations
 		chosenNode.copyConfigurationTo(newNode, course, getIdentity());
 		//insert the node
@@ -535,7 +536,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
 		if (cnConfig.isEnabled()) {
 			CourseEditorTreeNode parent = (CourseEditorTreeNode) cetm.getNodeById(chosenNode.getIdent());
-			chosenNode.updateModuleConfigDefaults(false, parent);
+			chosenNode.updateModuleConfigDefaults(false, parent, nodeAccessType);
 			nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), stackPanel, course, euce);
 			listenTo(nodeEditCntrllr);
 			nodeEditCntrllr.addTabs(tabbedNodeConfig);

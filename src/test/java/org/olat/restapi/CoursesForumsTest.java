@@ -40,6 +40,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -84,7 +85,8 @@ public class CoursesForumsTest  extends OlatRestTestCase {
 		//create a folder
 		CourseNode rootNode = course1.getRunStructure().getRootNode();
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("fo");
-		forumNode = newNodeConfig.getInstance(rootNode);
+		forumNode = newNodeConfig.getInstance();
+		forumNode.updateModuleConfigDefaults(true, rootNode, NodeAccessType.of(course1));
 		forumNode.setShortTitle("Forum");
 		forumNode.setNoAccessExplanation("You don't have access");
 		course1.getEditorTreeModel().addCourseNode(forumNode, rootNode);

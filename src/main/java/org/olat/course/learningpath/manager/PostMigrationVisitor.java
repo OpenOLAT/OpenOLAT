@@ -23,7 +23,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.course.nodes.CourseNodeHelper;
 
 /**
  * 
@@ -41,17 +41,12 @@ public class PostMigrationVisitor implements Visitor {
 
 	@Override
 	public void visit(INode node) {
-		CourseNode courseNode = null;
-		if (node instanceof CourseEditorTreeNode) {
-			CourseEditorTreeNode courseEditorTreeNode = (CourseEditorTreeNode)node;
-			courseNode = courseEditorTreeNode.getCourseNode();
-		}
-		if (node instanceof CourseNode) {
-			courseNode = (CourseNode)node;
-		}
+		CourseNode courseNode = CourseNodeHelper.getCourseNode(node);
 		if (courseNode != null) {
 			LearningPathNodeHandler lpHandler = registry.getLearningPathNodeHandler(courseNode);
 			lpHandler.onMigrated(courseNode);
+			// Learning path configs have to be initialized like a new course node
+			lpHandler.updateDefaultConfigs(courseNode, true);
 		}
 	}
 

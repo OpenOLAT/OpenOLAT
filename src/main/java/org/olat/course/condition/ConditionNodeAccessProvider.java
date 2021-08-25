@@ -89,6 +89,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public void updateConfigDefaults(CourseNode courseNode, boolean newNode) {
+		//
+	}
+
+	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel) {
 		if (courseNode instanceof AbstractAccessableCourseNode) {

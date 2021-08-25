@@ -82,6 +82,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.projectbroker.ProjectBrokerControllerFactory;
 import org.olat.course.nodes.projectbroker.ProjectBrokerCourseEditorController;
@@ -168,11 +169,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	private Condition conditionProjectBroker;
 
 	public ProjectBrokerCourseNode() {
-		this(null);
-	}
-
-	public ProjectBrokerCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -669,7 +666,9 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

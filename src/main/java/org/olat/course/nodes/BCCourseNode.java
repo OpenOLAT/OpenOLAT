@@ -65,6 +65,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
@@ -116,11 +117,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	private Condition preConditionUploaders, preConditionDownloaders;
 
 	public BCCourseNode() {
-		this(null);
-	}
-	
-	public BCCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -332,9 +329,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		CourseNode parent = this.getParent() instanceof CourseNode? (CourseNode)this.getParent(): null;
-		updateModuleConfigDefaults(false, parent);
-
 		StatusDescription sd = StatusDescription.NOERROR;
 		if(!getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
 			String subpath = getModuleConfiguration().getStringValue(CONFIG_SUBPATH,"");
@@ -515,7 +509,9 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		

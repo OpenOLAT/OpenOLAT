@@ -71,11 +71,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 	private transient CourseGroupManager groupMgr;
 	
 	public AdobeConnectCourseNode() {
-		this(null);
-	}
-
-	public AdobeConnectCourseNode(CourseNode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	private void updateModuleConfigDefaults(RepositoryEntry courseEntry, boolean isNewNode) {

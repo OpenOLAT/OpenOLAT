@@ -36,6 +36,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.StatusDescriptionHelper;
@@ -67,15 +68,13 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_LINKLIST = "ll_link_list";
 
 	public LLCourseNode() {
-		this(null);
-	}
-
-	public LLCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+	
 		ModuleConfiguration config = getModuleConfiguration();
 		
 		if (isNewNode) {

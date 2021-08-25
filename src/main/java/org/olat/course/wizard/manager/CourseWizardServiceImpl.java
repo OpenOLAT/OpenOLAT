@@ -45,6 +45,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -254,7 +255,8 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		CourseNode rootNode = cetm.getCourseNode(cetm.getRootNode().getIdent());
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(nodeType);
-		CourseNode createdNode = nodeConfig.getInstance(cetm.getRootNode());
+		CourseNode createdNode = nodeConfig.getInstance();
+		createdNode.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course));
 		createdNode.setLongTitle(context.getLongTitle());
 		createdNode.setShortTitle(context.getShortTitle());
 		createdNode.setDescription(context.getDescription());

@@ -64,6 +64,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
@@ -124,11 +125,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	private Condition preConditionReader, preConditionPoster, preConditionModerator;
 
 	public DialogCourseNode() {
-		this(null);
-	}
-
-	public DialogCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -191,7 +188,9 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		

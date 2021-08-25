@@ -153,7 +153,8 @@ public class ChooseNodeController extends BasicController {
 		
 		// user chose a position to insert a new node
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		createdNode = newNodeConfig.getInstance(selectedNode);
+		createdNode = newNodeConfig.getInstance();
+		createdNode.updateModuleConfigDefaults(true, selectedNode, NodeAccessType.of(course));
 
 		// Set some default values
 		String title = newNodeConfig.getLinkText(getLocale());

@@ -102,6 +102,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	public boolean isScoreCalculatorSupported() {
 		return false;
 	}
+
+	@Override
+	public void updateConfigDefaults(CourseNode courseNode, boolean newNode) {
+		registry.getLearningPathNodeHandler(courseNode).updateDefaultConfigs(courseNode, newNode);
+	}
 	
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,

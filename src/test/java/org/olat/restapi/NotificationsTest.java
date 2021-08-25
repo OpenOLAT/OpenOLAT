@@ -376,7 +376,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		//create the forum
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("fo");
-		FOCourseNode forumNode = (FOCourseNode)newNodeConfig.getInstance(rootNode);
+		FOCourseNode forumNode = (FOCourseNode)newNodeConfig.getInstance();
 		forumNode.setShortTitle("Forum");
 		forumNode.setNoAccessExplanation("You don't have access");
 		Forum courseForum = forumNode.loadOrCreateForum(course.getCourseEnvironment());
@@ -426,7 +426,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		//create the folder
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
-		BCCourseNode folderNode = (BCCourseNode)newNodeConfig.getInstance(rootNode);
+		BCCourseNode folderNode = (BCCourseNode)newNodeConfig.getInstance();
 		folderNode.setShortTitle("Folder");
 		folderNode.setNoAccessExplanation("You don't have access");
 		String relPath = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), folderNode);

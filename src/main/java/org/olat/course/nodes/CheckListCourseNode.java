@@ -68,6 +68,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.cl.CLLearningPathNodeHandler;
 import org.olat.course.nodes.cl.CheckListAssessmentConfig;
 import org.olat.course.nodes.cl.CheckboxManager;
@@ -117,11 +118,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	public static final String FOLDER_NAME = "checklistfiles";
 
 	public CheckListCourseNode() {
-		this(null);
-	}
-
-	public CheckListCourseNode(CourseNode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -661,7 +658,9 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			config.setConfigurationVersion(1);

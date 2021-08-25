@@ -39,6 +39,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
@@ -94,13 +95,9 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	
 	
 	public AppointmentsCourseNode() {
-		this(null);
+		super(TYPE);
 	}
 	
-	public AppointmentsCourseNode(CourseNode parent) {
-		super(TYPE, parent);
-	}
-
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
@@ -170,7 +167,9 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		

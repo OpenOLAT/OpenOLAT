@@ -51,6 +51,11 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode) {
+		// Nothing to update here. The defaults are initialized in the course node itself.
+	}
+
+	@Override
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
 		return new STLearningPathConfigs(courseNode.getModuleConfiguration());
 	}

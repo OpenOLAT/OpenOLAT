@@ -24,7 +24,6 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.BigBlueButtonCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -68,7 +67,7 @@ public class BigBlueButtonCourseNodeConfiguration extends AbstractCourseNodeConf
 	}
 
 	@Override
-	public CourseNode getInstance(INode parent) {
+	public CourseNode getInstance() {
 		return new BigBlueButtonCourseNode();
 	}
 

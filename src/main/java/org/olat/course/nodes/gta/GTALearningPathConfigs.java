@@ -40,6 +40,12 @@ public class GTALearningPathConfigs extends ModuleLearningPathConfigs {
 	}
 	
 	@Override
+	protected boolean isInitObligation() {
+		//GTA has own obligation management
+		return false;
+	}
+	
+	@Override
 	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
 		FullyAssessedResult result = super.isFullyAssessedOnNodeVisited();
 		FullyAssessedTrigger fullyAssedTrigger = getFullyAssessedTrigger();

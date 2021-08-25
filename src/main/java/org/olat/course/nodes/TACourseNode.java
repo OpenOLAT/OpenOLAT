@@ -77,6 +77,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.ta.ConvertToGTACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
@@ -180,7 +181,7 @@ public class TACourseNode extends GenericCourseNode {
 	}
 	
 	public TACourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -720,7 +721,9 @@ public class TACourseNode extends GenericCourseNode {
 	 * Init config parameter with default values for a new course node.
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

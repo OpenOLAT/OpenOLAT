@@ -62,6 +62,8 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant;
 import org.olat.course.noderight.NodeRightService;
@@ -109,13 +111,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * Generic course node constructor
 	 * 
 	 * @param type The course node type
-	 * @param parent to init the module config
 	 */
-	public GenericCourseNode(String type, INode parent) {
+	public GenericCourseNode(String type) {
 		super();
 		this.type = type;
 		this.moduleConfiguration = new ModuleConfiguration();
-		this.updateModuleConfigDefaults(true, parent);
 	}
 
 	/**
@@ -702,8 +702,9 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
-		//
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+		nodeAccessService.updateConfigDefaults(nodeAccessType, this, isNewNode);
 	}
 	
 	@Override

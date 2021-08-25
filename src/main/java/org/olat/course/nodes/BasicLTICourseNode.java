@@ -55,6 +55,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.basiclti.LTIAssessmentConfig;
 import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
@@ -106,11 +107,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	private static final String NLS_ERROR_HOSTMISSING_LONG = "error.hostmissing.long";
 
 	public BasicLTICourseNode() {
-		this(null);
-	}
-
-	public BasicLTICourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -218,8 +215,6 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		CourseNode parent = this.getParent() instanceof CourseNode? (CourseNode)this.getParent(): null;
-		updateModuleConfigDefaults(false, parent);
 		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null).getRunController();
 	}
 
@@ -359,7 +354,9 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// use defaults for new course building blocks

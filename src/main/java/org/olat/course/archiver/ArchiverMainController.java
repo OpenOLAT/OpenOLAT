@@ -337,7 +337,7 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new TACourseNode());
 				main.setContent(contentCtr.getInitialComponent());
 			}  else if (menuCommand.equals(CMD_GROUPTASKS)) {
-				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new GTACourseNode(), new GTACourseNode(GTACourseNode.TYPE_INDIVIDUAL, null));
+				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new GTACourseNode(), new GTACourseNode(GTACourseNode.TYPE_INDIVIDUAL));
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_PROJECTBROKER)) { 
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new ProjectBrokerCourseNode());

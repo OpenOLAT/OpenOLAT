@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.util.nodes.INode;
 /**
  * 
  * Interface for course nodes
@@ -40,7 +39,7 @@ public interface CourseNodeConfiguration extends ConfigOnOff{
 	
 	public String getGroup();
 	
-	public CourseNode getInstance(INode parent);
+	public CourseNode getInstance();
 	
 	public String getLinkText(Locale locale);
 	

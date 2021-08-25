@@ -40,6 +40,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.video.VideoEditController;
 import org.olat.course.nodes.video.VideoPeekviewController;
 import org.olat.course.nodes.video.VideoRunController;
@@ -67,11 +68,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "video";
 
 	public VideoCourseNode() {
-		this(null);
-	}
-	
-	public VideoCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -157,7 +154,9 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	 *                  previous behavior
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 

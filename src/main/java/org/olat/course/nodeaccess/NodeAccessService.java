@@ -58,6 +58,15 @@ public interface NodeAccessService {
 	public boolean isConditionExpressionSupported(NodeAccessType type);
 	
 	public boolean isScoreCalculatorSupported(NodeAccessType type);
+	
+	/**
+	 * Update configs if a node is created or updated.
+	 *
+	 * @param type
+	 * @param courseNode
+	 * @param newNode
+	 */
+	public void updateConfigDefaults(NodeAccessType type, CourseNode courseNode, boolean newNode);
 
 	/**
 	 * Creates the controller to edit the access configurations of the node.

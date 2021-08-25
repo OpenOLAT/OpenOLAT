@@ -48,6 +48,7 @@ import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PFCourseNode;
@@ -307,7 +308,7 @@ public class MergedCourseElementDataContainer extends MergeSource {
 	private VFSContainer getBCContainer(ICourse course, BCCourseNode bcNode, NodeEvaluation nodeEval,
 			UserCourseEnvironment userCourseEnv, boolean isOlatAdmin) {
 		CourseNode parent = bcNode.getParent() instanceof CourseNode? (CourseNode)bcNode.getParent(): null;
-		bcNode.updateModuleConfigDefaults(false, parent);
+		bcNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(course));
 		// add folder not to merge source. Use name and node id to have unique name
 		VFSContainer rootFolder = null;
 		String subpath = bcNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH);

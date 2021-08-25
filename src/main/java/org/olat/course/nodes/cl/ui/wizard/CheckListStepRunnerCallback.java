@@ -90,14 +90,14 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		
 		CourseNode rootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode()).getCourseNode();
-		CourseNode structureNode = createCourseNode(rootNode, data.getStructureShortTitle(), data.getStructureTitle(), data.getStructureDescription(), "st");
+		CourseNode structureNode = createCourseNode(rootNode, NodeAccessType.of(course), data.getStructureShortTitle(), data.getStructureTitle(), data.getStructureDescription(), "st");
 		course.getEditorTreeModel().addCourseNode(structureNode, rootNode);
 		
 		List<CheckListNode> nodes = data.getNodes();
 		List<String> nodesIdent = new ArrayList<>();
 		for(CheckListNode node:nodes) {
 			String title = node.getTitle();
-			CheckListCourseNode checkNode = (CheckListCourseNode)createCourseNode(structureNode, title, title, null, "checklist");
+			CheckListCourseNode checkNode = (CheckListCourseNode)createCourseNode(structureNode, NodeAccessType.of(course), title, title, null, "checklist");
 			nodesIdent.add(checkNode.getIdent());
 
 			ModuleConfiguration config = checkNode.getModuleConfiguration();
@@ -180,9 +180,10 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		stNode.setScoreCalculator(sc);
 	}
 	
-	private CourseNode createCourseNode(CourseNode parent, String shortTitle, String title, String description, String type) {
+	private CourseNode createCourseNode(CourseNode parent, NodeAccessType nodeAccessType, String shortTitle, String title, String description, String type) {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		CourseNode newNode = newNodeConfig.getInstance(parent);
+		CourseNode newNode = newNodeConfig.getInstance();
+		newNode.updateModuleConfigDefaults(true, parent, nodeAccessType);
 		newNode.setShortTitle(shortTitle);
 		newNode.setLongTitle(title);
 		newNode.setDescription(description);

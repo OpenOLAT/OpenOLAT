@@ -44,7 +44,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -105,11 +104,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_CONFIRMATION_ENABLED = "confirmation.enabled";
 
 	public FormCourseNode() {
-		this(null);
-	}
-	
-	public FormCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override

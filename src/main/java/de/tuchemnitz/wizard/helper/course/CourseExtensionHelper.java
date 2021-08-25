@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -129,7 +130,8 @@ public class CourseExtensionHelper {
 
 		// create a node with default data
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		CourseNode node = nodeConfig.getInstance(cetm.getRootNode());
+		CourseNode node = nodeConfig.getInstance();
+		node.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course));
 		node.setShortTitle(shortTitle);
 		node.setLongTitle(longTitle);
 

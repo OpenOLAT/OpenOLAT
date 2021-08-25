@@ -21,8 +21,11 @@ package org.olat.course.learningpath;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,37 +38,39 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LearningPathServiceTest extends OlatTestCase {
 	
+	private static final NodeAccessType NODE_ACCESS_TYPE = NodeAccessType.of(LearningPathNodeAccessProvider.TYPE);
+	
 	@Autowired
 	private LearningPathService sut;
 	
 	@Test
 	public void shouldGetSequenceConfig() {
-		CourseNode root = CourseNodeFactory.getInstance().getCourseNodeConfiguration("st").getInstance(null);
+		CourseNode root = createCourseNode(STCourseNode.TYPE, null);
 		root.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		
-		CourseNode sp_0_1 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("sp").getInstance(root);
+		CourseNode sp_0_1 = createCourseNode(SPCourseNode.TYPE, root);
 		root.addChild(sp_0_1);
 		
-		CourseNode st1 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("st").getInstance(root);
+		CourseNode st1 = createCourseNode(STCourseNode.TYPE, root);
 		st1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		root.addChild(st1);
-		CourseNode sp_1_1 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("sp").getInstance(st1);
+		CourseNode sp_1_1 = createCourseNode(SPCourseNode.TYPE, st1);
 		st1.addChild(sp_1_1);
-		CourseNode sp_1_2 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("sp").getInstance(st1);
+		CourseNode sp_1_2 = createCourseNode(SPCourseNode.TYPE, st1);
 		st1.addChild(sp_1_2);
-		CourseNode sp_1_2_1 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("sp").getInstance(sp_1_2);
+		CourseNode sp_1_2_1 = createCourseNode(SPCourseNode.TYPE, sp_1_2);
 		sp_1_2.addChild(sp_1_2_1);
 		
-		CourseNode st2 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("st").getInstance(root);
+		CourseNode st2 = createCourseNode(STCourseNode.TYPE, root);
 		st2.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		root.addChild(st2);
-		CourseNode st2_1 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("st").getInstance(st2);
+		CourseNode st2_1 = createCourseNode(STCourseNode.TYPE, st2);
 		st2_1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		st2.addChild(st2_1);
-		CourseNode st2_1_1 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("st").getInstance(st2_1);
+		CourseNode st2_1_1 = createCourseNode(STCourseNode.TYPE, st2_1);
 		st2_1_1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		st2_1.addChild(st2_1_1);
-		CourseNode sp2_1_1_1 = CourseNodeFactory.getInstance().getCourseNodeConfiguration("sp").getInstance(st2_1_1);
+		CourseNode sp2_1_1_1 = createCourseNode(SPCourseNode.TYPE, st2_1_1);
 		st2_1_1.addChild(sp2_1_1_1);
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -94,9 +99,9 @@ public class LearningPathServiceTest extends OlatTestCase {
 	
 	@Test
 	public void shouldGetRooSequenceConfig() {
-		CourseNode rootWithout = CourseNodeFactory.getInstance().getCourseNodeConfiguration("st").getInstance(null);
+		CourseNode rootWithout = createCourseNode(STCourseNode.TYPE, null);
 		rootWithout.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
-		CourseNode rootSequential = CourseNodeFactory.getInstance().getCourseNodeConfiguration("st").getInstance(null);
+		CourseNode rootSequential = createCourseNode(STCourseNode.TYPE, null);
 		rootSequential.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		
 		SoftAssertions softly = new SoftAssertions();
@@ -107,5 +112,10 @@ public class LearningPathServiceTest extends OlatTestCase {
 		softly.assertAll();
 	}
 
+	private CourseNode createCourseNode(String type, CourseNode parent) {
+		CourseNode courseNode = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type).getInstance();
+		courseNode.updateModuleConfigDefaults(true, parent, NODE_ACCESS_TYPE);
+		return courseNode;
+	}
 
 }

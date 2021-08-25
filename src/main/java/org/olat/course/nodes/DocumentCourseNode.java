@@ -42,6 +42,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.folder.CourseContainerOptions;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
@@ -111,11 +112,7 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(EDIT, DOWNLOAD);
 	
 	public DocumentCourseNode() {
-		this(null);
-	}
-		
-	public DocumentCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 	
 	@Override
@@ -208,7 +205,9 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		

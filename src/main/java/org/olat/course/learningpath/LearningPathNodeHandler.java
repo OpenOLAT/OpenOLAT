@@ -36,6 +36,8 @@ public interface LearningPathNodeHandler extends CourseNodeProvider {
 	
 	public boolean isSupported();
 	
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode);
+	
 	public LearningPathConfigs getConfigs(CourseNode courseNode);
 	
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,

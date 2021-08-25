@@ -59,6 +59,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.sp.SPPeekviewController;
 import org.olat.course.nodes.st.STCourseNodeEditController;
@@ -131,11 +132,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	transient private Condition failedExpression;
 	
 	public STCourseNode() {
-		this(null);
-	}
-	
-	public STCourseNode(INode parent) {
-		super(TYPE, parent);
+		super(TYPE);
 	}
 
 	@Override
@@ -360,7 +357,9 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	 *          previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent) {
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			config.setBooleanEntry(STCourseNodeEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, Boolean.FALSE.booleanValue());

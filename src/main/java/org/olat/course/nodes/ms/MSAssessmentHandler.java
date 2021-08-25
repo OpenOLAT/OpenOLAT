@@ -66,8 +66,9 @@ public class MSAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
-		CourseNode parent = courseNode.getParent() instanceof CourseNode? (CourseNode)courseNode.getParent(): null;
-		courseNode.updateModuleConfigDefaults(false, parent);
+		if (courseNode instanceof MSCourseNode) {
+			((MSCourseNode)courseNode).updateModuleDefaults(courseNode.getModuleConfiguration());
+		}
 		return new MSAssessmentConfig(courseNode.getModuleConfiguration());
 	}
 
