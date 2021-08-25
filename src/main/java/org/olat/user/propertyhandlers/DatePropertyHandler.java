@@ -144,7 +144,7 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 	 * @param date
 	 * @return
 	 */
-	private String encode(Date date) {
+	public String encode(Date date) {
 		if (date == null) return null;
 		return INTERNAL_DATE_FORMATTER.format(date);
 	}
