@@ -329,6 +329,8 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
+		updateModuleConfigDefaults();
+		
 		StatusDescription sd = StatusDescription.NOERROR;
 		if(!getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
 			String subpath = getModuleConfiguration().getStringValue(CONFIG_SUBPATH,"");
@@ -512,6 +514,10 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
 		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
 		
+		updateModuleConfigDefaults();
+	}
+
+	private void updateModuleConfigDefaults() {
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
 		
