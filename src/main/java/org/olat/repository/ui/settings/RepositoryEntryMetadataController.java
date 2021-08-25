@@ -236,13 +236,13 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		if (!usedInWizard) {
 			language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
 			language.setEnabled(!readOnly);
+		
+			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), formLayout);
+			expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
+			expenditureOfWork.setEnabled(!readOnly);
+			
+			uifactory.addSpacerElement("spacer2", formLayout, false);
 		}
-		
-		expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), formLayout);
-		expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
-		expenditureOfWork.setEnabled(!readOnly);
-		
-		uifactory.addSpacerElement("spacer2", formLayout, false);
 		
 		if (licenseModule.isEnabled(licenseHandler)) {
 			license = licenseService.loadOrCreateLicense(res);

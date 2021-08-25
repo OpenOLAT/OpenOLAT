@@ -144,9 +144,7 @@ public class CopyCourseStepsStep extends BasicStep {
 			buttonWrapperLayout.add(buttonLayout);
 			
 			customizeAllLink = uifactory.addFormLink("customize.all", buttonLayout, Link.BUTTON);
-			customizeAllLink.setElementCssClass("pull-right");
 			resetToDefaultLink = uifactory.addFormLink("default.all", buttonLayout, Link.BUTTON);
-			resetToDefaultLink.setElementCssClass("pull-right");
 			
 			// Create new list for all options
 			allOptions = new ArrayList<>();
@@ -260,14 +258,7 @@ public class CopyCourseStepsStep extends BasicStep {
 
 			// Reminder steps
 			if (context.hasReminders()) {
-				SelectionValues reminderSettings = null;
-				
-				if (context.hasDateDependantReminders()) {
-					reminderSettings = new SelectionValues(customize, copy, ignore);
-				} else {
-					reminderSettings = new SelectionValues(copy, ignore);
-				}
-				
+				SelectionValues reminderSettings = new SelectionValues(customize, copy, ignore);
 				reminderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("reminders", additionalSettingsLayout, reminderSettings);
 				reminderSettingsEl.addActionListener(FormEvent.ONCHANGE);
 				allOptions.add(reminderSettingsEl);
@@ -379,13 +370,7 @@ public class CopyCourseStepsStep extends BasicStep {
 				lectureBlockSettingsEl.select(context.getLectureBlockCopyType().name(), true);
 			}
 			if (reminderSettingsEl != null) {
-				String copyMode = context.getReminderCopyType().name();
-				
-				if (copyMode.equals(CopyType.custom.name()) && !context.hasDateDependantReminders()) {
-					copyMode = CopyType.copy.name();
-				}
-				
-				reminderSettingsEl.select(copyMode, true);
+				reminderSettingsEl.select(context.getReminderCopyType().name(), true);
 			}
 			if (assessmentModeSettingsEl != null) {
 				assessmentModeSettingsEl.select(context.getAssessmentModeCopyType().name(), true);

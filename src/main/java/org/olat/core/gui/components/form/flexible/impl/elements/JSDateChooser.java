@@ -63,6 +63,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private String separatorI18nKey;
 	private boolean timeOnlyEnabled;
 	private boolean dateChooserTimeEnabled;
+	private boolean keepTime;
 	private boolean defaultTimeAtEndOfDay;
 	private String forValidDateErrorKey;
 	private boolean checkForValidDate;
@@ -233,7 +234,17 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 					cal.set(Calendar.MINUTE, m);
 				}
 				d = cal.getTime();
-			}	
+			} else if (d != null && isKeepTime() && getInitialDate() != null) {
+				Calendar newDate = Calendar.getInstance();
+				Calendar oldDate = Calendar.getInstance();
+				
+				oldDate.setTime(getInitialDate());
+				
+				newDate.setTime(d);
+				newDate.set(Calendar.HOUR_OF_DAY, oldDate.get(Calendar.HOUR_OF_DAY));
+				newDate.set(Calendar.MINUTE, oldDate.get(Calendar.HOUR_OF_DAY));
+				d = newDate.getTime();
+			}
 		} catch (ParseException e) {
 			log.error("", e);
 		}
@@ -316,6 +327,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	@Override
 	public void setDateChooserTimeEnabled(boolean dateChooserTimeEnabled) {
 		this.dateChooserTimeEnabled = dateChooserTimeEnabled;
+	}
+	
+	@Override
+	public boolean isKeepTime() {
+		return keepTime;
+	}
+	
+	@Override
+	public void setKeepTime(boolean keepTime) {
+		this.keepTime = keepTime;		
 	}
 
 	public boolean isDefaultTimeAtEndOfDay() {

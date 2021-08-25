@@ -324,6 +324,15 @@ public class LectureBlocksStep extends BasicStep {
 				return;
 			}
 			
+			if (dateChooser.getInitialDate().equals(dateChooser.getDate())) {
+				return;
+			}
+			
+			// Milliseconds to days => 1000*60*60*24 = 86400000
+			if (Math.abs(dateChooser.getInitialDate().getTime() - dateChooser.getDate().getTime()) < 86400000) {
+				return;
+			}
+			
 			moveDateConfirmController = new MoveDateConfirmController(ureq, getWindowControl(), dateChooser);
 			listenTo(moveDateConfirmController);
 			

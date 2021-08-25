@@ -213,7 +213,11 @@ public class CopyCourseGeneralStep extends BasicStep {
 				params.setExactSearch(true);
 				
 				if (textElement == displayNameEl) {
-					params.setDisplayname(textElement.getValue());
+					String displayName = textElement.getValue();
+					if (displayName != null) {
+						displayName = displayName.toLowerCase();
+					}
+					params.setDisplayname(displayName);
 				} else if (textElement == externalRefEl) {
 					params.setReference(textElement.getValue());
 				}
@@ -227,7 +231,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 					} else if (textElement == externalRefEl) {
 						errorKey += ".reference";
 					}
-					textElement.setErrorKey(errorKey, null);
+					textElement.setErrorKey(errorKey, true);
 				}
 			} else if (textElement.isMandatory()) {
 				textElement.setErrorKey("input.mandatory", null);

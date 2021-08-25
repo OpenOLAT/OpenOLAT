@@ -72,6 +72,17 @@ public interface DateChooser extends TextElement {
 	 * @return true if hour / minute fields are enabled
 	 */
 	public boolean isDateChooserTimeEnabled();
+	
+	/**
+	 * Keep the time when the time fields are not displayed. 
+	 * Useful if you want to shift dates.
+	 * To use this, the initial date must be set!
+	 * 
+	 * @return
+	 */
+	public void setKeepTime(boolean keepTime);
+	
+	public boolean isKeepTime();
 
 	/**
 	 * Enable or disable the hour and minute fields.

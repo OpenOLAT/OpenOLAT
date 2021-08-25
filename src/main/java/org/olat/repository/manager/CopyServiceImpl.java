@@ -134,11 +134,11 @@ public class CopyServiceImpl implements CopyService {
 		
 		RepositoryEntry target = repositoryService.create(context.getExecutingIdentity(), null, sourceEntry.getResourcename(), context.getDisplayName(),
 				sourceEntry.getDescription(), copyResource, RepositoryEntryStatusEnum.preparation, null);
-
+		
 		// Copy metadata
 		target.setTechnicalType(sourceEntry.getTechnicalType());
 		target.setCredits(sourceEntry.getCredits());
-		target.setExpenditureOfWork(context.getExpenditureOfWork());
+		target.setExpenditureOfWork(sourceEntry.getExpenditureOfWork());
 		target.setMainLanguage(sourceEntry.getMainLanguage());
 		target.setObjectives(sourceEntry.getObjectives());
 		target.setRequirements(sourceEntry.getRequirements());
@@ -189,7 +189,7 @@ public class CopyServiceImpl implements CopyService {
 		}		
 		
 		dbInstance.commit();
-
+		
 		// Set execution period
 		setLifecycle(context, target);
 				
@@ -227,17 +227,27 @@ public class CopyServiceImpl implements CopyService {
 				target.getExpenditureOfWork(), target.getLifecycle(), null, null,
 				target.getEducationalType());
 		
+		// Open course editing session
+		OLATResourceable courseOres = target.getOlatResource();
+		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		
 		// Copy disclaimer
-		copyDisclaimer(context, target);
+		copyDisclaimer(context, courseConfig);
 		
 		// Move dates
-		moveDates(context, target, sourceCourseNodesMap);
+		moveDates(context, target, course, sourceCourseNodesMap);
 		
 		// Copy lecture blocks
 		copyLectureBlocks(context, target);
 		
 		// Copy assessment modes
 		copyAssessmentModes(context, target);
+		
+		// Close edit session
+		CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
+		CourseFactory.saveCourse(courseOres.getResourceableId());
+		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
 		
 		return target;
 	}
@@ -252,7 +262,7 @@ public class CopyServiceImpl implements CopyService {
 			List<BusinessGroup> copiedGroups = new ArrayList<>();
 			List<BusinessGroupReference> copiedGroupReferences = new ArrayList<>();
 			for (BusinessGroup group : businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1)) {
-				BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, true, false, true, true, false, null);
+				BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, false, false, true, false, false, null);
 				copiedGroups.add(copiedGroup);
 				copiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group.getKey(), group.getName()));
 			}
@@ -280,7 +290,7 @@ public class CopyServiceImpl implements CopyService {
 					List<BusinessGroup> customCopiedGroups = new ArrayList<>();
 					List<BusinessGroupReference> customCopiedGroupReferences = new ArrayList<>();
 					for (BusinessGroup group : groupsToCopy) {
-						BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, true, false, true, true, false, null);
+						BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, false, false, true, false, false, null);
 						customCopiedGroups.add(copiedGroup);
 						customCopiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group.getKey(), group.getName()));
 					}
@@ -431,7 +441,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyDisclaimer(CopyCourseContext context, RepositoryEntry target) {
+	private void copyDisclaimer(CopyCourseContext context, CourseConfig courseConfig) {
 		if (context.getDisclaimerCopyType() != null) {
 			switch(context.getDisclaimerCopyType()) {
 			case copy:
@@ -439,10 +449,10 @@ public class CopyServiceImpl implements CopyService {
 				break;
 			case ignore:
 				// Necessary to remove, because course config is copied
-				removeDisclaimerSettings(target);
+				removeDisclaimerSettings(courseConfig);
 				break;
 			case custom:
-				copyDisclaimerSettings(context, target);
+				copyDisclaimerSettings(context, courseConfig);
 				break;
 			default:
 				break;
@@ -450,11 +460,8 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyDisclaimerSettings(CopyCourseContext context, RepositoryEntry target) {
+	private void copyDisclaimerSettings(CopyCourseContext context, CourseConfig courseConfig) {
 		if (context.getDisclaimerCopyContext() != null) {
-			OLATResourceable courseOres = target.getOlatResource();
-			ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
-			CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
 			
 			CourseDisclaimerContext disclaimerContext = context.getDisclaimerCopyContext();
 			
@@ -473,19 +480,10 @@ public class CopyServiceImpl implements CopyService {
 				courseConfig.setDisclaimerLabel(2, 1, disclaimerContext.getDataProtectionLabel1());
 				courseConfig.setDisclaimerLabel(2, 2, disclaimerContext.getDataProtectionLabel2());
 			}
-			
-			CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
-			CourseFactory.saveCourse(courseOres.getResourceableId());
-			CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
 		}
 	}
 	
-	private void removeDisclaimerSettings(RepositoryEntry target) {
-		OLATResourceable courseOres = target.getOlatResource();
-		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
-		
-		
+	private void removeDisclaimerSettings(CourseConfig courseConfig) {
 		courseConfig.setDisclaimerEnabled(1, false);
 		courseConfig.setDisclaimerTitle(1, "");
 		courseConfig.setDisclaimerTerms(1, "");
@@ -497,17 +495,10 @@ public class CopyServiceImpl implements CopyService {
 		courseConfig.setDisclaimerTerms(2, "");
 		courseConfig.setDisclaimerLabel(2, 1, "");
 		courseConfig.setDisclaimerLabel(2, 2, "");
-		
-		CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
-		CourseFactory.saveCourse(courseOres.getResourceableId());
-		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
 	}
 	
-	private void moveDates(CopyCourseContext context, RepositoryEntry target, Map<String, CopyCourseOverviewRow> sourceCourseNodesMap) {
-		if (context.getCourseNodes() != null && (context.isCustomConfigsLoaded() || context.getDateDifference() != 0)) {
-			
-			OLATResourceable targetOres = target.getOlatResource();
-			ICourse course = CourseFactory.openCourseEditSession(targetOres.getResourceableId());
+	private void moveDates(CopyCourseContext context, RepositoryEntry target, ICourse course, Map<String, CopyCourseOverviewRow> sourceCourseNodesMap) {
+		if (context.getCourseNodes() != null) {
 			CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
 			
 			for (String ident : sourceCourseNodesMap.keySet()) {

@@ -170,6 +170,7 @@ public class CourseOverviewStep extends BasicStep {
 				}
 			}
 			
+			context.setCustomConfigsLoaded(true);
 			context.setCourseNodes(rows);
 		}
 		
@@ -225,7 +226,6 @@ public class CourseOverviewStep extends BasicStep {
 			tableEl.setDetailsRenderer(detailsVC, this);
 			
 			forgeRows(formLayout);
-			context.setCustomConfigsLoaded(true);
 		}
 
 		@Override
@@ -289,7 +289,8 @@ public class CourseOverviewStep extends BasicStep {
 						startDateChooser.setUserObject(row);
 						startDateChooser.addActionListener(FormEvent.ONCHANGE);
 						startDateChooser.setInitialDate(startDate);
-						startDateChooser.setDateChooserTimeEnabled(true);
+						//startDateChooser.setDateChooserTimeEnabled(true);
+						startDateChooser.setKeepTime(true);
 						row.setNewStartDateChooser(startDateChooser);
 						if (row.getNewStartDate() != null) {
 							startDateChooser.setDate(row.getNewStartDate());
@@ -301,7 +302,8 @@ public class CourseOverviewStep extends BasicStep {
 						endDateChooser.setUserObject(row);
 						endDateChooser.addActionListener(FormEvent.ONCHANGE);
 						endDateChooser.setInitialDate(endDate);
-						endDateChooser.setDateChooserTimeEnabled(true);
+						//endDateChooser.setDateChooserTimeEnabled(true);
+						endDateChooser.setKeepTime(true);
 						endDateChooser.setVisible(row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name()));
 						row.setNewEndDateChooser(endDateChooser);
 						if (row.getNewEndDate() != null) {
@@ -396,6 +398,8 @@ public class CourseOverviewStep extends BasicStep {
 				if (sourceSelection.getName().startsWith("obligation")) {
 					CopyCourseOverviewRow row = (CopyCourseOverviewRow) sourceSelection.getUserObject();
 					updateVisibility(row);
+					
+					saveDatesToContext(context, dataModel.getObjects());
 				}
 			} else if (source instanceof DateChooser) {
 				if (source.getName().startsWith("start_") || source.getName().startsWith("end_")) {
@@ -408,6 +412,7 @@ public class CourseOverviewStep extends BasicStep {
 						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
 					
+					saveDatesToContext(context, dataModel.getObjects());
 					courseNodeDatesListController.updateDates(ureq);
 				}
 			}
@@ -427,6 +432,7 @@ public class CourseOverviewStep extends BasicStep {
 					askForDateMove = !moveDatesEvent.isRememberChoice();
 				}
 				
+				saveDatesToContext(context, dataModel.getObjects());
 				courseNodeDatesListController.updateDates(ureq);
 				
 				cmc.deactivate();
@@ -451,6 +457,11 @@ public class CourseOverviewStep extends BasicStep {
 			}
 			
 			if (dateChooser.getInitialDate().equals(dateChooser.getDate())) {
+				return;
+			}
+			
+			// Milliseconds to days => 1000*60*60*24 = 86400000
+			if (Math.abs(dateChooser.getInitialDate().getTime() - dateChooser.getDate().getTime()) < 86400000) {
 				return;
 			}
 			

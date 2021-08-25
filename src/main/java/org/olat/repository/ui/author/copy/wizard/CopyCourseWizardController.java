@@ -68,6 +68,7 @@ import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.MemberView;
 import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.ui.main.SearchMembersParams;
+import org.olat.group.ui.main.SearchMembersParams.Origin;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.lecture.LectureBlock;
@@ -417,6 +418,8 @@ public class CopyCourseWizardController extends BasicController {
 		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.coach);
+		params.setOrigin(Origin.repositoryEntry);
+		
 		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());
 		List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
 		List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);

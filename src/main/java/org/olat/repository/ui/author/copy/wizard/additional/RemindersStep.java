@@ -170,6 +170,7 @@ public class RemindersStep extends BasicStep {
 			
 			tableModel = new CourseReminderTableModel(columnsModel);
 			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+			tableEl.setEmptyTableMessageKey("reminders.not.datedependant");
 			
 			loadModel(formLayout);
 		}
@@ -335,6 +336,15 @@ public class RemindersStep extends BasicStep {
 		
 		private void doAskForDateMove(UserRequest ureq, DateChooser dateChooser) {
 			if (dateChooser == null || dateChooser.getInitialDate() == null || dateChooser.getDate() == null) {
+				return;
+			}
+			
+			if (dateChooser.getInitialDate().equals(dateChooser.getDate())) {
+				return;
+			}
+			
+			// Milliseconds to days => 1000*60*60*24 = 86400000
+			if (Math.abs(dateChooser.getInitialDate().getTime() - dateChooser.getDate().getTime()) < 86400000) {
 				return;
 			}
 			
