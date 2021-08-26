@@ -181,6 +181,12 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction LECTURE_BLOCK_ROLL_CALL_REOPENED = 
 			new CourseLoggingAction(ActionType.tracking, CrudAction.update, ActionVerb.reopen, ActionObject.lecturesRollcall).setTypeList(
 					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.lectureBlock));
+	
+	// Coach folder
+	public static final ILoggingAction COACH_FOLDER_ENABLED = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.coachFolder).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction COACH_FOLDER_DISABLED = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.coachFolder).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 
 	/**
 	 * This static constructor's only use is to set the javaFieldIdForDebug

@@ -79,7 +79,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 20;
+	private static final transient int CURRENTVERSION = 21;
 
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -143,6 +143,9 @@ public class CourseConfig implements Serializable, Cloneable {
 	private static final transient String DISCLAIMER_2_TERMS = "DISCLAIMER_2_TERMS";
 	private static final transient String DISCLAIMER_2_LABEL_1 = "DISCLAIMER_2_LABEL_1";
 	private static final transient String DISCLAIMER_2_LABEL_2 = "DISCLAIMER_2_LABEL_2";
+	
+	private static final transient String COACH_FOLDER_ENABLED = "COACH_FOLDER_ENABLED";
+	private static final transient String COACH_FOLDER_PATH = "COACH_FOLDER_PATH";
 
 
 	/**
@@ -213,7 +216,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
 		configuration.put(KEY_COMPLETION_TYPE, CompletionType.numberOfNodes.name());
 
-		// Version 20 
+		// Version 19 
 		configuration.put(DISCLAIMER_1_ENABLED, Boolean.FALSE);
 		configuration.put(DISCLAIMER_1_TITLE, "");
 		configuration.put(DISCLAIMER_1_TERMS, "");
@@ -226,9 +229,14 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(DISCLAIMER_2_LABEL_1, "");
 		configuration.put(DISCLAIMER_2_LABEL_2, "");
 		
+		// Version 20
 		configuration.put(NODE_TEASER_IMAGE_STYLE, TeaserImageStyle.DEFAULT_COURSE);
 		configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, ColorCategory.IDENTIFIER_DEFAULT_COURSE);
 
+		// Version 21
+		configuration.put(COACH_FOLDER_ENABLED, Boolean.FALSE);
+		
+		
 		this.version = CURRENTVERSION;
 	}
 
@@ -435,6 +443,14 @@ public class CourseConfig implements Serializable, Cloneable {
 				}
 				if (!configuration.containsKey(NODE_COLOR_CATEGORY_IDENITFIER)) {
 					configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, ColorCategory.IDENTIFIER_DEFAULT_COURSE);
+				}
+				
+				this.version = 21;
+			}
+			
+			if (version == 21) {
+				if (!configuration.containsKey(COACH_FOLDER_ENABLED)) {
+					configuration.put(COACH_FOLDER_ENABLED, Boolean.FALSE);
 				}
 			}
 
@@ -1006,6 +1022,28 @@ public class CourseConfig implements Serializable, Cloneable {
 				? (String) colorCategoryIdentifier
 				: ColorCategory.IDENTIFIER_DEFAULT_COURSE;
 	}
+	
+	public boolean isCoachFolderEnabled() {
+		Boolean bool = (Boolean) configuration.get(COACH_FOLDER_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setCoachFolderEnabled(boolean coachFolderEnabled) {
+		configuration.put(COACH_FOLDER_ENABLED, Boolean.valueOf(coachFolderEnabled));
+	}
+	
+	public String getCoachFolderPath() {
+		Object path = configuration.get(COACH_FOLDER_PATH);
+		return path != null ? (String) path : null;
+	}
+
+	public void setCoachFolderPath(String coachFolderPath) {
+		if (coachFolderPath != null) {
+			configuration.put(COACH_FOLDER_PATH, coachFolderPath);
+		} else {
+			configuration.remove(COACH_FOLDER_PATH);
+		}
+	}
 
 	@Override
 	public CourseConfig clone() {
@@ -1056,6 +1094,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setDisclaimerLabel(1, 2, getDisclaimerLabel(1, 2));
 		clone.setDisclaimerLabel(2, 1, getDisclaimerLabel(2, 1));
 		clone.setDisclaimerLabel(2, 2, getDisclaimerLabel(2, 2));
+		clone.setCoachFolderEnabled(isCoachFolderEnabled());
+		clone.setCoachFolderPath(getCoachFolderPath());
 		ImageSource teaserImageSource = getTeaserImageSource();
 		if (teaserImageSource != null) {
 			ImageSource clonedTeaserImageSource = (ImageSource)XStreamHelper.xstreamClone(teaserImageSource);

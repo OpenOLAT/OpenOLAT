@@ -64,7 +64,6 @@ import org.olat.group.ui.main.BGTableItem;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
-import org.olat.ims.lti13.LTI13Service;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
@@ -245,7 +244,7 @@ public class GroupStep extends BasicStep {
 		
 		protected List<BGTableItem> loadGroups(RepositoryEntry repositoryEntry) {
 			BusinessGroupQueryParams params = new BusinessGroupQueryParams();
-			params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE));
+			params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 			params.setRepositoryEntry(repositoryEntry);
 			
 			List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), params.getRepositoryEntry());

@@ -69,7 +69,6 @@ import org.olat.group.model.MemberView;
 import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.group.ui.main.SearchMembersParams.Origin;
-import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -384,7 +383,7 @@ public class CopyCourseWizardController extends BasicController {
 	
 	private boolean hasGroups(RepositoryEntry repositoryEntry) {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
-		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE));
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		params.setRepositoryEntry(repositoryEntry);
 		
 		List<StatisticsBusinessGroupRow> groups = businessGroupService.findBusinessGroupsFromRepositoryEntry(params, getIdentity(), params.getRepositoryEntry());

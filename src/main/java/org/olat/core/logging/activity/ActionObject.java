@@ -47,6 +47,7 @@ public enum ActionObject {
 	check,
 	checkbox,
 	checkpoint,
+	coachFolder,
 	comment,
 	course,
 	cpgetfile,

@@ -19,10 +19,18 @@
  */
 package org.olat.course.config.ui;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderModule;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,7 +41,10 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -51,8 +62,12 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -60,6 +75,10 @@ import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.bc.BCCourseNodeConfigController;
+import org.olat.course.nodes.bc.BCCourseNodeEditChooseFolderForm;
+import org.olat.course.nodes.bc.CoachFolderFactory;
+import org.olat.course.nodes.bc.SelectFolderEvent;
 import org.olat.course.run.RunMainController;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.fileresource.types.GlossaryResource;
@@ -87,6 +106,8 @@ public class CourseOptionsController extends FormBasicController {
 	private static final Logger log = Tracing.createLoggerFor(CourseOptionsController.class);
 	private static final String COMMAND_REMOVE = "command.glossary.remove";
 	private static final String COMMAND_ADD = "command.glossary.add";
+	private static final String COACH_FOLDER_AUTOMATIC = "coach.folder.settings.mode.auto";
+	private static final String COACH_FOLDER_CUSTOM = "coach.folder.settings.mode.custom";
 	
 	private static final String[] onKeys = new String[] {"xx"};
 
@@ -97,14 +118,22 @@ public class CourseOptionsController extends FormBasicController {
 	private FormLayoutContainer saveCont;
 	private FormLayoutContainer glossaryCont;
 	private FormLayoutContainer sharedFolderCont;
+	private FormLayoutContainer coachFolderCont;
 	
 	private FormLink addFolderCommand;
 	private FormLink removeFolderCommand;
 	private StaticTextElement folderNameEl;
 	private MultipleSelectionElement folderReadOnlyEl;
+	
+	private SelectionElement enableCoachFolderEl;
+	private SelectionElement coachFolderModeEl;
+	private StaticTextElement coachFolderPathEl;
+	private FormLink selectCoachFolderLink;
+	private boolean coachFolderPathSelected;
 
 	private LockResult lockEntry;
 	private final boolean editable;
+	private ICourse course;
 	private CourseConfig courseConfig;
 	private final RepositoryEntry entry;
 
@@ -113,6 +142,7 @@ public class CourseOptionsController extends FormBasicController {
 	private DialogBoxController folderRefRemoveWarnBox;
 	private ReferencableEntriesSearchController folderSearchCtr;
 	private ReferencableEntriesSearchController glossarySearchCtr;
+	private BCCourseNodeEditChooseFolderForm folderSelectCtrl;
 
 	@Autowired
 	private UserManager userManager;
@@ -127,10 +157,12 @@ public class CourseOptionsController extends FormBasicController {
 	 * @param chatEnabled
 	 */
 	public CourseOptionsController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, CourseConfig courseConfig, boolean canEdit) {
+			RepositoryEntry entry, ICourse course, boolean canEdit) {
 		super(ureq, wControl, "course_options");
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
-		this.courseConfig = courseConfig;
+		setTranslator(Util.createPackageTranslator(BCCourseNodeConfigController.class, getLocale(), getTranslator()));
+		this.courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
+		this.course = course;
 		this.entry = entry;
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
@@ -251,14 +283,39 @@ public class CourseOptionsController extends FormBasicController {
 		removeFolderCommand.setVisible(editable && !managedFolder);
 		addFolderCommand = uifactory.addFormLink("sf.changesfresource", buttons2Cont, Link.BUTTON);
 		addFolderCommand.setVisible(editable && !managedFolder);
-
+		
+		
+		// Coach folder
+		coachFolderCont = FormLayoutContainer.createDefaultFormLayout("coachfolder", getTranslator());
+		coachFolderCont.setRootForm(mainForm);
+		formLayout.add(coachFolderCont);
+		
+		coachFolderCont.setFormTitle(translate("coach.folder.settings"));
+		
+		SelectionValue enable = new SelectionValue("enabled", translate("on"));
+		SelectionValues enableCoachFolderOptions = new SelectionValues(enable);
+		enableCoachFolderEl = uifactory.addCheckboxesHorizontal("coach.folder.settings.enabled", coachFolderCont, enableCoachFolderOptions.keys(), enableCoachFolderOptions.values());
+		enableCoachFolderEl.addActionListener(FormEvent.ONCHANGE);
+		
+		SelectionValue generatedFolder = new SelectionValue(COACH_FOLDER_AUTOMATIC, translate("pathChoose.auto"));
+		SelectionValue selectedFolder = new SelectionValue(COACH_FOLDER_CUSTOM, translate("pathChoose.custom"));
+		SelectionValues coachFolderOptions = new SelectionValues(generatedFolder, selectedFolder);
+		coachFolderModeEl = uifactory.addRadiosVertical("pathChoose", coachFolderCont, coachFolderOptions.keys(), coachFolderOptions.values());
+		coachFolderModeEl.addActionListener(FormEvent.ONCHANGE);
+		
+		coachFolderPathEl = uifactory.addStaticTextElement("subPathLab.label", translate("coach.folder.not.configured"), coachFolderCont);
+		
+		selectCoachFolderLink = uifactory.addFormLink("chooseFolder", coachFolderCont, Link.BUTTON);
+		
+		loadCoachFolderConfig();
+		
 		if(editable) {
 			saveCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 			saveCont.setRootForm(mainForm);
 			formLayout.add(saveCont);
-			saveButton = uifactory.addFormLink("save", saveCont, Link.BUTTON);
-			saveButton.setElementCssClass("o_sel_settings_save");
-			saveButton.setPrimary(true);
+
+			FormSubmit submit = uifactory.addFormSubmitButton("save", saveCont);
+			submit.setElementCssClass("o_sel_settings_save");
 		}
 	}
 
@@ -269,7 +326,6 @@ public class CourseOptionsController extends FormBasicController {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = glossarySearchCtr.getSelectedEntry();
 				doSelectGlossary(repoEntry);
-				setSaveButtonDirty();
 			}
 			cleanUp();
 		} else if (source == folderSearchCtr) {
@@ -277,7 +333,6 @@ public class CourseOptionsController extends FormBasicController {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				RepositoryEntry repoEntry = folderSearchCtr.getSelectedEntry();
 				doSelectSharedFolder(ureq, repoEntry);
-				setSaveButtonDirty();
 			}
 			cleanUp();
 		} else if(cmc == source) {
@@ -285,7 +340,6 @@ public class CourseOptionsController extends FormBasicController {
 		} else if(source == folderRefRemoveWarnBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				doRemoveSharedFolder();
-				setSaveButtonDirty();
 			}
 		} else if(source == folderRefAddWarnBox) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
@@ -295,14 +349,32 @@ public class CourseOptionsController extends FormBasicController {
 				listenTo(cmc);
 				cmc.activate();
 			}
-		}
+		} else if(source == folderSelectCtrl) {
+			if(event instanceof SelectFolderEvent) {
+				SelectFolderEvent sfe = (SelectFolderEvent)event;
+				String subPath = sfe.getSubpath();
+				if (subPath != null) {
+					coachFolderPathEl.setValue(subPath);
+					coachFolderPathSelected = true;
+				} else {
+					coachFolderPathEl.setValue(translate("coach.folder.not.configured"));
+					coachFolderPathSelected = false;
+				}
+				
+				validateCoachFolderPath();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} 
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(glossarySearchCtr);
+		removeAsListenerAndDispose(folderSelectCtrl);
 		removeAsListenerAndDispose(folderSearchCtr);
 		removeAsListenerAndDispose(cmc);
 		glossarySearchCtr = null;
+		folderSelectCtrl = null;
 		folderSearchCtr = null;
 		cmc = null;
 	}
@@ -317,7 +389,6 @@ public class CourseOptionsController extends FormBasicController {
 			cmc.activate();
 		} else if (source == removeGlossaryCommand) {
 			doRemoveGlossary();
-			setSaveButtonDirty();
 		} else if (source == addFolderCommand) {
 			if(checkForFolderNodesAdd(ureq)  ){
 				folderSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq, SharedFolderFileResource.TYPE_NAME, translate("select"));
@@ -329,22 +400,33 @@ public class CourseOptionsController extends FormBasicController {
 		} else if (source == removeFolderCommand) {
 			if(checkForFolderNodesRemove(ureq)){
 				doRemoveSharedFolder();
-				setSaveButtonDirty();
 			}
-		} else if (source instanceof SelectionElement || source == folderReadOnlyEl) {
-			setSaveButtonDirty();
-		}  else if(saveButton == source) {
-			doSave(ureq);
-		}
+		} else if (source == enableCoachFolderEl) {
+			updateCoachFolderUI();
+		} else if (source == coachFolderModeEl) {
+			updateCoachFolderUI();
+		} else if (source == selectCoachFolderLink) {
+			doSelectDocumentsFolder(ureq);
+		}  
 	}
 	
 	private void updateToolbar() {
 		//
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		allOk &= validateCoachFolderPath();
+		
+		return allOk;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		doSave(ureq);
+		loadCoachFolderConfig();
 	}
 
 	private boolean checkForFolderNodesAdd(UserRequest ureq) {
@@ -388,15 +470,9 @@ public class CourseOptionsController extends FormBasicController {
 		return hasFolderNode.get();
 	}
 
-	private void setSaveButtonDirty() {
-		if(saveButton != null) {
-			saveButton.setCustomEnabledLinkCSS("btn btn-primary o_button_dirty");
-		}
-	}
-	
 	private void doSave(UserRequest ureq) {
 		doChangeConfig(ureq);
-		saveButton.setCustomEnabledLinkCSS("btn btn-primary");
+		//saveButton.setCustomEnabledLinkCSS("btn btn-primary");
 	}
 	
 	private void doChangeConfig(UserRequest ureq) {
@@ -433,6 +509,22 @@ public class CourseOptionsController extends FormBasicController {
 		} else {
 			courseConfig.setSharedFolderReadOnlyMount(true);
 		}
+		
+		boolean coachFolderConfigIsSame = true;
+		boolean coachFolderEnabled = enableCoachFolderEl.isKeySelected("enabled");
+		boolean customCoachFolderPath = coachFolderEnabled && coachFolderPathSelected && coachFolderModeEl.isKeySelected(COACH_FOLDER_CUSTOM);
+		String coachFolderPath = customCoachFolderPath ? coachFolderPathEl.getValue() : null;
+		
+		coachFolderConfigIsSame &= courseConfig.isCoachFolderEnabled() == coachFolderEnabled;
+		if (courseConfig.getCoachFolderPath() == null) {
+			coachFolderConfigIsSame &= coachFolderPath == null;
+		} else {
+			coachFolderConfigIsSame &= courseConfig.getCoachFolderPath().equals(coachFolderPath);
+		}
+		
+		courseConfig.setCoachFolderEnabled(coachFolderEnabled);
+		courseConfig.setCoachFolderPath(coachFolderPath);
+		updatePublisher(coachFolderPath);
 
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
@@ -486,6 +578,16 @@ public class CourseOptionsController extends FormBasicController {
 			}
 		}
 		
+		if (!coachFolderConfigIsSame) {
+			ILoggingAction loggingAction = coachFolderEnabled ?
+					LearningResourceLoggingAction.COACH_FOLDER_ENABLED:
+					LearningResourceLoggingAction.COACH_FOLDER_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.coachFolder, course.getResourceableId()), course);
+		}
+		
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
@@ -529,6 +631,112 @@ public class CourseOptionsController extends FormBasicController {
 		folderNameEl.setUserObject(null);
 		removeFolderCommand.setVisible(false);
 		folderReadOnlyEl.setVisible(false);
+	}
+	
+	private void loadCoachFolderConfig() {
+		boolean coachFolderEnabled = courseConfig.isCoachFolderEnabled();
+		enableCoachFolderEl.select("enabled", coachFolderEnabled);
+		
+		String coachFolderMode = StringHelper.containsNonWhitespace(courseConfig.getCoachFolderPath()) ? COACH_FOLDER_CUSTOM : COACH_FOLDER_AUTOMATIC;
+		coachFolderModeEl.select(coachFolderMode, true);
+		coachFolderModeEl.setVisible(coachFolderEnabled);
+		
+		boolean isCustomMode = coachFolderEnabled && coachFolderMode.equals(COACH_FOLDER_CUSTOM);
+		
+		if (StringHelper.containsNonWhitespace(courseConfig.getCoachFolderPath())) {
+			coachFolderPathEl.setValue(courseConfig.getCoachFolderPath());
+			coachFolderPathSelected = true;
+		} else {
+			coachFolderPathSelected = false;
+		}
+		
+		coachFolderPathEl.setVisible(isCustomMode);
+		
+		selectCoachFolderLink.setVisible(isCustomMode);
+	}
+	
+	private void updateCoachFolderUI() {
+		boolean coachFolderEnabled = enableCoachFolderEl.isKeySelected("enabled");
+		coachFolderModeEl.setVisible(coachFolderEnabled);
+		
+		boolean isCustomMode = coachFolderEnabled && coachFolderModeEl.isKeySelected(COACH_FOLDER_CUSTOM);
+		coachFolderPathEl.setVisible(isCustomMode);
+		selectCoachFolderLink.setVisible(isCustomMode);
+	}
+	
+	private boolean validateCoachFolderPath() {
+		boolean allOk = true;
+		
+		boolean hadError = coachFolderPathEl.hasError();
+		coachFolderPathEl.clearError();
+		if (enableCoachFolderEl.isSelected(0) && coachFolderModeEl.isKeySelected(COACH_FOLDER_CUSTOM)) {
+			if (!coachFolderPathSelected || !StringHelper.containsNonWhitespace(coachFolderPathEl.getValue())) {
+				coachFolderPathEl.setErrorKey("warning.no.linkedfolder", null);
+				allOk &= false;
+			} else if (isSharedfolderNotPresent(coachFolderPathEl.getValue())) {
+				coachFolderPathEl.setErrorKey("warning.no.sharedfolder", null);
+				allOk &= false;
+			} else if (isLinkedFolderNotPresent(coachFolderPathEl.getValue())) {
+				coachFolderPathEl.setErrorKey("warning.no.linkedfolder", null);
+				allOk &= false;
+			}
+		}
+		// After user has selected an other folder (SelectFolderEvent).
+		if (allOk && hadError) {
+			flc.setDirty(true);
+		}
+		
+		return allOk;
+	}
+	
+	private boolean isSharedfolderNotPresent(String documentPath) {
+		OLATResourceable courseOres = entry.getOlatResource();
+		ICourse course = CourseFactory.loadCourse(courseOres.getResourceableId());
+		
+		return documentPath.startsWith("/_sharedfolder") 
+				&& course.getCourseEnvironment().getCourseFolderContainer().resolve("/_sharedfolder/") == null;
+	}
+
+	private boolean isLinkedFolderNotPresent(String documentPath) {
+		OLATResourceable courseOres = entry.getOlatResource();
+		ICourse course = CourseFactory.loadCourse(courseOres.getResourceableId());
+		VFSContainer courseBase = course.getCourseBaseContainer();
+		
+		VFSItem folder;
+		if(documentPath.startsWith("/_sharedfolder/")) {
+			folder = course.getCourseEnvironment().getCourseFolderContainer().resolve(documentPath);
+		} else {
+			folder = courseBase.resolve("/coursefolder" + documentPath);
+		}
+		return folder == null;
+	}
+	
+	private void doSelectDocumentsFolder(UserRequest ureq) {
+		VFSContainer namedContainer = course.getCourseFolderContainer();
+		
+		folderSelectCtrl = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
+		listenTo(folderSelectCtrl);
+
+		String title = translate("createFolder");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), folderSelectCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void updatePublisher(String coachFolderPath){
+		VFSContainer vfsContainer = CoachFolderFactory.getFileContainer(course.getCourseEnvironment(), coachFolderPath);
+		File realFile = VFSManager.getRealFile(vfsContainer);
+		String relPath = new File(FolderConfig.getCanonicalRoot()).toPath().relativize(realFile.toPath()).toString();
+		
+		SubscriptionContext subContext = CoachFolderFactory.getSubscriptionContext(entry);
+		NotificationsManager notifManager = CoreSpringFactory.getImpl(NotificationsManager.class);
+		Publisher publisher = notifManager.getPublisher(subContext);
+		if (publisher != null) {
+			String businessPath = getWindowControl().getBusinessControl().getAsString();
+			String data = "/" + relPath;
+			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(FolderModule.class), data, businessPath);
+			notifManager.updatePublisherData(subContext, pdata);
+		}
 	}
 
 }

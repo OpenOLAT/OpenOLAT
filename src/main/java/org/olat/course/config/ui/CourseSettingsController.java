@@ -248,9 +248,8 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		removeControllerListener(optionsCtrl);
 		
 		ICourse course = CourseFactory.loadCourse(entry);
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Options"), null);
-		optionsCtrl = new CourseOptionsController(ureq, swControl, entry, courseConfig, !readOnly);
+		optionsCtrl = new CourseOptionsController(ureq, swControl, entry, course, !readOnly);
 		listenTo(optionsCtrl);
 		mainPanel.setContent(optionsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(optionsLink);

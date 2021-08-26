@@ -67,6 +67,7 @@ public class CourseConfigEvent extends MultiUserEvent {
 		wiki,
 		forum,
 		documents,
+		coachFolder,
 		chat,
 		glossary,
 		layout,

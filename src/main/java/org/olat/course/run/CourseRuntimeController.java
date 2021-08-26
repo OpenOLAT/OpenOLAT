@@ -114,6 +114,7 @@ import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
+import org.olat.course.nodes.bc.CoachFolderController;
 import org.olat.course.nodes.bc.CourseDocumentsController;
 import org.olat.course.nodes.co.COToolController;
 import org.olat.course.nodes.feed.blog.BlogToolController;
@@ -190,7 +191,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private Delayed delayedClose;
 
 	//tools
-	private Link folderLink,
+	private Link folderLink, coachFolderLink,
 		assessmentLink, archiverLink,
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink, convertLearningPathLink,
@@ -214,6 +215,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private WikiToolController wikiCtrl;
 	private FOToolController forumCtrl;
 	private CourseDocumentsController documentsCtrl;
+	private CoachFolderController coachFolderCtrl;
 	private CourseAreasController areasCtrl;
 	private ConfirmLeaveController leaveDialogBox;
 	private ArchiverMainController archiverCtrl;
@@ -560,7 +562,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			initToolsMenuSettings(toolsDropdown);
 			initToolsMenuEditor(toolsDropdown, uce);
-			initToolsMenuRuntime(toolsDropdown, uce);
+			initToolsMenuRuntime(toolsDropdown, course, uce);
 			initToolsMenuStatistics(toolsDropdown, course, uce);
 			initToolsMenuEdition(toolsDropdown);
 			initToolsBeta(toolsDropdown, course);
@@ -623,7 +625,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void initToolsMenuRuntime(Dropdown tools, final UserCourseEnvironmentImpl uce) {
+	private void initToolsMenuRuntime(Dropdown tools, ICourse course, final UserCourseEnvironmentImpl uce) {
+		CourseConfig cc = course.getCourseConfig();
+		
 		boolean courseAuthorRight = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
 		if (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach()
 				|| hasCourseRight(CourseRights.RIGHT_DB)
@@ -637,6 +641,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[assessmentToolv2:0]"));
 				assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 				tools.addComponent(assessmentLink);
+			}
+			
+			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+				coachFolderLink = LinkFactory.createToolLink("coachfolder", translate("command.coachfolder"), this, "o_icon_coursefolder");
+				coachFolderLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Coachfolder:0]]"));
+				coachFolderLink.setElementCssClass("o_sel_course_folder");
+				coachFolderLink.setVisible(cc.isCoachFolderEnabled());
+				tools.addComponent(coachFolderLink);
 			}
 			
 			if(lectureModule.isEnabled() && (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) && isLectureEnabled()) {
@@ -1167,6 +1180,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doArchive(ureq);
 		} else if(folderLink == source) {
 			doCourseFolder(ureq);
+		} else if(coachFolderLink == source) {
+			doCoachFolder(ureq);
 		} else if(areaLink == source) {
 			doCourseAreas(ureq);
 		} else if(dbLink == source) {
@@ -1324,6 +1339,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case lectures: doLectures(ureq); break;
 						case courseAreas: doCourseAreas(ureq); break;
 						case courseFolder: doCourseFolder(ureq); break;
+						case coachFolder: doCoachFolder(ureq); break;
 						case courseStatistics: doCourseStatistics(ureq); break;
 						case databases: doDatabases(ureq); break;
 						case details: doDetails(ureq); break;
@@ -1537,6 +1553,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				FolderRunController folderCtrl = doCourseFolder(ureq);
 				if(folderCtrl != null && entries.size() > 1) {
 					folderCtrl.activatePath(ureq, BusinessControlFactory.getInstance().getPath(entries.get(1)));
+				}
+			} else if("CoachFolder".equalsIgnoreCase(type)) {
+				if (coachFolderLink != null && coachFolderLink.isVisible()) {
+					activateSubEntries(ureq, doCoachFolder(ureq), entries);
 				}
 			} else if(type != null && type.startsWith("path=")) {
 				FolderRunController folderCtrl = doCourseFolder(ureq);
@@ -1906,6 +1926,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			delayedClose = Delayed.courseFolder;
 		}
 		return courseFolderCtrl;
+	}
+	
+	private CoachFolderController doCoachFolder(UserRequest ureq) {
+		if(delayedClose == Delayed.coachFolder || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("CoachFolder", 0l);
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			coachFolderCtrl = new CoachFolderController(ureq, swControl, getUserCourseEnvironment());
+
+			pushController(ureq, translate("command.coachfolder"), coachFolderCtrl);
+			setActiveTool(coachFolderLink);
+			currentToolCtr = coachFolderCtrl;
+			return coachFolderCtrl;
+		}
+		delayedClose = Delayed.coachFolder;
+		return null;
 	}
 	
 	private void doCourseAreas(UserRequest ureq) {
@@ -2576,6 +2613,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case coachFolder: {
+				if(coachFolderLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					coachFolderLink.setVisible(cc.isCoachFolderEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case chat: {
 				if(chatLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2715,6 +2761,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		lectures,
 		courseAreas,
 		courseFolder,
+		coachFolder,
 		courseStatistics,
 		databases,
 		details,

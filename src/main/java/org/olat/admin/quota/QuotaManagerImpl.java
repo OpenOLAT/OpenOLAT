@@ -125,6 +125,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_COURSE, defaultQuotaCourseFolder);
 		Quota defaultQuotaCourseDocuments = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS, defaultQuotaCourseDocuments);
+		Quota defaultQuotaCoachFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COACHFOLDER);
+		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_COACHFOLDER, defaultQuotaCoachFolder);
 		Quota defaultQuotaNodeFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_NODES, defaultQuotaNodeFolder);
 		Quota defaultQuotaPfNodeFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_PFNODES);
@@ -560,6 +562,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COURSE;
 			} else if(path.indexOf("/coursedocuments") >= 0) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS;
+			} else if(path.indexOf("/coachfolder") >= 0) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COACHFOLDER;
 			} else if(path.indexOf("/participantfolder/") >= 0) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_PFNODES;
 			} else if(path.indexOf("/returnboxes/") >= 0) {
