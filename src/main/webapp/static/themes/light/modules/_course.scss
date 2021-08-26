@@ -623,7 +623,15 @@
 	.o_next {
 		order: 3;	
 	}
-
+		
+	/* position at very left / right edge with icon to match positioning of top link and border */
+	.btn-link {
+		padding-left: 0;
+		padding-right: 0;
+		margin-left: -5px;
+		margin-right: -5px;
+	}
+	
 	@media (max-width: $screen-xs-max) { 
 		.o_previous, .o_next {
 			span { display: none; }

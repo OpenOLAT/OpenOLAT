@@ -80,7 +80,7 @@ public class CoursePaginationController extends FormBasicController {
 		nextButton.setI18nKey(translate("command.next"));
 		
 		// Button style
-		String styleEnabled = "btn btn-default";
+		String styleEnabled = "btn btn-link";
 		String styleDisabled = styleEnabled + (" o_disabled disabled");			
 		confirmButton.getComponent().setCustomEnabledLinkCSS(styleEnabled);		
 		confirmButton.getComponent().setCustomDisabledLinkCSS(styleDisabled);		
