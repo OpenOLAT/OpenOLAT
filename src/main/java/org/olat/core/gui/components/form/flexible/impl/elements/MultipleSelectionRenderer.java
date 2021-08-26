@@ -340,6 +340,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		if (StringHelper.containsNonWhitespace(value)) {
 			sb.append(" ").append(value);		
+		} else if(inline) {
+			// at least something in label required for properly aligned rendering, nbsp is important for bootstrap
+			sb.append("&nbsp;"); 
 		}
 		sb.append("</label>")
 		  .append(" ", inline) // to let a little space before the next checkbox

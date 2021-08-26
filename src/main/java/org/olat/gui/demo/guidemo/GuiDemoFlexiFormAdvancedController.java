@@ -224,7 +224,8 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		verticalRadioButtons.addActionListener(FormEvent.ONCLICK);
 
 		// checkboxes
-		uifactory.addCheckboxesVertical("checkboxes", "advanced_form.checkboxes", form, keys, options, 1);
+		uifactory.addCheckboxesVertical("checkboxes", "advanced_form.checkboxes", form, new String[] { "a", "b", "c", "d" }, new String[] { "", "b (a was missing intentionally)", "c", "d" }, 1);
+		uifactory.addCheckboxesHorizontal("checkboxes2", "advanced_form.checkboxes", form, keys, options);
 
 		// Translate the keys to the yes and no option values
 		final String[] yesOrNoOptions = new String[yesOrNoKeys.length];
