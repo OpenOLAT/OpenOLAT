@@ -144,7 +144,8 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 }
 
 /* more padding between inline checkboxes / radios */
-.form-horizontal .radio-inline, .form-horizontal .checkbox-inline {
+.form-horizontal .radio-inline, .form-horizontal .checkbox-inline, 
+.form-inline .radio-inline, .form-inline .checkbox-inline {
 	margin-right: 10px;
 }
 .form-horizontal .radio-inline.btn {
