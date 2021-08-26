@@ -266,8 +266,8 @@
 }
 
 .o_table_batch_buttons {
-	margin-top: $line-height-computed;
-	margin-bottom: -$line-height-computed;
+	margin-top: 0px;
+	margin-bottom: -3px; /* compensate for small batch buttons */
 	position: relative;
 	z-index: 2;
 	text-align: left;
@@ -277,13 +277,11 @@
 	}
 	
 	>span {
-		display: inline-block;
-		vertical-align: middle;
+		position: absolute;
+		bottom: -20px;
+vertical-align: middle;
 		margin-bottom: 0.5em;
-		@media (max-width: $screen-xs-max) { 
-			display: block;
 		}
-	}
 	.o_table_batch_label {
 		padding-right: 1em;
 		font-size: $font-size-small;
@@ -565,6 +563,9 @@ a.o_orderby, a.o_orderby:hover {
 	.o_table_tools > .btn-group:not(.o_table_settings),
 	.o_table_search > span {
 		display: none;
+	}
+	.o_table_filters_wrapper.o_collapsed {
+		margin-bottom: $line-height-computed;
 	}
 	
 	.o_table_toolbar .o_table_search input[type='text'] {

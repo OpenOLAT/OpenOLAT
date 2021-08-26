@@ -2187,8 +2187,10 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll, 
 		jQuery('#' + dispatchId + '_bab').each(function(index, el) {
 			if (showSelectAll) {
 				jQuery(el).addClass("o_table_batch_hide").removeClass("o_table_batch_show");
+				jQuery(el).prev('.o_table_toolbar').show(); 	
 			} else {
 				jQuery(el).addClass("o_table_batch_show").removeClass("o_table_batch_hide");	
+				jQuery(el).prev('.o_table_toolbar').hide();
 			}
 		});
 		
@@ -2224,6 +2226,7 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll, 
 		if(window.console)  console.log(e);
 	}
 }
+
 
 /*
  * Table and other element scrolling overflow indicator: show little shadow 
