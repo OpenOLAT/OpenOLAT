@@ -228,7 +228,11 @@ public class CopyCourseGeneralStep extends BasicStep {
 					}
 					params.setDisplayname(displayName);
 				} else if (textElement == externalRefEl) {
-					params.setReference(textElement.getValue());
+					String reference = textElement.getValue();
+					if (reference != null) {
+						reference = reference.toLowerCase();
+					}
+					params.setReference(reference);
 				}
 				
 				textElement.clearError();
