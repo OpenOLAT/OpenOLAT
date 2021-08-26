@@ -158,7 +158,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private void setFilter(FlexiTableFilter filter) {
 		switch(FilterButton.valueOf(filter.getFilter())) {
 			case MARKED:
-				searchParams.setMarked(Boolean.TRUE);
+				String markedValue = ((FlexiTableExtendedFilter)filter).getValue();
+				searchParams.setMarked(StringHelper.containsNonWhitespace(markedValue) ? Boolean.TRUE : null);
 				break;
 			case OWNED:
 				String ownedValue = ((FlexiTableExtendedFilter)filter).getValue();
