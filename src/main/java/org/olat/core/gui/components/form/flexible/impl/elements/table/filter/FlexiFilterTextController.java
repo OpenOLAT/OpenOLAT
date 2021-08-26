@@ -46,22 +46,24 @@ public class FlexiFilterTextController extends FormBasicController {
 	private FormLink clearButton;
 	private FormLink updateButton;
 	
+	private final String preselectedValue;
 	private final FlexiTableTextFilter filter;
 	
-	public FlexiFilterTextController(UserRequest ureq, WindowControl wControl, FlexiTableTextFilter filter) {
+	public FlexiFilterTextController(UserRequest ureq, WindowControl wControl,
+			FlexiTableTextFilter filter, String preselectedValue) {
 		super(ureq, wControl, "field_text");
 		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale(), getTranslator()));
 		this.filter = filter;
+		this.preselectedValue = preselectedValue;
 		initForm(ureq);
 	}
 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String searchString = filter.getValue();
-		textEl = uifactory.addTextElement("text", null, 255, searchString, formLayout);
+		textEl = uifactory.addTextElement("text", null, 255, preselectedValue, formLayout);
 		textEl.setDomReplacementWrapperRequired(false);
-		if(!StringHelper.containsNonWhitespace(searchString)) {
+		if(!StringHelper.containsNonWhitespace(preselectedValue)) {
 			textEl.setFocus(true);
 		}
 
@@ -96,13 +98,11 @@ public class FlexiFilterTextController extends FormBasicController {
 	}
 	
 	private void doUpdate(UserRequest ureq) {
-		filter.setValue(textEl.getValue());
-		fireEvent(ureq, new ChangeFilterEvent(filter));
+		fireEvent(ureq, new ChangeValueEvent(filter, textEl.getValue()));
 	}
 	
 	private void doClear(UserRequest ureq) {
 		textEl.setValue("");
-		filter.setValue(null);
-		fireEvent(ureq, new ChangeFilterEvent(filter));
+		fireEvent(ureq, new ChangeValueEvent(filter, null));
 	}
 }

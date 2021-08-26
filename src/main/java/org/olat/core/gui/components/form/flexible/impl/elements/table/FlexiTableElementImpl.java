@@ -62,6 +62,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.ChangeFilterEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.DeleteCurrentPresetEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.ExpandFiltersEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FiltersAndSettingsEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFiltersAndSettingsDialogController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFiltersElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.SaveCurrentPresetEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.UpdateCurrentPresetEvent;
@@ -82,6 +84,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -144,6 +147,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FormLink extendedSearchButton;
 	private FormLink classicTypeButton;
 	private FormLink customTypeButton;
+	private FormLink settingsButton;
 	private AbstractTextElement searchFieldEl;
 	private ExtendedFlexiTableSearchController extendedSearchCtrl;
 	
@@ -155,7 +159,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private final FlexiTableComponent component;
 	private FlexiTableComponentDelegate componentDelegate;
 	private CloseableCalloutWindowController callout;
+	private CloseableModalController cmc;
 	private final WindowControl wControl;
+	private FlexiFiltersAndSettingsDialogController settingsCtrl;
 	
 	private String wrapperSelector;
 	private FlexiTableCssDelegate cssDelegate;
@@ -201,11 +207,17 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		String dispatchId = component.getDispatchID();
-		customButton = new FormLinkImpl(dispatchId + "_customButton", "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
+		customButton = new FormLinkImpl(dispatchId.concat("_customButton"), "rCustomButton", "", Link.BUTTON + Link.NONTRANSLATED);
 		customButton.setTranslator(translator);
 		customButton.setIconLeftCSS("o_icon o_icon_customize");
 		customButton.setAriaLabel(translator.translate("aria.customize"));
 		components.put("rCustomize", customButton);
+		
+		settingsButton = new FormLinkImpl(dispatchId.concat("_settingsButton"), "rSetttingsButton", "", Link.BUTTON + Link.NONTRANSLATED);
+		settingsButton.setTranslator(translator);
+		settingsButton.setIconLeftCSS("o_icon o_icon_actions");
+		settingsButton.setAriaLabel(translator.translate("aria.settings"));
+		components.put("rSettings", settingsButton);
 		
 		this.pageSize = pageSize;
 		this.defaultPageSize = pageSize;
@@ -732,12 +744,18 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				filtersEl.getComponent().addListener(this);
 				components.put(dispatchId, filtersEl);
 			}
+			
+			
 			filtersEl.setAlwaysExpanded(alwaysExpanded);
 			filtersEl.setCustomPresets(customPresets);
 			if(getRootForm() != null) {
 				rootFormAvailable(filtersEl);
 			}
 			filtersEl.setFilters(filters);
+			if(this.filterTabsEl != null && filterTabsEl.getSelectedTab() instanceof FlexiFiltersPreset) {
+				FlexiFiltersPreset selectedPreset = (FlexiFiltersPreset)filterTabsEl.getSelectedTab();
+				filtersEl.setImplicitFilters(selectedPreset.getImplicitFilters());
+			}
 		} else if(filtersEl != null) {
 			filtersEl.getComponent().removeListener(this);
 			filtersEl = null;
@@ -944,12 +962,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return searchFieldEl;
 	}
 	
-	public FormItem getSearchButton() {
+	public FormLink getSearchButton() {
 		return searchButton;
 	}
 	
-	public FormItem getCustomButton() {
+	public FormLink getCustomButton() {
 		return customButton;
+	}
+	
+	public FormLink getSettingsButton() {
+		return settingsButton;
 	}
 
 	@Override
@@ -1150,6 +1172,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				&& customButton.getFormDispatchId().equals(dispatchuri)) {
 			//snap the request
 			customizeCallout(ureq);
+		} else if(settingsButton != null
+				&& settingsButton.getFormDispatchId().equals(dispatchuri)) {
+			doOpenSettings(ureq);
 		} else if(customTypeButton != null
 				&& customTypeButton.getFormDispatchId().equals(dispatchuri)) {
 			setRendererType(FlexiTableRendererType.custom);
@@ -1212,7 +1237,32 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			} else if(event == Event.DONE_EVENT) {
 				evalExtendedSearch(ureq);
 			}
+		} else if(settingsCtrl == source) {
+			if(event instanceof FiltersAndSettingsEvent) {
+				if(FiltersAndSettingsEvent.FILTERS_RESET.equals(event.getCommand())) {
+					resetFiltersSearch(ureq);
+				} else {
+					doSetSettings(ureq, (FiltersAndSettingsEvent)event);
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		settingsCtrl = cleanUp(settingsCtrl);
+		cmc = cleanUp(cmc);
+	}
+	
+	private <T extends Controller> T cleanUp(T ctrl) {
+		if(ctrl != null) {
+			ctrl.removeControllerListener(this);
+			ctrl = null;
+		}
+		return ctrl;
 	}
 	
 	@Override
@@ -1562,6 +1612,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		callout.activate();
 		callout.addControllerListener(this);
 	}
+	
+	public Set<Integer> getEnabledColumnIndex() {
+		return new HashSet<>(enabledColumnIndex);
+	}
 
 	@Override
 	public boolean isColumnModelVisible(FlexiColumnModel col) {
@@ -1611,7 +1665,45 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		saveCustomSettings(ureq);
 		component.setDirty(true);
-	} 
+	}
+	
+	private void doOpenSettings(UserRequest ureq) {
+		settingsCtrl = new FlexiFiltersAndSettingsDialogController(ureq, wControl, this);
+		settingsCtrl.addControllerListener(this);
+
+		String title = component.getTranslator().translate("table.settings");
+		cmc = new CloseableModalController(wControl, "close", settingsCtrl.getInitialComponent(), true, title, true);
+		cmc.setCustomWindowCSS("o_offcanvas_right_modal o_table_filters_and_settings");
+		cmc.activate();
+		cmc.addControllerListener(this);
+	}
+	
+	private void doSetSettings(UserRequest ureq, FiltersAndSettingsEvent e) {
+		if(e.getRenderType() != null) {
+			setRendererType(e.getRenderType());
+		}
+		
+		if(e.isResetCustomizedColumns()) {
+			resetCustomizedColumns(ureq);
+		} else if(e.getCustomizedColumns() != null) {
+			setCustomizedColumns(ureq, e.getCustomizedColumns());
+		}
+		
+		
+		// need to be the last
+		if(e.getFilterValues() != null) {
+			List<String> implicitFilters = filterTabsEl == null ? null : filterTabsEl.getImplicitFiltersOfSelectedTab();
+			filtersEl.setFiltersValues(null, implicitFilters, e.getFilterValues(), false);
+			doSearch(ureq, FlexiTableReduceEvent.FILTER, getSearchText(), filtersEl.getSelectedFilters());
+		}
+		
+		saveCustomSettings(ureq);
+		
+		if(e.getRenderType() != null) {
+			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
+					e.getRenderType(), FormEvent.ONCLICK));
+		}
+	}
 	
 	private void saveCustomSettings(UserRequest ureq) {
 		if(StringHelper.containsNonWhitespace(persistentId)) {
@@ -2110,6 +2202,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(searchFieldEl != null) searchFieldEl.validate(validationResults);
 		if(searchButton != null) searchButton.validate(validationResults);
 		if(customButton != null) customButton.validate(validationResults);
+		if(settingsButton != null) settingsButton.validate(validationResults);
 		if(extendedSearchButton != null) extendedSearchButton.validate(validationResults);
 	}
 
@@ -2192,6 +2285,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	protected void rootFormAvailable() {
 		rootFormAvailable(searchButton);
 		rootFormAvailable(customButton);
+		rootFormAvailable(settingsButton);
 		rootFormAvailable(exportButton);
 		rootFormAvailable(searchFieldEl);
 		rootFormAvailable(extendedSearchButton);

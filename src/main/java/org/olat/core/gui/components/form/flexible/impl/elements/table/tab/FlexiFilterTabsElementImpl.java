@@ -152,6 +152,14 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		return null;
 	}
 	
+	public List<String> getImplicitFiltersOfSelectedTab() {
+		if(selectedTab instanceof FlexiFiltersPreset) {
+			FlexiFiltersPreset preset = (FlexiFiltersPreset)selectedTab;
+			return preset.getImplicitFilters();	
+		}
+		return null;
+	}
+	
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		Form form = getRootForm();

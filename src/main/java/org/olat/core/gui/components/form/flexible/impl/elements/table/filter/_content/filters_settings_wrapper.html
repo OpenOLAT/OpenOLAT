@@ -1,0 +1,9 @@
+#if($r.visible("columns"))
+	<h4>$r.translate("customize.columns")</h4>
+	$r.render("columns")
+#elseif($r.visible("filter"))
+	<h4>$r.escapeHtml($filterLabel)</h4>
+	$r.render("filter")
+#else
+	$r.render("panel")
+#end

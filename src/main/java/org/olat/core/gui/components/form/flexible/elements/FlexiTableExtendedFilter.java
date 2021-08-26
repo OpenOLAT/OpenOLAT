@@ -46,6 +46,8 @@ public interface FlexiTableExtendedFilter {
 	 * @return The label with the selected values.
 	 */
 	public String getDecoratedLabel(boolean withHtml);
+	
+	public String getDecoratedLabel(Object value, boolean withHtml);
 
 	public boolean isDefaultVisible();
 	
@@ -53,16 +55,22 @@ public interface FlexiTableExtendedFilter {
 	
 	
 	public String getValue();
-	
+
 	public List<String> getValues();
-	
+
 	public void setValue(Object val);
 	
 	
 	public void reset();
 	
-	
-	
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @return
+	 */
 	public Controller getController(UserRequest ureq, WindowControl wControl);
+	
+	public Controller getController(UserRequest ureq, WindowControl wControl, Object preselectedValue);
 
 }

@@ -1,0 +1,29 @@
+<div class="o_table_modal_settings">
+	#if($r.visible("reset.filters"))
+		$r.render("reset.filters")
+	#end
+	
+	#if($r.isNotEmpty($filters))
+		<h4>$r.translate("settings.filters.title")</h4>
+		<ul class="list-unstyled">
+		#foreach($filter in $filters)
+			<li>$r.render($filter)</li>
+		#end
+		</ul>
+	#end
+	
+	#if($r.visible("customize.columns") || $r.visible("render.types"))
+		<h4>$r.translate("settings")</h4>
+		<ul class="list-unstyled">
+		#if($r.visible("customize.columns"))
+			<li>$r.render("customize.columns")</li>
+		#end
+		#if($r.visible("render.types"))
+			<li class="o_table_render_types">$r.render("render.types")</li>
+		#end
+		</ul>
+	#end
+	<div class="o_button_group">
+		$r.render("settings.done")
+	</div>
+</div>

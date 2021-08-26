@@ -50,13 +50,19 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 
 	@Override
 	public String getDecoratedLabel(boolean withHtml) {
+		return getDecoratedLabel(value, withHtml);
+	}
+	
+	@Override
+	public String getDecoratedLabel(Object objectValue, boolean withHtml) {
 		StringBuilder label = new StringBuilder(getLabel());
-		if(StringHelper.containsNonWhitespace(value)) {
+		String string = objectValue == null ? null : objectValue.toString();
+		if(StringHelper.containsNonWhitespace(string)) {
 			label.append(": ");
 			if(withHtml) {
 				label.append("<small>");
 			}
-			label.append("\"").append(StringHelper.escapeHtml(value)).append("\"");
+			label.append("\"").append(StringHelper.escapeHtml(string)).append("\"");
 			if(withHtml) {
 				label.append("</small>");
 			}
@@ -93,7 +99,13 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		return new FlexiFilterTextController(ureq, wControl, this);
+		return new FlexiFilterTextController(ureq, wControl, this, getValue());
+	}
+	
+	@Override
+	public Controller getController(UserRequest ureq, WindowControl wControl, Object value) {
+		String preselectedValue = value instanceof String ? (String)value : null;
+		return new FlexiFilterTextController(ureq, wControl, this, preselectedValue);
 	}
 
 	@Override

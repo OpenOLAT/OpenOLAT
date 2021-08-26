@@ -48,11 +48,14 @@ public class FlexiFilterSingleSelectionController extends FormBasicController {
 	private FormLink updateButton;
 	private SingleSelection listEl;
 	
+	private final String preselectedKey;
 	private final FlexiTableSingleSelectionFilter filter;
 	
-	public FlexiFilterSingleSelectionController(UserRequest ureq, WindowControl wControl, FlexiTableSingleSelectionFilter filter) {
+	public FlexiFilterSingleSelectionController(UserRequest ureq, WindowControl wControl,
+			FlexiTableSingleSelectionFilter filter, String preselectedKey) {
 		super(ureq, wControl, "field_list", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.filter = filter;
+		this.preselectedKey = preselectedKey;
 		initForm(ureq);
 	}
 
@@ -65,7 +68,6 @@ public class FlexiFilterSingleSelectionController extends FormBasicController {
 		listEl.setAllowNoSelection(true);
 		listEl.addActionListener(FormEvent.ONCHANGE);
 		listEl.setEscapeHtml(false);
-		String preselectedKey = filter.getValue();
 		if(StringHelper.containsNonWhitespace(preselectedKey) &&availableValues.containsKey(preselectedKey)) {
 			listEl.select(preselectedKey, true);
 		}
@@ -85,9 +87,7 @@ public class FlexiFilterSingleSelectionController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(listEl == source) {
-			doSelectItem(ureq);
-		} else if(clearButton == source) {
+		if(clearButton == source) {
 			doClear(ureq);
 		} else if(updateButton == source) {
 			doUpdate(ureq);
@@ -114,27 +114,16 @@ public class FlexiFilterSingleSelectionController extends FormBasicController {
 	
 	private void doUpdate(UserRequest ureq) {
 		if(listEl.isOneSelected()) {
-			filter.setValue(listEl.getSelectedKey());
-			fireEvent(ureq, new ChangeFilterEvent(filter));
+			fireEvent(ureq, new ChangeValueEvent(filter, listEl.getSelectedKey()));
 		} else {
-			filter.setValue(null);
+			fireEvent(ureq, new ChangeValueEvent(filter, null));
 		}
-	}
-	
-	private void doSelectItem(UserRequest ureq) {
-		if(listEl.isOneSelected()) {
-			filter.setValue(listEl.getSelectedKey());
-		} else {
-			filter.setValue(null);
-		}
-		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void doClear(UserRequest ureq) {
 		if(listEl.isOneSelected()) {
-			filter.setValue(null);
 			listEl.select(listEl.getSelectedKey(), false);
 		}
-		fireEvent(ureq, new ChangeFilterEvent(filter));
+		fireEvent(ureq, new ChangeValueEvent(filter, null));
 	}
 }

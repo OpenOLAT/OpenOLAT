@@ -539,6 +539,49 @@ a.o_orderby, a.o_orderby:hover {
 	width: 40px;
 }
 
+.o_table_filters_and_settings {
+
+	.btn.o_table_reset_filters {
+		width: 100%;
+	}
+
+	.o_table_render_types div.form-inline {
+		width: 100%;
+		padding-top: 10px;
+		display: table;
+		table-layout: fixed;
+		
+		label.btn {
+			float: none;
+			display: table-cell;
+		}
+	}
+}
+
+@media (max-width: 720px) {
+	.o_table_filters_wrapper .o_button_group,
+	.o_table_tools > .btn-group:not(.o_table_settings),
+	.o_table_search > span {
+		display: none;
+	}
+	
+	.o_table_toolbar .o_table_search input[type='text'] {
+		max-width: 170px;// iPhone SE
+	}
+}
+
+@media (min-width: 720px) {
+	.o_table_tools .o_table_settings {
+		display: none;
+	}
+}
+
+@media (max-width: $screen-sm-min) {
+	.o_table_search>span	  {
+		display: none;
+	}
+}
+
 
 
 	

@@ -82,18 +82,24 @@ public class FlexiTableSingleSelectionFilter extends FlexiTableFilter implements
 	
 	@Override
 	public String getDecoratedLabel(boolean withHtml) {
+		return getDecoratedLabel(value, withHtml);
+	}
+
+	@Override
+	public String getDecoratedLabel(Object objectValue, boolean withHtml) {
 		StringBuilder label = new StringBuilder(getLabel());
-		if(StringHelper.containsNonWhitespace(value)) {
+		String string = objectValue == null ? null : objectValue.toString();
+		if(StringHelper.containsNonWhitespace(string)) {
 			label.append(": ");
 			if(withHtml) {
 				label.append("<small>");
 			}
 			label.append("\"");
-			SelectionValue selectionValue = getSelectionValue(value);
+			SelectionValue selectionValue = getSelectionValue(string);
 			if(selectionValue != null) {
 				label.append(StringHelper.escapeHtml(selectionValue.getValue()));
 			} else {
-				label.append(StringHelper.escapeHtml(value));
+				label.append(StringHelper.escapeHtml(string));
 			}
 			label.append("\"");
 			if(withHtml) {
@@ -120,7 +126,12 @@ public class FlexiTableSingleSelectionFilter extends FlexiTableFilter implements
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		return new FlexiFilterSingleSelectionController(ureq, wControl, this);
+		return new FlexiFilterSingleSelectionController(ureq, wControl, this, getValue());
 	}
 
+	@Override
+	public Controller getController(UserRequest ureq, WindowControl wControl, Object preselectedValue) {
+		String preselectedKey = preselectedValue instanceof String ? (String)preselectedValue : null;
+		return new FlexiFilterSingleSelectionController(ureq, wControl, this, preselectedKey);
+	}
 }

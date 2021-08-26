@@ -75,7 +75,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	private final List<FlexiFilterButton> filterButtons = new ArrayList<>();
 	private Map<String,FormItem> components = new HashMap<>();
 	private final FlexiTableElementImpl tableEl;
-	
+
 	private Controller filterCtrl;
 	private CloseableModalController cmc;
 	private SaveFilterController saveCtrl;
@@ -293,6 +293,15 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		component.setDirty(true);
 	}
 	
+	/**
+	 * Flag some filters as implicit.
+	 */
+	public void setImplicitFilters(List<String> filters) {
+		for(FlexiFilterButton filterButton:getFiltersButtons()) {
+			filterButton.setImplicit(filters != null && filters.contains(filterButton.getFilter().getFilter()));
+		}
+	}
+	
 	private FlexiFilterButton forgeFormLink(FlexiTableExtendedFilter filter, boolean enabled) {
 		String dispatchId = component.getDispatchID();
 		String id = dispatchId + "_filterButton-" + (count++);
@@ -370,8 +379,9 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(filterCtrl == source) {
-			if(event instanceof ChangeFilterEvent) {
-				doFilter(ureq, ((ChangeFilterEvent)event).getFilter());
+			if(event instanceof ChangeValueEvent) {
+				ChangeValueEvent cve = (ChangeValueEvent)event;
+				doApplyFilterValue(ureq, cve.getFilter(), cve.getValue());
 				filtersCallout.deactivate();
 				cleanUp();
 			} else if(event == Event.CANCELLED_EVENT) {
@@ -502,7 +512,8 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		filtersCallout.activate();
 	}
 	
-	private void doFilter(UserRequest ureq, FlexiTableExtendedFilter filter) {
+	private void doApplyFilterValue(UserRequest ureq, FlexiTableExtendedFilter filter, Object value) {
+		filter.setValue(value);
 		for(FlexiFilterButton filterButton:filterButtons) {
 			if(filterButton.getFilter() == filter) {
 				filterButton.setChanged(true);

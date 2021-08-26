@@ -59,12 +59,16 @@ public class FlexiFilterMultiSelectionController extends FormBasicController {
 	
 	private MultipleSelectionElement listEl;
 	
+	private final List<String> preselectedKeys;
 	private final FlexiTableMultiSelectionFilter filter;
+	
 	private final Set<String> selectedKeys = new HashSet<>(); 
 	
-	public FlexiFilterMultiSelectionController(UserRequest ureq, WindowControl wControl, FlexiTableMultiSelectionFilter filter) {
+	public FlexiFilterMultiSelectionController(UserRequest ureq, WindowControl wControl,
+			FlexiTableMultiSelectionFilter filter, List<String> preselectedKeys) {
 		super(ureq, wControl, "field_list", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.filter = filter;
+		this.preselectedKeys = preselectedKeys;
 		initForm(ureq);
 	}
 
@@ -91,7 +95,7 @@ public class FlexiFilterMultiSelectionController extends FormBasicController {
 		listEl = uifactory.addCheckboxesVertical("list", null, formLayout, keys, availableValues.values(), availableValues.icons(), 1);
 		listEl.addActionListener(FormEvent.ONCHANGE);
 		listEl.setEscapeHtml(false);
-		List<String> preselectedKeys = filter.getValues();
+		
 		if(preselectedKeys != null && !preselectedKeys.isEmpty()) {
 			for(String selectedKey:preselectedKeys) {
 				if(availableValues.containsKey(selectedKey)) {
@@ -150,8 +154,7 @@ public class FlexiFilterMultiSelectionController extends FormBasicController {
 	
 	private void doUpdate(UserRequest ureq) {
 		selectedKeys.addAll(listEl.getSelectedKeys());
-		filter.setValues(new ArrayList<>(selectedKeys));
-		fireEvent(ureq, new ChangeFilterEvent(filter));
+		fireEvent(ureq, new ChangeValueEvent(filter, new ArrayList<>(selectedKeys)));
 	}
 	
 	private void doSelectItem(UserRequest ureq) {
@@ -184,11 +187,10 @@ public class FlexiFilterMultiSelectionController extends FormBasicController {
 		SelectionValues availableValues = filter.getSelectionValues();
 		listEl.setKeysAndValues(availableValues.keys(), availableValues.values(), null, availableValues.icons());
 		selectedKeys.clear();
-		filter.setValues(null);
 		if(quickSearchEl != null) {
 			quickSearchEl.setValue("");
 		}
-		fireEvent(ureq, new ChangeFilterEvent(filter));
+		fireEvent(ureq, new ChangeValueEvent(filter, null));
 	}
 	
 	private void doQuickSearch() {

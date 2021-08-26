@@ -87,6 +87,7 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 	
 	@Override
 	public void setValue(Object val) {
+		this.value = convert(val);
 		if(val == null) {
 			this.value = null;
 		} else if(val instanceof List) {
@@ -99,6 +100,19 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 		}
 	}
 	
+	private static List<String> convert(Object val) {
+		if(val == null) {
+			return null;
+		} else if(val instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<String> vals = (List<String>)val;
+			return new ArrayList<>(vals);
+		}
+		List<String> list = new ArrayList<>();
+		list.add(val.toString());
+		return list;
+	}
+
 	@Override
 	public void reset() {
 		value = null;
@@ -118,10 +132,16 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 	
 	@Override
 	public String getDecoratedLabel(boolean withHtml) {
+		return getDecoratedLabel(value, withHtml);
+	}
+
+	@Override
+	public String getDecoratedLabel(Object objectValue, boolean withHtml) {
 		StringBuilder label = new StringBuilder(getLabel());
-		if(value != null && !value.isEmpty()) {
+		List<String> list = convert(objectValue);
+		if(list != null && !list.isEmpty()) {
 			int currentLength = 0;
-			for(String val:value) {
+			for(String val:list) {
 				SelectionValue selectionValue = getSelectionValue(val);
 				String valForLabel = selectionValue == null ? val : selectionValue.getValue();
 				if(valForLabel != null) {
@@ -171,7 +191,12 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		return new FlexiFilterMultiSelectionController(ureq, wControl, this);
+		return new FlexiFilterMultiSelectionController(ureq, wControl, this, getValues());
 	}
 
+	@Override
+	public Controller getController(UserRequest ureq, WindowControl wControl, Object preselectedValue) {
+		List<String> preselectedKeys = convert(preselectedValue);
+		return new FlexiFilterMultiSelectionController(ureq, wControl, this, preselectedKeys);
+	}
 }
