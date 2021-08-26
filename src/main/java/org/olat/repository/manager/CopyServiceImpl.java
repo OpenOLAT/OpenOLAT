@@ -56,6 +56,7 @@ import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -271,6 +272,10 @@ public class CopyServiceImpl implements CopyService {
 			List<BusinessGroup> copiedGroups = new ArrayList<>();
 			List<BusinessGroupReference> copiedGroupReferences = new ArrayList<>();
 			for (BusinessGroup group : businessGroupService.findBusinessGroups(null, context.getSourceRepositoryEntry(), 0, -1)) {
+				if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+					continue;
+				}
+				
 				BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, false, false, true, false, false, null);
 				copiedGroups.add(copiedGroup);
 				copiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group));
@@ -287,6 +292,10 @@ public class CopyServiceImpl implements CopyService {
 			
 			List<BusinessGroupReference> newReferencedGroups = new ArrayList<>();
 			for (BusinessGroup group : referencedGroups) {
+				if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+					continue;
+				}
+				
 				newReferencedGroups.add(new BusinessGroupReference(group));
 			}
 			
@@ -299,6 +308,10 @@ public class CopyServiceImpl implements CopyService {
 					List<BusinessGroup> customCopiedGroups = new ArrayList<>();
 					List<BusinessGroupReference> customCopiedGroupReferences = new ArrayList<>();
 					for (BusinessGroup group : groupsToCopy) {
+						if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+							continue;
+						}
+						
 						BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, false, false, true, false, false, null);
 						customCopiedGroups.add(copiedGroup);
 						customCopiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group));
@@ -312,6 +325,10 @@ public class CopyServiceImpl implements CopyService {
 					
 					List<BusinessGroupReference> newCustomReferencedGroups = new ArrayList<>();
 					for (BusinessGroup group : groupsToReference) {
+						if(LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+							continue;
+						}
+						
 						newCustomReferencedGroups.add(new BusinessGroupReference(group));
 					}
 					
