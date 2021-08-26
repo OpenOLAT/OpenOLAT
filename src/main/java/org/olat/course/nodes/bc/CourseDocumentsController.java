@@ -31,8 +31,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
+import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 
@@ -50,6 +53,8 @@ public class CourseDocumentsController extends BasicController implements Activa
 	public CourseDocumentsController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		
+		setTranslator(Util.createPackageTranslator(CourseRuntimeController.class, getLocale(), getTranslator()));
+		
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		SubscriptionContext subContext = CourseDocumentsFactory.getSubscriptionContext(courseEntry);
@@ -57,6 +62,7 @@ public class CourseDocumentsController extends BasicController implements Activa
 				.getSecurityCallback(userCourseEnv, ureq.getUserSession().getRoles().isGuestOnly(), subContext);
 		VFSContainer rootContainer = CourseDocumentsFactory.getFileContainer(userCourseEnv.getCourseEnvironment());
 		if (rootContainer != null) {
+			rootContainer = new NamedContainerImpl(translate("command.documents"), rootContainer);
 			rootContainer.setLocalSecurityCallback(secCallback);
 			folderCtrl = new FolderRunController(rootContainer, true, false, true, ureq, getWindowControl());
 			listenTo(folderCtrl);
