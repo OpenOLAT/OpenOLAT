@@ -771,10 +771,12 @@ public class AuthorListController extends FormBasicController implements Activat
 				launchEditDescription(ureq, newEntry);
 			}
 		} else if(modifyOwnersWizardCtrl == source) {
-			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
+			if (event.equals(Event.CHANGED_EVENT) ) {
 				getWindowControl().pop();
-				
 				reloadRows();
+				cleanUp();
+			} else if(event.equals(Event.CANCELLED_EVENT)) {
+				getWindowControl().pop();
 				cleanUp();
 			}
 		} else if(userSearchCtr == source) {
@@ -1260,20 +1262,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			modifyOwnersWizardCtrl = new StepsMainRunController(ureq, getWindowControl(), step1, finishedCallback, cancelCallback, translate("tools.modify.owners"), null);
 			listenTo(modifyOwnersWizardCtrl);
 	        getWindowControl().pushAsModalDialog(modifyOwnersWizardCtrl.getInitialComponent());
-			
-			
-			
-			
-//			removeAsListenerAndDispose(userSearchCtr);
-//			userSearchCtr = new UserSearchController(ureq, getWindowControl(), false, true, UserSearchController.ACTION_KEY_CHOOSE_FINISH);
-//			userSearchCtr.setUserObject(manageableRows);
-//			listenTo(userSearchCtr);
-//			
-//			String title = translate("tools.add.owners");
-//			cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtr.getInitialComponent(),
-//					true, title);
-//			listenTo(cmc);
-//			cmc.activate();
 		}
 	}
 	

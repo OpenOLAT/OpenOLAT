@@ -2,14 +2,3 @@
 <h2><i class="o_icon $courseNodeCssClass"> </i> $r.escapeHtml($courseNodeTitle)#if($r.isNotEmpty($businessGroupName)) <small><i class="o_icon o_icon_group"> </i> $r.escapeHtml($businessGroupName)</small>#end</h2>
 #end
 $r.render("table")
-<div class="o_button_group">
-	#if($r.available("bulk.done"))
-		$r.render("bulk.done")
-	#end
-	#if($r.available("bulk.visible"))
-		$r.render("bulk.visible")
-	#end
-	#if($r.available("bulk.email"))
-		$r.render("bulk.email")
-	#end
-</div>

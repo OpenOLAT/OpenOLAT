@@ -91,7 +91,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String id = ftC.getFormDispatchId();
 		
 		sb.append("<div class='o_table_wrapper o_table_flexi")
-		  .append(" o_table_edit", ftE.isEditMode());
+		  .append(" o_table_edit", ftE.isEditMode())
+		  .append(" o_table_bulk", hasVisibleBulkActions(ftC));
 		String css = ftE.getElementCssClass();
 		if (css != null) {
 			sb.append(" ").append(css);
@@ -542,30 +543,36 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderBulkActions(Renderer renderer, StringOutput sb, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		if(!hasVisibleBulkActions(ftC)) return;
+		
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		List<FormItem> items = ftE.getBatchButtons();
+		int numOf = ftE.getNumOfMultiSelectedIndex();
+		String entryI18n;
+		if(numOf <= 1) {
+			entryI18n = translator.translate("number.selected.entry", new String[] { Integer.toString(numOf) });
+		} else {
+			entryI18n = translator.translate("number.selected.entries", new String[] { Integer.toString(numOf) });
+		}
+		
+		String dispatchId = ftE.getFormDispatchId();	
+		sb.append("<div id='").append(dispatchId).append("_bab' class='o_button_group o_table_batch_buttons ")
+		  .append("o_table_batch_show", "o_table_batch_hide", ftE.hasMultiSelectedIndex()).append("'>")
+		  .append("<span id='").append(dispatchId).append("_mscount' class='o_table_batch_label'>")
+		  .append(entryI18n).append("</span> ");
+		for(FormItem item:items) {
+			renderFormItem(renderer, sb, item, ubu, translator, renderResult, args);
+		}
+		sb.append("</div>");
+	}
+	
+	private boolean hasVisibleBulkActions(FlexiTableComponent ftC) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		List<FormItem> items = ftE.getBatchButtons();
 		if(items != null && !items.isEmpty()) {
-			boolean atLeastOneVisible = items.stream().anyMatch(FormItem::isVisible);
-			if(atLeastOneVisible) {
-				int numOf = ftE.getNumOfMultiSelectedIndex();
-				String entryI18n;
-				if(numOf <= 1) {
-					entryI18n = translator.translate("number.selected.entry", new String[] { Integer.toString(numOf) });
-				} else {
-					entryI18n = translator.translate("number.selected.entries", new String[] { Integer.toString(numOf) });
-				}
-				
-				String dispatchId = ftE.getFormDispatchId();	
-				sb.append("<div id='").append(dispatchId).append("_bab' class='o_button_group o_table_batch_buttons ")
-				  .append("o_table_batch_show", "o_table_batch_hide", ftE.hasMultiSelectedIndex()).append("'>")
-				  .append("<span id='").append(dispatchId).append("_mscount' class='o_table_batch_label'>")
-				  .append(entryI18n).append("</span> ");
-				for(FormItem item:items) {
-					renderFormItem(renderer, sb, item, ubu, translator, renderResult, args);
-				}
-				sb.append("</div>");
-			}
+			return items.stream().anyMatch(FormItem::isVisible);
 		}
+		return false;
 	}
 	
 	protected abstract void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator);

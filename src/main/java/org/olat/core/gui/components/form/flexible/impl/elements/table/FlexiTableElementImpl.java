@@ -1868,8 +1868,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 		if(key != null) {
 			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH_KEY_SELECTION, key, null);
+		} else if(isSearchEnabled() && isSearchLarge()) {
+			doSearch(ureq, FlexiTableReduceEvent.SEARCH, search, getSelectedFilters());
 		} else if(StringHelper.containsNonWhitespace(search)) {
-			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH, search, null);
+			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH, search, getSelectedFilters());
 		} else {
 			resetSearch(ureq);
 		}
