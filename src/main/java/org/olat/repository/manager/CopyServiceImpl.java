@@ -277,6 +277,7 @@ public class CopyServiceImpl implements CopyService {
 				}
 				
 				BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, false, false, true, false, false, null);
+				businessGroupService.removeOwners(context.getExecutingIdentity(), Collections.singletonList(context.getExecutingIdentity()), copiedGroup);
 				copiedGroups.add(copiedGroup);
 				copiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group));
 			}
@@ -313,6 +314,7 @@ public class CopyServiceImpl implements CopyService {
 						}
 						
 						BusinessGroup copiedGroup = businessGroupService.copyBusinessGroup(context.getExecutingIdentity(), group, group.getName(), group.getDescription(), group.getMinParticipants(), group.getMaxParticipants(), true, true, true, false, false, true, false, false, null);
+						businessGroupService.removeOwners(context.getExecutingIdentity(), Collections.singletonList(context.getExecutingIdentity()), copiedGroup);
 						customCopiedGroups.add(copiedGroup);
 						customCopiedGroupReferences.add(new BusinessGroupReference(copiedGroup, group));
 					}
