@@ -38,7 +38,6 @@ import org.olat.core.util.prefs.Preferences;
 public class ExportOptionsController extends FormBasicController {
 
 	private static final String ITEMCOLS = "itemcols";
-	private static final String POSCOL = "poscol";
 	private static final String POINTCOL = "pointcol";
 	private static final String TIMECOLS = "timecols";
 	private static final String COMMENTCOL = "commentcol";
@@ -51,10 +50,9 @@ public class ExportOptionsController extends FormBasicController {
 	public ExportOptionsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		optionKeys = new String[]{ITEMCOLS, POSCOL, POINTCOL, TIMECOLS, COMMENTCOL };
+		optionKeys = new String[]{ITEMCOLS, POINTCOL, TIMECOLS, COMMENTCOL };
 		optionVals = new String[] {
 				translate("form.itemcols"),
-				translate("form.poscol.extra"),
 				translate("form.pointcol"),
 				translate("form.timecols"),
 				translate("form.commentcol")
@@ -75,9 +73,6 @@ public class ExportOptionsController extends FormBasicController {
 		ExportFormat c = FormatConfigHelper.loadExportFormat(ureq);
 		if(c.isResponseCols()) {
 			downloadOptionsEl.select(ITEMCOLS, c.isResponseCols());
-		}
-		if(c.isPositionsOfResponsesCol()) {
-			downloadOptionsEl.select(POSCOL, c.isPositionsOfResponsesCol());
 		}
 		if(c.isPointCol()) {
 			downloadOptionsEl.select(POINTCOL, c.isPointCol());
@@ -122,11 +117,10 @@ public class ExportOptionsController extends FormBasicController {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
 			boolean itemcols = downloadOptionsEl.isSelected(0);
-			boolean poscol = downloadOptionsEl.isSelected(1);
-			boolean pointcol = downloadOptionsEl.isSelected(2);
-			boolean timecols = downloadOptionsEl.isSelected(3);
-			boolean commentcol = downloadOptionsEl.isSelected(4);
-			FormatConfigHelper.updateExportFormat(ureq, itemcols, poscol, pointcol, timecols, commentcol);
+			boolean pointcol = downloadOptionsEl.isSelected(1);
+			boolean timecols = downloadOptionsEl.isSelected(2);
+			boolean commentcol = downloadOptionsEl.isSelected(3);
+			FormatConfigHelper.updateExportFormat(ureq, itemcols, false, pointcol, timecols, commentcol);
 		}
 	}
 
