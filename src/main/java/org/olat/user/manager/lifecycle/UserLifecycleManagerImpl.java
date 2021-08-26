@@ -526,9 +526,10 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
 
 		MailerResult result = new MailerResult();
-		MailBundle bundle = mailManager.makeMailBundle(null, null, template, null, null, result);
+		MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
 		if(bundle != null) {
 			bundle.setTo(receiver);
+			bundle.setToId(null);
 			mailManager.sendExternMessage(bundle, result, true);
 		}
 		log.info(Tracing.M_AUDIT, "User lifecycle {} send copy regarding identity={} to email={}", type, identity.getKey(), receiver);
