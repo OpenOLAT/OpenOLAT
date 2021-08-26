@@ -157,8 +157,6 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				sb.append(getRawJSFor(check));
 				sb.append(getAjaxOnlyJs(stF, stC, key));
 				sb.append("   }, 0);");
-// TODO: UH: what is this blur for? Breaks Keyboard / tabbing navigation, do we need it?
-//				sb.append("   jQuery(event.target).blur();");
 				sb.append("   return false;");
 				sb.append("});");
 				// remember last focus position, see FormJSHelper.getRawJSFor()
