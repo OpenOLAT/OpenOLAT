@@ -267,7 +267,9 @@
 
 .o_table_batch_buttons {
 	margin-top: $line-height-computed;
-	margin-bottom: 0;
+	margin-bottom: -$line-height-computed;
+	position: relative;
+	z-index: 2;
 	text-align: left;
 	
 	&.o_table_batch_hide {
