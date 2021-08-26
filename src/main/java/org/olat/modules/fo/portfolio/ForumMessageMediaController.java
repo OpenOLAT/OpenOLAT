@@ -19,6 +19,7 @@
  */
 package org.olat.modules.fo.portfolio;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -72,6 +73,7 @@ public class ForumMessageMediaController extends BasicController {
 		if (StringHelper.containsNonWhitespace(media.getStoragePath())) {
 			VFSContainer attachmentsContainer = VFSManager.olatRootContainer("/" + media.getStoragePath(), null);
 			List<VFSItem> attachments = attachmentsContainer.getItems(new VFSSystemItemFilter());
+			List<VFSItem> attachmentsToShow = new ArrayList<>();
 			int i=1; //vc-shift!
 			for (VFSItem attachment : attachments) {
 				if(attachment instanceof VFSLeaf) {
@@ -80,11 +82,12 @@ public class ForumMessageMediaController extends BasicController {
 							file.getName() + " (" + String.valueOf(file.getSize() / 1024) + " KB)", null,
 							CSSHelper.createFiletypeIconCssClassFor(file.getName()));
 					mainVC.put("download"+i, downlC);
+					attachmentsToShow.add(file);
 					i++;
 				}
 			}
-			mainVC.contextPut("attachments", attachments);
-			mainVC.contextPut("hasAttachments", true);
+			mainVC.contextPut("attachments", attachmentsToShow);
+			mainVC.contextPut("hasAttachments", !attachmentsToShow.isEmpty());
 			
 		} 		
 		
