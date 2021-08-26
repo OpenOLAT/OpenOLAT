@@ -50,6 +50,7 @@ import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.right.BGRightManager;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
@@ -371,11 +372,13 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		File fExportFile = new File(fExportDirectory, LEARNINGGROUPEXPORT_XML);
 		List<BGArea> areas = getAllAreas();
 		List<BusinessGroup> groups = getAllBusinessGroups();
-
-		BusinessGroupEnvironment bgEnv = new BusinessGroupEnvironment();
-		bgEnv.getGroups().addAll(courseEnv.getGroups());
-		bgEnv.getAreas().addAll(courseEnv.getAreas());
-		businessGroupService.exportGroups(groups, areas, fExportFile);
+		List<BusinessGroup> exportedGroups = new ArrayList<>();
+		for(BusinessGroup group:groups) {
+			if(!LTI13Service.LTI_GROUP_TYPE.equals(group.getTechnicalType())) {
+				exportedGroups.add(group);
+			}
+		}
+		businessGroupService.exportGroups(exportedGroups, areas, fExportFile);
 	}
 	
 	/**

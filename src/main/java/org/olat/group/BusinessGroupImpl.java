@@ -233,7 +233,8 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	public String getName() {
 		return name;
 	}
-	
+
+	@Override
 	public String getTechnicalType() {
 		return technicalType;
 	}
