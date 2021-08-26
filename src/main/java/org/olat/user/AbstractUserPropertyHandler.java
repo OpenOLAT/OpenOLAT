@@ -158,7 +158,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 				((UserImpl)user).setUserProperty(name, value);
 			}
 		} else {
-			log.warn("Set read-only value: " + name);
+			log.warn("Set read-only value: {}", name);
 		}
 	}
 
