@@ -92,6 +92,9 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 				return encode(date);
 			} catch (ParseException e) {
 				// catch but do nothing, return null in the end
+				if(displayValue.length() == 8 && decode(displayValue) != null) {
+					return displayValue;
+				}
 			} 
 		}
 		return null;
