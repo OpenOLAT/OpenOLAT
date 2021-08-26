@@ -472,8 +472,8 @@ public class AppointmentEditController extends FormBasicController {
 		if (bbbEditable && templateEl != null && templateEl.isVisible()) {
 			allOk &= BigBlueButtonUIHelper.validateReadableIdentifier(bbbExternalLinkEl, bbbMeeting);
 			
-			allOk &= BigBlueButtonUIHelper.validateTime(bbbLeadTimeEl, 15l);
-			allOk &= BigBlueButtonUIHelper.validateTime(bbbFollowupTimeEl, 15l);
+			allOk &= BigBlueButtonUIHelper.validateTime(bbbLeadTimeEl, 30l);
+			allOk &= BigBlueButtonUIHelper.validateTime(bbbFollowupTimeEl, 30l);
 			
 			templateEl.clearError();
 			if(!templateEl.isOneSelected()) {

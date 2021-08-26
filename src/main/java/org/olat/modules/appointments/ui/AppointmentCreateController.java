@@ -628,8 +628,8 @@ public class AppointmentCreateController extends FormBasicController {
 		
 		boolean bbbOk = true;
 		if (templateEl != null && templateEl.isVisible()) {
-			bbbOk &= BigBlueButtonUIHelper.validateTime(bbbLeadTimeEl, 15l);
-			bbbOk &= BigBlueButtonUIHelper.validateTime(bbbFollowupTimeEl, 15l);
+			bbbOk &= BigBlueButtonUIHelper.validateTime(bbbLeadTimeEl, 30l);
+			bbbOk &= BigBlueButtonUIHelper.validateTime(bbbFollowupTimeEl, 30l);
 			
 			templateEl.clearError();
 			if(!templateEl.isOneSelected()) {

@@ -304,8 +304,8 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 			}
 		}
 		
-		allOk &= validateTime(leadTimeEl, 15l);
-		allOk &= validateTime(followupTimeEl, 15l);
+		allOk &= BigBlueButtonUIHelper.validateTime(leadTimeEl, 30l);
+		allOk &= BigBlueButtonUIHelper.validateTime(followupTimeEl, 30l);
 
 		allOk &= validateSingleSelection(templateEl);
 		allOk &= validateSingleSelection(joinPolicyEl);
@@ -344,21 +344,6 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 					.transferTime(startRecurringDateEl.getDate(), startTimeEl.getDate());
 		}
 		return null;
-	}
-	
-	private boolean validateTime(TextElement el, long maxValue) {
-		boolean allOk = true;
-		el.clearError();
-		if(StringHelper.containsNonWhitespace(el.getValue())) {
-			if(!StringHelper.isLong(el.getValue())) {
-				el.setErrorKey("form.error.nointeger", null);
-				allOk &= false;
-			} else if(Long.parseLong(el.getValue()) > maxValue) {
-				el.setErrorKey("error.too.long.time", new String[] { Long.toString(maxValue) });
-				allOk &= false;
-			}
-		}
-		return allOk;
 	}
 	
 	private boolean validateDuration() {

@@ -534,8 +534,8 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				}
 			}
 			
-			allOk &= BigBlueButtonUIHelper.validateTime(leadTimeEl, 15l);
-			allOk &= BigBlueButtonUIHelper.validateTime(followupTimeEl, 15l);
+			allOk &= BigBlueButtonUIHelper.validateTime(leadTimeEl, 30l);
+			allOk &= BigBlueButtonUIHelper.validateTime(followupTimeEl, 30l);
 		}
 		
 		allOk &= validateSingleSelection(templateEl);
