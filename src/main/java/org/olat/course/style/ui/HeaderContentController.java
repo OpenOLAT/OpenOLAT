@@ -141,9 +141,7 @@ public class HeaderContentController extends BasicController
 		CourseConfig courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		Mapper teaserImageMapper = courseStyleService.getTeaserImageMapper(course, courseNode);
 		if (teaserImageMapper != null) {
-			TeaserImageStyle teaserImageStyle = courseConfig.getTeaserImageStyle() != null
-					? courseConfig.getTeaserImageStyle()
-					: TeaserImageStyle.gradient;
+			TeaserImageStyle teaserImageStyle = courseStyleService.getTeaserImageStyle(course, courseNode);
 			builder.withTeaserImage(teaserImageMapper, teaserImageStyle);
 		}
 		

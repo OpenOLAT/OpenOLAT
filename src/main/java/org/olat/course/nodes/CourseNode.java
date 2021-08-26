@@ -60,6 +60,7 @@ import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.course.style.ImageSource;
+import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -113,6 +114,10 @@ public interface CourseNode extends INode, ShortName {
 	public ImageSource getTeaserImageSource();
 	
 	public void setTeaserImageSource(ImageSource imageSource);
+	
+	public TeaserImageStyle getTeaserImageStyle();
+	
+	public void setTeaserImageStyle(TeaserImageStyle teaserImageStyle);
 	
 	public String getColorCategoryIdentifier();
 	

@@ -31,8 +31,8 @@ public interface ColorCategory extends ColorCategoryRef, Comparable<ColorCategor
 	public final static String CSS_NO_COLOR = "o_colcat_nocolor";
 	public final static String IDENTIFIER_INHERITED = "inherited";
 	public final static String IDENTIFIER_COURSE = "course";
-	public final static String IDENTIFIER_FALLBACK_COURSE = IDENTIFIER_NO_COLOR;
-	public final static String IDENTIFIER_FALLBACK_COURSE_NODE = IDENTIFIER_INHERITED;
+	public final static String IDENTIFIER_DEFAULT_COURSE = IDENTIFIER_NO_COLOR;
+	public final static String IDENTIFIER_DEFAULT_COURSE_NODE = IDENTIFIER_INHERITED;
 	
 	public enum Type { technical, predefined, custom }
 	

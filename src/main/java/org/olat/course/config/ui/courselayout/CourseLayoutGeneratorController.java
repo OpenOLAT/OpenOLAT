@@ -381,12 +381,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		}
 		
 		SelectionValues teaserImageStyleKV = new SelectionValues();
-		Arrays.stream(TeaserImageStyle.values()).forEach(
-				style -> teaserImageStyleKV.add(entry(style.name(), translate(CourseStyleUIFactory.getI18nKey(style)))));
+		Arrays.stream(TeaserImageStyle.values())
+				.filter(style -> !style.isTechnical())
+				.forEach(style -> teaserImageStyleKV.add(entry(style.name(), translate(CourseStyleUIFactory.getI18nKey(style)))));
 		teaserImageStyleEl = uifactory.addRadiosHorizontal("teaser.image.style", styleCont, teaserImageStyleKV.keys(), teaserImageStyleKV.values());
 		teaserImageStyleEl.addActionListener(FormEvent.ONCHANGE);
 		if (teaserImageStyle == null || !teaserImageStyleEl.containsKey(teaserImageStyle.name())) {
-			teaserImageStyle = TeaserImageStyle.gradient;
+			teaserImageStyle = TeaserImageStyle.DEFAULT_COURSE;
 		}
 		teaserImageStyleEl.select(teaserImageStyle.name(), true);
 		
@@ -646,7 +647,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		ImageSourceType type =  teaserImageTypeEl.isOneSelected()
 				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
-				: ImageSourceType.none;
+				: ImageSourceType.DEFAULT_COURSE;
 		if (ImageSourceType.system == type && teaserImageSystemEl.isOneSelected()) {
 			teaserImageSource = courseStyleService.getSystemTeaserImageSource(teaserImageSystemEl.getSelectedKey());
 		} else if (ImageSourceType.custom == type) {
@@ -743,7 +744,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private void updateTeaserImageUI() {
 		ImageSourceType type = teaserImageTypeEl.isOneSelected()
 				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
-				: ImageSourceType.none;
+				: ImageSourceType.DEFAULT_COURSE;
 		teaserImageUploadEl.setVisible(ImageSourceType.custom == type);
 		teaserImageSystemEl.setVisible(ImageSourceType.system == type);
 		

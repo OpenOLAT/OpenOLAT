@@ -78,6 +78,7 @@ import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ImageSource;
+import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
@@ -99,6 +100,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	private String instructionalDesign;
 	private String displayOption;
 	private ImageSource teaserImageSource;
+	private TeaserImageStyle teaserImageStyle;
 	private String colorCategoryIdentifier;
 	private ModuleConfiguration moduleConfiguration;
 	private String noAccessExplanation;
@@ -299,10 +301,22 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
+	public TeaserImageStyle getTeaserImageStyle() {
+		return teaserImageStyle != null
+				? teaserImageStyle
+				: TeaserImageStyle.DEFAULT_COURSE_NODE;
+	}
+
+	@Override
+	public void setTeaserImageStyle(TeaserImageStyle teaserImageStyle) {
+		this.teaserImageStyle = teaserImageStyle;
+	}
+
+	@Override
 	public String getColorCategoryIdentifier() {
 		return colorCategoryIdentifier != null
 				? colorCategoryIdentifier
-				: ColorCategory.IDENTIFIER_FALLBACK_COURSE_NODE;
+				: ColorCategory.IDENTIFIER_DEFAULT_COURSE_NODE;
 	}
 
 	@Override
@@ -602,6 +616,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			newNode.setNoAccessExplanation(getNoAccessExplanation());
 			newNode.setShortTitle(getShortTitle());
 			newNode.setTeaserImageSource(getTeaserImageSource());
+			newNode.setTeaserImageStyle(getTeaserImageStyle());
 			newNode.setColorCategoryIdentifier(getColorCategoryIdentifier());
 			
 			if(preConditionVisibility != null) {
@@ -703,6 +718,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		if (isNewNode) {
+			setTeaserImageStyle(TeaserImageStyle.DEFAULT_COURSE_NODE);
+			setColorCategoryIdentifier(ColorCategory.IDENTIFIER_DEFAULT_COURSE_NODE);
+		}
+		
 		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 		nodeAccessService.updateConfigDefaults(nodeAccessType, this, isNewNode);
 	}

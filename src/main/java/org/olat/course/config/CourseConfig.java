@@ -226,7 +226,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(DISCLAIMER_2_LABEL_1, "");
 		configuration.put(DISCLAIMER_2_LABEL_2, "");
 		
-		configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, ColorCategory.IDENTIFIER_FALLBACK_COURSE);
+		configuration.put(NODE_TEASER_IMAGE_STYLE, TeaserImageStyle.DEFAULT_COURSE);
+		configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, ColorCategory.IDENTIFIER_DEFAULT_COURSE);
 
 		this.version = CURRENTVERSION;
 	}
@@ -429,8 +430,11 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING)) {
 					configuration.put(BIGBLUEBUTTON_MODERATOR_STARTS_MEETING, Boolean.TRUE);
 				}
+				if (!configuration.containsKey(NODE_TEASER_IMAGE_STYLE)) {
+					configuration.put(NODE_TEASER_IMAGE_STYLE, TeaserImageStyle.DEFAULT_COURSE);
+				}
 				if (!configuration.containsKey(NODE_COLOR_CATEGORY_IDENITFIER)) {
-					configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, ColorCategory.IDENTIFIER_FALLBACK_COURSE);
+					configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, ColorCategory.IDENTIFIER_DEFAULT_COURSE);
 				}
 			}
 
@@ -976,21 +980,23 @@ public class CourseConfig implements Serializable, Cloneable {
 	
 	public TeaserImageStyle getTeaserImageStyle() {
 		Object teaserImageStyle = configuration.get(NODE_TEASER_IMAGE_STYLE);
-		return teaserImageStyle != null ? (TeaserImageStyle) teaserImageStyle : null;
+		return teaserImageStyle != null 
+				? (TeaserImageStyle) teaserImageStyle
+				: TeaserImageStyle.DEFAULT_COURSE;
 	}
 	
 	public void setTeaserImageStyle(TeaserImageStyle teaserImageStyle) {
 		if (teaserImageStyle != null) {
 			configuration.put(NODE_TEASER_IMAGE_STYLE, teaserImageStyle);
 		} else {
-			configuration.remove(NODE_TEASER_IMAGE_STYLE);
+			configuration.put(NODE_TEASER_IMAGE_STYLE, TeaserImageStyle.DEFAULT_COURSE);
 		}
 	}
 	
 	public void setColorCategoryIdentifier(String colorCategoryIdentifier) {
 		String identifier = colorCategoryIdentifier != null
 				? colorCategoryIdentifier
-				: ColorCategory.IDENTIFIER_FALLBACK_COURSE;
+				: ColorCategory.IDENTIFIER_DEFAULT_COURSE;
 		configuration.put(NODE_COLOR_CATEGORY_IDENITFIER, identifier);
 	}
 
@@ -998,7 +1004,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		Object colorCategoryIdentifier = configuration.get(NODE_COLOR_CATEGORY_IDENITFIER);
 		return colorCategoryIdentifier != null
 				? (String) colorCategoryIdentifier
-				: ColorCategory.IDENTIFIER_FALLBACK_COURSE;
+				: ColorCategory.IDENTIFIER_DEFAULT_COURSE;
 	}
 
 	@Override

@@ -63,6 +63,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.style.ColorCategory;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
@@ -94,6 +95,8 @@ public class ConvertToGTACourseNode {
 		gtaNode.setLongTitle("New_ " + sourceNode.getLongTitle());
 		gtaNode.setDisplayOption(sourceNode.getDisplayOption());
 		gtaNode.setDescription(sourceNode.getLearningObjectives());
+		gtaNode.setTeaserImageStyle(sourceNode.getTeaserImageStyle());
+		gtaNode.setColorCategoryIdentifier(ColorCategory.IDENTIFIER_DEFAULT_COURSE_NODE);
 		
 		TaskList taskList = gtaManager.createIfNotExists(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
 		DBFactory.getInstance().commit();

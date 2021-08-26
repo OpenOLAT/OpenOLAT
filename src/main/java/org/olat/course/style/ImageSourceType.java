@@ -35,6 +35,8 @@ public enum ImageSourceType {
 	inherited,
 	custom;
 	
+	public final static ImageSourceType DEFAULT_COURSE = ImageSourceType.none;
+	public final static ImageSourceType DEFAULT_COURSE_NODE = ImageSourceType.course;
 	private final static ImageSourceType[] VAULES = ImageSourceType.values();
 	
 	public static ImageSourceType toEnum(String value) {

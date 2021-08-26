@@ -27,9 +27,24 @@ package org.olat.course.style;
  */
 public enum TeaserImageStyle {
 	
-	gradient,
-	right,
-	left,
-	cover;
+	course(true),
+	inherited(true),
+	gradient(false),
+	right(false),
+	left(false),
+	cover(false);
+	
+	private final boolean technical;
+	
+	private TeaserImageStyle(boolean technical) {
+		this.technical = technical;
+	}
+
+	public boolean isTechnical() {
+		return technical;
+	}
+	
+	public static final TeaserImageStyle DEFAULT_COURSE = TeaserImageStyle.gradient;
+	public static final TeaserImageStyle DEFAULT_COURSE_NODE = TeaserImageStyle.course;
 
 }

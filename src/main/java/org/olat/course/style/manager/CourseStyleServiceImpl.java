@@ -36,6 +36,7 @@ import org.olat.course.style.ColorCategorySearchParams;
 import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
+import org.olat.course.style.TeaserImageStyle;
 import org.olat.course.style.model.ImageSourceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -132,7 +133,7 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	public VFSMediaMapper getTeaserImageMapper(ICourse course) {
 		ImageSourceType type = course.getCourseConfig().getTeaserImageSource() != null
 				? course.getCourseConfig().getTeaserImageSource().getType()
-				: ImageSourceType.none;
+				: ImageSourceType.DEFAULT_COURSE;
 		
 		VFSMediaMapper mapper = null;
 		if (ImageSourceType.custom == type) {
@@ -154,7 +155,7 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 		CourseNode courseNode = CourseNodeHelper.getCourseNode(node);
 		ImageSourceType type = courseNode.getTeaserImageSource() != null
 				? courseNode.getTeaserImageSource().getType()
-				: ImageSourceType.inherited;
+				: ImageSourceType.DEFAULT_COURSE_NODE;
 		
 		VFSMediaMapper mapper = null;
 		if (ImageSourceType.course == type) {
@@ -178,6 +179,24 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 			}
 		}
 		return mapper;
+	}
+	
+	@Override
+	public TeaserImageStyle getTeaserImageStyle(ICourse course, INode node) {
+		CourseNode courseNode = CourseNodeHelper.getCourseNode(node);
+		TeaserImageStyle teaserImageStyle = courseNode.getTeaserImageStyle();
+		
+		if (TeaserImageStyle.course == teaserImageStyle) {
+			teaserImageStyle = course.getCourseConfig().getTeaserImageStyle();
+		} else if (TeaserImageStyle.inherited == teaserImageStyle) {
+			if (node.getParent() != null) {
+				teaserImageStyle = getTeaserImageStyle(course, node.getParent());
+			} else {
+				teaserImageStyle = course.getCourseConfig().getTeaserImageStyle();
+			}
+		}
+		
+		return teaserImageStyle;
 	}
 	
 	@Override

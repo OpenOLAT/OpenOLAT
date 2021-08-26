@@ -89,7 +89,7 @@ public class CachingColorCategoryResolver implements ColorCategoryResolver {
 			return getCachedOrLoad(courseColorCategoryIdentifier);
 		}
 		
-		String fallbackIdentifier = iNode != null? ColorCategory.IDENTIFIER_FALLBACK_COURSE_NODE: ColorCategory.IDENTIFIER_FALLBACK_COURSE;
+		String fallbackIdentifier = iNode != null? ColorCategory.IDENTIFIER_DEFAULT_COURSE_NODE: ColorCategory.IDENTIFIER_DEFAULT_COURSE;
 		ColorCategory colorCategory = getColorCategory(colorCategoryIdentifier, fallbackIdentifier);
 		if (ColorCategory.IDENTIFIER_INHERITED.equals(colorCategory.getIdentifier())) {
 			INode parent = iNode != null? iNode.getParent(): null;

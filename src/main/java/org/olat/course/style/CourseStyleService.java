@@ -86,6 +86,15 @@ public interface CourseStyleService {
 	 * @return the mapper of the image
 	 */
 	public VFSMediaMapper getTeaserImageMapper(ICourse course, INode node);
+	
+	/**
+	 * Get the effective teaser image style.
+	 *
+	 * @param course
+	 * @param node a CourseNode or a CourseEditorTreeNode
+	 * @return
+	 */
+	public TeaserImageStyle getTeaserImageStyle(ICourse course, INode node);
 
 	public ColorCategory createColorCategory(String identifier);
 

@@ -90,6 +90,7 @@ public class NodeLayoutController extends FormBasicController {
 	private static final String KEY_TITLE_NONE = "none";
 	private static final String KEY_METADATA = "metadata";
 	private static final String TEASER_IMAGE_NODE = "node";
+	private static final String TEASER_IMAGE_STYLE_NODE = "node";
 	private static final String COLOR_CATEGORY_NODE = "node";
 	private static final String COLOR_CATEGORY_CUSTOM = "custom";
 	private static final ColorCategorySearchParams SEARCH_PARAMS_RESOLVER = ColorCategorySearchParams.builder()
@@ -107,6 +108,9 @@ public class NodeLayoutController extends FormBasicController {
 	private SingleSelection teaserImageNodeEl;
 	private SingleSelection teaserImageSystemEl;
 	private FileElement teaserImageUploadEl;
+	private SingleSelection teaserImageStyleTypeEl;
+	private SingleSelection teaserImageStyleNodeEl;
+	private boolean teaserImageStyleNodeNeverVisible = true;
 	private SingleSelection colorCategoryTypeEl;
 	private SingleSelection colorCategoryNodeEl;
 	private FormLink colorCategorySelectionEl;
@@ -140,16 +144,14 @@ public class NodeLayoutController extends FormBasicController {
 		editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
 		colorCategoryResolver = courseStyleService.getColorCategoryResolver(SEARCH_PARAMS_RESOLVER, course.getCourseConfig().getColorCategoryIdentifier());
 		teaserImageSource = courseNode.getTeaserImageSource();
-		teaserImageStyle = course.getCourseConfig().getTeaserImageStyle();
-		if (teaserImageStyle == null) {
-			teaserImageStyle = TeaserImageStyle.gradient;
-		}
+		teaserImageStyle = courseNode.getTeaserImageStyle();
 		// check if ColorCategory exists
-		colorCategoryIdentifier = courseStyleService.getColorCategory(courseNode.getColorCategoryIdentifier(), ColorCategory.IDENTIFIER_FALLBACK_COURSE_NODE).getIdentifier();
+		colorCategoryIdentifier = courseStyleService.getColorCategory(courseNode.getColorCategoryIdentifier(), ColorCategory.IDENTIFIER_DEFAULT_COURSE_NODE).getIdentifier();
 		inSTOverview = isInSTOverview();
 		
 		initForm(ureq);
 		updateTeaserImageUI();
+		updateTeaserImageStyleUI();
 		updateColorCategoryUI();
 		updatePreviewUI(ureq, false);
 	}
@@ -197,7 +199,7 @@ public class NodeLayoutController extends FormBasicController {
 		teaserImageTypeKV.add(entry(TEASER_IMAGE_NODE, translate("teaser.image.type.node")));
 		teaserImageTypeEl = uifactory.addDropdownSingleselect("teaser.image.type", formLayout, teaserImageTypeKV.keys(), teaserImageTypeKV.values());
 		teaserImageTypeEl.addActionListener(FormEvent.ONCHANGE);
-		ImageSourceType type = teaserImageSource != null ? teaserImageSource.getType() : ImageSourceType.inherited;
+		ImageSourceType type = teaserImageSource != null ? teaserImageSource.getType() : ImageSourceType.DEFAULT_COURSE_NODE;
 		if (ImageSourceType.course == type || ImageSourceType.inherited == type) {
 			teaserImageTypeEl.select(type.name(), true);
 		} else {
@@ -249,7 +251,34 @@ public class NodeLayoutController extends FormBasicController {
 			}
 		}
 		
-		uifactory.addStaticTextElement("teaser.image.style", translate(CourseStyleUIFactory.getI18nKey(teaserImageStyle)), formLayout);
+		SelectionValues teaserImageStyleTypeKV = new SelectionValues();
+		teaserImageStyleTypeKV.add(entry(TeaserImageStyle.course.name(), translate("teaser.image.style.type.course")));
+		teaserImageStyleTypeKV.add(entry(TeaserImageStyle.inherited.name(), translate("teaser.image.style.type.inherited")));
+		teaserImageStyleTypeKV.add(entry(TEASER_IMAGE_STYLE_NODE, translate("teaser.image.style.type.node")));
+		teaserImageStyleTypeEl = uifactory.addDropdownSingleselect("teaser.image.style", formLayout, teaserImageStyleTypeKV.keys(), teaserImageStyleTypeKV.values());
+		teaserImageStyleTypeEl.addActionListener(FormEvent.ONCHANGE);
+		if (TeaserImageStyle.course == teaserImageStyle || TeaserImageStyle.inherited == teaserImageStyle) {
+			teaserImageStyleTypeEl.select(teaserImageStyle.name(), true);
+		} else {
+			teaserImageStyleTypeEl.select(TEASER_IMAGE_STYLE_NODE, true);
+		}
+		
+		SelectionValues teaserImageStyleNodeKV = new SelectionValues();
+		Arrays.stream(TeaserImageStyle.values())
+				.filter(style -> !style.isTechnical())
+				.forEach(style -> teaserImageStyleNodeKV.add(entry(style.name(), translate(CourseStyleUIFactory.getI18nKey(style)))));
+		teaserImageStyleNodeEl = uifactory.addRadiosHorizontal("teaser.image.style.node", null, formLayout, teaserImageStyleNodeKV.keys(), teaserImageStyleNodeKV.values());
+		teaserImageStyleNodeEl.addActionListener(FormEvent.ONCHANGE);
+		if (TEASER_IMAGE_STYLE_NODE.equals(teaserImageStyleTypeEl.getSelectedKey())) {
+			if (teaserImageStyleNodeEl.containsKey(teaserImageStyle.name())) {
+				teaserImageStyleNodeEl.select(teaserImageStyle.name(), true);
+			} else {
+				teaserImageStyleNodeEl.select(TeaserImageStyle.DEFAULT_COURSE_NODE.name(), true);
+			}
+			teaserImageStyleNodeNeverVisible = false;
+		} else {
+			teaserImageStyleNodeEl.setVisible(false);
+		}
 		
 		SelectionValues colorCategoryTypeKV = new SelectionValues();
 		colorCategoryTypeKV.add(entry(ColorCategory.IDENTIFIER_COURSE, translate("color.category.type.course")));
@@ -300,6 +329,12 @@ public class NodeLayoutController extends FormBasicController {
 			updatePreviewUI(ureq, true);
 		} else if (source == teaserImageNodeEl) {
 			updateTeaserImageUI();
+			updatePreviewUI(ureq, true);
+		} else if (source == teaserImageStyleTypeEl) {
+			updateTeaserImageStyleUI();
+			updatePreviewUI(ureq, true);
+		} else if (source == teaserImageStyleNodeEl) {
+			updateTeaserImageStyleUI();
 			updatePreviewUI(ureq, true);
 		} else if (source == teaserImageSystemEl) {
 			updatePreviewUI(ureq, true);
@@ -366,7 +401,7 @@ public class NodeLayoutController extends FormBasicController {
 		courseNode.setDisplayOption(displayOption);
 		
 		teaserImageSource = null;
-		ImageSourceType type = ImageSourceType.inherited;
+		ImageSourceType type = ImageSourceType.DEFAULT_COURSE_NODE;
 		if (teaserImageNodeEl.isVisible() && teaserImageNodeEl.isOneSelected()) {
 			if (teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.none.name())) {
 				type = ImageSourceType.none;
@@ -378,8 +413,12 @@ public class NodeLayoutController extends FormBasicController {
 							teaserImageUploadEl.getUploadFile(), teaserImageUploadEl.getUploadFileName());
 				}
 			}
-		} else if (teaserImageTypeEl.isOneSelected() && teaserImageTypeEl.getSelectedKey().equals(ImageSourceType.course.name())) {
-			type = ImageSourceType.course;
+		} else if (teaserImageTypeEl.isOneSelected()) {
+			if (teaserImageTypeEl.getSelectedKey().equals(ImageSourceType.course.name())) {
+				type = ImageSourceType.course;
+			} else if (teaserImageTypeEl.getSelectedKey().equals(ImageSourceType.inherited.name())) {
+				type = ImageSourceType.inherited;
+			}
 		}
 		
 		if (teaserImageSource == null) {
@@ -391,6 +430,7 @@ public class NodeLayoutController extends FormBasicController {
 			courseStyleService.deleteImage(course, courseNode);
 		}
 		
+		courseNode.setTeaserImageStyle(teaserImageStyle);
 		courseNode.setColorCategoryIdentifier(colorCategoryIdentifier);
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -428,6 +468,28 @@ public class NodeLayoutController extends FormBasicController {
 		boolean nodeImage = teaserImageNodeEl.isVisible() && teaserImageNodeEl.isOneSelected();
 		teaserImageUploadEl.setVisible(nodeImage && teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.custom.name()));
 		teaserImageSystemEl.setVisible(nodeImage && teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.system.name()));
+	}
+	
+	private void updateTeaserImageStyleUI() {
+		teaserImageStyleNodeEl.setVisible(teaserImageStyleTypeEl.isOneSelected() && teaserImageStyleTypeEl.getSelectedKey().equals(TEASER_IMAGE_STYLE_NODE));
+		if (teaserImageStyleNodeNeverVisible && teaserImageStyleNodeEl.isVisible()) {
+			teaserImageStyleNodeNeverVisible = false;
+			TeaserImageStyle technicalStyle = getTechnicalStyle(teaserImageStyle);
+			if (technicalStyle != null) {
+				teaserImageStyleNodeEl.select(technicalStyle.name(), true);
+			} else {
+				teaserImageStyleNodeEl.select(TeaserImageStyle.DEFAULT_COURSE_NODE.name(), true);
+			}
+		}
+		
+		if (teaserImageStyleTypeEl.isOneSelected()) {
+			String selectedKey = teaserImageStyleTypeEl.getSelectedKey();
+			if (TeaserImageStyle.course.name().equals(selectedKey) || TeaserImageStyle.inherited.name().equals(selectedKey)) {
+				teaserImageStyle = TeaserImageStyle.valueOf(selectedKey);
+			} else if (teaserImageStyleNodeEl.isVisible() && teaserImageStyleNodeEl.isOneSelected()) {
+				teaserImageStyle = TeaserImageStyle.valueOf(teaserImageStyleNodeEl.getSelectedKey());
+			}
+		}
 	}
 
 	private void updateColorCategorySelectionUI() {
@@ -484,6 +546,7 @@ public class NodeLayoutController extends FormBasicController {
 		ColorCategory colorCategory = colorCategoryResolver.getColorCategory(colorCategoryIdentifier, editorTreeNode);
 		String colorCategoryCss = colorCategoryResolver.getCss(colorCategory);
 		Mapper mapper = createPreviewImageMapper();
+		TeaserImageStyle previewStyle = getPreviewImageStyle();
 
 		org.olat.course.style.Header.Builder headerBuilder = Header.builder();
 		headerBuilder.withIconCss(iconCSSClass);
@@ -491,7 +554,7 @@ public class NodeLayoutController extends FormBasicController {
 		CourseStyleUIFactory.addMetadata(headerBuilder, courseNode, displayOption, true);
 		headerBuilder.withColorCategoryCss(colorCategoryCss);
 		if (mapper != null) {
-			headerBuilder.withTeaserImage(mapper, teaserImageStyle);
+			headerBuilder.withTeaserImage(mapper, previewStyle);
 		}
 		Header header = headerBuilder.build();
 		
@@ -505,7 +568,7 @@ public class NodeLayoutController extends FormBasicController {
 			overviewBuilder.withDescription(courseNode.getDescription());
 			overviewBuilder.withColorCategoryCss(colorCategoryCss);
 			if (mapper != null) {
-				overviewBuilder.withTeaserImage(mapper, teaserImageStyle);
+				overviewBuilder.withTeaserImage(mapper, previewStyle);
 			}
 			if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
 				LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
@@ -540,7 +603,7 @@ public class NodeLayoutController extends FormBasicController {
 		} else {
 			ImageSourceType type = teaserImageTypeEl.isOneSelected()
 					? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
-					: ImageSourceType.inherited;
+					: ImageSourceType.DEFAULT_COURSE_NODE;
 			if (ImageSourceType.course == type) {
 				mapper = courseStyleService.getTeaserImageMapper(course);
 			} else if (ImageSourceType.inherited == type) {
@@ -552,6 +615,31 @@ public class NodeLayoutController extends FormBasicController {
 			}
 		}
 		return mapper;
+	}
+
+	private TeaserImageStyle getPreviewImageStyle() {
+		TeaserImageStyle previewStyle = teaserImageStyle;
+		
+		TeaserImageStyle technicalStyle = getTechnicalStyle(previewStyle);
+		if (technicalStyle != null) {
+			previewStyle = technicalStyle;
+		}
+		
+		return previewStyle;
+	}
+
+	private TeaserImageStyle getTechnicalStyle(TeaserImageStyle style) {
+		TeaserImageStyle technicalStyle = null;
+		if (TeaserImageStyle.course == style) {
+			technicalStyle = course.getCourseConfig().getTeaserImageStyle();
+		} else if (TeaserImageStyle.inherited == style) {
+			if (editorTreeNode.getParent() != null) {
+				technicalStyle = courseStyleService.getTeaserImageStyle(course, editorTreeNode.getParent());
+			} else {
+				technicalStyle = course.getCourseConfig().getTeaserImageStyle();
+			}
+		}
+		return technicalStyle;
 	}
 
 	private boolean isInSTOverview() {
