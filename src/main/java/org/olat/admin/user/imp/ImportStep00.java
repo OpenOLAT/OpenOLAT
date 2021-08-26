@@ -71,6 +71,7 @@ import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.DatePropertyHandler;
+import org.olat.user.propertyhandlers.PastDatePropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -492,6 +493,24 @@ class ImportStep00 extends BasicStep {
 					}
 				}
 			}
+			
+			if(date != null && (handler instanceof PastDatePropertyHandler)) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(date);
+				// Excel will cut 2021 to 21
+				int year = cal.get(Calendar.YEAR);
+				if(year < 100) {
+					Calendar now = Calendar.getInstance();
+					int currentYear = now.get(Calendar.YEAR) - 2000;
+					if(year > currentYear) {
+						cal.add(Calendar.YEAR, 1900);
+					} else {
+						cal.add(Calendar.YEAR, 2000);
+					}
+					date = cal.getTime();
+				}
+			}
+			
 			return date == null ? null : handler.encode(date);
 		}
 		
