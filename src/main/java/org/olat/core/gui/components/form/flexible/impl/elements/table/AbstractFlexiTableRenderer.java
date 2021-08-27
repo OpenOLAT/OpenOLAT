@@ -221,8 +221,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
 		  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 				  new NameValuePair("reset-search", "true")))
-		  .append("\" class='btn btn-default o_reset_quick_search'><i class='o_icon o_icon_remove_filters' aria-label='")
-		  .append(translator.translate("aria.reset.search")).append("'> </i></a>");
+		  .append("\" class='btn btn-default o_reset_quick_search' aria-label='")
+		  .append(translator.translate("aria.reset.search")).append("'><i class='o_icon o_icon_remove_filters'> </i></a>");
 		
 		renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);
 		
@@ -273,8 +273,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("reset-search", "true")))
-			  .append("\" class='btn btn-default o_reset_quick_search'><i class='o_icon o_icon_remove_filters' aria-label='")
-			  .append(translator.translate("aria.reset.search")).append("'> </i></a>");
+			  .append("\" class='btn btn-default o_reset_quick_search' aria-label='")
+			  .append(translator.translate("aria.reset.search")).append("'><i class='o_icon o_icon_remove_filters'> </i></a>");
 			
 			if(ftE.getExtendedSearchButton() != null) {
 				renderFormItem(renderer, sb, ftE.getSearchButton(), ubu, translator, renderResult, null);

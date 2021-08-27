@@ -92,15 +92,13 @@ public class LicenseRenderer implements FlexiCellRenderer {
 		String licensor = license.getLicensor() != null? license.getLicensor(): "";
 		appendStaticControl(sb, "license.popup.licensor", licensor);
 		appendStaticControl(sb, "license.popup.text", LicenseUIFactory.getFormattedLicenseText(license));
-		sb.append("</div>");
+		sb.append("</div></div>");
 		
 		// JavaScript to pup up the popup
 		sb.append("<script>")
-	      .append("/* <![CDATA[ */")
 		  .append("jQuery(function() {\n")
 		  .append("  o_popover('o_lic_").append(id).append("','o_lic_pop_").append(id).append("','top');\n")
 		  .append("});")
-		  .append("/* ]]> */")
 		  .append("</script>");
 	}
 
