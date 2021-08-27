@@ -51,7 +51,7 @@ public class CourseDocumentsFactory {
 	
 	public static VFSContainer getFileContainer(CourseEnvironment courseEnv, String documentsPath) {
 		if (documentsPath == null) {
-			return VFSManager.resolveOrCreateContainerFromPath(courseEnv.getCourseBaseContainer(), FOLDER_NAME);
+			return getFileContainer(courseEnv.getCourseBaseContainer());
 		}
 		VFSItem documentsItem = courseEnv.getCourseFolderContainer().resolve(documentsPath);
 		if (documentsItem instanceof VFSContainer) {
@@ -60,12 +60,20 @@ public class CourseDocumentsFactory {
 		return null;
 	}
 	
+	public static VFSContainer getFileContainer(VFSContainer courseBaseContainer) {
+		return VFSManager.resolveOrCreateContainerFromPath(courseBaseContainer, FOLDER_NAME);
+	}
+	
 	public static String getFileDirectory(CourseEnvironment courseEnv) {
 		String documentsPath = courseEnv.getCourseConfig().getDocumentsPath();
 		if (documentsPath == null) {
-			return courseEnv.getCourseBaseContainer().getRelPath() + "/" + FOLDER_NAME;
+			return getFileDirectory(courseEnv.getCourseBaseContainer());
 		}
 		return courseEnv.getCourseFolderContainer().getRelPath() + documentsPath;
+	}
+	
+	public static String getFileDirectory(VFSContainer courseBaseContainer) {
+		return courseBaseContainer.getRelPath() + "/" + FOLDER_NAME;
 	}
 	
 	public static SubscriptionContext getSubscriptionContext(RepositoryEntry courseEntry) {
@@ -80,8 +88,8 @@ public class CourseDocumentsFactory {
 			SubscriptionContext subContext) {
 		String folderPath = getFileDirectory(userCourseEnv.getCourseEnvironment());
 		return isReadOnly(userCourseEnv, isGuestOnly)
-				? new ReadOnlyCallback(subContext)
-				: new ReadWriteCallback(subContext, folderPath);
+				? createReadOnlyCallback(subContext)
+				: createReadWriteCallback(subContext, folderPath);
 	}
 	
 	private static boolean isReadOnly(UserCourseEnvironment userCourseEnv, boolean isGuestOnly) {
@@ -100,6 +108,14 @@ public class CourseDocumentsFactory {
 		return courseConfig.getDocumentsPath() != null
 				&& courseConfig.getDocumentsPath().startsWith("/_sharedfolder")
 				&& courseConfig.isSharedFolderReadOnlyMount();
+	}
+	
+	public static VFSSecurityCallback createReadWriteCallback(SubscriptionContext subContext, String folderPath) {
+		return new ReadWriteCallback(subContext, folderPath);
+	}
+	
+	public static VFSSecurityCallback createReadOnlyCallback(SubscriptionContext subContext) {
+		return new ReadOnlyCallback(subContext);
 	}
 
 	private static class ReadWriteCallback implements VFSSecurityCallback {
