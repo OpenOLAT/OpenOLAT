@@ -51,7 +51,7 @@ public class CoachFolderFactory {
 	
 	public static VFSContainer getFileContainer(CourseEnvironment courseEnv, String coachFolderPath) {
 		if (coachFolderPath == null) {
-			return VFSManager.resolveOrCreateContainerFromPath(courseEnv.getCourseBaseContainer(), FOLDER_NAME);
+			return getFileContainer(courseEnv.getCourseBaseContainer());
 		}
 		
 		VFSItem coachFolderItem = courseEnv.getCourseFolderContainer().resolve(coachFolderPath);
@@ -61,12 +61,20 @@ public class CoachFolderFactory {
 		return null;
 	}
 	
+	public static VFSContainer getFileContainer(VFSContainer courseBaseContainer) {
+		return VFSManager.resolveOrCreateContainerFromPath(courseBaseContainer, FOLDER_NAME);
+	}
+	
 	public static String getFileDirectory(CourseEnvironment courseEnv) {
 		String coachFolderPath = courseEnv.getCourseConfig().getCoachFolderPath();
 		if (coachFolderPath == null) {
-			return courseEnv.getCourseBaseContainer().getRelPath() + "/" + FOLDER_NAME;
+			return getFileDirectory(courseEnv.getCourseBaseContainer());
 		}
 		return courseEnv.getCourseFolderContainer().getRelPath() + coachFolderPath;
+	}
+	
+	public static String getFileDirectory(VFSContainer courseBaseContainer) {
+		return courseBaseContainer.getRelPath() + "/" + FOLDER_NAME;
 	}
 	
 	public static SubscriptionContext getSubscriptionContext(RepositoryEntry courseEntry) {
@@ -74,16 +82,22 @@ public class CoachFolderFactory {
 	}
 	
 	public static VFSSecurityCallback getSecurityCallback(UserCourseEnvironment userCourseEnv) {
-		// TODO Webdav connection for coach folders
-		// TODO Notifications check
 		return getSecurityCallback(userCourseEnv, false, null);
 	}
 	
 	public static VFSSecurityCallback getSecurityCallback(UserCourseEnvironment userCourseEnv, boolean isGuestOnly, SubscriptionContext subContext) {
 		String folderPath = getFileDirectory(userCourseEnv.getCourseEnvironment());
 		return isReadOnly(userCourseEnv, isGuestOnly)
-				? new ReadOnlyCallback(subContext)
-				: new ReadWriteCallback(subContext, folderPath);
+				? createReadOnlyCallback(subContext)
+				: createReadWriteCallback(subContext, folderPath);
+	}
+	
+	public static VFSSecurityCallback createReadWriteCallback(SubscriptionContext subContext, String folderPath) {
+		return new ReadWriteCallback(subContext, folderPath);
+	}
+	
+	public static VFSSecurityCallback createReadOnlyCallback(SubscriptionContext subContext) {
+		return new ReadOnlyCallback(subContext);
 	}
 	
 	private static boolean isReadOnly(UserCourseEnvironment userCourseEnv, boolean isGuestOnly) {

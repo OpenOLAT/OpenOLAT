@@ -34,6 +34,7 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.folder.MergedCourseElementDataContainer;
+import org.olat.course.nodes.bc.CoachFolderFactory;
 import org.olat.course.nodes.bc.CourseDocumentsFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -118,6 +119,10 @@ public class MergedCourseContainer extends MergeSource {
 		if(options.withCourseDocuments()) {
 			initCourseDocuments(persistingCourse);
 		}
+		
+		if(options.isWithCoachFolder()) {
+			initCoachFolder(persistingCourse);
+		}
 			
 		// add all course building blocks of type BC to a virtual folder
 		if(options.withCourseElements()) {
@@ -181,6 +186,35 @@ public class MergedCourseContainer extends MergeSource {
 			}
 			documentsContainer.setLocalSecurityCallback(securityCallback);
 			addContainer(new NamedContainerImpl("_documents", documentsContainer));
+		}
+	}
+	
+	private void initCoachFolder(PersistingCourseImpl persistingCourse) {
+		if (!persistingCourse.getCourseConfig().isCoachFolderEnabled()) return;
+		// Don't add a linked resource folder
+		if (StringHelper.containsNonWhitespace(persistingCourse.getCourseConfig().getCoachFolderPath())) return;
+		
+		VFSContainer documentsContainer = CoachFolderFactory.getFileContainer(persistingCourse.getCourseBaseContainer());
+		if (documentsContainer != null) {
+			VFSSecurityCallback securityCallback = null;
+			if (identityEnv == null) {
+				if (courseReadOnly) {
+					securityCallback = CoachFolderFactory.createReadOnlyCallback(null);
+				} else {
+					securityCallback = CoachFolderFactory.createReadWriteCallback(null,
+							CoachFolderFactory.getFileDirectory(persistingCourse.getCourseBaseContainer()));
+				}
+			} else {
+				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
+				if (userCourseEnv.isCoach()) {
+					securityCallback = CoachFolderFactory.getSecurityCallback(userCourseEnv);
+				} else {
+					// Do not show the folder to participants
+					return;
+				}
+			}
+			documentsContainer.setLocalSecurityCallback(securityCallback);
+			addContainer(new NamedContainerImpl("_coachdocuments", documentsContainer));
 		}
 	}
 
