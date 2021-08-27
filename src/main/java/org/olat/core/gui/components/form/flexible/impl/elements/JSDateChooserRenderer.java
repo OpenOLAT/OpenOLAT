@@ -161,6 +161,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("  onSelect:function(){\n")
 			  .append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
+			  .append("    jQuery(this).focus();\n")
 			  .append("    jQuery(this).change();\n")
 			  .append("  }\n")
 			  .append("})});")
