@@ -66,6 +66,7 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.bc.BCCourseNodeConfigController;
 import org.olat.course.nodes.bc.BCCourseNodeEditChooseFolderForm;
 import org.olat.course.nodes.bc.CourseDocumentsFactory;
@@ -912,7 +913,7 @@ public class CourseToolbarController extends FormBasicController {
 	}
 	
 	private void doSelectDocumentsFolder(UserRequest ureq) {
-		VFSContainer namedContainer = course.getCourseFolderContainer();
+		VFSContainer namedContainer = course.getCourseFolderContainer(CourseContainerOptions.withoutElements());
 		
 		folderSelectCtrl = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
 		listenTo(folderSelectCtrl);

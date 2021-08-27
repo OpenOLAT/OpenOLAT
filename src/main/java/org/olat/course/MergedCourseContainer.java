@@ -161,13 +161,24 @@ public class MergedCourseContainer extends MergeSource {
 	}
 	
 	private void initCourseDocuments(PersistingCourseImpl persistingCourse) {
-		if (identityEnv == null) return;
 		if (!persistingCourse.getCourseConfig().isDocumentsEnabled()) return;
+		// Don't add a linked resource folder
+		if (StringHelper.containsNonWhitespace(persistingCourse.getCourseConfig().getDocumentsPath())) return;
 		
-		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
-		VFSContainer documentsContainer = CourseDocumentsFactory.getFileContainer(persistingCourse.getCourseEnvironment());
+		VFSContainer documentsContainer = CourseDocumentsFactory.getFileContainer(persistingCourse.getCourseBaseContainer());
 		if (documentsContainer != null) {
-			VFSSecurityCallback securityCallback = CourseDocumentsFactory.getSecurityCallback(userCourseEnv);
+			VFSSecurityCallback securityCallback = null;
+			if (identityEnv == null) {
+				if (courseReadOnly) {
+					securityCallback = CourseDocumentsFactory.createReadOnlyCallback(null);
+				} else {
+					securityCallback = CourseDocumentsFactory.createReadWriteCallback(null,
+							CourseDocumentsFactory.getFileDirectory(persistingCourse.getCourseBaseContainer()));
+				}
+			} else {
+				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
+				securityCallback = CourseDocumentsFactory.getSecurityCallback(userCourseEnv);
+			}
 			documentsContainer.setLocalSecurityCallback(securityCallback);
 			addContainer(new NamedContainerImpl("_documents", documentsContainer));
 		}
