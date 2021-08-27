@@ -20,6 +20,7 @@
 package org.olat.upgrade;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.course.style.CourseStyleService;
 import org.olat.modules.video.VideoManager;
@@ -44,6 +45,8 @@ public class OLATUpgrade_16_0_0 extends OLATUpgrade {
 	private CourseStyleService courseStyleService;
 	@Autowired
 	private VideoManager videoManager;
+	@Autowired
+	private DB dbInstance;
 
 	public OLATUpgrade_16_0_0() {
 		super();
@@ -104,10 +107,16 @@ public class OLATUpgrade_16_0_0 extends OLATUpgrade {
 			int RESOLUTION_360 = 360;
 			
 			try {
+				int videoDeletedCount = 0;
 				for(VideoTranscoding transcoding : videoManager.getAllVideoTranscodings()) {
 					if (transcoding.getResolution() == RESOLUTION_240 || transcoding.getResolution() == RESOLUTION_360) {
 						log.info("Video transcoding deleted for video " + transcoding.getVideoResource().getKey() + " - " + transcoding.getResolution() + "p");
 						videoManager.deleteVideoTranscoding(transcoding);
+						
+						if(++videoDeletedCount % 10 == 0) {
+							dbInstance.commitAndCloseSession();
+						}
+						
 					}
 				}
 			} catch (Exception e) {
