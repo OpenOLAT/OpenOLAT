@@ -22,6 +22,8 @@ package org.olat.upgrade;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.style.CourseStyleService;
+import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoTranscoding;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -36,9 +38,12 @@ public class OLATUpgrade_16_0_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_16.0.0";
 	private static final String INIT_CN_TEASER_IMAGES = "INIT CN TEASER IMAGES";
+	private static final String REMOVE_UNSUPPORTED_TRANSCODINGS = "REMOVE UNSUPPORTED TRANSCODINGS";
 	
 	@Autowired
 	private CourseStyleService courseStyleService;
+	@Autowired
+	private VideoManager videoManager;
 
 	public OLATUpgrade_16_0_0() {
 		super();
@@ -60,7 +65,9 @@ public class OLATUpgrade_16_0_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
+		
 		allOk &= initCourseNodeTeaserNodes(upgradeManager, uhd);
+		allOk &= removeUnsupportedTranscodings(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -86,6 +93,32 @@ public class OLATUpgrade_16_0_0 extends OLATUpgrade {
 			uhd.setBooleanDataValue(INIT_CN_TEASER_IMAGES, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
+		return allOk;
+	}
+	
+	private boolean removeUnsupportedTranscodings(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(REMOVE_UNSUPPORTED_TRANSCODINGS)) {
+			int RESOLUTION_240 = 240;
+			int RESOLUTION_360 = 360;
+			
+			try {
+				for(VideoTranscoding transcoding : videoManager.getAllVideoTranscodings()) {
+					if (transcoding.getResolution() == RESOLUTION_240 || transcoding.getResolution() == RESOLUTION_360) {
+						log.info("Video transcoding deleted for video " + transcoding.getVideoResource().getKey() + " - " + transcoding.getResolution() + "p");
+						videoManager.deleteVideoTranscoding(transcoding);
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+			
+			uhd.setBooleanDataValue(REMOVE_UNSUPPORTED_TRANSCODINGS, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
 		return allOk;
 	}
 	
