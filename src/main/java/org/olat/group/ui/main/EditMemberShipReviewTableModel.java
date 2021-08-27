@@ -84,13 +84,11 @@ public class EditMemberShipReviewTableModel extends DefaultFlexiTreeTableDataMod
 
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public DefaultFlexiTableDataModel<EditMembershipReviewTableRow> createCopyWithEmptyList() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

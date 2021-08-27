@@ -72,7 +72,6 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
         }
     }
     
-    // TODO Alex Test
     @Override
     public ContactTracingLocation importLocation(ContactTracingLocation location) {
     	if (location == null || location.getQrId() == null) {

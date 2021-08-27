@@ -62,7 +62,6 @@ public class ModifyOwnersRemoveTableModel extends DefaultFlexiTableDataModel<Mod
 
 	@Override
 	public DefaultFlexiTableDataModel<ModifyOwnersRemoveTableRow> createCopyWithEmptyList() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

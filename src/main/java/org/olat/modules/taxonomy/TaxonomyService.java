@@ -299,7 +299,7 @@ public interface TaxonomyService {
 	 */
 	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
 			TaxonomyCompetenceTypes competence, Date expiration, TaxonomyCompetenceLinkLocations linkLocation);
-	// TODO Alex: Talk to Stephane, should be removed
+
 	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
 			TaxonomyCompetenceTypes competence, Date expiration);
 	

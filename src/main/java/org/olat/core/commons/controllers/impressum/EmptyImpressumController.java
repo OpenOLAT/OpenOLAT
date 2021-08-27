@@ -51,13 +51,11 @@ public class EmptyImpressumController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
 		
 	}
 
