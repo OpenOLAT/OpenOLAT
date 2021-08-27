@@ -559,12 +559,16 @@ a.o_orderby, a.o_orderby:hover {
 }
 
 @media (max-width: 720px) {
-	.o_table_filters_wrapper .o_button_group,
+	.o_table_filters_wrapper.o_collapsed .o_button_group,
+	.o_table_filters_wrapper.o_table_filters_large_off .o_table_filters_row,
+	.o_table_filters_wrapper.o_table_filters_large_off .o_button_group,
 	.o_table_tools > .btn-group:not(.o_table_settings),
 	.o_table_search > span {
 		display: none;
 	}
-	.o_table_filters_wrapper.o_collapsed {
+	
+	.o_table_filters_wrapper.o_collapsed,
+	.o_table_filters_wrapper.o_expanded {
 		margin-bottom: $line-height-computed;
 	}
 	

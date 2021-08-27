@@ -48,10 +48,12 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 		FlexiFiltersElementImpl ffE = ffC.getFlexiFiltersElement();
 		boolean alwaysOn = ffE.isAlwaysExpanded();
 		boolean expanded = ffE.isExpanded();
+		boolean largeSearch = ffE.isLargeSearch();
 		
 		sb.append("<div id='o_c").append(ffC.getDispatchID()).append("' class='o_table_filters_wrapper")
 			.append(" always-on", alwaysOn)
-			.append(" o_expanded", " o_collapsed", expanded).append("'>");
+			.append(" o_expanded", " o_collapsed", expanded)
+			.append(" o_table_filters_large_on", " o_table_filters_large_off", largeSearch).append("'>");
 		if(expanded) {
 			sb.append("<div class='o_table_filters_row'>")
 			  .append("<ul class='nav nav-pills o_table_filters' role='navigation'>");

@@ -146,6 +146,10 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	public boolean isExpanded() {
 		return expanded || alwaysExpanded;
 	}
+	
+	public boolean isLargeSearch() {
+		return tableEl.isSearchEnabled() && tableEl.isSearchLarge();
+	}
 
 	public void expand(boolean expand) {
 		this.expanded = expand;
