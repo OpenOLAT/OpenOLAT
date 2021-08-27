@@ -24,10 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -83,7 +83,7 @@ public class VideoModule extends AbstractSpringModule {
 	@Value("${video.transcoding.profile}")
 	private String transcodingProfile;
 	
-	private int[] transcodingResolutionsArr; //  1080, 720, 480, 360
+	private int[] transcodingResolutionsArr; //  1080, 720, 480
 	private Integer preferredDefaultResolution;// 720
 
 	@Autowired

@@ -61,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VideoAdminTranscodingController extends FormBasicController {
 	
 	// Hardcoded same as VideoAdminSetController
-	private static final List<Integer> RESOLUTIONS = List.of(2160, 1080, 720, 480, 360, 240);
+	private static final List<Integer> RESOLUTIONS = List.of(2160, 1080, 720, 480);
 
 	private TranscodingTableModel tableModel;
 	private FlexiTableElement transcodingTable;

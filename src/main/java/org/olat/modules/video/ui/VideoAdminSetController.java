@@ -52,8 +52,6 @@ public class VideoAdminSetController extends FormBasicController  {
 	private MultipleSelectionElement enable1080SelectionEl;
 	private MultipleSelectionElement enable720SelectionEl;
 	private MultipleSelectionElement enable480SelectionEl;
-	private MultipleSelectionElement enable360SelectionEl;
-	private MultipleSelectionElement enable240SelectionEl;
 	private SingleSelection defaultResEl;
 	private DialogBoxController deactivationHintController;
 
@@ -113,12 +111,6 @@ public class VideoAdminSetController extends FormBasicController  {
 		enable480SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.480", transcodingCont, enableKeys, enableValues);
 		enable480SelectionEl.addActionListener(FormEvent.ONCHANGE);
 		
-		enable360SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.360", transcodingCont, enableKeys, enableValues);
-		enable360SelectionEl.addActionListener(FormEvent.ONCHANGE);
-		
-		enable240SelectionEl = uifactory.addCheckboxesHorizontal("quality.resolution.240", transcodingCont, enableKeys, enableValues);
-		enable240SelectionEl.addActionListener(FormEvent.ONCHANGE);
-		
 		defaultResEl = uifactory.addDropdownSingleselect("quality.resolution.default", transcodingCont, new String[3], new String[3], null);
 		defaultResEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -139,8 +131,6 @@ public class VideoAdminSetController extends FormBasicController  {
 		enable1080SelectionEl.setVisible(transcodingEnabled);
 		enable720SelectionEl.setVisible(transcodingEnabled);
 		enable480SelectionEl.setVisible(transcodingEnabled);
-		enable360SelectionEl.setVisible(transcodingEnabled);
-		enable240SelectionEl.setVisible(transcodingEnabled);
 		defaultResEl.setVisible(transcodingEnabled);
 		//get active resolutions from moduleconfig
 		int[] resolutions = videoModule.getTranscodingResolutions();
@@ -148,8 +138,6 @@ public class VideoAdminSetController extends FormBasicController  {
 		enable1080SelectionEl.select("on", containsResolution(resolutions, 1080));
 		enable720SelectionEl.select("on", containsResolution(resolutions, 720));
 		enable480SelectionEl.select("on", containsResolution(resolutions, 480));
-		enable360SelectionEl.select("on", containsResolution(resolutions, 360));
-		enable240SelectionEl.select("on", containsResolution(resolutions, 240));
 		updateDefaultResOptions(videoModule.getPreferredDefaultResolution());
 	}
 	
@@ -205,15 +193,13 @@ public class VideoAdminSetController extends FormBasicController  {
 			updateResolutionOptions();
 		}
 
-		if(source == enable2160SelectionEl || source == enable1080SelectionEl || source == enable720SelectionEl || source == enable480SelectionEl || source == enable360SelectionEl || source == enable240SelectionEl) {
+		if(source == enable2160SelectionEl || source == enable1080SelectionEl || source == enable720SelectionEl || source == enable480SelectionEl) {
 			//update config with values from gui
 			List<Integer> resolutions = new ArrayList<>();
 			if(enable2160SelectionEl.isSelected(0)) resolutions.add(2160);
 			if(enable1080SelectionEl.isSelected(0)) resolutions.add(1080);
 			if(enable720SelectionEl.isSelected(0)) resolutions.add(720);
 			if(enable480SelectionEl.isSelected(0)) resolutions.add(480);
-			if(enable360SelectionEl.isSelected(0)) resolutions.add(360);
-			if(enable240SelectionEl.isSelected(0)) resolutions.add(240);
 			if(resolutions.size() <= 0){
 				deactivationHintController = activateYesNoDialog(ureq, translate("admin.config.hint.title"), translate("admin.config.hint"), deactivationHintController);
 				deactivationHintController.setUserObject(source);
