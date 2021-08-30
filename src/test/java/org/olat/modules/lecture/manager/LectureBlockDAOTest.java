@@ -710,7 +710,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		
-		List<LectureBlockWithTeachers> infos = lectureBlockDao.getLecturesBlockWithTeachers(entry);
+		List<LectureBlockWithTeachers> infos = lectureBlockDao.getLecturesBlockWithTeachers(entry, null);
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		Assert.assertEquals(lectureBlock, infos.get(0).getLectureBlock());
