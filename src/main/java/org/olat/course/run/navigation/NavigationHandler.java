@@ -150,11 +150,15 @@ public class NavigationHandler implements Disposable {
 	 * @param treeEvent
 	 * @param listeningController
 	 * @param nodecmd null or a subcmd which activates a node-specific view (e.g. opens a certain uri in a contentpackaging- buildingblock)
+	 * @param singleBranch Only show the branch with the current node and close all other branches
 	 * @return the NodeClickedRef
 	 * @return currentNodeController the current node controller that will be dispose before creating the new one
 	 */
 	public NodeClickedRef evaluateJumpToTreeNode(UserRequest ureq, WindowControl wControl, TreeModel treeModel, TreeEvent treeEvent,
-			ControllerEventListener listeningController, String nodecmd, Controller currentNodeController) {
+			ControllerEventListener listeningController, String nodecmd, Controller currentNodeController, boolean singleBranch) {
+		if (singleBranch) {
+			openCourseNodeIds.clear();
+		}
 		NodeClickedRef ncr;
 		String treeNodeId = treeEvent.getNodeId();
 		TreeNode selTN = treeModel.getNodeById(treeNodeId);
