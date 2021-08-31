@@ -30,7 +30,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
@@ -50,6 +52,8 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	
@@ -89,16 +93,20 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 		for(LectureBlockWithTeachers blockWithTeachers:blocksWithTeachers) {
 			LectureBlock block = blockWithTeachers.getLectureBlock();
 			RepositoryEntry entry = block.getEntry();
-			
-			StringBuilder teachers = new StringBuilder(32);
-			String separator = translate("user.fullname.separator");
-			for(Identity teacher:blockWithTeachers.getTeachers()) {
-				if(teachers.length() > 0) teachers.append(" ").append(separator).append(" ");
-				teachers.append(userManager.getUserDisplayName(teacher));
+			RepositoryEntryLectureConfiguration entryConfig = blockWithTeachers.getLecturesConfigurations();
+			if(ConfigurationHelper.isRollCallEnabled(entryConfig, lectureModule)) {
+				StringBuilder teachers = new StringBuilder(32);
+				String separator = translate("user.fullname.separator");
+				for(Identity teacher:blockWithTeachers.getTeachers()) {
+					if(teachers.length() > 0) teachers.append(" ").append(separator).append(" ");
+					teachers.append(userManager.getUserDisplayName(teacher));
+				}
+				
+				rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(),
+						teachers.toString(), true, blockWithTeachers.isAssessmentMode()));
+			} else {
+				System.out.println(entry.getDisplayname());
 			}
-			
-			rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(),
-					teachers.toString(), true, blockWithTeachers.isAssessmentMode()));
 		}
 		return rows;
 	}
