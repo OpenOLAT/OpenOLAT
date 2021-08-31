@@ -440,6 +440,21 @@ public class RepositoryEntryListController extends FormBasicController
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries != null && !entries.isEmpty()) {
+			ContextEntry entry = entries.get(0);
+			String tabId = entry.getOLATResourceable().getResourceableTypeName();
+			if(tableEl.getSelectedFilterTab() == null || !tableEl.getSelectedFilterTab().getId().equals(tabId)) {
+				FlexiFiltersTab tab = tableEl.getFilterTabById(tabId);
+				if(tab == null) {
+					selectFilterTab(ureq, myTab);
+				} else {
+					selectFilterTab(ureq, tab);
+				}
+			} else {
+				tableEl.addToHistory(ureq);
+			}
+		}
+		
 		if(state instanceof RepositoryEntryListState) {
 			RepositoryEntryListState se = (RepositoryEntryListState)state;
 			if(se.getTableState() != null) {
@@ -644,9 +659,9 @@ public class RepositoryEntryListController extends FormBasicController
 		addToHistory(ureq, state);
 	}
 	
-	protected void selectFilterTab(FlexiFiltersTab tab) {
+	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		if(tab == null) return;
-		tableEl.setSelectedFilterTab(tab);
+		tableEl.setSelectedFilterTab(ureq, tab);
 	}
 	
 	private void doFilter(List<Filter> filters) {	

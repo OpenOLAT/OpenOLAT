@@ -73,7 +73,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
@@ -683,20 +682,16 @@ public class AuthorListController extends FormBasicController implements Activat
 		return null;
 	}
 	
+	public boolean hasTab() {
+		return tableEl.getSelectedFilterTab() != null;
+	}
+	
 	public FlexiFiltersTab getFavoritTab() {
 		return bookmarkTab;
 	}
 	
 	public FlexiFiltersTab getMyTab() {
 		return myTab;
-	}
-	
-	public FlexiFiltersTab getSearchTab() {
-		return searchTab;
-	}
-	
-	public FlexiFiltersTab getDeletedTab() {
-		return deletedTab;
 	}
 
 	@Override
@@ -706,6 +701,21 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries != null && !entries.isEmpty()) {
+			ContextEntry entry = entries.get(0);
+			String tabName = entry.getOLATResourceable().getResourceableTypeName();
+			if(tableEl.getSelectedFilterTab() == null || !tableEl.getSelectedFilterTab().getId().equals(tabName)) {
+				FlexiFiltersTab tab = tableEl.getFilterTabById(tabName);
+				if(tab != null) {
+					selectFilterTab(ureq, tab);
+				} else {
+					selectFilterTab(ureq, myTab);
+				}
+			} else {
+				tableEl.addToHistory(ureq);
+			}
+		}
+		
 		if(state instanceof AuthorListState) {
 			AuthorListState se = (AuthorListState)state;
 			if(se.getTableState() != null) {
@@ -975,10 +985,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				} else if("select".equals(cmd)) {
 					launch(ureq, row);
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
-				AuthorListState stateEntry = new AuthorListState();
-				stateEntry.setTableState(tableEl.getStateEntry());
-				addToHistory(ureq, stateEntry);
 			} else if(event instanceof FlexiTableFilterTabEvent) {
 				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
 			}
@@ -1191,10 +1197,10 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.reset(true, true, true);
 	}
 	
-	protected void selectFilterTab(FlexiFiltersTab tab) {
+	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		if(tab == null) return;
 		
-		tableEl.setSelectedFilterTab(tab);
+		tableEl.setSelectedFilterTab(ureq, tab);
 		doSelectFilterTab(tab);
 	}
 	

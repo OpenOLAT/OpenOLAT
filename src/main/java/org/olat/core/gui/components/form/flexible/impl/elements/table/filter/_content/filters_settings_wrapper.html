@@ -4,6 +4,9 @@
 #elseif($r.visible("filter"))
 	<h4>$r.escapeHtml($filterLabel)</h4>
 	$r.render("filter")
+#elseif($r.visible("sort"))
+	<h4>$r.translate("sort.settings")</h4>
+	$r.render("sort")
 #else
 	$r.render("panel")
 #end

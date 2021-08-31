@@ -42,8 +42,8 @@
 				<div class="o_fileinput">
 					<input id="oo_${responseIdentifier}" class="form-control o_realchooser" type="file" name="qtiworks_uploadresponse_${responseIdentifier}" onchange="b_handleFileUploadFormChange(this, this.form.fake_oo_${responseIdentifier}, this.form.upload); $r.getFullTemporaryResponseEvent();" />
 					<div class="o_fakechooser input-group">
-						<input class="form-control" name="fake_oo_${responseIdentifier}">
-						<span class="input-group-addon"><a href="javascript:;"><i class="o_icon o_icon_upload"> </i></a></span>
+						<input class="form-control" name="fake_oo_${responseIdentifier}" tabindex="-1">
+						<span class="input-group-addon"><a href="javascript:;" tabindex="-1"><i class="o_icon o_icon_upload"> </i></a></span>
 					</div>
 				</div>
 			</div>

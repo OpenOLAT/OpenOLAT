@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 
 /**
  * 
@@ -35,11 +36,15 @@ public class LectureBlockWithTeachers {
 	
 	private final boolean assessmentMode;
 	private final LectureBlock lectureBlock;
+	private final RepositoryEntryLectureConfiguration lecturesConfiguration;
+	
 	private final List<Identity> teachers = new ArrayList<>(3);
 	
-	public LectureBlockWithTeachers(LectureBlock lectureBlock, boolean assessmentMode) {
+	public LectureBlockWithTeachers(LectureBlock lectureBlock, RepositoryEntryLectureConfiguration lecturesConfiguration,
+			boolean assessmentMode) {
 		this.lectureBlock = lectureBlock;
 		this.assessmentMode = assessmentMode;
+		this.lecturesConfiguration = lecturesConfiguration;
 	}
 	
 	public boolean isAssessmentMode() {
@@ -52,5 +57,9 @@ public class LectureBlockWithTeachers {
 	
 	public List<Identity> getTeachers() {
 		return teachers;
+	}
+	
+	public RepositoryEntryLectureConfiguration getLecturesConfigurations() {
+		return lecturesConfiguration;
 	}
 }

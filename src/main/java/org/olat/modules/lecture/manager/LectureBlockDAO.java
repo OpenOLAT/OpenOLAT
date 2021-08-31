@@ -51,6 +51,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRefImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
@@ -512,12 +513,13 @@ public class LectureBlockDAO {
 	}
 	
 	/**
+	 * The method doesn't fill the configuration.
 	 * 
 	 * @param entry The course (mandatory)
 	 * @param teacher The teacher (optional)
 	 * @return
 	 */
-	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry) {
+	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry, RepositoryEntryLectureConfiguration config) {
 		List<LectureBlock> blocks = getLectureBlocks(entry);
 		
 		// assessed lectures blocks
@@ -535,7 +537,7 @@ public class LectureBlockDAO {
 		
 		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
 		for(LectureBlock block:blocks) {
-			blockMap.put(block.getKey(), new  LectureBlockWithTeachers(block, assessedBlockKeySet.contains(block.getKey())));
+			blockMap.put(block.getKey(), new LectureBlockWithTeachers(block, config, assessedBlockKeySet.contains(block.getKey())));
 		}
 		
 		// append the coaches
@@ -572,7 +574,7 @@ public class LectureBlockDAO {
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sc = new QueryBuilder(2048);
-		sc.append("select block, coach, mode.key")
+		sc.append("select block, coach, config, mode.key")
 		  .append(" from lectureblock block")
 		  .append(" inner join block.entry entry")
 		  .append(" inner join block.teacherGroup tGroup")
@@ -580,7 +582,9 @@ public class LectureBlockDAO {
 		  .append(" inner join membership.identity coach")
 		  .append(" inner join fetch coach.user usercoach")
 		  .append(" left join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
-		  .where().append(" membership.role='").append("teacher").append("'");
+		  .append(" inner join lectureentryconfig as config on (config.entry.key=entry.key)")
+		  .where().append(" membership.role='").append("teacher").append("'")
+		  .and().append(" config.lectureEnabled=true");
 		addSearchParametersToQuery(sc, searchParams);
 
 		//get all, it's quick
@@ -594,11 +598,12 @@ public class LectureBlockDAO {
 		for(Object[] rawCoach:rawCoachs) {
 			LectureBlock block = (LectureBlock)rawCoach[0];
 			Identity coach = (Identity)rawCoach[1];
-			Long assessmentModeKey = (Long)rawCoach[2];
+			RepositoryEntryLectureConfiguration lectureConfiguration = (RepositoryEntryLectureConfiguration)rawCoach[2];
+			Long assessmentModeKey = (Long)rawCoach[3];
 			
 			LectureBlockWithTeachers blockWith = blockMap.get(block.getKey());
 			if(blockWith == null) {
-				blockWith = new LectureBlockWithTeachers(block, assessmentModeKey != null);
+				blockWith = new LectureBlockWithTeachers(block, lectureConfiguration, assessmentModeKey != null);
 				blockMap.put(block.getKey(), blockWith);
 			}
 			blockWith.getTeachers().add(coach);

@@ -155,6 +155,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private Controller currentNodeController;
 
 	private boolean isInEditor = false;
+	private final boolean leaningPath;
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
@@ -178,7 +179,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private CourseModule courseModule;
 	@Autowired 
 	private CourseDisclaimerManager disclaimerManager;
-	
+
 	/**
 	 * Constructor for the run main controller
 	 * 
@@ -321,7 +322,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			coursemain.contextPut("oInfoCourse", oInfoCourse);
 		}
 		
-		boolean leaningPath = NodeAccessType.of(course).getType().equals(LearningPathNodeAccessProvider.TYPE);
+		leaningPath = NodeAccessType.of(course).getType().equals(LearningPathNodeAccessProvider.TYPE);
 		coursemain.contextPut("learningPath", Boolean.valueOf(leaningPath));
 		
 		// if a disclaimer is enabled, show it first
@@ -721,7 +722,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		} else if (source == luTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED) || event.getCommand().equals(MenuTree.COMMAND_TREENODE_EXPANDED)) {
 				TreeEvent tev = (TreeEvent) event;
-				doNodeClick(ureq, tev);
+				doNodeClick(ureq, tev, false);
 			}
 		} else if (source == coursemain) {
 			if ("activateCourseNode".equals(event.getCommand())) {
@@ -863,7 +864,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if(index >= 0 && index+1 <flatList.size()) {
 			TreeNode nextNode = flatList.get(index + 1);
 			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, nextNode.getIdent());
-			doNodeClick(ureq, tev);
+			doNodeClick(ureq, tev, leaningPath);
 		}
 	}
 	
@@ -874,7 +875,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		TreeNode previousNonDelegatingNode = getPreviousNonDelegatingNode(flatList, currentNode);
 		if (previousNonDelegatingNode != null) {
 			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, previousNonDelegatingNode.getIdent());
-			doNodeClick(ureq, tev);
+			doNodeClick(ureq, tev, leaningPath);
 		}
 	}
 	
@@ -914,11 +915,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		updateProgressUI();
 	}
 
-	private void doNodeClick(UserRequest ureq, TreeEvent tev) {
+	private void doNodeClick(UserRequest ureq, TreeEvent tev, boolean singleBranch) {
 		// goto node:
 		// after a click in the tree, evaluate the model anew, and set the
 		// selection of the tree again
-		NodeClickedRef nclr = navHandler.evaluateJumpToTreeNode(ureq, getWindowControl(), treeModel, tev, this, null, currentNodeController);
+		NodeClickedRef nclr = navHandler.evaluateJumpToTreeNode(ureq, getWindowControl(), treeModel, tev, this, null, currentNodeController, singleBranch);
 		if (!nclr.isVisible()) {
 			getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
 			// go to root since the current node is no more visible 

@@ -93,12 +93,14 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			if(isGuestOnly) {
-				authorListCtrl.selectFilterTab(authorListCtrl.getMyTab());
-			} else {
-				authorListCtrl.selectFilterTab(authorListCtrl.getFavoritTab());
-				if(authorListCtrl.isEmpty()) {
-					authorListCtrl.selectFilterTab(authorListCtrl.getMyTab());
+			if(!authorListCtrl.hasTab()) {
+				if(isGuestOnly) {
+					authorListCtrl.selectFilterTab(ureq, authorListCtrl.getMyTab());
+				} else {
+					authorListCtrl.selectFilterTab(ureq, authorListCtrl.getFavoritTab());
+					if(authorListCtrl.isEmpty()) {
+						authorListCtrl.selectFilterTab(ureq, authorListCtrl.getMyTab());
+					}
 				}
 			}
 			
@@ -108,23 +110,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 				authorListCtrl.reloadDirtyRows();
 			}
 		} else {
-			ContextEntry entry = entries.get(0);
-			String segment = entry.getOLATResourceable().getResourceableTypeName();
-			if("Favorits".equals(segment) && authorListCtrl.getFavoritTab() != null) {
-				if(isGuestOnly) {
-					authorListCtrl.selectFilterTab(authorListCtrl.getMyTab());
-				} else {
-					authorListCtrl.selectFilterTab(authorListCtrl.getFavoritTab());
-				}
-			} else if("My".equals(segment)) {
-				authorListCtrl.selectFilterTab(authorListCtrl.getMyTab());
-			} else if("Search".equals(segment) && authorListCtrl.getSearchTab() != null) {
-				authorListCtrl.selectFilterTab(authorListCtrl.getSearchTab());
-			} else if("Deleted".equals(segment) && authorListCtrl.getDeletedTab() != null) {
-				authorListCtrl.selectFilterTab(authorListCtrl.getDeletedTab());
-			} else {
-				authorListCtrl.selectFilterTab(authorListCtrl.getMyTab());
-			}
+			authorListCtrl.activate(ureq, entries, state);
 		}
 	}
 

@@ -1,0 +1,12 @@
+<ul class="list-unstyled">
+#foreach($sorter in $sorters)
+	#if($sorter == "DIVIDER")
+		<li class='divider'> </li>
+	#else
+		<li>$r.render($sorter)</li>
+	#end
+#end
+</ul>
+<div class="o_button_group">
+	$r.render("cancel")
+</div>

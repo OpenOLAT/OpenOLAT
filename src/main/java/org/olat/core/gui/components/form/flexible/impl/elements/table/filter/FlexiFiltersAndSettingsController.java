@@ -22,10 +22,12 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -49,6 +51,7 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 	
 	private int count = 0;
 	private SingleSelection renderTypeEl;
+	private FormLink sortLink;
 	private FormLink resetFilterLink;
 	private FormLink customizeColumnsLink;
 	private final FlexiTableElementImpl tableEl;
@@ -66,6 +69,13 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 		resetFilterLink = uifactory.addFormLink("reset.filters", "reset.filters", null, formLayout, Link.BUTTON);
 		resetFilterLink.setElementCssClass("o_table_reset_filters");
 		resetFilterLink.getComponent().setSuppressDirtyFormWarning(true);
+		
+		sortLink = uifactory.addFormLink("sort.settings", "sort.settings", null, formLayout, Link.LINK);
+		sortLink.setElementCssClass("o_table_sort");
+		sortLink.getComponent().setSuppressDirtyFormWarning(true);
+		List<FlexiTableSort> sorts = tableEl.getSorts();
+		sortLink.setVisible(sorts != null && !sorts.isEmpty());
+		updateSort(getTableOrderBy());
 		
 		FlexiFiltersElementImpl filtersEl = tableEl.getFiltersElement();
 		if(filtersEl != null) {
@@ -116,7 +126,31 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 		uifactory.addFormSubmitButton("settings.done", formLayout);
 	}
 	
-	public void updateLink(FlexiTableExtendedFilter filter, Object value) {
+	protected void updateSort(SortKey sortKey) {
+		String name = null;
+		if(tableEl.getSorts() != null) {
+			for(FlexiTableSort sort:tableEl.getSorts()) {
+				if(sort.getSortKey().getKey().equals(sortKey.getKey())) {
+					name = translate("sort.settings.with", sort.getLabel());
+				}
+			}
+		}
+		if(name == null) {
+			name = translate("sort.settings");
+		}
+		sortLink.getComponent().setCustomDisplayText(name);
+		
+		String sortIcon = null;
+		if(sortKey != null && sortKey.isAsc()) {
+			sortIcon = "o_icon o_icon_sort_asc";
+		} else if(sortKey != null && !sortKey.isAsc()) {
+			sortIcon = "o_icon o_icon_sort_desc";
+		}
+		sortLink.getComponent().setIconRightCSS(sortIcon);
+		
+	}
+	
+	protected void updateLink(FlexiTableExtendedFilter filter, Object value) {
 		FormLink link = getFilterLinkByFilter(filter);
 		if(link != null) {
 			String label = value == null ? filter.getLabel() : filter.getDecoratedLabel(value, true);
@@ -145,6 +179,8 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 			fireEvent(ureq, new CustomizeColumnsEvent());
 		} else if(source == resetFilterLink) {
 			fireEvent(ureq, new FiltersAndSettingsEvent(FiltersAndSettingsEvent.FILTERS_RESET));
+		} else if(source == sortLink) {
+			fireEvent(ureq, new CustomizeSortEvent());
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if(link.getUserObject() instanceof FlexiFilterButton) {
@@ -162,7 +198,10 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 			renderType = FlexiTableRendererType.valueOf(renderTypeEl.getSelectedKey());
 		}
 		
-		
 		fireEvent(ureq, new FiltersAndSettingsEvent(renderType));
+	}
+	
+	protected SortKey getTableOrderBy() {
+		return (tableEl.getOrderBy() != null && tableEl.getOrderBy().length > 0) ? tableEl.getOrderBy()[0] : null;
 	}
 }

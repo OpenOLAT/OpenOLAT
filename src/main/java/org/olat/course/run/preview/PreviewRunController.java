@@ -162,7 +162,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 				// goto node:
 				// after a click in the tree, evaluate the model anew, set the tree
 				// model anew, and set the selection of the tree again
-				NodeClickedRef nclr = navHandler.evaluateJumpToTreeNode(ureq, getWindowControl(), treeModel, tev, this, null, currentNodeController);
+				NodeClickedRef nclr = navHandler.evaluateJumpToTreeNode(ureq, getWindowControl(), treeModel, tev, this, null, currentNodeController, false);
 				if (!nclr.isVisible()) {
 					getWindowControl().setWarning(translate("warn.notvisible"));
 					return;

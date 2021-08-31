@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.choice.Choice;
@@ -50,12 +51,14 @@ public class FlexiFiltersAndSettingsDialogController extends BasicController {
 	private Choice choice;
 	private final VelocityContainer mainVC;
 	
+	private SortKey sortKey;
 	private Choice customizedColumnsChoice;
 	private boolean resetCustomizedColumns = false;
 	private List<FilterToValue> filterValues = new ArrayList<>();
 	private final FlexiTableElementImpl tableEl;
 	
 	private Controller filterCtrl;
+	private FlexiSortController sortCtrl;
 	private final FlexiFiltersAndSettingsController filtersAndSettingsCtrl;
 	
 	public FlexiFiltersAndSettingsDialogController(UserRequest ureq, WindowControl wControl, FlexiTableElementImpl tableEl) {
@@ -98,6 +101,8 @@ public class FlexiFiltersAndSettingsDialogController extends BasicController {
 				doSelectFilter(ureq, ((SelectFilterEvent)event).getFilterButton());
 			} else if(event instanceof CustomizeColumnsEvent) {
 				doCustomizeColumns();
+			} else if(event instanceof CustomizeSortEvent) {
+				doCustomizeSort(ureq);
 			}
 		} else if(source == filterCtrl) {
 			if(event instanceof ChangeValueEvent) {
@@ -105,6 +110,12 @@ public class FlexiFiltersAndSettingsDialogController extends BasicController {
 				doApplyFilterValue(cve.getFilter(), cve.getValue());
 				closeSubPanel();
 			} 
+		} else if(source == sortCtrl) {
+			if(event instanceof CustomizeSortEvent) {
+				sortKey = ((CustomizeSortEvent)event).getSortKey();
+				filtersAndSettingsCtrl.updateSort(sortKey);
+			}
+			closeSubPanel();
 		}
 	}
 	
@@ -118,9 +129,14 @@ public class FlexiFiltersAndSettingsDialogController extends BasicController {
 		removeAsListenerAndDispose(filterCtrl);
 		filterCtrl = null;
 		mainVC.remove("filter");
+		
+		this.removeAsListenerAndDispose(sortCtrl);
+		sortCtrl = null;
+		mainVC.remove("sort");
 	}
 	
 	private void doSetSettings(UserRequest ureq, FiltersAndSettingsEvent event) {
+		event.setSortKey(sortKey);
 		event.setCustomizedColumns(customizedColumnsChoice);
 		event.setResetCustomizedColumns(resetCustomizedColumns);
 		
@@ -180,6 +196,20 @@ public class FlexiFiltersAndSettingsDialogController extends BasicController {
 		choice.setElementCssClass("o_table_config");
 		
 		mainVC.put("columns", choice);
+	}
+	
+	private void doCustomizeSort(UserRequest ureq) {
+		SortKey selectedSortKey;
+		if(sortKey == null) {
+			selectedSortKey = filtersAndSettingsCtrl.getTableOrderBy();
+		} else {
+			selectedSortKey = sortKey;
+		}
+		
+		sortCtrl = new FlexiSortController(ureq, getWindowControl(), tableEl, selectedSortKey);
+		listenTo(sortCtrl);
+		
+		mainVC.put("sort", sortCtrl.getInitialComponent());
 	}
 	
 	private void setCustomizedColumns(Choice visibleColsChoice) {
