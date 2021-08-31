@@ -1707,7 +1707,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			setCustomizedColumns(ureq, e.getCustomizedColumns());
 		}
 		
-		
+		if(e.getSortKey() != null) {
+			setSortSettings(sortOptions);
+			orderBy = new SortKey[]{ e.getSortKey() };
+		}
+
 		// need to be the last
 		if(e.getFilterValues() != null) {
 			List<String> implicitFilters = filterTabsEl == null ? null : filterTabsEl.getImplicitFiltersOfSelectedTab();

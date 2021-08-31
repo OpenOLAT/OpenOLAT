@@ -3,6 +3,11 @@
 		$r.render("reset.filters")
 	#end
 	
+	#if($r.visible("sort.settings"))
+		<h4>$r.translate("sort.settings")</h4>
+		$r.render("sort.settings")
+	#end
+	
 	#if($r.isNotEmpty($filters))
 		<h4>$r.translate("settings.filters.title")</h4>
 		<ul class="list-unstyled">

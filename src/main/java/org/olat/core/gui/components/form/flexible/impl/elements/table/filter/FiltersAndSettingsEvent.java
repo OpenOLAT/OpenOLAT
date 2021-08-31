@@ -21,6 +21,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table.filter;
 
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.choice.Choice;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
@@ -38,7 +39,8 @@ public class FiltersAndSettingsEvent extends Event {
 
 	public static final String FILTERS_AND_SETTINGS = "filters-and-settings";
 	public static final String FILTERS_RESET = "filters-reset";
-	
+
+	private SortKey sortKey;
 	private Choice customizedColumns;
 	private FlexiTableRendererType renderType;
 	private boolean resetCustomizedColumns = false;
@@ -51,6 +53,14 @@ public class FiltersAndSettingsEvent extends Event {
 	public FiltersAndSettingsEvent(FlexiTableRendererType renderType) {
 		super(FILTERS_AND_SETTINGS);
 		this.renderType = renderType;
+	}
+
+	public SortKey getSortKey() {
+		return sortKey;
+	}
+
+	public void setSortKey(SortKey sortKey) {
+		this.sortKey = sortKey;
 	}
 
 	public FlexiTableRendererType getRenderType() {
