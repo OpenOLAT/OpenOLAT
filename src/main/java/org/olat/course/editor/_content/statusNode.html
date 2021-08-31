@@ -1,0 +1,44 @@
+#if($errors.size() > 0)
+<ul class="o_error o_messages list-unstyled">	
+#foreach($message in $errors)
+	<li>
+		<span class="badge o_miderr"><i class="o_icon o_miderr"> </i></span> 
+		$r.escapeHtml($message[0])
+		#set ($link = ($message[1]))
+		#if($link)
+			<a href="$r.commandURI($link)"><span>$r.translate("fix.it")></span> <i class="o_icon o_icon-fw o_icon_go"> </i></a>
+		#end
+	</li>
+	#end
+</ul>
+#end
+
+#if($warnings.size() > 0)	
+<ul class="o_warning o_messages list-unstyled">
+#foreach($message in $warnings)
+	<li>
+		<span class="badge o_midwarn"><i class="o_icon o_midwarn"> </i></span> 
+		$r.escapeHtml($message[0])
+		#set ($link = ($message[1]))
+		#if($link)
+			<a href="$r.commandURI($link)"><span>$r.translate("fix.it")></span> <i class="o_icon o_icon-fw o_icon_go"> </i></a>
+		#end
+	</li>
+#end
+</ul>
+#end
+
+#if($infos.size() > 0)	
+<ul class="o_info o_messages list-unstyled">
+#foreach($message in $infos)
+	<li>
+		<span class="badge"><i class="o_icon o_icon_info_badge"> </i></span> 
+		$r.escapeHtml($message[0])
+		#set ($link = ($message[1]))
+		#if($link)
+			<a href="$r.commandURI($link)"><span>$r.translate("fix.it")></span> <i class="o_icon o_icon-fw o_icon_go"> </i></a>
+		#end
+	</li>
+#end
+</ul>
+#end

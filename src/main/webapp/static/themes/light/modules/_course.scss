@@ -240,12 +240,12 @@
 	&.o_midlock           { background-color: $o-course-node-locked;}
 	&.o_miderr            { background-color: $o-course-node-error;}
 	&.o_middel            { background-color: $o-course-node-deleted;}
-}
-.o_course_editor_legend .badge {
-	font-size: 80%;
 	&:before {
 		content: none;
 	}
+}
+.o_course_editor_legend .badge {
+	font-size: 80%;
 }
 
 .o_course_edit_overview_table {

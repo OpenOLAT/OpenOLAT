@@ -4,6 +4,9 @@
 	<h2><i class="o_icon $courseNodeCss"> </i> $r.escapeHtml($courseNode.getShortTitle())</h2>
 </div>
 #end
+
+$r.render("nodeStatu")
+
 #if($courseNodeDisabled)
 <div class="o_block">
 	<p>$r.translate("course.building.block.disabled")</p>

@@ -178,6 +178,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private EditorStatusController statusCtr;
 	private ChooseNodeController chooseNodeTypeCtr;
 	private QuickPublishController quickPublishCtr;
+	private NodeStatusController nodeStatusCtr;
 	
 	private LockResult lockEntry;
 	
@@ -557,8 +558,17 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 		main.contextPut("courseNodeCss", nodeCssClass);
 		main.contextPut("courseNode", chosenNode);
+
+		// Show error / warning status
+		if (nodeStatusCtr == null) {
+			nodeStatusCtr = new NodeStatusController(ureq, getWindowControl());
+			listenTo(nodeStatusCtr);
+			main.put("nodeStatu", nodeStatusCtr.getInitialComponent());
+		}
+		nodeStatusCtr.updateFromNodeStatus(ureq, chosenNode, euce.getCourseEditorEnv());
 	}
 
+	
 	/**
 	 * Initializes the node edit tabbed pane and its controller for this
 	 * particular node
@@ -596,7 +606,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				TreeNode node = menuTree.getSelectedNode();
 				if(node instanceof CourseEditorTreeNode) {
 					CourseEditorTreeNode cet = (CourseEditorTreeNode)node;
-					main.contextPut("courseNode", cet.getCourseNode());
+					main.contextPut("courseNode", cet.getCourseNode());					
+					nodeStatusCtr.updateFromNodeStatus(ureq, cet.getCourseNode(), euce.getCourseEditorEnv());
 				}
 				if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
 					initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"));
@@ -608,6 +619,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 			calloutCtrl.deactivate();
 			cleanUp();
+		} else if (source == nodeStatusCtr) {
+			if (event.getCommand().startsWith(NLS_START_HELP_WIZARD)) {
+				doStartHelpWizard(ureq, event);
+			}
 		} else if (source == chooseNodeTypeCtr) {
 			cmc.deactivate();
 
@@ -749,6 +764,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		removeAsListenerAndDispose(alternateCtr);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(statusCtr);
+		removeAsListenerAndDispose(nodeStatusCtr);
 		removeAsListenerAndDispose(cmc);
 		moveCopyController = null;
 		chooseNodeTypeCtr = null;
@@ -757,6 +773,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		alternateCtr = null;
 		calloutCtrl = null;
 		statusCtr = null;
+		nodeStatusCtr = null;
 		cmc = null;
 	}
 	

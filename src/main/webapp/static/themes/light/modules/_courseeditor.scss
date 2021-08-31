@@ -39,3 +39,15 @@
 		flex-direction: row-reverse;
 	}
 }
+
+.o_messages {
+	padding: 10px;
+	&+ .o_messages {
+		margin-top: -20px;
+	}
+	a {
+		font-size: 80%;
+		vertical-align: text-top;
+		margin-left: 10px;
+	}
+}

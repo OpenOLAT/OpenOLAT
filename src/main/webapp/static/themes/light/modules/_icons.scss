@@ -170,6 +170,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_import:before { content: $fa-var-upload; }
 .o_icon_incorrect_response:before { content: $fa-var-times-circle-o; color: $brand-danger; }
 .o_icon_info:before { content: $fa-var-info-circle; color: $brand-info}
+.o_icon_info_badge:before { content: $fa-var-info-circle;}
 .o_icon_info_ap:before { content: $fa-var-info-circle; }
 .o_icon_info_msg:before { content: $fa-var-exclamation-circle; color: $brand-danger}
 .o_icon_info_resource:before { content: $fa-var-info-circle;}
