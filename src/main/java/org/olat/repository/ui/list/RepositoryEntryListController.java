@@ -674,9 +674,13 @@ public class RepositoryEntryListController extends FormBasicController
 
 	private boolean isConventionalUnpassedCourse(RepositoryEntryRow row) {
 		if ("CourseModule".equals(row.getOLATResourceable().getResourceableTypeName())) {
-			ICourse course = CourseFactory.loadCourse(row.getOLATResourceable());
-			return ConditionNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())
-					&& row.getCompletion().doubleValue() < 1.0;
+			try {
+				ICourse course = CourseFactory.loadCourse(row.getOLATResourceable());
+				return ConditionNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType())
+						&& row.getCompletion().doubleValue() < 1.0;
+			} catch (Exception e) {
+				logError("", e);
+			}
 		}
 		return false;
 	}
