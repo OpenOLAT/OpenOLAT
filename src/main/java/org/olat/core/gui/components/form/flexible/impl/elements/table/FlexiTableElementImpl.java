@@ -88,12 +88,15 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.core.util.resource.OresHelper;
 
 
 /**
@@ -857,7 +860,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void setSelectedFilterTab(FlexiFiltersTab tab) {
+	public void setSelectedFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		doUnSelectAll();
 		filterTabsEl.setSelectedTab(tab);
 		if(tab.isFiltersExpanded() && filtersEl != null) {
@@ -876,6 +879,21 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
 				reset(true, true, false);
+			}
+		}
+		
+		addToHistory(ureq);
+	}
+
+	@Override
+	public void addToHistory(UserRequest ureq) {
+		FlexiFiltersTab tab = getSelectedFilterTab();
+		if(ureq != null) {
+			if(tab == null) {
+				BusinessControlFactory.getInstance().addToHistory(ureq, wControl);
+			} else {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstanceWithoutCheck(tab.getId(), Long.valueOf(0l));
+				BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			}
 		}
 	}
@@ -1270,7 +1288,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(filterTabsEl != null && filterTabsEl.getComponent() == source) {
 			if(event instanceof SelectFilterTabEvent) {
 				FlexiFiltersTab tab = ((SelectFilterTabEvent)event).getTab();
-				setSelectedFilterTab(tab);
+				setSelectedFilterTab(ureq, tab);
 				getRootForm().fireFormEvent(ureq, new FlexiTableFilterTabEvent(this, tab, FormEvent.ONCLICK));
 			} else if(event instanceof RemoveFiltersEvent) {
 				resetFiltersSearch(ureq);
@@ -2013,6 +2031,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(eventCmd, this,
 				search, selectedFilters, FormEvent.ONCLICK));
+		addToHistory(ureq);
 	}
 	
 	private List<FlexiTableFilter> getSelectedFilters(List<FlexiTableFilter> changedFilters) {

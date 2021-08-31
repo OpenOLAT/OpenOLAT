@@ -397,7 +397,14 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	
 	public FlexiFiltersTab getSelectedFilterTab();
 	
-	public void setSelectedFilterTab(FlexiFiltersTab tab);
+	public void setSelectedFilterTab(UserRequest ureq, FlexiFiltersTab tab);
+	
+	/**
+	 * Add the current state of the table, especially tabs / presets in the history.
+	 * 
+	 * @param ureq The user request
+	 */
+	public void addToHistory(UserRequest ureq);
 	
 	/**
 	 * Is the details view visible for this particular row?

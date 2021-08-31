@@ -417,7 +417,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		if(tab == null) return;
 		
-		tableEl.setSelectedFilterTab(tab);
+		tableEl.setSelectedFilterTab(ureq, tab);
 		reload(ureq);
 	}
 	
@@ -697,9 +697,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 			AssessedIdentityListState listState = (AssessedIdentityListState)state;
 			FlexiFiltersTab tab = tableEl.getFilterTabById(listState.getTabId());
 			if(tab != null) {
-				tableEl.setSelectedFilterTab(tab);
+				tableEl.setSelectedFilterTab(ureq, tab);
 			} else {
-				tableEl.setSelectedFilterTab(allTab);
+				tableEl.setSelectedFilterTab(ureq, allTab);
 			}
 			
 			List<FlexiTableExtendedFilter> filters = tableEl.getExtendedFilters();
@@ -707,7 +707,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			tableEl.setFilters(true, filters, false, false);
 			tableEl.expandFilters(listState.isFiltersExpanded());
 		} else {
-			tableEl.setSelectedFilterTab(allTab);
+			tableEl.setSelectedFilterTab(ureq, allTab);
 		}
 
 		reload(ureq);

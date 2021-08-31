@@ -73,14 +73,14 @@ public class OverviewRepositoryListController extends BasicController implements
 	
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link myCourseLink;
+	private final Link coursesLink;
 	private Link catalogLink;
 	private Link curriculumLink;
+	private BreadcrumbedStackedPanel entriesStackPanel;
 	
 	private Controller currentCtrl;
-	private RepositoryEntryListController entriesCtrl;
 	private CatalogNodeController catalogCtrl;
-	private CurriculumListController curriculumListCtrl;
+	private RepositoryEntryListController entriesCtrl;
 	
 	private boolean entriesDirty;
 	private final boolean guestOnly;
@@ -117,11 +117,11 @@ public class OverviewRepositoryListController extends BasicController implements
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setReselect(true);
 
-		myCourseLink = LinkFactory.createLink("search.mycourses.student", mainVC, this);
-		myCourseLink.setUrl(BusinessControlFactory.getInstance()
+		coursesLink = LinkFactory.createLink("search.mycourses.student", mainVC, this);
+		coursesLink.setUrl(BusinessControlFactory.getInstance()
 				.getAuthenticatedURLFromBusinessPathStrings(OVERVIEW_PATH, "[My:0]"));
-		myCourseLink.setElementCssClass("o_sel_mycourses_my");
-		segmentView.addSegment(myCourseLink, false);
+		coursesLink.setElementCssClass("o_sel_mycourses_my");
+		segmentView.addSegment(coursesLink, false);
 		
 		if(withCurriculums) {
 			curriculumLink = LinkFactory.createLink("search.curriculums", mainVC, this);
@@ -157,15 +157,13 @@ public class OverviewRepositoryListController extends BasicController implements
 				activateMyEntries(ureq);
 			} else if(entriesDirty && entriesCtrl != null) {
 				entriesCtrl.reloadRows();
+				addToHistory(ureq, this);
 			}
-			addToHistory(ureq, this);
 		} else {
 			ContextEntry entry = entries.get(0);
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			if("My".equalsIgnoreCase(segment)) {
-				activateMyEntries(ureq);
-			} else if(("Catalog".equalsIgnoreCase(segment) || "CatalogEntry".equalsIgnoreCase(segment))
+			if(("Catalog".equalsIgnoreCase(segment) || "CatalogEntry".equalsIgnoreCase(segment))
 					&& catalogLink != null) {
 				CatalogNodeController ctrl = doOpenCatalog(ureq);
 				if(ctrl != null) {
@@ -174,7 +172,7 @@ public class OverviewRepositoryListController extends BasicController implements
 				} else if(currentCtrl == null) {
 					activateMyEntries(ureq);
 				}
-			} else if("Curriculum".equalsIgnoreCase(segment)) {
+			} else if("Curriculum".equalsIgnoreCase(segment) && curriculumLink != null) {
 				CurriculumListController ctrl = doOpenCurriculum(ureq);
 				if(ctrl != null) {
 					ctrl.activate(ureq, subEntries, entry.getTransientState());
@@ -183,21 +181,23 @@ public class OverviewRepositoryListController extends BasicController implements
 					activateMyEntries(ureq);
 				}
 			} else {
-				activateMyEntries(ureq);
+				RepositoryEntryListController listCtrl = doOpenEntries(ureq);
+				segmentView.select(coursesLink);
+				listCtrl.activate(ureq, subEntries, state);
 			}
 		}
 	}
 	
 	private void activateMyEntries(UserRequest ureq) {
 		RepositoryEntryListController listCtrl = doOpenEntries(ureq);
-		segmentView.select(myCourseLink);
+		segmentView.select(coursesLink);
 
 		if(guestOnly) {
-			listCtrl.selectFilterTab(listCtrl.getMyEntriesPreset());
+			listCtrl.selectFilterTab(ureq, listCtrl.getMyEntriesPreset());
 		} else {
-			listCtrl.selectFilterTab(listCtrl.getBookmarkPreset());
+			listCtrl.selectFilterTab(ureq, listCtrl.getBookmarkPreset());
 			if(listCtrl.isEmpty()) {
-				listCtrl.selectFilterTab(listCtrl.getMyEntriesPreset());
+				listCtrl.selectFilterTab(ureq, listCtrl.getMyEntriesPreset());
 			}
 		}
 	}
@@ -226,7 +226,7 @@ public class OverviewRepositoryListController extends BasicController implements
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == myCourseLink) {
+				if (clickedLink == coursesLink) {
 					doOpenEntries(ureq);
 				} else if (clickedLink == catalogLink) {
 					doOpenCatalog(ureq);
@@ -245,24 +245,25 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 	
 	private RepositoryEntryListController doOpenEntries(UserRequest ureq) {
-		cleanUp();
+		if(entriesCtrl == null) {
+			SearchMyRepositoryEntryViewParams searchParams
+				= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
+			searchParams.setMembershipMandatory(true);
+			searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 	
-		SearchMyRepositoryEntryViewParams searchParams
-			= new SearchMyRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-		searchParams.setMembershipMandatory(true);
-		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
-
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		BreadcrumbedStackedPanel entriesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
-		entriesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, false, true, true, true, "my", entriesStackPanel);
-		entriesStackPanel.pushController(translate("search.mycourses.student"), entriesCtrl);
-		listenTo(entriesCtrl);
-		currentCtrl = entriesCtrl;
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Courses", 0l);
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+			entriesStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
+			entriesCtrl = new RepositoryEntryListController(ureq, bwControl, searchParams, false, true, true, true, "my", entriesStackPanel);
+			entriesStackPanel.pushController(translate("search.mycourses.student"), entriesCtrl);
+			listenTo(entriesCtrl);
+		} else if(entriesDirty) {
+			entriesCtrl.reloadRows();
+		}
+		
 		entriesDirty = false;
-
-		addToHistory(ureq, entriesCtrl);
+		currentCtrl = entriesCtrl;
 		mainVC.put("segmentCmp", entriesStackPanel);
 		return entriesCtrl;
 	}
@@ -303,7 +304,7 @@ public class OverviewRepositoryListController extends BasicController implements
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		BreadcrumbedStackedPanel curriculumStackPanel = new BreadcrumbedStackedPanel("curriculumstack", getTranslator(), this);
-		curriculumListCtrl = new CurriculumListController(ureq, bwControl, curriculumStackPanel);
+		CurriculumListController curriculumListCtrl = new CurriculumListController(ureq, bwControl, curriculumStackPanel);
 		curriculumStackPanel.pushController(translate("search.curriculums"), curriculumListCtrl);
 		listenTo(curriculumListCtrl);
 		currentCtrl = curriculumListCtrl;
