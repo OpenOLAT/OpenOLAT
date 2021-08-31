@@ -156,8 +156,15 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		String ltiVersion = config.getStringValue(LTIConfigForm.CONFIGKEY_LTI_VERSION, LTIConfigForm.CONFIGKEY_LTI_11);
 		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			LTI13ToolDeployment deployment = CoreSpringFactory.getImpl(LTI13Service.class).getToolDeployment(courseEntry, getIdent());
+			LTI13Service ltiService = CoreSpringFactory.getImpl(LTI13Service.class);
+			String deploymentKey = config.getStringValue(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY);
+			LTI13ToolDeployment deployment;
+			if(StringHelper.isLong(deploymentKey)) {
+				deployment = ltiService.getToolDeploymentByKey(Long.valueOf(deploymentKey));
+			} else {
+				RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				deployment = ltiService.getToolDeployment(courseEntry, getIdent());
+			}
 			runCtrl = new LTIRunController(ureq, wControl, this, deployment, userCourseEnv);
 		} else {
 			runCtrl = new LTIRunController(ureq, wControl, this, userCourseEnv);

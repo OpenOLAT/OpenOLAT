@@ -283,7 +283,12 @@ public class LTIConfigForm extends FormBasicController {
 		isAssessable = assessable != null && assessable.booleanValue();
 		
 		if(CONFIGKEY_LTI_13.equals(config.getStringValue(CONFIGKEY_LTI_VERSION, CONFIGKEY_LTI_11))) {
-			toolDeployement = lti13Service.getToolDeployment(courseEntry, subIdent);
+			String deploymentKey = config.getStringValue(CONFIGKEY_13_DEPLOYMENT_KEY);
+			if(StringHelper.isLong(deploymentKey)) {
+				toolDeployement = lti13Service.getToolDeploymentByKey(Long.valueOf(deploymentKey));
+			} else {
+				toolDeployement = lti13Service.getToolDeployment(courseEntry, subIdent);
+			}
 			tool = toolDeployement == null ? null: toolDeployement.getTool();	
 		}
 
