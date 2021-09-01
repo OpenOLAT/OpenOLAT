@@ -21,6 +21,7 @@ package org.olat.modules.portfolio.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
@@ -28,6 +29,8 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageBody;
@@ -37,6 +40,7 @@ import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.model.ContainerPart;
 import org.olat.modules.portfolio.model.EvaluationFormPart;
 import org.olat.modules.portfolio.model.HTMLPart;
 import org.olat.modules.portfolio.model.SpacerPart;
@@ -391,6 +395,211 @@ public class PageDAOTest extends OlatTestCase {
 		Assert.assertEquals(titlePart, moveDownPageParts2.get(0));
 		Assert.assertEquals(htmlPart, moveDownPageParts2.get(1));
 		Assert.assertEquals(spacePart, moveDownPageParts2.get(2));
+	}
+	
+	@Test
+	public void movePartsSimpleDoubleDown() {
+		Page page = pageDao.createAndPersist("Page 3", "A page with content.", null, null, true, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		TitlePart titlePart = new TitlePart();
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, titlePart);
+		dbInstance.commitAndCloseSession();
+		
+		HTMLPart htmlPart = new HTMLPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, htmlPart);
+		dbInstance.commitAndCloseSession();
+		
+		SpacerPart spacePart = new SpacerPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, spacePart);
+		dbInstance.commitAndCloseSession();
+		
+		//check the order
+		List<PagePart> reloadedPageParts = pageDao.getParts(reloadedBody);
+		Assert.assertNotNull(reloadedPageParts);
+		Assert.assertEquals(3, reloadedPageParts.size());
+		Assert.assertEquals(titlePart , reloadedPageParts.get(0));
+		Assert.assertEquals(htmlPart, reloadedPageParts.get(1));
+		Assert.assertEquals(spacePart, reloadedPageParts.get(2));
+		
+		//move title part down
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.moveDownPart(reloadedBody, titlePart);
+		dbInstance.commitAndCloseSession();
+		//move twice
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.moveDownPart(reloadedBody, titlePart);
+		dbInstance.commitAndCloseSession();
+		
+		List<PagePart> moveDownPageParts = pageDao.getParts(reloadedBody);
+		Assert.assertNotNull(moveDownPageParts);
+		Assert.assertEquals(3, moveDownPageParts.size());
+		Assert.assertEquals(htmlPart, moveDownPageParts.get(0));
+		Assert.assertEquals(spacePart, moveDownPageParts.get(1));
+		Assert.assertEquals(titlePart, moveDownPageParts.get(2));
+	}
+	
+	@Test
+	public void movePartUpContainer() {
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		HTMLPart htmlPart = new HTMLPart();
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, htmlPart);
+		dbInstance.commitAndCloseSession();
+		
+		ContainerPart containerPart = new ContainerPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, containerPart);
+		dbInstance.commitAndCloseSession();
+		
+		TitlePart titlePart = new TitlePart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, titlePart);
+		dbInstance.commitAndCloseSession();
+		
+		SpacerPart spacePart = new SpacerPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, spacePart);
+		
+		containerPart = (ContainerPart)reloadedBody.getParts().get(1);
+		ContainerSettings containerSettings = containerPart.getContainerSettings();
+		containerSettings.setNumOfColumns(1);
+		List<String> elementIds = new ArrayList<>();
+		elementIds.add(titlePart.getId());
+		elementIds.add(spacePart.getId());
+		containerSettings.getColumn(0).setElementIds(elementIds);
+		containerPart.setLayoutOptions(ContentEditorXStream.toXml(containerSettings));
+		containerPart = (ContainerPart)pageDao.merge(containerPart);
+		dbInstance.commitAndCloseSession();
+		
+		HTMLPart lastHtmlPart = new HTMLPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, lastHtmlPart);
+		dbInstance.commitAndCloseSession();
+		
+		//check the order
+		List<PagePart> reloadedPageParts = pageDao.getParts(reloadedBody);
+		Assert.assertNotNull(reloadedPageParts);
+		Assert.assertEquals(5, reloadedPageParts.size());
+		Assert.assertEquals(htmlPart, reloadedPageParts.get(0));
+		Assert.assertEquals(containerPart, reloadedPageParts.get(1));
+		Assert.assertEquals(titlePart, reloadedPageParts.get(2));
+		Assert.assertEquals(spacePart, reloadedPageParts.get(3));
+		Assert.assertEquals(lastHtmlPart, reloadedPageParts.get(4));
+		
+		//move title part up
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.moveUpPart(reloadedBody, lastHtmlPart);
+		dbInstance.commitAndCloseSession();
+		
+		List<PagePart> moveUpPageParts = pageDao.getParts(reloadedBody);
+		Assert.assertNotNull(moveUpPageParts);
+		Assert.assertEquals(5, moveUpPageParts.size());
+		Assert.assertEquals(htmlPart, moveUpPageParts.get(0));
+		Assert.assertEquals(lastHtmlPart, moveUpPageParts.get(1));
+		Assert.assertEquals(containerPart, moveUpPageParts.get(2));
+		Assert.assertEquals(titlePart, moveUpPageParts.get(3));
+		Assert.assertEquals(spacePart, moveUpPageParts.get(4));
+	}
+	
+	@Test
+	public void movePartDownContainer() {
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		HTMLPart htmlPart = new HTMLPart();
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, htmlPart);
+		dbInstance.commitAndCloseSession();
+		
+		ContainerPart oneContainerPart = new ContainerPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, oneContainerPart);
+		dbInstance.commitAndCloseSession();
+		
+		TitlePart titlePart = new TitlePart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, titlePart);
+		dbInstance.commitAndCloseSession();
+		
+		SpacerPart spacePart = new SpacerPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, spacePart);
+		
+		oneContainerPart = (ContainerPart)reloadedBody.getParts().get(1);
+		ContainerSettings containerSettings = oneContainerPart.getContainerSettings();
+		containerSettings.setNumOfColumns(1);
+		List<String> elementIds = new ArrayList<>();
+		elementIds.add(titlePart.getId());
+		elementIds.add(spacePart.getId());
+		containerSettings.getColumn(0).setElementIds(elementIds);
+		oneContainerPart.setLayoutOptions(ContentEditorXStream.toXml(containerSettings));
+		oneContainerPart = (ContainerPart)pageDao.merge(oneContainerPart);
+		dbInstance.commitAndCloseSession();
+		
+		
+		ContainerPart twoContainerPart = new ContainerPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, twoContainerPart);
+		dbInstance.commitAndCloseSession();
+		
+		TitlePart twoTitlePart = new TitlePart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, twoTitlePart);
+		dbInstance.commitAndCloseSession();
+		
+		SpacerPart twoSpacePart = new SpacerPart();
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, twoSpacePart);
+		
+		int twoIndex = reloadedBody.getParts().indexOf(twoContainerPart);
+		twoContainerPart = (ContainerPart)reloadedBody.getParts().get(twoIndex);
+		ContainerSettings twoContainerSettings = twoContainerPart.getContainerSettings();
+		twoContainerSettings.setNumOfColumns(1);
+		List<String> twoElementIds = new ArrayList<>();
+		twoElementIds.add(twoTitlePart.getId());
+		twoElementIds.add(twoSpacePart.getId());
+		twoContainerSettings.getColumn(0).setElementIds(twoElementIds);
+		twoContainerPart.setLayoutOptions(ContentEditorXStream.toXml(twoContainerSettings));
+		twoContainerPart = (ContainerPart)pageDao.merge(twoContainerPart);
+		dbInstance.commitAndCloseSession();
+		
+		//check the order
+		List<PagePart> reloadedPageParts = pageDao.getParts(reloadedBody);
+		Assert.assertNotNull(reloadedPageParts);
+		Assert.assertEquals(7, reloadedPageParts.size());
+		Assert.assertEquals(htmlPart, reloadedPageParts.get(0));
+		Assert.assertEquals(oneContainerPart, reloadedPageParts.get(1));
+		Assert.assertEquals(titlePart, reloadedPageParts.get(2));
+		Assert.assertEquals(spacePart, reloadedPageParts.get(3));
+		Assert.assertEquals(twoContainerPart, reloadedPageParts.get(4));
+		Assert.assertEquals(twoTitlePart, reloadedPageParts.get(5));
+		Assert.assertEquals(twoSpacePart, reloadedPageParts.get(6));
+		
+		//move title part up
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.moveDownPart(reloadedBody, htmlPart);
+		dbInstance.commitAndCloseSession();
+		// move twice
+		reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.moveDownPart(reloadedBody, htmlPart);
+		dbInstance.commitAndCloseSession();
+		
+		List<PagePart> moveUpPageParts = pageDao.getParts(reloadedBody);
+		Assert.assertNotNull(moveUpPageParts);
+		Assert.assertEquals(7, moveUpPageParts.size());
+		Assert.assertEquals(oneContainerPart, moveUpPageParts.get(0));
+		Assert.assertEquals(titlePart, moveUpPageParts.get(1));
+		Assert.assertEquals(spacePart, moveUpPageParts.get(2));
+		Assert.assertEquals(twoContainerPart, moveUpPageParts.get(3));
+		Assert.assertEquals(htmlPart, moveUpPageParts.get(4));
+		Assert.assertEquals(twoTitlePart, moveUpPageParts.get(5));
+		Assert.assertEquals(twoSpacePart, moveUpPageParts.get(6));
 	}
 
 	@Test

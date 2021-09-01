@@ -68,6 +68,17 @@ public class ContainerSettings {
 		}
 		return allElementIds;
 	}
+	
+	public boolean hasElement(String elementId) {
+		if(columns != null) {
+			for(ContainerColumn column:columns) {
+				if(column.contains(elementId)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	public List<ContainerColumn> getColumns() {
 		if(columns == null) {

@@ -434,6 +434,45 @@ public class UserMgmtTest extends OlatRestTestCase {
 		conn.shutdown();
 	}
 	
+	/**
+	 * This make sure that inactive user are returned. Really important for
+	 * synchronization operations.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void testFindInactiveUsersByExternalId() throws IOException, URISyntaxException {
+		//there is user-rest-...
+		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("user-external-inactive-id");
+		Assert.assertNotNull(id);
+		String externalId = UUID.randomUUID().toString();
+		Identity identity = securityManager.setExternalId(id.getIdentity(), externalId);
+		dbInstance.commit();
+		identity = securityManager.saveIdentityStatus(identity, Identity.STATUS_INACTIVE, identity);
+		dbInstance.commitAndCloseSession();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("users")
+				.queryParam("externalId", externalId)
+				.queryParam("statusVisibleLimit", "all")
+				.build();
+
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> vos = parseUserArray(response.getEntity());
+
+		Assert.assertNotNull(vos);
+		Assert.assertEquals(1, vos.size());
+		Assert.assertEquals(identity.getKey(), vos.get(0).getKey());
+		Assert.assertNull(vos.get(0).getLogin());
+		conn.shutdown();
+	}
+	
+	
 	@Test
 	public void testFindUsersByAuthusername() throws IOException, URISyntaxException {
 		//there is user-rest-...

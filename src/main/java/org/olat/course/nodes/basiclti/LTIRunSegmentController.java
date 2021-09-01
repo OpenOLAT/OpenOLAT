@@ -21,7 +21,6 @@ package org.olat.course.nodes.basiclti;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -38,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
@@ -77,6 +77,8 @@ public class LTIRunSegmentController extends BasicController implements Activate
 	private final UserCourseEnvironment userCourseEnv;
 	private final BasicLTICourseNode courseNode;
 	
+	@Autowired
+	private LTI13Service lti13Service;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
@@ -181,8 +183,14 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		String ltiVersion = config.getStringValue(LTIConfigForm.CONFIGKEY_LTI_VERSION, LTIConfigForm.CONFIGKEY_LTI_11);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_CONTENT), null);
 		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(ltiVersion)) {
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			LTI13ToolDeployment deployment = CoreSpringFactory.getImpl(LTI13Service.class).getToolDeployment(courseEntry, courseNode.getIdent());
+			String deploymentKey = config.getStringValue(LTIConfigForm.CONFIGKEY_13_DEPLOYMENT_KEY);
+			LTI13ToolDeployment deployment;
+			if(StringHelper.isLong(deploymentKey)) {
+				deployment = lti13Service.getToolDeploymentByKey(Long.valueOf(deploymentKey));
+			} else {
+				RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				deployment = lti13Service.getToolDeployment(courseEntry, courseNode.getIdent());
+			}
 			contentCtrl = new LTIRunController(ureq, swControl, courseNode, deployment, userCourseEnv);
 		} else {
 			contentCtrl = new LTIRunController(ureq, swControl, courseNode, userCourseEnv);

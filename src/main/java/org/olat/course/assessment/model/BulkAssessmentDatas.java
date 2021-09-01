@@ -62,6 +62,11 @@ public class BulkAssessmentDatas implements Serializable {
 		this.rows = rows;
 	}
 
+	/**
+	 * The path to a ZIP file containing the returned files.
+	 * 
+	 * @return The path the ZIP file
+	 */
 	public String getReturnFiles() {
 		return returnFiles;
 	}
@@ -70,6 +75,12 @@ public class BulkAssessmentDatas implements Serializable {
 		this.returnFiles = returnFiles;
 	}
 
+	/**
+	 * The data, user, passed/failed are saved as a CSV file
+	 * at the path specified here.
+	 * 
+	 * @return The path to the data as a file.
+	 */
 	public String getDataBackupFile() {
 		return dataBackupFile;
 	}

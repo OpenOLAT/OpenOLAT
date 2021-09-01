@@ -57,6 +57,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AbstractPart;
 import org.olat.modules.portfolio.model.AssignmentImpl;
+import org.olat.modules.portfolio.model.ContainerPart;
 import org.olat.modules.portfolio.model.PageBodyImpl;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.repository.RepositoryEntryRef;
@@ -731,26 +732,82 @@ public class PageDAO {
 	
 	public void moveUpPart(PageBody body, PagePart part) {
 		body.getParts().size();
+		
 		int index = body.getParts().indexOf(part);
-		if(index > 0) {
-			PagePart reloadedPart = body.getParts().remove(index);
-			body.getParts().add(index - 1, reloadedPart);
-		} else if(index < 0) {
+		if(index < 0) {
 			body.getParts().add(0, part);
+		} else {
+			int previousSibling = previousSiblingIndex(body, part);
+			if(previousSibling >= 0) {
+				PagePart reloadedPart = body.getParts().remove(index);
+				body.getParts().add(previousSibling, reloadedPart);
+			} else {
+				body.getParts().add(0, part);
+			}
 		}
 		((PageBodyImpl)body).setLastModified(new Date());
 		dbInstance.getCurrentEntityManager().merge(body);
 	}
 	
+	private int previousSiblingIndex(PageBody body, PagePart part) {
+		final int index = body.getParts().indexOf(part);
+		if(index <= 0) {
+			return -1;
+		}
+		
+		if(isContained(body, part)) {
+			// this case is not possible, the editor makes the change in the container 
+		} else {
+			for(int i=index; i-->0; ) {
+				PagePart currentPart = body.getParts().get(i);
+				if(!isContained(body, currentPart)) {
+					return i;
+				}	
+			}
+		}
+		return index - 1;
+	}
+	
+	private boolean isContained(PageBody body, PagePart part) {
+		final String elementId = part.getId();
+		for(PagePart el:body.getParts()) {
+			if(el instanceof ContainerPart && ((ContainerPart)el).getContainerSettings().hasElement(elementId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public void moveDownPart(PageBody body, PagePart part) {
 		body.getParts().size();
 		int index = body.getParts().indexOf(part);
-		if(index >= 0 && index + 1 < body.getParts().size()) {
-			PagePart reloadedPart = body.getParts().remove(index);
-			body.getParts().add(index + 1, reloadedPart);
+		int nextSibling = nextSiblingIndex(body, part);
+		if(index >= 0 && nextSibling >= 0 && nextSibling < body.getParts().size()) {
+			PagePart reloadedPart = body.getParts().remove(index);// next sibling lose 1 position
+			body.getParts().add(nextSibling, reloadedPart);
 			((PageBodyImpl)body).setLastModified(new Date());
 			dbInstance.getCurrentEntityManager().merge(body);
 		}
+	}
+	
+	private int nextSiblingIndex(PageBody body, PagePart part) {
+		final int index = body.getParts().indexOf(part);
+		if(index < 0) {
+			return -1;
+		}
+		
+		if(isContained(body, part)) {
+			// this case is not possible, the editor makes the change in the container 
+		} else {
+			int numOfParts = body.getParts().size();
+			for(int i=index + 1; i<numOfParts; i++) {
+				PagePart currentPart = body.getParts().get(i);
+				if(!isContained(body, currentPart)) {
+					return i;
+				}	
+			}
+		}
+		return index + 1;
 	}
 	
 	public void movePart(PageBody body, PagePart part, PagePart sibling, boolean after) {

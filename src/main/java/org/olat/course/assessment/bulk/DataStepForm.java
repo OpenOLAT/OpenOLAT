@@ -52,6 +52,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -195,13 +196,30 @@ public class DataStepForm extends StepFormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if(returnFileEl != null && returnFileEl.isUploadSuccess()) {
+			returnFileEl.clearError();
+			if(returnFileEl.getUploadFile() != null && returnFileEl.getUploadFile().exists()
+					&& !ZipUtil.isReadable(returnFileEl.getUploadFile())) {
+				returnFileEl.setErrorKey("error.zip", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		String val = dataEl.getValue();
 		if (!StringHelper.containsNonWhitespace(val) && (returnFileEl != null ? !returnFileEl.isUploadSuccess() : true)) {
-			// do not proceed when nothin in input field and no file uploaded
+			// do not proceed when nothing in input field and no file uploaded
 			setFormWarning("form.step2.error");
 			return;
 		}
+		
 		setFormWarning(null); // reset error
 		BulkAssessmentDatas datas = (BulkAssessmentDatas)getFromRunContext("datas");
 		if(datas == null) {
