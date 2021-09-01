@@ -64,25 +64,74 @@ public class Form {
 	}
 	
 	public void moveUpElement(AbstractElement element) {
-		int index = elements.indexOf(element);
-		if(index > 0 && index - 1 < elements.size()) {
+		int previousSibling = previousSiblingIndex(element);
+		if(previousSibling > 0 && previousSibling < elements.size()) {
 			elements.remove(element);
-			elements.add(index - 1, element);
+			elements.add(previousSibling, element);
 		} else {
 			elements.remove(element);
 			elements.add(0, element);
 		}
 	}
 	
-	public void moveDownElement(AbstractElement element) {
+	private int previousSiblingIndex(AbstractElement element) {
 		int index = elements.indexOf(element);
-		if(index >= 0 && index + 1 < elements.size()) {
+		if(index <= 0) {
+			return -1;
+		}
+		
+		if(isContained(element)) {
+			// this case is not possible, the editor makes the change in the container 
+		} else {
+			for(int i=index; i-->0; ) {
+				AbstractElement currentElement = elements.get(i);
+				if(!isContained(currentElement)) {
+					return i;
+				}	
+			}
+		}
+		return index - 1;
+	}
+	
+	private boolean isContained(AbstractElement element) {
+		final String elementId = element.getId();
+		for(AbstractElement el:elements) {
+			if(el instanceof Container && ((Container)el).getContainerSettings().hasElement(elementId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void moveDownElement(AbstractElement element) {
+		int nextSibling = nextSiblingIndex(element);
+		if(nextSibling >= 0 && nextSibling + 1 < elements.size()) {
 			elements.remove(element);
-			elements.add(index + 1, element);
+			elements.add(nextSibling, element);
 		} else {
 			elements.remove(element);
 			elements.add(element);
 		}
+	}
+	
+	private int nextSiblingIndex(AbstractElement element) {
+		final int index = elements.indexOf(element);
+		if(index < 0) {
+			return -1;
+		}
+		
+		if(isContained(element)) {
+			// this case is not possible, the editor makes the change in the container 
+		} else {
+			int numOfElements = elements.size();
+			for(int i=index + 1; i<numOfElements; i++) {
+				AbstractElement currentElement = elements.get(i);
+				if(!isContained(currentElement)) {
+					return i;
+				}	
+			}
+		}
+		return index + 1;
 	}
 	
 	public void moveElement(AbstractElement elementToMove, AbstractElement sibling, boolean after) {

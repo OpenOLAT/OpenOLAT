@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.3.0'
+				version : '1.3.1'
 			};
 		},
 
@@ -524,12 +524,12 @@
 			
 			/** 
              * This event is catch to convert the content of the editor in something useable for
-             * OpenOLAT, e.g. replace all placeholders with real HTML/XML QTI code.
+             * OpenOlat, e.g. replace all placeholders with real HTML/XML QTI code.
              */
 			ed.on('PreProcess', function(e) {
 				tinymce.each(ed.dom.select("span[data-qti=textentryinteraction]"), function(node) {
 					var identifier = jQuery(node).attr('data-qti-response-identifier');
-					var solution = jQuery(node).children().html();
+					var solution = jQuery(node).children().text();
 					var textNode = ed.dom.create("textEntryInteraction", {
 						responseIdentifier: identifier,
 						"data-qti-solution": solution,
