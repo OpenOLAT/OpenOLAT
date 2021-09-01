@@ -714,6 +714,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else {
 				tableEl.addToHistory(ureq);
 			}
+			
+			reloadDirtyRows();
 		}
 		
 		if(state instanceof AuthorListState) {
