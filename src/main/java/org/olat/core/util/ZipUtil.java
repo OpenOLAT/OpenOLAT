@@ -100,6 +100,22 @@ public class ZipUtil {
 		}
 		return name;
 	}
+	
+	public static boolean isReadable(File zipFile) {
+		try(InputStream in = new FileInputStream(zipFile);
+				ZipInputStream oZip = new ZipInputStream(in)) {
+			// unzip files
+			ZipEntry oEntr = oZip.getNextEntry();
+			while (oEntr != null) {
+				oEntr.getName();
+				oZip.closeEntry();
+				oEntr = oZip.getNextEntry();
+			} 
+			return true;
+		} catch(Exception e) {
+			return false;
+		}
+	}
 
 	/**
 	 * Unzip a file to a directory
