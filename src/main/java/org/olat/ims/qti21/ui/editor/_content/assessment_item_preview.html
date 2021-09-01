@@ -7,16 +7,15 @@ $r.render("display")
 	<div id="o_qti_debug_outcomes" class="collapse #if($showOutcomes) in #end" aria-expanded="$showOutcomes">
 		<table class="o_info small table table-hover"><tbody>
 		#foreach($response in $responses)
-			<tr><th>${response.identifier}</th><td>$r.xssScan(${response.stringuifiedValue})<td></td>
+			<tr><th scope="row">${response.identifier}</th><td>$r.xssScan(${response.stringuifiedValue})<td></td>
 		#end
 		#foreach($outcome in $outcomes)
-			<tr><th>${outcome.identifier}</th><td>$r.xssScan(${outcome.stringuifiedValue})<td></td>
+			<tr><th scope="row">${outcome.identifier}</th><td>$r.xssScan(${outcome.stringuifiedValue})<td></td>
 		#end
 		</tbody></table>
 	</div>
 </div>
 <script>
-/* <![CDATA[ */
 jQuery('#o_qti_debug_outcomes').on('hide.bs.collapse', function () {
 	jQuery('#o_qti_debug_outcomes_l').toggleClass('o_in');
  	$r.backgroundCommand("hide","debug","outcomes")
@@ -24,6 +23,5 @@ jQuery('#o_qti_debug_outcomes').on('hide.bs.collapse', function () {
 	jQuery('#o_qti_debug_outcomes_l').toggleClass('o_in');
 	$r.backgroundCommand("show","debug","outcomes")
 })
-/* ]]> */
 </script>
 #end
