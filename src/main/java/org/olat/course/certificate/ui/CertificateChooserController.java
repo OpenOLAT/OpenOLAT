@@ -44,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateChooserController extends UploadCertificateController {
+public class CertificateChooserController extends UploadCertificateTemplateController {
 	
 	private FormLink selectLink, uploadLink;
 	private SingleSelection publicTemplatesEl;

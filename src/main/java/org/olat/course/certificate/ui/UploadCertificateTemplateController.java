@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UploadCertificateController extends FormBasicController {
+public class UploadCertificateTemplateController extends FormBasicController {
 	
 	protected static final String[] formatKeys = new String[]{ "A4", "Letter" };
 	protected static final String[] orientationKeys = new String[]{ "portrait", "landscape" };
@@ -69,13 +69,13 @@ public class UploadCertificateController extends FormBasicController {
 	@Autowired
 	private CertificatesManager certificatesManager;
 	
-	public UploadCertificateController(UserRequest ureq, WindowControl wControl) {
+	public UploadCertificateTemplateController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		initForm(ureq);
 	}
 	
-	public UploadCertificateController(UserRequest ureq, WindowControl wControl, CertificateTemplate template) {
+	public UploadCertificateTemplateController(UserRequest ureq, WindowControl wControl, CertificateTemplate template) {
 		super(ureq, wControl);
 		this.templateToUpdate = template;
 		initForm(ureq);

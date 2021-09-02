@@ -31,9 +31,12 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.EmailAddressValidator;
 import org.olat.course.certificate.CertificatesModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +52,8 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 
 	private TextElement bccEl;
+	private MultipleSelectionElement userCanUploadExternalEl;
+	private MultipleSelectionElement userManagerCanUploadExternalEl;
 	private MultipleSelectionElement enableBccEl;
 	private MultipleSelectionElement enableLinemanagerEl;
 	
@@ -72,6 +77,21 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.certificates.options.title");
+		
+		SelectionValue enableUpload = new SelectionValue("on", translate("on"));
+		SelectionValues uploadOptions = new SelectionValues(enableUpload);
+		
+		userCanUploadExternalEl = uifactory.addCheckboxesVertical("admin.certificates.upload.user", formLayout, uploadOptions.keys(), uploadOptions.values(), 1);
+		userCanUploadExternalEl.select(enableUpload.getKey(), certificatesModule.canUserUploadExternalCertificates());
+		
+		userManagerCanUploadExternalEl = uifactory.addCheckboxesVertical("admin.certificates.upload.user.manager", formLayout, uploadOptions.keys(), uploadOptions.values(), 1);
+		userManagerCanUploadExternalEl.select(enableUpload.getKey(), certificatesModule.canUserManagerUploadExternalCertificates());
+		
+		// Add instruction sample
+		String page = Util.getPackageVelocityRoot(getClass()) + "/external_certificates_hint.html";
+		FormLayoutContainer instructions = FormLayoutContainer.createCustomFormLayout("instructions", getTranslator(), page);
+		instructions.setLabel("no.text", null);
+		formLayout.add(instructions);
 
 		String bcc = certificatesModule.getCertificateBcc();
 		enableBccEl = uifactory.addCheckboxesHorizontal("enableBcc", "admin.certificates.bcc.enable", formLayout,
@@ -136,5 +156,8 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 		
 		boolean linemanager = enableLinemanagerEl.isAtLeastSelected(1);
 		certificatesModule.setCertificateLinemanager(linemanager);
+		
+		certificatesModule.setUserCanUploadExternalCertificates(userCanUploadExternalEl.isAtLeastSelected(1));
+		certificatesModule.setUserManagerCanUploadExternalCertificates(userManagerCanUploadExternalEl.isAtLeastSelected(1));
 	}
 }

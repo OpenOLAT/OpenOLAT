@@ -176,5 +176,7 @@ public interface CertificatesManager {
 	public Certificate generateCertificate(CertificateInfos infos, RepositoryEntry entry, CertificateTemplate template, CertificateConfig config);
 	
 	public void deleteCertificate(Certificate certificate);
+	
+	public void deleteStandalonCertificate(Certificate certificate);
 
 }

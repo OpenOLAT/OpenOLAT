@@ -86,7 +86,7 @@ public class OrganisationRoleEditController extends FormBasicController {
 		for(int i = 0; i < allRights.size(); i++) {
 			rightKeys[i] = allRights.get(i).getRight();
 			rightValues[i] = allRights.get(i).getTranslatedName(getLocale());
-			cssClasses[i] = allRights.get(i).getParent() != null ? "o_checkbox_indented" : null;
+			cssClasses[i] = allRights.get(i).getParent() != null ? (allRights.get(i).getParent().getParent() != null ? "o_checkbox_indented level_2" : "o_checkbox_indented") : null;
 		}
 
 		rightsEl = uifactory.addCheckboxesVertical("role.rights", "role.rights", formLayout, rightKeys, rightValues, cssClasses, null,1);

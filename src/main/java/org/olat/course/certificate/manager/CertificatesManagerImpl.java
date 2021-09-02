@@ -638,6 +638,39 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 		}
 	}
+	
+	@Override
+	public void deleteStandalonCertificate(Certificate certificate) {
+		File certificateFile = getCertificateFile(certificate);
+		if(certificateFile != null && certificateFile.exists()) {
+			try {
+				FileUtils.deleteDirsAndFiles(certificateFile.getParentFile().toPath());
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		CertificateStandalone relaodedCertificate = dbInstance.getCurrentEntityManager()
+				.getReference(CertificateStandalone.class, certificate.getKey());
+		dbInstance.getCurrentEntityManager().remove(relaodedCertificate);
+		
+		//reorder the last flag
+		List<Certificate> certificates = getCertificates(relaodedCertificate.getIdentity());
+		certificates.remove(relaodedCertificate);
+		if(!certificates.isEmpty()) {
+			boolean hasLast = false;
+			for(Certificate cer:certificates) {
+				if(((CertificateImpl)cer).isLast()) {
+					hasLast = true;
+				}
+			}
+			
+			if(!hasLast) {
+				CertificateImpl newLastCertificate = (CertificateImpl)certificates.get(0);
+				newLastCertificate.setLast(true);
+				dbInstance.getCurrentEntityManager().merge(newLastCertificate);
+			}
+		}
+	}
 
 	@Override
 	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile) {

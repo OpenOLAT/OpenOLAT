@@ -57,7 +57,7 @@ public class CertificatesListAdminController extends FormBasicController {
 	private TemplatesDataModel tableModel;
 	
 	private CloseableModalController cmc;
-	private UploadCertificateController uploadCtrl;
+	private UploadCertificateTemplateController uploadCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 
 	@Autowired
@@ -158,7 +158,7 @@ public class CertificatesListAdminController extends FormBasicController {
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		
-		uploadCtrl = new UploadCertificateController(ureq, getWindowControl());
+		uploadCtrl = new UploadCertificateTemplateController(ureq, getWindowControl());
 		listenTo(uploadCtrl);
 		
 		String title = translate("upload.title");
@@ -171,7 +171,7 @@ public class CertificatesListAdminController extends FormBasicController {
 		removeAsListenerAndDispose(uploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		
-		uploadCtrl = new UploadCertificateController(ureq, getWindowControl(), template);
+		uploadCtrl = new UploadCertificateTemplateController(ureq, getWindowControl(), template);
 		listenTo(uploadCtrl);
 		
 		String title = translate("upload.title");

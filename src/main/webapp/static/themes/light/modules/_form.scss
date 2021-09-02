@@ -572,6 +572,10 @@
 }
 
 /* input indentation */
-.o_checkbox_indented {
-	padding-left: 3em !important;
+.checkbox .o_checkbox_indented {
+	padding-left: 3em;
+	
+	&.level_2 {
+		padding-left: 5em;
+	}
 }

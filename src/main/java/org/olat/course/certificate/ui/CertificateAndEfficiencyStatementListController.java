@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -57,6 +59,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -70,9 +73,11 @@ import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
+import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
 import org.olat.modules.assessment.AssessmentService;
@@ -100,15 +105,18 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
 	private FormLink coachingToolButton;
+	private FormLink uploadCertificateButton;
 	private CertificateAndEfficiencyStatementListModel tableModel;
 
 	private CloseableModalController cmc;
 	private CollectArtefactController collectorCtrl;
 	private DialogBoxController confirmDeleteCtr;
+	private UploadExternalCertificateController uploadCertificateController;
 	
 	private final boolean canModify;
 	private final boolean linkToCoachingTool;
 	private final boolean canLaunchCourse;
+	private boolean canUploadExternalCertificate;
 	private final Identity assessedIdentity;
 	
 	@Autowired
@@ -125,6 +133,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private EfficiencyStatementMediaHandler mediaHandler;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private CertificatesModule certificatesModule;
+	@Autowired
+	private BaseSecurityManager baseSecurityManager;
+	
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true, true);
@@ -137,6 +150,18 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		this.assessedIdentity = assessedIdentity;
 		this.linkToCoachingTool = linkToCoachingTool;
 		this.canLaunchCourse = canLaunchCourse;
+		
+		// Upload certificates
+		Roles userRoles = ureq.getUserSession().getRoles();
+		if (getIdentity().equals(assessedIdentity)) {
+			canUploadExternalCertificate = certificatesModule.canUserUploadExternalCertificates();
+		} else if (userRoles.isUserManager()) {
+			canUploadExternalCertificate = certificatesModule.canUserManagerUploadExternalCertificates();
+		} else if (userRoles.isLineManager()) {
+			canUploadExternalCertificate = baseSecurityManager.getRoles(assessedIdentity).hasRole(userRoles.getOrganisations(), OrganisationRoles.user);			
+		} else if (userRoles.isAdministrator() || userRoles.isSystemAdmin()) {
+			canUploadExternalCertificate = true;
+		}
 
 		// Show heading
 		flc.contextPut("showHeading", true);
@@ -197,8 +222,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(linkToCoachingTool) {
-			flc.contextPut("withFieldSet", true);
+			flc.contextPut("linkToCoachingTool", true);
 			coachingToolButton = uifactory.addFormLink("coaching.tool", formLayout, Link.BUTTON);
+		}
+		
+		if (canUploadExternalCertificate) {
+			flc.contextPut("uploadCertificate", true);
+			uploadCertificateButton = uifactory.addFormLink("upload.certificate", formLayout, Link.BUTTON);
 		}
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -326,6 +356,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			}
 		} else if(coachingToolButton == source) {
 			doLaunchCoachingTool(ureq);
+		} else if(uploadCertificateButton == source) {
+			showUploadCertificateController(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -335,9 +367,17 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		 if (source == confirmDeleteCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				CertificateAndEfficiencyStatement statement = (CertificateAndEfficiencyStatement)confirmDeleteCtr.getUserObject();
-				doDelete(statement.getEfficiencyStatementKey());
+				doDelete(statement);
 			}
 		} else if(collectorCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(uploadCertificateController == source) {
+			if (event == Event.DONE_EVENT) {
+				loadModel();
+				tableEl.reset();
+			}
+			
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -346,8 +386,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(uploadCertificateController);
 		removeAsListenerAndDispose(collectorCtrl);
 		removeAsListenerAndDispose(cmc);
+		uploadCertificateController = null;
 		collectorCtrl = null;
 		cmc = null;
 	}
@@ -372,10 +414,21 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		}
 	}
 	
-	private void doDelete(Long efficiencyStatementKey) {
-		UserEfficiencyStatementLight efficiencyStatement = esm.getUserEfficiencyStatementLightByKey(efficiencyStatementKey);
+	private void doDelete(CertificateAndEfficiencyStatement statement) {
+		if (statement == null) {
+			return;
+		}
+		
+		UserEfficiencyStatementLight efficiencyStatement = esm.getUserEfficiencyStatementLightByKey(statement.getEfficiencyStatementKey());
 		if(efficiencyStatement != null) {
 			esm.deleteEfficiencyStatement(efficiencyStatement);
+		} else {
+			// Delete standalone certificate
+			Certificate certificate = certificatesManager.getCertificateByUuid(statement.getCertificate().getUuid());
+			
+			if (certificate != null) {
+				certificatesManager.deleteStandalonCertificate(certificate);
+			}
 		}
 		
 		loadModel();
@@ -413,6 +466,17 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		listenTo(collectorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), null, collectorCtrl.getInitialComponent(), true, title, true);
+		cmc.addControllerListener(this);
+		cmc.activate();
+	}
+	
+	private void showUploadCertificateController(UserRequest ureq) {
+		if(guardModalController(uploadCertificateController)) return;
+		
+		uploadCertificateController = new UploadExternalCertificateController(ureq, getWindowControl(), assessedIdentity);
+		listenTo(uploadCertificateController);
+		
+		cmc = new CloseableModalController(getWindowControl(), null, uploadCertificateController.getInitialComponent(), true, translate("upload.certificate"), true);
 		cmc.addControllerListener(this);
 		cmc.activate();
 	}

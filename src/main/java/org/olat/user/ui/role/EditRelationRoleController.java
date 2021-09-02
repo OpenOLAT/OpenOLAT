@@ -119,6 +119,10 @@ public class EditRelationRoleController extends FormBasicController {
 			StringBuilder valueBuilder = new StringBuilder();
 			if (relationRights.get(i).getParent() != null) {
 				cssClasses[i] = "o_checkbox_indented";
+				
+				if (relationRights.get(i).getParent().getParent() != null) {
+					cssClasses[i] += " level_2";
+				}
 			}
 			valueBuilder.append(relationRights.get(i).getTranslatedName(getLocale()));
 			rightKeys[i] = relationRights.get(i).getRight();

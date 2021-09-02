@@ -86,7 +86,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 				return null;
 			}
 			case efficiencyStatement: return statement.getEfficiencyStatementKey();
-			case deleteEfficiencyStatement:
+			case deleteEfficiencyStatement: return true;
 			case artefact: return statement.getEfficiencyStatementKey() != null;
 		}
 		return null;
