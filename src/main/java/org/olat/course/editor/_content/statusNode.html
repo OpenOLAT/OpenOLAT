@@ -1,4 +1,4 @@
-#if($errors.size() > 0)
+#if($r.isNotEmpty($errors))
 <ul class="o_error o_messages list-unstyled">	
 #foreach($message in $errors)
 	<li>
@@ -13,7 +13,7 @@
 </ul>
 #end
 
-#if($warnings.size() > 0)	
+#if($r.isNotEmpty($warnings))	
 <ul class="o_warning o_messages list-unstyled">
 #foreach($message in $warnings)
 	<li>
@@ -28,7 +28,7 @@
 </ul>
 #end
 
-#if($infos.size() > 0)	
+#if($r.isNotEmpty($infos))	
 <ul class="o_info o_messages list-unstyled">
 #foreach($message in $infos)
 	<li>
