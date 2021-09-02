@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -67,6 +68,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -84,8 +86,10 @@ import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel;
+import org.olat.course.certificate.ui.UploadExternalCertificateController;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.coach.RoleSecurityCallback;
@@ -135,6 +139,9 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
     private FlexiTableElement tableEl;
     private CurriculumElementWithViewsDataModel tableModel;
     private final BreadcrumbPanel stackPanel;
+    
+    private FormLink uploadCertificateButton;
+    private boolean canUploadExternalCertificate;
 
     private int counter;
     private final boolean guestOnly;
@@ -145,8 +152,10 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
     private final CurriculumSecurityCallback curriculumSecurityCallback;
     private final RoleSecurityCallback roleSecurityCallback;
 
+    private CloseableModalController cmc;
     private RepositoryEntryDetailsController detailsCtrl;
     private CurriculumElementCalendarController calendarsCtrl;
+    private UploadExternalCertificateController uploadCertificateController;
 
     @Autowired
     private ACService acService;
@@ -170,6 +179,8 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
     private EfficiencyStatementManager esm;
     @Autowired
     private CertificatesManager certificatesManager;
+    @Autowired
+    private CertificatesModule certificatesModule;
 
     public CertificateAndEfficiencyStatementCurriculumListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
                                                                      Identity assessedIdentity, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback) {
@@ -178,6 +189,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         setTranslator(Util.createPackageTranslator(CertificateAndEfficiencyStatementListController.class, getLocale(), getTranslator()));
         setTranslator(Util.createPackageTranslator(CurriculumListController.class, getLocale(), getTranslator()));
         setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(CertificateAndEfficiencyStatementCurriculumListController.class, getLocale(), getTranslator()));
 
         this.stackPanel = stackPanel;
         this.curriculumSecurityCallback = curriculumSecurityCallback;
@@ -186,6 +198,18 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         this.curriculumList = curriculumService.getMyCurriculums(assessedIdentity);
         guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
         mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
+        
+        // Upload certificates
+		Roles userRoles = ureq.getUserSession().getRoles();
+		if (getIdentity().equals(assessedIdentity)) {
+			canUploadExternalCertificate = certificatesModule.canUserUploadExternalCertificates();
+		} else if (userRoles.isUserManager()) {
+			canUploadExternalCertificate = certificatesModule.canUserManagerUploadExternalCertificates();
+		} else if (userRoles.isLineManager()) {
+			canUploadExternalCertificate = securityManager.getRoles(assessedIdentity).hasRole(userRoles.getOrganisations(), OrganisationRoles.user);			
+		} else if (userRoles.isAdministrator() || userRoles.isSystemAdmin()) {
+			canUploadExternalCertificate = true;
+		}
 
         initForm(ureq);
         loadModel(ureq);
@@ -198,6 +222,12 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+    	if (canUploadExternalCertificate) {
+			flc.contextPut("uploadCertificate", true);
+			uploadCertificateButton = uifactory.addFormLink("upload.certificate", formLayout, Link.BUTTON);
+			uploadCertificateButton.setIconLeftCSS("o_icon o_icon_import");
+		}
+    	
         FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
         columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.key));
@@ -701,6 +731,28 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
     protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
         //do not update the
     }
+    
+    @Override
+    protected void event(UserRequest ureq, Controller source, Event event) {
+    	if(uploadCertificateController == source) {
+			if (event == Event.DONE_EVENT) {
+				loadModel(ureq);
+				tableEl.reset();
+			}
+			
+			cmc.deactivate();
+			cleanUp();
+		}
+    	
+    	super.event(ureq, source, event);
+    }
+    
+    private void cleanUp() {
+		removeAsListenerAndDispose(uploadCertificateController);
+		removeAsListenerAndDispose(cmc);
+		uploadCertificateController = null;
+		cmc = null;
+	}
 
     @Override
     public void event(UserRequest ureq, Component source, Event event) {
@@ -731,7 +783,9 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
 
     @Override
     protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-        if (source instanceof FormLink) {
+    	if(uploadCertificateButton == source) {
+			showUploadCertificateController(ureq);
+		} else if (source instanceof FormLink) {
             FormLink link = (FormLink) source;
             if ("start".equals(link.getCmd())) {
                 CurriculumTreeWithViewsRow row = (CurriculumTreeWithViewsRow) link.getUserObject();
@@ -770,6 +824,17 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         }
         super.formInnerEvent(ureq, source, event);
     }
+    
+    private void showUploadCertificateController(UserRequest ureq) {
+		if(guardModalController(uploadCertificateController)) return;
+		
+		uploadCertificateController = new UploadExternalCertificateController(ureq, getWindowControl(), assessedIdentity);
+		listenTo(uploadCertificateController);
+		
+		cmc = new CloseableModalController(getWindowControl(), null, uploadCertificateController.getInitialComponent(), true, translate("upload.certificate"), true);
+		cmc.addControllerListener(this);
+		cmc.activate();
+	}
 
     @Override
     protected void formOK(UserRequest ureq) {

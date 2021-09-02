@@ -224,11 +224,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		if(linkToCoachingTool) {
 			flc.contextPut("linkToCoachingTool", true);
 			coachingToolButton = uifactory.addFormLink("coaching.tool", formLayout, Link.BUTTON);
+			coachingToolButton.setIconLeftCSS("o_icon o_icon_coach");
 		}
 		
 		if (canUploadExternalCertificate) {
 			flc.contextPut("uploadCertificate", true);
 			uploadCertificateButton = uifactory.addFormLink("upload.certificate", formLayout, Link.BUTTON);
+			uploadCertificateButton.setIconLeftCSS("o_icon o_icon_import");
 		}
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

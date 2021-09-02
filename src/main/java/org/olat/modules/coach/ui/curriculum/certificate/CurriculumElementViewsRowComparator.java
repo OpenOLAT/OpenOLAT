@@ -113,7 +113,11 @@ public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator
 
 		if (c == 0) {
 			if (c1.getKey().isWithoutCurriculum() && c2.getKey().isWithoutCurriculum()) {
-				c = Long.compare(c1.getRepositoryEntryKey(), c2.getRepositoryEntryKey());
+				if (c1.getRepositoryEntryKey() != null && c2.getRepositoryEntryKey() != null) {
+					c = Long.compare(c1.getRepositoryEntryKey(), c2.getRepositoryEntryKey());
+				} else {
+					c = compareNullObjects(c1, c2);
+				}
 			} else {
 				c = Long.compare(c1.getCurriculumKey(), c2.getCurriculumKey());
 			}
