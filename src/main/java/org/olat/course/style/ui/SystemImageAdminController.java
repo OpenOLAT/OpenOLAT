@@ -19,15 +19,21 @@
  */
 package org.olat.course.style.ui;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+import static org.olat.core.util.ArrayHelper.emptyStrings;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -38,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -46,8 +53,13 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.course.CourseModule;
 import org.olat.course.style.CourseStyleService;
+import org.olat.course.style.Header;
+import org.olat.course.style.Header.Builder;
 import org.olat.course.style.ImageSource;
+import org.olat.course.style.ImageSourceType;
+import org.olat.course.style.TeaserImageStyle;
 import org.olat.course.style.ui.SystemImageDataModel.SystemImageCols;
 import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +75,11 @@ public class SystemImageAdminController extends FormBasicController {
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
 	
+	private FormLayoutContainer styleCont;
+	private SingleSelection teaserImageTypeEl;
+	private SingleSelection teaserImageSystemEl;
+	private SingleSelection teaserImageStyleEl;
+	private FormLayoutContainer headerPreviewCont;
 	private FormLink addSystemImageLink;
 	private FlexiTableElement tableEl;
 	private SystemImageDataModel dataModel;
@@ -70,9 +87,12 @@ public class SystemImageAdminController extends FormBasicController {
 	private CloseableModalController cmc;
 	private SystemImageEditController editCtrl;
 	private DialogBoxController deleteDialogCtrl;
+	private HeaderController headerCtrl;
 	
 	@Autowired
 	private CourseStyleService courseStyleService;
+	@Autowired
+	private CourseModule courseModule;
 
 	public SystemImageAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -80,16 +100,59 @@ public class SystemImageAdminController extends FormBasicController {
 		
 		initForm(ureq);
 		loadModel(ureq);
+		updateTeaserImageUI();
+		updateHeaderPreviewUI(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer topCont = FormLayoutContainer.createVerticalFormLayout("top", getTranslator());
-		topCont.setElementCssClass("o_button_group_right");
-		topCont.setRootForm(mainForm);
-		formLayout.add(topCont);
+		styleCont = FormLayoutContainer.createDefaultFormLayout("node.style", getTranslator());
+		styleCont.setFormTitle(translate("course.style.defaults"));
+		styleCont.setRootForm(mainForm);
+		formLayout.add("node.style", styleCont);
 		
-		addSystemImageLink = uifactory.addFormLink("system.image.add", topCont, Link.BUTTON);
+		SelectionValues teaserImageTpeKV = new SelectionValues();
+		teaserImageTpeKV.add(entry(ImageSourceType.system.name(), translate("teaser.image.type.system")));
+		teaserImageTpeKV.add(entry(ImageSourceType.none.name(), translate("teaser.image.type.none")));
+		teaserImageTypeEl = uifactory.addRadiosHorizontal("teaser.image.type", styleCont, teaserImageTpeKV.keys(), teaserImageTpeKV.values());
+		teaserImageTypeEl.addActionListener(FormEvent.ONCHANGE);
+		ImageSourceType imageSourceType = courseModule.getTeaserImageSourceType() != null
+				? courseModule.getTeaserImageSourceType()
+						: ImageSourceType.none;
+		teaserImageTypeEl.select(imageSourceType.name(), true);
+		
+		teaserImageSystemEl = uifactory.addDropdownSingleselect("teaser.image.system", styleCont, emptyStrings(), emptyStrings());
+		teaserImageSystemEl.addActionListener(FormEvent.ONCHANGE);
+		updateTeaserImageSystemUI();
+		
+		SelectionValues teaserImageStyleKV = new SelectionValues();
+		Arrays.stream(TeaserImageStyle.values())
+				.filter(style -> !style.isTechnical())
+				.forEach(style -> teaserImageStyleKV.add(entry(style.name(), translate(CourseStyleUIFactory.getI18nKey(style)))));
+		teaserImageStyleEl = uifactory.addRadiosHorizontal("teaser.image.style", styleCont, teaserImageStyleKV.keys(), teaserImageStyleKV.values());
+		teaserImageStyleEl.addActionListener(FormEvent.ONCHANGE);
+		TeaserImageStyle teaserImageStyle = courseModule.getTeaserImageStyle() != null
+				? courseModule.getTeaserImageStyle()
+				: TeaserImageStyle.DEFAULT_COURSE;
+		teaserImageStyleEl.select(teaserImageStyle.name(), true);
+		
+		
+		String page = Util.getPackageVelocityRoot(HeaderController.class) + "/header_preview.html"; 
+		headerPreviewCont = FormLayoutContainer.createCustomFormLayout("preview.header", getTranslator(), page);
+		headerPreviewCont.setLabel("preview.header", null);
+		styleCont.add(headerPreviewCont);
+		
+		FormLayoutContainer libraryCont = FormLayoutContainer.createVerticalFormLayout("library", getTranslator());
+		libraryCont.setFormTitle(translate("system.image.title"));
+		libraryCont.setRootForm(mainForm);
+		formLayout.add(libraryCont);
+		
+		FormLayoutContainer tableButtonsCont = FormLayoutContainer.createVerticalFormLayout("tableButtons", getTranslator());
+		tableButtonsCont.setElementCssClass("o_button_group_right");
+		tableButtonsCont.setRootForm(mainForm);
+		formLayout.add(tableButtonsCont);
+		
+		addSystemImageLink = uifactory.addFormLink("system.image.add", tableButtonsCont, Link.BUTTON);
 		addSystemImageLink.setIconLeftCSS("o_icon o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -133,9 +196,42 @@ public class SystemImageAdminController extends FormBasicController {
 		tableEl.reset(false, false, true);
 	}
 
+	private void updateTeaserImageUI() {
+		boolean hasDefault = teaserImageTypeEl.isOneSelected() && ImageSourceType.system.name().equals(teaserImageTypeEl.getSelectedKey());
+		teaserImageSystemEl.setVisible(hasDefault);
+		teaserImageStyleEl.setVisible(hasDefault);
+		headerPreviewCont.setVisible(hasDefault);
+	}
+	
+	private void updateTeaserImageSystemUI() {
+		SelectionValues teaserImageKV = new SelectionValues();
+		courseStyleService.getSystemTeaserImageSources().stream().forEach(
+				source -> teaserImageKV.add(entry(
+						source.getFilename(),
+						CourseStyleUIFactory.translateSystemImage(getTranslator(), source.getFilename()))));
+		teaserImageKV.sort(SelectionValues.VALUE_ASC);
+		teaserImageSystemEl.setKeysAndValues(teaserImageKV.keys(), teaserImageKV.values(), null);
+		
+		String teaserImageFilename = courseModule.getTeaserImageFilename();
+		if (teaserImageSystemEl.containsKey(teaserImageFilename)) {
+			teaserImageSystemEl.select(teaserImageFilename, true);
+		} else if (teaserImageSystemEl.getKeys().length > 0) {
+			teaserImageSystemEl.select(teaserImageSystemEl.getKey(0), true);
+		}
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addSystemImageLink == source) {
+		if (source == teaserImageTypeEl) {
+			doUpdateTeaserImage();
+			updateHeaderPreviewUI(ureq);
+		} else if (source == teaserImageSystemEl) {
+			doUpdateTeaserImage();
+			updateHeaderPreviewUI(ureq);
+		} else if (source == teaserImageStyleEl) {
+			doUpdateTeaserImage();
+			updateHeaderPreviewUI(ureq);
+		} else if(addSystemImageLink == source) {
 			doAddSystemImage(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
@@ -157,14 +253,15 @@ public class SystemImageAdminController extends FormBasicController {
 		if (editCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(ureq);
+				updateTeaserImageSystemUI();
+				flc.setDirty(true);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if(deleteDialogCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				String filename = (String)deleteDialogCtrl.getUserObject();
-				doDelete(filename);
-				loadModel(ureq);
+				doDelete(ureq, filename);
 			}
 		} else if(cmc == source) {
 			cleanUp();
@@ -187,6 +284,49 @@ public class SystemImageAdminController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private void doUpdateTeaserImage() {
+		ImageSourceType type = teaserImageTypeEl.isOneSelected()
+				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
+				: ImageSourceType.none;
+		courseModule.setTeaserImageSourceType(type);
+		
+		String filename = teaserImageSystemEl.isOneSelected()? teaserImageSystemEl.getSelectedKey(): null;
+		courseModule.setTeaserImageFilename(filename);
+		
+		TeaserImageStyle teaserImageStyle = teaserImageStyleEl.isOneSelected()
+				? TeaserImageStyle.valueOf(teaserImageStyleEl.getSelectedKey())
+				: TeaserImageStyle.DEFAULT_COURSE;
+		courseModule.setTeaserImageStyle(teaserImageStyle);
+		
+		updateTeaserImageUI();
+	}
+	
+	private void updateHeaderPreviewUI(UserRequest ureq) {
+		removeAsListenerAndDispose(headerCtrl);
+		headerCtrl = null;
+		
+		Header header = createPreviewHeader();
+		headerCtrl = new HeaderController(ureq, getWindowControl(), header);
+		listenTo(headerCtrl);
+		headerPreviewCont.put("header", headerCtrl.getInitialComponent());
+	}
+	
+	private Header createPreviewHeader() {
+		Builder builder = Header.builder();
+		builder.withIconCss("o_CourseModule_icon");
+		builder.withTitle(translate("preview.header.title"));
+		
+		if (teaserImageSystemEl.isVisible()) {
+			File file = courseStyleService.getSystemTeaserImageFile(courseModule.getTeaserImageFilename());
+			if (file != null) {
+				Mapper mapper = new VFSMediaMapper(file);
+				builder.withTeaserImage(mapper, courseModule.getTeaserImageStyle());
+			}
+		}
+		
+		return builder.build();
 	}
 
 	private void doAddSystemImage(UserRequest ureq) {
@@ -219,8 +359,15 @@ public class SystemImageAdminController extends FormBasicController {
 		deleteDialogCtrl.setUserObject(filename);
 	}
 
-	private void doDelete(String filename) {
+	private void doDelete(UserRequest ureq, String filename) {
 		courseStyleService.deleteSystemImage(filename);
+		loadModel(ureq);
+		updateTeaserImageSystemUI();
+		flc.setDirty(true);
+		if (courseModule.getTeaserImageFilename().equals(filename)) {
+			teaserImageTypeEl.select(ImageSourceType.none.name(), true);
+			doUpdateTeaserImage();
+		}
 	}
 
 }

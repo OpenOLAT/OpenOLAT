@@ -38,6 +38,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.style.ImageSourceType;
+import org.olat.course.style.TeaserImageStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +60,9 @@ public class CourseModule extends AbstractSpringModule {
 	private static final String COURSE_DISPLAY_INFOBOX = "course.display.infobox";
 	private static final String COURSE_DISCLAIMER_ENABLED = "course.disclaimer.enabled";
 	private static final String COURSE_TYPE_DEFAULT = "course.type.default";
+	private static final String COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE = "course.style.teaser.image.source.type";
+	private static final String COURSE_STYLE_TEASER_IMAGE_FILENAME = "course.style.teaser.image.filename";
+	private static final String COURSE_STYLE_TEASER_IMAGE_STYLE = "course.style.teaser.image.style";
 	
 	@Value("${course.display.participants.count}")
 	private boolean displayParticipantsCount;
@@ -77,6 +82,14 @@ public class CourseModule extends AbstractSpringModule {
 	private String archiveLogTableOnDelete;
 	@Value("${course.info.details.enabled:false}")
 	private boolean infoDetailsEnabled;
+	@Value("${course.style.teaser.image.type}")
+	private String teaserImageSourceTypeName;
+	private ImageSourceType teaserImageSourceType;
+	@Value("${course.style.teaser.image.filename}")
+	private String teaserImageFilename;
+	@Value("${course.style.teaser.image.style}")
+	private String teaserImageStyleName;
+	private TeaserImageStyle teaserImageStyle;
 	
 	// Repository types
 	public static final String ORES_TYPE_COURSE = OresHelper.calculateTypeName(CourseModule.class);
@@ -111,6 +124,23 @@ public class CourseModule extends AbstractSpringModule {
 		String courseTypeDefaultObj = getStringPropertyValue(COURSE_TYPE_DEFAULT, true);
 		if (StringHelper.containsNonWhitespace(courseTypeDefaultObj)) {
 			courseTypeDefault = courseTypeDefaultObj;
+		}
+		
+		String teaserImageSourceTypeObj = getStringPropertyValue(COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE, true);
+		if (StringHelper.containsNonWhitespace(teaserImageSourceTypeObj)) {
+			teaserImageSourceTypeName = teaserImageSourceTypeObj;
+			teaserImageSourceType = ImageSourceType.valueOf(teaserImageSourceTypeName);
+		}
+		
+		String teaserImageFilenameObj = getStringPropertyValue(COURSE_STYLE_TEASER_IMAGE_FILENAME, true);
+		if (StringHelper.containsNonWhitespace(teaserImageFilenameObj)) {
+			teaserImageFilename = teaserImageFilenameObj;
+		}
+		
+		String teaserImageStyleObj = getStringPropertyValue(COURSE_STYLE_TEASER_IMAGE_STYLE, true);
+		if (StringHelper.containsNonWhitespace(teaserImageStyleObj)) {
+			teaserImageStyleName = teaserImageStyleObj;
+			teaserImageStyle = TeaserImageStyle.valueOf(teaserImageStyleName);
 		}
 	}
 
@@ -255,6 +285,35 @@ public class CourseModule extends AbstractSpringModule {
 
 	public boolean isInfoDetailsEnabled() {
 		return infoDetailsEnabled;
+	}
+
+	public ImageSourceType getTeaserImageSourceType() {
+		return teaserImageSourceType;
+	}
+
+	public void setTeaserImageSourceType(ImageSourceType imageSourceType) {
+		this.teaserImageSourceType = imageSourceType;
+		this.teaserImageSourceTypeName = imageSourceType.name();
+		setStringProperty(COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE, teaserImageSourceTypeName, true);
+	}
+
+	public String getTeaserImageFilename() {
+		return teaserImageFilename;
+	}
+	
+	public void setTeaserImageFilename(String filename) {
+		this.teaserImageFilename = filename;
+		setStringProperty(COURSE_STYLE_TEASER_IMAGE_FILENAME, filename, true);
+	}
+
+	public TeaserImageStyle getTeaserImageStyle() {
+		return teaserImageStyle;
+	}
+
+	public void setTeaserImageStyle(TeaserImageStyle teaserImageStyle) {
+		this.teaserImageStyle = teaserImageStyle;
+		this.teaserImageStyleName = teaserImageStyle.name();
+		setStringProperty(COURSE_STYLE_TEASER_IMAGE_STYLE, teaserImageStyleName, true);
 	}
 	
 }
