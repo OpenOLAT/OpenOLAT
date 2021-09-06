@@ -250,7 +250,7 @@ public class CopyServiceImpl implements CopyService {
 		copyDisclaimer(context, courseConfig);
 		
 		// Move dates
-		moveDates(context, target, course, sourceCourseNodesMap);
+		moveDates(context, course, sourceCourseNodesMap);
 		
 		// Copy lecture blocks
 		copyLectureBlocks(context, target);
@@ -269,7 +269,7 @@ public class CopyServiceImpl implements CopyService {
 		return target;
 	}
 	
-	private void copyGroups(CopyCourseContext context, RepositoryEntry target) {
+	protected void copyGroups(CopyCourseContext context, RepositoryEntry target) {
 		if (context.getGroupCopyType() == null) {
 			return;
 		}
@@ -355,7 +355,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyOwners(CopyCourseContext context, RepositoryEntry target) {
+	protected void copyOwners(CopyCourseContext context, RepositoryEntry target) {
 		switch (context.getOwnersCopyType()) {
 		case copy:
 			List<Identity> ownersToCopy = repositoryService.getMembers(context.getSourceRepositoryEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
@@ -382,7 +382,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyCoaches(CopyCourseContext context, RepositoryEntry target) {
+	protected void copyCoaches(CopyCourseContext context, RepositoryEntry target) {
 		switch (context.getCoachesCopyType()) {
 		case copy:
 			List<Identity> coachesToCopy = repositoryService.getMembers(context.getSourceRepositoryEntry(), RepositoryEntryRelationType.defaultGroup, GroupRoles.coach.name());
@@ -415,7 +415,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void setLifecycle(CopyCourseContext context, RepositoryEntry target) {
+	protected void setLifecycle(CopyCourseContext context, RepositoryEntry target) {
 		switch (context.getExecutionType()) {
 		case none:
 			target.setLifecycle(null);
@@ -444,7 +444,7 @@ public class CopyServiceImpl implements CopyService {
 		target.setLocation(context.getLocation());
 	}
 	
-	private void publishInCatalog(CopyCourseContext context, RepositoryEntry target) {
+	protected void publishInCatalog(CopyCourseContext context, RepositoryEntry target) {
 		switch (context.getCatalogCopyType()) {
 		case copy:
 			copyCatalog(context, target);
@@ -462,7 +462,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyCatalog(CopyCourseContext context, RepositoryEntry target) {
+	protected void copyCatalog(CopyCourseContext context, RepositoryEntry target) {
 		List<CatalogEntry> catalogEntries = catalogManager.getCatalogEntriesReferencing(context.getSourceRepositoryEntry());
 		
 		for (CatalogEntry catalogEntry : catalogEntries) {
@@ -476,7 +476,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyDisclaimer(CopyCourseContext context, CourseConfig courseConfig) {
+	protected void copyDisclaimer(CopyCourseContext context, CourseConfig courseConfig) {
 		if (context.getDisclaimerCopyType() != null) {
 			switch(context.getDisclaimerCopyType()) {
 			case copy:
@@ -495,7 +495,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyDisclaimerSettings(CopyCourseContext context, CourseConfig courseConfig) {
+	protected void copyDisclaimerSettings(CopyCourseContext context, CourseConfig courseConfig) {
 		if (context.getDisclaimerCopyContext() != null) {
 			
 			CourseDisclaimerContext disclaimerContext = context.getDisclaimerCopyContext();
@@ -518,7 +518,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void removeDisclaimerSettings(CourseConfig courseConfig) {
+	protected void removeDisclaimerSettings(CourseConfig courseConfig) {
 		courseConfig.setDisclaimerEnabled(1, false);
 		courseConfig.setDisclaimerTitle(1, "");
 		courseConfig.setDisclaimerTerms(1, "");
@@ -532,7 +532,7 @@ public class CopyServiceImpl implements CopyService {
 		courseConfig.setDisclaimerLabel(2, 2, "");
 	}
 	
-	private void moveDates(CopyCourseContext context, RepositoryEntry target, ICourse course, Map<String, CopyCourseOverviewRow> sourceCourseNodesMap) {
+	protected void moveDates(CopyCourseContext context, ICourse course, Map<String, CopyCourseOverviewRow> sourceCourseNodesMap) {
 		if (context.getCourseNodes() != null) {
 			CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
 			
@@ -572,7 +572,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyLectureBlocks(CopyCourseContext context, RepositoryEntry target) {
+	protected void copyLectureBlocks(CopyCourseContext context, RepositoryEntry target) {
 		if (context.getLectureBlockCopyType() == null || context.getLectureBlockCopyType().equals(CopyType.ignore)) {
 			return;
 		}
@@ -650,7 +650,7 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private LectureBlock copyLectureBlockDetails(LectureBlockImpl copy, LectureBlockImpl original, CopyCourseContext context, String location, Date startDate, Date endDate, Date effectiveEndDate, Date autoClosedDate) {
+	protected LectureBlock copyLectureBlockDetails(LectureBlockImpl copy, LectureBlockImpl original, CopyCourseContext context, String location, Date startDate, Date endDate, Date effectiveEndDate, Date autoClosedDate) {
 		copy.setTitle(original.getTitle());
 		copy.setDescription(original.getDescription());
 		copy.setPreparation(original.getPreparation());
@@ -703,7 +703,7 @@ public class CopyServiceImpl implements CopyService {
 		return copy;
 	}
 	
-	private void copyAssessmentModes(CopyCourseContext context, RepositoryEntry target) {
+	protected void copyAssessmentModes(CopyCourseContext context, RepositoryEntry target) {
 		if (context.getAssessmentModeCopyType() == null || context.getAssessmentModeCopyType().equals(CopyType.ignore)) {
 			return;
 		}

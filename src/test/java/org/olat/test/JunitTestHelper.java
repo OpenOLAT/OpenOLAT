@@ -345,6 +345,21 @@ public class JunitTestHelper {
 	}
 	
 	/**
+	 * Deploys/imports the "Demo Course".
+	 * @return the created RepositoryEntry
+	 */
+	public static RepositoryEntry deployCopyWizardCourse(Identity initialAuthor) {		
+		RepositoryEntry re = null;
+		try {
+			URL courseUrl = JunitTestHelper.class.getResource("file_resources/CopyCourseWizardTestCourse.zip");
+			re = deployCourse(initialAuthor, "CPW-Test", RepositoryEntryStatusEnum.published, true, false, courseUrl);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return re;
+	}
+	
+	/**
 	 * Deploy a course with only a single page. Title is randomized.
 	 * 
 	 * @param initialAuthor The author
