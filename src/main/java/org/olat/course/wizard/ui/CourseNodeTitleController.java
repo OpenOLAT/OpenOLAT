@@ -45,7 +45,7 @@ import org.olat.course.wizard.CourseNodeTitleContext;
  */
 public class CourseNodeTitleController extends StepFormBasicController {
 	
-	private TextElement longTitleEl;
+	private TextElement titleEl;
 	private TextElement shortTitleEl;
 	private RichTextElement descriptionEl;
 	
@@ -62,13 +62,17 @@ public class CourseNodeTitleController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle",
-				NodeConfigController.SHORT_TITLE_MAX_LENGTH, context.getShortTitle(), formLayout);
-		shortTitleEl.setMandatory(true);
+		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle",
+				NodeConfigController.LONG_TITLE_MAX_LENGTH, null, formLayout);
+		titleEl.setCheckVisibleLength(true);
+		titleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
+		titleEl.setMandatory(true);
+		
+		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
+				NodeConfigController.SHORT_TITLE_MAX_LENGTH, null, formLayout);
 		shortTitleEl.setCheckVisibleLength(true);
-
-		longTitleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255,
-				context.getLongTitle(), formLayout);
+		shortTitleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.SHORT_TITLE_MAX_LENGTH)});
+		shortTitleEl.enablePlaceholderUpdate(titleEl.getFormDispatchId(), NodeConfigController.SHORT_TITLE_MAX_LENGTH);
 
 		descriptionEl = uifactory.addRichTextElementForStringData("nodeConfigForm.description",
 				"nodeConfigForm.description", context.getDescription(), 10, -1, false, null, null, formLayout,
@@ -82,7 +86,7 @@ public class CourseNodeTitleController extends StepFormBasicController {
 		
 		shortTitleEl.clearError();
 		if (!StringHelper.containsNonWhitespace(shortTitleEl.getValue())) {
-			shortTitleEl.setErrorKey("nodeConfigForm.menumust", null);
+			shortTitleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
@@ -94,7 +98,7 @@ public class CourseNodeTitleController extends StepFormBasicController {
 		String shortTitle = shortTitleEl.getValue();
 		context.setShortTitle(shortTitle);
 		
-		String longTitle = longTitleEl.getValue();
+		String longTitle = titleEl.getValue();
 		context.setLongTitle(longTitle);
 		
 		String description = descriptionEl.getValue();

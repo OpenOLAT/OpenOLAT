@@ -47,5 +47,18 @@ public class CourseNodeHelper {
 		}
 		return null;
 	}
+	
+	/**
+	 * Return the short title if the short title is different then the start of the title.
+	 *
+	 * @param courseNode
+	 * @return
+	 */
+	public static String getCustomShortTitle(CourseNode courseNode) {
+		if (!(courseNode.getLongTitle().equals(courseNode.getShortTitle()) || courseNode.getLongTitle().startsWith(courseNode.getShortTitle()))) {
+			return courseNode.getShortTitle();
+		}
+		return null;
+	}
 
 }

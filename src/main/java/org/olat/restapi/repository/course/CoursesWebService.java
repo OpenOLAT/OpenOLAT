@@ -69,6 +69,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.editor.NodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -296,6 +297,9 @@ public class CoursesWebService {
 		}
 		
 		if(!StringHelper.containsNonWhitespace(displayName)) {
+			displayName = title;
+		}
+		if(!StringHelper.containsNonWhitespace(displayName)) {
 			displayName = shortTitle;
 		}
 
@@ -354,7 +358,7 @@ public class CoursesWebService {
 
 		CourseConfigVO configVO = new CourseConfigVO();
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
-				courseVo.getTitle(), courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), null, null, null, null,
+				null, courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), null, null, null, null,
 				courseVo.getSoftKey(), RepositoryEntryStatusEnum.preparation, false, false, courseVo.getOrganisationKey(),
 				courseVo.getAuthors(), courseVo.getLocation(), courseVo.getExternalId(), courseVo.getExternalRef(), 
 				courseVo.getManagedFlags(), courseVo.getNodeAccessType(), configVO);
@@ -687,21 +691,22 @@ public class CoursesWebService {
 
 	private ICourse prepareCourse(RepositoryEntry addedEntry, String shortTitle, String longTitle, CourseConfigVO courseConfigVO) {
 		// set root node title
-		String courseShortTitle = addedEntry.getDisplayname();
+		String courseShortTitle = null;
 		if(StringHelper.containsNonWhitespace(shortTitle)) {
-			courseShortTitle = shortTitle;
+			courseShortTitle = Formatter.truncate(shortTitle, NodeConfigController.SHORT_TITLE_MAX_LENGTH);
 		}
 		String courseLongTitle = addedEntry.getDisplayname();
 		if(StringHelper.containsNonWhitespace(longTitle)) {
 			courseLongTitle = longTitle;
 		}
+		courseLongTitle = Formatter.truncate(courseLongTitle, NodeConfigController.LONG_TITLE_MAX_LENGTH);
 
 		ICourse course = CourseFactory.openCourseEditSession(addedEntry.getOlatResource().getResourceableId());
-		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncate(courseShortTitle, 25));
+		course.getRunStructure().getRootNode().setShortTitle(courseShortTitle);
 		course.getRunStructure().getRootNode().setLongTitle(courseLongTitle);
 
 		CourseNode rootNode = ((CourseEditorTreeNode) course.getEditorTreeModel().getRootNode()).getCourseNode();
-		rootNode.setShortTitle(Formatter.truncate(courseShortTitle, 25));
+		rootNode.setShortTitle(courseShortTitle);
 		rootNode.setLongTitle(courseLongTitle);
 
 		if(courseConfigVO != null) {

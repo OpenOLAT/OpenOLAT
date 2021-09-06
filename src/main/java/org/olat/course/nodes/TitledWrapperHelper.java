@@ -46,15 +46,6 @@ public class TitledWrapperHelper {
 		String displayOption = courseNode.getDisplayOption();
 		if(CourseNode.DISPLAY_OPTS_CONTENT.equals(displayOption)) {
 			//don't change anything
-		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
-			if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
-				TitleInfo titleInfo = new TitleInfo(null, courseNode.getShortTitle(), null, courseNode.getIdent());
-				titleInfo.setDescriptionCssClass("o_description o_user_content_block");
-				if (StringHelper.containsNonWhitespace(iconCssClass)) {
-					titleInfo.setIconCssClass(iconCssClass);
-				}
-				controller = new TitledWrapperController(ureq, wControl, controller, null, titleInfo); 
-			}
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
 			if(StringHelper.containsNonWhitespace(courseNode.getLongTitle())) {
 				TitleInfo titleInfo = new TitleInfo(null, courseNode.getLongTitle(), null, courseNode.getIdent());
@@ -72,25 +63,7 @@ public class TitledWrapperHelper {
 				titleInfo.setDescriptionCssClass("o_description o_user_content_block");
 				controller = new TitledWrapperController(ureq, wControl, controller, null, titleInfo);
 			}
-		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			String title = courseNode.getShortTitle();
-			String description = null;
-			if (StringHelper.containsNonWhitespace(courseNode.getDescription())) {
-				if (StringHelper.containsNonWhitespace(title)) {
-					description = courseNode.getDescription();
-				}
-			}
-
-			if(StringHelper.containsNonWhitespace(title) || StringHelper.containsNonWhitespace(description)) {
-				TitleInfo titleInfo = new TitleInfo(null, title, description, courseNode.getIdent());
-				titleInfo.setDescriptionCssClass("o_description o_user_content_block");
-				if (StringHelper.containsNonWhitespace(iconCssClass)) {
-					titleInfo.setIconCssClass(iconCssClass);
-				}
-				controller = new TitledWrapperController(ureq, wControl, controller, null, titleInfo);
-			}
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-
 			String title = courseNode.getLongTitle();
 			String description = null;
 			if (StringHelper.containsNonWhitespace(courseNode.getDescription())) {

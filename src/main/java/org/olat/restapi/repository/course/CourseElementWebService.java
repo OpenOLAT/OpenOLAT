@@ -319,8 +319,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachStructure(@PathParam("courseId") Long courseId,
 			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -522,8 +523,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSinglePagePost(@PathParam("courseId") Long courseId,
 			@FormParam("parentNodeId") String parentNodeId, @FormParam("position") Integer position,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("shortTitle") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -569,8 +571,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachSinglePage(@PathParam("courseId") Long courseId,
 			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -610,8 +613,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateTask(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("shortTitle") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -654,8 +658,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTaskPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("position") Integer position, @FormParam("shortTitle") @DefaultValue("undefined") String shortTitle, 
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("position") Integer position, @FormParam("shortTitle") String shortTitle, 
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,
@@ -697,9 +701,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTask(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("position") Integer position, @QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -741,8 +745,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateTest(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("shortTitle") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -790,8 +795,8 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTestPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("position") Integer position, @FormParam("longTitle") String longTitle,
+			@FormParam("shortTitle") String shortTitle, @FormParam("position") Integer position,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
 			@FormParam("description") String description, @FormParam("objectives") String objectives,
 			@FormParam("instruction") String instruction, @FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -833,9 +838,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachTest(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("position") Integer position, @QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -879,8 +884,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateAssessment(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("shortTitle") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -919,8 +925,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachAssessmentPost(@PathParam("courseId") Long courseId,
 			@FormParam("parentNodeId") String parentNodeId, @FormParam("position") Integer position,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("shortTitle") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -957,8 +964,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachAssessment(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("position") Integer position, @QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
@@ -996,8 +1004,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateWiki(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("shortTitle") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -1045,8 +1054,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachWikiPost(@PathParam("courseId") Long courseId,
 			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -1085,8 +1095,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachWiki(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
 			@QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -1130,8 +1141,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateBlog(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("shortTitle") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -1180,8 +1192,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachBlogPost(@PathParam("courseId") Long courseId,
 			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -1221,8 +1234,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachBlog(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
 			@QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -1267,8 +1281,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateExternalPage(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
-			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@FormParam("longTitle") String longTitle, @FormParam("description") String description,
+			@FormParam("shortTitle") String shortTitle,
+			@FormParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@FormParam("description") String description,
 			@FormParam("objectives") String objectives, @FormParam("instruction") String instruction,
 			@FormParam("instructionalDesign") String instructionalDesign,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules,
@@ -1317,8 +1332,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachExternalPagePost(@PathParam("courseId") Long courseId,
 			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,
@@ -1358,8 +1374,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachExternalPage(@PathParam("courseId") Long courseId,
 			@QueryParam("parentNodeId") String parentNodeId, @QueryParam("position") Integer position,
-			@QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") String longTitle, @QueryParam("description") String description,
+			@QueryParam("shortTitle") String shortTitle,
+			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle,
+			@QueryParam("description") String description,
 			@QueryParam("objectives") String objectives, @QueryParam("instruction") String instruction,
 			@QueryParam("instructionalDesign") String instructionalDesign,
 			@QueryParam("visibilityExpertRules") String visibilityExpertRules,

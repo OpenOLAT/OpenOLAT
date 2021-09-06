@@ -4,11 +4,8 @@
 			<div class="o_text_block">
 				<div>
 					<div class="o_title">
-						<h4>$r.render("nodeLink")</h4>
+						<h4>$r.render("nodeLink")#if($r.isNotEmpty($item.subTitle)) <small>$r.escapeHtml($item.subTitle)</small>#end</h4>
 					</div>
-					#if($r.isNotEmpty($item.subTitle))
-						<div><h5>$r.escapeHtml($item.subTitle)</h5></div>
-					#end
 					#if($r.isNotEmpty($item.learningPathStatus) || $r.isNotEmpty($assessmentInfos))
 						<div class="o_assessment">
 							#if($r.isNotEmpty($item.learningPathStatus))

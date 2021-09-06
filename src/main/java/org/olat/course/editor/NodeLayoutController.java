@@ -85,10 +85,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeLayoutController extends FormBasicController {
 	
-	private static final String KEY_TITLE_SHORT = "short";
-	private static final String KEY_TITLE_LONG = "long";
-	private static final String KEY_TITLE_NONE = "none";
-	private static final String KEY_METADATA = "metadata";
+	private static final String KEY_TITLE = "long";
+	private static final String KEY_DESCRIPTION = "description";
 	private static final String TEASER_IMAGE_NODE = "node";
 	private static final String TEASER_IMAGE_STYLE_NODE = "node";
 	private static final String COLOR_CATEGORY_NODE = "node";
@@ -101,9 +99,7 @@ public class NodeLayoutController extends FormBasicController {
 			.withEnabled(Boolean.TRUE)
 			.build();
 	
-	private FormLayoutContainer displayCont;
-	private SingleSelection displayTitleEl;
-	private MultipleSelectionElement displayMetadataEl;
+	private MultipleSelectionElement displayEl;
 	private SingleSelection teaserImageTypeEl;
 	private SingleSelection teaserImageNodeEl;
 	private SingleSelection teaserImageSystemEl;
@@ -160,37 +156,20 @@ public class NodeLayoutController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.layout");
 		
-		displayCont = FormLayoutContainer.createBareBoneFormLayout("nodeConfigForm.display_options", getTranslator());
-		displayCont.setLabel("nodeConfigForm.display_options", null);
-		displayCont.setRootForm(mainForm);
-		formLayout.add(displayCont);
-		
-		SelectionValues titleKV = new SelectionValues();
-		titleKV.add(entry(KEY_TITLE_SHORT, translate("nodeConfigForm.title.short")));
-		titleKV.add(entry(KEY_TITLE_LONG, translate("nodeConfigForm.title.long")));
-		titleKV.add(entry(KEY_TITLE_NONE, translate("nodeConfigForm.title.none")));
-		displayTitleEl = uifactory.addRadiosHorizontal("nodeConfigForm.display_options", displayCont, titleKV.keys(), titleKV.values());
-		displayTitleEl.addActionListener(FormEvent.ONCHANGE);
-		
-		SelectionValues metadataKV = new SelectionValues();
-		metadataKV.add(entry(KEY_METADATA, translate("nodeConfigForm.metadata.all")));
-		displayMetadataEl = uifactory.addCheckboxesVertical("nodeConfigForm.metadata", displayCont, metadataKV.keys(), metadataKV.values(), 1);
-		displayMetadataEl.addActionListener(FormEvent.ONCHANGE);
-		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(courseNode.getDisplayOption())) {
-			displayTitleEl.select(KEY_TITLE_SHORT, true);
-			displayMetadataEl.select(KEY_METADATA, true);
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(courseNode.getDisplayOption())) {
-			displayTitleEl.select(KEY_TITLE_LONG, true);
-			displayMetadataEl.select(KEY_METADATA, true);
-		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(courseNode.getDisplayOption())) {
-			displayTitleEl.select(KEY_TITLE_SHORT, true);
+		SelectionValues displayKV = new SelectionValues();
+		displayKV.add(entry(KEY_TITLE, translate("nodeConfigForm.title.long")));
+		displayKV.add(entry(KEY_DESCRIPTION, translate("nodeConfigForm.metadata.all")));
+		displayEl = uifactory.addCheckboxesVertical("nodeConfigForm.display_options", formLayout, displayKV.keys(), displayKV.values(), 1);
+		displayEl.addActionListener(FormEvent.ONCHANGE);
+		if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(courseNode.getDisplayOption())) {
+			displayEl.select(KEY_TITLE, true);
+			displayEl.select(KEY_DESCRIPTION, true);
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(courseNode.getDisplayOption())) {
-			displayTitleEl.select(KEY_TITLE_LONG, true);
+			displayEl.select(KEY_TITLE, true);
 		} else if (CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT.equals(courseNode.getDisplayOption())) {
-			displayTitleEl.select(KEY_TITLE_NONE, true);
-			displayMetadataEl.select(KEY_METADATA, true);
+			displayEl.select(KEY_DESCRIPTION, true);
 		} else if (CourseNode.DISPLAY_OPTS_CONTENT.equals(courseNode.getDisplayOption())) {
-			displayTitleEl.select(KEY_TITLE_NONE, true);
+			//
 		}
 		
 		SelectionValues teaserImageTypeKV = new SelectionValues();
@@ -320,9 +299,7 @@ public class NodeLayoutController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == displayTitleEl) {
-			updatePreviewUI(ureq, true);
-		} else if (source == displayMetadataEl) {
+		if (source == displayEl) {
 			updatePreviewUI(ureq, true);
 		} else if (source == teaserImageTypeEl) {
 			updateTeaserImageUI();
@@ -379,11 +356,6 @@ public class NodeLayoutController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		if(!displayTitleEl.isOneSelected()) {
-			displayCont.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		teaserImageUploadEl.clearError();
 		if (teaserImageUploadEl.isVisible()) {
 			if (teaserImageUploadEl.getUploadFile() == null && teaserImageUploadEl.getInitialFile() == null) {
@@ -437,23 +409,18 @@ public class NodeLayoutController extends FormBasicController {
 	}
 
 	private String getDisplayOption() {
-		String titleKey = displayTitleEl.isOneSelected()? displayTitleEl.getSelectedKey(): KEY_TITLE_LONG;
 		String displayOption = CourseNode.DISPLAY_OPTS_CONTENT;
-		if (displayMetadataEl.isAtLeastSelected(1)) {
-			if (KEY_TITLE_SHORT.equals(titleKey)) {
-				displayOption = CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT;
-			} else if (KEY_TITLE_LONG.equals(titleKey)) {
+		
+		if (displayEl.isKeySelected(KEY_TITLE)) {
+			if (displayEl.isKeySelected(KEY_DESCRIPTION)) {
 				displayOption = CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT;
 			} else {
-				displayOption = CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT;
-			}
-		} else {
-			if (KEY_TITLE_SHORT.equals(titleKey)) {
-				displayOption = CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT;
-			} else if (KEY_TITLE_LONG.equals(titleKey)) {
 				displayOption = CourseNode.DISPLAY_OPTS_TITLE_CONTENT;
 			}
+		} else if (displayEl.isKeySelected(KEY_DESCRIPTION)) {
+			displayOption = CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT;
 		}
+		
 		return displayOption;
 	}
 	

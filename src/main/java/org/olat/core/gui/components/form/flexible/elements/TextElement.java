@@ -210,6 +210,19 @@ public interface TextElement extends FormItem{
 	 * @return the autocomplete value or null if not set
 	 */
 	public String getAutocomplete();
+	
+	/**
+	 * If enabled the placeholder of this element is updated to the value of the
+	 * TextElement with the elementId when the user is typing (keyup) in the
+	 * TextElement with the elementId. The optional maxLength truncates the
+	 * placeholder after this value.
+	 *
+	 * @param elementId
+	 * @param maxLength
+	 */
+	public void enablePlaceholderUpdate(String elementId, Integer maxLength);
+	
+	public void disablePlaceholderUpdate();
 
 	public void setDomReplacementWrapperRequired(boolean required);
 	

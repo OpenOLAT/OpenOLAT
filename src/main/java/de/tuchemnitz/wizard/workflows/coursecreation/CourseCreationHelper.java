@@ -44,12 +44,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.editor.CourseEditorHelper;
+import org.olat.course.editor.NodeConfigController;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.editor.StatusDescription;
@@ -274,13 +276,11 @@ public class CourseCreationHelper {
 		}
 
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());
-		course.getRunStructure().getRootNode().setShortTitle(addedEntry.getDisplayname());
-		course.getRunStructure().getRootNode().setLongTitle(addedEntry.getDisplayname());
+		course.getRunStructure().getRootNode().setLongTitle(Formatter.truncateOnly(addedEntry.getDisplayname(), NodeConfigController.LONG_TITLE_MAX_LENGTH));
 		CourseFactory.saveCourse(course.getResourceableId());
 		final CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		final CourseNode rootNode = cetm.getCourseNode(course.getRunStructure().getRootNode().getIdent());
-		rootNode.setShortTitle(addedEntry.getDisplayname());
-		rootNode.setLongTitle(addedEntry.getDisplayname());
+		rootNode.setLongTitle(Formatter.truncateOnly(addedEntry.getDisplayname(), NodeConfigController.LONG_TITLE_MAX_LENGTH));
 		course.getEditorTreeModel().nodeConfigChanged(course.getRunStructure().getRootNode());
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 

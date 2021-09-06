@@ -50,6 +50,7 @@ import org.olat.repository.wizard.ui.RepositoryEntryOverviewController.MoreFigur
 public class TitleAndEntryController extends StepFormBasicController {
 	
 	private FormLayoutContainer nodeCont;
+	private TextElement titleEl;
 	private TextElement shortTitleEl;
 
 	private final ReferencableEntriesStepController referencableCtrl;
@@ -82,23 +83,29 @@ public class TitleAndEntryController extends StepFormBasicController {
 		nodeCont.setRootForm(mainForm);
 		formLayout.add(nodeCont);
 		
-		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle",
-				NodeConfigController.SHORT_TITLE_MAX_LENGTH, titleContext.getShortTitle(), nodeCont);
-		shortTitleEl.setMandatory(true);
-		shortTitleEl.setNotEmptyCheck("nodeConfigForm.menumust");
+		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle",
+				NodeConfigController.LONG_TITLE_MAX_LENGTH, null, nodeCont);
+		titleEl.setCheckVisibleLength(true);
+		titleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
+		titleEl.setMandatory(true);
+		
+		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
+				NodeConfigController.SHORT_TITLE_MAX_LENGTH, null, nodeCont);
 		shortTitleEl.setCheckVisibleLength(true);
+		shortTitleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.SHORT_TITLE_MAX_LENGTH)});
+		shortTitleEl.enablePlaceholderUpdate(titleEl.getFormDispatchId(), NodeConfigController.SHORT_TITLE_MAX_LENGTH);
 		
 		formLayout.add(referencableCtrl.getInitialFormItem());
 	}
 	
 	private void updateUI(boolean updateTitle) {
 		nodeCont.setVisible(!referencableCtrl.isSearch());
-		if (updateTitle && !StringHelper.containsNonWhitespace(shortTitleEl.getValue()) && referencableCtrl.getEntry() != null) {
+		if (updateTitle && !StringHelper.containsNonWhitespace(titleEl.getValue()) && referencableCtrl.getEntry() != null) {
 			String displayname = referencableCtrl.getEntry().getDisplayname();
-			String shortTitle = NodeConfigController.SHORT_TITLE_MAX_LENGTH < displayname.length()
-					? displayname.substring(0, NodeConfigController.SHORT_TITLE_MAX_LENGTH)
+			String title = NodeConfigController.LONG_TITLE_MAX_LENGTH < displayname.length()
+					? displayname.substring(0, NodeConfigController.LONG_TITLE_MAX_LENGTH)
 					: displayname;
-			shortTitleEl.setValue(shortTitle);
+			titleEl.setValue(title);
 		}
 		flc.setDirty(true);
 	}
@@ -118,7 +125,23 @@ public class TitleAndEntryController extends StepFormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
+		String title = titleEl.getValue();
+		titleContext.setLongTitle(title);
+		
 		String shortTitle = shortTitleEl.getValue();
 		titleContext.setShortTitle(shortTitle);
 		

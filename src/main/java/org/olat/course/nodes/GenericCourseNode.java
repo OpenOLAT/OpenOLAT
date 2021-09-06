@@ -45,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.GenericNode;
@@ -90,6 +91,10 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 public abstract class GenericCourseNode extends GenericNode implements CourseNode {
 	
 	private static final long serialVersionUID = -1093400247219150363L;
+	
+	private static final transient String DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT = "shorttitle+desc+content"; // legacy
+	private static final transient String DISPLAY_OPTS_SHORT_TITLE_CONTENT = "shorttitle+content"; // legacy
+	
 	private String type;
 	private String shortTitle;
 	private String longTitle;
@@ -199,11 +204,17 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 
 	@Override
 	public String getLongTitle() {
+		if (!StringHelper.containsNonWhitespace(longTitle)) {
+			return shortTitle;
+		}
 		return longTitle;
 	}
 
 	@Override
 	public String getShortTitle() {
+		if (!StringHelper.containsNonWhitespace(shortTitle)) {
+			return Formatter.truncateOnly(longTitle, NodeConfigController.SHORT_TITLE_MAX_LENGTH);
+		}
 		return shortTitle;
 	}
 	
@@ -213,8 +224,19 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * @return String 
 	 */
 	public String getDisplayOption(boolean returnDefault) {
+		// Fallback for old CourseNodes. They may have no displayOption, so we
+		// return the old default value.
+		// In new CourseNodes the displayOption is initialized during the creation of
+		// the CourseNode.
 		if(!StringHelper.containsNonWhitespace(displayOption) && returnDefault) {
 			return getDefaultTitleOption();
+		}
+		// Map the legacy values to still valid values.
+		if (DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
+			return DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT;
+		}
+		if (DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
+			return DISPLAY_OPTS_TITLE_CONTENT;
 		}
 		return displayOption;
 	}
@@ -594,10 +616,10 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		copyInstance.setPreConditionVisibility(null);
 		if (isNewTitle) {
 			String newTitle = "Copy of " + getShortTitle();
-			if (newTitle.length() > NodeConfigController.SHORT_TITLE_MAX_LENGTH) {
-				newTitle = newTitle.substring(0, NodeConfigController.SHORT_TITLE_MAX_LENGTH - 1);
+			if (newTitle.length() > NodeConfigController.LONG_TITLE_MAX_LENGTH) {
+				newTitle = newTitle.substring(0, NodeConfigController.LONG_TITLE_MAX_LENGTH - 1);
 			}
-			copyInstance.setShortTitle(newTitle);
+			copyInstance.setLongTitle(newTitle);
 		}
 		return copyInstance;
 	}
@@ -719,6 +741,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
 		if (isNewNode) {
+			setDisplayOption(CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT);
 			setTeaserImageStyle(TeaserImageStyle.DEFAULT_COURSE_NODE);
 			setColorCategoryIdentifier(ColorCategory.IDENTIFIER_DEFAULT_COURSE_NODE);
 		}

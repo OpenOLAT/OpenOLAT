@@ -36,6 +36,7 @@ import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.nodes.st.Overview.Builder;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -111,7 +112,8 @@ public class OverviewFactory {
 		}
 		
 		builder.withIconCss(CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
-		builder.withTitle(courseNode.getShortTitle());
+		builder.withTitle(courseNode.getLongTitle());
+		builder.withSubTitle(CourseNodeHelper.getCustomShortTitle(courseNode));
 		
 		if (scoreAccounting != null) {
 			AssessmentEvaluation evaluation = scoreAccounting.getScoreEvaluation(courseNode);
@@ -140,7 +142,6 @@ public class OverviewFactory {
 		
 		Controller peekViewCtrl = null;
 		if (courseTreeNode.isAccessible()) {
-			builder.withSubTitle(courseNode.getLongTitle());
 			builder.withDescription(courseNode.getDescription());
 			
 			if (peekViewFilter.accept(courseNode)) {
