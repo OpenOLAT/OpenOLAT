@@ -89,7 +89,7 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 			return null;
 		}
 	
-		selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
+		selection = new FileSelection(ureq, folderComponent.getCurrentContainer(), folderComponent.getCurrentContainerPath());
 		status = FolderCommandHelper.sanityCheck3(wControl, folderComponent, selection);
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;

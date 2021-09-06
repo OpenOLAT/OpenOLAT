@@ -74,7 +74,7 @@ public class CmdDelete extends BasicController implements FolderCommand {
 	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl wContr, Translator trans) {
 		this.translator = trans;
 		this.folderComponent = fc;
-		this.fileSelection = new FileSelection(ureq, fc.getCurrentContainerPath());
+		this.fileSelection = new FileSelection(ureq, fc.getCurrentContainer(), fc.getCurrentContainerPath());
 
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 		List<String> lockedFiles = hasLockedFiles(currentContainer, fileSelection);

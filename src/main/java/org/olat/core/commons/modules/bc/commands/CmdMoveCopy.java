@@ -89,7 +89,7 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 	public Controller execute(FolderComponent fc, UserRequest ureq, WindowControl windowControl, Translator trans) {
 		this.folderComponent = fc;
 		this.translator = trans;
-		this.fileSelection = new FileSelection(ureq, fc.getCurrentContainerPath());
+		this.fileSelection = new FileSelection(ureq, fc.getCurrentContainer(), fc.getCurrentContainerPath());
 				
 		VelocityContainer main = new VelocityContainer("mc", VELOCITY_ROOT + "/movecopy.html", translator, this);
 		main.contextPut("fileselection", fileSelection);
