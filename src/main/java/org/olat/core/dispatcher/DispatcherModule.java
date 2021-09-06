@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.Tracing;
@@ -60,6 +61,8 @@ public class DispatcherModule {
 	public static final String PATH_AUTHENTICATED = "/auth/";
 	/** default encoding */
 	private static final String UTF8_ENCODING = "utf-8";
+	
+	private static final UrlValidator redirectValidator = new UrlValidator(new String[] { "http", "https" }, UrlValidator.ALLOW_LOCAL_URLS);
 
 	/**
 	 * set by spring
@@ -134,10 +137,11 @@ public class DispatcherModule {
 	}
 
 	/**
-	 * Generic redirect method.
+	 * Generic redirect method. The method doesn't validate the URL, in doubt use
+	 * @see redirectSecureTo
 	 * 
-	 * @param response
-	 * @param url
+	 * @param response The response
+	 * @param url A valid url
 	 */
 	public static final void redirectTo(HttpServletResponse response, String url) {
 		try {
@@ -145,6 +149,26 @@ public class DispatcherModule {
 		} catch (IOException e) {
 			log.error("Redirect failed: url={}", url, e);
 		}
+	}
+	
+	/**
+	 * The url is validated before being redirected. If the validation failed, it redirects
+	 * to the default.
+	 * 
+	 * @param response The HTTP response
+	 * @param url An url
+	 */
+	public static final boolean redirectSecureTo(HttpServletResponse response, String url) {
+		try {
+			if(redirectValidator.isValid(url)) {
+				response.sendRedirect(url);
+				return true;
+			}
+			sendNotFound(response);
+		} catch (IOException e) {
+			log.error("Redirect failed: url={}", url, e);
+		}
+		return false;
 	}
 
 	/**

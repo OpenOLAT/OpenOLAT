@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -46,7 +47,6 @@ import org.olat.core.dispatcher.mapper.MapperDispatcher;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -311,8 +311,9 @@ public class OpenOLATServlet extends HttpServlet {
 					int index = uri.indexOf("/raw/_noversion_/");
 					if(index > 0) {
 						String redirectUri = Settings.getServerContextPathURI() + uri.substring(index, uri.length());
-						response.sendRedirect(redirectUri);
-						ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
+						if(DispatcherModule.redirectSecureTo(response, redirectUri)) {
+							ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);
+						}
 					} else {
 						DispatcherModule.sendNotFound(response);
 						ServletUtil.setCacheHeaders(response, ServletUtil.CACHE_ONE_DAY);

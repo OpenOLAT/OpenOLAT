@@ -214,6 +214,7 @@ public class TopicsRunCoachController extends FormBasicController {
 		for (Topic topic : topics) {
 			TopicWrapper wrapper = new TopicWrapper(topic);
 			List<Organizer> organizers = topicKeyToOrganizer.getOrDefault(topic.getKey(), emptyList());
+			wrapper.setOrganizers(organizers);
 			if (secCallback.canViewAppointment(organizers)) {
 				wrapper.setOrganizerNames(AppointmentsUIFactory.formatOrganizers(organizers));
 				List<Appointment> appointments = topicKeyToAppointments.getOrDefault(topic.getKey(), emptyList());
