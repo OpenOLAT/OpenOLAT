@@ -108,6 +108,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 	private FormLink selectAllCurriculumOwnersButton;
 	private FormLink selectAllCurriculumCoachesButton;
 	private FormLink selectAllCurriculumParticipantsButton;
+	private FormLink selectAllCurriculumMasterCoachButton;
+	private FormLink selectAllCurriculumElementOwnerButton;
 	private EditGroupMembershipTableDataModel groupTableDataModel;
 	private EditCurriculumMembershipTableDataModel curriculumTableDataModel;
 	
@@ -348,6 +350,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		
 		curriculumTableDataModel.setObjects(curriculumOptions);
 		curriculumTableEl.setVisible(!curriculumOptions.isEmpty());
+		selectAllCurriculumElementOwnerButton.setVisible(extendedCurriculumRoles && curriculumOptions.size() > 1);
+		selectAllCurriculumMasterCoachButton.setVisible(extendedCurriculumRoles && curriculumOptions.size() > 1);
 		selectAllCurriculumParticipantsButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
 		selectAllCurriculumCoachesButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
 		selectAllCurriculumOwnersButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
@@ -527,6 +531,12 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		curriculumTableEl.setCustomizeColumns(false);
 		curriculumTableEl.setNumOfRowsEnabled(false);
 		
+		selectAllCurriculumElementOwnerButton = uifactory.addFormLink("select.all.curriculum.element.owners", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumElementOwnerButton.setIconLeftCSS("o_icon o_icon_check_on");
+		selectAllCurriculumElementOwnerButton.setUserObject(Boolean.TRUE);
+		selectAllCurriculumMasterCoachButton = uifactory.addFormLink("select.all.curriculum.master.coaches", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumMasterCoachButton.setIconLeftCSS("o_icon o_icon_check_on");
+		selectAllCurriculumMasterCoachButton.setUserObject(Boolean.TRUE);
 		selectAllCurriculumOwnersButton = uifactory.addFormLink("select.all.curriculum.owners", formLayout, Link.BUTTON_SMALL);
 		selectAllCurriculumOwnersButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllCurriculumOwnersButton.setUserObject(Boolean.TRUE);
@@ -593,6 +603,12 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 					}
 				}
 			}
+		} else if(selectAllCurriculumMasterCoachButton == source) {
+			toogleCurriculumMembership(selectAllCurriculumMasterCoachButton, CurriculumRoles.mastercoach,
+					"select.all.curriculum.master.coaches", "deselect.all.curriculum.master.coaches");
+		} else if(selectAllCurriculumElementOwnerButton == source) {
+			toogleCurriculumMembership(selectAllCurriculumElementOwnerButton, CurriculumRoles.curriculumelementowner,
+					"select.all.curriculum.element.owners", "deselect.all.curriculum.element.owners");
 		} else if(selectAllCurriculumOwnersButton == source) {
 			toogleCurriculumMembership(selectAllCurriculumOwnersButton, CurriculumRoles.owner,
 					"select.all.curriculum.owners", "deselect.all.curriculum.owners");
@@ -611,7 +627,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		} else if(selectAllGroupParticipantsButton == source) {
 			toogleGroupMembership(selectAllGroupParticipantsButton, GroupRoles.participant,
 					"select.all.group.participants", "deselect.all.group.participants");
-		}
+		} 
 		super.formInnerEvent(ureq, source, event);
 	}
 	
@@ -621,7 +637,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		List<MemberCurriculumOption> memberOptions = curriculumTableDataModel.getObjects();
 		for(MemberCurriculumOption memberOption:memberOptions) {
 			MultipleSelectionElement element = memberOption.getSelection(role);
-			if(element.isEnabled()) {
+			if(element != null && element.isEnabled()) {
 				element.select(keys[0], enabled.booleanValue());
 			}
 		}
@@ -786,6 +802,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 				case owner: return owner;
 				case coach: return coach;
 				case participant: return participant;
+				case mastercoach: return masterCoach;
+				case curriculumelementowner: return elementOwner;
 				default: return null;
 			}
 		}

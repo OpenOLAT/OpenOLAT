@@ -19,11 +19,15 @@
 #if($r.visible("curriculumList"))
 	<fieldset>
 		<legend>$r.translate("edit.member.curriculums")</legend>
-		<div class="o_button_group o_button_group_right"><div class="btn-group">
-			$r.render("select.all.curriculum.owners")
-			$r.render("select.all.curriculum.coaches")
-			$r.render("select.all.curriculum.participants")
-		</div></div>
+		<div class="o_button_group o_button_group_right">
+			<div class="btn-group">
+				$r.render("select.all.curriculum.element.owners")
+				$r.render("select.all.curriculum.master.coaches")
+				$r.render("select.all.curriculum.owners")
+				$r.render("select.all.curriculum.coaches")
+				$r.render("select.all.curriculum.participants")
+			</div>
+		</div>
 		$r.render("curriculumList")
 	</fieldset>
 #end
