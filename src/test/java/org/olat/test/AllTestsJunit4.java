@@ -456,6 +456,7 @@ import org.junit.runners.Suite;
 	org.olat.commons.info.InfoManagerTest.class,
 	org.olat.core.commons.services.tagging.SimpleTagProposalManagerTest.class,
 	org.olat.core.commons.services.tagging.TaggingManagerTest.class,
+	org.olat.core.dispatcher.DispatcherModuleRedirectTest.class,
 	org.olat.core.dispatcher.mapper.MapperDAOTest.class,
 	org.olat.core.dispatcher.mapper.MapperServiceTest.class,
 	org.olat.restapi.AuthenticationTest.class,

@@ -167,7 +167,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 					if(request.getParameter("redirect") != null) {
 						//redirect parameter like: /olat/url/RepositoryEntry/917504/CourseNode/81254724902921
 						String redirect = request.getParameter("redirect");
-						DispatcherModule.redirectTo(response, redirect);
+						DispatcherModule.redirectSecureTo(response, redirect);
 					} else if(StringHelper.containsNonWhitespace(restPart)) {
 						//redirect like: http://www.frentix.com/olat/remotelogin/RepositoryEntry/917504/CourseNode/81254724902921
 						try {
@@ -190,7 +190,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 						
 						usess.putEntryInNonClearedStore(AuthenticatedDispatcher.AUTHDISPATCHER_BUSINESSPATH, businessPath);
 						String url = getRedirectToURL(usess, ureq);
-						DispatcherModule.redirectTo(response, url);
+						DispatcherModule.redirectSecureTo(response, url);
 					} else {
 						//redirect
 						ServletUtil.serveResource(request, response, ureq.getDispatchResult().getResultingMediaResource());
