@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCel
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -273,9 +274,13 @@ public class CompetencesOverviewController extends FormBasicController implement
 			addTargetButton = uifactory.addFormLink("add.competence.target", formLayout, Link.BUTTON);
 		}
 		
+		
+		TreeNodeFlexiCellRenderer treeRenderer = new TreeNodeFlexiCellRenderer(true);
+		treeRenderer.setFlatBySearchAndFilter(true);
+		
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetencesOverviewCols.key));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.competence, new TreeNodeFlexiCellRenderer(true)));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.competence, treeRenderer));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.resource, OPEN_RESOURCE));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.info));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetencesOverviewCols.type));
@@ -298,7 +303,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 		tableEl = uifactory.addTableElement(getWindowControl(), "competences_overview", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "competences_overview");
-		tableEl.setSearchEnabled(false);
+		tableEl.setSearchEnabled(true);
 		tableEl.setEmptyTableSettings("competences.empty.table", null, "o_icon_competences");
 				
 		// Set rootcrumb
@@ -333,6 +338,15 @@ public class CompetencesOverviewController extends FormBasicController implement
 						showInfo("competence.without.link");
 					}
 				} 
+			} else if (event instanceof FlexiTableSearchEvent) {
+				if (event.getCommand().equals(FlexiTableSearchEvent.QUICK_SEARCH)) {
+					tableModel.openAll();
+					tableModel.filter(((FlexiTableSearchEvent) event).getSearch(), null);
+					tableEl.reloadData();
+				} else if (event.getCommand().equals(FormEvent.RESET.getCommand())) {
+					tableModel.filter(null, null);
+					tableEl.reloadData();
+				}
 			}
 		} else if (source instanceof FormLink) {
 			FormLink sFl = (FormLink) source;

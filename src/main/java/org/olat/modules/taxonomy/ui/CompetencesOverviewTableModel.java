@@ -19,7 +19,9 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -28,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial date: 19.03.2021<br>
@@ -47,10 +50,21 @@ public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataMode
 		CompetencesOverviewTableRow competenceRow = getObject(row);
 		return getValueAt(competenceRow, col);
 	}
-
+	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		//
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			String lowerSearchString = searchString.toLowerCase();
+			List<CompetencesOverviewTableRow> objects = getObjects();
+			
+			if (objects == null || objects.isEmpty()) {
+				setFilteredObjects(new ArrayList<>());
+			}
+			
+			setFilteredObjects(objects.stream().filter(row -> row.getDisplayName().toLowerCase().contains(lowerSearchString)).collect(Collectors.toList()));
+		} else {
+			setUnfilteredObjects();
+		}
 	}
 
 	@Override
