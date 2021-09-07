@@ -189,7 +189,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		if (status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
 		}
-		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
+		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainer(), folderComponent.getCurrentContainerPath());
 		status = FolderCommandHelper.sanityCheck3(wControl, folderComponent, selection);
 		if (status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
