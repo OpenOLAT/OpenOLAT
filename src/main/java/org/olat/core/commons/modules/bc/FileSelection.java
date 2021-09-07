@@ -27,24 +27,29 @@
 package org.olat.core.commons.modules.bc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 
 public class FileSelection {
 
 	/** HTML form identifier */
 	public static final String FORM_ID = "paths";
 	
-	private List<String> files = new ArrayList<>();
-	private String currentContainerRelPath;
+	private final List<String> files = new ArrayList<>();
+	private final String currentContainerRelPath;
+	private final VFSContainer currentContainer;
 	
-	public FileSelection(UserRequest ureq, String currentContainerRelPath) {
+	public FileSelection(UserRequest ureq, VFSContainer currentContainer, String currentContainerRelPath) {
 		if (currentContainerRelPath.equals("/")) currentContainerRelPath = "";
 		this.currentContainerRelPath = currentContainerRelPath;
+		this.currentContainer = currentContainer;
 		parse(ureq);
 	}
 
@@ -76,8 +81,20 @@ public class FileSelection {
 	 */
 	private void parse(UserRequest ureq) {
 		String[] sFiles = ureq.getHttpReq().getParameterValues(FORM_ID);
-		if (sFiles == null || sFiles.length == 0) return;
-		files = Arrays.asList(sFiles);
+		if (sFiles == null || sFiles.length == 0) {
+			return;
+		}
+		List<VFSItem> items = currentContainer.getItems();
+		if(items != null && !items.isEmpty()) {
+			Set<String> itemNames =  items.stream()
+					.map(VFSItem::getName)
+					.collect(Collectors.toSet());
+			for(String sFile:sFiles) {
+				if(itemNames.contains(sFile)) {
+					files.add(sFile);
+				}
+			}
+		}
 	}
 
 	/**

@@ -250,14 +250,7 @@ public class MultiSPController extends FormBasicController {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode newNode = newNodeConfig.getInstance();
 		newNode.updateModuleConfigDefaults(true, parent, NodeAccessType.of(course));
-		String name = item.getName();
-		if (name.length() > NodeConfigController.SHORT_TITLE_MAX_LENGTH) {
-			String shortName = name.substring(0, NodeConfigController.SHORT_TITLE_MAX_LENGTH - 1);
-			newNode.setShortTitle(shortName);
-			newNode.setLongTitle(name);
-		} else {
-			newNode.setShortTitle(name);
-		}
+		newNode.setLongTitle(item.getName());
 		newNode.setNoAccessExplanation("You don't have access");
 		return newNode;
 	}

@@ -78,6 +78,7 @@ import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.editor.NodeConfigController;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.export.CourseExportMediaResource;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -152,8 +153,7 @@ public class CourseHandler implements RepositoryHandler {
 						RepositoryEntryStatusEnum.preparation, organisation);
 		DBFactory.getInstance().commit();
 
-		String shortDisplayname = Formatter.truncateOnly(displayname, 25);
-		ICourse course = CourseFactory.createCourse(re, shortDisplayname, displayname);
+		ICourse course = CourseFactory.createCourse(re, null, displayname);
 		log.info(Tracing.M_AUDIT, "Course created: {}", course.getCourseTitle());
 		return re;
 	}
@@ -294,13 +294,11 @@ public class CourseHandler implements RepositoryHandler {
 			}
 		}
 		if (doUpdateTitle) {
-			course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(displayname, 25)); //do not use truncate!
-			course.getRunStructure().getRootNode().setLongTitle(displayname);
+			course.getRunStructure().getRootNode().setLongTitle(Formatter.truncateOnly(displayname, NodeConfigController.LONG_TITLE_MAX_LENGTH));
 		}
 		
 		CourseEditorTreeNode editorRootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
-		editorRootNode.getCourseNode().setShortTitle(Formatter.truncateOnly(displayname, 25)); //do not use truncate!
-		editorRootNode.getCourseNode().setLongTitle(displayname);
+		editorRootNode.getCourseNode().setLongTitle(Formatter.truncateOnly(displayname, NodeConfigController.LONG_TITLE_MAX_LENGTH));
 	
 		// mark entire structure as dirty/new so the user can re-publish
 		markDirtyNewRecursively(editorRootNode);
@@ -523,7 +521,7 @@ public class CourseHandler implements RepositoryHandler {
 		Map<Long, ReminderRow> remindersMap = null;
 		
 		if (context.getReminderRows() != null) {
-			remindersMap = context.getReminderRows().stream().collect(Collectors.toMap(row -> row.getKey(), Function.identity()));
+			remindersMap = context.getReminderRows().stream().collect(Collectors.toMap(ReminderRow::getKey, Function.identity()));
 		}
 		
 		if (remindersCopyType.equals(CopyType.copy) || remindersCopyType.equals(CopyType.custom)) {

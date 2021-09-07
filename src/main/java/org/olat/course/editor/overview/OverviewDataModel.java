@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.nodes.CourseNodeHelper;
 
 /**
  * 
@@ -64,7 +65,7 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case dirty: return Boolean.valueOf(row.getEditorNode().isDirty());
 			case newNode: return Boolean.valueOf(row.getEditorNode().isNewnode());
 			case deleted: return Boolean.valueOf(row.getEditorNode().isDeleted());
-			case shortTitle: return row.getCourseNode().getShortTitle();
+			case shortTitle: return CourseNodeHelper.getCustomShortTitle(row.getCourseNode());
 			case longTitle: return row.getCourseNode().getLongTitle();
 			case description: return row.getCourseNode().getDescription();
 			case display: return row.getTranslatedDisplayOption();

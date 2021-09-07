@@ -70,7 +70,7 @@ public class CmdDownloadZip implements FolderCommand {
 			return null;
 		}
 	
-		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
+		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainer(), folderComponent.getCurrentContainerPath());
 		status = FolderCommandHelper.sanityCheck3(wControl, folderComponent, selection);
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;
@@ -78,7 +78,7 @@ public class CmdDownloadZip implements FolderCommand {
 		
 		if(selection.getFiles().isEmpty()) {
 			status = FolderCommandStatus.STATUS_FAILED;
-			wControl.setWarning(trans.translate("warning.file.selection.empty"));
+			wControl.setWarning(trans.translate("warning.file.selection.empty22"));
 			return null;
 		}
 		

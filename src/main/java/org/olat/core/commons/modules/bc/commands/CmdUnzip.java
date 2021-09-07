@@ -77,7 +77,7 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wContr, Translator trans) {
 		this.translator = trans;
-		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainerPath());
+		FileSelection selection = new FileSelection(ureq, folderComponent.getCurrentContainer(), folderComponent.getCurrentContainerPath());
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 		if (currentContainer.canWrite() != VFSConstants.YES)
 			throw new AssertException("Cannot unzip to folder. Writing denied.");

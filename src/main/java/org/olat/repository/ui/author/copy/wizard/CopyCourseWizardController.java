@@ -253,9 +253,7 @@ public class CopyCourseWizardController extends BasicController {
 		if (displayOption == null) return null;
 		
 		switch(displayOption) {
-		case CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT: return translate("nodeConfigForm.short_title_desc_content");
 		case CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT: return translate("nodeConfigForm.title_desc_content");
-		case CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT: return translate("nodeConfigForm.short_title_content");
 		case CourseNode.DISPLAY_OPTS_TITLE_CONTENT: return translate("nodeConfigForm.title_content");
 		case CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT: return translate("nodeConfigForm.description_content");
 		case CourseNode.DISPLAY_OPTS_CONTENT: return translate("nodeConfigForm.content_only");
@@ -402,7 +400,7 @@ public class CopyCourseWizardController extends BasicController {
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.owner);
 		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(repositoryEntry, params, userPropertyHandlers, getLocale());
-		List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
+		List<Long> identityKeys = memberViews.stream().map(MemberView::getIdentityKey).collect(Collectors.toList());
 		
 		return !identityKeys.isEmpty();
 	}
@@ -431,7 +429,7 @@ public class CopyCourseWizardController extends BasicController {
 		params.setOrigin(Origin.repositoryEntry);
 		
 		List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(sourceEntry, params, userPropertyHandlers, getLocale());
-		List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
+		List<Long> identityKeys = memberViews.stream().map(MemberView::getIdentityKey).collect(Collectors.toList());
 		List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
 		
 		return coaches;

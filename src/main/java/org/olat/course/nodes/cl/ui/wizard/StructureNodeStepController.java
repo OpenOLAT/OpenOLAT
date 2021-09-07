@@ -79,12 +79,17 @@ public class StructureNodeStepController extends StepFormBasicController {
 		setFormTitle("structurenode.configuration");
 		setFormDescription("structurenode.configuration.description");
 
-		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle", NodeConfigController.SHORT_TITLE_MAX_LENGTH, null, formLayout);
-		shortTitleEl.setMandatory(true);
-		shortTitleEl.setCheckVisibleLength(true);
+		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle",
+				NodeConfigController.LONG_TITLE_MAX_LENGTH, null, formLayout);
+		titleEl.setCheckVisibleLength(true);
+		titleEl.setMandatory(true);
+		titleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
 		
-		// add the title input text element
-		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, null, formLayout);
+		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
+				NodeConfigController.SHORT_TITLE_MAX_LENGTH, null, formLayout);
+		shortTitleEl.setCheckVisibleLength(true);
+		shortTitleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.SHORT_TITLE_MAX_LENGTH)});
+		shortTitleEl.enablePlaceholderUpdate(titleEl.getFormDispatchId(), NodeConfigController.SHORT_TITLE_MAX_LENGTH);
 		
 		// add the learning objectives rich text input element
 		descriptionEl = uifactory.addRichTextElementForStringData("nodeConfigForm.description", "nodeConfigForm.description", null, 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
@@ -123,9 +128,9 @@ public class StructureNodeStepController extends StepFormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		shortTitleEl.clearError();
-		if(!StringHelper.containsNonWhitespace(shortTitleEl.getValue())) {
-			shortTitleEl.setErrorKey("form.legende.mandatory", null);
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
@@ -183,7 +188,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 			data.setPoints(pointsEl.isAtLeastSelected(1));
 			data.setPassed(passedEl.isAtLeastSelected(1));
 			if(outputEl.isVisible() && outputEl.isSelected(0)) {
-				Float cutValue = new Float(Float.parseFloat(cutValueEl.getValue()));
+				Float cutValue = Float.valueOf(Float.parseFloat(cutValueEl.getValue()));
 				data.setCutValue(cutValue);
 			}
 		}

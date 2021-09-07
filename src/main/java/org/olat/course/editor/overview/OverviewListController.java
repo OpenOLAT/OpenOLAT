@@ -140,8 +140,8 @@ public class OverviewListController extends FormBasicController implements Flexi
 		deletedModel.setCellRenderer(new YesNoCellRenderer(getTranslator()));
 		deletedModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(deletedModel);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.shortTitle));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.longTitle));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.shortTitle));
 		DefaultFlexiColumnModel learningObjectivesModel = new DefaultFlexiColumnModel(OverviewCols.description);
 		learningObjectivesModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.none));
 		learningObjectivesModel.setDefaultVisible(false);
@@ -250,9 +250,7 @@ public class OverviewListController extends FormBasicController implements Flexi
 		if (displayOption == null) return null;
 		
 		switch(displayOption) {
-		case CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT: return translate("nodeConfigForm.short_title_desc_content");
 		case CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT: return translate("nodeConfigForm.title_desc_content");
-		case CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT: return translate("nodeConfigForm.short_title_content");
 		case CourseNode.DISPLAY_OPTS_TITLE_CONTENT: return translate("nodeConfigForm.title_content");
 		case CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT: return translate("nodeConfigForm.desc_content");
 		case CourseNode.DISPLAY_OPTS_CONTENT: return translate("nodeConfigForm.content_only");

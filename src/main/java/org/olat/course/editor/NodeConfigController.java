@@ -21,12 +21,16 @@
 package org.olat.course.editor;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
@@ -44,43 +48,57 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  */
 public class NodeConfigController extends FormBasicController {
 
+	public static final int LONG_TITLE_MAX_LENGTH = 75;
 	public static final int SHORT_TITLE_MAX_LENGTH = 25;
 
 	private TextElement shortTitleEl;
 	private TextElement titleEl;
 	private RichTextElement descriptionEl;
+	private FormLink showAdditionalLink;
 	private RichTextElement objectivesEl;
 	private RichTextElement instructionEl;
 	private RichTextElement instructionalDesignEl;
 
 	private final CourseNode courseNode;
 	private final UserCourseEnvironment userCourseEnv;
+	private boolean showAdditional;
+	
 
 	public NodeConfigController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
+		this.showAdditional = StringHelper.containsNonWhitespace(courseNode.getObjectives())
+				|| StringHelper.containsNonWhitespace(courseNode.getInstruction())
+				|| StringHelper.containsNonWhitespace(courseNode.getInstructionalDesign());
 
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String shortTitle = Formatter.truncate(courseNode.getShortTitle(), SHORT_TITLE_MAX_LENGTH);
-		shortTitleEl = uifactory.addTextElement("nodeConfigForm.menutitle", "nodeConfigForm.menutitle",
-				SHORT_TITLE_MAX_LENGTH, shortTitle, formLayout);
-		shortTitleEl.setElementCssClass("o_sel_node_editor_shorttitle");
-		shortTitleEl.setMandatory(true);
-		shortTitleEl.setCheckVisibleLength(true);
-
 		// add the title input text element
-		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255,
-				courseNode.getLongTitle(), formLayout);
-		String longTitle = new String(translate("longtitle.placeholder", new String[] { shortTitle }));
-		titleEl.setPlaceholderText(longTitle);
+		String longTitle = Formatter.truncateOnly(courseNode.getLongTitle(), LONG_TITLE_MAX_LENGTH);
+		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle",
+				LONG_TITLE_MAX_LENGTH, longTitle, formLayout);
+		titleEl.setMandatory(true);
+		titleEl.setCheckVisibleLength(true);
+		titleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(LONG_TITLE_MAX_LENGTH)});
 		titleEl.setElementCssClass("o_sel_node_editor_title");
-
+		
+		String shortTitle = Formatter.truncateOnly(courseNode.getShortTitle(), SHORT_TITLE_MAX_LENGTH);
+		if (longTitle.equals(shortTitle) || longTitle.startsWith(shortTitle)) {
+			shortTitle = null;
+		}
+		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
+				SHORT_TITLE_MAX_LENGTH, shortTitle, formLayout);
+		shortTitleEl.setCheckVisibleLength(true);
+		shortTitleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(SHORT_TITLE_MAX_LENGTH)});
+		shortTitleEl.enablePlaceholderUpdate(titleEl.getFormDispatchId(), SHORT_TITLE_MAX_LENGTH);
+		shortTitleEl.setElementCssClass("o_sel_node_editor_shorttitle");
+		
 		descriptionEl = uifactory.addRichTextElementForStringData("nodeConfigForm.description",
 				"nodeConfigForm.description", courseNode.getDescription(), 10, -1, false, null, null, formLayout,
 				ureq.getUserSession(), getWindowControl());
@@ -91,6 +109,9 @@ public class NodeConfigController extends FormBasicController {
 				new LazyRepositoryEdusharingProvider(
 						userCourseEnv.getCourseEditorEnv().getCourseGroupManager().getCourseEntry().getKey(),
 						"course-learning-objectives-" + courseNode.getIdent()));
+		
+		showAdditionalLink = uifactory.addFormLink("show.additional", "nodeConfigForm.show.additional", null, formLayout, Link.LINK);
+		showAdditionalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
 
 		objectivesEl = uifactory.addRichTextElementForStringData("nodeConfigForm.objectives",
 				"nodeConfigForm.objectives", courseNode.getObjectives(), 10, -1, false, null, null, formLayout,
@@ -131,15 +152,29 @@ public class NodeConfigController extends FormBasicController {
 				.setElementCssClass("o_sel_node_editor_submit");
 	}
 
+	private void updateUI() {
+		showAdditionalLink.setVisible(!showAdditional);
+		objectivesEl.setVisible(showAdditional);
+		instructionEl.setVisible(showAdditional);
+		instructionalDesignEl.setVisible(showAdditional);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == showAdditionalLink) {
+			showAdditional = true;
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		shortTitleEl.clearError();
-		if (!StringHelper.containsNonWhitespace(shortTitleEl.getValue())) {
-			shortTitleEl.setErrorKey("nodeConfigForm.menumust", null);
-			allOk &= false;
-		} else if (shortTitleEl.hasError()) {
+		titleEl.clearError();
+		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 
@@ -148,8 +183,17 @@ public class NodeConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		courseNode.setShortTitle(shortTitleEl.getValue());
-		courseNode.setLongTitle(titleEl.getValue());
+		String longTitle = titleEl.getValue();
+		courseNode.setLongTitle(longTitle);
+		
+		String shortTitle = shortTitleEl.getValue();
+		if (longTitle.startsWith(shortTitle)) {
+			// We do not store short titles if they start like long titles to avoid
+			// differences in future (e.g. because of typos)
+			shortTitle = null;
+		}
+		courseNode.setShortTitle(shortTitle);
+		
 		if (courseNode instanceof GenericCourseNode) {
 			// Indicator that migration is done
 			((GenericCourseNode) courseNode).setLearningObjectives(null);

@@ -64,14 +64,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BulkChangeController extends FormBasicController {
 	
 	private static final String[] EMPTY_VALUES = new String[]{ "" };
-	private static final String KEY_TITLE_SHORT = "short";
-	private static final String KEY_TITLE_LONG = "long";
-	private static final String KEY_TITLE_NONE = "none";
-	private static final String KEY_METADATA = "metadata";
+	private static final String KEY_TITLE = "long";
+	private static final String KEY_DESCRIPTION = "description";
 
-	private FormLayoutContainer displayCont;
-	private SingleSelection displayTitleEl;
-	private MultipleSelectionElement displayMetadataEl;
+	private MultipleSelectionElement displayEl;
 	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private TextElement durationEl;
 	private SingleSelection obligationEl;
@@ -128,21 +124,11 @@ public class BulkChangeController extends FormBasicController {
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 		
-		displayCont = FormLayoutContainer.createBareBoneFormLayout("nodeConfigForm.display_options", getTranslator());
-		displayCont.setRootForm(mainForm);
-		generalCont.add(displayCont);
-		decorate(displayCont, generalCont);
-		
-		SelectionValues titleKV = new SelectionValues();
-		titleKV.add(entry(KEY_TITLE_SHORT, translate("nodeConfigForm.title.short")));
-		titleKV.add(entry(KEY_TITLE_LONG, translate("nodeConfigForm.title.long")));
-		titleKV.add(entry(KEY_TITLE_NONE, translate("nodeConfigForm.title.none")));
-		displayTitleEl = uifactory.addRadiosHorizontal("nodeConfigForm.display_options", displayCont, titleKV.keys(), titleKV.values());
-		displayTitleEl.select(KEY_TITLE_LONG, true);
-		
-		SelectionValues metadataKV = new SelectionValues();
-		metadataKV.add(entry(KEY_METADATA, translate("nodeConfigForm.metadata.all")));
-		displayMetadataEl = uifactory.addCheckboxesVertical("nodeConfigForm.metadata", displayCont, metadataKV.keys(), metadataKV.values(), 1);
+		SelectionValues displayKV = new SelectionValues();
+		displayKV.add(entry(KEY_TITLE, translate("nodeConfigForm.title.long")));
+		displayKV.add(entry(KEY_DESCRIPTION, translate("nodeConfigForm.metadata.all")));
+		displayEl = uifactory.addCheckboxesVertical("nodeConfigForm.display_options", generalCont, displayKV.keys(), displayKV.values(), 1);
+		decorate(displayEl, generalCont);
 	}
 	
 	private void initAssessmentForm(FormItemContainer formLayout) {
@@ -254,30 +240,25 @@ public class BulkChangeController extends FormBasicController {
 	}
 
 	private void formOKGeneral(CourseNode courseNode) {
-		if (isEnabled(displayCont)) {
+		if (isEnabled(displayEl)) {
 			String displayOption = getDisplayOption();
 			courseNode.setDisplayOption(displayOption);
 		}
 	}
 	
 	private String getDisplayOption() {
-		String titleKey = displayTitleEl.isOneSelected()? displayTitleEl.getSelectedKey(): KEY_TITLE_LONG;
 		String displayOption = CourseNode.DISPLAY_OPTS_CONTENT;
-		if (displayMetadataEl.isAtLeastSelected(1)) {
-			if (KEY_TITLE_SHORT.equals(titleKey)) {
-				displayOption = CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT;
-			} else if (KEY_TITLE_LONG.equals(titleKey)) {
+		
+		if (displayEl.isKeySelected(KEY_TITLE)) {
+			if (displayEl.isKeySelected(KEY_DESCRIPTION)) {
 				displayOption = CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT;
 			} else {
-				displayOption = CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT;
-			}
-		} else {
-			if (KEY_TITLE_SHORT.equals(titleKey)) {
-				displayOption = CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT;
-			} else if (KEY_TITLE_LONG.equals(titleKey)) {
 				displayOption = CourseNode.DISPLAY_OPTS_TITLE_CONTENT;
 			}
+		} else if (displayEl.isKeySelected(KEY_DESCRIPTION)) {
+			displayOption = CourseNode.DISPLAY_OPTS_DESCRIPTION_CONTENT;
 		}
+		
 		return displayOption;
 	}
 

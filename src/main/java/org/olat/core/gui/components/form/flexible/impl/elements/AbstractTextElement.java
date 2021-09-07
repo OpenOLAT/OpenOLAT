@@ -83,6 +83,9 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private String placeholder;
 	private String autocomplete;
 	private String ariaLabel;
+	private boolean placeholderUpdate = false;
+	private String placeholderId;
+	private Integer placeholderMaxLength;
 	private ItemValidatorProvider itemValidatorProvider;
 	protected boolean originalInitialised=false;
 	
@@ -392,6 +395,32 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	@Override
 	public String getAutocomplete() {
 		return autocomplete;
+	}
+	
+	@Override
+	public void enablePlaceholderUpdate(String elementId, Integer maxLength) {
+		this.placeholderUpdate = true;
+		this.placeholderId = elementId;
+		this.placeholderMaxLength = maxLength;
+	}
+	
+	@Override
+	public void disablePlaceholderUpdate() {
+		this.placeholderUpdate = false;
+		this.placeholderId = null;
+		this.placeholderMaxLength = null;
+	}
+
+	public boolean isPlaceholderUpdate() {
+		return placeholderUpdate;
+	}
+
+	public String getPlaceholderId() {
+		return placeholderId;
+	}
+
+	public Integer getPlaceholderMaxLength() {
+		return placeholderMaxLength;
 	}
 
 	/**

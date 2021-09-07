@@ -315,7 +315,7 @@ public class CoursesTest extends OlatRestTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		CourseVO course = conn.parse(response, CourseVO.class);
 		assertNotNull(course);
-		assertEquals("course3", course.getTitle());
+		assertEquals("course3 long name", course.getTitle());
 		//check repository entry
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(course.getRepoEntryKey());
 		assertNotNull(re);

@@ -227,7 +227,11 @@ public class OverviewRepositoryListController extends BasicController implements
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == coursesLink) {
-					doOpenEntries(ureq);
+					if(entriesCtrl == null) {
+						activateMyEntries(ureq);
+					} else {
+						doOpenEntries(ureq);
+					}
 				} else if (clickedLink == catalogLink) {
 					doOpenCatalog(ureq);
 				} else if (clickedLink == curriculumLink) {
@@ -239,10 +243,9 @@ public class OverviewRepositoryListController extends BasicController implements
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(catalogCtrl);
-		removeAsListenerAndDispose(entriesCtrl);
 		catalogCtrl = null;
-		entriesCtrl = null;
 	}
+	
 	
 	private RepositoryEntryListController doOpenEntries(UserRequest ureq) {
 		if(entriesCtrl == null) {

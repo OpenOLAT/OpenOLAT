@@ -105,6 +105,9 @@
 		&.o_colcat_light_green { background-color: $o-cn-style-cat-light-green-color; }
 		&.o_colcat_dark_green { background-color: $o-cn-style-cat-dark-green-color; }
 	}
+	.o_image {
+		max-height: $o-cn-style-image-height;
+	}
 	&.o_cover {
 		/* The second empty div is to press the first div to left side.
 			Otherwise the hole line has the background color.

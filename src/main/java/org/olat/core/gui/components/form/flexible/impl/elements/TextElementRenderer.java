@@ -45,7 +45,6 @@ class TextElementRenderer extends DefaultComponentRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
-
 		TextElementComponent teC = (TextElementComponent) source;
 		TextElementImpl te = teC.getTextElementImpl();
 		String id = teC.getFormDispatchId();
@@ -88,7 +87,29 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			sb.append(" />");
 			
 			//add set dirty form only if enabled
-			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());	
+			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());
+			
+			if (te.isPlaceholderUpdate()) {
+				sb.append("<script>\n")
+				  .append("/* <![CDATA[ */\n")
+				  .append(" function o_up").append(te.getPlaceholderId()).append("(){")
+				  .append(" try {\n")
+				  .append("  jQuery('#").append(id).append("').attr('placeholder',")
+				  .append("   function(){return jQuery('#").append(te.getPlaceholderId()).append("').val()");
+				if (te.getPlaceholderMaxLength() != null) {
+					sb.append(" .substring(0,").append(te.getPlaceholderMaxLength().intValue()).append(")");
+				}
+				sb.append(";}\n");  //function
+				sb.append("  );\n") // attr
+				  .append(" } catch (e){}\n")
+				  .append(" }\n") // try function
+				  .append("jQuery(function(){\n")
+				  .append(" jQuery('#").append(te.getPlaceholderId()).append("').ready(o_up").append(te.getPlaceholderId()).append(");")
+				  .append(" jQuery('#").append(te.getPlaceholderId()).append("').keyup(o_up").append(te.getPlaceholderId()).append(");")
+				  .append("});\n")
+				  .append("/* ]]> */\n")
+				  .append("</script>\n");
+			}
 		} else {
 			//read only view
 			sb.append("<span id=\"").append(id).append("_wp\" ")

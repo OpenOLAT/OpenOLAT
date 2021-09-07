@@ -72,9 +72,7 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
  */
 public interface CourseNode extends INode, ShortName {
 	
-	public static final String DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT = "shorttitle+desc+content";
 	public static final String DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT = "title+desc+content";
-	public static final String DISPLAY_OPTS_SHORT_TITLE_CONTENT = "shorttitle+content";
 	public static final String DISPLAY_OPTS_TITLE_CONTENT = "title+content";
 	public static final String DISPLAY_OPTS_DESCRIPTION_CONTENT = "desc+content";
 	public static final String DISPLAY_OPTS_CONTENT = "content";

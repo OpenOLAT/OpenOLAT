@@ -120,6 +120,8 @@ import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.statistic.AsyncExportManager;
 import org.olat.course.style.CourseStyleService;
+import org.olat.course.style.ImageSource;
+import org.olat.course.style.ImageSourceType;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.PublishTreeModel;
@@ -244,6 +246,14 @@ public class CourseFactory {
 		//enable efficiency statement per default
 		CourseConfig courseConfig = newCourse.getCourseConfig();
 		courseConfig.setEfficencyStatementIsEnabled(true);
+		
+		CourseModule courseModule = CoreSpringFactory.getImpl(CourseModule.class);
+		if (ImageSourceType.system == courseModule.getTeaserImageSourceType()) {
+			CourseStyleService courseStyleService = CoreSpringFactory.getImpl(CourseStyleService.class);
+			ImageSource imageSource = courseStyleService.getSystemTeaserImageSource(courseModule.getTeaserImageFilename());
+			courseConfig.setTeaserImageSource(imageSource);
+			courseConfig.setTeaserImageStyle(courseModule.getTeaserImageStyle());
+		}
 		newCourse.setCourseConfig(courseConfig);
 
 		return newCourse;

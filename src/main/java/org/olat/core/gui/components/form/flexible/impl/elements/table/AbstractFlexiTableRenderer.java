@@ -605,7 +605,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	protected abstract void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult);
 
-	private void renderPagesLinks(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
+	protected void renderPagesLinks(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		int pageSize = ftE.getPageSize();
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();

@@ -99,13 +99,8 @@ public class CourseStyleUIFactory {
 	}
 	
 	public static void addMetadata(Header.Builder builder, CourseNode courseNode, String displayOption, boolean coach) {
-		if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getShortTitle());
-		} else if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
+		if (CourseNode.DISPLAY_OPTS_TITLE_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getLongTitle());
-		} else if (CourseNode.DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			builder.withTitle(courseNode.getShortTitle());
-			addExtendedHeader(builder, courseNode, coach);
 		} else if (CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
 			builder.withTitle(courseNode.getLongTitle());
 			addExtendedHeader(builder, courseNode, coach);
