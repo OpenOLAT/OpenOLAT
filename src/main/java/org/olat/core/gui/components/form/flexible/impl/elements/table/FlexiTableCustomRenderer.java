@@ -84,6 +84,9 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 			sb.append("</div>");
 	
 			renderTreeButtons(sb, ftC, translator);
+			if(ftE.getDefaultPageSize() > 0) {
+				renderPagesLinks(sb, ftC, translator);
+			}
 			sb.append("</div>");
 		}
 		
