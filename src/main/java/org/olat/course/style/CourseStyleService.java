@@ -42,8 +42,6 @@ public interface CourseStyleService {
 	public static final Set<String> IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	public static final long IMAGE_LIMIT_KB = 4096;
 	
-	public void initProvidedSystemImages() throws Exception;
-	
 	public void storeSystemImage(File file, String filename);
 	
 	public List<ImageSource> getSystemTeaserImageSources();

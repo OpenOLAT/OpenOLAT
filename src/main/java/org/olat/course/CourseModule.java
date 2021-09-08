@@ -63,6 +63,7 @@ public class CourseModule extends AbstractSpringModule {
 	private static final String COURSE_STYLE_TEASER_IMAGE_SOURCE_TYPE = "course.style.teaser.image.source.type";
 	private static final String COURSE_STYLE_TEASER_IMAGE_FILENAME = "course.style.teaser.image.filename";
 	private static final String COURSE_STYLE_TEASER_IMAGE_STYLE = "course.style.teaser.image.style";
+	private static final String COURSE_STYLE_SYSTEM_IMAGES_16_0 = "course.style.system.images.16.0";
 	
 	@Value("${course.display.participants.count}")
 	private boolean displayParticipantsCount;
@@ -90,6 +91,7 @@ public class CourseModule extends AbstractSpringModule {
 	@Value("${course.style.teaser.image.style}")
 	private String teaserImageStyleName;
 	private TeaserImageStyle teaserImageStyle;
+	private boolean systemImages160;
 	
 	// Repository types
 	public static final String ORES_TYPE_COURSE = OresHelper.calculateTypeName(CourseModule.class);
@@ -141,6 +143,11 @@ public class CourseModule extends AbstractSpringModule {
 		if (StringHelper.containsNonWhitespace(teaserImageStyleObj)) {
 			teaserImageStyleName = teaserImageStyleObj;
 			teaserImageStyle = TeaserImageStyle.valueOf(teaserImageStyleName);
+		}
+		
+		String systemImages160Obj = getStringPropertyValue(COURSE_STYLE_SYSTEM_IMAGES_16_0, false);
+		if (StringHelper.containsNonWhitespace(systemImages160Obj)) {
+			systemImages160 = "true".equals(systemImages160Obj);
 		}
 	}
 
@@ -314,6 +321,15 @@ public class CourseModule extends AbstractSpringModule {
 		this.teaserImageStyle = teaserImageStyle;
 		this.teaserImageStyleName = teaserImageStyle.name();
 		setStringProperty(COURSE_STYLE_TEASER_IMAGE_STYLE, teaserImageStyleName, true);
+	}
+	
+	public boolean isSystemImages160() {
+		return systemImages160;
+	}
+
+	public void setSystemImages160(boolean deployed) {
+		systemImages160 = deployed;
+		setStringProperty(COURSE_STYLE_SYSTEM_IMAGES_16_0, Boolean.toString(deployed), true);
 	}
 	
 }

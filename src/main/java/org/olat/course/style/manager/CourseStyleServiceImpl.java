@@ -22,10 +22,15 @@ package org.olat.course.style.manager;
 import java.io.File;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeHelper;
@@ -49,6 +54,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CourseStyleServiceImpl implements CourseStyleService {
+
+	private static final Logger log = Tracing.createLoggerFor(CourseStyleServiceImpl.class);
 	
 	@Autowired
 	private SystemImageStorage systemImageStorage;
@@ -56,10 +63,20 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	private CustomImageStorage customImageStorage;
 	@Autowired
 	private ColorCategoryDAO colorCategoryDao;
+	@Autowired
+	private CourseModule courseModule;
 	
-	@Override
+	@PostConstruct
 	public void initProvidedSystemImages() throws Exception {
-		systemImageStorage.initProvidedSystemImages();
+		if (!courseModule.isSystemImages160()) {
+			try {
+				systemImageStorage.initProvidedSystemImages();
+				courseModule.setSystemImages160(true);
+				log.info("System images 16.0 initialized");
+			} catch (Exception e) {
+				log.error("System images 16.0 not initialized", e);
+			}
+		}
 	}
 	
 	@Override
