@@ -1713,7 +1713,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 
 		// need to be the last
-		if(e.getFilterValues() != null) {
+		if(filtersEl != null && e.getFilterValues() != null) {
 			List<String> implicitFilters = filterTabsEl == null ? null : filterTabsEl.getImplicitFiltersOfSelectedTab();
 			filtersEl.setFiltersValues(null, implicitFilters, e.getFilterValues(), false);
 			doSearch(ureq, FlexiTableReduceEvent.FILTER, getSearchText(), filtersEl.getSelectedFilters());
@@ -2054,16 +2054,18 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void resetFiltersSearch(UserRequest ureq) {
-		filtersEl.resetCustomizedFilters();
+		if(filtersEl != null) {
+			filtersEl.resetCustomizedFilters();
+		}
 		if(filterTabsEl != null) {
 			FlexiFiltersTab tab = filterTabsEl.getSelectedTab();
-			if(tab instanceof FlexiFiltersPreset) {
+			if(tab instanceof FlexiFiltersPreset && filtersEl != null) {
 				FlexiFiltersPreset preset = (FlexiFiltersPreset)tab;
 				filtersEl.setFiltersValues(preset.getEnabledFilters(), preset.getImplicitFilters(), preset.getDefaultFiltersValues(), true);
 			}
 			filterTabsEl.getComponent().setDirty(true);
 		}
-		List<FlexiTableFilter> allFilters = filtersEl.getAllFilters();
+		List<FlexiTableFilter> allFilters = filtersEl == null ? null : filtersEl.getAllFilters();
 		doSearch(ureq, FlexiTableReduceEvent.FILTER, getSearchText(), allFilters);
 	}
 	
