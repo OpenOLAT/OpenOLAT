@@ -294,7 +294,7 @@ public class CourseHandler implements RepositoryHandler {
 			}
 		}
 		if (doUpdateTitle) {
-			course.getRunStructure().getRootNode().setLongTitle(Formatter.truncateOnly(displayname, NodeConfigController.LONG_TITLE_MAX_LENGTH));
+			course.getRunStructure().getRootNode().setLongTitle(displayname);
 		}
 		
 		CourseEditorTreeNode editorRootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());

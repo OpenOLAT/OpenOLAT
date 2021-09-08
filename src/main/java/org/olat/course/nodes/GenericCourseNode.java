@@ -615,11 +615,12 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		copyInstance.setIdent(String.valueOf(CodeHelper.getForeverUniqueID()));
 		copyInstance.setPreConditionVisibility(null);
 		if (isNewTitle) {
-			String newTitle = "Copy of " + getShortTitle();
-			if (newTitle.length() > NodeConfigController.LONG_TITLE_MAX_LENGTH) {
-				newTitle = newTitle.substring(0, NodeConfigController.LONG_TITLE_MAX_LENGTH - 1);
+			if (CourseNodeHelper.isCustomShortTitle(getLongTitle(), getShortTitle())) {
+				copyInstance.setShortTitle(Formatter.truncateOnly("Copy of " + getShortTitle(), NodeConfigController.SHORT_TITLE_MAX_LENGTH));
+			} else {
+				copyInstance.setShortTitle(null);
 			}
-			copyInstance.setLongTitle(newTitle);
+			copyInstance.setLongTitle("Copy of " + getLongTitle());
 		}
 		return copyInstance;
 	}
