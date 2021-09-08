@@ -86,6 +86,8 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 	@Column(name="passed_nodes", nullable=true, insertable=false, updatable=false)
 	private Integer passedNodes;
 
+	@Column(name="course_title", nullable=true, insertable=true, updatable=true)
+	private String title;
 	@Column(name="course_short_title", nullable=true, insertable=false, updatable=false)
 	private String shortTitle;
 	@Column(name="course_repo_key", nullable=true, insertable=false, updatable=false)
@@ -208,6 +210,15 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 		
 	public void setResourceKey(Long resourceKey) {
 		this.resourceKey = resourceKey;
+	}
+
+	@Override
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	@Override

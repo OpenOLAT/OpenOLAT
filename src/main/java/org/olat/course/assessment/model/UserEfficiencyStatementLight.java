@@ -92,6 +92,8 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	@Column(name="passed_nodes", nullable=true, insertable=true, updatable=true)
 	private Integer passedNodes;
 
+	@Column(name="course_title", nullable=true, insertable=true, updatable=true)
+	private String title;
 	@Column(name="course_short_title", nullable=true, insertable=true, updatable=true)
 	private String shortTitle;
 	@Column(name="course_repo_key", nullable=true, insertable=true, updatable=true)
@@ -142,6 +144,7 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public Date getLastUserModified() {
 		return lastUserModified;
 	}
@@ -150,6 +153,7 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 		this.lastUserModified = lastUserModified;
 	}
 
+	@Override
 	public Date getLastCoachModified() {
 		return lastCoachModified;
 	}
@@ -218,6 +222,15 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 		
 	public void setResource(OLATResource resource) {
 		this.resource = resource;
+	}
+
+	@Override
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	@Override

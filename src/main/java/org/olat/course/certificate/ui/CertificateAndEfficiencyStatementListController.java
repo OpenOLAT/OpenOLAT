@@ -258,7 +258,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {
 			CertificateAndEfficiencyStatement wrapper = new CertificateAndEfficiencyStatement();
-			wrapper.setDisplayName(efficiencyStatement.getShortTitle());
+			wrapper.setDisplayName(efficiencyStatement.getTitle());
 			wrapper.setPassed(efficiencyStatement.getPassed());
 			wrapper.setScore(efficiencyStatement.getScore());
 			wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
