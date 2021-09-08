@@ -284,6 +284,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 		setDisplayname(null);
 		setDescription(null);
 		setEducationalTypeKeys(null);
+		setTechnicalTypes(null);
 		setTaxonomyLevels(null);
 		setLicenseTypeKeys(null);
 		setResourceUsage(null);
