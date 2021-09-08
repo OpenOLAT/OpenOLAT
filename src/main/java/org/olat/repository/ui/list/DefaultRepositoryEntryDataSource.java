@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntryMyView;
@@ -173,6 +174,10 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 					searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
 				}
 				break;
+			case EDUCATIONALTYPE:
+				List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
+				searchParams.setEducationalTypeKeys(educationalTypes);
+				break;
 			default:
 				String filterVal = ((FlexiTableExtendedFilter)filter).getValue();
 				if(filterVal != null) {
@@ -188,8 +193,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		STATUS,
 		PASSED,
 		BOOKING,
-		DATES
-		
+		DATES,
+		EDUCATIONALTYPE
 	}
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {
