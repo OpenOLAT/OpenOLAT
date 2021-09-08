@@ -40,6 +40,8 @@ public interface UserEfficiencyStatementShort {
 	public Date getCreationDate();
 	
 	public Long getCourseRepoKey();
+	
+	public String getTitle();
 
 	public String getShortTitle();
 	

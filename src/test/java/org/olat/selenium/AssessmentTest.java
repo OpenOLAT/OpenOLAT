@@ -648,7 +648,7 @@ public class AssessmentTest extends Deployments {
 		OOGraphene.waitingALittleLonger();
 		
 		//open the efficiency statements
-		String certificateTitle = "Certificates" + zipTitle;
+		String certificateTitle = zipTitle;
 		UserToolsPage participantUserTools = new UserToolsPage(browser);
 		participantUserTools
 			.openUserToolsMenu()
@@ -657,7 +657,7 @@ public class AssessmentTest extends Deployments {
 			.assertOnCertificateAndStatements(certificateTitle)
 			.selectStatement(certificateTitle)
 			.selectStatementSegment()
-			.assertOnCourseDetails("CertificatesCert", true)
+			.assertOnCourseDetails("Certificates", true)
 			.assertOnCourseDetails("Struktur 1", true)
 			.assertOnCourseDetails("Test 1", true);
 		
@@ -703,7 +703,7 @@ public class AssessmentTest extends Deployments {
 			.assertOnCertificateAndStatements(certificateTitle)
 			.selectStatement(certificateTitle)
 			.selectStatementSegment()
-			.assertOnCourseDetails("CertificatesCert", true)
+			.assertOnCourseDetails("Certificates", true)
 			.assertOnCourseDetails("Struktur 3", true)
 			.assertOnCourseDetails("Test 3", true);
 	}
