@@ -169,7 +169,6 @@ public class HeaderContentController extends BasicController
 	@Override
 	protected void doDispose() {
 		//
-		System.out.println();
 	}
 
 }
