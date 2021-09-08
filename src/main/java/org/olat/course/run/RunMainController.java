@@ -572,6 +572,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			if(contentcontroller instanceof Activateable2) {
 				((Activateable2)contentcontroller).activate(ureq, entries, state);
 			}
+		} else if (currentNodeController instanceof HeaderContentController) {
+			Controller contentcontroller = ((HeaderContentController)currentNodeController).getContentController();
+			addToHistory(ureq, contentcontroller);
+			if(contentcontroller instanceof Activateable2) {
+				((Activateable2)contentcontroller).activate(ureq, entries, state);
+			}
 		} else if(currentNodeController instanceof Activateable2) {
 			((Activateable2)currentNodeController).activate(ureq, entries, state);
 		}

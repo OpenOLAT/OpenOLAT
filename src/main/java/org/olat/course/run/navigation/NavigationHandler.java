@@ -76,6 +76,7 @@ import org.olat.course.nodes.wiki.WikiRunController;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
+import org.olat.course.style.ui.HeaderContentController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -240,7 +241,10 @@ public class NavigationHandler implements Disposable {
 				
 				if (currentNodeController instanceof TitledWrapperController) {
 					currentNodeController = ((TitledWrapperController)currentNodeController).getContentController();
+				} else if (currentNodeController instanceof HeaderContentController) {
+					currentNodeController = ((HeaderContentController)currentNodeController).getContentController();
 				}
+				
 				if(subtreemodelListener != currentNodeController) {
 					if(subtreemodelListener instanceof CPRunController) {
 						nrcr =  ((CPRunController)subtreemodelListener).createNodeRunConstructionResult(ureq, selTN.getIdent());

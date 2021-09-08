@@ -91,6 +91,10 @@ public class HeaderContentController extends BasicController
 		
 		putInitialPanel(mainVC);
 	}
+	
+	public Controller getContentController() {
+		return contentCtrl;
+	}
 
 	@Override
 	public void configurationChanged() {
@@ -165,6 +169,7 @@ public class HeaderContentController extends BasicController
 	@Override
 	protected void doDispose() {
 		//
+		System.out.println();
 	}
 
 }
