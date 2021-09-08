@@ -276,7 +276,7 @@ public class CourseCreationHelper {
 		}
 
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());
-		course.getRunStructure().getRootNode().setLongTitle(Formatter.truncateOnly(addedEntry.getDisplayname(), NodeConfigController.LONG_TITLE_MAX_LENGTH));
+		course.getRunStructure().getRootNode().setLongTitle(addedEntry.getDisplayname());
 		CourseFactory.saveCourse(course.getResourceableId());
 		final CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		final CourseNode rootNode = cetm.getCourseNode(course.getRunStructure().getRootNode().getIdent());

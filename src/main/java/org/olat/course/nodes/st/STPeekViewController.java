@@ -85,13 +85,11 @@ public class STPeekViewController extends BasicController {
 					nodeLink.setElementCssClass("o_gotoNode");
 					wrapper.setNodeLinkName(nodeLink.getComponentName());
 					
-					wrapper.setDescription(child.getDescription());
-					
 					String colorCategoryCss = colorCategoryResolver.getColorCategoryCss(child);
 					wrapper.setColorCategoryCss(colorCategoryCss);
 					
-					wrappers.add(wrapper)
-;				}
+					wrappers.add(wrapper);
+				}
 			}
 		}
 		genericPeekViewVC.contextPut("items", wrappers);
@@ -117,7 +115,6 @@ public class STPeekViewController extends BasicController {
 	public static final class CourseNodeWrapper {
 		
 		private String nodeLinkName;
-		private String description;
 		private String colorCategoryCss;
 		
 		public String getNodeLinkName() {
@@ -126,14 +123,6 @@ public class STPeekViewController extends BasicController {
 		
 		public void setNodeLinkName(String nodeLinkName) {
 			this.nodeLinkName = nodeLinkName;
-		}
-		
-		public String getDescription() {
-			return description;
-		}
-		
-		public void setDescription(String description) {
-			this.description = description;
 		}
 		
 		public String getColorCategoryCss() {

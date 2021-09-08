@@ -39,6 +39,7 @@ import org.olat.core.util.Util;
 import org.olat.course.editor.NodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -79,11 +80,10 @@ public class StructureNodeStepController extends StepFormBasicController {
 		setFormTitle("structurenode.configuration");
 		setFormDescription("structurenode.configuration.description");
 
-		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle",
-				NodeConfigController.LONG_TITLE_MAX_LENGTH, null, formLayout);
+		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, null, formLayout);
 		titleEl.setCheckVisibleLength(true);
 		titleEl.setMandatory(true);
-		titleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
+		titleEl.setExampleKey("nodeConfigForm.max.length.recommended", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
 		
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
 				NodeConfigController.SHORT_TITLE_MAX_LENGTH, null, formLayout);
@@ -132,6 +132,8 @@ public class StructureNodeStepController extends StepFormBasicController {
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			titleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if (titleEl.getValue().length() > NodeConfigController.LONG_TITLE_MAX_LENGTH) {
+			titleEl.setErrorKey("error.title.too.long", true, new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
 		}
 		
 		cutValueEl.clearError();
@@ -180,8 +182,16 @@ public class StructureNodeStepController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		data.setStructureTitle(titleEl.getValue());
-		data.setStructureShortTitle(shortTitleEl.getValue());
+		String longTitle = titleEl.getValue();
+		data.setStructureTitle(longTitle);
+		
+		String shortTitle = shortTitleEl.getValue();
+		if (!CourseNodeHelper.isCustomShortTitle(longTitle, shortTitle)) {
+			shortTitle = null;
+			shortTitleEl.setValue(null);
+		}
+		data.setStructureShortTitle(shortTitle);
+		
 		data.setStructureDescription(descriptionEl.getValue());
 		
 		if (scoreCalculatorSupported) {

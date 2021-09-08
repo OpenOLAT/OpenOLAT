@@ -699,7 +699,6 @@ public class CoursesWebService {
 		if(StringHelper.containsNonWhitespace(longTitle)) {
 			courseLongTitle = longTitle;
 		}
-		courseLongTitle = Formatter.truncate(courseLongTitle, NodeConfigController.LONG_TITLE_MAX_LENGTH);
 
 		ICourse course = CourseFactory.openCourseEditSession(addedEntry.getOlatResource().getResourceableId());
 		course.getRunStructure().getRootNode().setShortTitle(courseShortTitle);

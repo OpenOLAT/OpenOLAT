@@ -11,7 +11,7 @@
         jQuery('#oo_' + settings.responseUniqueId).on('keyup', function(e) {
         	var textareaId = '#oo_' + settings.responseUniqueId;
         	var text = jQuery(textareaId).val();
-        	var words = text.split(/\W+/);// use the same regex as QtiWorks
+        	var words = text.match(/[\w\u00C0-\u00ff]+/g);// use a similar regex as QtiWorks
         	var numOfWords = 0;
         	for(var i=0; i<words.length; i++) {
         		if(words[i].length > 1) {

@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeConfigController;
+import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.wizard.CourseNodeTitleContext;
 import org.olat.course.wizard.CourseWizardService;
 import org.olat.repository.wizard.ui.ReferencableEntriesStepController;
@@ -83,10 +84,9 @@ public class TitleAndEntryController extends StepFormBasicController {
 		nodeCont.setRootForm(mainForm);
 		formLayout.add(nodeCont);
 		
-		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle",
-				NodeConfigController.LONG_TITLE_MAX_LENGTH, null, nodeCont);
+		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, null, nodeCont);
 		titleEl.setCheckVisibleLength(true);
-		titleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
+		titleEl.setExampleKey("nodeConfigForm.max.length.recommended", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
 		titleEl.setMandatory(true);
 		
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
@@ -101,10 +101,7 @@ public class TitleAndEntryController extends StepFormBasicController {
 	private void updateUI(boolean updateTitle) {
 		nodeCont.setVisible(!referencableCtrl.isSearch());
 		if (updateTitle && !StringHelper.containsNonWhitespace(titleEl.getValue()) && referencableCtrl.getEntry() != null) {
-			String displayname = referencableCtrl.getEntry().getDisplayname();
-			String title = NodeConfigController.LONG_TITLE_MAX_LENGTH < displayname.length()
-					? displayname.substring(0, NodeConfigController.LONG_TITLE_MAX_LENGTH)
-					: displayname;
+			String title = referencableCtrl.getEntry().getDisplayname();
 			titleEl.setValue(title);
 		}
 		flc.setDirty(true);
@@ -132,6 +129,8 @@ public class TitleAndEntryController extends StepFormBasicController {
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			titleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if (titleEl.getValue().length() > NodeConfigController.LONG_TITLE_MAX_LENGTH) {
+			titleEl.setErrorKey("error.title.too.long", true, new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
 		}
 		
 		return allOk;
@@ -139,10 +138,14 @@ public class TitleAndEntryController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String title = titleEl.getValue();
-		titleContext.setLongTitle(title);
+		String longTitle = titleEl.getValue();
+		titleContext.setLongTitle(longTitle);
 		
 		String shortTitle = shortTitleEl.getValue();
+		if (!CourseNodeHelper.isCustomShortTitle(longTitle, shortTitle)) {
+			shortTitle = null;
+			shortTitleEl.setValue(null);
+		}
 		titleContext.setShortTitle(shortTitle);
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

@@ -35,6 +35,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeConfigController;
+import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.wizard.CourseNodeTitleContext;
 
 /**
@@ -62,10 +63,9 @@ public class CourseNodeTitleController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle",
-				NodeConfigController.LONG_TITLE_MAX_LENGTH, null, formLayout);
+		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, null, formLayout);
 		titleEl.setCheckVisibleLength(true);
-		titleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
+		titleEl.setExampleKey("nodeConfigForm.max.length.recommended", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
 		titleEl.setMandatory(true);
 		
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
@@ -88,6 +88,8 @@ public class CourseNodeTitleController extends StepFormBasicController {
 		if (!StringHelper.containsNonWhitespace(shortTitleEl.getValue())) {
 			shortTitleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if (titleEl.getValue().length() > NodeConfigController.LONG_TITLE_MAX_LENGTH) {
+			titleEl.setErrorKey("error.title.too.long", true, new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
 		}
 		
 		return allOk;
@@ -95,11 +97,15 @@ public class CourseNodeTitleController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String shortTitle = shortTitleEl.getValue();
-		context.setShortTitle(shortTitle);
-		
 		String longTitle = titleEl.getValue();
 		context.setLongTitle(longTitle);
+		
+		String shortTitle = shortTitleEl.getValue();
+		if (!CourseNodeHelper.isCustomShortTitle(longTitle, shortTitle)) {
+			shortTitle = null;
+			shortTitleEl.setValue(null);
+		}
+		context.setShortTitle(shortTitle);
 		
 		String description = descriptionEl.getValue();
 		context.setDescription(description);

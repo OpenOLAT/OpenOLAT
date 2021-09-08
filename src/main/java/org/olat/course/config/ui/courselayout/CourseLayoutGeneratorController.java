@@ -66,6 +66,7 @@ import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -602,11 +603,15 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		teaserImageUploadEl.clearError();
 		if (teaserImageUploadEl.isVisible()) {
-			if (teaserImageUploadEl.getUploadFile() == null && teaserImageUploadEl.getInitialFile() == null) {
-				teaserImageUploadEl.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
+			List<ValidationStatus> fileStatus = new ArrayList<>();
+			teaserImageUploadEl.validate(fileStatus);
+			if (fileStatus.isEmpty()) {
+				if (teaserImageUploadEl.getUploadFile() == null && teaserImageUploadEl.getInitialFile() == null) {
+					teaserImageUploadEl.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				}
 			}
-		}
+		}	
 		
 		return allOk;
 	}

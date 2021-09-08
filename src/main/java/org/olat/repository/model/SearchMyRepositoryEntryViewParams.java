@@ -20,6 +20,7 @@
 package org.olat.repository.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -47,6 +48,7 @@ public class SearchMyRepositoryEntryViewParams {
 	private List<Filter> filters;
 	private CatalogEntry parentEntry;
 	private List<String> resourceTypes;
+	private Collection<Long> educationalTypeKeys;
 	private List<? extends CurriculumRef> curriculums;
 
 	private String idAndRefs;
@@ -184,6 +186,18 @@ public class SearchMyRepositoryEntryViewParams {
 		}
 	}
 	
+	public boolean isEducationalTypeDefined() {
+		return educationalTypeKeys != null && !educationalTypeKeys.isEmpty();
+	}
+	
+	public Collection<Long> getEducationalTypeKeys() {
+		return educationalTypeKeys;
+	}
+
+	public void setEducationalTypeKeys(Collection<Long> educationalTypeKeys) {
+		this.educationalTypeKeys = educationalTypeKeys;
+	}
+	
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -206,16 +220,6 @@ public class SearchMyRepositoryEntryViewParams {
 
 	public void setMarked(Boolean marked) {
 		this.marked = marked;
-	}
-	
-	public enum FilterButton {
-		MARKED,
-		OWNED,
-		STATUS,
-		PASSED,
-		BOOKING,
-		DATES
-		
 	}
 	
 	public enum OrderBy {

@@ -56,8 +56,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
 
-import net.fortuna.ical4j.data.CalendarBuilder;
-import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
@@ -66,6 +64,7 @@ import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.TimeZone;
+import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.TzId;
@@ -414,8 +413,8 @@ public class ICalServlet extends HttpServlet {
 	private void outputCalendarComponents(Calendar calendar, Writer out, Agent agent, Set<String> timezoneIds)
 	throws IOException {
 		try {
-			ComponentList events = calendar.getComponents();
-			for (final Iterator<?> i = events.iterator(); i.hasNext();) {
+			ComponentList<CalendarComponent> events = calendar.getComponents();
+			for (final Iterator<CalendarComponent> i = events.iterator(); i.hasNext();) {
 				outputCalendarComponent(i.next(), out, agent, timezoneIds);
 			}
 		} catch (IOException | OLATRuntimeException e) {
@@ -423,7 +422,7 @@ public class ICalServlet extends HttpServlet {
 		}
 	}
 	
-	private void outputCalendarComponent(Object component, Writer out, Agent agent, Set<String> timezoneIds) throws IOException {
+	private void outputCalendarComponent(CalendarComponent component, Writer out, Agent agent, Set<String> timezoneIds) throws IOException {
 		if (component instanceof VEvent) {
 			rewriteExDate((VEvent)component);
 		}
@@ -525,7 +524,7 @@ public class ICalServlet extends HttpServlet {
 			if (comp instanceof VEvent) {
 				VEvent event = (VEvent)comp;
 				
-				PropertyList ooLinkProperties = event.getProperties(CalendarManager.ICAL_X_OLAT_LINK);
+				PropertyList<Property> ooLinkProperties = event.getProperties(CalendarManager.ICAL_X_OLAT_LINK);
 				if(ooLinkProperties.isEmpty()) {
 					continue;
 				}
@@ -535,7 +534,7 @@ public class ICalServlet extends HttpServlet {
 					continue;
 				}
 				
-				for (Iterator<?> iter = ooLinkProperties.iterator(); iter.hasNext();) {
+				for (Iterator<Property> iter = ooLinkProperties.iterator(); iter.hasNext();) {
 					XProperty linkProperty = (XProperty) iter.next();
 					if (linkProperty != null) {
 						String encodedLink = linkProperty.getValue();
@@ -579,10 +578,9 @@ public class ICalServlet extends HttpServlet {
     }
     
     private Calendar buildCalendar(URL resource) {
-    	CalendarBuilder builder = new CalendarBuilder();
     	try(InputStream in = resource.openStream()) {
-    		return builder.build(in);
-    	} catch(IOException | ParserException e) {
+    		return CalendarUtils.buildCalendar(in);
+    	} catch(Exception e) {
     		log.error("", e);
     		return null;
     	}

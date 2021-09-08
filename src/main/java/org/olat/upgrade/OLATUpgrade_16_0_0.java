@@ -22,7 +22,6 @@ package org.olat.upgrade;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
-import org.olat.course.style.CourseStyleService;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoTranscoding;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +37,8 @@ public class OLATUpgrade_16_0_0 extends OLATUpgrade {
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_16_0_0.class);
 
 	private static final String VERSION = "OLAT_16.0.0";
-	private static final String INIT_CN_TEASER_IMAGES = "INIT CN TEASER IMAGES";
 	private static final String REMOVE_UNSUPPORTED_TRANSCODINGS = "REMOVE UNSUPPORTED TRANSCODINGS";
 	
-	@Autowired
-	private CourseStyleService courseStyleService;
 	@Autowired
 	private VideoManager videoManager;
 	@Autowired
@@ -69,7 +65,6 @@ public class OLATUpgrade_16_0_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		
-		allOk &= initCourseNodeTeaserNodes(upgradeManager, uhd);
 		allOk &= removeUnsupportedTranscodings(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
@@ -78,23 +73,6 @@ public class OLATUpgrade_16_0_0 extends OLATUpgrade {
 			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_16_0_0 successfully!");
 		} else {
 			log.info(Tracing.M_AUDIT, "OLATUpgrade_16_0_0 not finished, try to restart OpenOlat!");
-		}
-		return allOk;
-	}
-
-	private boolean initCourseNodeTeaserNodes(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
-		boolean allOk = true;
-		if (!uhd.getBooleanDataValue(INIT_CN_TEASER_IMAGES)) {
-			
-			try {
-				courseStyleService.initProvidedSystemImages();
-			} catch (Exception e) {
-				log.error("", e);
-				return false;
-			}
-			
-			uhd.setBooleanDataValue(INIT_CN_TEASER_IMAGES, allOk);
-			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
 	}

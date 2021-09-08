@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.nodes.GenericCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
@@ -48,8 +49,8 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  */
 public class NodeConfigController extends FormBasicController {
 
-	public static final int LONG_TITLE_MAX_LENGTH = 75;
-	public static final int SHORT_TITLE_MAX_LENGTH = 25;
+	public static final int LONG_TITLE_MAX_LENGTH = 75;  // recommendation
+	public static final int SHORT_TITLE_MAX_LENGTH = 25; // must
 
 	private TextElement shortTitleEl;
 	private TextElement titleEl;
@@ -80,12 +81,11 @@ public class NodeConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// add the title input text element
-		String longTitle = Formatter.truncateOnly(courseNode.getLongTitle(), LONG_TITLE_MAX_LENGTH);
-		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle",
-				LONG_TITLE_MAX_LENGTH, longTitle, formLayout);
+		String longTitle = courseNode.getLongTitle();
+		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, longTitle, formLayout);
 		titleEl.setMandatory(true);
 		titleEl.setCheckVisibleLength(true);
-		titleEl.setExampleKey("nodeConfigForm.max.length", new String[] {String.valueOf(LONG_TITLE_MAX_LENGTH)});
+		titleEl.setExampleKey("nodeConfigForm.max.length.recommended", new String[] {String.valueOf(LONG_TITLE_MAX_LENGTH)});
 		titleEl.setElementCssClass("o_sel_node_editor_title");
 		
 		String shortTitle = Formatter.truncateOnly(courseNode.getShortTitle(), SHORT_TITLE_MAX_LENGTH);
@@ -176,6 +176,8 @@ public class NodeConfigController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			titleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if (titleEl.getValue().length() > LONG_TITLE_MAX_LENGTH) {
+			titleEl.setErrorKey("error.title.too.long", true, new String[] {String.valueOf(LONG_TITLE_MAX_LENGTH)});
 		}
 
 		return allOk;
@@ -187,10 +189,9 @@ public class NodeConfigController extends FormBasicController {
 		courseNode.setLongTitle(longTitle);
 		
 		String shortTitle = shortTitleEl.getValue();
-		if (longTitle.startsWith(shortTitle)) {
-			// We do not store short titles if they start like long titles to avoid
-			// differences in future (e.g. because of typos)
+		if (!CourseNodeHelper.isCustomShortTitle(longTitle, shortTitle)) {
 			shortTitle = null;
+			shortTitleEl.setValue(null);
 		}
 		courseNode.setShortTitle(shortTitle);
 		

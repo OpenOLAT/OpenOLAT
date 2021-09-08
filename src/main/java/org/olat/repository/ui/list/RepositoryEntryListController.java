@@ -19,6 +19,8 @@
  */
 package org.olat.repository.ui.list;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,11 +102,12 @@ import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
-import org.olat.repository.model.SearchMyRepositoryEntryViewParams.FilterButton;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.EducationalTypeRenderer;
 import org.olat.repository.ui.author.TypeRenderer;
+import org.olat.repository.ui.list.DefaultRepositoryEntryDataSource.FilterButton;
 import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,6 +155,8 @@ public class RepositoryEntryListController extends FormBasicController
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	private final boolean guestOnly;
 	
@@ -382,8 +387,15 @@ public class RepositoryEntryListController extends FormBasicController
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"),
 				FilterButton.STATUS.name(), lifecycleValues, true));
 		
-		tableEl.setFilters(true, filters, true, false);
+		// educational type
+		SelectionValues educationalTypeKV = new SelectionValues();
+		repositoryManager.getAllEducationalTypes()
+				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
+		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
+				FilterButton.EDUCATIONALTYPE.name(), educationalTypeKV, true));
 		
+		tableEl.setFilters(true, filters, true, false);
 	}
 	
 	private void initSorters(FlexiTableElement tableElement) {
