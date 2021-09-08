@@ -25,6 +25,8 @@
 
 package org.olat.commons.calendar;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,10 +38,13 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.util.ReplacingInputStream;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.DateList;
 import net.fortuna.ical4j.model.Recur;
 import net.fortuna.ical4j.model.WeekDayList;
@@ -53,6 +58,23 @@ public class CalendarUtils {
 
 	private static final DateFormat iso8601Date = new SimpleDateFormat("yyyy-MM-dd");
 	private static final DateFormat iso8601DateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	
+	/**
+	 * The method replace \\n in the input stream with a double spaces.
+	 * 
+	 * @param in The input stream
+	 * @return A calendar
+	 */
+	public static final net.fortuna.ical4j.model.Calendar buildCalendar(InputStream in) {
+		try(InputStream	bin = new BufferedInputStream(in);
+				InputStream fin = new ReplacingInputStream(bin, "\n\\n", "\n \\n");
+				InputStream f2in = new ReplacingInputStream(fin, "\r\\n", "\n \\n");)  {
+			CalendarBuilder builder = new CalendarBuilder();
+			return builder.build(f2in);
+		} catch (Exception e) {
+			throw new OLATRuntimeException("Error parsing calendar", e);
+		}
+	}
 
 	public static String getTimeAsString(Date date, Locale locale) {
 		return DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(date);

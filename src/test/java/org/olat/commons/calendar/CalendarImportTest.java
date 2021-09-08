@@ -22,24 +22,29 @@ package org.olat.commons.calendar;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.logging.Tracing;
 
-import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.PeriodList;
+import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.RecurrenceId;
+import net.fortuna.ical4j.util.CompatibilityHints;
 
 /**
  * 
@@ -56,14 +61,84 @@ public class CalendarImportTest {
 	
 	@Before
 	public void setUp() {
+		// Use the same settings as OpenOlat CalendarModule
 		System.setProperty("net.fortuna.ical4j.timezone.cache.impl", "net.fortuna.ical4j.util.MapTimeZoneCache");
+		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
+		System.setProperty(CompatibilityHints.KEY_RELAXED_PARSING, "true");
+	}
+	
+	/**
+	 * The upgrade to iCal4j 3.0 bring an issue with some calendars where
+	 * the description has line breaks.
+	 * 
+	 * @throws IOException
+	 * @throws ParserException
+	 */
+	@Test
+	public void testImportLineBreakCrasher() throws IOException, ParserException {
+		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_linebreak_crash.ics");
+		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Assert.assertNotNull(calendar);
+        in.close();
+        
+        VEvent event = getFirstEvent(calendar);
+        Assert.assertNotNull(event);
+        Assert.assertNotNull(event.getDescription());
+        Assert.assertNotNull(event.getDescription().getValue());
+        String description = event.getDescription().getValue();
+        Assert.assertEquals("Weitere Bereiche der Kognition: Sprache, Denken, Probleml\u00F6s\nGelerntes \u00FCberpr\u00FCfen mit dem Wissenstest", description);  
+	}
+	
+	@Test
+	public void testImportNewLineCrasher() throws IOException, ParserException {
+		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_newline_crash.ics");
+		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Assert.assertNotNull(calendar);
+        in.close();
+        
+        VEvent event = getFirstEvent(calendar);
+        Assert.assertNotNull(event);
+        Assert.assertNotNull(event.getDescription());
+        Assert.assertNotNull(event.getDescription().getValue());
+        String description = event.getDescription().getValue();
+        Assert.assertEquals("Ceci est une note\navec une nouvelle ligne et un text plut\u00F4t long que je m'efforce d'\u00E9crire.\n", description);
+	}
+	
+	@Test
+	public void testImportMultiLines() throws IOException, ParserException {
+		InputStream in = CalendarImportTest.class.getResourceAsStream("cal_multiline_crash.ics");
+		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Assert.assertNotNull(calendar);
+        in.close();
+        
+        VEvent event = getFirstEvent(calendar);
+        Assert.assertNotNull(event);
+        Assert.assertNotNull(event.getDescription());
+        Assert.assertNotNull(event.getDescription().getValue());
+        String description = event.getDescription().getValue();
+        Assert.assertEquals("Test\nNew lines maintenance et après\navec un long text à \u00E9crire", description);
+	}
+	
+	@Test
+	public void testImportMultiLinesFile() throws Exception {
+		URL url = CalendarImportTest.class.getResource("cal_multiline_crash.ics");
+		InputStream in = new FileInputStream(new File(url.toURI()));
+		Calendar calendar = CalendarUtils.buildCalendar(in);
+		Assert.assertNotNull(calendar);
+        in.close();
+        
+        VEvent event = getFirstEvent(calendar);
+        Assert.assertNotNull(event);
+        Assert.assertNotNull(event.getDescription());
+        Assert.assertNotNull(event.getDescription().getValue());
+        String description = event.getDescription().getValue();
+        Assert.assertEquals("Test\nNew lines maintenance et après\navec un long text à \u00E9crire", description);
 	}
 	
 	@Test
 	public void testImportMonthFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_30.ics");
-		CalendarBuilder builder = new CalendarBuilder();
-		Calendar calendar = builder.build(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -71,8 +146,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportWeekFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_7.ics");
-		CalendarBuilder builder = new CalendarBuilder();
-		Calendar calendar = builder.build(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -80,8 +154,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportAllFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_Alles.ics");
-		CalendarBuilder builder = new CalendarBuilder();
-		Calendar calendar = builder.build(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -89,8 +162,7 @@ public class CalendarImportTest {
 	@Test
 	public void testImportOktoberFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("BB_Okt.ics");
-		CalendarBuilder builder = new CalendarBuilder();
-		Calendar calendar = builder.build(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
@@ -98,47 +170,36 @@ public class CalendarImportTest {
 	@Test
 	public void testImportFromOutlook() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("Hoffstedde.ics");
-		CalendarBuilder builder = new CalendarBuilder();
-		Calendar calendar = builder.build(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
 	}
 	
-	/*
-	 * Why is this test not reliable???
-	@Test(expected = ParserException.class)
+	@Test
 	public void testImportRefresh() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("Refresh.ics");
-		CalendarBuilder builder = new CalendarBuilder();
-		Calendar calendar = builder.build(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
 	}
 
 	@Test
 	public void testImportFromFGiCal() throws IOException, ParserException {
-		//default settings in olat
-		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
-		System.setProperty(CompatibilityHints.KEY_RELAXED_PARSING, "true");
-		
 		InputStream in = CalendarImportTest.class.getResourceAsStream("EMAIL.ics");
-		CalendarBuilder builder = new CalendarBuilder();
-		Calendar calendar = builder.build(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
 	}
-	*/
 	
 	@Test
 	public void testImportRecurringCal() throws IOException, ParserException {
 		InputStream in = CalendarImportTest.class.getResourceAsStream("RecurringEvent.ics");
-		CalendarBuilder builder = new CalendarBuilder();
-		Calendar calendar = builder.build(in);
+		Calendar calendar = CalendarUtils.buildCalendar(in);
         assertNotNull(calendar);
         in.close();
         
         VEvent rootEvent = null;
         VEvent exceptionEvent = null;
-        for (Iterator<?> iter = calendar.getComponents().iterator(); iter.hasNext();) {
-			Object comp = iter.next();
+        for (Iterator<CalendarComponent> iter = calendar.getComponents().iterator(); iter.hasNext();) {
+        	CalendarComponent comp = iter.next();
 			if (comp instanceof VEvent) {
 				VEvent vevent = (VEvent)comp;
 				if(vevent.getRecurrenceId() == null) {
@@ -160,12 +221,22 @@ public class CalendarImportTest {
         PeriodList pList = rootEvent.calculateRecurrenceSet(period);
         for(Object obj:pList) {
         	Period p = (Period)obj;
-        	log.info("Period: " + p.getStart());
+        	log.info("Period: {}", p.getStart());
         }
         
         RecurrenceId recurrenceId = exceptionEvent.getRecurrenceId();
         Date recurrenceDate = recurrenceId.getDate();
-        log.info("Recurrence: " + recurrenceDate);
+        log.info("Recurrence: {}", recurrenceDate);
         exceptionEvent.getSequence();
+	}
+	
+	private VEvent getFirstEvent(Calendar calendar) {
+		for (Iterator<CalendarComponent> iter = calendar.getComponents().iterator(); iter.hasNext();) {
+        	CalendarComponent comp = iter.next();
+			if (comp instanceof VEvent) {
+				return (VEvent)comp;
+			}
+		}
+		return null;
 	}
 }

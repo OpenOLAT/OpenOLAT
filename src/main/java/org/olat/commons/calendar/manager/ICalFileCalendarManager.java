@@ -25,16 +25,13 @@
 
 package org.olat.commons.calendar.manager;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
@@ -83,7 +80,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.DateList;
@@ -95,6 +91,7 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.Recur;
 import net.fortuna.ical4j.model.TimeZone;
+import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.parameter.Value;
@@ -247,8 +244,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 
 	protected Kalendar createKalendar(String type, String calendarID, Calendar calendar) {
 		Kalendar cal = new Kalendar(calendarID, type);
-		for (Iterator<?> iter = calendar.getComponents().iterator(); iter.hasNext();) {
-			Object comp = iter.next();
+		for (Iterator<CalendarComponent> iter = calendar.getComponents().iterator(); iter.hasNext();) {
+			CalendarComponent comp = iter.next();
 			if (comp instanceof VEvent) {
 				VEvent vevent = (VEvent)comp;
 				KalendarEvent calEvent = getKalendarEvent(vevent);
@@ -279,11 +276,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	
 	@Override
 	public Calendar readCalendar(File calendarFile) {
-		try(InputStream fIn = new FileInputStream(calendarFile);
-				InputStream	in = new BufferedInputStream(fIn))  {
-			
-			CalendarBuilder builder = new CalendarBuilder();
-			return builder.build(in);
+		try(InputStream fIn = new FileInputStream(calendarFile))  {
+			return CalendarUtils.buildCalendar(fIn);
 		} catch (FileNotFoundException fne) {
 			throw new OLATRuntimeException("Not found: " + calendarFile, fne);
 		} catch (Exception e) {
@@ -295,9 +289,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	public Kalendar buildKalendarFrom(InputStream in, String calType, String calId) {
 		Kalendar kalendar = null;
 		
-		try(BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-			CalendarBuilder builder = new CalendarBuilder();
-			Calendar calendar = builder.build(reader);
+		try {
+			Calendar calendar = CalendarUtils.buildCalendar(in);
 			kalendar = createKalendar(calType, calId, calendar);
 		} catch (Exception e) {
 			throw new OLATRuntimeException("Error parsing calendar file.", e);
@@ -307,8 +300,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	
 	@Override
 	public boolean synchronizeCalendarFrom(InputStream in, String source, Kalendar targetCalendar) {
-		try(BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-			Calendar inCalendar = new CalendarBuilder().build(reader);
+		try {
+			Calendar inCalendar = CalendarUtils.buildCalendar(in);
 			Kalendar inTmpKalendar = createKalendar("TEMP", UUID.randomUUID().toString(), inCalendar);
 			
 			String targetId = "-" + targetCalendar.getType() + "-" + targetCalendar.getCalendarID() + "-";
@@ -497,9 +490,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		KalendarEvent rootEvent = recurEvent.getCalendar().getEvent(recurEvent.getID(), null);
 		VEvent vEvent = getVEvent(recurEvent);
 		
-		PropertyList vEventProperties = vEvent.getProperties();
-		for(Iterator<?> objIt=vEventProperties.iterator(); objIt.hasNext(); ) {
-			Object property = objIt.next();
+		PropertyList<Property> vEventProperties = vEvent.getProperties();
+		for(Iterator<Property> objIt=vEventProperties.iterator(); objIt.hasNext(); ) {
+			Property property = objIt.next();
 			if(property instanceof RRule || property instanceof ExDate) {
 				objIt.remove();
 			}
@@ -571,7 +564,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		}
 
 		// Uid
-		PropertyList vEventProperties = vEvent.getProperties();
+		PropertyList<Property> vEventProperties = vEvent.getProperties();
 		vEventProperties.add(new Uid(kEvent.getID()));
 		
 		// clazz
@@ -826,9 +819,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		}
 		
 		// links if any
-		PropertyList linkProperties = event.getProperties(ICAL_X_OLAT_LINK);
+		PropertyList<Property> linkProperties = event.getProperties(ICAL_X_OLAT_LINK);
 		List<KalendarEventLink> kalendarEventLinks = new ArrayList<>();
-		for (Iterator<?> iter = linkProperties.iterator(); iter.hasNext();) {
+		for (Iterator<Property> iter = linkProperties.iterator(); iter.hasNext();) {
 			XProperty linkProperty = (XProperty) iter.next();
 			if (linkProperty != null) {
 				String encodedLink = linkProperty.getValue();
