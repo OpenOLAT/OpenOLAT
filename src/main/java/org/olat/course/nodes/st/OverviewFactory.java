@@ -113,7 +113,7 @@ public class OverviewFactory {
 		
 		builder.withIconCss(CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 		builder.withTitle(courseNode.getLongTitle());
-		builder.withSubTitle(CourseNodeHelper.getCustomShortTitle(courseNode));
+		builder.withSubTitle(CourseNodeHelper.getDifferentlyStartingShortTitle(courseNode));
 		
 		if (scoreAccounting != null) {
 			AssessmentEvaluation evaluation = scoreAccounting.getScoreEvaluation(courseNode);
