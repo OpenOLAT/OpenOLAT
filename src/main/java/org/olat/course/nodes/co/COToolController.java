@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -35,13 +37,13 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.co.COToolRecipientsController.Config;
 import org.olat.course.nodes.co.COToolRecipientsController.Recipients;
-import org.olat.course.nodes.members.MembersManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -54,19 +56,20 @@ public class COToolController extends BasicController {
 
 	private static final Recipients[] PARTICIPANT_RECIPIENTS = new Recipients[] {Recipients.owners, Recipients.coaches};
 
+	private final VelocityContainer mainVC;
 	private final ContactFormController emailCtrl;
 	private final COToolRecipientsController recipientCtrl;
 	
-	private final CourseGroupManager courseGroupManager;
+	private final UserCourseEnvironment userCourseEnv;
+	private final RepositoryEntry entry;
 
 	@Autowired
-	private MembersManager membersManager;
-
-	private VelocityContainer mainVC;
+	private RepositoryService repositoryService;
 
 	public COToolController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
-		this.courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		this.userCourseEnv = userCourseEnv;
+		this.entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		mainVC = createVelocityContainer("tool");
 		
@@ -82,7 +85,6 @@ public class COToolController extends BasicController {
 		ContactList dummyList = new ContactList("dummy");
 		dummyList.add(getIdentity());
 		cmsg.addEmailTo(dummyList);
-		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CourseMailTemplate template = new CourseMailTemplate(entry, getIdentity(), getLocale());
 		String courseUrl = CourseMailTemplate.createCourseUrl(entry);
 		String body = translate("tool.default.body", new String[] {courseUrl});
@@ -137,22 +139,25 @@ public class COToolController extends BasicController {
 	
 	private ContactList getOwnersContactList() {
 		ContactList cl = new ContactList(translate("tool.recipients.owners"));
-		List<Identity> identities = membersManager.getOwners(courseGroupManager.getCourseEntry());
+		List<Identity> identities = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
 		cl.addAllIdentites(identities);
 		return cl;
 	}
 	
 	private ContactList getCoachesContactList() {
 		ContactList cl = new ContactList(translate("tool.recipients.coaches"));
-		Collection<Identity> identities = courseGroupManager.getCoaches();
+		Collection<Identity> identities = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.coach.name());
 		cl.addAllIdentites(identities);
 		return cl;
 	}
 	
 	private ContactList getParticipantsContactList() {
 		ContactList cl = new ContactList(translate("tool.recipients.participants"));
-		Collection<Identity> identities = courseGroupManager.getParticipants();
-		cl.addAllIdentites(identities);
+		Collection<Identity> coachedIdentities = userCourseEnv.isAdmin()
+				? repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.participant.name())
+						.stream().distinct().collect(Collectors.toList())
+				: repositoryService.getCoachedParticipants(getIdentity(), entry);
+		cl.addAllIdentites(coachedIdentities);
 		return cl;
 	}
 
