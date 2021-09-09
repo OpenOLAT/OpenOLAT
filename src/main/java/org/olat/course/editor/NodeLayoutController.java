@@ -62,6 +62,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.Overview;
 import org.olat.course.nodes.st.STCourseNodeEditController;
@@ -536,8 +537,8 @@ public class NodeLayoutController extends FormBasicController {
 			org.olat.course.nodes.st.Overview.Builder overviewBuilder = Overview.builder();
 			overviewBuilder.withNodeIdent(courseNode.getIdent());
 			overviewBuilder.withIconCss(iconCSSClass);
-			overviewBuilder.withTitle(courseNode.getShortTitle());
-			overviewBuilder.withSubTitle(courseNode.getLongTitle());
+			overviewBuilder.withTitle(courseNode.getLongTitle());
+			overviewBuilder.withSubTitle(CourseNodeHelper.getDifferentlyStartingShortTitle(courseNode));
 			overviewBuilder.withDescription(courseNode.getDescription());
 			overviewBuilder.withColorCategoryCss(colorCategoryCss);
 			if (mapper != null) {

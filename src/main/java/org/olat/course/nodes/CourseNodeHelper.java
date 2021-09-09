@@ -49,6 +49,23 @@ public class CourseNodeHelper {
 	}
 	
 	/**
+	 * Return the short title if the short title is not the same as the start of the long title.
+	 *
+	 * @param courseNode
+	 * @return
+	 */
+	public static String getDifferentlyStartingShortTitle(CourseNode courseNode) {
+		if (isDifferentlyStartingShortTitle(courseNode.getLongTitle(), courseNode.getShortTitle())) {
+			return courseNode.getShortTitle();
+		}
+		return null;
+	}
+	
+	private static boolean isDifferentlyStartingShortTitle(String longTitle, String shortTitle) {
+		return !longTitle.equals(shortTitle) && !longTitle.startsWith(shortTitle);
+	}
+	
+	/**
 	 * Return the short title if the short title is different then the long title.
 	 *
 	 * @param courseNode

@@ -89,7 +89,7 @@ public class NodeConfigController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_node_editor_title");
 		
 		String shortTitle = Formatter.truncateOnly(courseNode.getShortTitle(), SHORT_TITLE_MAX_LENGTH);
-		if (longTitle.equals(shortTitle) || longTitle.startsWith(shortTitle)) {
+		if (!CourseNodeHelper.isCustomShortTitle(longTitle, shortTitle)) {
 			shortTitle = null;
 		}
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
