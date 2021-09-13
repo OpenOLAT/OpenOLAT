@@ -780,6 +780,10 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		// pending user is still pending
 		pendingUser = securityManager.loadIdentityByKey(pendingUser.getKey());
 		Assert.assertEquals(Identity.STATUS_PENDING, pendingUser.getStatus());
+		
+		// check mails were sent
+		List<SmtpMessage> inactivedMessages = getSmtpServer().getReceivedEmails();
+		Assert.assertTrue(hasTo(deleteMailSent.getUser().getEmail(), inactivedMessages));
 	}
 	
 	
@@ -905,12 +909,12 @@ public class UserLifecycleManagerTest extends OlatTestCase {
 		boolean isMember = businessGroupService.isIdentityInBusinessGroup(deletedIdentity, group);
 		Assert.assertFalse(isMember);
 		RepositoryEntry reloadedCourse = repositoryService.loadByKey(course.getKey());
-		Assert.assertFalse(reloadedCourse.getInitialAuthor().equals(username));
+		Assert.assertNotEquals(reloadedCourse.getInitialAuthor(), username);
 		boolean isOwner = repositoryService.hasRoleExpanded(identity, GroupRoles.owner.name());
 		Assert.assertFalse(isOwner);
 		
 		//check deleted consents
-		assertThat(courseDisclaimerManager.getConsents(course)).hasSize(0);
+		assertThat(courseDisclaimerManager.getConsents(course)).isEmpty();
 		
 		User deletedUser = deletedIdentity.getUser();
 		// process keep first name last name from user with some "administrative"
