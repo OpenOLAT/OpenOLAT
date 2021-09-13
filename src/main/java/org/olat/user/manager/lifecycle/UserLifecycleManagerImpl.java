@@ -292,7 +292,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			List<Identity> warnedIdentities = getIdentitiesByExpirationDateToEmail(lastExpirationDate);
 			for(Identity identity:warnedIdentities) {
 				if(identity.getLastLogin() != null && (vetoed.isEmpty() || !vetoed.contains(identity))) {
-					sendEmail(identity, "mail.before.expiration.subject", "mail.before.expiration.body", "before expiration");
+					sendEmail(identity, "mail.before.expiration.subject", "mail.before.expiration.body", "before expiration", false);
 					sendEmailCopy(userModule.getMailCopyBeforeExpiration(), "mail.before.expiration.subject", "mail.before.expiration.body", "before expiration", identity);
 					identity = setIdentityExpirationMail(identity);
 					vetoed.add(identity);
@@ -306,7 +306,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			if(vetoed.isEmpty() || !vetoed.contains(identity)) {
 				identity = setIdentityAsInactive(identity);
 				if(identity.getLastLogin() != null && userModule.isMailAfterExpiration()) {
-					sendEmail(identity, "mail.after.expiration.subject", "mail.after.expiration.body", "after expiration");
+					sendEmail(identity, "mail.after.expiration.subject", "mail.after.expiration.body", "after expiration", false);
 					sendEmailCopy(userModule.getMailCopyAfterExpiration(), "mail.after.expiration.subject", "mail.after.expiration.body", "after expiration", identity);
 				}
 				vetoed.add(identity);
@@ -330,7 +330,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
 					if(identity.getLastLogin() != null && (vetoed.isEmpty() || !vetoed.contains(identity))) {
-						sendEmail(identity, "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation");
+						sendEmail(identity, "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation", false);
 						sendEmailCopy(userModule.getMailCopyBeforeDeactivation(), "mail.before.deactivation.subject", "mail.before.deactivation.body", "before deactiviation", identity);
 						identity = setIdentityInactivationMail(identity);
 						vetoed.add(identity);
@@ -352,7 +352,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			if(vetoed.isEmpty() || !vetoed.contains(identity)) {
 				identity = setIdentityAsInactive(identity);
 				if(identity.getLastLogin() != null && userModule.isMailAfterDeactivation()) {
-					sendEmail(identity, "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation");
+					sendEmail(identity, "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation", false);
 					sendEmailCopy(userModule.getMailCopyAfterDeactivation(), "mail.after.deactivation.subject", "mail.after.deactivation.body", "after deactiviation", identity);
 				}
 				vetoed.add(identity);
@@ -374,7 +374,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			if(!identities.isEmpty()) {
 				for(Identity identity:identities) {
 					if(identity.getLastLogin() != null) {
-						sendEmail(identity, "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion");
+						sendEmail(identity, "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion", false);
 						sendEmailCopy(userModule.getMailCopyBeforeDeletion(), "mail.before.deletion.subject", "mail.before.deletion.body", "before deletion", identity);
 						identity = setIdentityDeletionMail(identity);
 						vetoed.add(identity);
@@ -395,7 +395,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 			for(Identity identity:identities) {
 				if(!vetoed.contains(identity)) {
 					if(identity.getLastLogin() != null && userModule.isMailAfterDeletion()) {
-						sendEmail(identity, "mail.after.deletion.subject", "mail.after.deletion.body", "after deletion");
+						sendEmail(identity, "mail.after.deletion.subject", "mail.after.deletion.body", "after deletion", true);
 						sendEmailCopy(userModule.getMailCopyAfterDeletion(), "mail.after.deletion.subject", "mail.after.deletion.body", "after deletion", identity);
 					}
 					deleteIdentity(identity, null);
@@ -477,7 +477,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		return true;
 	}	
 	
-	private void sendEmail(Identity identity, String subjectI18nKey, String bodyI18nKey, String type) {
+	private void sendEmail(Identity identity, String subjectI18nKey, String bodyI18nKey, String type, boolean externalOnly) {
 		String language = identity.getUser().getPreferences().getLanguage();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
 		Translator translator = Util.createPackageTranslator(UserAdminLifecycleConfigurationController.class, locale);
@@ -486,7 +486,7 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		String body = translator.translate(bodyI18nKey);
 		LifecycleMailTemplate template = new LifecycleMailTemplate(subject, body, locale);
 		
-		sendUserEmailTo(identity, template, type);
+		sendUserEmailTo(identity, template, type, externalOnly);
 	}
 	
 	private void sendEmailCopy(List<String> receivers, String subjectI18nKey, String bodyI18nKey, String type, Identity identity) {
@@ -509,14 +509,18 @@ public class UserLifecycleManagerImpl implements UserLifecycleManager {
 		}
 	}
 	
-	private void sendUserEmailTo(Identity identity, MailTemplate template, String type) {
+	private void sendUserEmailTo(Identity identity, MailTemplate template, String type, boolean externalOnly) {
 		// for backwards compatibility
 		template.addToContext("responseTo", repositoryDeletionModule.getEmailResponseTo());
 
 		MailerResult result = new MailerResult();
 		MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
 		if(bundle != null) {
-			mailManager.sendMessage(bundle);
+			if(externalOnly) {
+				mailManager.sendExternMessage(bundle, result, true);
+			} else {
+				mailManager.sendMessage(bundle);
+			}
 		}
 		log.info(Tracing.M_AUDIT, "User lifecycle {} send to identity={} with email={}", type, identity.getKey(), identity.getUser().getProperty(UserConstants.EMAIL, null));
 	}
