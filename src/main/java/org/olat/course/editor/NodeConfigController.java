@@ -88,9 +88,16 @@ public class NodeConfigController extends FormBasicController {
 		titleEl.setExampleKey("nodeConfigForm.max.length.recommended", new String[] {String.valueOf(LONG_TITLE_MAX_LENGTH)});
 		titleEl.setElementCssClass("o_sel_node_editor_title");
 		
-		String shortTitle = Formatter.truncateOnly(courseNode.getShortTitle(), SHORT_TITLE_MAX_LENGTH);
-		if (!CourseNodeHelper.isCustomShortTitle(longTitle, shortTitle)) {
-			shortTitle = null;
+		String shortTitle = null;
+		if (courseNode instanceof GenericCourseNode) {
+			// Only show custom short titles set by the author,
+			// so we have to use the raw short title.
+			shortTitle = ((GenericCourseNode)courseNode).getRawShortTitle();
+			shortTitle = Formatter.truncateOnly(shortTitle, SHORT_TITLE_MAX_LENGTH);
+			// Remove the short title if it is not really a custom title.
+			if (!CourseNodeHelper.isCustomShortTitle(longTitle, shortTitle)) {
+				shortTitle = null;
+			}
 		}
 		shortTitleEl = uifactory.addTextElement("nodeConfigForm.shorttitle", "nodeConfigForm.shorttitle",
 				SHORT_TITLE_MAX_LENGTH, shortTitle, formLayout);
