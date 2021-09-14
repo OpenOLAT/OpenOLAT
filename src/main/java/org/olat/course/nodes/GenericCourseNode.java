@@ -218,6 +218,10 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		return shortTitle;
 	}
 	
+	public String getRawShortTitle() {
+		return shortTitle;
+	}
+	
 	/**
 	 * allows to specify if default value should be returned in case where there is no value.
 	 * @param returnDefault if false: null may be returned if no value found!
