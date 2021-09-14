@@ -313,6 +313,34 @@ public class PersistedProperties implements Initializable, Destroyable{
 		}
 		return defaultValue;
 	}
+	
+	/**
+	 * Return an int value for a certain propertyName
+	 * 
+	 * @param propertyName The property name
+	 * @param defaultValue The default value
+	 * @return The value from the configuration or the default value
+	 */
+	public Long getLongPropertyValue(String propertyName, Long defaultValue) {
+		// 1) Try from configuration
+		String stringValue = configuredProperties.getProperty(propertyName);
+		// 2) Try from default configuration
+		if (stringValue == null) {
+			stringValue = defaultProperties.getProperty(propertyName);
+		}
+		if (StringHelper.containsNonWhitespace(stringValue)) {
+			try {
+				return Long.valueOf(stringValue.trim());
+			} catch (Exception ex) {
+				log.warn("Cannot parse to Long property::" + propertyName + ", value=" + stringValue);
+			}
+		}
+		// 3) Not even a value found in the fallback, use null
+		if(log.isDebugEnabled()) {
+			log.debug("No value found for Long property::" + propertyName + ", using value=" + defaultValue + " instead");
+		}
+		return defaultValue;
+	}
 
 	/**
 	 * Return a string value for certain propertyName-parameter.
@@ -399,6 +427,25 @@ public class PersistedProperties implements Initializable, Destroyable{
 			String oldValue = configuredProperties.getProperty(propertyName);
 			if (oldValue == null || !oldValue.equals(Integer.toString(value))) {
 				configuredProperties.setProperty(propertyName, Integer.toString(value));
+				propertiesDirty = true;
+				if (saveConfiguration) savePropertiesAndFireChangedEvent();
+			}
+		}
+	}
+	
+	/**
+	 * Set an int property
+	 * 
+	 * @param propertyName The key
+	 * @param value The Value
+	 * @param saveConfiguration true: will save property and fire event; false:
+	 *          will not save, but set a dirty flag
+	 */
+	public void setLongProperty(String propertyName, Long value, boolean saveConfiguration) {
+		synchronized (configuredProperties) { // make read/write save in VM
+			String oldValue = configuredProperties.getProperty(propertyName);
+			if (oldValue == null || !oldValue.equals(Long.toString(value))) {
+				configuredProperties.setProperty(propertyName, Long.toString(value));
 				propertiesDirty = true;
 				if (saveConfiguration) savePropertiesAndFireChangedEvent();
 			}

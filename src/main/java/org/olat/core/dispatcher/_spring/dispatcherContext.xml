@@ -71,6 +71,9 @@
 				<entry key="/trace/">
 					<ref bean="contacttracingbean" />
 				</entry>
+				<entry key="/proof">
+					<ref bean="immunityproofbean" />
+				</entry>
 				<entry key="/podcast/">
 					<ref bean="podcastMediaBean" />
 				</entry>
@@ -291,6 +294,9 @@
 		
 	<bean id="contacttracingbean"
 		  class="org.olat.modules.contacttracing.ContactTracingDispatcher" />
+		  
+	  <bean id="immunityproofbean"
+		  class="org.olat.modules.immunityProof.ImmunityProofDispatcher" />
 		
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">

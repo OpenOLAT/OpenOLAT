@@ -48,7 +48,7 @@ public class LogModule {
 	
 	private LogModule(boolean logAnonymous, List<String> logOperators) {
 		LogModule.logAnonymous = logAnonymous;
-		log.info("Log Module set logAnonymous to: " + new Boolean(logAnonymous));
+		log.info("Log Module set logAnonymous to: {}", logAnonymous);
 		operators = logOperators;
 	}
 	

@@ -3426,6 +3426,18 @@ create table o_ct_registration (
    primary key (id)
 );
 
+-- Immunity Proof
+create table o_immunity_proof (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_user bigint not null,
+   safedate datetime not null,
+   validated bool not null,
+   send_mail bool not null,
+   email_sent bool not null default false,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -3786,6 +3798,7 @@ alter table o_ap_appointment ENGINE = InnoDB;
 alter table o_ap_participation ENGINE = InnoDB;
 alter table o_ct_location ENGINE = InnoDB;
 alter table o_ct_registration ENGINE = InnoDB;
+alter table o_immunity_proof ENGINE = InnoDB;
 
 
 -- rating
@@ -4549,6 +4562,10 @@ create index idx_org_role_to_right_to_organisation_idx on o_org_role_to_right (f
 alter table o_ct_registration add constraint reg_to_loc_idx foreign key (fk_location) references o_ct_location (id);
 create index idx_reg_to_loc_idx on o_ct_registration (fk_location);
 create index idx_qr_id_idx on o_ct_location (l_qr_id);
+
+-- Immunity proof
+alter table o_immunity_proof add constraint proof_to_user_idx foreign key (fk_user) references o_bs_identity(id);
+create index idx_immunity_proof on o_immunity_proof (fk_user);
 
 
 insert into hibernate_unique_key values ( 0 );

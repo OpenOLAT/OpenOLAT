@@ -471,7 +471,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
     }
 
     private void initNumericTextElement(TextElement textEl, String unit) {
-        textEl.setDisplaySize(1);
+        textEl.setDisplaySize(3);
         textEl.setMaxLength(3);
         textEl.setElementCssClass("form-inline");
         textEl.setTextAddOn(unit);
