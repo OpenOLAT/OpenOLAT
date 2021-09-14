@@ -3450,14 +3450,14 @@ create table o_ct_registration (
 
 -- Immunity Proof
 create table o_immunity_proof (
-	id bigserial,
-	creationdate timestamp not null,
-	fk_user int8 not null,
-	safedate timestamp not null,
-	validated boolean not null,
-	send_mail boolean not null,
-	email_sent boolean not null default false,
-	primary key (id)
+   id bigserial,
+   creationdate timestamp not null,
+   fk_user int8 not null,
+   safedate timestamp not null,
+   validated boolean not null,
+   send_mail boolean not null,
+   email_sent boolean not null default false,
+   primary key (id)
 );
 
 -- user view

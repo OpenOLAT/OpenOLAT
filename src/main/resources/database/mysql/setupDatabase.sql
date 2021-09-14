@@ -3428,14 +3428,14 @@ create table o_ct_registration (
 
 -- Immunity Proof
 create table o_immunity_proof (
-	id bigint not null auto_increment,
-	creationdate datetime not null,
-	fk_user bigint not null,
-	safedate datetime not null,
-	validated boolean not null,
-	send_mail boolean not null,
-	email_sent boolean not null default false,
-	primary key (id)
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_user bigint not null,
+   safedate datetime not null,
+   validated bool not null,
+   send_mail bool not null,
+   email_sent bool not null default false,
+   primary key (id)
 );
 
 -- user view
@@ -3798,6 +3798,7 @@ alter table o_ap_appointment ENGINE = InnoDB;
 alter table o_ap_participation ENGINE = InnoDB;
 alter table o_ct_location ENGINE = InnoDB;
 alter table o_ct_registration ENGINE = InnoDB;
+alter table o_immunity_proof ENGINE = InnoDB;
 
 
 -- rating
