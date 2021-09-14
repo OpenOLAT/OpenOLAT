@@ -1,0 +1,49 @@
+<div>
+	<h2>$r.translate("proof.heading")</h2>
+	
+	<div>
+		<h4>$r.translate("proof.for")</h4>
+		<p>$user</p>
+		
+		#if($r.isNotNull($birthdate))
+		<h4>$r.translate("proof.birthdate")</h4>
+		<p>$birthdate</p>
+		#end
+	</div>
+	
+	<div class="row">
+		<div class="col-xs-8">
+			#if($r.isNotNull($validUntil))
+			<div>
+				<h4>$r.translate("proof.valid.until")</h4>
+				<p>$validUntil</p>
+			</div>
+			#end
+		</div>
+		<div class="col-xs-4">
+			<div class="o_immunity_proof_state_box o_immunity_proof_status $status">
+				<div class="o_immunity_proof_state_icon">
+				<i class="o_icon o_icon_lg o_immunity_proof_$status"> </i>
+				</div>
+				<div class="o_immunity_proof_counter"id="o_immunity_proof_counter"> </div>
+			</div>
+		</div>
+	</div>
+	
+	
+
+	$r.render("add.immunity.proof")
+	$r.render("delete.immunity.proof")
+</div>
+
+<script> 
+/* <![CDATA[ */
+updateTime();
+setInterval(updateTime, 1000);
+
+function updateTime() {
+	const time = new Date().toLocaleTimeString("$locale");
+	document.getElementById('o_immunity_proof_counter').innerHTML = time;
+}
+/* ]]> */
+</script> 

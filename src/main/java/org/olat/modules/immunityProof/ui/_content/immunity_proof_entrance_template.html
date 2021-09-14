@@ -1,0 +1,20 @@
+<div class="o_ct_pdf_wrapper">
+    #if($r.isNotEmpty("generalInstructions"))
+    <div class="o_ct_pdf_spacer">
+        $generalInstructions
+    </div>
+    #end
+
+    #if($r.isNotEmpty($url))
+    <div class="o_ct_pdf_spacer">
+     <div id="o_qrcode_url" class="o_ct_pdf_qr"></div>
+     <script>
+         jQuery(function() {
+             o_QRCode('o_qrcode_url', '$url');
+         });
+     </script>
+    </div>
+    <p><a id="o_qrcode_$url_link" target="_blank" href="$url">$url</a></p>
+    #end
+</div>
+

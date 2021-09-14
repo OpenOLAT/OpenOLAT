@@ -41,9 +41,16 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.login.SupportsAfterLoginInterceptor;
+import org.olat.modules.immunityProof.ImmunityProof;
+import org.olat.modules.immunityProof.ImmunityProofModule;
+import org.olat.modules.immunityProof.ui.ImmunityProofUserProfileController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: Jul 14, 2005
@@ -55,13 +62,17 @@ import org.olat.login.SupportsAfterLoginInterceptor;
 public class ProfileAndHomePageEditController extends BasicController implements Activateable2, SupportsAfterLoginInterceptor {
 
 	private final VelocityContainer myContent;
-	private final Link profilLink, homePageLink;
+	private final Link profilLink, homePageLink, immunityProofLink;
 	private final SegmentViewComponent segmentView;
 	private ProfileFormController profileFormController;
 	private HomePageSettingsController homePageController;
+	private ImmunityProofUserProfileController immunityProofUserProfileController;
 
 	private Identity identityToModify;
 	private boolean isAdministrativeUser;
+	
+	@Autowired
+	private ImmunityProofModule immunityProofModule;
 
 	public ProfileAndHomePageEditController(UserRequest ureq, WindowControl wControl) {		
 		this(ureq,wControl, ureq.getIdentity(), false);
@@ -79,15 +90,24 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		this.identityToModify = identityToModify;
 		this.isAdministrativeUser = isAdministrativeUser;
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
 		
 		myContent = createVelocityContainer("homepage");
 		segmentView = SegmentViewFactory.createSegmentView("segments", myContent, this);
+		
 		profilLink = LinkFactory.createLink("tab.profile", myContent, this);
 		profilLink.setElementCssClass("o_sel_usersettings_profile");
 		segmentView.addSegment(profilLink, true);
+		
 		homePageLink = LinkFactory.createLink("tab.hp", myContent, this);
 		homePageLink.setElementCssClass("o_sel_usersettings_homepage");
 		segmentView.addSegment(homePageLink, false);
+		
+		immunityProofLink = LinkFactory.createLink("immunity.proof", myContent, this);
+		immunityProofLink.setElementCssClass("o_sel_immunity_proof");
+		if (immunityProofModule.isEnabled()) {
+			segmentView.addSegment(immunityProofLink, false);
+		}
 
 		putInitialPanel(myContent);
 		
@@ -118,8 +138,10 @@ public class ProfileAndHomePageEditController extends BasicController implements
 					selectedController = doOpenProfile(ureq);
 				} else if (clickedLink == homePageLink){
 					selectedController = doOpenHomePageSettings(ureq);
+				} else if (clickedLink == immunityProofLink) {
+					selectedController = doOpenImmunityProof(ureq);
 				}
-				addToHistory(ureq, selectedController);
+				//addToHistory(ureq, selectedController);
 			}
 		}
 	}
@@ -153,30 +175,51 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
-			if(profileFormController == null) {
-				doOpenProfile(ureq);
-			}
-		}
+			doOpenProfile(ureq);
+		} 
 	}
 
 	private ProfileFormController doOpenProfile(UserRequest ureq) {
 		if(profileFormController == null) {
-			profileFormController = new ProfileFormController(ureq, getWindowControl(),
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Profile", 0l);
+            WindowControl bwControl = addToHistory(ureq, ores, null);
+			profileFormController = new ProfileFormController(ureq, bwControl,
 					identityToModify, isAdministrativeUser, true);
 			listenTo(profileFormController);
+		} else {
+			addToHistory(ureq, profileFormController);
 		}
 
 		myContent.put("segmentCmp", profileFormController.getInitialComponent());
+		myContent.contextPut("showNote", true);
 		return profileFormController;
 	}
 	
 	private HomePageSettingsController doOpenHomePageSettings(UserRequest ureq) {
 		if(homePageController == null) {
-			homePageController = new HomePageSettingsController(ureq, getWindowControl(), identityToModify, isAdministrativeUser);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("HomePage", 0l);
+            WindowControl bwControl = addToHistory(ureq, ores, null);
+			homePageController = new HomePageSettingsController(ureq, bwControl, identityToModify, isAdministrativeUser);
 			listenTo(homePageController);
+		} else {
+			addToHistory(ureq, homePageController);
 		}
 
 		myContent.put("segmentCmp", homePageController.getInitialComponent());
+		myContent.contextPut("showNote", true);
 		return homePageController;
+	}
+	
+	private ImmunityProofUserProfileController doOpenImmunityProof(UserRequest ureq) {
+		// Always create new controller
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("ImmunityProof", 0l);
+        WindowControl bwControl = addToHistory(ureq, ores, null);
+		immunityProofUserProfileController = new ImmunityProofUserProfileController(ureq, bwControl);
+		listenTo(immunityProofUserProfileController);
+		addToHistory(ureq, immunityProofUserProfileController);
+		
+		myContent.put("segmentCmp", immunityProofUserProfileController.getInitialComponent());
+		myContent.contextPut("showNote", false);
+		return immunityProofUserProfileController;
 	}
 }

@@ -1,0 +1,22 @@
+#if($validity == 2)
+<div class="o_immunity_proof_status validated"> </div>
+#elseif($validity == 1)
+<div class="o_immunity_proof_status claimed"> </div>
+#else
+<div class="o_immunity_proof_status invalid"> </div>
+#end
+
+<div class="o_immunity_proof_counter"id="o_immunity_proof_counter"> </div>
+
+
+<script> 
+/* <![CDATA[ */
+updateTime();
+setInterval(updateTime, 1000);
+
+function updateTime() {
+	const time = new Date().toLocaleTimeString("$locale");
+	document.getElementById('o_immunity_proof_counter').innerHTML = time;
+}
+/* ]]> */
+</script> 

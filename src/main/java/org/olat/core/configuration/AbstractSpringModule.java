@@ -191,6 +191,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		moduleConfigProperties.setStringProperty(propertyName, value, saveConfiguration);
 		log.info(Tracing.M_AUDIT, "change system property: {} {}", propertyName, "*********");
 	}
+	
 	/**
 	 * Return an int value for a certain property name
 	 * 
@@ -232,10 +233,55 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		log.info(Tracing.M_AUDIT, "change system property: {} {}", propertyName, Integer.valueOf(value));
 	}
 	
+	
+	/**
+	 * Return a Long value for a certain property name
+	 * 
+	 * @param propertyName The property name
+	 * @return the value from the configuration or null
+	 */
+	protected Long getLongProperty(String propertyName) {
+		// delegate to new property based config style
+		return moduleConfigProperties.getLongPropertyValue(propertyName, null);
+	}
+	
+	/**
+	 * Return a Long value for a certain property name
+	 * 
+	 * @param propertyName The property name
+	 * @param defaultValue The default value if the property is not set
+	 * @return The value from the configuration or the default value
+	 */
+	protected Long getLongPropertyValue(String propertyName, Long defaultValue) {
+		// delegate to new property based config style
+		return moduleConfigProperties.getLongPropertyValue(propertyName, defaultValue);
+	}
+	
+	
+	/**
+	 * Set a Long property
+	 * 
+	 * @param propertyName
+	 *            The key
+	 * @param value
+	 *            The Value
+	 * @param saveConfiguration
+	 *            true: will save property and fire event; false: will not save,
+	 *            but set a dirty flag
+	 */
+	protected void setLongProperty(String propertyName, Long value, boolean saveConfiguration) {
+		// delegate to new property based config style
+		moduleConfigProperties.setLongProperty(propertyName, value, saveConfiguration);
+		log.info(Tracing.M_AUDIT, "change system property: {} {}", propertyName, Long.valueOf(value));
+	}
+	
+	
 	protected void removeProperty(String propertyName, boolean saveConfiguration) {
 		moduleConfigProperties.removeProperty(propertyName, saveConfiguration);
 		log.info(Tracing.M_AUDIT, "remove system property: {}", propertyName);
 	}
+	
+	
 	
 	/**
 	 * Return a boolean value for certain propertyName

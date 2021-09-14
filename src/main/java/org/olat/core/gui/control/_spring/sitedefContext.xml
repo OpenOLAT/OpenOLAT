@@ -111,8 +111,13 @@
 	   <!-- this one is hard coded and cannot be changed -->
 	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToSysAdminSiteSecurityCallback"/>
 	</bean>
-	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
+	<bean id="olatsites_immunity_proof" class="org.olat.modules.immunityProof.ui.site.ImmunityProofSiteDef">
 	   <property name="order" value="16" />
+	   <!-- this one is hard coded and cannot be changed -->
+	   <property name="defaultSiteSecurityCallbackBeanId" value="immunityProofSecurityCallback"/>
+	</bean>
+	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
+	   <property name="order" value="17" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="adminSiteSecurityCallback"/>
 	</bean>
@@ -129,6 +134,11 @@
 	<bean id="registredSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserSecurityCallback"/>
 
 	<bean id="registredOrGuestSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserOrGuestSecurityCallback"/>
+	
+	<bean id="immunityProofSecurityCallback" class="org.olat.modules.immunityProof.ui.site.ImmunityProofSecurityCallback">
+		<property name="immunityProofModule" ref="immunityProofModule" />
+		<property name="groupDAO" ref="groupDao" />
+	</bean>
 
 	
 	<!-- for development purpose

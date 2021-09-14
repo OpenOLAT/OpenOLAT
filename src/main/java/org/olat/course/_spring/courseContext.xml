@@ -99,7 +99,7 @@
 	</bean>
 	
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="7210" />
+		<property name="order" value="7212" />
 		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.course.nodes.livestream.ui.LiveStreamAdminController"/>

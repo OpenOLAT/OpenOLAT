@@ -92,6 +92,7 @@
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementForCoaching</class>
 		<class>org.olat.modules.contacttracing.model.ContactTracingLocationImpl</class>
 		<class>org.olat.modules.contacttracing.model.ContactTracingRegistrationImpl</class>
+		<class>org.olat.modules.immunityProof.model.ImmunityProofImpl</class>
 		<class>org.olat.modules.dcompensation.model.DisadvantageCompensationImpl</class>
 		<class>org.olat.modules.dcompensation.model.DisadvantageCompensationAuditLogImpl</class>
 		<class>org.olat.course.disclaimer.model.CourseDisclaimerConsentImpl</class>
