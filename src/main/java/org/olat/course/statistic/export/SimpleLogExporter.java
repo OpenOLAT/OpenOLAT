@@ -39,11 +39,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
+import org.hibernate.jpa.QueryHints;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
@@ -78,24 +80,25 @@ public class SimpleLogExporter implements ICourseLogExporter {
 	@Override
 	public void exportCourseLog(File outFile, Long resourceableId, Date begin, Date end, boolean resourceAdminAction,
 			boolean anonymize, boolean isAdministrativeUser) {
-		StringBuilder sb = new StringBuilder(512);
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select v, ident, identUser from loggingobject as v")
 		  .append(" left join ").append(IdentityImpl.class.getCanonicalName()).append(" as ident on (ident.key=v.userId)")
 		  .append(" left join ident.user as identUser")
-		  .append(" where v.resourceAdminAction=:resAdminAction")
-		  .append(" and ((v.targetResId = :resId) or (v.parentResId = :resId) or (v.grandParentResId = :resId) or (v.greatGrandParentResId = :resId))");
+		  .and().append(" v.resourceAdminAction=:resAdminAction")
+		  .and().append(" ((v.targetResId = :resId) or (v.parentResId = :resId) or (v.grandParentResId = :resId) or (v.greatGrandParentResId = :resId))");
 
 		if (begin != null) {
-			sb.append(" and (v.creationDate >= :createdAfter)");
+			sb.and().append(" (v.creationDate >= :createdAfter)");
 		}
 		if (end != null) {
-			sb.append(" and (v.creationDate <= :createdBefore)");
+			sb.and().append(" (v.creationDate <= :createdBefore)");
 		}
 		
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		em.clear();
 
 		TypedQuery<Object[]> dbQuery = em.createQuery(sb.toString(), Object[].class)
+				.setHint(QueryHints.HINT_FETCH_SIZE, "10000")
 				.setParameter("resAdminAction", resourceAdminAction)
 				.setParameter("resId", Long.toString(resourceableId));
 		if (begin != null) {
@@ -120,9 +123,18 @@ public class SimpleLogExporter implements ICourseLogExporter {
 					LoggingObject loggingObject = (LoggingObject)objects[0];
 					Identity identity = (Identity)objects[1];
 					User user = (User)objects[2];
-					
+
 					logLineConverter.setRow(workbook, sheet, loggingObject, identity, user, anonymize, resourceableId, isAdministrativeUser);
-					if(count.incrementAndGet() % 1000 == 0) {
+
+					em.detach(loggingObject);
+					if(identity != null) {
+						em.detach(identity);
+					}
+					if(user != null) {
+						em.detach(user);
+					}
+					
+					if(count.incrementAndGet() % 10000 == 0) {
 						try {
 							out.flush();
 						} catch (IOException e) {

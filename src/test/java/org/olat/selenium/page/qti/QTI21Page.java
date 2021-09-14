@@ -541,10 +541,16 @@ public class QTI21Page {
 	 * @param y The y coordinate
 	 * @return Itself
 	 */
-	public QTI21Page answerSelectPoint(int x, int y, int width, int height) {
-		Position pos = Position.valueOf(x, y, width, height);
+	public QTI21Page answerSelectPoint(int x, int y) {
 		By canvasBy = By.xpath("//div[contains(@class,'selectPointInteraction')]/div/canvas");
+		OOGraphene.waitElement(canvasBy, browser);
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTo(canvasBy, browser);
+		}
+		
 		WebElement canvasEl = browser.findElement(canvasBy);
+		Dimension dimension = canvasEl.getSize();
+		Position pos = Position.valueOf(x, y, dimension);
 		new Actions(browser)
 			.moveToElement(canvasEl, pos.getX(), pos.getY())
 			.click()
