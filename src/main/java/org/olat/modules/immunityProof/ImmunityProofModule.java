@@ -239,4 +239,10 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		pcrTest,
 		antigenTest
 	}
+	
+	public enum ImmunityProofLevel {
+		none,
+		claimed,
+		validated
+	}
 }

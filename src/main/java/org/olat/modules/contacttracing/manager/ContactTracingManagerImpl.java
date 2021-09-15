@@ -36,6 +36,7 @@ import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingRegistrationInternalWrapperControllerCreator;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
+import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -184,8 +185,8 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
     // Contact tracing entries
 
     @Override
-    public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate) {
-        return contactTracingRegistrationDAO.create(location, startDate, deletionDate);
+    public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate, ImmunityProofLevel immunityProofLevel, Date immunityProofDate) {
+        return contactTracingRegistrationDAO.create(location, startDate, deletionDate, immunityProofLevel);
     }
 
     @Override

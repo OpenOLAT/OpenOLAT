@@ -21,6 +21,7 @@ package org.olat.modules.immunityProof.ui;
 
 import java.util.Date;
 
+import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,11 +37,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.immunityProof.ImmunityProof;
 import org.olat.modules.immunityProof.ImmunityProofModule;
 import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofType;
 import org.olat.modules.immunityProof.ImmunityProofService;
+import org.olat.user.DisplayPortraitController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -60,6 +64,8 @@ public class ImmunityProofCreateController extends FormBasicController {
 	private SelectionValue recovery;
 	private SelectionValue testPCR;
 	private SelectionValue testAntigen;
+	
+	private FormLayoutContainer userInfoLayout;
 	
 	private FormLayoutContainer vaccinationMethod;
 	private MultipleSelectionElement confirmVaccinationEl;
@@ -96,6 +102,20 @@ public class ImmunityProofCreateController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// User info
+		if (usedByCovidCommissioner) {
+			String page = Util.getPackageVelocityRoot(getClass()) + "/immunity_proof_user_details.html";
+			userInfoLayout = FormLayoutContainer.createCustomFormLayout("immunity_proof_user_details", getTranslator(), page);
+			
+			DisplayPortraitController displayPortraitController = new DisplayPortraitController(ureq, getWindowControl(), editedIdentity, true, true);
+			userInfoLayout.put("portrait", displayPortraitController.getInitialComponent());
+
+			UserShortDescription userShortDescriptionController = new UserShortDescription(ureq, getWindowControl(), editedIdentity, ImmunityProofModule.USER_PROPERTY_HANDLER);
+			userInfoLayout.put("userShortDescription", userShortDescriptionController.getInitialComponent());
+			
+			formLayout.add(userInfoLayout);
+		}
+		
 		// Immunity method
 		vaccination = new SelectionValue("vaccination", translate("vaccination"));
 		recovery = new SelectionValue("recovery", translate("recovery"));
@@ -237,6 +257,21 @@ public class ImmunityProofCreateController extends FormBasicController {
 		boolean sendMail = confirmReminderEl.isAtLeastSelected(1);
 		
 		immunityProofService.createImmunityProof(editedIdentity, type, safeUntilDate, sendMail, usedByCovidCommissioner, true);
+		
+		if (usedByCovidCommissioner) {
+			String name = "";
+			User user = editedIdentity.getUser();
+			
+			if (StringHelper.containsNonWhitespace(user.getFirstName())) {
+				name += user.getFirstName() + " ";
+			} 
+			
+			if (StringHelper.containsNonWhitespace(user.getLastName())) {
+				name += user.getLastName();
+			}
+			
+			getWindowControl().setInfo(translate("proof.added.heading"), translate("proof.added.for", new String[] {name, StringHelper.formatLocaleDate(safeUntilDate.getTime(), getLocale())}));
+		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

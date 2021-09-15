@@ -34,9 +34,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.immunityProof.ImmunityProof;
+import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.immunityProof.ImmunityProofService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -137,21 +139,19 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 		reset();
 		
 		this.immunityProof = immunityProofService.getImmunityProof(getIdentity());
-		String status = null;
+		ImmunityProofLevel status = ImmunityProofLevel.none;
 		String validUntil = null;
 		
 		if (immunityProof != null) {
 			if (immunityProof.getSafeDate().after(new Date())) {
 				addImmunityProofButton.setVisible(false);
-				validUntil = StringHelper.formatLocaleDate(immunityProof.getSafeDate().getTime(), getLocale());
-				status = immunityProof.isValidated() ? "validated" : "claimed";
-			} else {
-				deleteImmunityProofButton.setVisible(false);
-				status = "invalid";
-			}
-		} else {
+				validUntil = Formatter.getInstance(getLocale()).formatDate(immunityProof.getSafeDate());
+				status = immunityProof.isValidated() ? ImmunityProofLevel.validated : ImmunityProofLevel.claimed;
+			} 
+		}
+		
+		if (status.equals(ImmunityProofLevel.none)) {
 			deleteImmunityProofButton.setVisible(false);
-			status = "invalid";
 		}
 		
 		User user = getIdentity().getUser();

@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
+
 /**
  * Initial date: 13.10.20<br>
  *
@@ -121,11 +123,13 @@ public interface ContactTracingManager {
      * Creates a new non-persisted empty registration
      * Details must be applied manually and then persisted
      *
-     * @param location Contact tracing location must be provided to make sure it isn't empty
-     * @param deletionDate Deletion date must be provided to make sure it isn´t empty
-     * @return Empty contact tracing registration
+     * @param location 				Contact tracing location must be provided to make sure it isn't empty
+     * @param deletionDate 			Deletion date must be provided to make sure it isn´t empty
+     * @param immunityProofLevel	level of covid certifcate 
+     * @param immunityProofDate TODO
+     * @return Empty 				contact tracing registration
      */
-    public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate);
+    public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate, ImmunityProofLevel immunityProofLevel, Date immunityProofDate);
 
     /**
      * Persist a given contact tracing registration

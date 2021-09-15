@@ -872,7 +872,7 @@ i.o_lp_done:before { content: $fa-var-check-circle;}
 .o_icon_lic_youtube:before { content: $fa-var-youtube-square;}
 
 /* Immunity Proof */
-.o_immunity_proof_invalid:before { content: $fa-var-times; }
+.o_immunity_proof_none:before { content: $fa-var-times; }
 .o_immunity_proof_claimed:before { content: $fa-var-question; }
 .o_immunity_proof_validated:before { content: $fa-var-check; }
 

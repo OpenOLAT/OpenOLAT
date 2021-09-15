@@ -2016,6 +2016,7 @@
 							<list>
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -2027,6 +2028,7 @@
 								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />

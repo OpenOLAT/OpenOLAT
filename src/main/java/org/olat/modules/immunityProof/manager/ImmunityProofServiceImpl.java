@@ -20,10 +20,12 @@
 package org.olat.modules.immunityProof.manager;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.immunityProof.ImmunityProof;
 import org.olat.modules.immunityProof.ImmunityProofModule;
+import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofType;
 import org.olat.modules.immunityProof.ImmunityProofService;
 import org.olat.user.UserDataDeletable;
@@ -60,6 +62,10 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 
 	@Override
 	public ImmunityProof getImmunityProof(Identity identity) {
+		if (identity == null) {
+			return null;
+		}
+		
 		return immunityProofDAO.getImmunitiyProof(identity);
 	}
 
@@ -77,10 +83,40 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 	public void deleteAllImmunityProofs() {
 		immunityProofDAO.deleteAllImmunityProofs();
 	}
+	
+	@Override
+	public void deleteImmunityProof(ImmunityProof immunityProof) {
+		immunityProofDAO.deleteImmunityProof(immunityProof);
+	}
 
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		deleteImmunityProof(identity);		
+	}
+	
+	@Override
+	public List<ImmunityProof> getAllCertificates() {
+		return immunityProofDAO.getAllCertificates();
+	}
+	
+	@Override
+	public ImmunityProof updateImmunityProof(ImmunityProof certificate) {
+		return immunityProofDAO.updateImmunityProof(certificate);
+	}
+	
+	@Override
+	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof) {
+		ImmunityProofLevel level = ImmunityProofLevel.none;
+		
+		if (immunityProof != null && immunityProof.getSafeDate().after(new Date())) {
+			if (immunityProof.isValidated()) {
+				level = ImmunityProofLevel.validated;
+			} else {
+				level = ImmunityProofLevel.claimed;
+			}
+		}
+		
+		return level;
 	}
 
 }

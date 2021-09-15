@@ -56,6 +56,14 @@ public class ImmunityProofDAO {
 		dbInstance.getCurrentEntityManager().persist(immunityProof);
 		return immunityProof;
 	}
+	
+	public ImmunityProof updateImmunityProof(ImmunityProof immunityProof) {
+		if (immunityProof == null || immunityProof.getKey() == null) {
+			return null;
+		}
+		
+		return dbInstance.getCurrentEntityManager().merge(immunityProof);
+	}
 
 	public ImmunityProof getImmunitiyProof(IdentityRef identityRef) {
 		StringBuilder sb = new StringBuilder(128);
@@ -100,6 +108,22 @@ public class ImmunityProofDAO {
                 .executeUpdate();
 	}
 	
+	public void deleteImmunityProof(ImmunityProof immunityProof) {
+		if (immunityProof == null) {
+			return;
+		}
+		
+		String query = new StringBuilder()
+                .append("delete from immunityProof as entry ")
+                .append("where entry.key = :immunityProofKey")
+                .toString();
+
+        dbInstance.getCurrentEntityManager()
+                .createQuery(query)
+                .setParameter("immunityProofKey", immunityProof.getKey())
+                .executeUpdate();
+	}
+	
 	public void pruneImmunityProofs(Date pruneUntil) {
 		if (pruneUntil == null) {
 			return;
@@ -124,5 +148,16 @@ public class ImmunityProofDAO {
         dbInstance.getCurrentEntityManager()
                 .createQuery(query)
                 .executeUpdate();
+	}
+	
+	public List<ImmunityProof> getAllCertificates() {
+		StringBuilder sb = new StringBuilder(128);
+		
+		sb.append("select from immunityProof");
+		
+		TypedQuery<ImmunityProof> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ImmunityProof.class);
+		
+		return query.getResultList();
 	}
 }

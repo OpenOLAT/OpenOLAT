@@ -1,30 +1,32 @@
-<div>
+<div class="o_immunity_proof_wrapper">
 	<h2>$r.translate("proof.heading")</h2>
 	
-	<div>
-		<h4>$r.translate("proof.for")</h4>
-		<p>$user</p>
-		
-		#if($r.isNotNull($birthdate))
-		<h4>$r.translate("proof.birthdate")</h4>
-		<p>$birthdate</p>
-		#end
-	</div>
-	
 	<div class="row">
-		<div class="col-xs-8">
+		<div class="col-xs-12 col-sm-6">
+			<h7>$r.translate("proof.for")</h7>
+			<p>$user</p>
+			
+			#if($r.isNotNull($birthdate))
+			<h7>$r.translate("proof.birthdate")</h7>
+			<p>$birthdate</p>
+			#end
+			
 			#if($r.isNotNull($validUntil))
-			<div>
-				<h4>$r.translate("proof.valid.until")</h4>
-				<p>$validUntil</p>
-			</div>
+			<h7>$r.translate("proof.valid.until")</h7>
+			<p>$validUntil</p>
 			#end
 		</div>
-		<div class="col-xs-4">
+	
+		<div class="col-xs-12 col-sm-6">
 			<div class="o_immunity_proof_state_box o_immunity_proof_status $status">
-				<div class="o_immunity_proof_state_icon">
-				<i class="o_icon o_icon_lg o_immunity_proof_$status"> </i>
+	   			<div class="o_immunity_proof_watermark_wrapper">
+					<div class="o_immunity_proof_watermark">3G</div>
 				</div>
+				
+				<div class="o_immunity_proof_state_icon">
+					<i class="o_icon o_icon_lg o_immunity_proof_$status"> </i>
+				</div>
+				
 				<div class="o_immunity_proof_counter"id="o_immunity_proof_counter"> </div>
 			</div>
 		</div>
@@ -35,6 +37,9 @@
 	$r.render("add.immunity.proof")
 	$r.render("delete.immunity.proof")
 </div>
+
+<br>
+<br>
 
 <script> 
 /* <![CDATA[ */

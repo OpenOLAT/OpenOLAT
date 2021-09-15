@@ -20,8 +20,10 @@
 package org.olat.modules.immunityProof;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofType;
 
 /**
@@ -33,6 +35,8 @@ public interface ImmunityProofService {
 	
 	public void createImmunityProof(Identity identity, ImmunityProofType type, Date safeUntil, boolean sendMail, boolean validated, boolean deleteOtherImmunityProof);
 	
+	public ImmunityProof updateImmunityProof(ImmunityProof immunityProof);
+	
 	public ImmunityProof getImmunityProof(Identity identity);
 	
 	public void deleteImmunityProof(Identity identity);
@@ -40,5 +44,11 @@ public interface ImmunityProofService {
 	public void pruneImmunityProofs(Date pruneUntil);
 	
 	public void deleteAllImmunityProofs();
+	
+	public void deleteImmunityProof(ImmunityProof immunityProof);
+	
+	public List<ImmunityProof> getAllCertificates();
+	
+	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof);
 	
 }
