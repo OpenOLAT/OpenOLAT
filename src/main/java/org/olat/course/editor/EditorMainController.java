@@ -559,6 +559,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		main.contextPut("courseNodeCss", nodeCssClass);
 		main.contextPut("courseNode", chosenNode);
 
+		doShowNodeStatus(ureq, chosenNode);
+	}
+
+	private void doShowNodeStatus(UserRequest ureq, CourseNode chosenNode) {
 		// Show error / warning status
 		if (nodeStatusCtr == null) {
 			nodeStatusCtr = new NodeStatusController(ureq, getWindowControl());
@@ -607,7 +611,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				if(node instanceof CourseEditorTreeNode) {
 					CourseEditorTreeNode cet = (CourseEditorTreeNode)node;
 					main.contextPut("courseNode", cet.getCourseNode());					
-					nodeStatusCtr.updateFromNodeStatus(ureq, cet.getCourseNode(), euce.getCourseEditorEnv());
+					doShowNodeStatus(ureq, cet.getCourseNode());
 				}
 				if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
 					initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"));
