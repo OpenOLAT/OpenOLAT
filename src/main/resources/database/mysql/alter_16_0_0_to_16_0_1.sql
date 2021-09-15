@@ -16,5 +16,5 @@ alter table o_immunity_proof add constraint immunity_proof_to_user_idx foreign k
 create unique index idx_immunity_proof on o_immunity_proof (fk_user);
 
 -- Contact tracing
-alter table o_ct_registration add column l_immunity_proof_level varchar2(20);
+alter table o_ct_registration add column l_immunity_proof_level varchar(20);
 alter table o_ct_registration add column l_immunity_proof_date datetime;
