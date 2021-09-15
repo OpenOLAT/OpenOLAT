@@ -30,7 +30,7 @@ import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
 import org.olat.modules.contacttracing.model.ContactTracingRegistrationImpl;
-import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -33,7 +33,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
-import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 

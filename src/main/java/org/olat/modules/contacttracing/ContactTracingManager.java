@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.modules.contacttracing.model.ContactTracingLocationInfo;
-import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 
 /**
  * Initial date: 13.10.20<br>

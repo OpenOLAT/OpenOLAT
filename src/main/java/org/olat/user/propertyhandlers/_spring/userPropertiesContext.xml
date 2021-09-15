@@ -2008,7 +2008,7 @@
 					</bean>
 				</entry>
 				
-				<entry key="org.olat.modules.immunityProof.ImmunityProofModule">
+				<entry key="org.olat.modules.immunityproof.ImmunityProofModule">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 						<!--  the login field is always available, this is

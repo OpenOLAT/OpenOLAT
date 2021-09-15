@@ -55,7 +55,7 @@ import org.olat.course.editor.overview.YesNoCellRenderer;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ui.ContactTracingLocationTableModel.ContactTracingLocationCols;
-import org.olat.modules.immunityProof.ImmunityProofModule;
+import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

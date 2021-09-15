@@ -296,7 +296,7 @@
 		  class="org.olat.modules.contacttracing.ContactTracingDispatcher" />
 		  
 	  <bean id="immunityproofbean"
-		  class="org.olat.modules.immunityProof.ImmunityProofDispatcher" />
+		  class="org.olat.modules.immunityproof.ImmunityProofDispatcher" />
 		
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">

@@ -39,7 +39,7 @@ import javax.persistence.TemporalType;
 import org.olat.core.id.Persistable;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
-import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 
 /**
  * Initial date: 13.10.20<br>

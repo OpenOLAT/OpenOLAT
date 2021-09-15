@@ -47,9 +47,9 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.SupportsAfterLoginInterceptor;
-import org.olat.modules.immunityProof.ImmunityProof;
-import org.olat.modules.immunityProof.ImmunityProofModule;
-import org.olat.modules.immunityProof.ui.ImmunityProofUserProfileController;
+import org.olat.modules.immunityproof.ui.ImmunityProofUserProfileController;
+import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
