@@ -54,6 +54,8 @@ import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
+import org.olat.modules.immunityProof.ImmunityProof;
+import org.olat.modules.immunityProof.ImmunityProofModule;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +79,8 @@ public class ContactTracingReportController extends FormBasicController {
     @Autowired
     ContactTracingManager contactTracingManager;
     @Autowired
+    ImmunityProofModule immunityProofModule;
+    @Autowired
     private UserPropertiesConfig userPropertiesConfig;
 
     public ContactTracingReportController(UserRequest ureq, WindowControl wControl) {
@@ -84,6 +88,7 @@ public class ContactTracingReportController extends FormBasicController {
         setTranslator(userPropertiesConfig.getTranslator(getTranslator()));
         setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
         setTranslator(Util.createPackageTranslator(ContactTracingModule.class, getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
 
         initForm(ureq);
         loadData(ureq);
@@ -313,6 +318,12 @@ public class ContactTracingReportController extends FormBasicController {
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.NICKNAME).i18nFormElementLabelKey()));
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.FIRSTNAME).i18nFormElementLabelKey()));
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.LASTNAME).i18nFormElementLabelKey()));
+        
+        if (immunityProofModule.isEnabled()) {
+        	columns.add(translate("immunity.proof"));
+        	columns.add(translate("immunity.proof.valid.until"));
+        }
+        
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.STREET).i18nFormElementLabelKey()));
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.EXTENDEDADDRESS).i18nFormElementLabelKey()));
         columns.add(translate(userPropertiesConfig.getPropertyHandler(UserConstants.ZIPCODE).i18nFormElementLabelKey()));
@@ -342,6 +353,18 @@ public class ContactTracingReportController extends FormBasicController {
             dataRow.addCell(i++, registration.getNickName());
             dataRow.addCell(i++, registration.getFirstName());
             dataRow.addCell(i++, registration.getLastName());
+            
+            if (immunityProofModule.isEnabled()) {
+            	dataRow.addCell(i++, translate("immunity.proof." + registration.getImmunityProofLevel().toString()));
+            	
+            	Date safeDate = registration.getImmunityProofDate();
+            	if (safeDate != null) {
+            		dataRow.addCell(i++, StringHelper.formatLocaleDate(safeDate.getTime(), getLocale()));
+            	} else {
+            		dataRow.addCell(i++, "");
+            	}
+            }
+            
             dataRow.addCell(i++, registration.getStreet());
             dataRow.addCell(i++, registration.getExtraAddressLine());
             dataRow.addCell(i++, registration.getZipCode());

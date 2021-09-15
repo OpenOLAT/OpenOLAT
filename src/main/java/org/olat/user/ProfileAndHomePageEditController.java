@@ -141,7 +141,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 				} else if (clickedLink == immunityProofLink) {
 					selectedController = doOpenImmunityProof(ureq);
 				}
-				//addToHistory(ureq, selectedController);
+				addToHistory(ureq, selectedController);
 			}
 		}
 	}
@@ -176,7 +176,16 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			doOpenProfile(ureq);
-		} 
+		} else {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Profile".equalsIgnoreCase(type)) {
+				doOpenProfile(ureq);
+			} else if("HomePage".equalsIgnoreCase(type)) {
+				doOpenHomePageSettings(ureq);
+			} else if("ImmunityProof".equalsIgnoreCase(type)) {
+				doOpenImmunityProof(ureq);
+			}
+		}
 	}
 
 	private ProfileFormController doOpenProfile(UserRequest ureq) {
@@ -186,12 +195,12 @@ public class ProfileAndHomePageEditController extends BasicController implements
 			profileFormController = new ProfileFormController(ureq, bwControl,
 					identityToModify, isAdministrativeUser, true);
 			listenTo(profileFormController);
-		} else {
-			addToHistory(ureq, profileFormController);
-		}
+		} 
 
 		myContent.put("segmentCmp", profileFormController.getInitialComponent());
 		myContent.contextPut("showNote", true);
+		
+		segmentView.select(profilLink);
 		return profileFormController;
 	}
 	
@@ -201,12 +210,12 @@ public class ProfileAndHomePageEditController extends BasicController implements
             WindowControl bwControl = addToHistory(ureq, ores, null);
 			homePageController = new HomePageSettingsController(ureq, bwControl, identityToModify, isAdministrativeUser);
 			listenTo(homePageController);
-		} else {
-			addToHistory(ureq, homePageController);
-		}
+		} 
 
 		myContent.put("segmentCmp", homePageController.getInitialComponent());
 		myContent.contextPut("showNote", true);
+		
+		segmentView.select(homePageLink);
 		return homePageController;
 	}
 	
@@ -216,10 +225,11 @@ public class ProfileAndHomePageEditController extends BasicController implements
         WindowControl bwControl = addToHistory(ureq, ores, null);
 		immunityProofUserProfileController = new ImmunityProofUserProfileController(ureq, bwControl);
 		listenTo(immunityProofUserProfileController);
-		addToHistory(ureq, immunityProofUserProfileController);
 		
 		myContent.put("segmentCmp", immunityProofUserProfileController.getInitialComponent());
 		myContent.contextPut("showNote", false);
+		
+		segmentView.select(immunityProofLink);
 		return immunityProofUserProfileController;
 	}
 }

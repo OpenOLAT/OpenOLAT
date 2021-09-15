@@ -42,6 +42,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.contacttracing.ContactTracingDispatcher;
 import org.olat.modules.contacttracing.ContactTracingLocation;
+import org.olat.modules.contacttracing.model.ContactTracingLocationInfo;
 
 /**
  * Initial date: 12.10.20<br>
@@ -56,12 +57,12 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
 
     private final Locale locale;
 
-    private Map<ContactTracingLocation, Long> locationRegistrationMap;
+    private Map<ContactTracingLocation, ContactTracingLocationInfo> locationRegistrationMap;
     private Map<ContactTracingLocation, FormLink> toolLinks;
     private Map<ContactTracingLocation, Boolean> alreadyExistingMap;
     private List<ContactTracingLocation> backup;
 
-    public ContactTracingLocationTableModel(FlexiTableColumnModel columnModel, Map<ContactTracingLocation, Long> locationRegistrationMap, Locale locale) {
+    public ContactTracingLocationTableModel(FlexiTableColumnModel columnModel, Map<ContactTracingLocation, ContactTracingLocationInfo> locationRegistrationMap, Locale locale) {
         super(columnModel);
 
         // Save locale for sorting
@@ -130,7 +131,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
         }
     }
 
-    public void setObjects(Map<ContactTracingLocation, Long> locationRegistrationMap) {
+    public void setObjects(Map<ContactTracingLocation, ContactTracingLocationInfo> locationRegistrationMap) {
         // Save locationRegistrationMap
         this.locationRegistrationMap = locationRegistrationMap;
 
@@ -189,7 +190,13 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
             case guest:
                 return location.isAccessibleByGuests();
             case registrations:
-                return locationRegistrationMap.get(location);
+                return locationRegistrationMap.get(location).getRegistrations();
+            case proofNone:
+            	return locationRegistrationMap.get(location).getRegistrationsWithoutProof();
+            case proofClaimed:
+            	return locationRegistrationMap.get(location).getRegistrationsWithClaimedProof();
+            case proofValidated:
+            	return locationRegistrationMap.get(location).getRegistrationsWithValidatedProof();
             case settings:
                 return toolLinks.get(location);
             default:
@@ -223,6 +230,9 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
         guest("contact.tracing.cols.guest"),
         registrations("contact.tracing.cols.registrations"),
         url("contact.tracing.cols.url"),
+        proofNone("contact.tracing.cols.proof.none", "o_icon o_icon-lg o_icon_immunity_proof_none o_icon-fws"),
+        proofClaimed("contact.tracing.cols.proof.claimed", "o_icon o_icon-lg o_icon_immunity_proof_claimed o_icon-fws"),
+        proofValidated("contact.tracing.cols.proof.validated", "o_icon o_icon-lg o_icon_immunity_proof_validated o_icon-fws"),
         settings("contact.tracing.cols.settings", "o_icon o_icon-lg o_icon_actions o_icon-fws");
 
         private final String i18nHeaderKey;

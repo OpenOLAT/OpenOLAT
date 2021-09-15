@@ -23,25 +23,25 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.immunityProof.ImmunityProof;
+import org.olat.modules.immunityProof.ui.event.ImmunityProofDeleteEvent;
 
 /**
- * Initial date: 13.09.2021<br>
+ * Initial date: 15.09.2021<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ImmunityProofConfirmResetController extends FormBasicController {
-	
-	private static final String[] CONFIRMATION_KEYS = new String[]{"on"};
+public class ImmunityProofConfirmDeleteAllProofsController extends FormBasicController {
+
+	private static final String[] CONFIRMATION_KEYS = new String[]{"confirm", "notify"};
 
     private MultipleSelectionElement confirmationEl;
 
-    public ImmunityProofConfirmResetController(UserRequest ureq, WindowControl wControl) {
+    public ImmunityProofConfirmDeleteAllProofsController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl, LAYOUT_DEFAULT);
 
         setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
@@ -51,16 +51,17 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        uifactory.addStaticTextElement("warning", null, translate("reminder.mail.reset.warning"), formLayout);
+    	setFormWarning("delete.proof.warning");
 
-        confirmationEl = uifactory.addCheckboxesHorizontal("reminder.mail.reset.confirm", formLayout, CONFIRMATION_KEYS, new String[]{ translate("reminder.mail.reset.confirm.value" )});
+        String[] values = new String[]{ translate("delete.proof.confirm.value" ), translate("delete.proofs.and.notify")};
+        confirmationEl = uifactory.addCheckboxesHorizontal("delete.proof.confirm", formLayout, CONFIRMATION_KEYS, values);
 
-        FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("contact.tracing.reset.buttons", getTranslator());
+        FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("reset.buttons", getTranslator());
         buttonLayout.setRootForm(mainForm);
         formLayout.add(buttonLayout);
 
         uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-        uifactory.addFormSubmitButton("reset", buttonLayout);
+        uifactory.addFormSubmitButton("delete.all.proofs", buttonLayout);
     }
 
     @Override
@@ -68,7 +69,7 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
         boolean allOk = super.validateFormLogic(ureq);
         confirmationEl.clearError();
 
-        if (!confirmationEl.isSelected(0)) {
+        if (!confirmationEl.isKeySelected("confirm")) {
             allOk = false;
             confirmationEl.setErrorKey("form.legende.mandatory", null);
         }
@@ -78,16 +79,21 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
 
     @Override
     protected void formOK(UserRequest ureq) {
-        fireEvent(ureq, FormEvent.DONE_EVENT);
+    	if (confirmationEl.isKeySelected("notify")) {
+    		fireEvent(ureq, ImmunityProofDeleteEvent.DELETE_AND_NOTIFY);
+    	} else {
+    		fireEvent(ureq, ImmunityProofDeleteEvent.DELETE);
+    	}
     }
 
     @Override
     protected void formCancelled(UserRequest ureq) {
-        fireEvent(ureq, FormEvent.CANCELLED_EVENT);
+        fireEvent(ureq, ImmunityProofDeleteEvent.CANCELLED_EVENT);
     }
 
     @Override
     protected void doDispose() {
 
     }
+
 }

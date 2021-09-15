@@ -56,6 +56,7 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private ImmunityProofCreateController immunityProofCreateController;
+	private ImmunityProofDeleteConfirmController deleteConfirmController;
 	
 	@Autowired
 	private ImmunityProofService immunityProofService;
@@ -72,15 +73,16 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		deleteImmunityProofButton = uifactory.addFormLink("delete.immunity.proof", formLayout, Link.BUTTON);
+		deleteImmunityProofButton.setIconLeftCSS("o_icon o_icon_lg o_icon_clear_all");
 		addImmunityProofButton = uifactory.addFormLink("add.immunity.proof", formLayout, Link.BUTTON);
+		addImmunityProofButton.setIconLeftCSS("o_icon o_icon_lg o_icon_add");
 		addImmunityProofButton.setPrimary(true);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (deleteImmunityProofButton == source) {
-			immunityProofService.deleteImmunityProof(getIdentity());
-			loadData();
+			doAskForRemoval(ureq);
 		} else if (addImmunityProofButton == source) {
 			doAddImmunityProof(ureq);
 		}
@@ -94,15 +96,17 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 				loadData();
 			}
 			
-			if (cmc.isCloseable()) {
-				cmc.deactivate();
+			cleanUp();
+		} if (source == deleteConfirmController) {
+			if (event.equals(Event.DONE_EVENT)) {
+				immunityProofService.deleteImmunityProof(getIdentity());
+				flc.setDirty(true);
+				loadData();
 			}
 			
 			cleanUp();
 		} else if (source == cmc) {
-			if (cmc.isCloseable()) {
-				cmc.deactivate();
-			}
+			
 			
 			cleanUp();
 		}
@@ -119,6 +123,10 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		if (cmc != null && cmc.isCloseable()) {
+			cmc.deactivate();
+		}
+		
 		removeAsListenerAndDispose(immunityProofCreateController);
 		removeAsListenerAndDispose(cmc);
 		
@@ -131,6 +139,15 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 		listenTo(immunityProofCreateController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), immunityProofCreateController.getInitialComponent(), true, translate("add.immunity.proof"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAskForRemoval(UserRequest ureq) {
+		deleteConfirmController = new ImmunityProofDeleteConfirmController(ureq, getWindowControl());
+		listenTo(deleteConfirmController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), deleteConfirmController.getInitialComponent(), true, translate("delete.immunity.proof"));
 		listenTo(cmc);
 		cmc.activate();
 	}

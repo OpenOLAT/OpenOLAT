@@ -36,6 +36,7 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
@@ -82,6 +83,9 @@ public class ImmunityProofCreateController extends FormBasicController {
 	
 	private MultipleSelectionElement confirmReminderEl;
 	private MultipleSelectionElement confirmTruthEl;
+	
+	private ImmunityProofCreateConfirmController confirmController;
+	private CloseableModalController cmc;
 	
 	@Autowired
 	private ImmunityProofService immunityProofService;
@@ -193,6 +197,29 @@ public class ImmunityProofCreateController extends FormBasicController {
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == confirmController) {
+        	if (event == Event.DONE_EVENT) {
+                formOK(ureq);
+            } else {
+            	formCancelled(ureq);
+            }
+
+            cleanUp();
+        } else if (source == cmc) {
+			cleanUp();
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmController);
+		removeAsListenerAndDispose(cmc);
+		
+		confirmController = null;
+		cmc = null;
+	}
+	
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
@@ -216,6 +243,39 @@ public class ImmunityProofCreateController extends FormBasicController {
 		if (!confirmTruthEl.isAtLeastSelected(1)) {
 			allOk &= false;
 			confirmTruthEl.setErrorKey("confirmation.mandatory", null);
+		}
+		
+		ImmunityProof existingProof = immunityProofService.getImmunityProof(editedIdentity);
+		
+		if (allOk && existingProof != null && existingProof.isValidated()) {
+			Date safeUntilDate = null;
+			ImmunityProofType type = null;
+			
+			if (immunityMethodEl.getSelectedKey().equals(vaccination.getKey())) {
+				safeUntilDate = vaccinationDateChooser.getDate();
+				type = ImmunityProofType.vaccination;
+			} else if (immunityMethodEl.getSelectedKey().equals(recovery.getKey())) {
+				safeUntilDate = recoveryDateChooser.getDate();
+				type = ImmunityProofType.recovery;
+			} else if (immunityMethodEl.getSelectedKey().equals(testPCR.getKey())) {
+				safeUntilDate = testPCRDateChooser.getDate();
+				type = ImmunityProofType.pcrTest;
+			} else if (immunityMethodEl.getSelectedKey().equals(testAntigen.getKey())) {
+				safeUntilDate = testAntigenDateChooser.getDate();
+				type = ImmunityProofType.antigenTest;
+			}
+			
+			if (safeUntilDate != null) {
+				long daysToMs = 24l * 60 * 60 * 1000;
+				safeUntilDate = new Date(safeUntilDate.getTime() + immunityProofModule.getValidity(type) * daysToMs);
+			}
+			
+			if (safeUntilDate != null && safeUntilDate.before(existingProof.getSafeDate())) {
+				allOk &= false;
+				
+				doAskForConfirmation(ureq);
+			}
+			
 		}
 		
 		return allOk;
@@ -278,6 +338,21 @@ public class ImmunityProofCreateController extends FormBasicController {
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
+		if (usedByCovidCommissioner) {
+			String name = "";
+			User user = editedIdentity.getUser();
+			
+			if (StringHelper.containsNonWhitespace(user.getFirstName())) {
+				name += user.getFirstName() + " ";
+			} 
+			
+			if (StringHelper.containsNonWhitespace(user.getLastName())) {
+				name += user.getLastName();
+			}
+			
+			getWindowControl().setInfo(translate("proof.not.added.heading"), translate("proof.not.added.for", new String[] {name}));
+		}
+		
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
@@ -301,6 +376,14 @@ public class ImmunityProofCreateController extends FormBasicController {
 		} else if (immunityMethodEl.getSelectedKey().equals(testAntigen.getKey())) {
 			testAntigenMethod.setVisible(true);
 		}
+	}
+	
+	private void doAskForConfirmation(UserRequest ureq) {
+		confirmController = new ImmunityProofCreateConfirmController(ureq, getWindowControl());
+        cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmController.getInitialComponent(), true, translate("confirm.date.override"), true, true);
+        listenTo(confirmController);
+        listenTo(cmc);
+        cmc.activate();
 	}
 
 }

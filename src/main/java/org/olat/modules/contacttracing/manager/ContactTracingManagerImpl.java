@@ -36,6 +36,7 @@ import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.modules.contacttracing.ContactTracingRegistrationInternalWrapperControllerCreator;
 import org.olat.modules.contacttracing.ContactTracingSearchParams;
+import org.olat.modules.contacttracing.model.ContactTracingLocationInfo;
 import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -142,25 +143,39 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
     }
 
     @Override
-    public Map<ContactTracingLocation, Long> getLocationsWithRegistrations() {
-        Map<ContactTracingLocation, Long> locationRegistrationMap = new HashMap<>();
+    public Map<ContactTracingLocation, ContactTracingLocationInfo> getLocationsWithRegistrations() {
+        Map<ContactTracingLocation, ContactTracingLocationInfo> locationRegistrationMap = new HashMap<>();
         ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
 
         for (ContactTracingLocation location : getLocations()) {
             searchParams.setLocation(location);
-            locationRegistrationMap.put(location, contactTracingRegistrationDAO.getRegistrationsCount(searchParams));
+            
+            ContactTracingLocationInfo locationInfo = new ContactTracingLocationInfo();
+            locationInfo.setRegistrations(contactTracingRegistrationDAO.getRegistrationsCount(searchParams));
+            locationInfo.setRegistrationsWithoutProof(contactTracingRegistrationDAO.getRegistrationsWithProofCount(searchParams, ImmunityProofLevel.none));
+            locationInfo.setRegistrationsWithClaimedProof(contactTracingRegistrationDAO.getRegistrationsWithProofCount(searchParams, ImmunityProofLevel.claimed));
+            locationInfo.setRegistrationsWithValidatedProof(contactTracingRegistrationDAO.getRegistrationsWithProofCount(searchParams, ImmunityProofLevel.validated));
+            
+            locationRegistrationMap.put(location, locationInfo);
         }
 
         return locationRegistrationMap;
     }
 
     @Override
-    public Map<ContactTracingLocation, Long> getLocationsWithRegistrations(ContactTracingSearchParams searchParams) {
-        Map<ContactTracingLocation, Long> locationRegistrationMap = new HashMap<>();
+    public Map<ContactTracingLocation, ContactTracingLocationInfo> getLocationsWithRegistrations(ContactTracingSearchParams searchParams) {
+        Map<ContactTracingLocation, ContactTracingLocationInfo> locationRegistrationMap = new HashMap<>();
 
         for (ContactTracingLocation location : getLocations(searchParams)) {
             searchParams.setLocation(location);
-            locationRegistrationMap.put(location, contactTracingRegistrationDAO.getRegistrationsCount(searchParams));
+            
+            ContactTracingLocationInfo locationInfo = new ContactTracingLocationInfo();
+            locationInfo.setRegistrations(contactTracingRegistrationDAO.getRegistrationsCount(searchParams));
+            locationInfo.setRegistrationsWithoutProof(contactTracingRegistrationDAO.getRegistrationsWithProofCount(searchParams, ImmunityProofLevel.none));
+            locationInfo.setRegistrationsWithClaimedProof(contactTracingRegistrationDAO.getRegistrationsWithProofCount(searchParams, ImmunityProofLevel.claimed));
+            locationInfo.setRegistrationsWithValidatedProof(contactTracingRegistrationDAO.getRegistrationsWithProofCount(searchParams, ImmunityProofLevel.validated));
+            
+            locationRegistrationMap.put(location, locationInfo);
         }
 
         return locationRegistrationMap;
@@ -186,7 +201,7 @@ public class ContactTracingManagerImpl implements ContactTracingManager {
 
     @Override
     public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate, ImmunityProofLevel immunityProofLevel, Date immunityProofDate) {
-        return contactTracingRegistrationDAO.create(location, startDate, deletionDate, immunityProofLevel);
+        return contactTracingRegistrationDAO.create(location, startDate, deletionDate, immunityProofLevel, immunityProofDate);
     }
 
     @Override

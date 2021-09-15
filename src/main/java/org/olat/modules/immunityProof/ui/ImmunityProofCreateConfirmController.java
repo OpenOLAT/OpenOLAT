@@ -31,18 +31,18 @@ import org.olat.core.util.Util;
 import org.olat.modules.immunityProof.ImmunityProof;
 
 /**
- * Initial date: 13.09.2021<br>
+ * Initial date: 15.09.2021<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ImmunityProofConfirmResetController extends FormBasicController {
+public class ImmunityProofCreateConfirmController extends FormBasicController {
 	
 	private static final String[] CONFIRMATION_KEYS = new String[]{"on"};
 
     private MultipleSelectionElement confirmationEl;
 
-    public ImmunityProofConfirmResetController(UserRequest ureq, WindowControl wControl) {
-        super(ureq, wControl, LAYOUT_DEFAULT);
+	public ImmunityProofCreateConfirmController(UserRequest ureq, WindowControl wControl) {
+        super(ureq, wControl, LAYOUT_VERTICAL);
 
         setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
 
@@ -51,29 +51,29 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        uifactory.addStaticTextElement("warning", null, translate("reminder.mail.reset.warning"), formLayout);
+        setFormWarning("confirm.date.already.exists");
+        
+        confirmationEl = uifactory.addCheckboxesHorizontal("confirm.date.label", formLayout, CONFIRMATION_KEYS, new String[]{ translate("confirm.date.value" )});
 
-        confirmationEl = uifactory.addCheckboxesHorizontal("reminder.mail.reset.confirm", formLayout, CONFIRMATION_KEYS, new String[]{ translate("reminder.mail.reset.confirm.value" )});
-
-        FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("contact.tracing.reset.buttons", getTranslator());
+        FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
         buttonLayout.setRootForm(mainForm);
         formLayout.add(buttonLayout);
 
-        uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-        uifactory.addFormSubmitButton("reset", buttonLayout);
+        uifactory.addFormSubmitButton("confirm.date.override", buttonLayout);
+        uifactory.addFormCancelButton("confirm.date.keep", buttonLayout, ureq, getWindowControl());
     }
-
+    
     @Override
     protected boolean validateFormLogic(UserRequest ureq) {
-        boolean allOk = super.validateFormLogic(ureq);
-        confirmationEl.clearError();
+    	 boolean allOk = super.validateFormLogic(ureq);
+         confirmationEl.clearError();
 
-        if (!confirmationEl.isSelected(0)) {
-            allOk = false;
-            confirmationEl.setErrorKey("form.legende.mandatory", null);
-        }
+         if (!confirmationEl.isSelected(0)) {
+             allOk = false;
+             confirmationEl.setErrorKey("form.legende.mandatory", null);
+         }
 
-        return allOk;
+         return allOk;
     }
 
     @Override

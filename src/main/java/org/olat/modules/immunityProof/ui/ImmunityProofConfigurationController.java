@@ -47,6 +47,8 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.immunityProof.ImmunityProof;
 import org.olat.modules.immunityProof.ImmunityProofModule;
+import org.olat.modules.immunityProof.ImmunityProofService;
+import org.olat.modules.immunityProof.ui.event.ImmunityProofDeleteEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,6 +60,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 
 	private FormLayoutContainer generalConfig;
 	private MultipleSelectionElement enabledEl;
+	private FormLink deleteAllProofsLink;
 	
 	private FormLayoutContainer validityConfig;
 	private TextElement validVaccines;
@@ -73,6 +76,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
     private FormLink reminderMailCustomize;
     
     private ImmunityProofConfirmResetController confirmResetMailController;
+    private ImmunityProofConfirmDeleteAllProofsController confirmDeleteProofController;
     private SingleKeyTranslatorController singleKeyTranslatorController;
     private CloseableModalController cmc;
 	
@@ -82,6 +86,8 @@ public class ImmunityProofConfigurationController extends FormBasicController {
     private I18nModule i18nModule;
 	@Autowired	
     private I18nManager i18nManager;
+	@Autowired
+	private ImmunityProofService immunityProofService;
 	
 	public ImmunityProofConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -104,6 +110,11 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		SelectionValues enabledOptions = new SelectionValues(SelectionValues.entry("on", translate("on")));
 		enabledEl = uifactory.addCheckboxesVertical("config.enabled", generalConfig, enabledOptions.keys(), enabledOptions.values(), 1);
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
+		
+		// Delete button
+		deleteAllProofsLink = uifactory.addFormLink("delete.all.proofs", generalConfig, Link.BUTTON);
+		deleteAllProofsLink.setCustomEnabledLinkCSS("btn btn-danger");
+		deleteAllProofsLink.setIconLeftCSS("o_icon o_icon_lg o_icon_clear_all");
 		
 		
 		// Validity config
@@ -193,6 +204,12 @@ public class ImmunityProofConfigurationController extends FormBasicController {
             listenTo(singleKeyTranslatorController);
             listenTo(cmc);
             cmc.activate();
+		} else if (source == deleteAllProofsLink) {
+			confirmDeleteProofController = new ImmunityProofConfirmDeleteAllProofsController(ureq, getWindowControl());
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteProofController.getInitialComponent(), true, translate("delete.all.proofs"), true, true);
+            listenTo(confirmDeleteProofController);
+            listenTo(cmc);
+            cmc.activate();
 		}
 	}
 	
@@ -208,6 +225,16 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		} else if (source == singleKeyTranslatorController) {
             if (event == FormEvent.DONE_EVENT) {
                 loadConfiguration();
+            }
+
+            cleanUp();
+        } else if (source == confirmDeleteProofController) {
+        	if (event == ImmunityProofDeleteEvent.DELETE_AND_NOTIFY) {
+                immunityProofService.deleteAllImmunityProofs(true);
+                showWarning("delete.proof.confirmation");
+            } else if (event == ImmunityProofDeleteEvent.DELETE) {
+            	immunityProofService.deleteAllImmunityProofs(false);
+            	showWarning("delete.proof.confirmation");
             }
 
             cleanUp();
@@ -232,9 +259,11 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 
         removeAsListenerAndDispose(cmc);
         removeAsListenerAndDispose(confirmResetMailController);
+        removeAsListenerAndDispose(confirmDeleteProofController);
 
         cmc = null;
         confirmResetMailController = null;
+        confirmDeleteProofController = null;
 	}
 
 	@Override

@@ -306,7 +306,8 @@ public class ContactTracingRegistrationImpl implements ContactTracingRegistratio
     	this.seatNumber = seatNumber;
     }
     
-    public ImmunityProofLevel getImmunityProofLevel() {
+    @Override
+	public ImmunityProofLevel getImmunityProofLevel() {
 		return immunityProofLevel;
 	}
     
@@ -314,6 +315,7 @@ public class ContactTracingRegistrationImpl implements ContactTracingRegistratio
 		this.immunityProofLevel = immunityProofLevel;
 	}
     
+    @Override
     public Date getImmunityProofDate() {
 		return immunityProofDate;
 	}

@@ -31,17 +31,17 @@ import org.olat.core.util.Util;
 import org.olat.modules.immunityProof.ImmunityProof;
 
 /**
- * Initial date: 13.09.2021<br>
+ * Initial date: 15.09.2021<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ImmunityProofConfirmResetController extends FormBasicController {
+public class ImmunityProofDeleteConfirmController extends FormBasicController {
 	
 	private static final String[] CONFIRMATION_KEYS = new String[]{"on"};
 
     private MultipleSelectionElement confirmationEl;
 
-    public ImmunityProofConfirmResetController(UserRequest ureq, WindowControl wControl) {
+    public ImmunityProofDeleteConfirmController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl, LAYOUT_DEFAULT);
 
         setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
@@ -51,16 +51,17 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        uifactory.addStaticTextElement("warning", null, translate("reminder.mail.reset.warning"), formLayout);
+        uifactory.addStaticTextElement("warning", null, translate("confirm.delete.proof.warning"), formLayout);
 
-        confirmationEl = uifactory.addCheckboxesHorizontal("reminder.mail.reset.confirm", formLayout, CONFIRMATION_KEYS, new String[]{ translate("reminder.mail.reset.confirm.value" )});
+        confirmationEl = uifactory.addCheckboxesHorizontal("confirm.delete.label", formLayout, CONFIRMATION_KEYS, new String[]{ translate("confirm.delete.value" )});
 
-        FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("contact.tracing.reset.buttons", getTranslator());
+        FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
         buttonLayout.setRootForm(mainForm);
         formLayout.add(buttonLayout);
 
+        
+        uifactory.addFormSubmitButton("delete.immunity.proof", buttonLayout);
         uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-        uifactory.addFormSubmitButton("reset", buttonLayout);
     }
 
     @Override
@@ -90,4 +91,5 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
     protected void doDispose() {
 
     }
+
 }

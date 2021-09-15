@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.modules.contacttracing.model.ContactTracingLocationInfo;
 import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
 
 /**
@@ -95,14 +96,14 @@ public interface ContactTracingManager {
      * @param searchParams ContactTracingSearchParams
      * @return List of contact tracing locations
      */
-    public Map<ContactTracingLocation, Long> getLocationsWithRegistrations(ContactTracingSearchParams searchParams);
+    public Map<ContactTracingLocation, ContactTracingLocationInfo> getLocationsWithRegistrations(ContactTracingSearchParams searchParams);
 
     /**
      * Get all contact tracing locations and their registrations count
      *
      * @return A map with all contact tracing locations and their registrations
      */
-    public Map<ContactTracingLocation, Long> getLocationsWithRegistrations();
+    public Map<ContactTracingLocation, ContactTracingLocationInfo> getLocationsWithRegistrations();
 
     /**
      * Delete the given locations

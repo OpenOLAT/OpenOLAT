@@ -55,7 +55,8 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 			return;
 		}
 		
-		Date safeUntil = new Date(inputDate.getTime() + immunityProofModule.getValidity(type) * 24 * 60 * 60 * 1000);
+		long daysToMs = 24l * 60 * 60 * 1000;
+		Date safeUntil = new Date(inputDate.getTime() + immunityProofModule.getValidity(type) * daysToMs);
 		
 		immunityProofDAO.createImmunityProof(identity, safeUntil, sendMail, validated);
 	}
@@ -80,7 +81,7 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 	}
 
 	@Override
-	public void deleteAllImmunityProofs() {
+	public void deleteAllImmunityProofs(boolean notifyUser) {
 		immunityProofDAO.deleteAllImmunityProofs();
 	}
 	

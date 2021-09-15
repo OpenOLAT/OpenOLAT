@@ -45,7 +45,7 @@ public class ContactTracingRegistrationDAO {
     @Autowired
     private DB dbInstance;
 
-    public ContactTracingRegistration create(ContactTracingLocation location, Date startDate, Date deletionDate, ImmunityProofLevel immunityProofLevel) {
+    public ContactTracingRegistration create(ContactTracingLocation location, Date startDate, Date deletionDate, ImmunityProofLevel immunityProofLevel, Date immunityProofSafeDate) {
         ContactTracingRegistrationImpl entry = new ContactTracingRegistrationImpl();
 
         entry.setCreationDate(new Date());
@@ -53,6 +53,7 @@ public class ContactTracingRegistrationDAO {
         entry.setDeletionDate(deletionDate);
         entry.setLocation(location);
         entry.setImmunityProofLevel(immunityProofLevel);
+        entry.setImmunityProofDate(immunityProofSafeDate);
 
         return entry;
     }
@@ -108,6 +109,27 @@ public class ContactTracingRegistrationDAO {
 
         TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
                 .createQuery(queryBuilder.toString(), Long.class);
+        appendParams(query, searchParams);
+        return query.getSingleResult();
+    }
+      
+    public long getRegistrationsWithProofCount(ContactTracingSearchParams searchParams, ImmunityProofLevel level) {
+        QueryBuilder queryBuilder = new QueryBuilder();
+
+        queryBuilder.append("select count(entry) from contactTracingRegistration entry")
+        			.where().append("(immunityProofLevel = :level");
+        
+        if (level.equals(ImmunityProofLevel.none)) {
+        	queryBuilder.append(" or immunityProofLevel is null  or immunityProofLevel = ''");
+        }
+        queryBuilder.append(") ");
+        
+        appendWhere(queryBuilder, searchParams);
+
+        TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+                .createQuery(queryBuilder.toString(), Long.class)
+                .setParameter("level", level);
+        
         appendParams(query, searchParams);
         return query.getSingleResult();
     }

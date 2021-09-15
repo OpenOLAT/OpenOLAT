@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Persistable;
+import org.olat.modules.immunityProof.ImmunityProofModule.ImmunityProofLevel;
 
 /**
  * Initial date: 13.10.20<br>
@@ -102,4 +103,8 @@ public interface ContactTracingRegistration extends Persistable, CreateInfo {
     public String getSeatNumber();
     
     public void setSeatNumber(String seatNumber);
+    
+    public ImmunityProofLevel getImmunityProofLevel();
+    
+    public Date getImmunityProofDate();
 }

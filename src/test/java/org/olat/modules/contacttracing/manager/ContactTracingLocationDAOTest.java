@@ -188,11 +188,11 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterByReference() {
 		String reference = random();
 		ContactTracingLocation location1 = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = sut.createAndPersistLocation("fuzzy " + reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
@@ -209,11 +209,11 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterByTitle() {
 		String title = random();
 		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), title, random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), "fuzzy " + title, random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), title, random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
@@ -230,11 +230,11 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterByBuilding() {
 		String building = random();
 		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), building, random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), "fuzzy " + building, random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), building, random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
@@ -251,11 +251,11 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterByRoom() {
 		String room = random();
 		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), room, random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), "fuzzy " + room, random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), room, random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
@@ -272,11 +272,11 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterBySector() {
 		String sector = random();
 		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), random(), sector, random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), random(), "fuzzy " + sector, random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), random(), sector, random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
@@ -293,11 +293,11 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterByTable() {
 		String table = random();
 		ContactTracingLocation location1 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), table, randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), random(), random(), random(), "fuzzy " + table, randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(random(), random(), random(), random(), random(), table, randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		
@@ -314,11 +314,11 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterByStartDate() {
 		String reference = random();
 		ContactTracingLocation locationEarlier = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationEarlier, DateUtils.addHours(new Date(), -1), new Date(), ImmunityProofLevel.none));
-		registrationDao.persist(registrationDao.create(locationEarlier, DateUtils.addHours(new Date(), -2), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationEarlier, DateUtils.addHours(new Date(), -1), new Date(), ImmunityProofLevel.none, null));
+		registrationDao.persist(registrationDao.create(locationEarlier, DateUtils.addHours(new Date(), -2), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationLater = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationLater, DateUtils.addHours(new Date(), 1), new Date(), ImmunityProofLevel.none));
-		registrationDao.persist(registrationDao.create(locationLater, DateUtils.addHours(new Date(), 2), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationLater, DateUtils.addHours(new Date(), 1), new Date(), ImmunityProofLevel.none, null));
+		registrationDao.persist(registrationDao.create(locationLater, DateUtils.addHours(new Date(), 2), new Date(), ImmunityProofLevel.none, null));
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams params = new ContactTracingSearchParams();
@@ -335,14 +335,14 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterByEndDate() {
 		String reference = random();
 		ContactTracingLocation locationEarlier = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration11 = registrationDao.create(locationEarlier, new Date(), new Date(), ImmunityProofLevel.none);
+		ContactTracingRegistration registration11 = registrationDao.create(locationEarlier, new Date(), new Date(), ImmunityProofLevel.none, null);
 		registration11.setEndDate(DateUtils.addHours(new Date(), -1));
 		registration11 = registrationDao.persist(registration11);
-		ContactTracingRegistration registration12 = registrationDao.create(locationEarlier, new Date(), new Date(), ImmunityProofLevel.none);
+		ContactTracingRegistration registration12 = registrationDao.create(locationEarlier, new Date(), new Date(), ImmunityProofLevel.none, null);
 		registration12.setEndDate(DateUtils.addHours(new Date(), -2));
 		registration12 = registrationDao.persist(registration12);
 		ContactTracingLocation locationLater = sut.createAndPersistLocation(reference, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration21 = registrationDao.create(locationLater, new Date(), new Date(), ImmunityProofLevel.none);
+		ContactTracingRegistration registration21 = registrationDao.create(locationLater, new Date(), new Date(), ImmunityProofLevel.none, null);
 		registration21.setEndDate(DateUtils.addHours(new Date(), 1));
 		registration21 = registrationDao.persist(registration21);
 		dbInstance.commitAndCloseSession();
@@ -361,11 +361,11 @@ public class ContactTracingLocationDAOTest extends OlatTestCase {
 	public void shouldFilterByFullText() {
 		String fulltext = random();
 		ContactTracingLocation location1 = sut.createAndPersistLocation(fulltext, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = sut.createAndPersistLocation(random(), random(), "fuzzy " + fulltext, random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(location2, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationOther = sut.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none));
+		registrationDao.persist(registrationDao.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationNoRegistration = sut.createAndPersistLocation(fulltext, random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		dbInstance.commitAndCloseSession();
 		

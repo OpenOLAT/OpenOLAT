@@ -43,7 +43,7 @@ public interface ImmunityProofService {
 	
 	public void pruneImmunityProofs(Date pruneUntil);
 	
-	public void deleteAllImmunityProofs();
+	public void deleteAllImmunityProofs(boolean notifyUser);
 	
 	public void deleteImmunityProof(ImmunityProof immunityProof);
 	

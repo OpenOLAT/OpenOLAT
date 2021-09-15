@@ -63,7 +63,7 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
 		Date deletionDate = new Date();
 		Date startDate = new Date();
-		ContactTracingRegistration registration = sut.create(location, startDate, deletionDate, ImmunityProofLevel.none);
+		ContactTracingRegistration registration = sut.create(location, startDate, deletionDate, ImmunityProofLevel.none, null);
 		dbInstance.commitAndCloseSession();
 		
 		String city = random();
@@ -119,12 +119,12 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteByLocations() {
 		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration11 = sut.persist(sut.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
-		ContactTracingRegistration registration12 = sut.persist(sut.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		ContactTracingRegistration registration11 = sut.persist(sut.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
+		ContactTracingRegistration registration12 = sut.persist(sut.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration21 = sut.persist(sut.create(location2, new Date(), new Date(), ImmunityProofLevel.none));
+		ContactTracingRegistration registration21 = sut.persist(sut.create(location2, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationNotDeleted = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registrationNotDeleted = sut.persist(sut.create(locationNotDeleted, new Date(), new Date(), ImmunityProofLevel.none));
+		ContactTracingRegistration registrationNotDeleted = sut.persist(sut.create(locationNotDeleted, new Date(), new Date(), ImmunityProofLevel.none, null));
 		dbInstance.commitAndCloseSession();
 		
 		sut.deleteEntries(List.of(location1, location2));
@@ -141,12 +141,12 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldPruneRegistartions() {
 		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration11 = sut.persist(sut.create(location, new Date(), DateUtils.addHours(new Date(), -1), ImmunityProofLevel.none));
-		ContactTracingRegistration registration12 = sut.persist(sut.create(location, new Date(), DateUtils.addHours(new Date(), -2), ImmunityProofLevel.none));
+		ContactTracingRegistration registration11 = sut.persist(sut.create(location, new Date(), DateUtils.addHours(new Date(), -1), ImmunityProofLevel.none, null));
+		ContactTracingRegistration registration12 = sut.persist(sut.create(location, new Date(), DateUtils.addHours(new Date(), -2), ImmunityProofLevel.none, null));
 		ContactTracingLocation location2 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration21 = sut.persist(sut.create(location2, new Date(), DateUtils.addDays(new Date(), -1), ImmunityProofLevel.none));
+		ContactTracingRegistration registration21 = sut.persist(sut.create(location2, new Date(), DateUtils.addDays(new Date(), -1), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationPruned = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registrationNotPruned = sut.persist(sut.create(locationPruned, new Date(), DateUtils.addHours(new Date(), 11), ImmunityProofLevel.none));
+		ContactTracingRegistration registrationNotPruned = sut.persist(sut.create(locationPruned, new Date(), DateUtils.addHours(new Date(), 11), ImmunityProofLevel.none, null));
 		dbInstance.commitAndCloseSession();
 		
 		sut.pruneEntries(new Date());
@@ -163,10 +163,10 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByLocation() {
 		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration11 = sut.persist(sut.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
-		ContactTracingRegistration registration12 = sut.persist(sut.create(location1, new Date(), new Date(), ImmunityProofLevel.none));
+		ContactTracingRegistration registration11 = sut.persist(sut.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
+		ContactTracingRegistration registration12 = sut.persist(sut.create(location1, new Date(), new Date(), ImmunityProofLevel.none, null));
 		ContactTracingLocation locationOther = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registrationOther = sut.persist(sut.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none));
+		ContactTracingRegistration registrationOther = sut.persist(sut.create(locationOther, new Date(), new Date(), ImmunityProofLevel.none, null));
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
@@ -181,9 +181,9 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByStart() {
 		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration11 = sut.persist(sut.create(location, DateUtils.addHours(new Date(), 1), new Date(), ImmunityProofLevel.none));
-		ContactTracingRegistration registration12 = sut.persist(sut.create(location, DateUtils.addHours(new Date(), 2), new Date(), ImmunityProofLevel.none));
-		ContactTracingRegistration registrationOther = sut.persist(sut.create(location, DateUtils.addHours(new Date(), -1), new Date(), ImmunityProofLevel.none));
+		ContactTracingRegistration registration11 = sut.persist(sut.create(location, DateUtils.addHours(new Date(), 1), new Date(), ImmunityProofLevel.none, null));
+		ContactTracingRegistration registration12 = sut.persist(sut.create(location, DateUtils.addHours(new Date(), 2), new Date(), ImmunityProofLevel.none, null));
+		ContactTracingRegistration registrationOther = sut.persist(sut.create(location, DateUtils.addHours(new Date(), -1), new Date(), ImmunityProofLevel.none, null));
 		dbInstance.commitAndCloseSession();
 		
 		ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
@@ -199,13 +199,13 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByEnd() {
 		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		ContactTracingRegistration registration11 = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none);
+		ContactTracingRegistration registration11 = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none, null);
 		registration11.setEndDate(DateUtils.addHours(new Date(), -1));
 		registration11 = sut.persist(registration11);
-		ContactTracingRegistration registration12 = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none);
+		ContactTracingRegistration registration12 = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none, null);
 		registration12.setEndDate(DateUtils.addHours(new Date(), -2));
 		registration12 = sut.persist(registration12);
-		ContactTracingRegistration registrationOther = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none);
+		ContactTracingRegistration registrationOther = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none, null);
 		registrationOther.setEndDate(DateUtils.addHours(new Date(), 1));
 		registrationOther = sut.persist(registrationOther);
 		dbInstance.commitAndCloseSession();
@@ -223,7 +223,7 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldTestIfAnyRegistrationAvailable() {
 		ContactTracingLocation location1 = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), randomBoolean(), random(), random(), false);
-		sut.persist(sut.create(location1, new Date(), DateUtils.addHours(new Date(), -1), ImmunityProofLevel.none));
+		sut.persist(sut.create(location1, new Date(), DateUtils.addHours(new Date(), -1), ImmunityProofLevel.none, null));
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(sut.anyRegistrationAvailable()).isTrue();
@@ -232,12 +232,12 @@ public class ContactTracingRegistrationDAOTest extends OlatTestCase {
 	public void shouldAddSeatNumber() {
 		ContactTracingLocation location = locationDao.createAndPersistLocation(random(), random(), random(), random(), random(), random(), true, random(), random(), false);
 		
-		ContactTracingRegistration registration1 = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none);
+		ContactTracingRegistration registration1 = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none, null);
 		String registration1SeatNumber = "24";
 		registration1.setSeatNumber(registration1SeatNumber);
 		registration1 = sut.persist(registration1);
 		
-		ContactTracingRegistration registration2 = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none);
+		ContactTracingRegistration registration2 = sut.create(location, new Date(), new Date(), ImmunityProofLevel.none, null);
 		registration2 = sut.persist(registration2);
 		
 		ContactTracingSearchParams searchParams = new ContactTracingSearchParams();
