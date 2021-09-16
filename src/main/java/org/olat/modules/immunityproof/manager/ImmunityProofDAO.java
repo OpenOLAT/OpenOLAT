@@ -28,8 +28,8 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.modules.immunityproof.model.ImmunityProofImpl;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.model.ImmunityProofImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -153,11 +153,22 @@ public class ImmunityProofDAO {
 	public List<ImmunityProof> getAllCertificates() {
 		StringBuilder sb = new StringBuilder(128);
 		
-		sb.append("select from immunityProof");
+		sb.append("select proof from immunityProof as proof");
 		
 		TypedQuery<ImmunityProof> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ImmunityProof.class);
 		
 		return query.getResultList();
+	}
+	
+	public long getCount() {
+		StringBuilder sb = new StringBuilder(128);
+		
+		sb.append("select count(proof) from immunityProof as proof");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		
+		return query.getSingleResult();
 	}
 }

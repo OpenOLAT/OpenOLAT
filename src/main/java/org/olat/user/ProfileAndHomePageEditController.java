@@ -47,9 +47,9 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.SupportsAfterLoginInterceptor;
-import org.olat.modules.immunityproof.ui.ImmunityProofUserProfileController;
 import org.olat.modules.immunityproof.ImmunityProof;
 import org.olat.modules.immunityproof.ImmunityProofModule;
+import org.olat.modules.immunityproof.ui.ImmunityProofCardController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,7 +66,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 	private final SegmentViewComponent segmentView;
 	private ProfileFormController profileFormController;
 	private HomePageSettingsController homePageController;
-	private ImmunityProofUserProfileController immunityProofUserProfileController;
+	private ImmunityProofCardController immunityProofUserProfileController;
 
 	private Identity identityToModify;
 	private boolean isAdministrativeUser;
@@ -182,7 +182,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 				doOpenProfile(ureq);
 			} else if("HomePage".equalsIgnoreCase(type)) {
 				doOpenHomePageSettings(ureq);
-			} else if("ImmunityProof".equalsIgnoreCase(type)) {
+			} else if("CovidCertificate".equalsIgnoreCase(type)) {
 				doOpenImmunityProof(ureq);
 			}
 		}
@@ -219,11 +219,11 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		return homePageController;
 	}
 	
-	private ImmunityProofUserProfileController doOpenImmunityProof(UserRequest ureq) {
+	private ImmunityProofCardController doOpenImmunityProof(UserRequest ureq) {
 		// Always create new controller
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("ImmunityProof", 0l);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CovidCertificate", 0l);
         WindowControl bwControl = addToHistory(ureq, ores, null);
-		immunityProofUserProfileController = new ImmunityProofUserProfileController(ureq, bwControl);
+		immunityProofUserProfileController = new ImmunityProofCardController(ureq, bwControl, getIdentity(), true);
 		listenTo(immunityProofUserProfileController);
 		
 		myContent.put("segmentCmp", immunityProofUserProfileController.getInitialComponent());

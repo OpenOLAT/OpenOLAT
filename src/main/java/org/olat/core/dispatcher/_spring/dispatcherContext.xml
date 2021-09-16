@@ -71,7 +71,7 @@
 				<entry key="/trace/">
 					<ref bean="contacttracingbean" />
 				</entry>
-				<entry key="/proof">
+				<entry key="/covid">
 					<ref bean="immunityproofbean" />
 				</entry>
 				<entry key="/podcast/">

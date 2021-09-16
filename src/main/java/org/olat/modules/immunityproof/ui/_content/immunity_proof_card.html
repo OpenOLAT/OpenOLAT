@@ -1,4 +1,4 @@
-<div class="o_immunity_proof_wrapper">
+<div class="o_immunity_proof_wrapper $status">
 	<h2>$r.translate("proof.heading")</h2>
 	
 	<div class="row">
@@ -6,10 +6,8 @@
 			<h7>$r.translate("proof.for")</h7>
 			<p>$user</p>
 			
-			#if($r.isNotNull($birthdate))
-			<h7>$r.translate("proof.birthdate")</h7>
-			<p>$birthdate</p>
-			#end
+			<h7>$r.translate("form.name.nickName")</h7>
+			<p>$nickName</p>
 			
 			#if($r.isNotNull($validUntil))
 			<h7>$r.translate("proof.valid.until")</h7>
@@ -20,14 +18,14 @@
 		<div class="col-xs-12 col-sm-6">
 			<div class="o_immunity_proof_state_box o_immunity_proof_status $status">
 	   			<div class="o_immunity_proof_watermark_wrapper">
-					<div class="o_immunity_proof_watermark">3G</div>
+					<div class="o_immunity_proof_watermark"></div>
 				</div>
 				
 				<div class="o_immunity_proof_state_icon">
 					<i class="o_icon o_icon_lg o_icon_immunity_proof_$status"> </i>
 				</div>
 				
-				<div class="o_immunity_proof_counter"id="o_immunity_proof_counter"> </div>
+				<div class="o_immunity_proof_counter $status"id="o_immunity_proof_counter"> </div>
 			</div>
 		</div>
 	</div>
@@ -41,14 +39,22 @@
 <br>
 <br>
 
+$r.render("close.card")
+
 <script> 
 /* <![CDATA[ */
 updateTime();
-setInterval(updateTime, 1000);
+const interval = setInterval(updateTime, 1000);
 
 function updateTime() {
 	const time = new Date().toLocaleTimeString("$locale");
-	document.getElementById('o_immunity_proof_counter').innerHTML = time;
+	const counterElement = document.getElementById('o_immunity_proof_counter');
+	
+	if (counterElement) {
+		counterElement.innerHTML = time;
+	} else {
+		clearInterval(interval);
+	}
 }
 /* ]]> */
 </script> 

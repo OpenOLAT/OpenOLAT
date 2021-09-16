@@ -27,8 +27,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.olat.modules.immunityproof.ui.event.ImmunityProofDeleteEvent;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ui.event.ImmunityProofDeleteEvent;
 
 /**
  * Initial date: 15.09.2021<br>
@@ -40,18 +40,20 @@ public class ImmunityProofConfirmDeleteAllProofsController extends FormBasicCont
 	private static final String[] CONFIRMATION_KEYS = new String[]{"confirm", "notify"};
 
     private MultipleSelectionElement confirmationEl;
+    private long proofCount;
 
-    public ImmunityProofConfirmDeleteAllProofsController(UserRequest ureq, WindowControl wControl) {
+    public ImmunityProofConfirmDeleteAllProofsController(UserRequest ureq, WindowControl wControl, long proofCount) {
         super(ureq, wControl, LAYOUT_DEFAULT);
 
         setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
+        this.proofCount = proofCount;
 
         initForm(ureq);
     }
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-    	setFormWarning("delete.proof.warning");
+    	setFormWarning("delete.proof.warning", new String[] {String.valueOf(proofCount)});
 
         String[] values = new String[]{ translate("delete.proof.confirm.value" ), translate("delete.proofs.and.notify")};
         confirmationEl = uifactory.addCheckboxesHorizontal("delete.proof.confirm", formLayout, CONFIRMATION_KEYS, values);
@@ -61,7 +63,7 @@ public class ImmunityProofConfirmDeleteAllProofsController extends FormBasicCont
         formLayout.add(buttonLayout);
 
         uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-        uifactory.addFormSubmitButton("delete.all.proofs", buttonLayout);
+        uifactory.addFormSubmitButton("delete.all.proofs", "delete.all.proofs", "delete.all.proofs", new String[] {String.valueOf(proofCount)}, buttonLayout);
     }
 
     @Override

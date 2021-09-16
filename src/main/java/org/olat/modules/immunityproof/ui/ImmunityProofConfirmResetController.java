@@ -40,22 +40,24 @@ public class ImmunityProofConfirmResetController extends FormBasicController {
 	private static final String[] CONFIRMATION_KEYS = new String[]{"on"};
 
     private MultipleSelectionElement confirmationEl;
+    private String resetKey;
 
-    public ImmunityProofConfirmResetController(UserRequest ureq, WindowControl wControl) {
+    public ImmunityProofConfirmResetController(UserRequest ureq, WindowControl wControl, String resetKey) {
         super(ureq, wControl, LAYOUT_DEFAULT);
 
         setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
+        this.resetKey = resetKey;
 
         initForm(ureq);
     }
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        uifactory.addStaticTextElement("warning", null, translate("reminder.mail.reset.warning"), formLayout);
+        uifactory.addStaticTextElement("warning", null, translate("mail.reset.warning", new String[] {translate(resetKey)}), formLayout);
 
-        confirmationEl = uifactory.addCheckboxesHorizontal("reminder.mail.reset.confirm", formLayout, CONFIRMATION_KEYS, new String[]{ translate("reminder.mail.reset.confirm.value" )});
+        confirmationEl = uifactory.addCheckboxesHorizontal("mail.reset.confirm", formLayout, CONFIRMATION_KEYS, new String[]{ translate("mail.reset.confirm.value" )});
 
-        FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("contact.tracing.reset.buttons", getTranslator());
+        FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("reset.buttons", getTranslator());
         buttonLayout.setRootForm(mainForm);
         formLayout.add(buttonLayout);
 

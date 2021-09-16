@@ -43,8 +43,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.immunityproof.ImmunityProof;
 import org.olat.modules.immunityproof.ImmunityProofModule;
-import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofType;
+import org.olat.modules.immunityproof.ImmunityProofService;
+import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
 import org.olat.user.DisplayPortraitController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,6 +66,7 @@ public class ImmunityProofCreateController extends FormBasicController {
 	private SelectionValue recovery;
 	private SelectionValue testPCR;
 	private SelectionValue testAntigen;
+	private SelectionValue medicalCertificate;
 	
 	private FormLayoutContainer userInfoLayout;
 	
@@ -80,6 +82,9 @@ public class ImmunityProofCreateController extends FormBasicController {
 	
 	private FormLayoutContainer testAntigenMethod;
 	private DateChooser testAntigenDateChooser;
+	
+	private FormLayoutContainer medicalCertificateMethod;
+	private DateChooser medicalCertificateDateChooser;
 	
 	private MultipleSelectionElement confirmReminderEl;
 	private MultipleSelectionElement confirmTruthEl;
@@ -125,7 +130,21 @@ public class ImmunityProofCreateController extends FormBasicController {
 		recovery = new SelectionValue("recovery", translate("recovery"));
 		testPCR = new SelectionValue("test.pcr", translate("test.pcr"));
 		testAntigen = new SelectionValue("test.antigen", translate("test.antigen"));
-		SelectionValues methods = new SelectionValues(vaccination, recovery, testPCR, testAntigen);
+		medicalCertificate = new SelectionValue("medical.certificate", translate("medical.certificate"));
+		
+		SelectionValues methods = new SelectionValues(vaccination, recovery);
+		
+		if (immunityProofModule.getValidityPCR() > 0) {
+			methods.add(testPCR);
+		}
+		
+		if (immunityProofModule.getValidityAntigen() > 0) {
+			methods.add(testAntigen);
+		}
+		
+		if (usedByCovidCommissioner) {
+			methods.add(medicalCertificate);
+		}
 		
 		methodLayout = FormLayoutContainer.createDefaultFormLayout("methodLayout", getTranslator());
 		methodLayout.setRootForm(mainForm);
@@ -161,6 +180,7 @@ public class ImmunityProofCreateController extends FormBasicController {
 		formLayout.add(testPCRMethod);
 		
 		testPCRDateChooser = uifactory.addDateChooser("test.pcr.date", null, testPCRMethod);
+		testPCRDateChooser.setDateChooserTimeEnabled(true);
 		
 		
 		testAntigenMethod = FormLayoutContainer.createDefaultFormLayout("testAntigenMethod", getTranslator());
@@ -168,6 +188,14 @@ public class ImmunityProofCreateController extends FormBasicController {
 		formLayout.add(testAntigenMethod);
 		
 		testAntigenDateChooser = uifactory.addDateChooser("test.antigen.date", null, testAntigenMethod);
+		testAntigenDateChooser.setDateChooserTimeEnabled(true);
+		
+		
+		medicalCertificateMethod = FormLayoutContainer.createDefaultFormLayout("medicalCertificate", getTranslator());
+		medicalCertificateMethod.setRootForm(mainForm);
+		formLayout.add(medicalCertificateMethod);
+		
+		medicalCertificateDateChooser = uifactory.addDateChooser("medical.certificate.date", null, medicalCertificateMethod);
 		
 		
 		FormLayoutContainer confirmLayout = FormLayoutContainer.createDefaultFormLayout("truthLayout", getTranslator());
@@ -230,13 +258,15 @@ public class ImmunityProofCreateController extends FormBasicController {
 				confirmVaccinationEl.setErrorKey("vaccination.error.confirm", null);
 			}
 			
-			allOk &= checkDateElement(vaccinationDateChooser);
+			allOk &= checkDateElement(vaccinationDateChooser, true);
 		} else if (immunityMethodEl.getSelectedKey().equals(recovery.getKey())) {
-			allOk &= checkDateElement(recoveryDateChooser);
+			allOk &= checkDateElement(recoveryDateChooser, true);
 		} else if (immunityMethodEl.getSelectedKey().equals(testPCR.getKey())) {
-			allOk &= checkDateElement(testPCRDateChooser);
+			allOk &= checkDateElement(testPCRDateChooser, true);
 		} else if (immunityMethodEl.getSelectedKey().equals(testAntigen.getKey())) {
-			allOk &= checkDateElement(testAntigenDateChooser);
+			allOk &= checkDateElement(testAntigenDateChooser, true);
+		} else if (immunityMethodEl.getSelectedKey().equals(medicalCertificate.getKey())) {
+			allOk &= checkDateElement(medicalCertificateDateChooser, false);
 		}
 		
 		confirmTruthEl.clearError();
@@ -281,15 +311,20 @@ public class ImmunityProofCreateController extends FormBasicController {
 		return allOk;
 	}
 	
-	private boolean checkDateElement(DateChooser dateChooser) {
+	private boolean checkDateElement(DateChooser dateChooser, boolean dateInPast) {
 		boolean allOk = true;
 		
 		dateChooser.clearError();
 		Date date = dateChooser.getDate();
 		
-		if (date == null || date.after(new Date())) {
-			allOk &= false;
-			dateChooser.setErrorKey("date.mandatory", null);
+		if (date != null) {
+			if (dateInPast && date.after(new Date())) {
+				allOk &= false;
+				dateChooser.setErrorKey("date.mandatory.past", null);
+			} else if (!dateInPast && date.before(new Date())) {
+				allOk &= false;
+				dateChooser.setErrorKey("date.mandatory.future", null);
+			}
 		}
 		
 		return allOk;
@@ -312,28 +347,16 @@ public class ImmunityProofCreateController extends FormBasicController {
 		} else if (immunityMethodEl.getSelectedKey().equals(testAntigen.getKey())) {
 			safeUntilDate = testAntigenDateChooser.getDate();
 			type = ImmunityProofType.antigenTest;
+		} else if (immunityMethodEl.getSelectedKey().equals(medicalCertificate.getKey())) {
+			safeUntilDate = medicalCertificateDateChooser.getDate();
+			type = ImmunityProofType.medicalCertificate;
 		}
 		
 		boolean sendMail = confirmReminderEl.isAtLeastSelected(1);
 		
 		immunityProofService.createImmunityProof(editedIdentity, type, safeUntilDate, sendMail, usedByCovidCommissioner, true);
 		
-		if (usedByCovidCommissioner) {
-			String name = "";
-			User user = editedIdentity.getUser();
-			
-			if (StringHelper.containsNonWhitespace(user.getFirstName())) {
-				name += user.getFirstName() + " ";
-			} 
-			
-			if (StringHelper.containsNonWhitespace(user.getLastName())) {
-				name += user.getLastName();
-			}
-			
-			getWindowControl().setInfo(translate("proof.added.heading"), translate("proof.added.for", new String[] {name, StringHelper.formatLocaleDate(safeUntilDate.getTime(), getLocale())}));
-		}
-		
-		fireEvent(ureq, Event.DONE_EVENT);
+		fireEvent(ureq, new ImmunityProofAddedEvent(editedIdentity));
 	}
 	
 	@Override
@@ -366,6 +389,7 @@ public class ImmunityProofCreateController extends FormBasicController {
 		recoveryMethod.setVisible(false);
 		testPCRMethod.setVisible(false);
 		testAntigenMethod.setVisible(false);
+		medicalCertificateMethod.setVisible(false);
 		
 		if (immunityMethodEl.getSelectedKey().equals(vaccination.getKey())) {
 			vaccinationMethod.setVisible(true);
@@ -375,6 +399,8 @@ public class ImmunityProofCreateController extends FormBasicController {
 			testPCRMethod.setVisible(true);
 		} else if (immunityMethodEl.getSelectedKey().equals(testAntigen.getKey())) {
 			testAntigenMethod.setVisible(true);
+		} else if (immunityMethodEl.getSelectedKey().equals(medicalCertificate.getKey())) {
+			medicalCertificateMethod.setVisible(true);
 		}
 	}
 	

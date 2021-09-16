@@ -25,9 +25,9 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.modules.immunityproof.ImmunityProof;
 import org.olat.modules.immunityproof.ImmunityProofModule;
-import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofType;
+import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -118,6 +118,11 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 		}
 		
 		return level;
+	}
+	
+	@Override
+	public long getImmunityProofCount() {
+		return immunityProofDAO.getCount();
 	}
 
 }
