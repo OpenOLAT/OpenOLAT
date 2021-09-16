@@ -120,7 +120,7 @@ public class ImmunityProofJob extends JobWithDB {
     
     private boolean sendMail(Translator translator, MailManager mailManager, User user, Locale userLocale, String reminderPeriod) {
     	String name = "";
-		String url = Settings.createServerURI() + "/covid";
+		String url = Settings.getServerContextPathURI() + "/covid";
 		
 		if (StringHelper.containsNonWhitespace(user.getFirstName())) {
 			name += user.getFirstName();

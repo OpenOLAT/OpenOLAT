@@ -442,7 +442,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 			Translator userTranslator = Util.createPackageTranslator(ImmunityProofModule.class, userLocale);
 			
 			String name = "";
-			String url = Settings.createServerURI() + "/covid";
+			String url = Settings.getServerContextPathURI() + "/covid";
 			
 			if (StringHelper.containsNonWhitespace(user.getFirstName())) {
 				name += user.getFirstName();

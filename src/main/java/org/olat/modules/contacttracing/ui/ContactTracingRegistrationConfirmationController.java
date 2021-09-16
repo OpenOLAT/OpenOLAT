@@ -34,8 +34,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
+import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 21.10.20<br>
@@ -48,10 +52,15 @@ public class ContactTracingRegistrationConfirmationController extends FormBasicC
     private final ContactTracingRegistration registration;
 
     private FormLink closeLink;
+    
+    @Autowired
+    private ImmunityProofModule immunityProofModule;
 
     public ContactTracingRegistrationConfirmationController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location, ContactTracingRegistration registration) {
         super(ureq, wControl, "contact_tracing_registration_confirmation");
 
+        setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
+        
         this.location = location;
         this.registration = registration;
 
@@ -95,6 +104,13 @@ public class ContactTracingRegistrationConfirmationController extends FormBasicC
 
         // Icon
         container.contextPut("confirmationIcon", "<i class='o_icon o_icon_check'></i>");
+        
+        // Immunity proof
+        container.contextPut("certificateActive", immunityProofModule.isEnabled() && registration.getImmunityProofLevel() != null);
+        if (immunityProofModule.isEnabled() && registration.getImmunityProofLevel() != null) {
+	        container.contextPut("certificateState", registration.getImmunityProofLevel());
+	        container.contextPut("certificateStateText", translate("immunity.proof." + registration.getImmunityProofLevel().toString()));
+        }
     }
 
     @Override
