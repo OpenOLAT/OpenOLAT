@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -39,24 +40,27 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImmunityProofModule extends AbstractSpringModule implements ConfigOnOff {
 	
-	public static final String USER_PROPERTY_HANDLER = 				ImmunityProofModule.class.getCanonicalName();
-	public static final String IMMUNITY_PROOF_COMMISSIONER_ROLE =	"Immunity_Commissioner";
-	public static final String REMINDER_MAIL_TRANSLATION_KEY = 		"immunity.proof.reminder.mail.body";
+	public static final String USER_PROPERTY_HANDLER = 					ImmunityProofModule.class.getCanonicalName();
+	public static final String IMMUNITY_PROOF_COMMISSIONER_ROLE =		"Immunity_Commissioner";
+	public static final String REMINDER_MAIL_TRANSLATION_KEY = 			"immunity.proof.reminder.mail.body";
+	public static final String PROOF_DELETED_TRANSLATION_KEY = 			"immunity.proof.deleted.mail.body";
+	public static final String COMMISSIONER_ADDED_TRANSLATION_KEY = 	"immunity.proof.commissioner.added.mail.body";
+	public static final String COMMISSIONER_REMOVED_TRANSLATION_KEY =	"immunity.proof.commissioner.removed.mail.body";
 	
-	private static final String PROP_ENABLED = 						"immunity.proof.enabled";
+	private static final String PROP_ENABLED = 							"immunity.proof.enabled";
 	
-	private static final String PROP_VALIDITY_VACCINATION = 		"immunity.proof.validity.vaccination";
-	private static final String PROP_VALIDITY_RECOVERY = 			"immunity.proof.validity.recovery";
-	private static final String PROP_VALIDITY_TEST_PCR = 			"immunity.proof.validity.test.pcr";
-	private static final String PROP_VALIDITY_TEST_ANTIGEN = 		"immunity.proof.validity.test.antigen";
+	private static final String PROP_VALIDITY_VACCINATION = 			"immunity.proof.validity.vaccination";
+	private static final String PROP_VALIDITY_RECOVERY = 				"immunity.proof.validity.recovery";
+	private static final String PROP_VALIDITY_TEST_PCR = 				"immunity.proof.validity.test.pcr";
+	private static final String PROP_VALIDITY_TEST_ANTIGEN = 			"immunity.proof.validity.test.antigen";
 	
-	private static final String PROP_VALID_VACCINES = 				"immunity.proof.vaccines";
+	private static final String PROP_VALID_VACCINES = 					"immunity.proof.vaccines";
 	
-	private static final String PROP_REMINDER_BEFORE_EXPIRATION  =	"immunity.proof.reminder.before.expiration";
+	private static final String PROP_REMINDER_BEFORE_EXPIRATION  =		"immunity.proof.reminder.before.expiration";
 	
-	private static final String PROP_COMMISSIONERS_GROUP_KEY = 		"immunity.proof.commissioners.group.key";
+	private static final String PROP_COMMISSIONERS_GROUP_KEY = 			"immunity.proof.commissioners.group.key";
 	
-	private static final String PROP_QR_ENTRANCE_TEXT = 			"immunity.proof.qr.entrance.text";
+	private static final String PROP_QR_ENTRANCE_TEXT = 				"immunity.proof.qr.entrance.text";
 	
 	@Value("${immunity.proof.enabled}")
 	private boolean enabled;
@@ -88,7 +92,10 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	
 	@Override
 	public void init() {
-		initProperties();		
+		initProperties();
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("CovidCertificates",
+				new ImmunityProofContextEntryCreator(this));
 	}
 	
 	@Override
@@ -228,6 +235,8 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 			return getValidityPCR();
 		case antigenTest:
 			return getValidityAntigen();
+		case medicalCertificate:
+			return 0;
 		}
 		
 		return 0;
@@ -237,7 +246,8 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		vaccination, 
 		recovery, 
 		pcrTest,
-		antigenTest
+		antigenTest,
+		medicalCertificate
 	}
 	
 	public enum ImmunityProofLevel {

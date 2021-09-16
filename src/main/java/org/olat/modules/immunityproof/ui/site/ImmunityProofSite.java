@@ -36,8 +36,8 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.immunityproof.ui.ImmunityProofCommissionerController;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ui.ImmunityProofCommissionerController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -47,7 +47,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class ImmunityProofSite extends AbstractSiteInstance {
 
-	private static final OLATResourceable immunityProofOres = OresHelper.createOLATResourceableInstance(ImmunityProofSite.class, 0l);
+	private static final OLATResourceable immunityProofOres = OresHelper.createOLATResourceableInstance("CovidCertificates", 0l);
 	private static final String immunityProofPath = OresHelper.toBusinessPath(immunityProofOres);
 	
 	private NavElement origNavElem;
@@ -58,7 +58,7 @@ public class ImmunityProofSite extends AbstractSiteInstance {
 		
 		Translator trans = Util.createPackageTranslator(ImmunityProof.class, locale);
 		
-		origNavElem = new DefaultNavElement(immunityProofPath, trans.translate("topnav.immunity.proof"), trans.translate("topnav.immunity.proof.alt"), "o_site_immunity_proof");
+		origNavElem = new DefaultNavElement(immunityProofPath, trans.translate("topnav.immunity.proof"), trans.translate("topnav.immunity.proof"), "o_site_immunity_proof");
 		curNavElem = origNavElem;
 	}
 
@@ -74,10 +74,10 @@ public class ImmunityProofSite extends AbstractSiteInstance {
 		return new ImmunityProofCommissionerController(ureq, bwControl);
 	}
 	
-	@Override
+	/*@Override
 	public boolean isKeepState() {
 		return true;
-	}
+	}*/
 	
 	@Override
 	public void reset() {

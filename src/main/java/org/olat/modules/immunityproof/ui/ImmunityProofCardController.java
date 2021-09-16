@@ -32,14 +32,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.immunityproof.ImmunityProof;
-import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofService;
+import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,12 +48,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ImmunityProofUserProfileController extends FormBasicController {
+public class ImmunityProofCardController extends FormBasicController {
 
 	private ImmunityProof immunityProof;
 	
 	private FormLink addImmunityProofButton;
 	private FormLink deleteImmunityProofButton;
+	
+	private FormLink closeButton;
+	
+	boolean usedInUserProfile;
+	private Identity identity;
 	
 	private CloseableModalController cmc;
 	private ImmunityProofCreateController immunityProofCreateController;
@@ -60,11 +66,17 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 	
 	@Autowired
 	private ImmunityProofService immunityProofService;
+	@Autowired
+	private UserManager userManager;
 	
-	public ImmunityProofUserProfileController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "immunity_proof_user_profile");
+	public ImmunityProofCardController(UserRequest ureq, WindowControl wControl, Identity identity, boolean usedInUserProfile) {
+		super(ureq, wControl, "immunity_proof_card");
 		
 		setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
+		this.usedInUserProfile = usedInUserProfile;
+		this.identity = identity;
 		
 		initForm(ureq);
 		loadData();
@@ -74,9 +86,12 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		deleteImmunityProofButton = uifactory.addFormLink("delete.immunity.proof", formLayout, Link.BUTTON);
 		deleteImmunityProofButton.setIconLeftCSS("o_icon o_icon_lg o_icon_clear_all");
+		
 		addImmunityProofButton = uifactory.addFormLink("add.immunity.proof", formLayout, Link.BUTTON);
 		addImmunityProofButton.setIconLeftCSS("o_icon o_icon_lg o_icon_add");
 		addImmunityProofButton.setPrimary(true);
+		
+		closeButton = uifactory.addFormLink("close.card", formLayout, Link.BUTTON);
 	}
 	
 	@Override
@@ -85,13 +100,15 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 			doAskForRemoval(ureq);
 		} else if (addImmunityProofButton == source) {
 			doAddImmunityProof(ureq);
+		} else if (source == closeButton) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
 		}
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == immunityProofCreateController) {
-			if (event.equals(Event.DONE_EVENT)) {
+			if (event instanceof ImmunityProofAddedEvent) {
 				flc.setDirty(true);
 				loadData();
 			}
@@ -99,15 +116,13 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 			cleanUp();
 		} if (source == deleteConfirmController) {
 			if (event.equals(Event.DONE_EVENT)) {
-				immunityProofService.deleteImmunityProof(getIdentity());
+				immunityProofService.deleteImmunityProof(identity);
 				flc.setDirty(true);
 				loadData();
 			}
 			
 			cleanUp();
 		} else if (source == cmc) {
-			
-			
 			cleanUp();
 		}
 	}
@@ -135,7 +150,7 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 	}
 	
 	private void doAddImmunityProof(UserRequest ureq) {
-		immunityProofCreateController = new ImmunityProofCreateController(ureq, getWindowControl(), getIdentity(), false);
+		immunityProofCreateController = new ImmunityProofCreateController(ureq, getWindowControl(), identity, false);
 		listenTo(immunityProofCreateController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), immunityProofCreateController.getInitialComponent(), true, translate("add.immunity.proof"));
@@ -155,7 +170,7 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 	private void loadData() {
 		reset();
 		
-		this.immunityProof = immunityProofService.getImmunityProof(getIdentity());
+		this.immunityProof = immunityProofService.getImmunityProof(identity);
 		ImmunityProofLevel status = ImmunityProofLevel.none;
 		String validUntil = null;
 		
@@ -171,21 +186,19 @@ public class ImmunityProofUserProfileController extends FormBasicController {
 			deleteImmunityProofButton.setVisible(false);
 		}
 		
-		User user = getIdentity().getUser();
+		User user = identity.getUser();
 		flc.contextPut("user", user.getFirstName() + " " + user.getLastName());
+		flc.contextPut("nickName", user.getNickName());
 		flc.contextPut("locale", getLocale().toLanguageTag());
 		flc.contextPut("status", status);
 		flc.contextPut("validUntil", validUntil);
-		
-		String birthDate = user.getProperty(UserConstants.BIRTHDAY, getLocale());
-		if (StringHelper.containsNonWhitespace(birthDate)) {
-			flc.contextPut("birthdate", birthDate);
-		}
 	}
 	
 	private void reset() {		
-		addImmunityProofButton.setVisible(true);
-		deleteImmunityProofButton.setVisible(true);
+		closeButton.setVisible(!usedInUserProfile);
+		
+		addImmunityProofButton.setVisible(usedInUserProfile);
+		deleteImmunityProofButton.setVisible(usedInUserProfile);
 	}
 
 	

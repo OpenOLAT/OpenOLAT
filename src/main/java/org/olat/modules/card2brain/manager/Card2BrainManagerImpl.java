@@ -69,15 +69,21 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 
 		String url = String.format(card2brainModule.getPeekViewUrl(), alias);
 
-		HttpGet request = new HttpGet(url);
+		HttpGet request;
+		try {
+			request = new HttpGet(url);
+		} catch (Exception e) {
+			log.warn("card2brain alias with illegal characters: {}", url);
+			return false;
+		}
 		try(CloseableHttpClient httpclient = httpClientService.createHttpClient();
 				CloseableHttpResponse response = httpclient.execute(request);) {
 			setOfFlashcardExists = isSetOfFlashcardExisting(response);
 		} catch(Exception e) {
-			log.error("", e);
+			log.warn("", e);
 		}
-
-		log.info(new StringBuilder("Check card2brain set of flaschcards (").append(url).append("): ").append(setOfFlashcardExists).toString());
+		
+		log.debug("Check card2brain set of flaschcards ({}): {}", url, setOfFlashcardExists);
 		return setOfFlashcardExists;
 	}
 

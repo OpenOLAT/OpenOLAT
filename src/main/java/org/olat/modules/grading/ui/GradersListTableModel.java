@@ -51,8 +51,11 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<GraderRow> rows = new GradersListTableSortDelegate(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 
 	@Override
@@ -120,7 +123,7 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != tools;
 		}
 
 		@Override

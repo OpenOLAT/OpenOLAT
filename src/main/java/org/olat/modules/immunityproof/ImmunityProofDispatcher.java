@@ -46,7 +46,7 @@ public class ImmunityProofDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(ImmunityProofDispatcher.class);
 
-	private static final String IMMUNITY_PROOF_PATH = "proof";
+	private static final String IMMUNITY_PROOF_PATH = "covid";
 
 	public static String getImmunityProofUrl() {
 		return new StringBuilder()
@@ -82,17 +82,24 @@ public class ImmunityProofDispatcher implements Dispatcher {
 		}
 
 		if (!ureq.getUserSession().isAuthenticated()) {
-			// Go to default screen
-			DispatcherModule.redirectToDefaultDispatcher(response);
+			// Go to login screen and then to the user profile
+			String redirectURL = new StringBuilder()
+					.append(Settings.getServerContextPathURI())
+					.append("/url")
+					.append("/HomeSite").append("/0")
+					.append("/profil").append("/0")
+					.append("/CovidCertificate").append("/0")
+					.toString();
+			DispatcherModule.redirectTo(response, redirectURL);
 		} else if(ureq.getUserSession().isAuthenticated()) {
-			// already authenticated
+			// Go to the user profile
 			String redirectURL = new StringBuilder()
 					.append(Settings.getServerContextPathURI())
 					.append("/auth")
 					.append("/HomeSite").append("/")
 					.append(ureq.getUserSession().getIdentity().getKey())
 					.append("/profil").append("/0")
-					.append("/ImmunityProof").append("/0")
+					.append("/CovidCertificate").append("/0")
 					.toString();
 			DispatcherModule.redirectTo(response, redirectURL);
 		} 

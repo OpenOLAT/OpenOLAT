@@ -57,10 +57,11 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
 
+	private final boolean defaultMembershipMandatory;
+	private final RepositoryEntryStatusEnum[] defaultEntryStatus;
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
 	
-
 	private final ACService acService;
 	private final AccessControlModule acModule;
 	private final RepositoryService repositoryService;
@@ -72,6 +73,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			RepositoryEntryDataSourceUIFactory uifactory) {
 		this.uifactory = uifactory;
 		this.searchParams = searchParams;
+		
+		defaultMembershipMandatory = searchParams.isMembershipMandatory();
+		defaultEntryStatus = searchParams.getEntryStatus();
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
@@ -151,10 +155,10 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private void resetFilters() {
 		searchParams.setIdRefsAndTitle(null);
 		searchParams.setMarked(null);
-		searchParams.setMembershipMandatory(false);
+		searchParams.setMembershipMandatory(defaultMembershipMandatory);
 		searchParams.setFilters(null);
 		searchParams.setEducationalTypeKeys(null);
-		searchParams.setEntryStatus(RepositoryEntryStatusEnum.preparationToPublished());
+		searchParams.setEntryStatus(defaultEntryStatus);
 	}
 	
 	private void setFilter(FlexiTableFilter filter) {

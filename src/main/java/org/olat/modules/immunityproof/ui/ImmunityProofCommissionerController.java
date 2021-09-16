@@ -37,6 +37,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
 
 /**
  * Initial date: 09.09.2021<br>
@@ -50,6 +51,7 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 	private UserSearchFlexiController userSearchController;
 	
 	private ImmunityProofCreateController immunityProofCreateController;
+	private ImmunityProofCardController cardController;
 	private CloseableModalController cmc;
 	
 	public ImmunityProofCommissionerController(UserRequest ureq, WindowControl wControl) {
@@ -93,6 +95,12 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 			}
 		} else if (source == immunityProofCreateController) {
 			cleanUp();
+			
+			if (event instanceof ImmunityProofAddedEvent) {
+				doCardPreview(ureq, ((ImmunityProofAddedEvent) event).getIdentity());
+			} 
+		} else if (source == cardController) {
+			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
 		}
@@ -103,6 +111,15 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 		listenTo(immunityProofCreateController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), immunityProofCreateController.getInitialComponent(), true, translate("add.immunity.proof"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCardPreview(UserRequest ureq, Identity identity) {
+		cardController = new ImmunityProofCardController(ureq, getWindowControl(), identity, false);
+		listenTo(cardController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), cardController.getInitialComponent(), true, translate("preview.immunity.proof"));
 		listenTo(cmc);
 		cmc.activate();
 	}

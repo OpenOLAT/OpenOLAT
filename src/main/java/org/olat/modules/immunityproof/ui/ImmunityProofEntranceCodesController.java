@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -49,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ImmunityProofEntranceCodesController extends FormBasicController {
 	
-	private StaticTextElement qrCodeInstructionsEl;
     private FormLink qrCodeInstructionsReset;
     private FormLink qrCodeInstructionsCustomize;
     
@@ -79,10 +77,9 @@ public class ImmunityProofEntranceCodesController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("entrance.qr.code");
 		
-		// Instructions
-		qrCodeInstructionsEl = uifactory.addStaticTextElement("qr.description", null, formLayout);
 		// Buttons
 		FormLayoutContainer qrCodeButtons = FormLayoutContainer.createButtonLayout("qrCodeButtons", getTranslator());
+		qrCodeButtons.setLabel("qr.description", null);
         formLayout.add(qrCodeButtons);
         qrCodeInstructionsReset = uifactory.addFormLink("reset", qrCodeButtons, Link.BUTTON);
         qrCodeInstructionsCustomize = uifactory.addFormLink("customize", qrCodeButtons, Link.BUTTON);
@@ -99,8 +96,6 @@ public class ImmunityProofEntranceCodesController extends FormBasicController {
 	}
 	
 	private void loadConfiguration(UserRequest ureq) {
-		qrCodeInstructionsEl.setValue(immunityProofModule.getQrEntranceText());
-		
 		pdfController = new ImmunityProofQrPdfPreviewController(ureq, getWindowControl());
         pdfPreviewContainer.put("pdfPreview", pdfController.getInitialComponent());
 		
@@ -128,7 +123,7 @@ public class ImmunityProofEntranceCodesController extends FormBasicController {
 	}
 	
 	private void doAskForReset(UserRequest ureq) {
-		confirmResetQRCodeInstructionsController = new ImmunityProofConfirmResetController(ureq, getWindowControl());
+		confirmResetQRCodeInstructionsController = new ImmunityProofConfirmResetController(ureq, getWindowControl(), "qr.text.reset.warning");
         cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetQRCodeInstructionsController.getInitialComponent(), true, translate("qr.description.reset"), true, true);
         listenTo(confirmResetQRCodeInstructionsController);
         listenTo(cmc);

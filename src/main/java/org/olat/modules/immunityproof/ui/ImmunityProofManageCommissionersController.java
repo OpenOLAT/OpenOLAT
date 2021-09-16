@@ -21,7 +21,14 @@ package org.olat.modules.immunityproof.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import javax.mail.Address;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.UserSearchFlexiController;
 import org.olat.admin.user.UserSearchFlexiTableModel;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -48,9 +55,18 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.immunityproof.ImmunityProof;
 import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.olat.user.UserManager;
@@ -63,6 +79,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 public class ImmunityProofManageCommissionersController extends FormBasicController {
+	
+	private static final Logger log = Tracing.createLoggerFor(ImmunityProofManageCommissionersController.class);
 	
 	private FormLink addCommissioners;
 	
@@ -81,6 +99,10 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private I18nManager i18nManager;
 
 	public ImmunityProofManageCommissionersController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "immunity_proof_commissioners");
@@ -226,6 +248,11 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
 			}
 			
 			groupDAO.addMembershipTwoWay(commissionersGroup, newCommissioner, ImmunityProofModule.IMMUNITY_PROOF_COMMISSIONER_ROLE);
+			
+			// Send mail
+			User user = newCommissioner.getUser();
+			Locale userLocale = i18nManager.getLocaleOrDefault(user.getPreferences().getLanguage()); 
+			sendMail(getTranslator(), mailManager, user, userLocale, true);
 		}		
 	}
 	
@@ -245,6 +272,58 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
 		
 		// Remove membership
 		groupDAO.removeMembership(commissionersGroup, commissionerToRemove);
+		
+		// Send mail
+		User user = commissionerToRemove.getUser();
+		Locale userLocale = i18nManager.getLocaleOrDefault(user.getPreferences().getLanguage()); 
+		sendMail(getTranslator(), mailManager, user, userLocale, false);
 	}
+	
+	private boolean sendMail(Translator translator, MailManager mailManager, User user, Locale userLocale, boolean added) {
+		String name = "";
+		String url = Settings.createServerURI() + "/url/CovidCertificates/0";
+		
+		if (StringHelper.containsNonWhitespace(user.getFirstName())) {
+			name += user.getFirstName();
+		}
+		
+		if (StringHelper.containsNonWhitespace(user.getLastName())) {
+			name += " " + user.getLastName();
+		}
+		
+		if (!StringHelper.containsNonWhitespace(name)) {
+			name = user.getNickName();
+		}
+		
+		String[] params = new String[] {name, url};	
+		
+        String subject = translator.translate("immunity.proof.commissioner." + (added ? "added":"removed") + ".mail.subject");
+        String body = translator.translate("immunity.proof.commissioner." + (added ? "added":"removed") + ".mail.body", params);
+        
+        System.out.println("params" + params);
+        System.out.println("body" + body);
+        String decoratedBody = mailManager.decorateMailBody(body, userLocale);
+        String recipientAddress = user.getEmail();
+        Address from;
+        Address[] to;
+
+        try {
+            from = new InternetAddress(WebappHelper.getMailConfig("mailSupport"));
+            to = new Address[] {new InternetAddress(((recipientAddress)))};
+        } catch (AddressException e) {
+            log.error("Could not send COVID commissioner notification message, bad mail address", e);
+            return false;
+        }
+
+        MailerResult result = new MailerResult();
+        MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, subject, decoratedBody, null, result);
+        mailManager.sendMessage(msg, result);
+        if (!result.isSuccessful()) {
+            log.error("Could not send COVID commissioner message to " + recipientAddress);
+            return false;
+        }
+        
+        return true;
+    }
 
 }

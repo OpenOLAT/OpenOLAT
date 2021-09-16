@@ -244,6 +244,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.bigbluebutton.manager.BigBlueButtonManagerTest.class,
 	org.olat.modules.contacttracing.manager.ContactTracingLocationDAOTest.class,
 	org.olat.modules.contacttracing.manager.ContactTracingRegistrationDAOTest.class,
+	org.olat.modules.immunityproof.ImmunityProofDaoTest.class,
 	org.olat.modules.dcompensation.manager.DisadvantageCompensationDAOTest.class,
 	org.olat.modules.dcompensation.manager.DisadvantageCompensationAuditLogDAOTest.class,
 	org.olat.modules.fo.ForumManagerTest.class,//fail

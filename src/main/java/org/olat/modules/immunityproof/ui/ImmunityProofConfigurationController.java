@@ -19,16 +19,23 @@
  */
 package org.olat.modules.immunityproof.ui;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.mail.Address;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -39,16 +46,24 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
-import org.olat.modules.immunityproof.ui.event.ImmunityProofDeleteEvent;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.immunityproof.ImmunityProof;
 import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.olat.modules.immunityproof.ImmunityProofService;
+import org.olat.modules.immunityproof.ui.event.ImmunityProofDeleteEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,6 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ImmunityProofConfigurationController extends FormBasicController {
 
+	private static final Logger log = Tracing.createLoggerFor(ImmunityProofConfigurationController.class);
+	
 	private FormLayoutContainer generalConfig;
 	private MultipleSelectionElement enabledEl;
 	private FormLink deleteAllProofsLink;
@@ -69,13 +86,21 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 	private IntegerElement validityPeriodTestPCR;
 	private IntegerElement validityPeriodTestAntigen;
 	
-	private FormLayoutContainer reminderConfig;
+	private FormLayoutContainer mailConfig;
 	private IntegerElement reminderBeforeExpirationEl;
-	private StaticTextElement reminderMailEl;
     private FormLink reminderMailReset;
     private FormLink reminderMailCustomize;
+    private FormLink mailCommissionerAddedReset;
+    private FormLink mailCommissionerAddedCustomize;
+    private FormLink mailCommissionerRemovedReset;
+    private FormLink mailCommissionerRemovedCustomize;
+    private FormLink mailAllCertificatesRemovedReset;
+    private FormLink mailAllCertificatesRemovedCustomize;
     
-    private ImmunityProofConfirmResetController confirmResetMailController;
+    private ImmunityProofConfirmResetController confirmResetReminderMailController;
+    private ImmunityProofConfirmResetController confirmResetCommissionerAddedMailController;
+    private ImmunityProofConfirmResetController confirmResetCommissionerRemovedMailController;
+    private ImmunityProofConfirmResetController confirmResetCertificatesRemovedMailController;
     private ImmunityProofConfirmDeleteAllProofsController confirmDeleteProofController;
     private SingleKeyTranslatorController singleKeyTranslatorController;
     private CloseableModalController cmc;
@@ -88,6 +113,10 @@ public class ImmunityProofConfigurationController extends FormBasicController {
     private I18nManager i18nManager;
 	@Autowired
 	private ImmunityProofService immunityProofService;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	public ImmunityProofConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -146,6 +175,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodTestPCR.setMaxLength(1);
 		validityPeriodTestPCR.setElementCssClass("form-inline");
 		validityPeriodTestPCR.setTextAddOn("days");
+		validityPeriodTestPCR.setHelpTextKey("validity.test.help", null);
 		
 		// Validity period when tested with antigen
 		validityPeriodTestAntigen = uifactory.addIntegerElement("validity.test.antigen", 0, validityConfig);
@@ -153,27 +183,48 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodTestAntigen.setMaxLength(1);
 		validityPeriodTestAntigen.setElementCssClass("form-inline");
 		validityPeriodTestAntigen.setTextAddOn("days");
+		validityPeriodTestAntigen.setHelpTextKey("validity.test.help", null);
 		
 		
 		// Reminder config 
-		reminderConfig = FormLayoutContainer.createDefaultFormLayout("reminderConfig", getTranslator());
-		reminderConfig.setRootForm(mainForm);
-		reminderConfig.setFormTitle(translate("config.reminder"));
-		formLayout.add("reminderConfig", reminderConfig);
+		mailConfig = FormLayoutContainer.createDefaultFormLayout("mailConfig", getTranslator());
+		mailConfig.setRootForm(mainForm);
+		mailConfig.setFormTitle(translate("config.reminder"));
+		formLayout.add("reminderConfig", mailConfig);
 		
 		// Reminder period
-		reminderBeforeExpirationEl = uifactory.addIntegerElement("reminder.before.expiration", 0, reminderConfig);
+		reminderBeforeExpirationEl = uifactory.addIntegerElement("reminder.before.expiration", 0, mailConfig);
 		reminderBeforeExpirationEl.setDisplaySize(3);
 		reminderBeforeExpirationEl.setMaxLength(2);
 		reminderBeforeExpirationEl.setElementCssClass("form-inline");
 		reminderBeforeExpirationEl.setTextAddOn("days");
 		
 		// Reminder mail
-		reminderMailEl = uifactory.addStaticTextElement("reminder.mail", null, reminderConfig);
 		FormLayoutContainer reminderMailButtons = FormLayoutContainer.createButtonLayout("reminderMailButtons", getTranslator());
-		reminderConfig.add(reminderMailButtons);
-        reminderMailReset = uifactory.addFormLink("reset", reminderMailButtons, Link.BUTTON);
-        reminderMailCustomize = uifactory.addFormLink("customize", reminderMailButtons, Link.BUTTON);
+		reminderMailButtons.setLabel("reminder.mail.customize", null); 
+		mailConfig.add(reminderMailButtons);
+        reminderMailReset = uifactory.addFormLink("reminder.reset", "reset", null, reminderMailButtons, Link.BUTTON);
+        reminderMailCustomize = uifactory.addFormLink("reminder.customize", "customize", null, reminderMailButtons, Link.BUTTON);
+        
+        // All certs deleted mail
+        FormLayoutContainer certificatesDeletedButtons = FormLayoutContainer.createButtonLayout("certificateDeletedButtons", getTranslator());
+        certificatesDeletedButtons.setLabel("mail.template.proof.deleted", null);
+		mailConfig.add(certificatesDeletedButtons);
+        mailAllCertificatesRemovedReset = uifactory.addFormLink("deleted.reset", "reset", null, certificatesDeletedButtons, Link.BUTTON);
+        mailAllCertificatesRemovedCustomize = uifactory.addFormLink("deleted.customize", "customize", null, certificatesDeletedButtons, Link.BUTTON);
+        
+        // Commissioner mail
+        FormLayoutContainer commissionerAddedButtons = FormLayoutContainer.createButtonLayout("commissionerAddedButtons", getTranslator());
+        commissionerAddedButtons.setLabel("mail.template.commissioner.added", null);
+		mailConfig.add(commissionerAddedButtons);
+        mailCommissionerAddedReset = uifactory.addFormLink("commissioner.added.reset", "reset", null, commissionerAddedButtons, Link.BUTTON);
+        mailCommissionerAddedCustomize = uifactory.addFormLink("commissioner.added.customzie", "customize", null, commissionerAddedButtons, Link.BUTTON);
+        
+        FormLayoutContainer commissionerRemovedButtons = FormLayoutContainer.createButtonLayout("commissionerRemovedButtons", getTranslator());
+        commissionerRemovedButtons.setLabel("mail.template.commissioner.removed", null);
+		mailConfig.add(commissionerRemovedButtons);
+        mailCommissionerRemovedReset = uifactory.addFormLink("commissioner.removed.reset", "reset", null, commissionerRemovedButtons, Link.BUTTON);
+        mailCommissionerRemovedCustomize = uifactory.addFormLink("commissioner.removed.customize", "customize", null, commissionerRemovedButtons, Link.BUTTON);
 		
 		// Submit button
 		FormLayoutContainer buttonWrapper = FormLayoutContainer.createDefaultFormLayout("buttonWrapper", getTranslator());
@@ -191,11 +242,11 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enabledEl) {
 			validityConfig.setVisible(enabledEl.isAtLeastSelected(1));
-			reminderConfig.setVisible(enabledEl.isAtLeastSelected(1));
+			mailConfig.setVisible(enabledEl.isAtLeastSelected(1));
 		} else if (source == reminderMailReset) {
-			confirmResetMailController = new ImmunityProofConfirmResetController(ureq, getWindowControl());
-            cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetMailController.getInitialComponent(), true, translate("reminder.mail.reset"), true, true);
-            listenTo(confirmResetMailController);
+			confirmResetReminderMailController = new ImmunityProofConfirmResetController(ureq, getWindowControl(), "reminder.mail.customize");
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetReminderMailController.getInitialComponent(), true, translate("reminder.mail.customize"), true, true);
+            listenTo(confirmResetReminderMailController);
             listenTo(cmc);
             cmc.activate();
 		} else if (source == reminderMailCustomize) {
@@ -204,20 +255,79 @@ public class ImmunityProofConfigurationController extends FormBasicController {
             listenTo(singleKeyTranslatorController);
             listenTo(cmc);
             cmc.activate();
+		} else if (source == mailCommissionerAddedReset) {
+			confirmResetCommissionerAddedMailController = new ImmunityProofConfirmResetController(ureq, getWindowControl(), "mail.template.commissioner.added");
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetCommissionerAddedMailController.getInitialComponent(), true, translate("mail.template.commissioner.added"), true, true);
+            listenTo(confirmResetCommissionerAddedMailController);
+            listenTo(cmc);
+            cmc.activate();
+		} else if (source == mailCommissionerAddedCustomize) {
+			singleKeyTranslatorController = new SingleKeyTranslatorController(ureq, getWindowControl(), ImmunityProofModule.COMMISSIONER_ADDED_TRANSLATION_KEY, ImmunityProofModule.class, SingleKeyTranslatorController.InputType.RICH_TEXT_ELEMENT, null);
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), singleKeyTranslatorController.getInitialComponent(), true, translate("mail.template.commissioner.added"), true, true);
+            listenTo(singleKeyTranslatorController);
+            listenTo(cmc);
+            cmc.activate();
+		} else if (source == mailCommissionerRemovedReset) {
+			confirmResetCommissionerRemovedMailController = new ImmunityProofConfirmResetController(ureq, getWindowControl(), "mail.template.commissioner.removed");
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetCommissionerRemovedMailController.getInitialComponent(), true, translate("mail.template.commissioner.removed"), true, true);
+            listenTo(confirmResetCommissionerRemovedMailController);
+            listenTo(cmc);
+            cmc.activate();
+		} else if (source == mailCommissionerRemovedCustomize) {
+			singleKeyTranslatorController = new SingleKeyTranslatorController(ureq, getWindowControl(), ImmunityProofModule.COMMISSIONER_REMOVED_TRANSLATION_KEY, ImmunityProofModule.class, SingleKeyTranslatorController.InputType.RICH_TEXT_ELEMENT, null);
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), singleKeyTranslatorController.getInitialComponent(), true, translate("mail.template.commissioner.removed"), true, true);
+            listenTo(singleKeyTranslatorController);
+            listenTo(cmc);
+            cmc.activate();
+		} else if (source == mailAllCertificatesRemovedReset) {
+			confirmResetCertificatesRemovedMailController = new ImmunityProofConfirmResetController(ureq, getWindowControl(), "mail.template.proof.deleted");
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetCertificatesRemovedMailController.getInitialComponent(), true, translate("mail.template.proof.deleted"), true, true);
+            listenTo(confirmResetCertificatesRemovedMailController);
+            listenTo(cmc);
+            cmc.activate();
+		} else if (source == mailAllCertificatesRemovedCustomize) {
+			singleKeyTranslatorController = new SingleKeyTranslatorController(ureq, getWindowControl(), ImmunityProofModule.PROOF_DELETED_TRANSLATION_KEY, ImmunityProofModule.class, SingleKeyTranslatorController.InputType.RICH_TEXT_ELEMENT, null);
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), singleKeyTranslatorController.getInitialComponent(), true, translate("mail.template.proof.deleted"), true, true);
+            listenTo(singleKeyTranslatorController);
+            listenTo(cmc);
+            cmc.activate();
 		} else if (source == deleteAllProofsLink) {
-			confirmDeleteProofController = new ImmunityProofConfirmDeleteAllProofsController(ureq, getWindowControl());
-            cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteProofController.getInitialComponent(), true, translate("delete.all.proofs"), true, true);
+			long count = immunityProofService.getImmunityProofCount();
+			confirmDeleteProofController = new ImmunityProofConfirmDeleteAllProofsController(ureq, getWindowControl(), count);
+            cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteProofController.getInitialComponent(), true, translate("delete.all.proofs", new String[] {String.valueOf(count)}), true, true);
             listenTo(confirmDeleteProofController);
             listenTo(cmc);
             cmc.activate();
 		}
 	}
 	
+	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == confirmResetMailController) {
+		if (source == confirmResetReminderMailController) {
 			if (event == FormEvent.DONE_EVENT) {
 	            resetI18nKeys(ImmunityProofModule.REMINDER_MAIL_TRANSLATION_KEY);
+	            loadConfiguration();
+            }
+			
+			cleanUp();
+		} if (source == confirmResetCertificatesRemovedMailController) {
+			if (event == FormEvent.DONE_EVENT) {
+	            resetI18nKeys(ImmunityProofModule.PROOF_DELETED_TRANSLATION_KEY);
+	            loadConfiguration();
+            }
+			
+			cleanUp();
+		} if (source == confirmResetCommissionerAddedMailController) {
+			if (event == FormEvent.DONE_EVENT) {
+	            resetI18nKeys(ImmunityProofModule.COMMISSIONER_ADDED_TRANSLATION_KEY);
+	            loadConfiguration();
+            }
+			
+			cleanUp();
+		} if (source == confirmResetCommissionerRemovedMailController) {
+			if (event == FormEvent.DONE_EVENT) {
+	            resetI18nKeys(ImmunityProofModule.COMMISSIONER_REMOVED_TRANSLATION_KEY);
 	            loadConfiguration();
             }
 			
@@ -230,11 +340,14 @@ public class ImmunityProofConfigurationController extends FormBasicController {
             cleanUp();
         } else if (source == confirmDeleteProofController) {
         	if (event == ImmunityProofDeleteEvent.DELETE_AND_NOTIFY) {
+        		sendMail();
                 immunityProofService.deleteAllImmunityProofs(true);
                 showWarning("delete.proof.confirmation");
+                loadConfiguration();
             } else if (event == ImmunityProofDeleteEvent.DELETE) {
             	immunityProofService.deleteAllImmunityProofs(false);
             	showWarning("delete.proof.confirmation");
+            	loadConfiguration();
             }
 
             cleanUp();
@@ -257,13 +370,19 @@ public class ImmunityProofConfigurationController extends FormBasicController {
             cmc.deactivate();
         }
 
-        removeAsListenerAndDispose(cmc);
-        removeAsListenerAndDispose(confirmResetMailController);
+        removeAsListenerAndDispose(confirmResetCommissionerRemovedMailController);
+        removeAsListenerAndDispose(confirmResetCertificatesRemovedMailController);
+        removeAsListenerAndDispose(confirmResetCommissionerAddedMailController);
+        removeAsListenerAndDispose(confirmResetReminderMailController);
         removeAsListenerAndDispose(confirmDeleteProofController);
-
-        cmc = null;
-        confirmResetMailController = null;
+        removeAsListenerAndDispose(cmc);
+        
+        confirmResetCommissionerRemovedMailController = null;
+        confirmResetCertificatesRemovedMailController = null;
+        confirmResetCommissionerAddedMailController = null;
+        confirmResetReminderMailController = null;
         confirmDeleteProofController = null;
+        cmc = null;
 	}
 
 	@Override
@@ -289,8 +408,12 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 	}
 	
 	private void loadConfiguration() {
+		long count = immunityProofService.getImmunityProofCount();
+		deleteAllProofsLink.setI18nKey("delete.all.proofs", new String[] {String.valueOf(count)});
+		deleteAllProofsLink.setVisible(count > 0);
+		
 		validityConfig.setVisible(immunityProofModule.isEnabled());
-		reminderConfig.setVisible(immunityProofModule.isEnabled());
+		mailConfig.setVisible(immunityProofModule.isEnabled());
 		
 		enabledEl.select("on", immunityProofModule.isEnabled());
 		
@@ -301,6 +424,62 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodTestAntigen.setIntValue(immunityProofModule.getValidityAntigen());
 		
 		reminderBeforeExpirationEl.setIntValue(immunityProofModule.getReminderPeriod());
-		reminderMailEl.setValue(StringHelper.truncateText(StringHelper.xssScan(translate(ImmunityProofModule.REMINDER_MAIL_TRANSLATION_KEY, new String[]{String.valueOf(immunityProofModule.getReminderPeriod())}))));
 	}
+	
+	private void sendMail() {
+		List<ImmunityProof> immunityProofs = immunityProofService.getAllCertificates();
+		
+		for (ImmunityProof certificate : immunityProofs) {
+			// Create translator for user
+			Identity identity = securityManager.loadIdentityByKey(certificate.getIdentity().getKey(), true);
+			if (identity == null) {
+				continue;
+			}
+			
+			User user = identity.getUser();
+			
+			Locale userLocale = i18nManager.getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
+			Translator userTranslator = Util.createPackageTranslator(ImmunityProofModule.class, userLocale);
+			
+			String name = "";
+			String url = Settings.createServerURI() + "/covid";
+			
+			if (StringHelper.containsNonWhitespace(user.getFirstName())) {
+				name += user.getFirstName();
+			}
+			
+			if (StringHelper.containsNonWhitespace(user.getLastName())) {
+				name += " " + user.getLastName();
+			}
+			
+			if (!StringHelper.containsNonWhitespace(name)) {
+				name = user.getNickName();
+			}
+			
+			String[] params = new String[] {name, url};	
+			
+			String subject = userTranslator.translate("immunity.proof.deleted.mail.subject");
+	        String body = userTranslator.translate("immunity.proof.deleted.mail.body", params);
+	        String decoratedBody = mailManager.decorateMailBody(body, userLocale);
+	        String recipientAddress = user.getEmail();
+	        Address from;
+	        Address[] to;
+	
+	        try {
+	            from = new InternetAddress(WebappHelper.getMailConfig("mailSupport"));
+	            to = new Address[] {new InternetAddress(((recipientAddress)))};
+	        } catch (AddressException e) {
+	            log.error("Could not send COVID certificate deletion notification message, bad mail address", e);
+	            return;
+	        }
+	
+	        MailerResult result = new MailerResult();
+	        MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, subject, decoratedBody, null, result);
+	        mailManager.sendMessage(msg, result);
+	        if (!result.isSuccessful()) {
+	            log.error("Could not send COVID certificate deletion notification message to " + recipientAddress);
+	        }
+        
+		}
+    }
 }
