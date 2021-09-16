@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.immunityproof.manager.ImmunityProofDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -132,11 +133,11 @@ public class ImmunityProofDaoTest extends OlatTestCase {
 	
 	@Test
 	public void shouldPruneProofs() {
-		ImmunityProof proof1 = immunityProofDAO.createImmunityProof(id1, new Date(100l), true, true);
-		ImmunityProof proof2 = immunityProofDAO.createImmunityProof(id2, new Date(200l), true, true);
+		ImmunityProof proof1 = immunityProofDAO.createImmunityProof(id1, DateUtils.addDays(new Date(), -36), true, true);
+		ImmunityProof proof2 = immunityProofDAO.createImmunityProof(id2, DateUtils.addDays(new Date(), -18), true, true);
 		dbInstance.commitAndCloseSession();
 		
-		immunityProofDAO.pruneImmunityProofs(new Date(150l));
+		immunityProofDAO.pruneImmunityProofs(DateUtils.addDays(new Date(), -26));
 		dbInstance.commitAndCloseSession();
 		
 		List<ImmunityProof> allProofs = immunityProofDAO.getAllCertificates();
