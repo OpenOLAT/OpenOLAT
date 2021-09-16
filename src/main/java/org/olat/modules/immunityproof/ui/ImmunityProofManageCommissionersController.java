@@ -281,7 +281,7 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
 	
 	private boolean sendMail(Translator translator, MailManager mailManager, User user, Locale userLocale, boolean added) {
 		String name = "";
-		String url = Settings.createServerURI() + "/url/CovidCertificates/0";
+		String url = Settings.getServerContextPathURI() + "/url/CovidCertificates/0";
 		
 		if (StringHelper.containsNonWhitespace(user.getFirstName())) {
 			name += user.getFirstName();

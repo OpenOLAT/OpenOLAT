@@ -9,6 +9,18 @@
   background-color: $o-ct-confirmation-bg-color;
   text-align: center;
   color: white;
+
+  &.validated {
+    background-color: $o-ip-validated-bg-color;
+  }
+	
+  &.claimed {
+    background-color: $o-ip-claimed-bg-color;
+  }
+	
+  &.none {
+	background-color: $o-ip-none-bg-color;	
+  }
   
   h1, h2 {
     color: white;
