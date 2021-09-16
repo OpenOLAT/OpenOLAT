@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
@@ -91,7 +92,10 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	
 	@Override
 	public void init() {
-		initProperties();		
+		initProperties();
+		
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("CovidCertificates",
+				new ImmunityProofContextEntryCreator(this));
 	}
 	
 	@Override

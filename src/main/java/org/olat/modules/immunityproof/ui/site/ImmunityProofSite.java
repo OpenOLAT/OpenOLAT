@@ -74,10 +74,10 @@ public class ImmunityProofSite extends AbstractSiteInstance {
 		return new ImmunityProofCommissionerController(ureq, bwControl);
 	}
 	
-	@Override
+	/*@Override
 	public boolean isKeepState() {
 		return true;
-	}
+	}*/
 	
 	@Override
 	public void reset() {

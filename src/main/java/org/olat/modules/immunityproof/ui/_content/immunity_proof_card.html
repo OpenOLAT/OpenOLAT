@@ -44,11 +44,11 @@ $r.render("close.card")
 <script> 
 /* <![CDATA[ */
 updateTime();
-const interval = setInterval(updateTime, 1000);
+var interval = setInterval(updateTime, 1000);
 
 function updateTime() {
-	const time = new Date().toLocaleTimeString("$locale");
-	const counterElement = document.getElementById('o_immunity_proof_counter');
+	var time = new Date().toLocaleTimeString("$locale");
+	var counterElement = document.getElementById('o_immunity_proof_counter');
 	
 	if (counterElement) {
 		counterElement.innerHTML = time;
