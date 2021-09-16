@@ -8,11 +8,9 @@
 #if($r.visible("groupList"))
 	<fieldset>
 		<legend>$r.translate("edit.member.groups")</legend>
-		<div class="o_button_group o_button_group_right"><div class="btn-group">
-			$r.render("select.all.group.coaches")
-			$r.render("select.all.group.participants")
-			$r.render("select.all.group.waiting")
-		</div></div>
+		<div class="o_button_group o_button_group_right">
+			$r.render("group.bulk.actions")
+		</div>
 		$r.render("groupList")
 	</fieldset>
 #end
@@ -20,13 +18,7 @@
 	<fieldset>
 		<legend>$r.translate("edit.member.curriculums")</legend>
 		<div class="o_button_group o_button_group_right">
-			<div class="btn-group">
-				$r.render("select.all.curriculum.element.owners")
-				$r.render("select.all.curriculum.master.coaches")
-				$r.render("select.all.curriculum.owners")
-				$r.render("select.all.curriculum.coaches")
-				$r.render("select.all.curriculum.participants")
-			</div>
+			$r.render("curriculum.bulk.actions")
 		</div>
 		$r.render("curriculumList")
 	</fieldset>

@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -53,7 +54,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -110,6 +110,8 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 	private FormLink selectAllCurriculumParticipantsButton;
 	private FormLink selectAllCurriculumMasterCoachButton;
 	private FormLink selectAllCurriculumElementOwnerButton;
+	private DropdownItem curriculumDropDown;
+	private DropdownItem groupDropDown; 
 	private EditGroupMembershipTableDataModel groupTableDataModel;
 	private EditCurriculumMembershipTableDataModel curriculumTableDataModel;
 	
@@ -323,6 +325,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		selectAllGroupParticipantsButton.setVisible(options.size() > 1);
 		selectAllGroupCoachesButton.setVisible(options.size() > 1);
 		selectAllGroupWaitingButton.setVisible(options.size() > 1);
+		groupDropDown.setVisible(options.size() > 1);
 		
 		
 		List<CurriculumElement> curriculumElements = loadCurriculumElements();
@@ -355,6 +358,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		selectAllCurriculumParticipantsButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
 		selectAllCurriculumCoachesButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
 		selectAllCurriculumOwnersButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
+		curriculumDropDown.setVisible(curriculumEditable && options.size() > 1);	
 	}
 	
 	private List<CurriculumElement> loadCurriculumElements() {
@@ -497,16 +501,21 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		groupTableEl.setCustomizeColumns(false);
 		groupTableEl.setNumOfRowsEnabled(false);
 		
-		selectAllGroupWaitingButton = uifactory.addFormLink("select.all.group.waiting", formLayout, Link.BUTTON_SMALL);
+		selectAllGroupWaitingButton = uifactory.addFormLink("select.all.group.waiting", formLayout);
 		selectAllGroupWaitingButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllGroupWaitingButton.setUserObject(Boolean.TRUE);
-		selectAllGroupCoachesButton = uifactory.addFormLink("select.all.group.coaches", formLayout, Link.BUTTON_SMALL);
+		selectAllGroupCoachesButton = uifactory.addFormLink("select.all.group.coaches", formLayout);
 		selectAllGroupCoachesButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllGroupCoachesButton.setUserObject(Boolean.TRUE);
-		selectAllGroupParticipantsButton = uifactory.addFormLink("select.all.group.participants", formLayout, Link.BUTTON_SMALL);
+		selectAllGroupParticipantsButton = uifactory.addFormLink("select.all.group.participants", formLayout);
 		selectAllGroupParticipantsButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllGroupParticipantsButton.setUserObject(Boolean.TRUE);
 		
+		groupDropDown = uifactory.addDropdownMenu("group.bulk.actions", "bulk.actions", "bulk.actions", formLayout, getTranslator());
+		groupDropDown.setIconCSS("o_icon o_icon_check_on");
+		groupDropDown.addElement(selectAllGroupCoachesButton);
+		groupDropDown.addElement(selectAllGroupParticipantsButton);
+		groupDropDown.addElement(selectAllGroupWaitingButton);
 		
 		// curriculum rights
 		FlexiTableColumnModel curriculumTableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -531,21 +540,29 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		curriculumTableEl.setCustomizeColumns(false);
 		curriculumTableEl.setNumOfRowsEnabled(false);
 		
-		selectAllCurriculumElementOwnerButton = uifactory.addFormLink("select.all.curriculum.element.owners", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumElementOwnerButton = uifactory.addFormLink("select.all.curriculum.element.owners", formLayout);
 		selectAllCurriculumElementOwnerButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllCurriculumElementOwnerButton.setUserObject(Boolean.TRUE);
-		selectAllCurriculumMasterCoachButton = uifactory.addFormLink("select.all.curriculum.master.coaches", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumMasterCoachButton = uifactory.addFormLink("select.all.curriculum.master.coaches", formLayout);
 		selectAllCurriculumMasterCoachButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllCurriculumMasterCoachButton.setUserObject(Boolean.TRUE);
-		selectAllCurriculumOwnersButton = uifactory.addFormLink("select.all.curriculum.owners", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumOwnersButton = uifactory.addFormLink("select.all.curriculum.owners", formLayout);
 		selectAllCurriculumOwnersButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllCurriculumOwnersButton.setUserObject(Boolean.TRUE);
-		selectAllCurriculumCoachesButton = uifactory.addFormLink("select.all.curriculum.coaches", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumCoachesButton = uifactory.addFormLink("select.all.curriculum.coaches", formLayout);
 		selectAllCurriculumCoachesButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllCurriculumCoachesButton.setUserObject(Boolean.TRUE);
-		selectAllCurriculumParticipantsButton = uifactory.addFormLink("select.all.curriculum.participants", formLayout, Link.BUTTON_SMALL);
+		selectAllCurriculumParticipantsButton = uifactory.addFormLink("select.all.curriculum.participants", formLayout);
 		selectAllCurriculumParticipantsButton.setIconLeftCSS("o_icon o_icon_check_on");
 		selectAllCurriculumParticipantsButton.setUserObject(Boolean.TRUE);
+		
+		curriculumDropDown = uifactory.addDropdownMenu("curriculum.bulk.actions", "bulk.actions", "bulk.actions", formLayout, getTranslator());
+		curriculumDropDown.setIconCSS("o_icon o_icon_check_on");
+		curriculumDropDown.addElement(selectAllCurriculumElementOwnerButton);
+		curriculumDropDown.addElement(selectAllCurriculumMasterCoachButton);
+		curriculumDropDown.addElement(selectAllCurriculumOwnersButton);
+		curriculumDropDown.addElement(selectAllCurriculumCoachesButton);
+		curriculumDropDown.addElement(selectAllCurriculumParticipantsButton);
 
 		if(withButtons) {
 			FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
