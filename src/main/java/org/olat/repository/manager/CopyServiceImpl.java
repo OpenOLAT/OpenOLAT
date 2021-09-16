@@ -431,6 +431,7 @@ public class CopyServiceImpl implements CopyService {
 				privateCycle = lifecycleDao.updateLifecycle(privateCycle);
 			}
 			target.setLifecycle(privateCycle);
+			break;
 		case semester: 
 			if (context.getSemesterKey() == null) {
 				break; 

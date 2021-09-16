@@ -55,6 +55,7 @@ import org.olat.course.editor.overview.YesNoCellRenderer;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ui.ContactTracingLocationTableModel.ContactTracingLocationCols;
+import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -91,6 +92,8 @@ public class ContactTracingLocationListController extends FormBasicController {
     private ContactTracingManager contactTracingManager;
     @Autowired
     private PdfService pdfService;
+    @Autowired
+    private ImmunityProofModule immunityProofModule;
 
     public ContactTracingLocationListController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl, "contact_tracing_location_list");
@@ -107,6 +110,22 @@ public class ContactTracingLocationListController extends FormBasicController {
         DefaultFlexiColumnModel buildingColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.building);
         DefaultFlexiColumnModel qrIdColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.qrId);
         DefaultFlexiColumnModel registrationsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.registrations);
+        registrationsColumn.setDefaultVisible(true);
+        registrationsColumn.setAlwaysVisible(true);
+        
+        // Immunity proof
+        DefaultFlexiColumnModel registrationsWithoutProof = new DefaultFlexiColumnModel(ContactTracingLocationCols.proofNone);
+        registrationsWithoutProof.setIconHeader(ContactTracingLocationCols.proofNone.iconHeader());
+        registrationsWithoutProof.setDefaultVisible(true);
+        registrationsWithoutProof.setAlwaysVisible(true);
+        DefaultFlexiColumnModel registrationsWithClaimedProof = new DefaultFlexiColumnModel(ContactTracingLocationCols.proofClaimed);
+        registrationsWithClaimedProof.setIconHeader(ContactTracingLocationCols.proofClaimed.iconHeader());
+        registrationsWithClaimedProof.setDefaultVisible(true);
+        registrationsWithClaimedProof.setAlwaysVisible(true);
+        DefaultFlexiColumnModel registrationsWithValidatedProof = new DefaultFlexiColumnModel(ContactTracingLocationCols.proofValidated);
+        registrationsWithValidatedProof.setIconHeader(ContactTracingLocationCols.proofValidated.iconHeader());
+        registrationsWithValidatedProof.setDefaultVisible(true);
+        registrationsWithValidatedProof.setAlwaysVisible(true);
 
         // Url column
         DefaultFlexiColumnModel urlColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.url);
@@ -142,6 +161,9 @@ public class ContactTracingLocationListController extends FormBasicController {
         // Actions column
         DefaultFlexiColumnModel actionsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.settings);
         actionsColumn.setIconHeader(ContactTracingLocationCols.settings.iconHeader());
+        actionsColumn.setDefaultVisible(true);
+        actionsColumn.setAlwaysVisible(true);
+        actionsColumn.setExportable(false);
 
         // Columns model
         FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -158,6 +180,11 @@ public class ContactTracingLocationListController extends FormBasicController {
         columnModel.addFlexiColumnModel(qrTextColumn);
         columnModel.addFlexiColumnModel(guestColumn);
         columnModel.addFlexiColumnModel(registrationsColumn);
+        if (immunityProofModule.isEnabled()) {
+        	columnModel.addFlexiColumnModel(registrationsWithoutProof);
+        	columnModel.addFlexiColumnModel(registrationsWithClaimedProof);
+        	columnModel.addFlexiColumnModel(registrationsWithValidatedProof);
+        }
         columnModel.addFlexiColumnModel(actionsColumn);
 
         // Table model

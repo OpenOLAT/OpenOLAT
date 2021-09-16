@@ -57,6 +57,9 @@ import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ContactTracingModule;
 import org.olat.modules.contacttracing.ContactTracingModule.AttributeState;
+import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofService;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
 import org.olat.user.ProfileFormController;
 import org.olat.user.UserManager;
@@ -118,6 +121,8 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
     private UserManager userManager;
     @Autowired
     private BaseSecurity baseSecurity;
+    @Autowired
+    private ImmunityProofService immunityProofService;
 
     public ContactTracingRegistrationFormController(UserRequest ureq, WindowControl wControl, ContactTracingLocation location) {
         this(ureq, wControl, location, false);
@@ -426,23 +431,36 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
 
     @Override
     protected void formOK(UserRequest ureq) {
-        // Save user information if selected
+        // Load identity if available
+    	Identity updateIdentity = null;
+    	if (user != null) {
+    		updateIdentity = baseSecurity.loadIdentityByKey(getIdentity().getKey());
+    	}
+    	// Save user information if selected
         if (user != null && saveUserPropertiesToProfileEl.isSelected(0 )) {
-            Identity updateIdentity = baseSecurity.loadIdentityByKey(getIdentity().getKey());
-
+        	// Necessary because of effectively final requirement
+        	Identity identity = updateIdentity;
             userPropertyHandlerFormItemMap.forEach((userPropertyHandler, formItem) -> {
                 // If user is allowed to update this property, save content to user profile
                 // This check is necessary in case of disabled user properties combined with mandatory fields in the contact tracing form
                 if (updateablePropertyMap.get(userPropertyHandler)) {
-                    userPropertyHandler.updateUserFromFormItem(updateIdentity.getUser(), formItem);
+                    userPropertyHandler.updateUserFromFormItem(identity.getUser(), formItem);
                 }
             });
             userManager.updateUserFromIdentity(updateIdentity);
         }
+        
+        // Load users immunity proof
+        ImmunityProof immunityProof = immunityProofService.getImmunityProof(updateIdentity);
+        ImmunityProofLevel immunityProofLevel = immunityProofService.getImmunityProofLevel(immunityProof);
+        Date immunityProofDate = null;
+        if (immunityProof != null) {
+        	immunityProofDate = immunityProof.getSafeDate();
+        }
 
         // Create new entry
         Date deletionDate = DateUtils.addDays(new Date(), contactTracingModule.getRetentionPeriod());
-        ContactTracingRegistration registration = contactTracingManager.createRegistration(location, startDateEl.getDate(), deletionDate);
+        ContactTracingRegistration registration = contactTracingManager.createRegistration(location, startDateEl.getDate(), deletionDate, immunityProofLevel, immunityProofDate);
 
         // Set information
         Date date = endDateEl.getDate() != null? endDateEl.getDate(): DateUtils.setTime(startDateEl.getDate(), 23, 59, 59);

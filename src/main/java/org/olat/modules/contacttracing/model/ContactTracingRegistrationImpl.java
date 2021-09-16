@@ -24,6 +24,8 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -37,6 +39,7 @@ import javax.persistence.TemporalType;
 import org.olat.core.id.Persistable;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingRegistration;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 
 /**
  * Initial date: 13.10.20<br>
@@ -63,6 +66,12 @@ public class ContactTracingRegistrationImpl implements ContactTracingRegistratio
     @ManyToOne(targetEntity = ContactTracingLocationImpl.class, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="fk_location", nullable=false, insertable=true, updatable=false)
     private ContactTracingLocation location;
+    
+    @Column(name="l_immunity_proof_date", insertable=true, updatable=false)
+    private Date immunityProofDate;
+    @Column(name="l_immunity_proof_level", insertable=true, updatable=false)
+	@Enumerated(EnumType.STRING)
+    private ImmunityProofLevel immunityProofLevel;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name="l_start_date", nullable=false, insertable=true, updatable=false)
@@ -296,6 +305,24 @@ public class ContactTracingRegistrationImpl implements ContactTracingRegistratio
     public void setSeatNumber(String seatNumber) {
     	this.seatNumber = seatNumber;
     }
+    
+    @Override
+	public ImmunityProofLevel getImmunityProofLevel() {
+		return immunityProofLevel;
+	}
+    
+    public void setImmunityProofLevel(ImmunityProofLevel immunityProofLevel) {
+		this.immunityProofLevel = immunityProofLevel;
+	}
+    
+    @Override
+    public Date getImmunityProofDate() {
+		return immunityProofDate;
+	}
+    
+    public void setImmunityProofDate(Date immunityProofDate) {
+		this.immunityProofDate = immunityProofDate;
+	}
 
     @Override
     public boolean equalsByPersistableKey(Persistable persistable) {

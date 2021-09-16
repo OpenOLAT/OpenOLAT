@@ -3495,6 +3495,8 @@ create table o_ct_registration (
    l_mobile_phone varchar2(255),
    l_office_phone varchar2(255),
    l_seat_number varchar2(64),
+   l_immunity_proof_level varchar2(20),
+   l_immunity_proof_date date,
    fk_location number(20) not null,
    primary key (id)
 );

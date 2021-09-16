@@ -111,7 +111,7 @@
 	   <!-- this one is hard coded and cannot be changed -->
 	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToSysAdminSiteSecurityCallback"/>
 	</bean>
-	<bean id="olatsites_immunity_proof" class="org.olat.modules.immunityProof.ui.site.ImmunityProofSiteDef">
+	<bean id="olatsites_immunity_proof" class="org.olat.modules.immunityproof.ui.site.ImmunityProofSiteDef">
 	   <property name="order" value="16" />
 	   <!-- this one is hard coded and cannot be changed -->
 	   <property name="defaultSiteSecurityCallbackBeanId" value="immunityProofSecurityCallback"/>
@@ -135,7 +135,7 @@
 
 	<bean id="registredOrGuestSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.RegistredUserOrGuestSecurityCallback"/>
 	
-	<bean id="immunityProofSecurityCallback" class="org.olat.modules.immunityProof.ui.site.ImmunityProofSecurityCallback">
+	<bean id="immunityProofSecurityCallback" class="org.olat.modules.immunityproof.ui.site.ImmunityProofSecurityCallback">
 		<property name="immunityProofModule" ref="immunityProofModule" />
 		<property name="groupDAO" ref="groupDao" />
 	</bean>

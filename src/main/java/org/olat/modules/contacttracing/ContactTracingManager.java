@@ -23,6 +23,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.modules.contacttracing.model.ContactTracingLocationInfo;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
+
 /**
  * Initial date: 13.10.20<br>
  *
@@ -93,14 +96,14 @@ public interface ContactTracingManager {
      * @param searchParams ContactTracingSearchParams
      * @return List of contact tracing locations
      */
-    public Map<ContactTracingLocation, Long> getLocationsWithRegistrations(ContactTracingSearchParams searchParams);
+    public Map<ContactTracingLocation, ContactTracingLocationInfo> getLocationsWithRegistrations(ContactTracingSearchParams searchParams);
 
     /**
      * Get all contact tracing locations and their registrations count
      *
      * @return A map with all contact tracing locations and their registrations
      */
-    public Map<ContactTracingLocation, Long> getLocationsWithRegistrations();
+    public Map<ContactTracingLocation, ContactTracingLocationInfo> getLocationsWithRegistrations();
 
     /**
      * Delete the given locations
@@ -121,11 +124,13 @@ public interface ContactTracingManager {
      * Creates a new non-persisted empty registration
      * Details must be applied manually and then persisted
      *
-     * @param location Contact tracing location must be provided to make sure it isn't empty
-     * @param deletionDate Deletion date must be provided to make sure it isn´t empty
-     * @return Empty contact tracing registration
+     * @param location 				Contact tracing location must be provided to make sure it isn't empty
+     * @param deletionDate 			Deletion date must be provided to make sure it isn´t empty
+     * @param immunityProofLevel	level of covid certifcate 
+     * @param immunityProofDate TODO
+     * @return Empty 				contact tracing registration
      */
-    public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate);
+    public ContactTracingRegistration createRegistration(ContactTracingLocation location, Date startDate, Date deletionDate, ImmunityProofLevel immunityProofLevel, Date immunityProofDate);
 
     /**
      * Persist a given contact tracing registration

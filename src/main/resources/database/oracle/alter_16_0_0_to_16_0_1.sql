@@ -12,3 +12,7 @@ create table o_immunity_proof (
 
 alter table o_immunity_proof add constraint proof_to_user_idx foreign key (fk_user) references o_bs_identity (id);
 create index idx_proof_to_user_idx on o_immunity_proof (fk_user);
+
+-- Contact tracing
+alter table o_ct_registration add l_immunity_proof_level varchar2(20);
+alter table o_ct_registration add l_immunity_proof_date date;

@@ -2100,7 +2100,7 @@ function showInfoBox(title, content){
 		 + title + '</h3><p>' + content + '</p></div></div>';
     var msgCt = jQuery('#o_messages').prepend(info);
     // Hide message automatically based on content length
-    var time = (content.length > 150) ? 8000 : ((content.length > 70) ? 6000 : 4000);
+    var time = (content.length > 150) ? 10000 : ((content.length > 70) ? 8000 : 6000);
 
     // Callback to remove after reading
     var cleanup = function() {

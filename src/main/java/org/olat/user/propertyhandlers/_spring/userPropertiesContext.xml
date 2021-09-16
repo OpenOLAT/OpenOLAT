@@ -2008,7 +2008,7 @@
 					</bean>
 				</entry>
 				
-				<entry key="org.olat.modules.immunityProof.ImmunityProofModule">
+				<entry key="org.olat.modules.immunityproof.ImmunityProofModule">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="propertyHandlers">
 						<!--  the login field is always available, this is
@@ -2016,6 +2016,7 @@
 							<list>
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />
@@ -2027,6 +2028,7 @@
 								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyEmail" />
 								<ref bean="userPropertyInstitutionalName" />
 								<ref bean="userPropertyInstitutionalUserIdentifier" />

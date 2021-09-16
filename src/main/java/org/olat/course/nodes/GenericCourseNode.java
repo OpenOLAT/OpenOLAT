@@ -78,7 +78,9 @@ import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.course.style.ColorCategory;
+import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.ImageSource;
+import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -749,6 +751,9 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			setDisplayOption(CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT);
 			setTeaserImageStyle(TeaserImageStyle.DEFAULT_COURSE_NODE);
 			setColorCategoryIdentifier(ColorCategory.IDENTIFIER_DEFAULT_COURSE_NODE);
+			ImageSource newTeaserImageSource = CoreSpringFactory.getImpl(CourseStyleService.class)
+					.createEmptyImageSource(ImageSourceType.DEFAULT_COURSE_NODE);
+			setTeaserImageSource(newTeaserImageSource);
 		}
 		
 		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);

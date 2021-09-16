@@ -519,7 +519,8 @@ a.o_orderby, a.o_orderby:hover {
 
 /* bootstrap extensions */
 .o_info, o_note, o_important, o_warning, o_error {
-	.table-bordered td {
+	.table-bordered td,
+	.table-bordered th {
 		border-color: $gray-dark;
 	}
 }

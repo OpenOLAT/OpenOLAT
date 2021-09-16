@@ -75,6 +75,15 @@ public class UserShortDescription extends BasicController {
 		initProperties(usageIdentifyer, identity, isAdministrativeUser,true, additionalRows);
 	}
 	
+	// Pass a custom usage identifier to define which user properties should be shown
+	public UserShortDescription(UserRequest ureq, WindowControl wControl, Identity identity, String usageIdentifier) {
+		super(ureq, wControl);
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+
+		initProperties(usageIdentifier, identity, isAdministrativeUser,true, Rows.builder().build());
+	}
+	
 	// Used in coaching tool -> user relations
 	public UserShortDescription(UserRequest ureq, WindowControl wControl, Identity identity, boolean isAdministrativeUser) {
 		super(ureq, wControl);
