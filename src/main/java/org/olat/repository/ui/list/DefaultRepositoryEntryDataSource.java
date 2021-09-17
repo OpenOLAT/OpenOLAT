@@ -70,12 +70,12 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private Integer count;
 	
 	public DefaultRepositoryEntryDataSource(SearchMyRepositoryEntryViewParams searchParams,
-			RepositoryEntryDataSourceUIFactory uifactory) {
+			RepositoryEntryDataSourceUIFactory uifactory, boolean defaultMembershipMandatory,
+			RepositoryEntryStatusEnum[] defaultEntryStatus) {
 		this.uifactory = uifactory;
 		this.searchParams = searchParams;
-		
-		defaultMembershipMandatory = searchParams.isMembershipMandatory();
-		defaultEntryStatus = searchParams.getEntryStatus();
+		this.defaultMembershipMandatory = defaultMembershipMandatory;
+		this.defaultEntryStatus = defaultEntryStatus;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);

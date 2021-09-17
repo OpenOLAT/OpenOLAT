@@ -358,7 +358,7 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		selectAllCurriculumParticipantsButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
 		selectAllCurriculumCoachesButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
 		selectAllCurriculumOwnersButton.setVisible(curriculumEditable && curriculumOptions.size() > 1);
-		curriculumDropDown.setVisible(curriculumEditable && options.size() > 1);	
+		curriculumDropDown.setVisible(curriculumEditable && curriculumOptions.size() > 1);	
 	}
 	
 	private List<CurriculumElement> loadCurriculumElements() {
