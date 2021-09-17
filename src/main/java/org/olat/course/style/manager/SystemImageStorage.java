@@ -62,8 +62,8 @@ public class SystemImageStorage {
 		}
 	}
 	
-	public void initProvidedSystemImages() throws Exception {
-		URL providedUrl = SystemImageStorage.class.getResource("_system_images/");
+	public void initProvidedSystemImages(String path) throws Exception {
+		URL providedUrl = SystemImageStorage.class.getResource("_system_images/" + path + "/");
 		File providedDir = new File(providedUrl.toURI());
 		FileUtils.copyDirContentsToDir(providedDir, ROOT_PATH.toFile(), false, "");
 	}

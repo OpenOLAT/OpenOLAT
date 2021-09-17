@@ -21,6 +21,7 @@ package org.olat.course.style.manager;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -68,13 +69,15 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	
 	@PostConstruct
 	public void initProvidedSystemImages() throws Exception {
-		if (!courseModule.isSystemImages160()) {
+		Set<String> systemImagesProvided = courseModule.getSystemImagesProvided();
+		if (!systemImagesProvided.contains("oo_16_0_1")) {
 			try {
-				systemImageStorage.initProvidedSystemImages();
-				courseModule.setSystemImages160(true);
-				log.info("System images 16.0 initialized");
+				systemImageStorage.initProvidedSystemImages("oo_16_0_1");
+				systemImagesProvided.add("oo_16_0_1");
+				courseModule.setSystemImages(systemImagesProvided);
+				log.info("System images 16.0.1 initialized");
 			} catch (Exception e) {
-				log.error("System images 16.0 not initialized", e);
+				log.error("System images 16.0.1 not initialized", e);
 			}
 		}
 	}
