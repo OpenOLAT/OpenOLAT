@@ -177,7 +177,13 @@ public class RepositoryEntryListController extends FormBasicController
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
 		this.searchParams = searchParams;
-		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
+		if(withPresets) {
+			dataSource = new DefaultRepositoryEntryDataSource(searchParams, this,
+					false, RepositoryEntryStatusEnum.preparationToPublished());
+		} else {
+			dataSource = new DefaultRepositoryEntryDataSource(searchParams, this,
+					searchParams.isMembershipMandatory(), searchParams.getEntryStatus());
+		}
 		initForm(ureq);
 		
 		if(load) {
