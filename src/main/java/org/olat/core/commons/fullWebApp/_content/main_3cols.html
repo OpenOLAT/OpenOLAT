@@ -130,6 +130,26 @@ jQuery().ready(function() {
 		// same breakpoint as bootstrap screen-md, opacity detect IE8
 		o_undockMenu(0);
 	}
+	
+	// Adjust width to fit menu content
+	#if($autoWidth)
+	try {
+		if (jQuery('#o_main_left div.o_tree').length > 0) {
+			var realWidth = jQuery('div.o_tree').prop('scrollWidth');
+			var visibleWidth = jQuery('#o_main_left_content').width();
+			if (visibleWidth < realWidth) {
+				var viewPortWidth = jQuery(window).width();
+				if (realWidth < (viewPortWidth - 50)) {			
+					var newEmWidth = Math.ceil(realWidth / 14) + 2;
+					jQuery('#o_main_left').width(newEmWidth + 'em');
+				}
+			}
+		}	
+	} catch(e) {
+		if(window.console)  console.log(e);
+	}
+	#end
+	
 #end
 
 #if($existsCol2 && $r.visible("col2"))		

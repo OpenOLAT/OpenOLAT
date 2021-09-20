@@ -279,17 +279,18 @@
 	>span {
 		position: absolute;
 		bottom: -20px;
-vertical-align: middle;
+		vertical-align: middle;
 		margin-bottom: 0.5em;
-		}
+	}
 	.o_table_batch_label {
 		padding-right: 1em;
 		font-size: $font-size-small;
 		color: $text-muted;
 	}
-	.btn {
+	.btn.btn-default {
 		@include button-variant($btn-primary-color, $btn-primary-bg, $btn-primary-border);
 		font-size: $font-size-small;
+		text-shadow: none;
 	}
 }
 
