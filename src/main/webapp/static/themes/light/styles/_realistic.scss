@@ -23,6 +23,9 @@
 	@include btn-styles($o-button-dirty-bg);
 }
 
+.o_table_batch_buttons .btn.btn-default {
+	@include btn-styles($btn-primary-bg);
+}
 
 /* remove text-shadow on default buttons in conjunction with other button styles */
 .btn-default {
