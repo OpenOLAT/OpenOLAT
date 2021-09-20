@@ -124,7 +124,7 @@ public class RepositoryEntryAuthorQueries {
 			}
 			
 			String deletedByName = null;
-			if(params.isDeleted()) {
+			if(params.hasStatus(RepositoryEntryStatusEnum.trash)) {
 				Identity deletedBy = re.getDeletedBy();
 				if(deletedBy != null) {
 					deletedByName = userManager.getUserDisplayName(deletedBy);
@@ -183,7 +183,7 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" inner join fetch v.statistics as stats")
 			  .append(" left join fetch v.educationalType as educationalType")
 			  .append(" left join fetch v.lifecycle as lifecycle ");
-			if(params.isDeleted()) {
+			if(params.hasStatus(RepositoryEntryStatusEnum.trash)) {
 				sb.append(" left join fetch v.deletedBy as deletedBy")
 				  .append(" left join fetch deletedBy.user as deletedByUser");
 			}
@@ -403,14 +403,8 @@ public class RepositoryEntryAuthorQueries {
 		if(params.isOwnedResourcesOnly()) {
 			sb.append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append(" ) and v.status");
-			if(params.isDeleted()) {
-				sb.in(RepositoryEntryStatusEnum.trash);
-			} else if(params.getClosed() != null) {
-				if(params.getClosed().booleanValue()) {
-					sb.in(RepositoryEntryStatusEnum.closed);
-				} else {
-					sb.in(RepositoryEntryStatusEnum.preparationToPublished());
-				}
+			if(params.hasStatus()) {
+				sb.in(params.getStatus());
 			} else {
 				sb.in(RepositoryEntryStatusEnum.preparationToClosed());
 			}
@@ -419,31 +413,18 @@ public class RepositoryEntryAuthorQueries {
 			if(roles == null) {
 				sb.append(" and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
 				  .append(") and (v.allUsers=true or v.bookable=true) and v.status ");
-				
-				if(params.getClosed() != null) {
-					if(params.getClosed().booleanValue()) {
-						sb.in(RepositoryEntryStatusEnum.closed);
-					} else {
-						sb.in(RepositoryEntryStatusEnum.published);
-					}
+				if(params.hasStatus()) {
+					sb.in(params.getStatus());
 				} else {
 					sb.in(RepositoryEntryStatusEnum.publishedAndClosed());
 				}
-				
-			} else if(params.isDeleted() && (roles.isAdministrator() || roles.isLearnResourceManager())) {
-				sb.append("     and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
-				  .append(") and v.status ").in(RepositoryEntryStatusEnum.trash);
 			} else {
-				sb.append("   and (")
+				sb.append(" and (")
 				  // owner, principal, learn resource manager and administrator which can see all
 				  .append("     ( membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, GroupRoles.owner)
 				  .append("       and v.status ");
-				if(params.getClosed() != null) {
-					if(params.getClosed().booleanValue()) {
-						sb.in(RepositoryEntryStatusEnum.closed);
-					} else {
-						sb.in(RepositoryEntryStatusEnum.preparationToPublished());
-					}
+				if(params.hasStatus()) {
+					sb.in(params.getStatus());
 				} else {
 					sb.in(RepositoryEntryStatusEnum.preparationToClosed());
 				} 
@@ -452,13 +433,8 @@ public class RepositoryEntryAuthorQueries {
 				  // standard users
 				sb.append("     or (membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
 				  .append("       and (v.allUsers=true or v.bookable=true) and v.status ");
-
-				if(params.getClosed() != null) {
-					if(params.getClosed().booleanValue()) {
-						sb.in(RepositoryEntryStatusEnum.closed);
-					} else {
-						sb.in(RepositoryEntryStatusEnum.published);
-					}
+				if(params.hasStatus()) {
+					sb.in(params.getStatus());
 				} else {
 					sb.in(RepositoryEntryStatusEnum.publishedAndClosed());
 				} 
@@ -467,12 +443,8 @@ public class RepositoryEntryAuthorQueries {
 				if(roles.isAuthor()) {
 					sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
 					  .append("   and v.status ");
-					if(params.getClosed() != null) {
-						if(params.getClosed().booleanValue()) {
-							sb.in(RepositoryEntryStatusEnum.closed);
-						} else {
-							sb.in(RepositoryEntryStatusEnum.reviewToPublished());
-						}
+					if(params.hasStatus()) {
+						sb.in(params.getStatus());
 					} else {
 						sb.in(RepositoryEntryStatusEnum.reviewToClosed());
 					}
@@ -588,7 +560,7 @@ public class RepositoryEntryAuthorQueries {
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case deletedBy:
-					if(params.isDeleted()) {
+					if(params.hasStatus(RepositoryEntryStatusEnum.trash)) {
 						sb.append(" order by deletedByUser.lastName ");
 						appendAsc(sb, asc).append(" nulls last, deletedByUser.firstName ");
 						appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");

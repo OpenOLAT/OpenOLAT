@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.ui.settings.RepositoryEntryLifecycleController;
@@ -217,8 +218,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 		private void checkCourseAvailability(UserRequest ureq, TextElement textElement) {
 			if (StringHelper.containsNonWhitespace(textElement.getValue())) {
 				SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-				params.setClosed(false);
-				params.setDeleted(false);
+				params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
 				params.setExactSearch(true);
 				
 				if (textElement == displayNameEl) {
