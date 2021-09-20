@@ -372,7 +372,7 @@ public class DocumentConfigController extends BasicController {
 	}
 
 	private void doSelectRepositoryEntry(UserRequest ureq) {
-		repoSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, FILE_TYPES, null);
+		repoSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, FILE_TYPES, translate("select"));
 		listenTo(repoSearchCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtrl.getInitialComponent(),
