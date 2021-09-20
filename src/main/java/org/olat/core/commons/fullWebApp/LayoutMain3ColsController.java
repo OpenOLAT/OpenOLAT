@@ -363,7 +363,13 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		}
 		if (layoutConfig == null) {
 			// user has no config so far, use default configuration if available or create a new one
-			layoutConfig = (defaultConfiguration == null ? new LayoutMain3ColsConfig() : defaultConfiguration);
+			if (defaultConfiguration == null) {
+				layoutMainVC.contextPut("autoWidth", Boolean.TRUE);
+				layoutConfig = new LayoutMain3ColsConfig();
+			} else {
+				layoutMainVC.contextPut("autoWidth", Boolean.FALSE);
+				layoutConfig = defaultConfiguration;
+			}
 		}
 		return layoutConfig;
 
