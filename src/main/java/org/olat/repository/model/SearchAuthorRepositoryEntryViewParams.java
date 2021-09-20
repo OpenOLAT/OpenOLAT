@@ -27,6 +27,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 
 /**
  * 
@@ -39,10 +40,9 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private final Roles roles;
 	
 	private Boolean marked;
-	private Boolean closed;
-	private boolean deleted = false;
 	private boolean ownedResourcesOnly;
 	private ResourceUsage resourceUsage = ResourceUsage.all;
+	private RepositoryEntryStatusEnum[] status;
 	
 	private String idAndRefs;
 	private String idRefsAndTitle;
@@ -205,14 +205,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 	public Roles getRoles() {
 		return roles;
 	}
-	
-	public boolean isDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
-	}
 
 	public Boolean getMarked() {
 		return marked;
@@ -228,14 +220,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 
 	public void setResourceUsage(ResourceUsage resourceUsage) {
 		this.resourceUsage = resourceUsage;
-	}
-
-	public Boolean getClosed() {
-		return closed;
-	}
-
-	public void setClosed(Boolean closed) {
-		this.closed = closed;
 	}
 	
 	public boolean isLicenseTypeDefined() {
@@ -270,6 +254,33 @@ public class SearchAuthorRepositoryEntryViewParams {
 		this.taxonomyLevels = taxonomyLevels;
 	}
 	
+	public boolean hasStatus() {
+		return status != null && status.length > 0;
+	}
+	
+	public boolean hasStatus(RepositoryEntryStatusEnum search) {
+		if(status != null && status.length > 0) {
+			for(RepositoryEntryStatusEnum s:status) {
+				if(s == search) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public RepositoryEntryStatusEnum[] getStatus() {
+		return status;
+	}
+
+	public void setStatus(RepositoryEntryStatusEnum[] statusArr) {
+		if(statusArr == null || statusArr.length == 0) {
+			status = null;
+		} else {
+			status = statusArr;
+		}
+	}
+
 	/**
 	 * Reset the search values but not the permissions.
 	 */
@@ -278,8 +289,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 		setOwnedResourcesOnly(false);
 		setResourceTypes(null);
 		setIdAndRefs(null);
-		setClosed(null);
-		setDeleted(false);
 		setAuthor(null);
 		setDisplayname(null);
 		setDescription(null);
@@ -288,6 +297,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 		setTaxonomyLevels(null);
 		setLicenseTypeKeys(null);
 		setResourceUsage(null);
+		setStatus(null);
 	}
 
 	public enum OrderBy {

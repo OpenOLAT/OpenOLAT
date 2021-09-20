@@ -109,7 +109,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		
 		SearchAuthorRepositoryEntryViewParams params
 			= new SearchAuthorRepositoryEntryViewParams(id, roles);
-		params.setDeleted(true);
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.deleted });
 		
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, 10);
 		Assert.assertNotNull(results);
@@ -335,7 +335,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.authorRoles());
-		params.setDeleted(true);
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.trash });
 		params.setOwnedResourcesOnly(true);
 		
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
@@ -473,7 +473,7 @@ public class RepositoryEntryAuthorQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(id, Roles.administratorRoles());
-		params.setDeleted(true);
+		params.setStatus(new RepositoryEntryStatusEnum[] { RepositoryEntryStatusEnum.trash });
 		
 		RepositoryEntryAuthorViewResults results = repositoryEntryAuthorViewQueries.searchViews(params, 0, -1);
 		Assert.assertFalse(contains(rePreparation, results));

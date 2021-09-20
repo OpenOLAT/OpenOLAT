@@ -60,7 +60,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -174,7 +173,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory, FlexiTableCssDelegate {
 
-	private SingleSelection closedEl;
 	private FlexiTableElement tableEl;
 	
 	private FlexiFilterTabPreset myTab;
@@ -496,7 +494,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		if(roles.isAuthor() || hasAdministratorRight) {
 			deletedTab = FlexiFilterTabPreset.presetWithImplicitFilters("Deleted", translate("search.deleted"),
-					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, "deleted")));
+					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, RepositoryEntryStatusEnum.trash.name())));
 			deletedTab.setElementCssClass("o_sel_author_deleted");
 			deletedTab.setPosition(FlexiFilterTabPosition.right);
 			tabs.add(deletedTab);
@@ -553,13 +551,15 @@ public class AuthorListController extends FormBasicController implements Activat
 
 		// life-cycle
 		SelectionValues lifecycleValues = new SelectionValues();
-		lifecycleValues.add(SelectionValues.entry("active", translate("cif.resources.status.active")));
-		lifecycleValues.add(SelectionValues.entry("closed", translate("cif.resources.status.closed")));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate(RepositoryEntryStatusEnum.preparation.i18nKey())));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.review.name(), translate(RepositoryEntryStatusEnum.review.i18nKey())));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.coachpublished.name(), translate(RepositoryEntryStatusEnum.coachpublished.i18nKey())));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.published.name(), translate(RepositoryEntryStatusEnum.published.i18nKey())));
+		lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.closed.name(), translate(RepositoryEntryStatusEnum.closed.i18nKey())));
 		if(roles.isAuthor() || hasAdministratorRight) {
-			lifecycleValues.add(SelectionValues.entry("deleted", translate("cif.resources.status.deleted")));
-			
+			lifecycleValues.add(SelectionValues.entry(RepositoryEntryStatusEnum.trash.name(), translate(RepositoryEntryStatusEnum.trash.i18nKey())));
 		}
-		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"),
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.resources.status"),
 				AuthorSourceFilter.STATUS.name(), lifecycleValues, true));
 		
 		// type of resources
@@ -947,8 +947,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
-		} else if(closedEl == source) {
-			doSetClosedFilter();
 		} else if(importLink == source) {
 			doImport(ureq);
 		} else if(importUrlLink == source) {
@@ -1184,19 +1182,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 		return rows;
-	}
-	
-	private void doSetClosedFilter() {
-		searchParams.setClosed(null);
-		if(closedEl.isOneSelected()) {
-			int selected = closedEl.getSelected();
-			if(selected == 1) {
-				searchParams.setClosed(Boolean.FALSE);
-			} else if(selected == 2) {
-				searchParams.setClosed(Boolean.TRUE);
-			}
-		}
-		tableEl.reset(true, true, true);
 	}
 	
 	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {

@@ -810,7 +810,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					// If only one of the two actions are managed, we go to the
 					// separate page as well and show only the relevant action
 					// there.
-					lifeCycleChangeLink = LinkFactory.createToolLink("lifeCycleChange", translate("details.lifecycle.change"), this, "o_icon o_icon-fw o_icon_lifecycle");
+					lifeCycleChangeLink = LinkFactory.createToolLink("lifeCycleChange", translate("details.lifecycle.change"), this, "o_icon o_icon-fw o_icon_delete_item");
 					settingsDropdown.addComponent(lifeCycleChangeLink);
 				}
 			} else if(!deleteManaged) {

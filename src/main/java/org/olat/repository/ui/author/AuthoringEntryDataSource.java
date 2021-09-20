@@ -51,6 +51,7 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
@@ -181,20 +182,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 				searchParams.setOwnedResourcesOnly(ownedOnly);
 				break;
 			case STATUS:
-				String selectedStatus = ((FlexiTableSingleSelectionFilter)filter).getValue();
-				if("active".equals(selectedStatus)) {
-					searchParams.setClosed(Boolean.FALSE);
-					searchParams.setDeleted(false);
-				} else if("closed".equals(selectedStatus)) {
-					searchParams.setClosed(Boolean.TRUE);
-					searchParams.setDeleted(false);
-				} else if("deleted".equals(selectedStatus)) {
-					searchParams.setClosed(null);
-					searchParams.setDeleted(true);
-				} else {
-					searchParams.setDeleted(false);
-					searchParams.setClosed(null);
-				}
+				List<String> selectedStatus = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				searchParams.setStatus(RepositoryEntryStatusEnum.toArray(selectedStatus));
 				break;
 			case TYPE:
 				searchParams.setResourceTypes(((FlexiTableMultiSelectionFilter)filter).getValues());

@@ -19,6 +19,9 @@
  */
 package org.olat.repository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.util.StringHelper;
 
 /**
@@ -120,5 +123,17 @@ public enum RepositoryEntryStatusEnum {
 			}
 		}
 		return allOk;
-	}	
+	}
+	
+	public static RepositoryEntryStatusEnum[] toArray(List<String> status) {
+		List<RepositoryEntryStatusEnum> list = new ArrayList<>();
+		if(status != null && !status.isEmpty()) {
+			for(String s:status) {
+				if(isValid(s)) {
+					list.add(valueOf(s));
+				}
+			}
+		}
+		return list.toArray(new RepositoryEntryStatusEnum[list.size()]);
+	}
 }
