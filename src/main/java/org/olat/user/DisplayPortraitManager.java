@@ -206,6 +206,17 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		return getPortraitFile(identity, LOGO_BIG_FILENAME);
 	}
 	
+	public VFSLeaf getLargestVFSLogo(Identity username) {
+		VFSLeaf portrait = getPortraitLeaf(username, LOGO_MASTER_FILENAME);
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitLeaf(username, LOGO_BIG_FILENAME);
+		}
+		if(portrait == null || !portrait.exists()) {
+			portrait = getPortraitLeaf(username, LOGO_SMALL_FILENAME);
+		}
+		return portrait;
+	}
+	
 	public File getLargestLogo(Identity identity) {
 		File portrait = getPortraitFile(identity, LOGO_MASTER_FILENAME);
 		if(portrait == null || !portrait.exists()) {
@@ -272,12 +283,20 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 		setImage(file, filename, identity, PORTRAIT_PREFIX_FILENAME,
 				PORTRAIT_MASTER_FILENAME, PORTRAIT_BIG_FILENAME, PORTRAIT_SMALL_FILENAME,
 				WIDTH_PORTRAIT_BIG, WIDTH_PORTRAIT_SMALL);
+		VFSLeaf vfsPortrait = getLargestVFSPortrait(identity);
+		if(vfsPortrait != null && vfsPortrait.canMeta() == VFSConstants.YES) {
+			vfsRepositoryService.resetThumbnails(vfsPortrait);
+		}
 	}
 	
 	public void setLogo(File file, String filename, Identity identity) {
 		setImage(file, filename, identity, LOGO_PREFIX_FILENAME,
 				LOGO_MASTER_FILENAME, LOGO_BIG_FILENAME, LOGO_SMALL_FILENAME,
 				WIDTH_LOGO_BIG, WIDTH_LOGO_SMALL);
+		VFSLeaf vfsLogo = getLargestVFSLogo(identity);
+		if(vfsLogo != null && vfsLogo.canMeta() == VFSConstants.YES) {
+			vfsRepositoryService.resetThumbnails(vfsLogo);
+		}
 	}
 
 	private void setImage(File file, String filename, Identity identity, String prefix,
@@ -319,10 +338,7 @@ public class DisplayPortraitManager implements UserDataDeletable, UserDataExport
 			imageHelper.scaleImage(file, extension, smallFile, maxSmallWidth, HEIGHT_SMALL, false);
 		}
 		
-		VFSLeaf vfsPortrait = getLargestVFSPortrait(identity);
-		if(vfsPortrait.canMeta() == VFSConstants.YES) {
-			vfsRepositoryService.resetThumbnails(vfsPortrait);
-		}
+
 	}
 
 	public void deletePortrait(Identity identity) {
