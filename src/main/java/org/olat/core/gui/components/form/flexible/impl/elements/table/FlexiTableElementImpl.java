@@ -1717,6 +1717,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			List<String> implicitFilters = filterTabsEl == null ? null : filterTabsEl.getImplicitFiltersOfSelectedTab();
 			filtersEl.setFiltersValues(null, implicitFilters, e.getFilterValues(), false);
 			doSearch(ureq, FlexiTableReduceEvent.FILTER, getSearchText(), filtersEl.getSelectedFilters());
+		} else if(e.getSortKey() != null) {
+			sort(e.getSortKey());
 		}
 		
 		saveCustomSettings(ureq);

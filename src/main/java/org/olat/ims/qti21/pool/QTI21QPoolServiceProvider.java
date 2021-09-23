@@ -258,9 +258,12 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
 				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-		assessmentItem.setTitle(copy.getTitle());
-		
-		qtiService.persistAssessmentObject(itemFile, assessmentItem);
+		if(assessmentItem == null) {
+			log.error("Question not readable: {} (key: {}, path: {})", original.getTitle(), original.getKey(), original.getDirectory());
+		} else {
+			assessmentItem.setTitle(copy.getTitle());
+			qtiService.persistAssessmentObject(itemFile, assessmentItem);
+		}
 	}
 
 	@Override

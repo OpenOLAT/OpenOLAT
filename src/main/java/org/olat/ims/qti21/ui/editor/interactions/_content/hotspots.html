@@ -3,7 +3,7 @@
 #if($r.visible("new.circle"))
 	<div class="small btn-toolbar o_block_bottom"><div class="btn-group">$r.render("new.circle") $r.render("new.rectangle")</div> <div class="btn-group">$r.render("extended.edit.hotspot")</div></div>
 #end
-<div class="o_qti_hotspots_editor $layoutCssClass" style="position:relative; #if($width && !${width.isEmpty()}) width:${width}px; #end #if($height && !${height.isEmpty()}) height:${height}px; #end #if($filename && !${filename.isEmpty()}) background-image: url('$mapperUri/${filename}?t=${r.getUniqueId()}'); #end">
+<div class="o_qti_hotspots_editor $layoutCssClass #if($filename && !${filename.isEmpty()}) o_qti_hotspots_with_bg #else o_qti_hotspots_without_bg #end " style="position:relative; #if($width && !${width.isEmpty()}) width:${width}px; #end #if($height && !${height.isEmpty()}) height:${height}px; #end #if($filename && !${filename.isEmpty()}) background-image: url('$mapperUri/${filename}?t=${r.getUniqueId()}'); #end">
 	<input type="hidden" id="hotspots_selection" name="hotspots_selection" value="" />
 #foreach($hotspot in $hotspots)
 	<input type="hidden" id="${hotspot.identifier}_shape" name="${hotspot.identifier}_shape" value="${hotspot.shape}" />
