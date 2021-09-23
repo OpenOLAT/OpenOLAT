@@ -136,8 +136,8 @@ ul.sessionControl {
 
 /* Hotspot */
 .o_qti_hotspots_editor {
-	min-height: 300px;
-	min-width: 400px;
+	min-height: 50px;
+	min-width: 75px;
 	background-repeat: no-repeat;
 	background-size: cover;
 	touch-action: none;
@@ -146,6 +146,11 @@ ul.sessionControl {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	overflow: hidden;
+	
+	&.o_qti_hotspots_without_bg {
+		min-height: 300px;
+		min-width: 400px;
+	}
 	
 	.o_draw_circle.o_hotspot_selected, .o_draw_rectangle.o_hotspot_selected {
 		background-color: $o-drawing-select-bg !important;
