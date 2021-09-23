@@ -128,9 +128,10 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 	
 	protected void updateSort(SortKey sortKey) {
 		String name = null;
-		if(tableEl.getSorts() != null) {
+		if(tableEl.getSorts() != null && sortKey != null) {
 			for(FlexiTableSort sort:tableEl.getSorts()) {
-				if(sort.getSortKey().getKey().equals(sortKey.getKey())) {
+				if(sort != null && sort.getSortKey() != null && sort.getSortKey().getKey() != null
+						&& sort.getSortKey().getKey().equals(sortKey.getKey())) {
 					name = translate("sort.settings.with", sort.getLabel());
 				}
 			}
@@ -147,7 +148,6 @@ class FlexiFiltersAndSettingsController extends FormBasicController {
 			sortIcon = "o_icon o_icon_sort_desc";
 		}
 		sortLink.getComponent().setIconRightCSS(sortIcon);
-		
 	}
 	
 	protected void updateLink(FlexiTableExtendedFilter filter, Object value) {
