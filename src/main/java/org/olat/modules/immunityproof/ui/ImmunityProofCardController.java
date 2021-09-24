@@ -61,7 +61,8 @@ public class ImmunityProofCardController extends FormBasicController {
 	private Identity identity;
 	
 	private CloseableModalController cmc;
-	private ImmunityProofCreateController immunityProofCreateController;
+	private ImmunityProofCreateWrapperController createWrapperController;
+	private ImmunityProofCreateManuallyController immunityProofCreateController;
 	private ImmunityProofDeleteConfirmController deleteConfirmController;
 	
 	@Autowired
@@ -107,7 +108,7 @@ public class ImmunityProofCardController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == immunityProofCreateController) {
+		if (source == createWrapperController) {
 			if (event instanceof ImmunityProofAddedEvent) {
 				flc.setDirty(true);
 				loadData();
@@ -138,22 +139,26 @@ public class ImmunityProofCardController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		if (cmc != null && cmc.isCloseable()) {
-			cmc.deactivate();
-		}
-		
 		removeAsListenerAndDispose(immunityProofCreateController);
+		removeAsListenerAndDispose(createWrapperController);
 		removeAsListenerAndDispose(cmc);
 		
 		immunityProofCreateController = null;
+		createWrapperController = null;
 		cmc = null;
 	}
 	
 	private void doAddImmunityProof(UserRequest ureq) {
-		immunityProofCreateController = new ImmunityProofCreateController(ureq, getWindowControl(), identity, false);
+		createWrapperController = new ImmunityProofCreateWrapperController(ureq, getWindowControl(), identity, false);
+		listenTo(createWrapperController);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("cancel"),
+				createWrapperController.getInitialComponent(), true, translate("add.immunity.proof"));
+		
+		/*immunityProofCreateController = new ImmunityProofCreateManuallyController(ureq, getWindowControl(), identity, false);
 		listenTo(immunityProofCreateController);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), immunityProofCreateController.getInitialComponent(), true, translate("add.immunity.proof"));
+		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), immunityProofCreateController.getInitialComponent(), true, translate("add.immunity.proof"));*/
 		listenTo(cmc);
 		cmc.activate();
 	}

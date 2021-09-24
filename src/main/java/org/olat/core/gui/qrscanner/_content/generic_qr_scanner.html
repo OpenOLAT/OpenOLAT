@@ -1,0 +1,121 @@
+<div class="o_qr_scanner_wrapper">
+	<video class="o_qr_scanner hidden" id="o_qr_scanner" height="100%"
+		width="100%" autoplay>
+
+	</video>
+
+	<div class="o_warning hidden" id="o_qr_scanner_warning">
+		<i class="o_icon o_icon_lg o_icon_warn"> </i>
+		$r.translate("scanner.permission.error")
+	</div>
+</div>
+
+<script src='$r.staticLink("js/qrscanner/qr-scanner.umd.min.js")'></script>
+<script>
+var cameraInput = document.getElementById("o_qr_scanner");
+var warning = document.getElementById("o_qr_scanner_warning");
+var qrScanner = null;
+var lastTime = 0;
+
+// Camera related functions
+// TODO Maybe we do not need this at all, it is integrated in the scanner
+/*function stopCamera() {
+  if (cameraInput.srcObject != null) {
+    var stream = cameraInput.srcObject;
+    var tracks = stream.getTracks();
+    
+    if (tracks) {
+    	tracks.forEach((track) => {
+    		console.log(track);
+      		track.stop();
+    	});
+    }
+  }
+
+  cameraInput.srcObject = null;
+}
+
+function startCamera() {
+  if (navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({video: true})
+      .then((stream) => {
+        startVideoStream(stream);
+      }, (error) => {
+        setPermissionWarning(true);
+      })
+      .catch(error => console.log("Could not get access to webcam!"));
+  }
+}
+
+function startVideoStream(stream) {
+  cameraInput.srcObject = stream;
+}*/
+
+function setPermissionWarning(visible) {
+  if (visible) {
+    warning.classList.remove("hidden");
+    cameraInput.classList.add("hidden");
+  } else {
+    warning.classList.add("hidden");
+    cameraInput.classList.remove("hidden");
+  }
+}
+
+// QR scanner related functions
+function getScanRegion(video) {
+  // Necessary because the default of the qr scanner library only uses a downscaled fraction of the actual video input
+  return {
+    x: 0,
+    y: 0,
+    width: video.videoWidth,
+    height: video.videoHeight,
+  };
+}
+
+function onQrCodeFound(qrCode) {
+	// Wait 2 seconds before firing a new event
+	var now = new Date().getTime(); 
+    if (now - lastTime < 2000) {
+        return;
+    } else {
+        lastTime = now;
+        
+        // This syntax is necessary exactly as it is
+        // The additional bracket in the end is intended
+        
+        ${r.openJavaScriptCommand("QrCodeFoundEvent")}, 'qrCode', qrCode);
+    }
+}
+
+function initScanner() {
+  if (navigator.mediaDevices.getUserMedia) {
+    QrScanner.WORKER_PATH = '$r.staticLink("js/qrscanner/qr-scanner.umd.min.js")';
+    
+    qrScanner = new QrScanner(cameraInput, qrCode => onQrCodeFound(qrCode), QrScanner._onDecodeError, getScanRegion);
+    qrScanner.setInversionMode("both");
+    qrScanner.start();
+  }
+}
+
+function cleanUpScanner() {
+	// Stop camera and clean up worker	
+	//stopCamera();
+
+	//qrScanner.stop();
+  	qrScanner.destroy();
+  	qrScanner = null;
+  	
+  	cameraInput.classList.add("hidden");
+}
+
+function initCameraAndScanner() {
+	// Start camera and setup the qr scanner
+	//startCamera();
+	
+	// TODO Check for camera and show warning if there is none or no permission
+	initScanner();
+	
+	cameraInput.classList.remove("hidden");
+}
+ 
+</script>

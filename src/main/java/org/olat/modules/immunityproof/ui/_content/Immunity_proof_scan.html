@@ -1,0 +1,51 @@
+<style>
+#container {
+	margin: 0px auto;
+	width: 500px;
+	height: 375px;
+	border: 10px #333 solid;
+}
+#videoElement {
+	width: 500px;
+	height: 375px;
+	background-color: #666;
+}
+</style>
+
+<div id="container">
+	<input type="file"
+       id="avatar" name="avatar"
+       accept="image/png, image/jpeg">
+
+	<video autoplay="true" id="videoElement">
+	
+	</video>
+	<button onClick="pauseVideo()">Pause</button>
+	<button onClick="startVideo()">Start</button>
+</div>
+
+<script>
+var video = document.querySelector("#videoElement");
+
+function startVideo() {
+	if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+		  navigator.mediaDevices.getUserMedia({ 
+			  video: true,
+			  facingMode: {
+			      exact: 'environment'
+			    }
+			  })
+		    .then(function (stream) {
+		      video.srcObject = stream;
+		    })
+		    .catch(function (error) {
+		      console.log("Something went wrong!");
+		    });
+		} 
+}
+
+function pauseVideo() {
+	video.stop();
+}
+
+</script>

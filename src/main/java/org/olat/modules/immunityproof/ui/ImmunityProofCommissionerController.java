@@ -50,7 +50,7 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 	
 	private UserSearchFlexiController userSearchController;
 	
-	private ImmunityProofCreateController immunityProofCreateController;
+	private ImmunityProofCreateManuallyController immunityProofCreateController;
 	private ImmunityProofCardController cardController;
 	private CloseableModalController cmc;
 	
@@ -107,7 +107,7 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 	}
 	
 	private void doAddImmunityProof(UserRequest ureq, Identity identity) {
-		immunityProofCreateController = new ImmunityProofCreateController(ureq, getWindowControl(), identity, true);
+		immunityProofCreateController = new ImmunityProofCreateManuallyController(ureq, getWindowControl(), identity, true);
 		listenTo(immunityProofCreateController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), immunityProofCreateController.getInitialComponent(), true, translate("add.immunity.proof"));

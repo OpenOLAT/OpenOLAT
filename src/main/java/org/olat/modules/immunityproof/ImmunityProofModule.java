@@ -84,6 +84,11 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
     private String qrEntranceText;
     @Value("${immunity.proof.qr.entrance.text:}")
     private String qrEntranceTextBackup;
+
+	@Value("${python.dir}")
+	private String pythonDir;
+	@Value("${immunity.proof.script.dir}")
+	private String validationScriptDir;
 	
 	@Autowired
 	public ImmunityProofModule(CoordinatorManager coordinatorManager) {
@@ -242,6 +247,14 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		return 0;
 	}
 	
+	public String getPythonDir() {
+		return pythonDir;
+	}
+
+	public String getValidationScriptDir() {
+		return validationScriptDir;
+	}
+
 	public enum ImmunityProofType {
 		vaccination, 
 		recovery, 
