@@ -1707,9 +1707,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		if(StringHelper.containsNonWhitespace(ldapLoginModule.getTrustStoreLocation())) {
 			System.setProperty("javax.net.ssl.trustStore", ldapLoginModule.getTrustStoreLocation());
 		}
-		if(StringHelper.containsNonWhitespace(ldapLoginModule.getSocketFactory())) {
-			env.put("java.naming.ldap.factory.socket", ldapLoginModule.getSocketFactory());
-		}
 	}
 	
 	/**

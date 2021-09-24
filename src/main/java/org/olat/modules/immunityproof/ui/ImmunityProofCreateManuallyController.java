@@ -54,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class ImmunityProofCreateController extends FormBasicController {
+public class ImmunityProofCreateManuallyController extends FormBasicController {
 
 	private final boolean usedByCovidCommissioner;
 	private final Identity editedIdentity;
@@ -97,7 +97,7 @@ public class ImmunityProofCreateController extends FormBasicController {
 	@Autowired
 	private ImmunityProofModule immunityProofModule;
 	
-	public ImmunityProofCreateController(UserRequest ureq, WindowControl wControl, Identity editedIdentity, boolean usedByCovidCommissioner) {
+	public ImmunityProofCreateManuallyController(UserRequest ureq, WindowControl wControl, Identity editedIdentity, boolean usedByCovidCommissioner) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
