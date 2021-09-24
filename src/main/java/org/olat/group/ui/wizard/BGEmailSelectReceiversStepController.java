@@ -71,8 +71,8 @@ public class BGEmailSelectReceiversStepController extends StepFormBasicControlle
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> selectedKeys = receiversEl.getSelectedKeys();
-		addToRunContext("tutors", new Boolean(selectedKeys.contains("tutors")));
-		addToRunContext("participants", new Boolean(selectedKeys.contains("participants")));
+		addToRunContext("tutors", Boolean.valueOf(selectedKeys.contains("tutors")));
+		addToRunContext("participants", Boolean.valueOf(selectedKeys.contains("participants")));
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

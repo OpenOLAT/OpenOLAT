@@ -38,7 +38,7 @@ import org.olat.group.BusinessGroup;
  * 
  * @author gnaegi
  */
-public class GroupsToAreaDataModel implements ChoiceModel {
+public class GroupsToAreaDataModel implements ChoiceModel<BusinessGroup> {
 	
 	private final Translator translator;
 	private final List<BusinessGroup> allGroups;
@@ -85,7 +85,8 @@ public class GroupsToAreaDataModel implements ChoiceModel {
 	public boolean isDisabled(int row) {
 		return false;
 	}
-	
+
+	@Override
 	public BusinessGroup getObject(int row) {
 		return allGroups.get(row);
 	}

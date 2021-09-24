@@ -52,7 +52,7 @@ public class BusinessGroupEditDetailsController extends BasicController {
 		
 		mainVC = createVelocityContainer("tab_bgDetail");
 
-		//hoover helptext for ID
+		//hoover help text for ID
 		HelpTooltip idHelpText = new HelpTooltip("idHelpText", translate("group.id.help"));
 		mainVC.put("idHelpText", idHelpText);
 

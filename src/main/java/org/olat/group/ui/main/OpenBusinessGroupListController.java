@@ -33,10 +33,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.OpenBusinessGroupRow;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
@@ -53,35 +55,38 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 	
 	@Override
 	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
-		searchCtrl.enableRoles(false);
+		//
 	}
 	
 	@Override
 	protected FlexiTableColumnModel initColumnModel() {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nHeaderKey(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
 				true, Cols.name.name(), new StaticFlexiCellRenderer(TABLE_ACTION_LAUNCH, new BusinessGroupNameCellRenderer())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18n(), Cols.key.ordinal(),
-				true, Cols.key.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key));
 		if(groupModule.isManagedBusinessGroups()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18n(), Cols.externalId.ordinal(),
-					true, Cols.externalId.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18n(), Cols.description.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18nHeaderKey(), Cols.description.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18n(), Cols.resources.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18nHeaderKey(), Cols.resources.ordinal(),
 				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.freePlaces.i18nHeaderKey(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH,
 				true, Cols.freePlaces.name(), new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18nHeaderKey(), Cols.accessTypes.ordinal(),
 				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.role.i18n(), Cols.role.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.role.i18nHeaderKey(), Cols.role.ordinal(),
 				true, Cols.role.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGRoleCellRenderer(getLocale())));
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.accessControlLaunch.i18n(), Cols.accessControlLaunch.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.accessControlLaunch));
 		
 		return columnsModel;
+	}
+	
+	@Override
+	protected void initFilters() {
+		tableEl.setSearchEnabled(true);
 	}
 	
 	@Override
@@ -95,19 +100,17 @@ public class OpenBusinessGroupListController extends AbstractBusinessGroupListCo
 	}
 
 	@Override
-	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
-		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
-		params.setPublicGroups(Boolean.TRUE);
-		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
-		return params;
-	}
-
-	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setPublicGroups(Boolean.TRUE);
 		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
+		params.setGroupStatus(List.of(BusinessGroupStatusEnum.active));
 		return params;
+	}
+	
+	@Override
+	protected void changeFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		//
 	}
 
 	@Override

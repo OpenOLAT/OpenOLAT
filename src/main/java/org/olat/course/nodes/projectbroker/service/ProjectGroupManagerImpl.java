@@ -41,7 +41,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.coordinate.SyncerCallback;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -53,6 +52,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.properties.Property;
@@ -81,6 +81,8 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	private ProjectBrokerManager projectBrokerManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 
 	//////////////////////
 	// ACCOUNT MANAGEMENT
@@ -103,7 +105,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 			// Check if account-manager-group-key-property already exist
 			if (accountManagerGroupProperty != null) {
 				groupKey = accountManagerGroupProperty.getLongValue();
-				log.debug("accountManagerGroupProperty=" + accountManagerGroupProperty + "  groupKey=" + groupKey);
+				log.debug("accountManagerGroupProperty={} groupKey={}", accountManagerGroupProperty, groupKey);
 			} 
 			log.debug("groupKey={}", groupKey);
 			if (groupKey != null) {
@@ -189,7 +191,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	}
 
 	@Override
-	public void deleteAccountManagerGroup( CoursePropertyManager cpm, CourseNode courseNode) {
+	public void deleteAccountManagerGroup( CoursePropertyManager cpm, CourseNode courseNode, Identity deletedBy) {
 		log.debug("deleteAccountManagerGroup start...");
   	Property accountManagerGroupProperty = cpm.findCourseNodeProperty(courseNode, null, null, ProjectBrokerCourseNode.CONF_ACCOUNTMANAGER_GROUP_KEY);
   	if (accountManagerGroupProperty != null) {
@@ -197,11 +199,10 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
   		if (groupKey != null) {
 				BusinessGroup accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
 				if (accountManagerGroup != null) {
-					BusinessGroupService bgs = businessGroupService;
-					bgs.deleteBusinessGroup(accountManagerGroup);
+					businessGroupLifecycleManager.deleteBusinessGroup(accountManagerGroup, deletedBy, false);
 					log.info(Tracing.M_AUDIT, "ProjectBroker: Deleted accountManagerGroup={}", accountManagerGroup);
 				} else {
-					log.debug("deleteAccountManagerGroup: accountManagerGroup=" + accountManagerGroup + " has already been deleted");
+					log.debug("deleteAccountManagerGroup: accountManagerGroup={} has already been deleted", accountManagerGroup);
 				}
 			}
   		cpm.deleteProperty(accountManagerGroupProperty);
@@ -215,9 +216,8 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	public BusinessGroup updateAccountManagerGroupName(Identity ureqIdentity, String groupName, String groupDescription, BusinessGroup accountManagerGroup) {
 		// group could have been deleted, see FXOLAT-295
 		if (accountManagerGroup != null){
-			BusinessGroupService bgs = businessGroupService;
-			BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(accountManagerGroup);
-			return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, groupName, groupDescription,
+			BusinessGroup reloadedBusinessGroup = businessGroupService.loadBusinessGroup(accountManagerGroup);
+			return businessGroupService.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, groupName, groupDescription,
 					reloadedBusinessGroup.getExternalId(), reloadedBusinessGroup.getManagedFlagsString(),
 					reloadedBusinessGroup.getMinParticipants(), reloadedBusinessGroup.getMaxParticipants());
 		}
@@ -241,7 +241,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 		while (projectGroup == null) {
 			// name already exist try another one
 			String newGroupName = groupName + " _" + counter ;
-			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, BusinessGroup.BUSINESS_TYPE,//TODO gorup type
+			projectGroup = businessGroupService.createBusinessGroup(identity, newGroupName, groupDescription, BusinessGroup.BUSINESS_TYPE,//TODO group type
 					-1, -1, false, false, re);
 			counter++;
 		}
@@ -250,8 +250,8 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	}
 
 	@Override
-	public void deleteProjectGroupFor(Project project) {
-		businessGroupService.deleteBusinessGroup(project.getProjectGroup());
+	public void deleteProjectGroupFor(Project project, Identity deletedBy) {
+		businessGroupLifecycleManager.deleteBusinessGroup(project.getProjectGroup(), deletedBy, false);
 	}
 	
 	/**
@@ -269,37 +269,30 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 
 	@Override
 	public List<Identity> addCandidates(final List<Identity> addIdentities, final Project project) {
-		List<Identity> addedIdentities = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<List<Identity>>(){
-			@Override
-			public List<Identity> execute() {
-				List<Identity> addedIdentityList = new ArrayList<>();
-				for (Identity identity : addIdentities) {
-					if (!securityGroupDao.isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
-						securityGroupDao.addIdentityToSecurityGroup(identity, project.getCandidateGroup());
-						addedIdentityList.add(identity);
-						log.info(Tracing.M_AUDIT, "ProjectBroker: Add user as candidate, identity={}", identity);
-					}
-					// fireEvents ?
+		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), () -> {
+			List<Identity> addedIdentityList = new ArrayList<>();
+			for (Identity identity : addIdentities) {
+				if (!securityGroupDao.isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
+					securityGroupDao.addIdentityToSecurityGroup(identity, project.getCandidateGroup());
+					addedIdentityList.add(identity);
+					log.info(Tracing.M_AUDIT, "ProjectBroker: Add user as candidate, identity={}", identity);
 				}
-				return addedIdentityList;
+				// fireEvents ?
 			}
+			return addedIdentityList;
 		});// end of doInSync
-		return addedIdentities;
 	}
 
 	@Override
 	public void removeCandidates(final List<Identity> addIdentities, final Project project) {
-		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
-			@Override
-			public Boolean execute() {
-				Project reloadedProject = (Project) dbInstance.loadObject(project, true);
-				for (Identity identity : addIdentities) {
-					securityGroupDao.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-					log.info(Tracing.M_AUDIT, "ProjectBroker: Remove user as candidate, identity={}", identity);
-					// fireEvents ?
-				}
-				return Boolean.TRUE;
+		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), () -> {
+			Project reloadedProject = (Project) dbInstance.loadObject(project, true);
+			for (Identity identity : addIdentities) {
+				securityGroupDao.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
+				log.info(Tracing.M_AUDIT, "ProjectBroker: Remove user as candidate, identity={}", identity);
+				// fireEvents ?
 			}
+			return Boolean.TRUE;
 		});// end of doInSync
 	}
 
@@ -311,17 +304,14 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 		response.getAddedIdentities().addAll(state.getAddedIdentities());
 		response.getIdentitiesAlreadyInGroup().addAll(state.getIdentitiesAlreadyInGroup());
 		
-		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
-			@Override
-			public Boolean execute() {
-				for (final Identity identity : identities) {
-					if (businessGroupService.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
-						securityGroupDao.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-						log.info(Tracing.M_AUDIT, "ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
-					}		
-				}
-				return Boolean.TRUE;
+		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), () -> {
+			for (final Identity identity : identities) {
+				if (businessGroupService.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
+					securityGroupDao.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
+					log.info(Tracing.M_AUDIT, "ProjectBroker: Accept candidate, identity={} project={}", identity,  reloadedProject);
+				}		
 			}
+			return Boolean.TRUE;
 		});// end of doInSync
 		
 		if (autoSignOut && result.booleanValue()) {
@@ -367,7 +357,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	public BusinessGroup setProjectGroupMaxMembers(Identity ureqIdentity, BusinessGroup projectGroup, int maxMembers ) {
   	 BusinessGroupService bgs = businessGroupService;
   	 BusinessGroup reloadedBusinessGroup = bgs.loadBusinessGroup(projectGroup);
-  	 log.debug("ProjectGroup.name=" + reloadedBusinessGroup.getName() + " setMaxParticipants=" + maxMembers);
+  	 log.debug("ProjectGroup.name={} setMaxParticipants={}", reloadedBusinessGroup.getName(), maxMembers);
   	 return bgs.updateBusinessGroup(ureqIdentity, reloadedBusinessGroup, reloadedBusinessGroup.getName(), 
   			 reloadedBusinessGroup.getDescription(), reloadedBusinessGroup.getExternalId(), reloadedBusinessGroup.getManagedFlagsString(),
   			 reloadedBusinessGroup.getMinParticipants(), maxMembers);

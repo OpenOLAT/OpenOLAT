@@ -65,6 +65,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
@@ -135,6 +136,8 @@ public class CourseOverviewController extends FormBasicController  {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private UserCourseInformationsManager userInfosMgr;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	public CourseOverviewController(UserRequest ureq, WindowControl wControl, Identity identity, boolean canModify) {
 		super(ureq, wControl, "courseoverview", Util.createPackageTranslator(CourseMembership.class, ureq.getLocale()));
@@ -505,12 +508,7 @@ public class CourseOverviewController extends FormBasicController  {
 		for(BusinessGroup group:groupsToLeave) {
 			if (groupsToDelete.contains(group)) {
 				// really delete the group as it has no more owners/participants
-				if(doSendMail) {
-					String businessPath = getWindowControl().getBusinessControl().getAsString();
-					businessGroupService.deleteBusinessGroupWithMail(group, businessPath, getIdentity(), getLocale());
-				} else {
-					businessGroupService.deleteBusinessGroup(group);
-				}
+				businessGroupLifecycleManager.deleteBusinessGroup(group, getIdentity(), doSendMail);
 			} else {
 				// 1) remove as owner
 				if (businessGroupService.hasRoles(editedIdentity, group, GroupRoles.coach.name())) {

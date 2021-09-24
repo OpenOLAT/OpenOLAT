@@ -53,13 +53,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
@@ -77,10 +77,12 @@ import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.edit.BusinessGroupEditController;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.group.ui.lifecycle.InactiveMessageController;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
@@ -178,10 +180,11 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 
 	private Panel mainPanel;
 	private VelocityContainer main;
-	private VelocityContainer vc_sendToChooserForm;
+	private VelocityContainer contactFromVC;
 	private final TooledStackedPanel toolbarPanel;
 
 	private BusinessGroup businessGroup;
+	private OLATResourceable businessGroupOres;
 
 	private MenuTree bgTree;
 	private LayoutMain3ColsController columnLayoutCtr;
@@ -192,6 +195,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private Controller bgACHistoryCtrl;
 	private BusinessGroupResourceController resourcesCtr;
 	private GroupMembersRunController groupMembersToggleViewController;
+	private InactiveMessageController warningCtrl;
 
 	private BusinessGroupSendToChooserForm sendToChooserForm;
 
@@ -203,6 +207,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	 * Group manager of OLAT administrator.
 	 */
 	private boolean isGroupsAdmin;
+	
+	private boolean readOnly;
+	private final UserSession usess;
 
 	private EventBus singleUserEventBus;
 	private String adminNodeId; // reference to admin menu item
@@ -263,8 +270,12 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public BusinessGroupMainRunController(UserRequest ureq, WindowControl control, BusinessGroup bGroup) {
 		super(ureq, control);
 		
+		usess = ureq.getUserSession();
+		
 		assessmentEventOres = OresHelper.createOLATResourceableType(AssessmentEvent.class);
 		nodeIdPrefix = "bgmr".concat(Long.toString(CodeHelper.getRAMUniqueID()));
+		
+		readOnly = BusinessGroupStatusEnum.isReadOnly(bGroup);
 		
 		toolbarPanel = new TooledStackedPanel("groupStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
@@ -277,7 +288,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			List<HistoryPoint> stack = session.getHistoryStack();
 			for(int i=stack.size() - 2; i-->0; ) {
 				HistoryPoint point = stack.get(stack.size() - 2);
-				if(point.getEntries().size() > 0) {
+				if(!point.getEntries().isEmpty()) {
 					OLATResourceable ores = point.getEntries().get(0).getOLATResourceable();
 					if(!OresHelper.equals(bGroup, ores) && !OresHelper.equals(bGroup.getResource(), ores)) {
 						launchedFromPoint = point;
@@ -285,22 +296,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 					}
 				}
 			}
-		}
-
-		/*
-		 * lastUsage, update lastUsage if group is run if you can acquire the lock
-		 * on the group for a very short time. If this is not possible, then the
-		 * lastUsage is already up to date within one-day-precision.
-		 */
-		businessGroup = businessGroupService.setLastUsageFor(getIdentity(), bGroup);
-		if(businessGroup == null) {
-			VelocityContainer vc = createVelocityContainer("deleted");
-			vc.contextPut("name", bGroup.getName());
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, vc, "grouprun");
-			listenTo(columnLayoutCtr); // cleanup on dispose
-			putInitialPanel(columnLayoutCtr.getInitialComponent());
-			chatAvailable = false;
-			return;
 		}
 
 		List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupMembership(Collections.singletonList(bGroup.getKey()), getIdentity());
@@ -314,6 +309,28 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			chatAvailable = false;
 			return;
 		}
+		
+		/*
+		 * lastUsage, update lastUsage if group is run if you can acquire the lock
+		 * on the group for a very short time. If this is not possible, then the
+		 * lastUsage is already up to date within one-day-precision.
+		 */
+		if(memberships == null || memberships.isEmpty()) {
+			businessGroup = businessGroupService.loadBusinessGroup(bGroup); 
+		} else {
+			businessGroup = businessGroupService.setLastUsageFor(getIdentity(), bGroup);
+		}
+		if(businessGroup == null) {
+			VelocityContainer vc = createVelocityContainer("deleted");
+			vc.contextPut("name", bGroup.getName());
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, vc, "grouprun");
+			listenTo(columnLayoutCtr); // cleanup on dispose
+			putInitialPanel(columnLayoutCtr.getInitialComponent());
+			chatAvailable = false;
+			return;
+		}
+		
+		businessGroupOres = OresHelper.clone(businessGroup.getResource());
 
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
@@ -328,6 +345,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		isAdmin = (wcard != null && Boolean.TRUE.equals(wcard))
 				|| isGroupsAdmin
 				|| businessGroupService.isIdentityInBusinessGroup(getIdentity(), businessGroup.getKey(), true, false, null);
+		
+		updateWarning(ureq);
 
 		// Initialize translator:
 		// package translator with default group fallback translators and type
@@ -432,6 +451,19 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		main.contextPut("BuddyGroup", currBusinessGroup);
 		main.contextPut("hasOwners", Boolean.TRUE);
 	}
+	
+	private void updateWarning(UserRequest ureq) {
+		if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.inactive) {
+			removeAsListenerAndDispose(warningCtrl);
+			warningCtrl = new InactiveMessageController(ureq, getWindowControl(), businessGroup, isAdmin);
+			listenTo(warningCtrl);
+			toolbarPanel.setMessageComponent(warningCtrl.getInitialComponent());
+		} else if(warningCtrl != null) {
+			removeAsListenerAndDispose(warningCtrl);
+			warningCtrl = null;
+			toolbarPanel.setMessageComponent(null);	
+		}
+	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -466,17 +498,27 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			// changes from the admin controller
 			if (event == Event.CHANGED_EVENT) {
 				businessGroup = bgEditCntrllr.getBusinessGroup();
+				readOnly = BusinessGroupStatusEnum.isReadOnly(businessGroup);
 				chatAvailable = isChatAvailable();
 				
 				TreeModel trMdl = buildTreeModel();
 				bgTree.setTreeModel(trMdl);
 				bgTree.setSelectedNode(nodeAdmin);
+				updateWarning(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// could not get lock on business group, back to inital screen
 				bgTree.setSelectedNodeId(bgTree.getTreeModel().getRootNode().getIdent());
 				mainPanel.setContent(main);
+			} else if(event == Event.CLOSE_EVENT) {
+				doClose(ureq);
 			}
-
+		} else if(warningCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				businessGroup = warningCtrl.getBusinessGroup();
+				readOnly = BusinessGroupStatusEnum.isReadOnly(businessGroup);
+				chatAvailable = isChatAvailable();
+				updateWarning(ureq);
+			}
 		} else if (source == sendToChooserForm) {
 			if (event == Event.DONE_EVENT) {
 				removeAsListenerAndDispose(collabToolCtr);
@@ -698,7 +740,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createChatController(ureq, bwControl, businessGroup, isAdmin);
+		collabToolCtr = collabTools.createChatController(ureq, bwControl, businessGroup, isAdmin, readOnly);
 		if(collabToolCtr == null) {
 			showWarning("groupchat.not.available");
 			mainPanel.setContent(new Panel("empty"));
@@ -717,7 +759,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createForumController(ureq, bwControl, isAdmin, ureq.getUserSession().getRoles().isGuestOnly(),	sc);
+		collabToolCtr = collabTools.createForumController(ureq, bwControl, isAdmin, ureq.getUserSession().getRoles().isGuestOnly(),	sc, readOnly);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 		return (Activateable2)collabToolCtr;
@@ -726,14 +768,14 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private Activateable2 doCalendar(UserRequest ureq) {
 		addLoggingResourceable(LoggingResourceable.wrap(ORES_TOOLCAL, OlatResourceableType.calendar));
 		
-		// calculate the new businesscontext for the forum clicked
+		// calculate the new business context
 		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ORES_TOOLCAL);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ce.getOLATResourceable()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, getWindowControl());
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createCalendarController(ureq, bwControl, businessGroup, isAdmin, true);
+		collabToolCtr = collabTools.createCalendarController(ureq, bwControl, businessGroup, isAdmin, true, readOnly);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 		return (Activateable2)collabToolCtr;
@@ -746,7 +788,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createInfoMessageController(ureq, bwControl, isAdmin);
+		collabToolCtr = collabTools.createInfoMessageController(ureq, bwControl, isAdmin, readOnly);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 	}
@@ -762,7 +804,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createFolderController(ureq, bwControl, businessGroup, isAdmin, sc);
+		collabToolCtr = collabTools.createFolderController(ureq, bwControl, businessGroup, isAdmin, sc, readOnly);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 		return (Activateable2)collabToolCtr;
@@ -777,7 +819,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createWikiController(ureq, bwControl);
+		collabToolCtr = collabTools.createWikiController(ureq, bwControl, readOnly);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 		return (Activateable2)collabToolCtr;
@@ -792,7 +834,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createPortfolioController(ureq, bwControl, toolbarPanel, businessGroup);
+		collabToolCtr = collabTools.createPortfolioController(ureq, bwControl, toolbarPanel, businessGroup, readOnly);
 		listenTo(collabToolCtr);
 		toolbarPanel.popUpToRootController(ureq);
 		toolbarPanel.pushController("Portfolio", collabToolCtr);
@@ -813,7 +855,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createOpenMeetingsController(ureq, bwControl, businessGroup, isAdmin);
+		collabToolCtr = collabTools.createOpenMeetingsController(ureq, bwControl, businessGroup, isAdmin, readOnly);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 	}
@@ -827,7 +869,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createAdobeConnectController(ureq, bwControl, businessGroup, isAdmin);
+		collabToolCtr = collabTools.createAdobeConnectController(ureq, bwControl, businessGroup, isAdmin, readOnly);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 	}
@@ -841,7 +883,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		BigBlueButtonRunController bigBlueButtonToolCtrl = collabTools.createBigBlueButtonController(ureq, bwControl, businessGroup, isAdmin);
+		BigBlueButtonRunController bigBlueButtonToolCtrl = collabTools
+				.createBigBlueButtonController(ureq, bwControl, businessGroup, isAdmin, readOnly);
 		collabToolCtr = bigBlueButtonToolCtrl;
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
@@ -857,7 +900,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		TeamsMeetingsRunController teamsToolCtrl = collabTools.createTeamsController(ureq, bwControl, businessGroup, isAdmin);
+		TeamsMeetingsRunController teamsToolCtrl = collabTools
+				.createTeamsController(ureq, bwControl, businessGroup, isAdmin, readOnly);
 		collabToolCtr = teamsToolCtrl;
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
@@ -891,22 +935,33 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	}
 
 	private void doContactForm(UserRequest ureq) {
-		if (vc_sendToChooserForm == null) vc_sendToChooserForm = createVelocityContainer("cosendtochooser");
+		if (contactFromVC == null) {
+			contactFromVC = createVelocityContainer("cosendtochooser");
+		}
 		removeAsListenerAndDispose(sendToChooserForm);
+		contactFromVC.remove("contactForm");
+		contactFromVC.contextPut("readOnly", Boolean.valueOf(readOnly));
 		
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLCONTACT, null, getWindowControl());
-		addToHistory(ureq, bwControl);
-		
-		sendToChooserForm = new BusinessGroupSendToChooserForm(ureq, bwControl, businessGroup, isAdmin);
-		listenTo(sendToChooserForm);
-		vc_sendToChooserForm.put("vc_sendToChooserForm", sendToChooserForm.getInitialComponent());
-		mainPanel.setContent(vc_sendToChooserForm);
+		if(readOnly) {
+            String title = translate("freezenoaccess.title");
+            String message = translate("freezenoaccess.message");
+            Controller controller = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), title, message);
+			contactFromVC.put("contactForm", controller.getInitialComponent());
+		} else {
+			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ORES_TOOLCONTACT, null, getWindowControl());
+			addToHistory(ureq, bwControl);
+			
+			sendToChooserForm = new BusinessGroupSendToChooserForm(ureq, bwControl, businessGroup, isAdmin);
+			listenTo(sendToChooserForm);
+			contactFromVC.put("contactForm", sendToChooserForm.getInitialComponent());
+		}
+		mainPanel.setContent(contactFromVC);
 	}
 
 	private void doShowMembers(UserRequest ureq) {
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(this.businessGroup);
-		boolean canEmail = collabTools.isToolEnabled(CollaborationTools.TOOL_CONTACT);
-		groupMembersToggleViewController = new GroupMembersRunController(ureq, getWindowControl(), businessGroup, canEmail);
+		boolean canEmail = collabTools.isToolEnabled(CollaborationTools.TOOL_CONTACT) && !readOnly;
+		groupMembersToggleViewController = new GroupMembersRunController(ureq, getWindowControl(), businessGroup, canEmail, readOnly);
 		listenTo(groupMembersToggleViewController);
 		mainPanel.setContent(groupMembersToggleViewController.getInitialComponent());
 		collabToolCtr = null;
@@ -914,14 +969,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	}
 	
 	protected final void doClose(UserRequest ureq) {
-		OLATResourceable ores = businessGroup.getResource();
 		getWindowControl().getWindowBackOffice().getWindow()
-			.getDTabs().closeDTab(ureq, ores, launchedFromPoint);
+			.getDTabs().closeDTab(ureq, businessGroupOres, launchedFromPoint);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CLOSED, getClass());
@@ -1074,17 +1125,17 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}
 	}
 
-	/**
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(Event event) {
 		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
 			OLATResourceableJustBeforeDeletedEvent delEvent = (OLATResourceableJustBeforeDeletedEvent) event;
-			if (!delEvent.targetEquals(businessGroup)) {
-				throw new AssertException("receiving a delete event for a olatres we never registered for!!!:" + delEvent.getDerivedOres());
+			if (delEvent.targetEquals(businessGroup) && delEvent.getDeletedByKey() != null) {
+				if( delEvent.getDeletedByKey().equals(getIdentity().getKey())) {
+					doClose(new SyntheticUserRequest(getIdentity(), getLocale(), usess));
+				} else {
+					dispose();
+				}
 			}	
-			dispose();
 		} else if (event instanceof BusinessGroupModifiedEvent) {
 			BusinessGroupModifiedEvent bgmfe = (BusinessGroupModifiedEvent) event;
 			if (event.getCommand().equals(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT)) {

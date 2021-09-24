@@ -57,6 +57,7 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -104,6 +105,8 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 	private BusinessGroupModule businessGroupModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -846,7 +849,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 			myCTSMngr.setToolEnabled(availableTools[i], true);
 		}
 
-		businessGroupService.deleteBusinessGroup(found);
+		businessGroupLifecycleManager.deleteBusinessGroup(found, null, false);
 		sqlRes = businessGroupService.findBusinessGroupsOwnedBy(id2);
 		assertTrue("0 BuddyGroup owned by id2", sqlRes.isEmpty());
 	}
@@ -858,7 +861,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 				"deleteTestGroup-1", BusinessGroup.BUSINESS_TYPE,-1, -1, true, true, resource);
 		dbInstance.commitAndCloseSession();
 		
-		businessGroupService.deleteBusinessGroup(deleteTestGroup);
+		businessGroupLifecycleManager.deleteBusinessGroup(deleteTestGroup, null, false);
 		dbInstance.commitAndCloseSession();
 		
 		Group reloadedGroup = groupDao.loadGroup(deleteTestGroup.getBaseGroup().getKey());
@@ -966,7 +969,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertNotNull(reservation);
 		
 		//delete the group
-		businessGroupService.deleteBusinessGroup(group);
+		businessGroupLifecycleManager.deleteBusinessGroup(group, id, false);
 		dbInstance.commitAndCloseSession();
 		
 		//accept reservation
@@ -997,7 +1000,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertNotNull(reservation);
 		
 		//delete the group
-		businessGroupService.deleteBusinessGroup(group);
+		businessGroupLifecycleManager.deleteBusinessGroup(group, null, false);
 		dbInstance.commitAndCloseSession();
 		
 		//accept reservation

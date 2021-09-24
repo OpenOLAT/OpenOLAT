@@ -212,7 +212,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 			//now send email to PB-accountmanager
 			projectBrokerMailer.sendProjectDeletedEmailToAccountManagers(ureq.getIdentity(), project, courseEnv, courseNode, getTranslator());
 			
-			projectBrokerManager.deleteProject(project, deleteGroup, courseEnv, courseNode);
+			projectBrokerManager.deleteProject(project, deleteGroup, courseEnv, courseNode, getIdentity());
 			projectGroupManager.sendGroupChangeEvent(project, courseEnv.getCourseResourceableId(), ureq.getIdentity());
 			showInfo("project.deleted.msg", project.getTitle());
 			fireEvent(ureq, new ProjectBrokerEditorEvent(project, ProjectBrokerEditorEvent.DELETED_PROJECT));

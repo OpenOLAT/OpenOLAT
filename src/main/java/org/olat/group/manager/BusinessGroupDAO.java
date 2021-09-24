@@ -36,11 +36,10 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
-import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.commons.services.mark.impl.MarkImpl;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
@@ -50,20 +49,15 @@ import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupMembershipImpl;
 import org.olat.group.model.BusinessGroupMembershipInfos;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
-import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.BusinessGroupRow;
-import org.olat.group.model.BusinessGroupToSearch;
 import org.olat.group.model.IdentityGroupKey;
-import org.olat.group.model.OpenBusinessGroupRow;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntryRef;
-import org.olat.repository.RepositoryEntryShort;
-import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.Price;
@@ -104,6 +98,7 @@ public class BusinessGroupDAO {
 				boolean showOwners, boolean showParticipants, boolean showWaitingList, Boolean allowToLeave) {
 
 		BusinessGroupImpl businessgroup = new BusinessGroupImpl(name, description);
+		businessgroup.setGroupStatus(BusinessGroupStatusEnum.active);
 		if(minParticipants != null && minParticipants.intValue() >= 0) {
 			businessgroup.setMinParticipants(minParticipants);
 		}
@@ -295,6 +290,10 @@ public class BusinessGroupDAO {
 		dbInstance.getCurrentEntityManager().remove(group.getBaseGroup());
 	}
 	
+	public void removeMemberships(BusinessGroup group) {
+		groupDao.removeMemberships(group.getBaseGroup());
+	}
+	
 	public List<BusinessGroupMembership> getBusinessGroupsMembership(Collection<BusinessGroup> groups) {
 		List<Long> groupKeys = new ArrayList<>();
 		for(BusinessGroup group:groups) {
@@ -403,16 +402,13 @@ public class BusinessGroupDAO {
 	}
 	
 	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Collection<Long> groupKeys, Identity... identity) {	
-		StringBuilder sb = new StringBuilder(); 
+		QueryBuilder sb = new QueryBuilder(); 
 		sb.append("select membership from bgmembershipview as membership ");
-		boolean and = false;
 		if(identity != null && identity.length > 0) {
-			and = and(sb, and);
-			sb.append("membership.identityKey in (:identIds) ");
+			sb.and().append("membership.identityKey in (:identIds) ");
 		}
 		if(groupKeys != null && !groupKeys.isEmpty()) {
-			and = and(sb, and);
-			sb.append("membership.groupKey in (:groupKeys)");
+			sb.and().append("membership.groupKey in (:groupKeys)");
 		}
 		
 		TypedQuery<BusinessGroupMembershipViewImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembershipViewImpl.class);
@@ -548,7 +544,7 @@ public class BusinessGroupDAO {
 	}
 	
 	private <T> TypedQuery<T> createFindDBQuery(SearchBusinessGroupParams params, RepositoryEntryRef resource, Class<T> resultClass, BusinessGroupOrder... ordering) {
-		StringBuilder query = new StringBuilder();
+		QueryBuilder query = new QueryBuilder();
 		if(BusinessGroup.class.equals(resultClass)) {
 			query.append("select distinct(bgi) from ");
 		} else {
@@ -565,10 +561,8 @@ public class BusinessGroupDAO {
 			query.append("inner join bgi.baseGroup as baseGroup ");
 		}
 
-		boolean where = false;
 		if(StringHelper.containsNonWhitespace(params.getExternalId())) {
-			where = where(query, where);
-			query.append("bgi.externalId=:externalId");
+			query.and().append("bgi.externalId=:externalId");
 		}
 		
 		Long id = null;
@@ -580,8 +574,7 @@ public class BusinessGroupDAO {
 					//not a real number, can be a very long numerical external id
 				}
 			}
-			where = where(query, where);
-			query.append("(bgi.externalId=:idRefString");
+			query.and().append("(bgi.externalId=:idRefString");
 			if(id != null) {
 				query.append(" or bgi.key=:idRefLong");
 			}
@@ -589,29 +582,27 @@ public class BusinessGroupDAO {
 		}
 		
 		if(params.getManaged() != null) {
-			where = where(query, where);
 			if(params.getManaged().booleanValue()) {
-				query.append("bgi.managedFlagsString is not null");
+				query.and().append("bgi.managedFlagsString is not null");
 			} else {
-				query.append("bgi.managedFlagsString is null");
+				query.and().append("bgi.managedFlagsString is null");
 			}
 		}
 		
 		if(params.getGroupKeys() != null && !params.getGroupKeys().isEmpty()) {
-			where = where(query, where);
-			query.append("bgi.key in (:groupKeys)");
+			query.and().append("bgi.key in (:groupKeys)");
 		}
 		
 		if(resource != null) {
-			where = where(query, where);
-			query.append(" bgi.baseGroup.key in (")
+			query.and()
+				 .append(" bgi.baseGroup.key in (")
 			     .append("   select relation.group.key from repoentrytogroup as relation where relation.entry.key=:resourceKey")
 			     .append(" )");
 		}
 		
 		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
-			where = where(query, where);
-			query.append(" bgi.key in (")
+			query.and()
+				 .append(" bgi.key in (")
 			     .append("   select bgRel.relationId.groupKey from repoentryrelationview bgRel ")
 			     .append("     where ");
 			searchLikeAttribute(query, "bgRel", "repositoryEntryDisplayName", "displayName");
@@ -620,9 +611,9 @@ public class BusinessGroupDAO {
 		
 		List<String> roles = null;
 		if(params.isOwner() || params.isAttendee() || params.isWaiting()) {
-			where = where(query, where);
 			roles = new ArrayList<>();
-			query.append(" bgi.baseGroup.key in (select bmember.group.key from bgroupmember as bmember")
+			query.and()
+				 .append(" bgi.baseGroup.key in (select bmember.group.key from bgroupmember as bmember")
 			     .append("   where bmember.identity.key=:identId and bmember.role in (:roles)")
 			     .append(" )");
 			
@@ -638,32 +629,30 @@ public class BusinessGroupDAO {
 		}
 		
 		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
-			where = where(query, where);
-			query.append("(");
+			query.and().append("(");
 			searchLikeAttribute(query, "bgi", "name", "search");
 			query.append(" or ");
 			searchLikeAttribute(query, "bgi", "description", "search");
 			query.append(")");
 		} else {
 			if(StringHelper.containsNonWhitespace(params.getExactName())) {
-				where = where(query, where);
-				query.append("bgi.name=:exactName");
+				query.and().append("bgi.name=:exactName");
 			}
 			if(StringHelper.containsNonWhitespace(params.getName())) {
-				where = where(query, where);
+				query.and();
 				searchLikeAttribute(query, "bgi", "name", "name");
 			}
 			if(StringHelper.containsNonWhitespace(params.getDescription())) {
-				where = where(query, where);
+				query.and();
 				searchLikeAttribute(query, "bgi", "description", "description");
 			}
 		}
 		
 		if(params.getTools() != null && !params.getTools().isEmpty()) {
-			where = where(query, where);
-			query.append("bgi.key in (select prop.resourceTypeId from ").append(Property.class.getName()).append(" prop")
-				.append(" where prop.category='").append(CollaborationTools.PROP_CAT_BG_COLLABTOOLS).append("'")
-				.append(" and prop.name in (:tools) and prop.stringValue='true' and prop.resourceTypeName='BusinessGroup')");
+			query.and()
+				 .append("bgi.key in (select prop.resourceTypeId from ").append(Property.class.getName()).append(" prop")
+				 .append(" where prop.category='").append(CollaborationTools.PROP_CAT_BG_COLLABTOOLS).append("'")
+				 .append(" and prop.name in (:tools) and prop.stringValue='true' and prop.resourceTypeName='BusinessGroup')");
 		}
 		//order by (not for count)
 		if(BusinessGroup.class.equals(resultClass)) {
@@ -730,573 +719,6 @@ public class BusinessGroupDAO {
 		return dbq;
 	}
 	
-	public List<StatisticsBusinessGroupRow> searchBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity) {
-	    StringBuilder sm = new StringBuilder();
-		sm.append("select memberships, bgi,")
-		  .append(" (select count(nCoaches.key) from bgroupmember as nCoaches ")
-		  .append("  where nCoaches.group.key=bgi.baseGroup.key and nCoaches.role='").append(GroupRoles.coach.name()).append("'")
-		  .append(" ) as numOfCoaches,")
-		  .append(" (select count(nParticipants.key) from bgroupmember as nParticipants ")
-		  .append("  where nParticipants.group.key=bgi.baseGroup.key and nParticipants.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" ) as numOfParticipants,")
-		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
-		  .append("  where bgi.waitingListEnabled=true and nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
-		  .append(" ) as numWaiting,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations");
-		appendMarkedSubQuery(sm, params);
-		sm.append(" from businessgrouptosearch as bgi ")
-		  .append(" inner join fetch bgi.resource as bgResource ")
-		  .append(" inner join bgi.baseGroup as bGroup ");
-		filterBusinessGroupToSearch(sm, params, true);
-
-		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sm.toString(), Object[].class);
-		filterBusinessGroupToSearchParameters(objectsQuery, params, identity, true);
-		
-		List<Object[]> objects = objectsQuery.getResultList();
-		List<StatisticsBusinessGroupRow> groups = new ArrayList<>(objects.size());
-		Map<Long,StatisticsBusinessGroupRow> keyToGroup = new HashMap<>();
-		Map<Long,StatisticsBusinessGroupRow> resourceKeyToGroup = new HashMap<>();
-		for(Object[] object:objects) {
-			BusinessGroupToSearch businessGroup = (BusinessGroupToSearch)object[1];
-			Number numOfCoaches = (Number)object[2];
-			Number numOfParticipants = (Number)object[3];
-			Number numWaiting = (Number)object[4];
-			Number numPending = (Number)object[5];
-			Number numOfMarks = (Number)object[6];
-			
-			StatisticsBusinessGroupRow row;
-			if(keyToGroup.containsKey(businessGroup.getKey())) {
-				row = keyToGroup.get(businessGroup.getKey());
-			} else {
-				row = new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
-				groups.add(row);
-				keyToGroup.put(businessGroup.getKey(), row);
-				resourceKeyToGroup.put(businessGroup.getResource().getKey(), row);
-			}
-			row.setMarked(numOfMarks == null ? false : numOfMarks.intValue() > 0);
-			addMembershipToRow(row, (GroupMembershipImpl)object[0]);
-		}
-		
-		loadRelations(keyToGroup, params, identity);
-		loadOfferAccess(resourceKeyToGroup);	
-		return groups;
-	}
-	
-	public List<StatisticsBusinessGroupRow> searchBusinessGroupsForSelection(BusinessGroupQueryParams params, IdentityRef identity) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select bgi, ")
-		  .append(" (select count(nCoaches.key) from bgroupmember as nCoaches ")
-		  .append("  where nCoaches.group.key=bgi.baseGroup.key and nCoaches.role='").append(GroupRoles.coach.name()).append("'")
-		  .append(" ) as numOfCoaches,")
-		  .append(" (select count(nParticipants.key) from bgroupmember as nParticipants ")
-		  .append("  where nParticipants.group.key=bgi.baseGroup.key and nParticipants.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" ) as numOfParticipants,")
-		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
-		  .append("  where bgi.waitingListEnabled=true and nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
-		  .append(" ) as numWaiting,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations,")
-		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-		  .append("   where mark.creator.key=:identityKey and mark.resId=bgi.key and mark.resName='BusinessGroup'")
-		  .append(" ) as marks")
-		  .append(" from businessgrouptosearch as bgi")
-		  .append(" inner join fetch bgi.resource as bgResource ")
-		  .append(" inner join bgi.baseGroup as bGroup ");
-		filterBusinessGroupToSearch(sb, params, false);
-
-		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
-		filterBusinessGroupToSearchParameters(objectsQuery, params, identity, true);
-		
-		List<Object[]> objects = objectsQuery.getResultList();
-		List<StatisticsBusinessGroupRow> groups = new ArrayList<>(objects.size());
-		Map<Long,BusinessGroupRow> keyToGroup = new HashMap<>();
-		for(Object[] object:objects) {
-			BusinessGroupToSearch businessGroup = (BusinessGroupToSearch)object[0];
-			Number numOfCoaches = (Number)object[1];
-			Number numOfParticipants = (Number)object[2];
-			Number numWaiting = (Number)object[3];
-			Number numPending = (Number)object[4];
-			Number marked = (Number)object[5];
-			
-			StatisticsBusinessGroupRow row
-				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
-			groups.add(row);
-			row.setMarked(marked == null ? false : marked.longValue() > 0);
-			keyToGroup.put(businessGroup.getKey(), row);
-		}
-		
-		loadRelations(keyToGroup, params, identity);
-		return groups;
-	}
-	
-	public List<StatisticsBusinessGroupRow> searchBusinessGroupsStatistics(BusinessGroupQueryParams params) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select bgi, ")
-		  .append(" (select count(nCoaches.key) from bgroupmember as nCoaches ")
-		  .append("  where nCoaches.group.key=bgi.baseGroup.key and nCoaches.role='").append(GroupRoles.coach.name()).append("'")
-		  .append(" ) as numOfCoaches,")
-		  .append(" (select count(nParticipants.key) from bgroupmember as nParticipants ")
-		  .append("  where nParticipants.group.key=bgi.baseGroup.key and nParticipants.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" ) as numOfParticipants,")
-		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
-		  .append("  where bgi.waitingListEnabled=true and nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
-		  .append(" ) as numWaiting,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations")
-		  .append(" from businessgrouptosearch as bgi")
-		  .append(" inner join fetch bgi.resource as bgResource ")
-		  .append(" inner join bgi.baseGroup as bGroup ");
-		filterBusinessGroupToSearch(sb, params, false);
-		sb.append(" order by bgi.name");
-
-		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
-		filterBusinessGroupToSearchParameters(objectsQuery, params, null, false);
-		
-		List<Object[]> objects = objectsQuery.getResultList();
-		List<StatisticsBusinessGroupRow> groups = new ArrayList<>(objects.size());
-
-		for(Object[] object:objects) {
-			BusinessGroupToSearch businessGroup = (BusinessGroupToSearch)object[0];
-			Number numOfCoaches = (Number)object[1];
-			Number numOfParticipants = (Number)object[2];
-			Number numWaiting = (Number)object[3];
-			Number numPending = (Number)object[4];
-
-			StatisticsBusinessGroupRow row
-				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
-			groups.add(row);
-		}
-		return groups;
-	}
-	
-	/**
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	public List<StatisticsBusinessGroupRow> searchBusinessGroupsForRepositoryEntry(BusinessGroupQueryParams params, IdentityRef identity, RepositoryEntryRef entry) {
-		//name, externalId, description, resources, tutors, participants, free places, waiting, access
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select bgi, ")
-		  .append(" (select count(nCoaches.key) from bgroupmember as nCoaches ")
-		  .append("  where nCoaches.group.key=bgi.baseGroup.key and nCoaches.role='").append(GroupRoles.coach.name()).append("'")
-		  .append(" ) as numOfCoaches,")
-		  .append(" (select count(nParticipants.key) from bgroupmember as nParticipants ")
-		  .append("  where nParticipants.group.key=bgi.baseGroup.key and nParticipants.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" ) as numOfParticipants,")
-		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
-		  .append("  where nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
-		  .append(" ) as numWaiting,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations")
-		  .append(" from businessgrouptosearch as bgi")
-		  .append(" inner join fetch bgi.resource as bgResource ")
-		  .append(" inner join bgi.baseGroup as bGroup ");
-		if(params.getRepositoryEntry() == null) {
-			params.setRepositoryEntry(entry);//make sur the restricition is applied
-		}
-		filterBusinessGroupToSearch(sb, params, false);
-		
-		TypedQuery<Object[]> objectsQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
-		filterBusinessGroupToSearchParameters(objectsQuery, params, identity, false);
-		
-		List<Object[]> objects = objectsQuery.getResultList();
-		List<StatisticsBusinessGroupRow> groups = new ArrayList<>(objects.size());
-		Map<Long,BusinessGroupRow> keyToGroup = new HashMap<>();
-		Map<Long,BusinessGroupRow> resourceKeyToGroup = new HashMap<>();
-		for(Object[] object:objects) {
-			BusinessGroupToSearch businessGroup = (BusinessGroupToSearch)object[0];
-			Number numOfCoaches = (Number)object[1];
-			Number numOfParticipants = (Number)object[2];
-			Number numWaiting = (Number)object[3];
-			Number numPending = (Number)object[4];
-
-			StatisticsBusinessGroupRow row
-				= new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
-			groups.add(row);
-			keyToGroup.put(businessGroup.getKey(), row);
-			resourceKeyToGroup.put(businessGroup.getResource().getKey(), row);
-		}
-		
-		loadOfferAccess(resourceKeyToGroup);
-		loadRelations(keyToGroup, params, identity);
-		return groups;
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public List<OpenBusinessGroupRow> searchPublishedBusinessGroups(BusinessGroupQueryParams params, IdentityRef identity) {
-		//need resources, access type, membership, num of pending, num of participants
-		StringBuilder sb = new StringBuilder();
-		sb.append("select bgi, ")
-		  .append(" (select count(nParticipants.key) from bgroupmember as nParticipants ")
-		  .append("  where nParticipants.group.key=bgi.baseGroup and nParticipants.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" ) as numOfParticipants,")
-		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
-		  .append("  where reservation.resource.key=bgi.resource.key")
-		  .append(" ) as numOfReservations")
-		  .append(" from businessgrouptosearch as bgi ")
-		  .append(" inner join fetch bgi.resource as bgResource ")
-		  .append(" inner join fetch bgi.baseGroup as bGroup ");
-		filterBusinessGroupToSearch(sb, params, false);
-		
-		TypedQuery<Object[]> queryObjects = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Object[].class);
-		filterBusinessGroupToSearchParameters(queryObjects, params, identity, false);
-		
-		List<Object[]> objects = queryObjects.getResultList();
-		List<OpenBusinessGroupRow> groups = new ArrayList<>(objects.size());
-		Map<Long, OpenBusinessGroupRow> keyToGroup = new HashMap<>();
-		Map<Long, OpenBusinessGroupRow> resourceKeyToGroup = new HashMap<>();
-		for(Object[] object:objects) {
-			BusinessGroupToSearch businessGroup = (BusinessGroupToSearch)object[0];
-			if(!keyToGroup.containsKey(businessGroup.getKey())) {
-				Long numOfParticipants = (Long)object[1];
-				Long numOfReservations = (Long)object[2];
-				
-				OpenBusinessGroupRow row = new OpenBusinessGroupRow(businessGroup, numOfParticipants, numOfReservations);
-				groups.add(row);
-				keyToGroup.put(businessGroup.getKey(), row);
-				resourceKeyToGroup.put(businessGroup.getResource().getKey(), row);
-			}
-		}
-		
-		loadRelations(keyToGroup, params, identity);
-		loadOfferAccess(resourceKeyToGroup);
-		loadMemberships(identity, keyToGroup);
-		return groups;
-	}
-	
-	private void filterBusinessGroupToSearchParameters(TypedQuery<?> query, BusinessGroupQueryParams params, IdentityRef identity, boolean needIdentity) {
-		boolean memberOnly = params.isAttendee() || params.isOwner() || params.isWaiting();
-
-		if(memberOnly) {
-			List<String> roles = new ArrayList<>(3);
-			if(params.isOwner()) {
-				roles.add(GroupRoles.coach.name());
-			}
-			if(params.isAttendee()) {
-				roles.add(GroupRoles.participant.name());
-			}
-			if(params.isWaiting()) {
-				roles.add(GroupRoles.waiting.name());
-			}
-			query.setParameter("roles", roles);
-		}
-	
-		if(memberOnly || needIdentity || params.isMarked() || params.isAuthorConnection()) {
-			query.setParameter("identityKey", identity.getKey());
-		}
-		
-		if(params.getBusinessGroupKeys() != null && !params.getBusinessGroupKeys().isEmpty()) {
-			query.setParameter("businessGroupKeys", params.getBusinessGroupKeys());
-		}
-		
-		if(params.getRepositoryEntry() != null) {
-			query.setParameter("repoEntryKey", params.getRepositoryEntry().getKey());
-		}
-		
-		//owner
-		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
-			query.setParameter("owner", PersistenceHelper.makeFuzzyQueryString(params.getOwnerName()));
-		}
-		
-		//id
-		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
-			if(StringHelper.isLong(params.getIdRef())) {
-				try {
-					Long id = Long.valueOf(params.getIdRef());
-					query.setParameter("idRefLong", id);
-				} catch (NumberFormatException e) {
-					//not a real number, can be a very long numerical external id
-				}
-			}
-			query.setParameter("idRefString", params.getIdRef());
-		}
-		
-		//name
-		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
-			query.setParameter("search", PersistenceHelper.makeFuzzyQueryString(params.getNameOrDesc()));
-		} else {
-			if(StringHelper.containsNonWhitespace(params.getName())) {
-				query.setParameter("name", PersistenceHelper.makeFuzzyQueryString(params.getName()));
-			}
-			if(StringHelper.containsNonWhitespace(params.getDescription())) {
-				query.setParameter("description", PersistenceHelper.makeFuzzyQueryString(params.getDescription()));
-			}
-		}
-		
-		//technical type
-		if(params.getTechnicalTypes() != null && !params.getTechnicalTypes().isEmpty()) {
-			query.setParameter("technicalTypes", params.getTechnicalTypes());
-		}
-		
-		//course title
-		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
-			query.setParameter("displayName", PersistenceHelper.makeFuzzyQueryString(params.getCourseTitle()));
-		}
-		
-		//public group
-		if(params.getPublicGroups() != null) {
-			if(params.getPublicGroups().booleanValue()) {
-				query.setParameter("atDate", new Date());
-			}
-		}
-		
-		// last usage
-		if(params.getLastUsageBefore() != null) {
-			query.setParameter("lastUsageBefore", params.getLastUsageBefore());
-		}
-	}
-	
-	private void filterBusinessGroupToSearch(StringBuilder sb, BusinessGroupQueryParams params, boolean includeMemberships) {
-		boolean where = false;
-		boolean memberOnly = params.isAttendee() || params.isOwner() || params.isWaiting();
-		
-		if(memberOnly) {
-			sb.append("inner join bGroup.members as memberships on (memberships.identity.key=:identityKey and memberships.role in (:roles))");	
-		} else if(includeMemberships) {
-			sb.append("left join bGroup.members as memberships on (memberships.identity.key=:identityKey)");	
-		}
-		
-		//coach / owner
-		if(StringHelper.containsNonWhitespace(params.getOwnerName())) {
-			where = true;
-			sb.append(" inner join bGroup.members as ownerMember on ownerMember.role='coach'")
-			  .append(" inner join ownerMember.identity as ownerIdentity")
-			  .append(" inner join ownerIdentity.user as ownerUser")
-			//query the name in login, firstName and lastName
-			  .append(" where (");
-			searchLikeOwnerUserProperty(sb, "firstName", "owner");
-			sb.append(" or ");
-			searchLikeOwnerUserProperty(sb, "lastName", "owner");
-			sb.append(" or ");
-			searchLikeAttribute(sb, "ownerIdentity", "name", "owner");
-			sb.append(")");
-		}
-		
-		if(params.getBusinessGroupKeys() != null && !params.getBusinessGroupKeys().isEmpty()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" bgi.key in (:businessGroupKeys)");
-		}
-		
-		if(params.isMarked()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" exists (select mark.key from ").append(MarkImpl.class.getName()).append(" as mark ")
-			  .append("  where mark.creator.key=:identityKey and mark.resId=bgi.key and mark.resName='BusinessGroup'")
-			  .append(" )");
-		}
-		
-		if(params.isAuthorConnection()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" bGroup.key in (select baseRelGroup.group.key from repositoryentry as v,")
-			  .append("   repoentrytogroup as baseRelGroup, repoentrytogroup as relGroup, bgroupmember as remembership")
-			  .append("     where baseRelGroup.entry.key=v.key and relGroup.entry.key=v.key and relGroup.group.key=remembership.group.key")
-			  .append("     and remembership.identity.key=:identityKey and remembership.role='owner'")
-			  .append(" )");
-		}
-		
-		//id
-		if(StringHelper.containsNonWhitespace(params.getIdRef())) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("(bgi.externalId=:idRefString");
-			if(StringHelper.isLong(params.getIdRef())) {
-				try {
-					Long.parseLong(params.getIdRef());
-					sb.append(" or bgi.key=:idRefLong");
-				} catch (NumberFormatException e) {
-					//not a real number, can be a very long numerical external id
-				}
-			}
-			sb.append(")");
-		}
-		
-		//name
-		if(StringHelper.containsNonWhitespace(params.getNameOrDesc())) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("(");
-			searchLikeAttribute(sb, "bgi", "name", "search");
-			sb.append(" or ");
-			searchLikeAttribute(sb, "bgi", "description", "search");
-			sb.append(")");
-		} else {
-			if(StringHelper.containsNonWhitespace(params.getName())) {
-				where = PersistenceHelper.appendAnd(sb, where);
-				searchLikeAttribute(sb, "bgi", "name", "name");
-			}
-			if(StringHelper.containsNonWhitespace(params.getDescription())) {
-				where = PersistenceHelper.appendAnd(sb, where);
-				searchLikeAttribute(sb, "bgi", "description", "description");
-			}
-		}
-		
-		//technical type
-		if(params.getTechnicalTypes() != null && !params.getTechnicalTypes().isEmpty()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("bgi.technicalType in (:technicalTypes)");
-		}
-	
-		// course title
-		if(StringHelper.containsNonWhitespace(params.getCourseTitle())) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" bgi.baseGroup.key in (select baseRelGroup.group.key from repositoryentry as v")
-			  .append("  inner join v.groups as baseRelGroup")
-			  .append("  where baseRelGroup.entry.key=v.key and ");
-			searchLikeAttribute(sb, "v", "displayname", "displayName");
-			sb.append(" )");	
-		}
-		
-		// open/public or not
-		if(params.getPublicGroups() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			if(params.getPublicGroups().booleanValue()) {
-				sb.append(" bgi.resource.key in (")
-		         .append("   select offer.resource.key from acoffer offer ")
-		         .append("     where offer.valid=true")
-		         .append("     and (offer.validFrom is null or offer.validFrom<=:atDate)")
-				 .append("     and (offer.validTo is null or offer.validTo>=:atDate)")
-				 .append(" )");
-				
-			} else {
-				sb.append(" bgi.resource.key not in (")
-		          .append("   select offer.resource.key from acoffer offer ")
-		          .append("     where offer.valid=true")
-		          .append(" )");
-			}
-		}
-		
-		if(params.getManaged() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			if(params.getManaged().booleanValue()) {
-				sb.append(" (bgi.managedFlagsString is not null or bgi.externalId is not null)");
-			} else {
-				sb.append(" (bgi.managedFlagsString is null and bgi.externalId is null)");
-			}
-		}
-		
-		if(params.getRepositoryEntry() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" bgi.baseGroup.key in (select entryRel.group.key from repoentrytogroup as entryRel where entryRel.entry.key=:repoEntryKey)");
-		}
-		
-		// in course or not
-		if(params.getResources() != null || params.isHeadless()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			if(params.getResources() != null && params.getResources().booleanValue()) {
-				sb.append(" exists (select resourceRel.key from repoentrytogroup as resourceRel where bgi.baseGroup.key=resourceRel.group.key )");
-			} else {
-				sb.append(" not exists (select resourceRel.key from repoentrytogroup as resourceRel where resourceRel.group.key=bGroup.key)");
-			}
-		}
-		
-		// orphans
-		if(params.isHeadless()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" not exists (select headMembership.key from bgroupmember as headMembership")
-			  .append("   where bGroup.key=headMembership.group.key and headMembership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
-			  .append(" )");
-		}
-		
-		// last usage
-		if(params.getLastUsageBefore() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" bgi.lastUsage <= :lastUsageBefore");
-		}
-	}
-	
-	private void loadMemberships(IdentityRef identity, Map<Long, ? extends BusinessGroupRow> keyToGroup) {
-		//memberships
-	    StringBuilder sm = new StringBuilder();
-		sm.append("select membership, bgi.key")
-		  .append(" from businessgroup as bgi ")
-		  .append(" inner join bgi.baseGroup as bGroup ")
-		  .append(" inner join bGroup.members as membership")
-		  .append(" where membership.identity.key=:identityKey");
-		
-		List<Object[]> memberships = dbInstance.getCurrentEntityManager()
-				.createQuery(sm.toString(), Object[].class)
-				.setParameter("identityKey", identity.getKey())
-				.getResultList();
-		for(Object[] membership:memberships) {
-			Long groupkey = (Long)membership[1];
-			BusinessGroupRow row = keyToGroup.get(groupkey);
-			addMembershipToRow(row, (GroupMembershipImpl)membership[0]);
-		}
-	}
-
-	private void loadRelations(Map<Long, ? extends BusinessGroupRow> keyToGroup, BusinessGroupQueryParams params, IdentityRef identity) {
-		if(keyToGroup.isEmpty()) return;
-		if(params.getResources() != null && !params.getResources().booleanValue()) return;//no resources, no relations
-		if(params.isHeadless()) return; //headless don't have relations
-		
-		final int RELATIONS_IN_LIMIT = 64;
-		final boolean restrictToMembership = params != null && identity != null
-				&& (params.isAttendee() || params.isOwner() || params.isWaiting() || params.isMarked());
-		
-		//resources
-		StringBuilder sr = new StringBuilder();
-		sr.append("select entry.key, entry.displayname, bgi.key from repoentrytobusinessgroup as v")
-		  .append(" inner join v.entry entry")
-		  .append(" inner join v.businessGroup relationToGroup")
-		  .append(" inner join relationToGroup.businessGroups bgi");
-		if(restrictToMembership) {
-			sr.append(" inner join bgi.baseGroup as bGroup ")
-			  .append(" inner join bGroup.members as membership on membership.identity.key=:identityKey");
-		} else if(keyToGroup.size() < RELATIONS_IN_LIMIT) {
-			sr.append(" where bgi.key in (:businessGroupKeys)");
-		} else if(params.getRepositoryEntry() != null) {
-			sr.append(" inner join repoentrytobusinessgroup as refBgiToGroup")
-			  .append("   on (refBgiToGroup.entry.key=:repositoryEntryKey and bgi.baseGroup.key=refBgiToGroup.businessGroup.key)");
-		} else {
-			sr.append(" inner join bgi.resource as bgResource ")
-			  .append(" inner join bgi.baseGroup as bGroup ");
-			filterBusinessGroupToSearch(sr, params, false);
-		}
-		
-		TypedQuery<Object[]> resourcesQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sr.toString(), Object[].class);
-		if(restrictToMembership) {
-			resourcesQuery.setParameter("identityKey", identity.getKey());
-		} else if(keyToGroup.size() < RELATIONS_IN_LIMIT) {
-			List<Long> businessGroupKeys = new ArrayList<>(keyToGroup.size());
-			for(Long businessGroupKey:keyToGroup.keySet()) {
-				businessGroupKeys.add(businessGroupKey);
-			}
-			resourcesQuery.setParameter("businessGroupKeys", businessGroupKeys);
-		} else if(params.getRepositoryEntry() != null) {
-			resourcesQuery.setParameter("repositoryEntryKey", params.getRepositoryEntry().getKey());
-		} else {
-			filterBusinessGroupToSearchParameters(resourcesQuery, params, identity, false);
-		}
-		
-		List<Object[]> resources = resourcesQuery.getResultList();
-		for(Object[] resource:resources) {
-			Long groupKey = (Long)resource[2];
-			BusinessGroupRow row = keyToGroup.get(groupKey);
-			if(row != null) {
-				Long entryKey = (Long)resource[0];
-				String displayName = (String)resource[1];
-				REShort entry = new REShort(entryKey, displayName);
-				if(row.getResources() == null) {
-					row.setResources(new ArrayList<>(4));
-				}
-				row.getResources().add(entry);
-			}
-		}
-	}
-	
 	public void loadOfferAccess(Map<Long, ? extends BusinessGroupRow> resourceKeyToGroup) {
 		if(resourceKeyToGroup.isEmpty()) return;
 
@@ -1341,119 +763,15 @@ public class BusinessGroupDAO {
 		}
 	}
 	
-	private void addMembershipToRow(BusinessGroupRow row, GroupMembershipImpl member) {
-		if(row != null && member != null) {
-			if(row.getMember() == null) {
-				row.setMember(new BusinessGroupMembershipImpl());
-			}
-			
-			String role = member.getRole();
-			BusinessGroupMembershipImpl mb = row.getMember();
-			mb.setCreationDate(member.getCreationDate());
-			mb.setLastModified(member.getLastModified());
-			if(GroupRoles.coach.name().equals(role)) {
-				mb.setOwner(true);
-			} else if(GroupRoles.participant.name().equals(role)) {
-				mb.setParticipant(true);
-			} else if(GroupRoles.waiting.name().equals(role)) {
-				mb.setWaiting(true);
-			}
-		}
-	}
-	
-	private void appendMarkedSubQuery(StringBuilder sb, BusinessGroupQueryParams params) {
-		if(params.isMarked()) {
-			sb.append(" ,1 as marks");
-		} else {
-			sb.append(" ,(select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-			  .append("   where mark.creator.key=:identityKey and mark.resId=bgi.key and mark.resName='BusinessGroup'")
-			  .append(" ) as marks");
-		}
-	}
-	
-	private StringBuilder searchLikeOwnerUserProperty(StringBuilder sb, String key, String var) {
+	private QueryBuilder searchLikeAttribute(QueryBuilder sb, String objName, String attribute, String parameter) {
 		if(dbInstance.getDbVendor().equals("mysql")) {
-			sb.append(" ownerUser.").append(key).append(" like :").append(var);
+			sb.append(" ").append(objName).append(".").append(attribute).append(" like :").append(parameter);
 		} else {
-			sb.append(" lower(ownerUser.").append(key).append(") like :").append(var);
+			sb.append(" lower(").append(objName).append(".").append(attribute).append(") like :").append(parameter);
 			if(dbInstance.getDbVendor().equals("oracle")) {
 	 	 		sb.append(" escape '\\'");
 	 	 	}
 		}
 		return sb;
-	}
-	
-	private StringBuilder searchLikeAttribute(StringBuilder sb, String objName, String attribute, String var) {
-		if(dbInstance.getDbVendor().equals("mysql")) {
-			sb.append(" ").append(objName).append(".").append(attribute).append(" like :").append(var);
-		} else {
-			sb.append(" lower(").append(objName).append(".").append(attribute).append(") like :").append(var);
-			if(dbInstance.getDbVendor().equals("oracle")) {
-	 	 		sb.append(" escape '\\'");
-	 	 	}
-		}
-		return sb;
-	}
-	
-	private final boolean where(StringBuilder sb, boolean where) {
-		if(where) {
-			sb.append(" and ");
-		} else {
-			sb.append(" where ");
-		}
-		return true;
-	}
-	
-	private final boolean and(StringBuilder sb, boolean and) {
-		if(and) sb.append(" and ");
-		else sb.append(" where ");
-		return true;
-	}
-	
-
-	private static class REShort implements RepositoryEntryShort {
-		private final Long key;
-		private final String displayname;
-		public REShort(Long entryKey, String displayname) {
-			this.key = entryKey;
-			this.displayname = displayname;
-		}
-
-		@Override
-		public Long getKey() {
-			return key;
-		}
-
-		@Override
-		public String getDisplayname() {
-			return displayname;
-		}
-
-		@Override
-		public String getResourceType() {
-			return "CourseModule";
-		}
-
-		@Override
-		public RepositoryEntryStatusEnum getEntryStatus() {
-			return null;
-		}
-
-		@Override
-		public int hashCode() {
-			return key.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj) {
-				return true;
-			}
-			if(obj instanceof REShort) {
-				REShort re = (REShort)obj;
-				return key != null && key.equals(re.key);
-			}
-			return false;
-		}
 	}
 }

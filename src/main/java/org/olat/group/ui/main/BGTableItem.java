@@ -75,7 +75,6 @@ public class BGTableItem extends BusinessGroupRow {
 	public String getBusinessGroupName() {
 		return getName();
 	}
-
 	
 	public long getNumOfParticipants() {
 		return numOfParticipants;

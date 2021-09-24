@@ -120,7 +120,10 @@ class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 		NamedContainerImpl grpContainer = new GroupNamedContainer(containerName, localImpl);
 
 		boolean writeAccess;
-		if (!isOwner) {
+		boolean readOnly = BusinessGroupStatusEnum.isReadOnly(group);
+		if(readOnly) {
+			writeAccess = false;
+		} else if (!isOwner) {
 			// check if participants have read/write access
 			int folderAccess = CollaborationTools.FOLDER_ACCESS_ALL;
 			Long lFolderAccess = collaborationManager.lookupFolderAccess(group);

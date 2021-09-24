@@ -1,0 +1,8 @@
+#if($r.isNotEmpty($message))
+<div class="o_toolbar_message o_warning">
+	<i class="o_icon o_icon-lg o_icon_cancelled"> </i> $message
+	#if($r.visible("reactivate.group"))
+		$r.render("reactivate.group")
+	#end
+</div>
+#end

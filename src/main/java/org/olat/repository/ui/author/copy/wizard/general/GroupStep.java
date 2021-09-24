@@ -205,14 +205,14 @@ public class GroupStep extends BasicStep {
 			// Group table
 			FlexiTableColumnModel columnsModel 	= FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			
-			FlexiColumnModel nameCol 			= new DefaultFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal(), true, Cols.name.name(), new BusinessGroupNameCellRenderer());
-			FlexiColumnModel idCol 				= new DefaultFlexiColumnModel(false, Cols.key.i18n(), Cols.key.ordinal(), true, Cols.key.name());
-			FlexiColumnModel descriptionCol 	= new DefaultFlexiColumnModel(false, Cols.description.i18n(), Cols.description.ordinal(), false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy));
-			FlexiColumnModel tutorsCol 			= new DefaultFlexiColumnModel(true, Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(), true, Cols.tutorsCount.name());
-			FlexiColumnModel participantsCol 	= new DefaultFlexiColumnModel(true, Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(), true, Cols.participantsCount.name());
-			FlexiColumnModel freePlacesCol 		= new DefaultFlexiColumnModel(true, Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(), true, Cols.freePlaces.name(), FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.none));
-			FlexiColumnModel waitingListCol 	= new DefaultFlexiColumnModel(true, Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(), true, Cols.waitingListCount.name());
-			FlexiColumnModel accessCol 			= new DefaultFlexiColumnModel(true, Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(), true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer());
+			FlexiColumnModel nameCol 			= new DefaultFlexiColumnModel(Cols.name, new BusinessGroupNameCellRenderer());
+			FlexiColumnModel idCol 				= new DefaultFlexiColumnModel(false, Cols.key);
+			FlexiColumnModel descriptionCol 	= new DefaultFlexiColumnModel(false, Cols.description.i18nHeaderKey(), Cols.description.ordinal(), false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy));
+			FlexiColumnModel tutorsCol 			= new DefaultFlexiColumnModel(true, Cols.tutorsCount);
+			FlexiColumnModel participantsCol 	= new DefaultFlexiColumnModel(true, Cols.participantsCount);
+			FlexiColumnModel freePlacesCol 		= new DefaultFlexiColumnModel(true, Cols.freePlaces.i18nHeaderKey(), Cols.freePlaces.ordinal(), true, Cols.freePlaces.name(), FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.none));
+			FlexiColumnModel waitingListCol 	= new DefaultFlexiColumnModel(true, Cols.waitingListCount);
+			FlexiColumnModel accessCol 			= new DefaultFlexiColumnModel(true, Cols.accessTypes.i18nHeaderKey(), Cols.accessTypes.ordinal(), true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer());
 			FlexiColumnModel removeCol 			= new DefaultFlexiColumnModel("table.header.remove", Cols.unlink.ordinal(), REMOVE_GROUP, new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.remove"), REMOVE_GROUP), null));
 			
 			columnsModel.addFlexiColumnModel(idCol, nameCol, descriptionCol, tutorsCol, participantsCol, freePlacesCol, waitingListCol, accessCol, removeCol);

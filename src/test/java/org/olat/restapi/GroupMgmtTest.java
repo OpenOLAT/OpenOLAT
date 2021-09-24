@@ -193,7 +193,7 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		collabTools1.saveNews("<p>Hello world</p>");
     
 		try {
-			collabTools1.createForumController(null, null, true, false, null);
+			collabTools1.createForumController(null, null, true, false, null, false);
 		} catch (Exception e) {
 			//will fail but generate the forum key
 		}

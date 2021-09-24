@@ -116,25 +116,31 @@ public class CollaborationManagerImpl implements CollaborationManager {
 	}
 
 	@Override
-	public KalendarRenderWrapper getCalendar(BusinessGroup businessGroup, UserRequest ureq, boolean isAdmin) {
+	public KalendarRenderWrapper getCalendar(BusinessGroup businessGroup, UserRequest ureq, boolean isAdmin, boolean readOnly) {
 		// do not use a global translator since in the fututre a collaborationtools
 		// may be shared among users
 
 		// get the calendar
 		KalendarRenderWrapper calRenderWrapper = calendarManager.getGroupCalendar(businessGroup);
-		boolean isOwner = businessGroupService.hasRoles(ureq.getIdentity(), businessGroup, GroupRoles.coach.name());
-		if (!(isAdmin || isOwner)) {
-			// check if participants have read/write access
-			int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
-			Long lCalAccess = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).lookupCalendarAccess();
-			if (lCalAccess != null) iCalAccess = lCalAccess.intValue();
-			if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_ALL) {
-				calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			} else {
-				calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			}
+		if(readOnly) {
+			calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 		} else {
-			calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+			boolean isGroupAdmin = isAdmin || businessGroupService.hasRoles(ureq.getIdentity(), businessGroup, GroupRoles.coach.name());
+			if (!isGroupAdmin) {
+				// check if participants have read/write access
+				int iCalAccess = CollaborationTools.CALENDAR_ACCESS_OWNERS;
+				Long lCalAccess = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).lookupCalendarAccess();
+				if (lCalAccess != null) {
+					iCalAccess = lCalAccess.intValue();
+				}
+				if (iCalAccess == CollaborationTools.CALENDAR_ACCESS_ALL) {
+					calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+				} else {
+					calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+				}
+			} else {
+				calRenderWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+			}
 		}
 		CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(calRenderWrapper.getKalendar(), ureq.getIdentity());
 		if (config != null) {

@@ -1,0 +1,67 @@
+.o_businessgroup_lifecycle {
+	text-align: center;
+	
+	.btn-arrow-right {
+		height: 72px;
+		padding-left: 72px;
+		padding-right: 36px;
+		margin-bottom: 5px;
+	}
+	
+	.btn-arrow-right:before,
+	.btn-arrow-right:after {
+		width: 50px;
+		height: 50px;
+		top: 10px;
+	}
+	.btn-arrow-right:before {
+		left: -25px;
+	}
+	.btn-arrow-right:after {
+		right: -24px;
+	}
+}
+
+.o_labeled_light {
+	&.o_businessgroup_status_active {
+	    border-color: 		$o-repo-published-color;
+	    color: 				$o-repo-published-color;
+	}
+	&.o_businessgroup_status_inactive {
+	    border-color: 		$o-repo-closed-color;
+	    color: 				$o-repo-closed-color;
+	}
+	&.o_businessgroup_status_trash {
+	    border-color: 		$o-repo-trash-color;
+	    color: 				$o-repo-trash-color;
+	}
+	&.o_businessgroup_status_deleted {
+	    border-color: 		$o-repo-deleted-color;
+	    color: 				$o-repo-deleted-color;
+	}	
+}
+
+.o_businessgroup_status_badge {
+	float: right;
+	display: inline-block;
+	padding: 1px 25px;
+	border-radius: $border-radius-small;
+	
+	&.o_businessgroup_status_active {
+	    background-color: 	$o-repo-published-color;
+	    color: 				#fff;
+	}
+	&.o_businessgroup_status_inactive {
+	    background-color: 	$o-repo-closed-color;
+	    color: 				#fff;
+	}
+	&.o_businessgroup_status_trash {
+	    background-color: 	$o-repo-trash-color;
+	    color: 				#fff;
+	}
+	&.o_businessgroup_status_deleted {
+	    background-color: 	$o-repo-deleted-color;
+	    color: 				#fff;
+	}
+}
+

@@ -54,19 +54,16 @@ public class ProjectBrokerGroupDeleteManager implements DeletableGroupData {
 	
 	@Override
 	public boolean deleteGroupDataFor(BusinessGroup group) {
-		log.debug("deleteAllProjectGroupEntiresFor started.. group=" + group);
+		log.debug("deleteAllProjectGroupEntiresFor started.. group={}", group);
 		
 		List<Project> projectList = projectBrokerManager.getProjectsWith(group);
 		for (Project project : projectList) {
-			projectBrokerManager.deleteProject(project,false, null, null); // no course-env, no course-node
+			projectBrokerManager.deleteProject(project,false, null, null, null); // no course-env, no course-node
 			ProjectBroker projectBroker = project.getProjectBroker();
 			OLATResourceableDeletedEvent delEv = new OLATResourceableDeletedEvent(projectBroker);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(delEv, projectBroker);
-			log.debug("deleteProjectWith: group=" + group  + " , project=" + project);
+			log.debug("deleteProjectWith: group={}, project={}", group, project);
 		}
 		return true;
 	}
-
-
-
 }

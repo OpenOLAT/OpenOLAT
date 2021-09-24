@@ -28,7 +28,6 @@ import java.util.Map;
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.groups.BusinessGroupTableModelWithType.Cols;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -57,6 +56,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
@@ -64,6 +64,7 @@ import org.olat.group.model.AddToGroupsEvent;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.main.BGRoleCellRenderer;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -89,8 +90,12 @@ public class GroupOverviewController extends BasicController {
 	private GroupSearchController groupsCtrl;
 	private GroupLeaveDialogBoxController removeFromGrpDlg;
 
-	private final BusinessGroupModule groupModule;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupModule groupModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	private final Identity identity;
 
@@ -99,8 +104,6 @@ public class GroupOverviewController extends BasicController {
 		setTranslator(Util.createPackageTranslator(BGRoleCellRenderer.class, getLocale(), getTranslator()));
 		
 		this.identity = identity;
-		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
 		vc = createVelocityContainer("groupoverview");
 
@@ -318,12 +321,7 @@ public class GroupOverviewController extends BasicController {
 		for(BusinessGroup group:groupsToLeave) {
 			if (groupsToDelete.contains(group)) {
 				// really delete the group as it has no more owners/participants
-				if(doSendMail) {
-					String businessPath = getWindowControl().getBusinessControl().getAsString();
-					businessGroupService.deleteBusinessGroupWithMail(group, businessPath, getIdentity(), getLocale());
-				} else {
-					businessGroupService.deleteBusinessGroup(group);
-				}
+				businessGroupLifecycleManager.deleteBusinessGroup(group, getIdentity(), doSendMail);
 			} else {
 				// 1) remove as owner
 				if (businessGroupService.hasRoles(identity, group, GroupRoles.coach.name())) {

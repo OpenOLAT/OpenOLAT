@@ -66,7 +66,8 @@ public class InfoGroupRunController extends BasicController {
 	@Autowired
 	private InfoSubscriptionManager subscriptionManager;
 
-	public InfoGroupRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean canAccess, boolean isAdmin) {
+	public InfoGroupRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup,
+			boolean canAccess, boolean isAdmin, boolean readOnly) {
 		super(ureq, wControl);
 		
 		long groupId = businessGroup.getKey();
@@ -81,7 +82,7 @@ public class InfoGroupRunController extends BasicController {
 			listenTo(subscriptionController);
 		}
 
-		boolean canAddAndEdit = isAdmin || canAccess;
+		boolean canAddAndEdit = (isAdmin || canAccess) && !readOnly;
 		InfoSecurityCallback secCallback = new InfoGroupSecurityCallback(getIdentity(), canAddAndEdit, isAdmin);
 		infoDisplayController = new InfoDisplayController(ureq, wControl, secCallback, businessGroup, resSubPath, businessPath);
 		SendMailOption subscribers = new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale());

@@ -241,9 +241,6 @@ public class ProjectListController extends BasicController implements GenericEve
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if ( (source == tableController) && (event instanceof TableEvent) ) {
@@ -255,7 +252,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			if (pbEditEvent.isCancelEvent()){
 				getLogger().info("event form cancelled => delete project");
 				projectBrokerManager.deleteProject(pbEditEvent.getProject(), true, userCourseEnv.getCourseEnvironment(),
-						courseNode);
+						courseNode, getIdentity());
 				mainPanel.popContent();
 				updateProjectListModelOf(tableController, urequest.getIdentity());
 			} else if (pbEditEvent.isCreateEvent() || pbEditEvent.isDeletedEvent()){
@@ -466,8 +463,8 @@ public class ProjectListController extends BasicController implements GenericEve
 					return (a == null) ? (bb ? 0: -1) : (bb ? 1: 0);
 				}
 				try {
-					Long la = new Long((String)a);
-					Long lb = new Long((String)b);
+					Long la = Long.valueOf((String)a);
+					Long lb = Long.valueOf((String)b);
 					return la.compareTo(lb);
 				} catch (NumberFormatException e) {
 					return super.compareTo(rowa, rowb);

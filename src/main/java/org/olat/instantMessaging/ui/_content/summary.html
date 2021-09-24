@@ -3,4 +3,11 @@
 #if ($isInAssessment)
 <div class="o_warning">$r.translate("im.conference.assessment.open")</div>
 #end
-<p>$r.render("openChat") #if($r.available("logChat")) $r.render("logChat") #end</p>
+<div class="o_button_group">
+	#if($r.visible("openChat"))
+		$r.render("openChat")
+	#end 
+	#if($r.available("logChat"))
+		$r.render("logChat")
+	#end
+</div>

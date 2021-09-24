@@ -23,7 +23,6 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,6 +41,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.model.ACResourceInfo;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,8 +56,10 @@ import org.olat.resource.accesscontrol.model.ACResourceInfo;
  */
 public class PendingEnrollmentController extends FormBasicController implements SupportsAfterLoginInterceptor {
 
-	private final ACService acService;
-	private final BusinessGroupService businessGroupService;
+	@Autowired
+	private ACService acService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	private List<ReservationWrapper> reservations;
 	private boolean showFormOK;
@@ -68,11 +70,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 	
 	public PendingEnrollmentController(UserRequest ureq, WindowControl wControl, boolean showFormOK) {
 		super(ureq, wControl, "accept_reservations");
-		
 		this.showFormOK = showFormOK;
-		this.acService = CoreSpringFactory.getImpl(ACService.class);
-		this.businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		
 		
 		getAndShowEnrolments();
 		initForm(ureq);
@@ -175,7 +173,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 			}
 			
 			if (!showFormOK) {
-				answerReservations(ureq);
+				answerReservations();
 				updateReservations(ureq, reservation);
 				initForm(ureq);
 			}
@@ -186,11 +184,11 @@ public class PendingEnrollmentController extends FormBasicController implements 
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		answerReservations(ureq);
+		answerReservations();
 		fireEvent (ureq, Event.DONE_EVENT);
 	}
 	
-	private void answerReservations(UserRequest ureq) {		
+	private void answerReservations() {		
 		for(ReservationWrapper reservation:reservations) {
 			if(reservation.getAccept() != null) {
 				if(reservation.getAccept().booleanValue()) {

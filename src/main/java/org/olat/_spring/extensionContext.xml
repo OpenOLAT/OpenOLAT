@@ -84,9 +84,24 @@
 		</property>
 	</bean>
 	
+	<!-- The life-cycle parent node -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
+		<property name="order" value="7405" />
+		<property name="navigationKey" value="modules" />
+		<property name="nodeIdentifierIfParent" value="lifecycleParent" />
+		<property name="translationPackage" value="org.olat.admin" />
+		<property name="i18nActionKey" value="menu.lifecycle" />
+		<property name="i18nDescriptionKey" value="menu.lifecycle.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+	</bean>
+	
 	<!-- The payment parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
-		<property name="order" value="7400" />
+		<property name="order" value="7410" />
 		<property name="navigationKey" value="modules" />
 		<property name="nodeIdentifierIfParent" value="paymentsParent" />
 		<property name="translationPackage" value="org.olat.admin" />
@@ -101,7 +116,7 @@
 	
 	<!-- The reports parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
-		<property name="order" value="7400" />
+		<property name="order" value="7415" />
 		<property name="navigationKey" value="reports" />
 		<property name="nodeIdentifierIfParent" value="reportsParent" />
 		<property name="translationPackage" value="org.olat.admin" />

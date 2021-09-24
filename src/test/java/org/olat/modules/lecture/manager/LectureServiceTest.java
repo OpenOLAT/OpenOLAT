@@ -35,6 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeTarget;
@@ -51,6 +52,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.vitero.model.GroupRole;
+import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -80,6 +82,8 @@ public class LectureServiceTest extends OlatTestCase {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 	@Autowired
 	private LectureParticipantSummaryDAO lectureParticipantSummaryDao;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	@Test
 	public void addTeacher() {
@@ -258,7 +262,7 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNotNull(block);
 		
 		//delete the group
-		businessGroupService.deleteBusinessGroup(group);
+		businessGroupLifecycleManager.deleteBusinessGroup(group, null, false);
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve lecture block
@@ -292,8 +296,10 @@ public class LectureServiceTest extends OlatTestCase {
 		
 		//delete and hope
 		Roles roles = Roles.administratorRoles();
-		repositoryService.deletePermanently(entry, owner, roles, Locale.ENGLISH);
+		ErrorList errors = repositoryService.deletePermanently(entry, owner, roles, Locale.ENGLISH);
 		dbInstance.commit();
+		
+		Assert.assertFalse(errors.hasErrors());
 	}
 	
 	
@@ -347,7 +353,7 @@ public class LectureServiceTest extends OlatTestCase {
 		// heal
 		int rows = ((LectureServiceImpl)lectureService).healMovedLectureBlocks(targetEntry, entry);
 		dbInstance.commitAndCloseSession();
-		Assert.assertFalse(rows == 0);
+		Assert.assertNotEquals(0, rows);
 		
 		LectureParticipantSummary summary = lectureParticipantSummaryDao.getSummary(targetEntry, participant);
 		Assert.assertNotNull(summary);

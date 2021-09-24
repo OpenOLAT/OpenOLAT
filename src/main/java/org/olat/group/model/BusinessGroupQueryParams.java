@@ -22,6 +22,7 @@ package org.olat.group.model;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -50,10 +51,16 @@ public class BusinessGroupQueryParams {
 	private Boolean resources;
 	private boolean headless = false;
 	private boolean authorConnection;
-	private Date lastUsageBefore;
 	
 	private List<Long> businessGroupKeys;
 	private RepositoryEntryRef repositoryEntry;
+
+	private Date lastUsageBefore;
+	
+	private List<BusinessGroupStatusEnum> groupStatus;
+	
+	private LifecycleSyntheticStatus lifecycleStatus;
+	private Date lifecycleStatusReference;
 	
 	public BusinessGroupQueryParams() {
 		//
@@ -234,5 +241,47 @@ public class BusinessGroupQueryParams {
 
 	public void setLastUsageBefore(Date lastUsageBefore) {
 		this.lastUsageBefore = lastUsageBefore;
+	}
+	
+	public List<BusinessGroupStatusEnum> getGroupStatus() {
+		return groupStatus;
+	}
+
+	public void setGroupStatus(List<BusinessGroupStatusEnum> groupStatus) {
+		this.groupStatus = groupStatus;
+	}
+
+	public LifecycleSyntheticStatus getLifecycleStatus() {
+		return lifecycleStatus;
+	}
+
+	public void setLifecycleStatus(LifecycleSyntheticStatus lifecycleStatus) {
+		this.lifecycleStatus = lifecycleStatus;
+	}
+
+	public Date getLifecycleStatusReference() {
+		return lifecycleStatusReference;
+	}
+
+	public void setLifecycleStatusReference(Date lifecycleStatusReference) {
+		this.lifecycleStatusReference = lifecycleStatusReference;
+	}
+
+	public enum LifecycleSyntheticStatus {
+		ACTIVE,
+		ACTIVE_LONG,
+		ACTIVE_RESPONSE_DELAY,
+		TO_START_INACTIVATE,
+		TO_INACTIVATE,
+		
+		INACTIVE,
+		INACTIVE_LONG,
+		INACTIVE_RESPONSE_DELAY,
+		TO_START_SOFT_DELETE,
+		TO_SOFT_DELETE,
+		
+		SOFT_DELETE,
+		SOFT_DELETE_LONG,
+		TO_DELETE
 	}
 }

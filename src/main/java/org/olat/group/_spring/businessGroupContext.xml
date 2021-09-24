@@ -57,4 +57,40 @@
 			</list>
 		</property>
 	</bean>
+	
+	<!-- Business group life-cycle admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8205" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.group.ui.lifecycle.BusinessGroupLifecycleAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="grouplifecycle" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.group.ui.lifecycle"/>
+		<property name="parentTreeNodeIdentifier" value="lifecycleParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Inactivate / delete business group -->
+	<bean id="lifecycleBusinessGroupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+    	<property name="jobDetail" ref="lifecycleBusinessGroupJob.${cluster.singleton.services}" />
+    	<property name="cronExpression" value="0 45 1 * * ?"/>
+    	<property name="startDelay" value="45000" />
+	</bean>
+	
+	<bean id="lifecycleBusinessGroupJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.group.manager.BusinessGroupLifecycleJob" />
+	</bean>
+
+	<bean id="lifecycleBusinessGroupJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
 </beans>

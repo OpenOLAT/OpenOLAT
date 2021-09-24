@@ -137,6 +137,8 @@ import org.junit.runners.Suite;
 	org.olat.group.test.BusinessGroupRelationDAOTest.class,
 	org.olat.group.test.BusinessGroupConcurrentTest.class,
 	org.olat.group.test.ContactDAOTest.class,
+	org.olat.group.test.BusinessGroupQueriesTest.class,
+	org.olat.group.test.BusinessGroupLifecycleManagerTest.class,
 	org.olat.group.test.BusinessGroupMembershipProcessorTest.class,
 	org.olat.fileresource.FileResourceTest.class,
 	org.olat.resource.lock.pessimistic.PLockTest.class,

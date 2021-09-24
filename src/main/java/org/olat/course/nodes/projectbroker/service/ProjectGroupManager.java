@@ -72,7 +72,7 @@ public interface ProjectGroupManager {
 	 * @param cpm
 	 * @param courseNode
 	 */
-	public void deleteAccountManagerGroup(CoursePropertyManager cpm, CourseNode courseNode);
+	public void deleteAccountManagerGroup(CoursePropertyManager cpm, CourseNode courseNode, Identity deletedBy);
 
 	/**
 	 * Update group-name or description for certain account manager group.
@@ -119,7 +119,7 @@ public interface ProjectGroupManager {
 	 * Delete project-group for certain project.
 	 * @param project
 	 */
-	public abstract void deleteProjectGroupFor(Project project);
+	public abstract void deleteProjectGroupFor(Project project, Identity deletedBy);
 
 
 	/**

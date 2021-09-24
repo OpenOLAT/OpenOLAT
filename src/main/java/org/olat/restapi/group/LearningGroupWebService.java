@@ -73,6 +73,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.fo.Forum;
@@ -130,6 +131,8 @@ public class LearningGroupWebService {
 	private CollaborationManager collaborationManager;
 	@Autowired
 	private CollaborationToolsFactory collaborationToolsFactory;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	/**
 	 * Retrieves the version of the Group Web Service.
@@ -553,7 +556,8 @@ public class LearningGroupWebService {
 		if(bg == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		bgs.deleteBusinessGroup(bg);
+		Identity identity = RestSecurityHelper.getIdentity(request);
+		businessGroupLifecycleManager.deleteBusinessGroup(bg, identity, false);
 		return Response.ok().build();
 	}
 	
@@ -710,7 +714,7 @@ public class LearningGroupWebService {
 		CollaborationTools collabTools = collaborationToolsFactory.getOrCreateCollaborationTools(bg);
 		if(collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
 			UserRequest ureq = getUserRequest(request);
-			KalendarRenderWrapper calendar = collaborationManager.getCalendar(bg, ureq, true);
+			KalendarRenderWrapper calendar = collaborationManager.getCalendar(bg, ureq, true, false);
 			return new CalWebService(calendar);
 		}
 		return null;

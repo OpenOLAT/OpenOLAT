@@ -105,7 +105,7 @@ public interface ProjectBrokerManager {
 	 * @param courseEnv
 	 * @param cNode
 	 */
-	public void deleteProject(Project project, boolean deleteGroup, CourseEnvironment courseEnv, CourseNode cNode);
+	public void deleteProject(Project project, boolean deleteGroup, CourseEnvironment courseEnv, CourseNode cNode, Identity deletedBy);
 
 	/**
 	 * Get the number of total selected project for certain identity.
@@ -160,7 +160,7 @@ public interface ProjectBrokerManager {
 	 * @param courseEnvironment
 	 * @param courseNode
 	 */
-	public void deleteProjectBroker(Long projectBrokerId, CourseEnvironment courseEnvironment, CourseNode courseNode);
+	public void deleteProjectBroker(Long projectBrokerId, CourseEnvironment courseEnvironment, CourseNode courseNode, Identity deletedBy);
 
 	/**
 	 * Save attachment file in the attachment-folder of a project.

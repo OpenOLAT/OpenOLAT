@@ -40,11 +40,21 @@ public class OLATResourceableJustBeforeDeletedEvent extends OLATResourceableEven
 	private static final long serialVersionUID = 4518227702411742858L;
 	private static final String COMMAND_DELETED = "deleted";
 	
+	private Long deletedByKey;
+	
 	/**
 	 * @param ores
 	 */
 	public OLATResourceableJustBeforeDeletedEvent(OLATResourceable ores) {
 		super(COMMAND_DELETED, ores);
 	}
-
+	
+	public OLATResourceableJustBeforeDeletedEvent(OLATResourceable ores, Long deletedByKey) {
+		super(COMMAND_DELETED, ores);
+		this.deletedByKey = deletedByKey;
+	}
+	
+	public Long getDeletedByKey() {
+		return deletedByKey;
+	}
 }

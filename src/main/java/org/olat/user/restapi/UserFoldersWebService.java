@@ -64,6 +64,7 @@ import org.olat.course.nodes.bc.BCWebService;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.restapi.group.LearningGroupWebService;
 import org.olat.restapi.support.vo.FileVO;
@@ -232,8 +233,9 @@ public class UserFoldersWebService {
 		params.addTools(CollaborationTools.TOOL_FOLDER);
 		List<BusinessGroup> groups = bgs.findBusinessGroups(params, null, 0, -1);
 		for(BusinessGroup group:groups) {
+			boolean readOnly = BusinessGroupStatusEnum.isReadOnly(group);
 			CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
-			VFSContainer container = tools.getSecuredFolder(group, null, ureqIdentity, false);
+			VFSContainer container = tools.getSecuredFolder(group, null, ureqIdentity, false, readOnly);
 
 			FolderVO folderVo = new FolderVO();
 			folderVo.setName(group.getName());

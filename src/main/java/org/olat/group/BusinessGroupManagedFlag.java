@@ -45,6 +45,7 @@ public enum BusinessGroupManagedFlag {
 	    membersmanagement(members,all),
 	  resources(all),//add/remove courses
 	  bookings(all),// change booking rules
+	  inactivate(all),
 	  delete(all);
 	
 	

@@ -19,6 +19,8 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -26,16 +28,19 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 
 /**
  * Initial date: 29.01.2021<br>
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-public class BusinessGroupListWrapperController extends BasicController {
+public class BusinessGroupListWrapperController extends BasicController implements Activateable2 {
 	
 	private PendingEnrollmentController pendingEnrollmentController;
-	private BusinessGroupListController myBusinessGroupListController;
+	private BusinessGroupListController businessGroupListController;
 	
 	private VelocityContainer wrapper;
 
@@ -47,16 +52,29 @@ public class BusinessGroupListWrapperController extends BasicController {
 		pendingEnrollmentController = new PendingEnrollmentController(ureq, wControl, false);
 		listenTo(pendingEnrollmentController);
 		
-		myBusinessGroupListController = new BusinessGroupListController(ureq, wControl, "my");
-		listenTo(myBusinessGroupListController);
-		myBusinessGroupListController.doDefaultSearch();
+		// enhance 
+		businessGroupListController = new BusinessGroupListController(ureq, wControl, "my");
+		listenTo(businessGroupListController);
 		
 		wrapper.contextPut("enrollmentsAvailable", Boolean.valueOf(pendingEnrollmentController.isEnrollmentAvailable()));
 		wrapper.put("pendingEnrollments", pendingEnrollmentController.getInitialComponent());
-		wrapper.put("myGroups", myBusinessGroupListController.getInitialComponent());
-		
-		
+		wrapper.put("myGroups", businessGroupListController.getInitialComponent());
+
 		putInitialPanel(wrapper);
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) {
+			if(!businessGroupListController.hasTab()) {
+				businessGroupListController.selectFilterTab(ureq, businessGroupListController.getBookmarkTab());
+				if(businessGroupListController.isEmpty()) {
+					businessGroupListController.selectFilterTab(ureq, businessGroupListController.getMyGroupsTab());
+				}
+			} // else do nothing
+		} else {
+			businessGroupListController.activate(ureq, entries, state);
+		}
 	}
 
 	@Override
@@ -67,7 +85,7 @@ public class BusinessGroupListWrapperController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == pendingEnrollmentController) {
-			myBusinessGroupListController.reloadModel();
+			businessGroupListController.reloadModel();
 			
 			if (event.equals(Event.DONE_EVENT)) {
 				wrapper.contextPut("enrollmentsAvailable", false);

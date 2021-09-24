@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFil
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -37,12 +38,21 @@ import org.olat.core.util.StringHelper;
 public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTableExtendedFilter {
 	
 	private String value;
+	private String textAddOn;
 	
 	public FlexiTableTextFilter(String label, String filter, boolean defaultVisible) {
 		super(label, filter);
 		setDefaultVisible(defaultVisible);
 	}
 	
+	public String getTextAddOn() {
+		return textAddOn;
+	}
+
+	public void setTextAddOn(String textAddOn) {
+		this.textAddOn = textAddOn;
+	}
+
 	@Override
 	public boolean isSelected() {
 		return value != null;
@@ -98,14 +108,18 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		return new FlexiFilterTextController(ureq, wControl, this, getValue());
+	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
+		return getController(ureq, wControl, translator, getValue());
 	}
 	
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Object value) {
-		String preselectedValue = value instanceof String ? (String)value : null;
-		return new FlexiFilterTextController(ureq, wControl, this, preselectedValue);
+	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object val) {
+		String preselectedValue = val instanceof String ? (String)val : null;
+		FlexiFilterTextController filterEl = new FlexiFilterTextController(ureq, wControl, this, preselectedValue, translator);
+		if(StringHelper.containsNonWhitespace(textAddOn)) {
+			filterEl.setTextAddOn(textAddOn);
+		}
+		return filterEl;
 	}
 
 	@Override

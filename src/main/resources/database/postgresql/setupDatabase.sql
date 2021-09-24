@@ -73,6 +73,12 @@ create table o_gp_business (
    lastmodified timestamp,
    creationdate timestamp,
    lastusage timestamp,
+   status varchar(32) default 'active',
+   inactivationdate timestamp,
+   inactivationemaildate timestamp,
+   reactivationdate timestamp,
+   softdeleteemaildate timestamp,
+   softdeletedate timestamp,
    groupname varchar(255),
    technical_type varchar(32) default 'business' not null,
    external_id varchar(64),
@@ -92,6 +98,8 @@ create table o_gp_business (
    allowtoleave bool not null default true,
    fk_resource int8 unique,
    fk_group_id int8 unique,
+   fk_inactivatedby_id int8,
+   fk_softdeletedby_id int8,
    primary key (group_id)
 );
 create table o_temporarykey (
@@ -3665,6 +3673,12 @@ create index gp_tech_type_idx on o_gp_business (technical_type);
 alter table o_bs_namedgroup add constraint FKBAFCBBC4B85B522C foreign key (secgroup_id) references o_bs_secgroup;
 create index FKBAFCBBC4B85B522C on o_bs_namedgroup (secgroup_id);
 create index groupname_idx on o_bs_namedgroup (groupname);
+
+alter table o_gp_business add constraint gb_bus_inactivateby_idx foreign key (fk_inactivatedby_id) references o_bs_identity (id);
+create index idx_gb_bus_inactivateby_idx on o_gp_business (fk_inactivatedby_id);
+
+alter table o_gp_business add constraint gb_bus_softdeletedby_idx foreign key (fk_softdeletedby_id) references o_bs_identity (id);
+create index idx_gb_bus_softdeletedby_idx on o_gp_business (fk_softdeletedby_id);
 
 -- area
 alter table o_gp_bgarea add constraint idx_area_to_resource foreign key (fk_resource) references o_olatresource (resource_id);

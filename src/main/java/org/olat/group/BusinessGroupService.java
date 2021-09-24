@@ -22,7 +22,6 @@ package org.olat.group;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
@@ -30,7 +29,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
@@ -125,22 +123,7 @@ public interface BusinessGroupService {
 			boolean download);
 	
 	public BusinessGroup updateAllowToLeaveBusinessGroup(BusinessGroup group, boolean allowLeaving);
-	
-	/**
-	 * Delete a business group from the persistence store
-	 * @param group
-	 */
-	public void deleteBusinessGroup(BusinessGroup group);
-	
-	/**
-	 * Delete a business group and send a mail to all users in the group
-	 * @param group
-	 * @param businessPath
-	 * @param deletedBy
-	 * @param locale
-	 * @return
-	 */
-	public MailerResult deleteBusinessGroupWithMail(BusinessGroup group, String businessPath, Identity deletedBy, Locale locale);
+
 
 	/**
 	 * Set certain business-group as active (set last-usage and delete time stamp for

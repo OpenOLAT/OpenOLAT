@@ -118,7 +118,7 @@ public class BGCopyPreparationStepController extends StepFormBasicController {
 			}
 		}
 		if(index >= 0) {
-			return new Boolean(ce.isSelected(index));
+			return Boolean.valueOf(ce.isSelected(index));
 		}
 		return Boolean.FALSE;
 	}

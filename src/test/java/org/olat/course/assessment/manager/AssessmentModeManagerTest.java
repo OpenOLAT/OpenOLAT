@@ -44,6 +44,7 @@ import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
@@ -89,6 +90,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	@Test
 	public void createAssessmentMode() {
@@ -1291,7 +1294,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertTrue(currentModes2.contains(mode));
 		
 		//remove business group 1
-		businessGroupService.deleteBusinessGroup(businessGroup2);
+		businessGroupLifecycleManager.deleteBusinessGroup(businessGroup2, author, false);
 		dbInstance.commitAndCloseSession();
 
 		//check participant 1

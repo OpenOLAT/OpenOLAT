@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiBusinessPathModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.Formatter;
@@ -51,7 +52,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 	 * @param owned list of business groups
 	 */
 	public BusinessGroupListFlexiTableModel(FlexiTableColumnModel columnModel, Locale locale) {
-		super(new ArrayList<BGTableItem>(), columnModel);
+		super(new ArrayList<>(), columnModel);
 		this.locale = locale;
 	}
 	
@@ -71,94 +72,95 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		
 	@Override
 	public Object getValueAt(BGTableItem wrapped, int col) {
-		switch (COLS[col]) {
-			case createionDate:
-				return wrapped.getCreationDate();
-			case name:
-				return wrapped;
-			case description:
-				String description = wrapped.getBusinessGroupDescription();
-				description = FilterFactory.getHtmlTagsFilter().filter(description);
-				description = Formatter.truncate(description, 256);
-				return description;
-			case allowLeave: {
-				Boolean allowed = wrapped.getAllowLeave();
-				if(allowed != null && allowed.booleanValue()) {
-					//check managed groups
-					if(BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
+		if(col >= 0 && col <COLS.length) {
+			switch (COLS[col]) {
+				case createionDate:
+					return wrapped.getCreationDate();
+				case name:
+					return wrapped;
+				case description:
+					String description = wrapped.getBusinessGroupDescription();
+					description = FilterFactory.getHtmlTagsFilter().filter(description);
+					description = Formatter.truncate(description, 256);
+					return description;
+				case allowLeave: {
+					Boolean allowed = wrapped.getAllowLeave();
+					if(allowed != null && allowed.booleanValue()
+							&& BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
 						return Boolean.FALSE;
 					}
+					return allowed;
 				}
-				return allowed;
-			}
-			case allowDelete: {
-				Boolean allowed =  wrapped.getAllowDelete();
-				if(allowed != null && allowed.booleanValue()) {
-					//check managed groups
-					if(BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.delete)) {
+				case allowDelete: {
+					Boolean allowed = wrapped.getAllowDelete();
+					if(allowed != null && allowed.booleanValue()
+							&&BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.delete)) {
 						return Boolean.FALSE;
 					}
+					return allowed;
 				}
-				return allowed;
-			}
-			case resources:
-				return wrapped;
-			case accessControl:
-				return Boolean.valueOf(wrapped.isAccessControl());
-			case accessControlLaunch:
-				return wrapped.getAccessLink();
-			case accessTypes:
-				return wrapped.getAccessTypes();
-			case mark:
-				return wrapped.getMarkLink();
-			case lastUsage:
-				return wrapped.getBusinessGroupLastUsage();
-			case role:
-				return wrapped.getMembership();
-			case firstTime: {
-				BusinessGroupMembership membership = wrapped.getMembership();
-				return membership == null ? null : membership.getCreationDate();
-			}
-			case lastTime: {
-				BusinessGroupMembership membership = wrapped.getMembership();
-				return membership == null ? null : membership.getLastModified();
-			}
-			case key:
-				return wrapped.getBusinessGroupKey();
-			case freePlaces: {
-				Integer maxParticipants = wrapped.getMaxParticipants();
-				if(maxParticipants != null && maxParticipants.intValue() >= 0) {
-					long free = maxParticipants - (wrapped.getNumOfParticipants() + wrapped.getNumOfPendings());
-					return new GroupNumber(free);
+				case resources:
+					return wrapped;
+				case accessControl:
+					return Boolean.valueOf(wrapped.isAccessControl());
+				case accessControlLaunch:
+					return wrapped.getAccessLink();
+				case accessTypes:
+					return wrapped.getAccessTypes();
+				case mark:
+					return wrapped.getMarkLink();
+				case lastUsage:
+					return wrapped.getBusinessGroupLastUsage();
+				case role:
+					return wrapped.getMembership();
+				case firstTime: {
+					BusinessGroupMembership membership = wrapped.getMembership();
+					return membership == null ? null : membership.getCreationDate();
 				}
-				return GroupNumber.INFINITE;
-			}
-			case participantsCount: {
-				long count = wrapped.getNumOfParticipants() + wrapped.getNumOfPendings();
-				return count < 0 ? GroupNumber.ZERO : new GroupNumber(count);
-			}
-			case tutorsCount: {
-				long count = wrapped.getNumOfOwners();
-				return count < 0 ? GroupNumber.ZERO : new GroupNumber(count);
-			}
-			case waitingListCount: {
-				if(wrapped.isWaitingListEnabled()) {
-					long count = wrapped.getNumWaiting();
+				case lastTime: {
+					BusinessGroupMembership membership = wrapped.getMembership();
+					return membership == null ? null : membership.getLastModified();
+				}
+				case key:
+					return wrapped.getBusinessGroupKey();
+				case freePlaces: {
+					Integer maxParticipants = wrapped.getMaxParticipants();
+					if(maxParticipants != null && maxParticipants.intValue() >= 0) {
+						long free = maxParticipants - (wrapped.getNumOfParticipants() + wrapped.getNumOfPendings());
+						return new GroupNumber(free);
+					}
+					return GroupNumber.INFINITE;
+				}
+				case participantsCount: {
+					long count = wrapped.getNumOfParticipants() + wrapped.getNumOfPendings();
 					return count < 0 ? GroupNumber.ZERO : new GroupNumber(count);
 				}
-				return GroupNumber.NONE;
+				case tutorsCount: {
+					long count = wrapped.getNumOfOwners();
+					return count < 0 ? GroupNumber.ZERO : new GroupNumber(count);
+				}
+				case waitingListCount: {
+					if(wrapped.isWaitingListEnabled()) {
+						long count = wrapped.getNumWaiting();
+						return count < 0 ? GroupNumber.ZERO : new GroupNumber(count);
+					}
+					return GroupNumber.NONE;
+				}
+				case wrapper:
+					return wrapped;
+				case externalId:
+					return wrapped.getBusinessGroupExternalId();
+				case unlink: {	
+					boolean managed = BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.resources);
+					return managed ? Boolean.FALSE : Boolean.TRUE;
+				}
+				case status:
+					return wrapped.getGroupStatus();
+				default:
+					return "ERROR";
 			}
-			case wrapper:
-				return wrapped;
-			case externalId:
-				return wrapped.getBusinessGroupExternalId();
-			case unlink: {	
-				boolean managed = BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.resources);
-				return managed ? Boolean.FALSE : Boolean.TRUE;
-			}
-			default:
-				return "ERROR";
 		}
+		return null;
 	}
 	
 	@Override
@@ -191,7 +193,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		return new BusinessGroupListFlexiTableModel(getTableColumnModel(), locale);
 	}
 	
-	public enum Cols {
+	public enum Cols implements FlexiSortableColumnDef {
 		createionDate("table.header.createionDate"),
 		name("table.header.bgname"),
 		description("table.header.description"),
@@ -215,17 +217,28 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		wrapper(""),
 		card("table.header.businesscard"),
 		externalId("table.header.externalid"),
-		unlink("table.header.unlink");
+		unlink("table.header.unlink"),
+		status("table.header.status");
 		
 		private final String i18n;
 		
 		private Cols(String i18n) {
 			this.i18n = i18n;
 		}
-		
-		public String i18n() {
+
+		@Override
+		public String i18nHeaderKey() {
 			return i18n;
 		}
-	}
 
+		@Override
+		public boolean sortable() {
+			return this != wrapper && this != card && this != unlink;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
+	}
 }

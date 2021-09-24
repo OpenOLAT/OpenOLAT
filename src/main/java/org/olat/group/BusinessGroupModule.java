@@ -19,6 +19,11 @@
  */
 package org.olat.group;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.logging.log4j.util.Strings;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -28,6 +33,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.site.GroupsSite;
+import org.olat.group.ui.lifecycle.BusinessGroupLifecycleTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -107,6 +113,29 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	
 	private static final String MANAGED_GROUPS_ENABLED = "managedBusinessGroups";
 	
+	private static final String GROUP_LIFECYCLE_TYPE = "group.lifecycle.type";
+	
+	private static final String GROUP_AUTOMATIC_DEACTIVATION = "group.automatic.inactivation";
+	private static final String GROUP_NUM_OF_DAYS_BEFORE_DEACTIVATION = "group.days.before.deactivation";
+	private static final String GROUP_NUM_OF_DAYS_REACTIVATION_PERIOD = "group.days.reactivation.period";
+	private static final String GROUP_MAIL_BEFORE_DEACTIVATION = "group.mail.before.deactivation";
+	private static final String GROUP_NUM_OF_DAYS_BEFORE_MAIL_DEACTIVATION = "group.days.before.mail.deactivation";
+	private static final String GROUP_MAIL_AFTER_DEACTIVATION = "group.mail.after.deactivation";
+	private static final String GROUP_MAIL_COPY_AFTER_DEACTIVATION = "group.mail.copy.after.deactivation";
+	private static final String GROUP_MAIL_COPY_BEFORE_DEACTIVATION = "group.mail.copy.before.deactivation";
+	
+	private static final String GROUP_AUTOMATIC_SOFT_DELETE = "group.automatic.soft.delete";
+	private static final String GROUP_NUM_OF_DAYS_BEFORE_SOFT_DELETE = "group.days.before.soft.delete";
+	private static final String GROUP_MAIL_BEFORE_SOFT_DELETE  = "group.mail.before.soft.delete";
+	private static final String GROUP_NUM_OF_DAYS_BEFORE_MAIL_SOFT_DELETE  = "group.days.before.mail.soft.delete";
+	private static final String GROUP_MAIL_AFTER_SOFT_DELETE  = "group.mail.after.soft.delete";
+	private static final String GROUP_MAIL_COPY_AFTER_SOFT_DELETE = "group.mail.copy.after.soft.delete";
+	private static final String GROUP_MAIL_COPY_BEFORE_SOFT_DELETE  = "group.mail.copy.before.soft.delete";
+	
+	private static final String GROUP_AUTOMATIC_DEFINITIVELY_DELETE = "group.automatic.definitively.delete";
+	private static final String GROUP_NUM_OF_DAYS_BEFORE_DEFINITIVELY_DELETE = "group.days.before.definitively.delete";
+	
+	
 	@Value("${group.user.create:true}")
 	private boolean userAllowedCreate;
 	@Value("${group.author.create}")
@@ -185,15 +214,54 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	private boolean resourceManagersAllowedToLinkGroups;
 	@Value("${group.managed}")
 	private boolean managedBusinessGroups;
+	
+	@Value("${group.lifecycle.type}")
+	private String groupLifecycleType;
 
+	@Value("${group.automatic.inactivation:disabled}")
+	private String automaticGroupInactivation;
+	
+	@Value("${group.days.before.deactivation:720}")
+	private int numberOfInactiveDayBeforeDeactivation;
+	@Value("${group.days.reactivation.period:30}")
+	private int numberOfDayReactivationPeriod;
+	@Value("${group.mail.before.deactivation:true}")
+	private boolean mailBeforeDeactivation;
+	@Value("${group.days.before.mail.automatic.deactivation:10}")
+	private int numberOfDayBeforeDeactivationMail;
+	@Value("${group.mail.after.deactivation:false}")
+	private boolean mailAfterDeactivation;
+	@Value("${group.mail.copy.before.deactivation}")
+	private String mailCopyBeforeDeactivation;
+	@Value("${group.mail.copy.after.deactivation}")
+	private String mailCopyAfterDeactivation;
+	
+	@Value("${group.automatic.soft.delete:false}")
+	private String automaticGroupSoftDeletion;
+	
+	@Value("${group.days.before.soft.delete:180}")
+	private int numberOfInactiveDayBeforeSoftDelete;
+	@Value("${group.mail.before.soft.delete:true}")
+	private boolean mailBeforeSoftDelete;
+	@Value("${group.days.before.mail.automatic.soft.delete:10}")
+	private int numberOfDayBeforeSoftDeleteMail;
+	@Value("${group.mail.after.soft.delete:false}")
+	private boolean mailAfterSoftDelete;
+	@Value("${group.mail.copy.before.soft.delete}")
+	private String mailCopyBeforeSoftDelete;
+	@Value("${group.mail.copy.after.soft.delete}")
+	private String mailCopyAfterSoftDelete;
+
+	@Value("${group.automatic.definitively.delete:false}")
+	private String automaticGroupDefinitivelyDeletion;
+	@Value("${group.days.before.definitively.delete:80}")
+	private int numberOfSoftDeleteDayBeforeDefinitivelyDelete;
+	
 	@Autowired
 	public BusinessGroupModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
 	}
-
-	/**
-	 * @see org.olat.core.configuration.AbstractOLATModule#init()
-	 */
+	
 	@Override
 	public void init() {
 		// Add controller factory extension point to launch groups
@@ -289,6 +357,47 @@ public class BusinessGroupModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(managedGroups)) {
 			managedBusinessGroups = "true".equals(managedGroups);
 		}
+		
+		groupLifecycleType = getStringPropertyValue(GROUP_LIFECYCLE_TYPE, groupLifecycleType);
+		
+		// life-cycle: inactivation
+		automaticGroupInactivation = getStringPropertyValue(GROUP_AUTOMATIC_DEACTIVATION, automaticGroupInactivation);
+		numberOfInactiveDayBeforeDeactivation = getIntPropertyValue(GROUP_NUM_OF_DAYS_BEFORE_DEACTIVATION, numberOfInactiveDayBeforeDeactivation);
+		numberOfDayReactivationPeriod = getIntPropertyValue(GROUP_NUM_OF_DAYS_REACTIVATION_PERIOD, numberOfDayReactivationPeriod);
+		
+		String mailBeforeDeactivationObj = getStringPropertyValue(GROUP_MAIL_BEFORE_DEACTIVATION, false);
+		if(StringHelper.containsNonWhitespace(mailBeforeDeactivationObj)) {
+			mailBeforeDeactivation = "true".equalsIgnoreCase(mailBeforeDeactivationObj);
+		}
+		numberOfDayBeforeDeactivationMail = getIntPropertyValue(GROUP_NUM_OF_DAYS_BEFORE_MAIL_DEACTIVATION, numberOfDayBeforeDeactivationMail);
+		
+		String mailAfterDeactivationObj = getStringPropertyValue(GROUP_MAIL_AFTER_DEACTIVATION, false);
+		if(StringHelper.containsNonWhitespace(mailAfterDeactivationObj)) {
+			mailAfterDeactivation = "true".equalsIgnoreCase(mailAfterDeactivationObj);
+		}
+		mailCopyBeforeDeactivation = getStringPropertyValue(GROUP_MAIL_COPY_BEFORE_DEACTIVATION, mailCopyBeforeDeactivation);
+		mailCopyAfterDeactivation = getStringPropertyValue(GROUP_MAIL_COPY_AFTER_DEACTIVATION, mailCopyAfterDeactivation);
+
+		// life-cycle: soft delete
+		automaticGroupSoftDeletion = getStringPropertyValue(GROUP_AUTOMATIC_SOFT_DELETE, automaticGroupSoftDeletion);
+		numberOfInactiveDayBeforeSoftDelete = getIntPropertyValue(GROUP_NUM_OF_DAYS_BEFORE_SOFT_DELETE, numberOfInactiveDayBeforeSoftDelete);
+	
+		String mailBeforeSoftDeleteObj = getStringPropertyValue(GROUP_MAIL_BEFORE_SOFT_DELETE, false);
+		if(StringHelper.containsNonWhitespace(mailBeforeSoftDeleteObj)) {
+			mailBeforeSoftDelete = "true".equalsIgnoreCase(mailBeforeSoftDeleteObj);
+		}
+		numberOfDayBeforeSoftDeleteMail = getIntPropertyValue(GROUP_NUM_OF_DAYS_BEFORE_MAIL_SOFT_DELETE, numberOfDayBeforeSoftDeleteMail);
+		
+		String mailAfterSoftDeleteObj = getStringPropertyValue(GROUP_MAIL_AFTER_SOFT_DELETE, false);
+		if(StringHelper.containsNonWhitespace(mailAfterSoftDeleteObj)) {
+			mailAfterSoftDelete = "true".equalsIgnoreCase(mailAfterSoftDeleteObj);
+		}
+		mailCopyBeforeSoftDelete = getStringPropertyValue(GROUP_MAIL_COPY_BEFORE_SOFT_DELETE, mailCopyBeforeSoftDelete);
+		mailCopyAfterSoftDelete = getStringPropertyValue(GROUP_MAIL_COPY_AFTER_SOFT_DELETE, mailCopyAfterSoftDelete);
+		
+		// life-cycle: definitively deleted
+		automaticGroupDefinitivelyDeletion = getStringPropertyValue(GROUP_AUTOMATIC_DEFINITIVELY_DELETE, automaticGroupDefinitivelyDeletion);
+		numberOfSoftDeleteDayBeforeDefinitivelyDelete = getIntPropertyValue(GROUP_NUM_OF_DAYS_BEFORE_DEFINITIVELY_DELETE, numberOfSoftDeleteDayBeforeDefinitivelyDelete);
 	}
 
 	public boolean isAllowedCreate(Roles roles) {
@@ -535,6 +644,226 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	}
 
 	public void setManagedBusinessGroups(boolean enabled) {
+		this.managedBusinessGroups = enabled;
 		setStringProperty(MANAGED_GROUPS_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public String[] getGroupLifecycleTypes() {
+		if(StringHelper.containsNonWhitespace(groupLifecycleType)) {
+			return groupLifecycleType.split("[,]");
+		}
+		return new String[0];
+	}
+	
+	public List<BusinessGroupLifecycleTypeEnum> getGroupLifecycleTypeEnumsList() {
+		List<BusinessGroupLifecycleTypeEnum> types = new ArrayList<>();
+		String[] typesArr = getGroupLifecycleTypes();
+		for(String type:typesArr) {
+			if(StringHelper.containsNonWhitespace(type)) {
+				types.add(BusinessGroupLifecycleTypeEnum.valueOf(type));
+			}
+		}
+		return types;
+	}
+	
+	public List<String> getGroupLifecycleTypesList() {
+		List<String> types = new ArrayList<>();
+		String[] typesArr = getGroupLifecycleTypes();
+		for(String type:typesArr) {
+			if(StringHelper.containsNonWhitespace(type)) {
+				types.add(type);
+			}
+		}
+		return types;
+	}
+
+	public void setGroupLifecycleTypes(Collection<String> types) {
+		if(types == null || types.isEmpty()) {
+			groupLifecycleType = null;
+		} else {
+			groupLifecycleType = Strings.join(types, ',');
+		}
+		setStringProperty(GROUP_LIFECYCLE_TYPE, groupLifecycleType, true);
+	}
+	
+	public boolean isAutomaticGroupInactivationEnabled() {
+		return "enabled".equals(automaticGroupInactivation);
+	}
+	
+	public void setAutomaticGroupInactivationEnabled(String enable) {
+		this.automaticGroupInactivation = enable;
+		setStringProperty(GROUP_AUTOMATIC_DEACTIVATION, enable, true);
+	}
+	
+	public int getNumberOfFocusDay() {
+		return 30;
+	}
+
+	public int getNumberOfInactiveDayBeforeDeactivation() {
+		return numberOfInactiveDayBeforeDeactivation;
+	}
+
+	public void setNumberOfInactiveDayBeforeDeactivation(int days) {
+		this.numberOfInactiveDayBeforeDeactivation = days;
+		setIntProperty(GROUP_NUM_OF_DAYS_BEFORE_DEACTIVATION, days, true);
+	}
+	
+	/**
+	 * This is a grace period after reactivation.
+	 * 
+	 * @return
+	 */
+	public int getNumberOfDayReactivationPeriod() {
+		return numberOfDayReactivationPeriod;
+	}
+
+	public void setNumberOfDayReactivationPeriod(int days) {
+		this.numberOfDayReactivationPeriod = days;
+		setIntProperty(GROUP_NUM_OF_DAYS_REACTIVATION_PERIOD, days, true);
+	}
+	
+	public boolean isMailBeforeDeactivation() {
+		return mailBeforeDeactivation;
+	}
+
+	public void setMailBeforeDeactivation(boolean enabled) {
+		this.mailBeforeDeactivation = enabled;
+		setStringProperty(GROUP_MAIL_BEFORE_DEACTIVATION, Boolean.toString(enabled), true);
+	}
+	
+	public int getNumberOfDayBeforeDeactivationMail() {
+		return numberOfDayBeforeDeactivationMail;
+	}
+	
+	public void setNumberOfDayBeforeDeactivationMail(int days) {
+		this.numberOfDayBeforeDeactivationMail = days;
+		setIntProperty(GROUP_NUM_OF_DAYS_BEFORE_MAIL_DEACTIVATION, days, true);
+	}
+	
+	public List<String> getMailCopyBeforeDeactivation() {
+		return convertStringToList(mailCopyBeforeDeactivation);
+	}
+	
+	public void setMailCopyBeforeDeactivation(String mails) {
+		mailCopyBeforeDeactivation = removeWhiteSpaces(mails);
+		setStringProperty(GROUP_MAIL_COPY_BEFORE_DEACTIVATION, mailCopyBeforeDeactivation, true);
+	}
+	
+	public boolean isMailAfterDeactivation() {
+		return mailAfterDeactivation;
+	}
+
+	public void setMailAfterDeactivation(boolean enabled) {
+		this.mailAfterDeactivation = enabled;
+		setStringProperty(GROUP_MAIL_AFTER_DEACTIVATION, Boolean.toString(enabled), true);
+	}
+	
+	public List<String> getMailCopyAfterDeactivation() {
+		return convertStringToList(mailCopyAfterDeactivation);
+	}
+	
+	public void setMailCopyAfterDeactivation(String mails) {
+		mailCopyAfterDeactivation = removeWhiteSpaces(mails);
+		setStringProperty(GROUP_MAIL_COPY_AFTER_DEACTIVATION, mailCopyAfterDeactivation, true);
+	}
+
+	public boolean isAutomaticGroupSoftDeleteEnabled() {
+		return "true".equals(automaticGroupSoftDeletion);
+	}
+	
+	public void setAutomaticGroupSoftDeleteEnabled(String enable) {
+		this.automaticGroupSoftDeletion = enable;
+		setStringProperty(GROUP_AUTOMATIC_SOFT_DELETE, enable, true);
+	}
+
+	public int getNumberOfInactiveDayBeforeSoftDelete() {
+		return numberOfInactiveDayBeforeSoftDelete;
+	}
+
+	public void setNumberOfInactiveDayBeforeSoftDelete(int days) {
+		this.numberOfInactiveDayBeforeSoftDelete = days;
+		setIntProperty(GROUP_NUM_OF_DAYS_BEFORE_SOFT_DELETE, days, true);
+	}
+	
+	public boolean isMailBeforeSoftDelete() {
+		return mailBeforeSoftDelete;
+	}
+
+	public void setMailBeforeSoftDelete(boolean enabled) {
+		this.mailBeforeSoftDelete = enabled;
+		setStringProperty(GROUP_MAIL_BEFORE_SOFT_DELETE, Boolean.toString(enabled), true);
+	}
+	
+	public int getNumberOfDayBeforeSoftDeleteMail() {
+		return numberOfDayBeforeSoftDeleteMail;
+	}
+	
+	public void setNumberOfDayBeforeSoftDeleteMail(int days) {
+		this.numberOfDayBeforeSoftDeleteMail = days;
+		setIntProperty(GROUP_NUM_OF_DAYS_BEFORE_MAIL_SOFT_DELETE, days, true);
+	}
+	
+	public List<String> getMailCopyBeforeSoftDelete() {
+		return convertStringToList(mailCopyBeforeSoftDelete);
+	}
+	
+	public void setMailCopyBeforeSoftDelete(String mails) {
+		mailCopyBeforeSoftDelete = removeWhiteSpaces(mails);
+		setStringProperty(GROUP_MAIL_COPY_BEFORE_SOFT_DELETE, mailCopyBeforeSoftDelete, true);
+	}
+	
+	public boolean isMailAfterSoftDelete() {
+		return mailAfterSoftDelete;
+	}
+
+	public void setMailAfterSoftDelete(boolean enabled) {
+		this.mailAfterSoftDelete = enabled;
+		setStringProperty(GROUP_MAIL_AFTER_SOFT_DELETE, Boolean.toString(enabled), true);
+	}
+	
+	public List<String> getMailCopyAfterSoftDelete() {
+		return convertStringToList(mailCopyAfterSoftDelete);
+	}
+	
+	public void setMailCopyAfterSoftDelete(String mails) {
+		mailCopyAfterSoftDelete = removeWhiteSpaces(mails);
+		setStringProperty(GROUP_MAIL_COPY_AFTER_SOFT_DELETE, mailCopyAfterSoftDelete, true);
+	}
+	
+	public boolean isAutomaticGroupDefinitivelyDeleteEnabled() {
+		return "true".equals(automaticGroupDefinitivelyDeletion);
+	}
+	
+	public void setAutomaticGroupDefinitivelyDeleteEnabled(String enable) {
+		this.automaticGroupDefinitivelyDeletion = enable;
+		setStringProperty(GROUP_AUTOMATIC_DEFINITIVELY_DELETE, enable, true);
+	}
+
+	public int getNumberOfSoftDeleteDayBeforeDefinitivelyDelete() {
+		return numberOfSoftDeleteDayBeforeDefinitivelyDelete;
+	}
+
+	public void setNumberOfSoftDeleteDayBeforeDefinitivelyDelete(int days) {
+		this.numberOfSoftDeleteDayBeforeDefinitivelyDelete = days;
+		setIntProperty(GROUP_NUM_OF_DAYS_BEFORE_DEFINITIVELY_DELETE, days, true);
+	}
+	
+	private String removeWhiteSpaces(String stringToClean) {
+		if (stringToClean == null) {
+			return null;
+		}
+		return stringToClean.replace(" ", "");
+	}
+	
+	private List<String> convertStringToList(String toList) {
+		if (!StringHelper.containsNonWhitespace(toList)) {
+			return new ArrayList<>();
+		}
+		
+		String[] arr = toList.split("[,]");
+		for(int i=arr.length; i-->0; ) {
+			arr[i] = arr[i].trim();
+		}
+		return List.of(arr);
 	}
 }

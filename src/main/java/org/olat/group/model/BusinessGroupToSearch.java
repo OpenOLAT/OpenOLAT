@@ -40,6 +40,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 
@@ -76,6 +77,25 @@ public class BusinessGroupToSearch implements Persistable {
 	private String description;
 	@Column(name="groupname", nullable=true, insertable=true, updatable=true)
 	private String name;
+	
+	@Column(name="status", nullable=false, insertable=true, updatable=true)
+	private String status;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="inactivationdate", nullable=true, insertable=true, updatable=true)
+	private Date inactivationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="inactivationemaildate", nullable=true, insertable=true, updatable=true)
+	private Date inactivationEmailDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="reactivationdate", nullable=true, insertable=true, updatable=true)
+	private Date reactivationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="softdeleteemaildate", nullable=true, insertable=true, updatable=true)
+	private Date softDeleteEmailDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="softdeletedate", nullable=true, insertable=true, updatable=true)
+	private Date softDeleteDate;
 	
 	@Column(name="technical_type", nullable=true, insertable=true, updatable=false)
 	private String technicalType;
@@ -120,6 +140,14 @@ public class BusinessGroupToSearch implements Persistable {
 		return name;
 	}
 	
+	public String getStatus() {
+		return status;
+	}
+	
+	public BusinessGroupStatusEnum getGroupStatus() {
+		return BusinessGroupStatusEnum.valueOf(getStatus());
+	}
+
 	public String getTechnicalType() {
 		return technicalType;
 	}

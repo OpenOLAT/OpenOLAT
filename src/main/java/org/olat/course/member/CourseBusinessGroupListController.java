@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -61,7 +62,6 @@ import org.olat.group.ui.main.BGTableItem;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
 import org.olat.group.ui.main.BusinessGroupViewFilter;
-import org.olat.group.ui.main.SearchEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.group.ui.main.UnmanagedGroupFilter;
 import org.olat.ims.lti13.LTI13Service;
@@ -78,10 +78,13 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	
 	public static final String TABLE_ACTION_UNLINK = "tblUnlink";
 	public static final String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
+
+	private FormLink addGroup;
+	private FormLink createGroup;
+	private FormLink removeGroups;
 	
 	private final RepositoryEntry re;
 	private final boolean groupManagementRight;
-	private FormLink createGroup, addGroup, removeGroups;
 
 	private DialogBoxController confirmRemoveResource;
 	private DialogBoxController confirmRemoveMultiResource;
@@ -89,7 +92,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			boolean groupManagementRight, boolean readOnly) {
-		super(ureq, wControl, "group_list", false, false, readOnly, "course", true, re);
+		super(ureq, wControl, "group_list", readOnly, "course", true, re);
 		this.re = re;
 		this.groupManagementRight = groupManagementRight;
 	}
@@ -138,31 +141,28 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		//group name
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18n(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nHeaderKey(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
 				true, Cols.name.name(), new StaticFlexiCellRenderer(TABLE_ACTION_LAUNCH, new BusinessGroupNameCellRenderer())));
 		//id and reference
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18n(), Cols.key.ordinal(), true, Cols.key.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key));
 		if(groupModule.isManagedBusinessGroups()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18n(), Cols.externalId.ordinal(),
-					true, Cols.externalId.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId));
 		}
 		//description
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18n(), Cols.description.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18nHeaderKey(), Cols.description.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
 		//courses
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18n(), Cols.resources.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18nHeaderKey(), Cols.resources.ordinal(),
 				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
 		//stats
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(),
-				true, Cols.tutorsCount.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(),
-				true, Cols.participantsCount.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.tutorsCount));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.participantsCount));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.freePlaces.i18nHeaderKey(), Cols.freePlaces.ordinal(),
 				true, Cols.freePlaces.name(), FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.waitingListCount.i18nHeaderKey(), Cols.waitingListCount.ordinal(),
 				true, Cols.waitingListCount.name()));
 		//access
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18nHeaderKey(), Cols.accessTypes.ordinal(),
 				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
 
 		if(!readOnly) {
@@ -250,7 +250,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes case
 				@SuppressWarnings("unchecked")
 				List<BusinessGroupRow> selectedItems = (List<BusinessGroupRow>)confirmRemoveMultiResource.getUserObject();
-				List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, false);
+				List<BusinessGroup> groups = toBusinessGroups(selectedItems, false);
 				doRemoveBusinessGroups(groups);
 			}
 		}
@@ -338,7 +338,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	protected void doSelectGroups(UserRequest ureq) {
 		removeAsListenerAndDispose(selectController);
 		BusinessGroupViewFilter filter = new UnmanagedGroupFilter(BusinessGroupManagedFlag.resources);
-		selectController = new SelectBusinessGroupController(ureq, getWindowControl(), filter);
+		selectController = new SelectBusinessGroupController(ureq, getWindowControl(), filter, null);
 		listenTo(selectController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -352,13 +352,6 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 		businessGroupService.addResourcesTo(groups, resources);
 		reloadModel();
 	}
-	
-	@Override
-	protected BusinessGroupQueryParams getSearchParams(SearchEvent event) {
-		BusinessGroupQueryParams params = event.convertToBusinessGroupQueriesParams();
-		params.setRepositoryEntry(re);
-		return params;
-	}
 
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
@@ -369,11 +362,16 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	}
 	
 	@Override
-	protected boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
+	protected void changeFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		//
+	}
+	
+	@Override
+	protected boolean filterEditableGroupKeys(List<Long> groupKeys) {
 		if(groupManagementRight) {
 			return false;
 		}
-		return super.filterEditableGroupKeys(ureq, groupKeys);
+		return super.filterEditableGroupKeys(groupKeys);
 	}
 
 	@Override

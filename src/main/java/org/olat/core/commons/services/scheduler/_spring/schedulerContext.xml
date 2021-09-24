@@ -58,6 +58,7 @@ How to add a new job:
             <ref bean="adobeCleanupTrigger"/>
             <ref bean="gradingRemindersTrigger"/>
             <ref bean="lifecycleUserTrigger"/>
+            <ref bean="lifecycleBusinessGroupTrigger"/>
             <ref bean="fileDeleteUserTrigger"/>
             <ref bean="contactTracingTrigger"/>
             <ref bean="immunityProofTrigger"/>

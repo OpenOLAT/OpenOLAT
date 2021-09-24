@@ -82,6 +82,10 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	
 	public void setExternalId(String externalId);
 	
+	public BusinessGroupStatusEnum getGroupStatus();
+	
+	public void setGroupStatus(BusinessGroupStatusEnum status);
+	
 	/**
 	 * 
 	 * @return List of flags which say what features are externally managed

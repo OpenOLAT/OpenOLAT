@@ -58,6 +58,7 @@ import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.ui.BGControllerFactory;
+import org.olat.group.ui.lifecycle.BusinessGroupStatusController;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,12 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupEditController extends BasicController implements GenericEventListener, Activateable2 {
 
-	private boolean hasResources;
 	private BusinessGroup currBusinessGroup;
-	@Autowired
-	private BusinessGroupService businessGroupService;
-	@Autowired
-	private AccessControlModule acModule;
 
 	private TabbedPane tabbedPane;
 	private VelocityContainer mainVC;
@@ -95,19 +91,24 @@ public class BusinessGroupEditController extends BasicController implements Gene
 	private BusinessGroupMembersController membersController;
 	private BusinessGroupEditResourceController resourceController;
 	private BusinessGroupEditAccessController tabAccessCtrl;
+	private BusinessGroupStatusController lifecycleCtrl;
 	
 	private int membersTab;
 	private final String type;
 
+	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+
 	/**
-	 * Never call this constructor directly, use the BGControllerFactory instead!!
 	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param currBusinessGroup
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param currBusinessGroup The business group to edit
 	 * @param configurationFlags Flags to configure the controllers features. The
 	 *          controller does no type specific stuff implicit just by looking at
-	 *          the group type. Type specifig features must be flagged.
+	 *          the group type. Type specific features must be flagged.
 	 */
 	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, BusinessGroup businessGroup) {
 		super(ureq, wControl);
@@ -127,7 +128,12 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().acquireLock(businessGroup, ureq.getIdentity(), locksubkey, getWindow());
 		if (lockEntry.isSuccess()) {
 			// reload group to minimize stale object exception and update last usage timestamp
-			currBusinessGroup = businessGroupService.setLastUsageFor(getIdentity(), businessGroup);
+			boolean groupOwner = businessGroupService.isIdentityInBusinessGroup(getIdentity(), businessGroup.getKey(), true, false, null);
+			if(groupOwner) {
+				currBusinessGroup = businessGroupService.setLastUsageFor(getIdentity(), businessGroup);
+			} else {
+				currBusinessGroup = businessGroupService.loadBusinessGroup(businessGroup);
+			}
 			if(currBusinessGroup == null) {
 				VelocityContainer vc = createVelocityContainer("deleted");
 				vc.contextPut("name", businessGroup.getName());
@@ -145,8 +151,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 				setAllTabs(ureq);
 				mainVC = createVelocityContainer("edit");
 				mainVC.put("tabbedpane", tabbedPane);
-				String[] title = new String[] { StringHelper.escapeHtml(currBusinessGroup.getName()) };
-				mainVC.contextPut("title", getTranslator().translate("group.edit.title", title));
+				updateContainer();
 				putInitialPanel(mainVC);
 			}
 		} else {
@@ -160,6 +165,17 @@ public class BusinessGroupEditController extends BasicController implements Gene
 	
 	public BusinessGroup getBusinessGroup() {
 		return currBusinessGroup;
+	}
+	
+	private void updateContainer() {
+		if(mainVC == null) return;
+		
+		String[] title = new String[] { StringHelper.escapeHtml(currBusinessGroup.getName()) };
+		mainVC.contextPut("title", translate("group.edit.title", title));
+		
+		String status = currBusinessGroup.getGroupStatus().name();
+		mainVC.contextPut("status", translate("status." + status));
+		mainVC.contextPut("statusCssClass", "o_businessgroup_status_" + status);
 	}
 	
 	/**
@@ -177,7 +193,6 @@ public class BusinessGroupEditController extends BasicController implements Gene
 	 * @param ureq
 	 */
 	private void setAllTabs(UserRequest ureq) {
-		hasResources = businessGroupService.hasResources(currBusinessGroup);
 		tabAccessCtrl = getAccessController(ureq);
 		int currentSelectedPane = tabbedPane.getSelectedPane();
 
@@ -203,7 +218,8 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		
 		//resources (optional)
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean resourceEnabled = roles.isAdministrator() || roles.isGroupManager() || roles.isAuthor() || hasResources;
+		boolean resourceEnabled = roles.isAdministrator() || roles.isGroupManager() || roles.isAuthor()
+				|| businessGroupService.hasResources(currBusinessGroup);
 		if(resourceEnabled && BusinessGroup.BUSINESS_TYPE.equals(type)) {
 			tabbedPane.addTab(ureq, translate("group.edit.tab.resources"), uureq -> {
 				if(resourceController == null) {
@@ -220,6 +236,14 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		if(tabAccessCtrl != null) {
 			tabbedPane.addTab(ureq, translate("group.edit.tab.accesscontrol"), uureq -> tabAccessCtrl.getInitialComponent());
 		}
+		
+		tabbedPane.addTab(ureq, translate("group.edit.tab.lifecycle"), uureq -> {
+			removeControllerListener(lifecycleCtrl);
+			// always a new up-to-date one
+			lifecycleCtrl = new BusinessGroupStatusController(uureq, getWindowControl(), currBusinessGroup);
+			listenTo(lifecycleCtrl);
+			return lifecycleCtrl.getInitialComponent();
+		});
 
 		if(currentSelectedPane > 0) {
 			tabbedPane.setSelectedPane(ureq, currentSelectedPane);
@@ -290,6 +314,14 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		} else if (source == tabAccessCtrl || source == resourceController) {
 			setAllTabs(ureq);
 			fireEvent(ureq, event);
+		} else if (source == lifecycleCtrl) {
+			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				currBusinessGroup = lifecycleCtrl.getBusinessGroup();
+				setAllTabs(ureq);
+				fireEvent(ureq, event);
+			} else if(event == Event.CLOSE_EVENT) {
+				fireEvent(ureq, event);
+			}
 		}
 	}
 

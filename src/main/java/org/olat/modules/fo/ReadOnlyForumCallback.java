@@ -17,18 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.fo.export;
+package org.olat.modules.fo;
 
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.modules.fo.ForumCallback;
 
 /**
  * Initial Date: 17.02.2017
  * @author fkiefer, fabian.kiefer@frentix.com, www.frentix.com
  */
-public class DefaultReadOnlyForumCallback implements ForumCallback {
+public class ReadOnlyForumCallback implements ForumCallback {
 
-	public DefaultReadOnlyForumCallback() {
+	public ReadOnlyForumCallback() {
 		//
 	}
 

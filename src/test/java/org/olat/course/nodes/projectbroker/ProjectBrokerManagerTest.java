@@ -133,14 +133,14 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		assertTrue("Wrong thema in project list B, title must start with 'thema B'", projectListB.get(1).getTitle().startsWith("thema B"));
 		
 		if (projectListA.get(0).getTitle().equals("thema A1")) {
-			assertTrue("Wrong thema in project list A, title must be 'thema A2'", projectListA.get(1).getTitle().equals("thema A2"));
+			assertEquals("Wrong thema in project list A, title must be 'thema A2'", "thema A2", projectListA.get(1).getTitle());
 		} else if (projectListA.get(0).getTitle().equals("thema A2")) {
-			assertTrue("Wrong thema in project list A, title must be 'thema A1'", projectListA.get(1).getTitle().equals("thema A1"));
+			assertEquals("Wrong thema in project list A, title must be 'thema A1'", "thema A1", projectListA.get(1).getTitle());
 		}
 		if (projectListB.get(0).getTitle().equals("thema B1")) {
-			assertTrue("Wrong thema in project list B, title must be 'thema B2'", projectListB.get(1).getTitle().equals("thema B2"));
+			assertEquals("Wrong thema in project list B, title must be 'thema B2'", "thema B2", projectListB.get(1).getTitle());
 		} else if (projectListB.get(0).getTitle().equals("thema B2")) {
-			assertTrue("Wrong thema in project list B, title must be 'thema B1'", projectListB.get(1).getTitle().equals("thema B1"));
+			assertEquals("Wrong thema in project list B, title must be 'thema B1'", "thema B1", projectListB.get(1).getTitle());
 		}
 		
 		// delete project 
@@ -148,7 +148,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		long projectGroupKey = projectListA.get(0).getProjectGroup().getKey();
 		assertNotNull("CandidateGroup does not exist before delete project", dbInstance.getCurrentEntityManager().find(SecurityGroupImpl.class, candiadteGroupKey));
 		assertNotNull("ProjectGroup does not exist before delete project", dbInstance.getCurrentEntityManager().find(BusinessGroupImpl.class, projectGroupKey));
-		projectBrokerManager.deleteProject(projectListA.get(0), true, null, null);
+		projectBrokerManager.deleteProject(projectListA.get(0), true, null, null, null);
 		assertNull("CandidateGroup still exists after delete project", dbInstance.getCurrentEntityManager().find(SecurityGroupImpl.class, candiadteGroupKey));
 		assertNull("ProjectGroup still exists after delete project", dbInstance.getCurrentEntityManager().find(BusinessGroupImpl.class, projectGroupKey));
 
@@ -158,7 +158,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		assertEquals("Wrong projectList.size for project-broker A after delete 'thema A1'",1, projectListA.size());
 		assertEquals("Wrong projectList.size for project-broker B after delete 'thema A1'",2, projectListB.size());
 		// delete project 
-		projectBrokerManager.deleteProject(projectListB.get(1), true, null, null);
+		projectBrokerManager.deleteProject(projectListB.get(1), true, null, null, null);
 		// get project list and check content
 		projectListA = projectBrokerManager.getProjectListBy(idProjectBrokerA);
 		projectListB = projectBrokerManager.getProjectListBy(idProjectBrokerB);
@@ -166,7 +166,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		assertEquals("Wrong projectList.size for project-broker B after delete 'thema B2'",1, projectListB.size());
 		
 		// delete project
-		projectBrokerManager.deleteProject(projectListA.get(0), true, null, null);
+		projectBrokerManager.deleteProject(projectListA.get(0), true, null, null, null);
 		projectListA = projectBrokerManager.getProjectListBy(idProjectBrokerA);
 		projectListB = projectBrokerManager.getProjectListBy(idProjectBrokerB);
 		log.info("testCreateListDeleteProjects: projectListA=" + projectListA);

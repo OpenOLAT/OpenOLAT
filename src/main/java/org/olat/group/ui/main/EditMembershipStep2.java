@@ -44,7 +44,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.id.Identity;
 import org.olat.course.member.PermissionHelper;
 import org.olat.course.member.PermissionHelper.BGPermission;
 import org.olat.course.member.PermissionHelper.RepoPermission;
@@ -68,13 +67,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditMembershipStep2 extends BasicStep {
 
-	private List<Identity> identities;
 	private MembersContext membersContext;
 	
-	public EditMembershipStep2(UserRequest ureq, List<Identity> identities, MembersContext membersContext) {
+	public EditMembershipStep2(UserRequest ureq, MembersContext membersContext) {
 		super(ureq);
 
-		this.identities = identities;
 		this.membersContext = membersContext;
 
 		setI18nTitleAndDescr("edit.member.confirm", null);
@@ -99,7 +96,6 @@ public class EditMembershipStep2 extends BasicStep {
 	private class EditMembershipConfirmationController extends StepFormBasicController {
 
 		private MemberPermissionChangeEvent changeEvent;
-		private List<Identity> members;
 		private EditMemberShipReviewTableModel tableModel;
 		
 		@Autowired
@@ -109,18 +105,15 @@ public class EditMembershipStep2 extends BasicStep {
 		@Autowired
 		private BusinessGroupService businessGroupService;
 		
-		@SuppressWarnings("unchecked")
 		public EditMembershipConfirmationController(UserRequest ureq, WindowControl wControl, Form rootForm,
 				StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
 			changeEvent = (MemberPermissionChangeEvent) runContext.get("membershipChanges");
-			members = (List<Identity>) runContext.get("members");
 			
 			initForm(ureq);
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {			
 			

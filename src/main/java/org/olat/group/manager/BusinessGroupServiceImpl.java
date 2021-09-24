@@ -29,14 +29,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.logging.log4j.Logger;
-import org.hibernate.ObjectNotFoundException;
-import org.hibernate.StaleObjectStateException;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -45,33 +41,21 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.commons.info.InfoMessageFrontendManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.ContactList;
-import org.olat.core.util.mail.MailBundle;
-import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailContextImpl;
-import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.mail.MailTemplate;
-import org.olat.core.util.mail.MailerResult;
-import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
@@ -79,13 +63,11 @@ import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
-import org.olat.group.DeletableGroupData;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BGRepositoryEntryRelation;
-import org.olat.group.model.BusinessGroupDeletedEvent;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.BusinessGroupMembershipImpl;
@@ -102,10 +84,8 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
-import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.group.ui.edit.BusinessGroupRepositoryEntryEvent;
-import org.olat.properties.PropertyManager;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -146,25 +126,19 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private PropertyManager propertyManager;
-	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private ContactDAO contactDao;
 	@Autowired
-	private AssessmentModeDAO assessmentModeDao;
+	private BusinessGroupQueries businessGroupQueries;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDAO;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
+	@Autowired
 	private RepositoryEntryQueries repositoryEntryQueries;
-	@Autowired
-	private NotificationsManager notificationsManager;
-	@Autowired
-	private InfoMessageFrontendManager infoMessageManager;
-	@Autowired
-	private MailManager mailManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
 	@Autowired
@@ -521,7 +495,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 			
 		for(BusinessGroup group:groupsToMerge) {
-			deleteBusinessGroup(group);
+			boolean sendMail = mailing != null && mailing.isSendEmail();
+			businessGroupLifecycleManager.deleteBusinessGroup(group, ureqIdentity, sendMail);
 		}
 		dbInstance.commit();
 		BusinessGroupModifiedEvent.fireDeferredEvents(events);
@@ -689,27 +664,27 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	public List<StatisticsBusinessGroupRow> findBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity) {
-		return businessGroupDAO.searchBusinessGroupsWithMemberships(params, identity);
+		return businessGroupQueries.searchBusinessGroupsWithMemberships(params, identity);
 	}
 
 	@Override
 	public List<StatisticsBusinessGroupRow> findBusinessGroupsFromRepositoryEntry(BusinessGroupQueryParams params, IdentityRef identity, RepositoryEntryRef entry) {
-		return businessGroupDAO.searchBusinessGroupsForRepositoryEntry(params, identity, entry);
+		return businessGroupQueries.searchBusinessGroupsForRepositoryEntry(params, identity, entry);
 	}
 
 	@Override
 	public List<StatisticsBusinessGroupRow> findBusinessGroupsForSelection(BusinessGroupQueryParams params, IdentityRef identity) {
-		return businessGroupDAO.searchBusinessGroupsForSelection(params, identity);
+		return businessGroupQueries.searchBusinessGroupsForSelection(params, identity);
 	}
 
 	@Override
 	public List<StatisticsBusinessGroupRow> findBusinessGroupsStatistics(BusinessGroupQueryParams params) {
-		return businessGroupDAO.searchBusinessGroupsStatistics(params);
+		return businessGroupQueries.searchBusinessGroupsStatistics(params);
 	}
 
 	@Override
 	public List<OpenBusinessGroupRow> findPublishedBusinessGroups(BusinessGroupQueryParams params, IdentityRef identity) {
-		return businessGroupDAO.searchPublishedBusinessGroups(params, identity);
+		return businessGroupQueries.searchPublishedBusinessGroups(params, identity);
 	}
 
 	@Override
@@ -725,94 +700,6 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Override
 	public List<Identity> findContacts(Identity identity, int firstResult, int maxResults) {
 		return contactDao.findContacts(identity, firstResult, maxResults);
-	}
-
-	@Override
-	public void deleteBusinessGroup(BusinessGroup group) {
-		try{
-			log.info(Tracing.M_AUDIT, "Start deleting Business Group {}", group);
-			
-			OLATResourceableJustBeforeDeletedEvent delEv = new OLATResourceableJustBeforeDeletedEvent(group);
-			// notify all (currently running) BusinessGroupXXXcontrollers
-			// about the deletion which will occur.
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(delEv, group);
-	
-			// refresh object to avoid stale object exceptions
-			group = loadBusinessGroup(group);
-			
-			List<Long> memberKeys = businessGroupRelationDAO
-					.getMemberKeys(Collections.singletonList(group), GroupRoles.coach.name(), GroupRoles.participant.name());
-			List<Long> entryKeys = businessGroupRelationDAO.getRepositoryEntryKeys(group);
-			// 0) Loop over all deletableGroupData
-			Map<String,DeletableGroupData> deleteListeners = CoreSpringFactory.getBeansOfType(DeletableGroupData.class);
-			for (DeletableGroupData deleteListener : deleteListeners.values()) {
-				if(log.isDebugEnabled()) {
-					log.debug("deleteBusinessGroup: call deleteListener={}", deleteListener);
-				}
-				deleteListener.deleteGroupDataFor(group);
-			} 
-			
-			// 1) Delete all group properties
-			CollaborationTools ct = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
-			ct.deleteTools(group);// deletes everything concerning properties&collabTools
-			// 2) Delete the group areas
-			areaManager.deleteBGtoAreaRelations(group);
-			// 3) Delete the relations
-			businessGroupRelationDAO.deleteRelationsToRepositoryEntry(group);
-			assessmentModeDao.deleteAssessmentModesToGroup(group);
-			// 4) delete properties
-			propertyManager.deleteProperties(null, group, null, null, null);
-			propertyManager.deleteProperties(null, null, group, null, null);
-			// 5) delete the publisher attached to this group (e.g. the forum and folder
-			// publisher)
-			notificationsManager.deletePublishersOf(group);
-			// 6) delete info messages and subscription context associated with this group
-			infoMessageManager.removeInfoMessagesAndSubscriptionContext(group);
-			// 7) the group
-			businessGroupDAO.delete(group);
-			
-			dbInstance.commit();
-	
-			log.info(Tracing.M_AUDIT, "Deleted Business Group {}", group);
-			//notify
-			BusinessGroupDeletedEvent event = new BusinessGroupDeletedEvent(BusinessGroupDeletedEvent.RESOURCE_DELETED_EVENT, memberKeys, entryKeys);
-			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(event, OresHelper.lookupType(BusinessGroup.class));
-		} catch(DBRuntimeException dbre) {
-			Throwable th = dbre.getCause();
-			if ((th instanceof ObjectNotFoundException) && th.getMessage().contains("org.olat.group.BusinessGroupImpl")) {
-				//group already deleted
-				return;
-			}
-			if ((th instanceof StaleObjectStateException) &&
-					(th.getMessage().startsWith("Row was updated or deleted by another transaction"))) {
-				// known issue OLAT-3654
-				log.info("Group was deleted by another user in the meantime. Known issue OLAT-3654");
-				throw new KnownIssueException("Group was deleted by another user in the meantime", 3654);
-			} else {
-				throw dbre;
-			}
-		}
-	}
-
-	@Override
-	public MailerResult deleteBusinessGroupWithMail(BusinessGroup businessGroupTodelete, String businessPath, Identity deletedBy, Locale locale) {
-		List<Identity> users = businessGroupRelationDAO.getMembers(businessGroupTodelete,
-				GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
-		// now delete the group first
-		deleteBusinessGroup(businessGroupTodelete);
-		dbInstance.commit();
-		// finally send email
-		MailTemplate mailTemplate = BGMailHelper.createDeleteGroupMailTemplate(businessGroupTodelete, deletedBy);
-		if (mailTemplate != null) {
-			String metaId = UUID.randomUUID().toString();
-			MailContext context = new MailContextImpl(businessPath);
-			MailerResult result = new MailerResult();
-			MailBundle[] bundles = mailManager.makeMailBundles(context, users, mailTemplate, null, metaId, result);
-			result.append(mailManager.sendMessage(bundles));
-			return result;
-		}
-		return null;
 	}
 
 	@Override

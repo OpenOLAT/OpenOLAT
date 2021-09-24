@@ -52,7 +52,7 @@ public class EditMembershipStep1 extends BasicStep {
 		this.membersContext = membersContext;
 		
 		setI18nTitleAndDescr("edit.member", null);
-        setNextStep(new EditMembershipStep2(ureq, members, membersContext));
+        setNextStep(new EditMembershipStep2(ureq, membersContext));
 	}
 
 	@Override

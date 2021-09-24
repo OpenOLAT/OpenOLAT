@@ -339,7 +339,7 @@ public class NotificationsTest extends OlatRestTestCase {
 		PublisherData folderPdata = new PublisherData("FolderModule", relPath, businessPath);
 		notificationManager.subscribe(id.getIdentity(), folderSubContext, folderPdata);
 		//add a file
-		VFSContainer folder = tools.getSecuredFolder(group, folderSubContext, id.getIdentity(), true);
+		VFSContainer folder = tools.getSecuredFolder(group, folderSubContext, id.getIdentity(), true, false);
 		String filename = addFile(folder);
 		
 		//mark as published

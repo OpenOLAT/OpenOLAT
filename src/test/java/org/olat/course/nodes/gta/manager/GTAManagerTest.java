@@ -61,7 +61,7 @@ import org.olat.course.nodes.gta.TaskRevisionDate;
 import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.vitero.model.GroupRole;
@@ -88,11 +88,11 @@ public class GTAManagerTest extends OlatTestCase {
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
-	private BusinessGroupService businessGroupService;
-	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	@Test
 	public void createIfNotExists() {
@@ -855,7 +855,7 @@ public class GTAManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//delete
-		businessGroupService.deleteBusinessGroup(businessGroup);
+		businessGroupLifecycleManager.deleteBusinessGroup(businessGroup, null, false);
 		dbInstance.commitAndCloseSession();
 		
 		List<Task> deletedTasks = gtaManager.getTasks(participant, re, node);
@@ -906,7 +906,7 @@ public class GTAManagerTest extends OlatTestCase {
 		Assert.assertNotNull(revDate2);
 		
 		//delete
-		businessGroupService.deleteBusinessGroup(businessGroup1);
+		businessGroupLifecycleManager.deleteBusinessGroup(businessGroup1, null, false);
 		dbInstance.commitAndCloseSession();
 		
 		List<Task> deletedTasks = gtaManager.getTasks(participant1, re, node);

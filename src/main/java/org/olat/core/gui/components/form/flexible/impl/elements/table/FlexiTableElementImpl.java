@@ -709,6 +709,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			extendedSearchButton.setElementCssClass("o_sel_flexi_extendedsearch");
 
 			components.put("rExtSearchCmp", controller.getInitialFormItem());
+		} else {
+			extendedSearchButton = null;
+			components.remove("rExtSearchB");
+			components.remove("rExtSearchCmp");
 		}
 	}
 	

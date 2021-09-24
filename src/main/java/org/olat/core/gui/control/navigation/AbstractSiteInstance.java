@@ -93,7 +93,6 @@ public abstract class AbstractSiteInstance implements SiteInstance {
 		return c;
 	}
 
-	@Override
 	public boolean isKeepState() {
 		return true;
 	}

@@ -31,6 +31,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -50,12 +51,16 @@ public class FlexiFilterTextController extends FormBasicController {
 	private final FlexiTableTextFilter filter;
 	
 	public FlexiFilterTextController(UserRequest ureq, WindowControl wControl,
-			FlexiTableTextFilter filter, String preselectedValue) {
-		super(ureq, wControl, "field_text");
+			FlexiTableTextFilter filter, String preselectedValue, Translator translator) {
+		super(ureq, wControl, "field_text", translator);
 		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale(), getTranslator()));
 		this.filter = filter;
 		this.preselectedValue = preselectedValue;
 		initForm(ureq);
+	}
+	
+	public void setTextAddOn(String text) {
+		textEl.setTextAddOn(text);
 	}
 
 
@@ -66,6 +71,7 @@ public class FlexiFilterTextController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(preselectedValue)) {
 			textEl.setFocus(true);
 		}
+		textEl.setTextAddOn(preselectedValue);
 
 		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
 		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);

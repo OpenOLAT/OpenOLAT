@@ -47,7 +47,7 @@ public class GroupMembersRunController extends BasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;	
 	
-	public GroupMembersRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean canEmail) {
+	public GroupMembersRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean canEmail, boolean readOnly) {
 		super(ureq, wControl);
 		
 		List<Identity> coaches, participants, waiting;
@@ -71,7 +71,7 @@ public class GroupMembersRunController extends BasicController {
 		}
 		boolean canDownload = businessGroup.isDownloadMembersLists();
 		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), null, businessGroup, new ArrayList<>(), 
-				coaches, participants, waiting, null, canEmail, canDownload, false, false, showCoaches, showParticipants, showWaiting, true);
+				coaches, participants, waiting, null, canEmail, canDownload, false, false, showCoaches, showParticipants, showWaiting, !readOnly);
 		listenTo(membersDisplayRunController);
 		
 		putInitialPanel(membersDisplayRunController.getInitialComponent());		

@@ -39,6 +39,6 @@ public interface CollaborationManager {
 	
 	public Map<Long,Long> lookupCalendarAccess(List<BusinessGroup> groups);
 	
-	public KalendarRenderWrapper getCalendar(BusinessGroup group, UserRequest ureq, boolean isAdmin);
+	public KalendarRenderWrapper getCalendar(BusinessGroup group, UserRequest ureq, boolean isAdmin, boolean readOnly);
 
 }

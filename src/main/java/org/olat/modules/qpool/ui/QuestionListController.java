@@ -1147,8 +1147,7 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	protected void doSelectGroup(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(selectGroupCtrl);
-		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl());
-		selectGroupCtrl.setUserObject(items);
+		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl(), null, items);
 		listenTo(selectGroupCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

@@ -346,7 +346,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="userlifecycle" />
-		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="parentTreeNodeIdentifier" value="lifecycleParent" /> 
 		<property name="i18nActionKey" value="admin.menu.title.lifecycle"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.lifecycle.alt"/>
 		<property name="translationPackage" value="org.olat.user.ui.admin.lifecycle"/>

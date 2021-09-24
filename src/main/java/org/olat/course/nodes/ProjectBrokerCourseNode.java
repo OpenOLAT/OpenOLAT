@@ -318,7 +318,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		}
 		// Delete project-broker, projects and project-groups
 		if (projectBrokerId != null) {
-			projectBrokerManager.deleteProjectBroker(projectBrokerId, course.getCourseEnvironment(), this);
+			projectBrokerManager.deleteProjectBroker(projectBrokerId, course.getCourseEnvironment(), this, null);
 		}
 		// Delete all properties...
 		cpm.deleteNodeProperties(this, null);

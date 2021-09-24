@@ -47,7 +47,7 @@ public class ChatToolController extends BasicController {
 	private final Link openChatLink;
 	private Link logLink;
 
-	public ChatToolController(UserRequest ureq, WindowControl wControl, BusinessGroup resource, boolean isAdmin) {
+	public ChatToolController(UserRequest ureq, WindowControl wControl, BusinessGroup resource, boolean isAdmin, boolean readOnly) {
 		super(ureq, wControl);
 		this.resource = resource;
 		this.isAdmin = isAdmin;
@@ -56,6 +56,7 @@ public class ChatToolController extends BasicController {
 		mainVC.contextPut("isInAssessment", Boolean.FALSE);
 		openChatLink = LinkFactory.createButton("openChat", mainVC, this);
 		openChatLink.setElementCssClass("o_sel_im_open_tool_chat");
+		openChatLink.setVisible(!readOnly);
 		if(isAdmin) {
 			logLink = LinkFactory.createButton("logChat", mainVC, this);
 		}

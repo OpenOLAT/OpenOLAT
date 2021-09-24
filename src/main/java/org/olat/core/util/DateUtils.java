@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -183,6 +184,12 @@ public class DateUtils {
 		}
 		
 		return dates;
+	}
+	
+	public static long countDays(Date date1, Date date2) {
+		LocalDate lDate1 = toLocalDate(date1);
+		LocalDate lDate2 = toLocalDate(date2);
+		return ChronoUnit.DAYS.between(lDate1, lDate2);
 	}
 
 }

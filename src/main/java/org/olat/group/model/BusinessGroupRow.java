@@ -26,6 +26,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 
@@ -48,6 +49,7 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 	private final Integer maxParticipants;
 	private final Boolean waitingListEnabled;
 	private final Boolean autoCloseRanksEnabled;
+	private final BusinessGroupStatusEnum status;
 	private final BusinessGroupManagedFlag[] managedFlags;
 	
 	private boolean marked;
@@ -71,6 +73,7 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		waitingListEnabled = businessGroup.getWaitingListEnabled();
 		autoCloseRanksEnabled = businessGroup.getAutoCloseRanksEnabled();
 		maxParticipants = businessGroup.getMaxParticipants();
+		status = businessGroup.getGroupStatus();
 		
 		String path = "[BusinessGroup:" + businessGroup.getKey() + "]";
 		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
@@ -88,6 +91,7 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		waitingListEnabled = businessGroup.isWaitingListEnabled();
 		autoCloseRanksEnabled = businessGroup.isAutoCloseRanksEnabled();
 		maxParticipants = businessGroup.getMaxParticipants();
+		status = businessGroup.getGroupStatus();
 		
 		String path = "[BusinessGroup:" + businessGroup.getKey() + "]";
 		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
@@ -184,6 +188,10 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 
 	public void setMember(BusinessGroupMembershipImpl member) {
 		this.member = member;
+	}
+	
+	public BusinessGroupStatusEnum getGroupStatus() {
+		return status;
 	}
 	
 	@Override

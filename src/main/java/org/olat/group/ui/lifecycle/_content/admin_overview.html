@@ -1,0 +1,10 @@
+#set($helplink=$r.contextHelpLink("User management"))
+<fieldset>
+	<legend>$r.translate("admin.title")</legend>
+	<p>$r.translate("admin.description") <a href="$helplink" target="_blank">$r.translate("admin.description.help")</a></p>
+	$r.render("process")
+</fieldset>
+$r.render("types")
+$r.render("inactivation")
+$r.render("soft.delete")
+$r.render("hard.delete")

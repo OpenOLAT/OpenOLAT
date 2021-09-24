@@ -1,2 +1,4 @@
-<div class="o_warning">$r.translate("sendtochooser.email.disclaimer")</div>
-$r.render("vc_sendToChooserForm")
+#if($r.isFalse($readOnly))
+	<div class="o_warning">$r.translate("sendtochooser.email.disclaimer")</div>
+#end
+$r.render("contactForm")

@@ -19,24 +19,37 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Roles;
-import org.olat.group.BusinessGroupModule;
-import org.olat.group.model.BusinessGroupSelectionEvent;
-import org.olat.group.ui.NewBGController;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupStatusEnum;
+import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.StatisticsBusinessGroupRow;
+import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 
 /**
  * 
@@ -44,194 +57,192 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SelectBusinessGroupController extends BasicController {
+public class SelectBusinessGroupController extends AbstractBusinessGroupListController {
 	
-	private final Link markedGroupsLink, ownedGroupsLink, courseGroupsLink, searchOpenLink;
-	private Link createGroup, adminSearchOpenLink;
-	private final SegmentViewComponent segmentView;
-	private final VelocityContainer mainVC;
+	private FlexiFilterTabPreset bookmarkTab;
+	private FlexiFilterTabPreset ownedGroupsTab;
+	private FlexiFilterTabPreset courseGroupsTab;
 
-	private SelectFavoritBusinessGroupController favoritGroupsCtrl;
-	private SelectOwnedBusinessGroupController ownedGroupsCtrl;
-	private SelectBusinessGroupCourseAuthorController authorGroupsCtrL;
-	private SelectSearchBusinessGroupController searchGroupsCtrl;
-	private SelectSearchBusinessGroupController searchAdminGroupsCtrl;
-	
-	private NewBGController groupCreateController;
-	protected CloseableModalController cmc;
-	
-	private final boolean enableCreate;
-	private Object userObject;
-	private final BusinessGroupViewFilter filter;
-
-	@Autowired
-	private BusinessGroupModule businessGroupModule;
-	
-	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, null);
-	}
-	
-	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroupViewFilter filter) {
-		super(ureq, wControl);
-		this.filter = filter;
-		enableCreate = businessGroupModule.isAllowedCreate(ureq.getUserSession().getRoles());
-		mainVC = createVelocityContainer("group_list_overview");
+	public SelectBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroupViewFilter filter, Object uobject) {
+		super(ureq, wControl, "group_list", false, "sel-search", true, uobject);
+		setFilter(filter);
 		
-		if(enableCreate) {
-			createGroup = LinkFactory.createButton("create.group", mainVC, this);
-			mainVC.put("create", createGroup);
+		selectFilterTab(ureq, bookmarkTab);
+		if(isEmpty()) {
+			selectFilterTab(ureq, ownedGroupsTab);
 		}
-		
-		boolean marked = updateMarkedGroups(ureq);
-		if(!marked) {
-			updateOwnedGroups(ureq);
-		}
-		
-		//segmented view
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		markedGroupsLink = LinkFactory.createLink("marked.groups", mainVC, this);
-		segmentView.addSegment(markedGroupsLink, marked);
-		courseGroupsLink = LinkFactory.createLink("course.groups", mainVC, this);
-		segmentView.addSegment(courseGroupsLink, false);
-		ownedGroupsLink = LinkFactory.createLink("owned.groups.2", mainVC, this);
-		segmentView.addSegment(ownedGroupsLink, !marked);
-		searchOpenLink = LinkFactory.createLink("opengroups.search", mainVC, this);
-		segmentView.addSegment(searchOpenLink, false);
-		if(isAdminSearchAllowed(ureq)) {
-			adminSearchOpenLink = LinkFactory.createLink("opengroups.search.admin", mainVC, this);
-			segmentView.addSegment(adminSearchOpenLink, false);
-		}
-		putInitialPanel(mainVC);
-	}
-	
-	private boolean isAdminSearchAllowed(UserRequest ureq) {
-		Roles roles = ureq.getUserSession().getRoles();
-		return roles.isAdministrator() 
-				|| roles.isGroupManager() 
-				|| (roles.isLearnResourceManager() && businessGroupModule.isResourceManagersAllowedToLinkGroups());
-	}
-	
-	public Object getUserObject() {
-		return userObject;
-	}
-
-	public void setUserObject(Object userObject) {
-		this.userObject = userObject;
 	}
 
 	@Override
-	protected void doDispose() {
+	protected boolean canCreateBusinessGroup() {
+		return false;
+	}
+	
+	@Override
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		initButtons(formLayout, ureq, false, true, false);
+	}
+
+	@Override
+	protected FlexiTableColumnModel initColumnModel() {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		//mark
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark));
+		//group name
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nHeaderKey(), Cols.name.ordinal(), TABLE_ACTION_LAUNCH,
+				true, Cols.name.name(), new StaticFlexiCellRenderer(TABLE_ACTION_LAUNCH, new BusinessGroupNameCellRenderer())));
+		//id and reference
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key));
+		if(groupModule.isManagedBusinessGroups()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId));
+		}
+		//description
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18nHeaderKey(), Cols.description.ordinal(),
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
+		//courses
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18nHeaderKey(), Cols.resources.ordinal(),
+				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
+
+		//stats
+		DefaultFlexiColumnModel tutorColumnModel = new DefaultFlexiColumnModel(true, Cols.tutorsCount);
+		tutorColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		tutorColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(tutorColumnModel);
+		
+		DefaultFlexiColumnModel participantsColumnModel = new DefaultFlexiColumnModel(true, Cols.participantsCount);
+		participantsColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		participantsColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(participantsColumnModel);
+		
+		DefaultFlexiColumnModel freePlacesColumnModel = new DefaultFlexiColumnModel(true, Cols.freePlaces.i18nHeaderKey(),
+				Cols.freePlaces.ordinal(), true, Cols.freePlaces.name(), FlexiColumnModel.ALIGNMENT_LEFT,
+				new TextFlexiCellRenderer(EscapeMode.none));
+		freePlacesColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		freePlacesColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(freePlacesColumnModel);
+		
+		DefaultFlexiColumnModel waitingListColumnModel = new DefaultFlexiColumnModel(true, Cols.waitingListCount);
+		waitingListColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		waitingListColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(waitingListColumnModel);
+		
+		//actions
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), TABLE_ACTION_SELECT));
+		return columnsModel;
+	}
+	
+
+	@Override
+	protected void initFilterTabs() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+
+		bookmarkTab = FlexiFilterTabPreset.presetWithImplicitFilters("Bookmarks", translate("marked.groups"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.MARKED, "marked")));
+		bookmarkTab.setElementCssClass("o_sel_group_bookmarked_groups");
+		tabs.add(bookmarkTab);
+		
+		ownedGroupsTab = FlexiFilterTabPreset.presetWithImplicitFilters("MyGroups", translate("owned.groups.2"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "all")));
+		ownedGroupsTab.setElementCssClass("o_sel_group_groups");
+		tabs.add(ownedGroupsTab);
+		
+		courseGroupsTab = FlexiFilterTabPreset.presetWithImplicitFilters("Courses", translate("course.groups"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.AUTHOR, "conn")));
+		courseGroupsTab.setElementCssClass("o_sel_group_courses");
+		tabs.add(courseGroupsTab);
+		
+		FlexiFilterTabPreset searchTab = new FlexiFilterTabPreset("Search", translate("search.generic"), TabSelectionBehavior.clear);
+		searchTab.setElementCssClass("o_sel_group_search_groups");
+		searchTab.setPosition(FlexiFilterTabPosition.right);
+		searchTab.setLargeSearch(true);
+		searchTab.setFiltersExpanded(true);
+		tabs.add(searchTab);
+
+		tableEl.setFilterTabs(true, tabs);
+	}
+	
+	@Override
+	protected void initFilters() {
+		tableEl.setSearchEnabled(true);
+
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		// external id
+		filters.add(new FlexiTableTextFilter(translate("cif.id"), BGSearchFilter.ID.name(), admin));
+		// bookmarks
+		SelectionValues bookmarkValues = new SelectionValues();
+		bookmarkValues.add(SelectionValues.entry("mark", translate("cif.bookmarks")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.bookmarks"), BGSearchFilter.MARKED.name(), bookmarkValues, true));
+		// roles
+		SelectionValues roleValues = new SelectionValues();
+		if(admin) {
+			roleValues.add(SelectionValues.entry("none", translate("search.none")));
+		}
+		roleValues.add(SelectionValues.entry("all", translate("search.all")));
+		roleValues.add(SelectionValues.entry("owner", translate("search.owner")));
+		roleValues.add(SelectionValues.entry("attendee", translate("search.attendee")));
+		roleValues.add(SelectionValues.entry("waiting", translate("search.waiting")));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("search.roles"), BGSearchFilter.ROLE.name(), roleValues, true));
+		// author connection of groups to courses
+		SelectionValues authorValues = new SelectionValues();
+		authorValues.add(SelectionValues.entry("conn", translate("course.groups")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("course.groups"), BGSearchFilter.AUTHOR.name(), authorValues, true));
+
+		if(admin) {
+			// coaches
+			filters.add(new FlexiTableTextFilter(translate("cif.owner"), BGSearchFilter.COACH.name(), false));
+			// description
+			filters.add(new FlexiTableTextFilter(translate("cif.description"), BGSearchFilter.DESCRIPTION.name(), false));
+			// course title
+			filters.add(new FlexiTableTextFilter(translate("cif.coursetitle"), BGSearchFilter.COURSETITLE.name(), false));
+			
+			// published
+			SelectionValues yesNoValues = new SelectionValues();
+			yesNoValues.add(SelectionValues.entry("all", translate("search.all")));
+			yesNoValues.add(SelectionValues.entry("yes", translate("search.yes")));
+			yesNoValues.add(SelectionValues.entry("no", translate("search.no")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("search.open"), BGSearchFilter.OPEN.name(), yesNoValues, true));
+			//resources
+			filters.add(new FlexiTableSingleSelectionFilter(translate("search.resources"), BGSearchFilter.RESOURCES.name(), yesNoValues, true));
+			// last visit
+			filters.add(new FlexiTableTextFilter(translate("search.last.usage"), BGSearchFilter.LASTVISIT.name(), false));	
+		}
+		
+		tableEl.setFilters(true, filters, true, false);
+	}
+
+	@Override
+	protected List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
+		List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsForSelection(params, getIdentity());
+		List<BGTableItem> items = new ArrayList<>(rows.size());
+		for(StatisticsBusinessGroupRow row:rows) {
+			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
+			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			
+			BGTableItem item = new BGTableItem(row, markLink, Boolean.FALSE, Boolean.FALSE);
+			item.setNumOfOwners(row.getNumOfCoaches());
+			item.setNumOfParticipants(row.getNumOfParticipants());
+			item.setNumWaiting(row.getNumWaiting());
+			item.setNumOfPendings(row.getNumPending());
+			items.add(item);
+		}
+		return items;
+	}
+
+	@Override
+	protected BusinessGroupQueryParams getDefaultSearchParams() {
+		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
+		params.setGroupStatus(List.of(BusinessGroupStatusEnum.active));
+		return params;
+	}
+	
+	@Override
+	protected void changeFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		//
 	}
 
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
-				String segmentCName = sve.getComponentName();
-				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == markedGroupsLink) {
-					updateMarkedGroups(ureq);
-				} else if (clickedLink == ownedGroupsLink){
-					updateOwnedGroups(ureq);
-				} else if (clickedLink == courseGroupsLink){
-					updateCourseGroups(ureq);
-				} else if (clickedLink == searchOpenLink) {
-					updateSearch(ureq);
-				} else if (clickedLink == adminSearchOpenLink) {
-					updateAdminSearch(ureq);
-				}
-			}
-		} else if(createGroup == source) {
-			doCreate(ureq);
-		}
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event instanceof BusinessGroupSelectionEvent) {
-			fireEvent(ureq, event);
-		} else if(groupCreateController == source) {
-			if(event == Event.DONE_EVENT) {
-				//current identity is set as owner -> view them in coach
-				updateOwnedGroups(ureq);
-				segmentView.select(ownedGroupsLink);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (cmc == source) {
-			cleanUp();
-		} else {
-			super.event(ureq, source, event);
-		}
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(groupCreateController);
-		removeAsListenerAndDispose(cmc);
-		groupCreateController = null;
-		cmc = null;
-	}
-	
-	protected void doCreate(UserRequest ureq) {				
-		removeAsListenerAndDispose(groupCreateController);
-		groupCreateController = new NewBGController(ureq, getWindowControl(), null, false, null);
-		listenTo(groupCreateController);
-		
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupCreateController.getInitialComponent(), true, translate("create.form.title"));
-		cmc.activate();
-		listenTo(cmc);
-	}
-
-	private boolean updateMarkedGroups(UserRequest ureq) {
-		if(favoritGroupsCtrl == null) {
-			favoritGroupsCtrl = new SelectFavoritBusinessGroupController(ureq, getWindowControl());
-			favoritGroupsCtrl.setFilter(filter);
-			listenTo(favoritGroupsCtrl);
-		}
-		boolean markedFound = favoritGroupsCtrl.doDefaultSearch();
-		mainVC.put("groupList", favoritGroupsCtrl.getInitialComponent());
-		return markedFound;
-	}
-	
-	private void updateOwnedGroups(UserRequest ureq) {
-		if(ownedGroupsCtrl == null) {
-			ownedGroupsCtrl = new SelectOwnedBusinessGroupController(ureq, getWindowControl());
-			ownedGroupsCtrl.setFilter(filter);
-			listenTo(ownedGroupsCtrl);
-		}
-		ownedGroupsCtrl.doDefaultSearch();
-		mainVC.put("groupList", ownedGroupsCtrl.getInitialComponent());
-	}
-	
-	private void updateCourseGroups(UserRequest ureq) {
-		if(authorGroupsCtrL == null) {
-			authorGroupsCtrL = new SelectBusinessGroupCourseAuthorController(ureq, getWindowControl());
-			authorGroupsCtrL.setFilter(filter);
-			listenTo(authorGroupsCtrL);
-		}
-		authorGroupsCtrL.doDefaultSearch();
-		mainVC.put("groupList", authorGroupsCtrL.getInitialComponent());
-	}
-	
-	private void updateSearch(UserRequest ureq) {
-		if(searchGroupsCtrl == null) {
-			searchGroupsCtrl = new SelectSearchBusinessGroupController(ureq, getWindowControl(), true);
-			searchGroupsCtrl.setFilter(filter);
-			listenTo(searchGroupsCtrl);
-		}
-		searchGroupsCtrl.updateSearch(ureq);
-		mainVC.put("groupList", searchGroupsCtrl.getInitialComponent());
-	}
-	
-	private void updateAdminSearch(UserRequest ureq) {
-		if(searchAdminGroupsCtrl == null) {
-			searchAdminGroupsCtrl = new SelectSearchBusinessGroupController(ureq, getWindowControl(), false);
-			searchAdminGroupsCtrl.setFilter(filter);
-			listenTo(searchAdminGroupsCtrl);
-		}
-		searchAdminGroupsCtrl.updateSearch(ureq);
-		mainVC.put("groupList", searchAdminGroupsCtrl.getInitialComponent());
+	protected void updateSearch(UserRequest ureq) {
+		doSearch(ureq, (FlexiFiltersTab)null);
 	}
 }

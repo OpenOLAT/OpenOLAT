@@ -156,10 +156,25 @@ public class GroupLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction GROUP_CREATED = 
 		new GroupLoggingAction(ActionType.admin, CrudAction.create, ActionVerb.add,	ActionObject.group).setTypeList(
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.businessGroup));
+	/** activity identitfyer: group has been inactivated * */
+	public static final ILoggingAction GROUP_INACTIVATED = 
+		new GroupLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.deactivate, ActionObject.group).setTypeList(
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.businessGroup));
+	/** activity identitfyer: group has been reactivated (after inactivation or soft delete) * */
+	public static final ILoggingAction GROUP_REACTIVATED = 
+		new GroupLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.deactivate, ActionObject.group).setTypeList(
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.businessGroup));
+	/** activity identifier: group has been reactivated (after inactivation or soft delete) * */
+	public static final ILoggingAction GROUP_TRASHED = 
+			new GroupLoggingAction(ActionType.admin, CrudAction.delete, ActionVerb.trash, ActionObject.group).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.businessGroup));
 	/** activity identitfyer: group has been deleted * */
 	public static final ILoggingAction GROUP_DELETED = 
 		new GroupLoggingAction(ActionType.admin, CrudAction.delete, ActionVerb.remove, ActionObject.group).setTypeList(
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.businessGroup));
+	
+	
+	
 	/** activity identitfyer: new learning area has been created * */
 	public static final ILoggingAction AREA_CREATED = 
 		new GroupLoggingAction(ActionType.admin, CrudAction.create, ActionVerb.add, ActionObject.grouparea).setTypeList(

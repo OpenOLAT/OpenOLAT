@@ -69,6 +69,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupRef;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.ModuleConfiguration;
@@ -1221,6 +1222,16 @@ public class NodeRightServiceImplTest {
 		@Override
 		public String getTechnicalType() {
 			return BusinessGroup.BUSINESS_TYPE;
+		}
+
+		@Override
+		public BusinessGroupStatusEnum getGroupStatus() {
+			return BusinessGroupStatusEnum.active;
+		}
+
+		@Override
+		public void setGroupStatus(BusinessGroupStatusEnum status) {
+			//
 		}
 
 		@Override

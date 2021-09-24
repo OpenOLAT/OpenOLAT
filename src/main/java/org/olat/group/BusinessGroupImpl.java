@@ -43,7 +43,9 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.model.GroupImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
@@ -93,6 +95,25 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	private String description;
 	@Column(name="groupname", nullable=true, insertable=true, updatable=true)
 	private String name;
+	
+	@Column(name="status", nullable=false, insertable=true, updatable=true)
+	private String status;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="inactivationdate", nullable=true, insertable=true, updatable=true)
+	private Date inactivationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="inactivationemaildate", nullable=true, insertable=true, updatable=true)
+	private Date inactivationEmailDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="reactivationdate", nullable=true, insertable=true, updatable=true)
+	private Date reactivationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="softdeleteemaildate", nullable=true, insertable=true, updatable=true)
+	private Date softDeleteEmailDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="softdeletedate", nullable=true, insertable=true, updatable=true)
+	private Date softDeleteDate;
 
 	@Column(name="technical_type", nullable=true, insertable=true, updatable=false)
 	private String technicalType;
@@ -140,6 +161,13 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group_id", nullable=false, insertable=true, updatable=false)
 	private Group baseGroup;
+	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_inactivatedby_id", nullable=true, insertable=true, updatable=true)
+	private Identity inactivatedBy;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_softdeletedby_id", nullable=true, insertable=true, updatable=true)
+	private Identity softDeletedBy;
 
 	/**
 	 * constructs an unitialised BusinessGroup, use setXXX for setting attributes
@@ -209,6 +237,64 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	@Override
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	@Override
+	public BusinessGroupStatusEnum getGroupStatus() {
+		return BusinessGroupStatusEnum.valueOf(getStatus());
+	}
+
+	@Override
+	public void setGroupStatus(BusinessGroupStatusEnum status) {
+		setStatus(status.name());
+	}
+
+	public Date getInactivationDate() {
+		return inactivationDate;
+	}
+
+	public void setInactivationDate(Date inactivationDate) {
+		this.inactivationDate = inactivationDate;
+	}
+
+	public Date getInactivationEmailDate() {
+		return inactivationEmailDate;
+	}
+
+	public void setInactivationEmailDate(Date inactivationEmailDate) {
+		this.inactivationEmailDate = inactivationEmailDate;
+	}
+
+	public Date getReactivationDate() {
+		return reactivationDate;
+	}
+
+	public void setReactivationDate(Date reactivationDate) {
+		this.reactivationDate = reactivationDate;
+	}
+
+	public Date getSoftDeleteEmailDate() {
+		return softDeleteEmailDate;
+	}
+
+	public void setSoftDeleteEmailDate(Date softDeleteEmailDate) {
+		this.softDeleteEmailDate = softDeleteEmailDate;
+	}
+
+	public Date getSoftDeleteDate() {
+		return softDeleteDate;
+	}
+
+	public void setSoftDeleteDate(Date softDeleteDate) {
+		this.softDeleteDate = softDeleteDate;
 	}
 
 	@Override
@@ -414,9 +500,24 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.waitingListEnabled = waitingListEnabled;
 	}
 	
+	public Identity getInactivatedBy() {
+		return inactivatedBy;
+	}
+
+	public void setInactivatedBy(Identity inactivatedBy) {
+		this.inactivatedBy = inactivatedBy;
+	}
+
+	public Identity getSoftDeletedBy() {
+		return softDeletedBy;
+	}
+
+	public void setSoftDeletedBy(Identity softDeletedBy) {
+		this.softDeletedBy = softDeletedBy;
+	}
+
 	/**
 	 * Compares the keys.
-	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {

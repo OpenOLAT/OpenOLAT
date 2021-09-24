@@ -21,6 +21,7 @@ package org.olat.group.ui.main;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -31,12 +32,14 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -45,6 +48,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
@@ -65,7 +71,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
@@ -77,23 +83,28 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
-import org.olat.group.GroupLoggingAction;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupMailing;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.model.BusinessGroupQueryParams;
+import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
 import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.ui.NewBGController;
+import org.olat.group.ui.lifecycle.ConfirmBusinessGroupChangeStatusController;
+import org.olat.group.ui.lifecycle.ConfirmBusinessGroupDefinitivelyDeleteController;
+import org.olat.group.ui.lifecycle.ConfirmBusinessGroupStartChangeStatusController;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 import org.olat.group.ui.wizard.BGConfigBusinessGroup;
 import org.olat.group.ui.wizard.BGConfigToolsStep;
@@ -109,7 +120,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -127,7 +137,11 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected static final String TABLE_ACTION_USERS = "bgTblUser";
 	protected static final String TABLE_ACTION_CONFIG = "bgTblConfig";
 	protected static final String TABLE_ACTION_EMAIL = "bgTblEmail";
-	protected static final String TABLE_ACTION_DELETE = "bgTblDelete";
+	protected static final String TABLE_ACTION_SOFT_DELETE = "bgTblSoftDelete";
+	protected static final String TABLE_ACTION_START_SOFT_DELETE = "bgTblStartSoftDelete";
+	protected static final String TABLE_ACTION_DEFINITIVELY_DELETE = "bgTblDefinitivelyDelete";
+	protected static final String TABLE_ACTION_INACTIVATE = "bgTblInactivate";
+	protected static final String TABLE_ACTION_START_INACTIVATE = "bgTblStartInactivate";
 	protected static final String TABLE_ACTION_SELECT = "bgTblSelect";
 	
 	protected static final BusinessGroupMembershipComparator MEMBERSHIP_COMPARATOR = new BusinessGroupMembershipComparator();
@@ -138,22 +152,37 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	private DialogBoxController leaveDialogBox;
 	
-	protected FormLink createButton, deleteButton, duplicateButton,
-		configButton, emailButton, usersButton, mergeButton, selectButton;
+	protected FormLink createButton;
+	protected FormLink inactivateButton;
+	protected FormLink softDeleteButton;
+	protected FormLink duplicateButton;
+	protected FormLink configButton;
+	protected FormLink emailButton;
+	protected FormLink usersButton;
+	protected FormLink mergeButton;
+	protected FormLink selectButton;
 	
 	private ContactFormController contactCtrl;
 	private NewBGController groupCreateController;
 	private BGUserManagementController userManagementController;
 	private BGMailNotificationEditController userManagementSendMailController;
-	private BusinessGroupDeleteDialogBoxController deleteDialogBox;
-	private StepsMainRunController emailWizard, businessGroupWizard;
-	protected BusinessGroupSearchController searchCtrl;
+	private ConfirmBusinessGroupChangeStatusController confirmChangeStatusController;
+	private ConfirmBusinessGroupStartChangeStatusController confirmStartChangeStatusController;
+	private ConfirmBusinessGroupDefinitivelyDeleteController confirmDefinitivelyDeleteController;
+	private StepsMainRunController emailWizard;
+	private StepsMainRunController businessGroupWizard;
 	protected CloseableModalController cmc;
 
-	private final boolean admin;
+	protected final Roles roles;
+	protected final boolean admin;
 	protected final boolean readOnly;
-	private final boolean showAdminTools;
-	private final boolean startExtendedSearch;
+	protected final boolean managedEnable;
+	
+	private BusinessGroupViewFilter filter;
+	private Object userObject;
+	private final String prefsKey;
+	private final boolean showAlwaysSearch;
+	
 	@Autowired
 	protected MarkManager markManager;
 	@Autowired
@@ -171,29 +200,25 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	@Autowired
 	protected BusinessGroupService businessGroupService;
 	@Autowired
+	protected BusinessGroupLifecycleManager businessGroupLifecycleManager;
+	@Autowired
 	protected CollaborationToolsFactory collaborationTools;
 	
-	private BusinessGroupViewFilter filter;
-	private Object userObject;
-	private final String prefsKey;
-	private final boolean showAlwaysSearch;
-	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey, boolean showAlwaysSearch) {
-		this(ureq, wControl, page, false, false, false, prefsKey, showAlwaysSearch, null);
+		this(ureq, wControl, page, false, prefsKey, showAlwaysSearch, null);
 	}
 	
 	public AbstractBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page,
-			boolean showAdminTools, boolean startExtendedSearch, boolean readOnly, String prefsKey, boolean showAlwaysSearch, Object userObject) {
+			boolean readOnly, String prefsKey, boolean showAlwaysSearch, Object userObject) {
 		super(ureq, wControl, page);
 		setTranslator(Util.createPackageTranslator(AbstractBusinessGroupListController.class, ureq.getLocale(), getTranslator()));
 
-		Roles roles = ureq.getUserSession().getRoles();
+		roles = ureq.getUserSession().getRoles();
 		admin = roles.isAdministrator() || roles.isGroupManager();
 		this.readOnly = readOnly;
-		this.showAdminTools = showAdminTools && admin;
+		this.managedEnable = groupModule.isManagedBusinessGroups();
 		this.userObject = userObject;
 		this.showAlwaysSearch = showAlwaysSearch;
-		this.startExtendedSearch = startExtendedSearch;
 		this.prefsKey = prefsKey;
 
 		initForm(ureq);
@@ -210,17 +235,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setFromColumnModel(true);
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "gbg-list-" + prefsKey);
-		
-		searchCtrl = new BusinessGroupSearchController(ureq, getWindowControl(), isAdmin(), true, showAdminTools, isAdmin(), mainForm);
-		searchCtrl.setEnabled(false);
-		listenTo(searchCtrl);
-		
 		tableEl.setSearchEnabled(true);
-		tableEl.setExtendedSearch(searchCtrl);
-		if(startExtendedSearch) {
-			tableEl.expandExtendedSearch(ureq);
-		}
+
 		initButtons(formLayout, ureq);
 		if (createButton == null) {
 			tableEl.setEmptyTableSettings("table.empty", null, "o_icon_group", null, null, showAlwaysSearch);		
@@ -228,12 +244,24 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			tableEl.setEmptyTableSettings("table.empty", "create.group.description", "o_icon_group", "create.group", "o_icon_add", showAlwaysSearch);					
 		}
 		
+		initFilterTabs();
+		initFilters();
+		
+		tableEl.setAndLoadPersistedPreferences(ureq, "gbg-list-" + prefsKey);
 	}
 	
 	protected abstract FlexiTableColumnModel initColumnModel();
 
 	protected final BusinessGroupListFlexiTableModel initTableModel(FlexiTableColumnModel columnModel) {
 		return new BusinessGroupListFlexiTableModel(columnModel, getLocale());
+	}
+	
+	protected void initFilterTabs() {
+		//
+	}
+
+	protected void initFilters() {
+		//
 	}
 
 	public Object getUserObject() {
@@ -268,7 +296,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
 			
-			boolean canCreateGroup = canCreateBusinessGroup(ureq);
+			boolean canCreateGroup = canCreateBusinessGroup();
 			if(canCreateGroup) {
 				duplicateButton = uifactory.addFormLink("table.duplicate", TABLE_ACTION_DUPLICATE, "table.duplicate", null, formLayout, Link.BUTTON);
 				tableEl.addBatchButton(duplicateButton);
@@ -283,20 +311,19 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			tableEl.addBatchButton(emailButton);
 			
 			if(canCreateGroup) {
-				deleteButton = uifactory.addFormLink("table.delete", TABLE_ACTION_DELETE, "table.delete", null, formLayout, Link.BUTTON);
-				tableEl.addBatchButton(deleteButton);
+				inactivateButton = uifactory.addFormLink("table.inactivate", TABLE_ACTION_INACTIVATE, "table.inactivate", null, formLayout, Link.BUTTON);
+				tableEl.addBatchButton(inactivateButton);
+				
+				softDeleteButton = uifactory.addFormLink("table.delete", TABLE_ACTION_SOFT_DELETE, "table.delete", null, formLayout, Link.BUTTON);
+				tableEl.addBatchButton(softDeleteButton);
 			}
 		}
 	}
 	
-	protected boolean canCreateBusinessGroup(UserRequest ureq) {
-		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isAdministrator() || roles.isGroupManager()
+	protected boolean canCreateBusinessGroup() {
+		return roles.isAdministrator() || roles.isGroupManager()
 				|| (roles.isAuthor() && groupModule.isAuthorAllowedCreate())
-				|| (!roles.isGuestOnly() && !roles.isInvitee() && groupModule.isUserAllowedCreate())) {
-			return true;
-		}
-		return false;
+				|| (!roles.isGuestOnly() && !roles.isInvitee() && groupModule.isUserAllowedCreate());
 	}
 	
 	protected boolean isAdmin() {
@@ -304,9 +331,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	}
 	
 	protected boolean isEmpty() {
-		return tableEl == null ? true :
-			(groupTableModel == null ? true :
-				groupTableModel.getRowCount() == 0);
+		return tableEl == null || groupTableModel == null || groupTableModel.getRowCount() == 0;
 	}
 	
 	@Override
@@ -340,8 +365,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(createButton == source) {
 			doCreate(ureq, getWindowControl(), null);
-		} else if(deleteButton == source) {
-			confirmDelete(ureq, getSelectedItems());
+		} else if(softDeleteButton == source) {
+			confirmChangeStatus(ureq, getSelectedItems(), BusinessGroupStatusEnum.trash);
+		} else if(inactivateButton == source) {
+			confirmChangeStatus(ureq, getSelectedItems(), BusinessGroupStatusEnum.inactive);
 		} else if(duplicateButton == source) {
 			doCopy(ureq, getSelectedItems());
 		} else if(configButton == source) {
@@ -396,8 +423,16 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 						tableEl.reset();
 					} else if(TABLE_ACTION_LAUNCH.equals(cmd)) {
 						doLaunch(ureq, businessGroup);
-					} else if(TABLE_ACTION_DELETE.equals(cmd)) {
-						confirmDelete(ureq, Collections.singletonList(item));
+					} else if(TABLE_ACTION_START_SOFT_DELETE.equals(cmd)) {
+						confirmStartChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.trash);
+					} else if(TABLE_ACTION_SOFT_DELETE.equals(cmd)) {
+						confirmChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.trash);
+					} else if(TABLE_ACTION_START_INACTIVATE.equals(cmd)) {
+						confirmStartChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.inactive);
+					} else if(TABLE_ACTION_INACTIVATE.equals(cmd)) {
+						confirmChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.inactive);
+					} else if(TABLE_ACTION_DEFINITIVELY_DELETE.equals(cmd)) {
+						confirmDefinitivelyDelete(ureq, List.of(item));
 					} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 						doEdit(ureq, businessGroup);
 					} else if(TABLE_ACTION_LEAVE.equals(cmd)) {
@@ -408,8 +443,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 						doSelect(ureq, businessGroup);
 					}
 				}
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				doSearch(ureq, ((FlexiTableFilterTabEvent)event).getTab());
 			} else if(event instanceof FlexiTableSearchEvent) {
-				doSearch((FlexiTableSearchEvent)event);
+				doSearch(ureq, (FlexiTableSearchEvent)event);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
 				doCreate(ureq, getWindowControl(), null);
 			}
@@ -436,11 +473,9 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == deleteDialogBox) {
+		if (source == confirmDefinitivelyDeleteController || source == confirmChangeStatusController
+				|| source == confirmStartChangeStatusController) {
 			if(event == Event.DONE_EVENT) {
-				boolean withEmail = deleteDialogBox.isSendMail();
-				List<BusinessGroup> groupsToDelete = deleteDialogBox.getGroupsToDelete();
-				doDelete(ureq, withEmail, groupsToDelete);
 				tableEl.deselectAll();
 				reloadModel();
 			}
@@ -460,7 +495,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 					group = groups.iterator().next();
 				}
 	
-				if(groups.size() > 0) {
+				if(!groups.isEmpty()) {
 					tableEl.deselectAll();
 					reloadModel();
 				}
@@ -511,10 +546,6 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			}
 			cmc.deactivate();
 			cleanUpPopups();
-		} else if(source == searchCtrl) {
-			if(event instanceof SearchEvent) {
-				doSearch(ureq, (SearchEvent)event);
-			}
 		} else if(source == contactCtrl) {
 			cmc.deactivate();
 			cleanUpPopups();
@@ -535,16 +566,18 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected void cleanUpPopups() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(contactCtrl);
-		removeAsListenerAndDispose(deleteDialogBox);
 		removeAsListenerAndDispose(groupCreateController);
 		removeAsListenerAndDispose(businessGroupWizard);
 		removeAsListenerAndDispose(leaveDialogBox);
+		removeAsListenerAndDispose(confirmChangeStatusController);
+		removeAsListenerAndDispose(confirmDefinitivelyDeleteController);
 		cmc = null;
 		contactCtrl = null;
 		leaveDialogBox = null;
-		deleteDialogBox = null;
 		groupCreateController = null;
 		businessGroupWizard = null;
+		confirmChangeStatusController = null;
+		confirmDefinitivelyDeleteController = null;
 	}
 	
 	/**
@@ -674,7 +707,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		}
 		
-		List<BusinessGroup> groups = toBusinessGroups(ureq, items, true);
+		List<BusinessGroup> groups = toBusinessGroups(items, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
 			return;
@@ -689,32 +722,29 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		boolean enableRightsCopy = rightManager.hasBGRight(groups);
 
 		Step start = new BGCopyPreparationStep(ureq, groups, enableCoursesCopy, enableAreasCopy, enableRightsCopy);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				@SuppressWarnings("unchecked")
-				List<BGCopyBusinessGroup> copies = (List<BGCopyBusinessGroup>)runContext.get("groupsCopy");
-				if(copies != null && !copies.isEmpty()) {
-					boolean copyAreas = convertToBoolean(runContext, "areas");
-					boolean copyCollabToolConfig = convertToBoolean(runContext, "tools");
-					boolean copyRights = convertToBoolean(runContext, "rights");
-					boolean copyOwners = convertToBoolean(runContext, "owners");
-					boolean copyParticipants = convertToBoolean(runContext, "participants");
-					boolean copyMemberVisibility = convertToBoolean(runContext, "membersvisibility");
-					boolean copyWaitingList = convertToBoolean(runContext, "waitingList");
-					boolean copyRelations = convertToBoolean(runContext, "resources");
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			@SuppressWarnings("unchecked")
+			List<BGCopyBusinessGroup> copies = (List<BGCopyBusinessGroup>)runContext.get("groupsCopy");
+			if(copies != null && !copies.isEmpty()) {
+				boolean copyAreas = convertToBoolean(runContext, "areas");
+				boolean copyCollabToolConfig = convertToBoolean(runContext, "tools");
+				boolean copyRights = convertToBoolean(runContext, "rights");
+				boolean copyOwners = convertToBoolean(runContext, "owners");
+				boolean copyParticipants = convertToBoolean(runContext, "participants");
+				boolean copyMemberVisibility = convertToBoolean(runContext, "membersvisibility");
+				boolean copyWaitingList = convertToBoolean(runContext, "waitingList");
+				boolean copyRelations = convertToBoolean(runContext, "resources");
 
-					for(BGCopyBusinessGroup copy:copies) {
-						businessGroupService.copyBusinessGroup(getIdentity(), copy.getOriginal(), copy.getNames(), copy.getDescription(),
-								copy.getMinParticipants(), copy.getMaxParticipants(),
-								copyAreas, copyCollabToolConfig, copyRights, copyOwners, copyParticipants,
-								copyMemberVisibility, copyWaitingList, copyRelations, copy.getAllowToLeave());
-					
-					}
-					return StepsMainRunController.DONE_MODIFIED;
-				} else {
-					return StepsMainRunController.DONE_UNCHANGED;
+				for(BGCopyBusinessGroup copy:copies) {
+					businessGroupService.copyBusinessGroup(getIdentity(), copy.getOriginal(), copy.getNames(), copy.getDescription(),
+							copy.getMinParticipants(), copy.getMaxParticipants(),
+							copyAreas, copyCollabToolConfig, copyRights, copyOwners, copyParticipants,
+							copyMemberVisibility, copyWaitingList, copyRelations, copy.getAllowToLeave());
+				
 				}
+				return StepsMainRunController.DONE_MODIFIED;
+			} else {
+				return StepsMainRunController.DONE_UNCHANGED;
 			}
 		};
 		
@@ -744,7 +774,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		}
 		
-		final List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		final List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
 			return;
@@ -778,41 +808,38 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		boolean isAuthor = roles.isAdministrator() || roles.isAuthor() || roles.isLearnResourceManager();
 
 		Step start = new BGConfigToolsStep(ureq, isAuthor);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				//configuration
-				BGConfigBusinessGroup configuration = (BGConfigBusinessGroup)runContext.get("configuration");
-				if(!configuration.getToolsToEnable().isEmpty() || !configuration.getToolsToDisable().isEmpty()) {
-					
-					for(BusinessGroup group:groups) {
-						CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
-						for(String enabledTool:configuration.getToolsToEnable()) {
-							tools.setToolEnabled(enabledTool, true);
-							if(CollaborationTools.TOOL_FOLDER.equals(enabledTool)) {
-								tools.saveFolderAccess(Long.valueOf(configuration.getFolderAccess()));
-								
-								Quota quota = configuration.getQuota();
-								if(quota != null) {
-									String path = tools.getFolderRelPath();
-									Quota fQuota = quotaManager.createQuota(path, quota.getQuotaKB(), quota.getUlLimitKB());
-									quotaManager.setCustomQuotaKB(fQuota);
-								}
-								
-							} else if (CollaborationTools.TOOL_CALENDAR.equals(enabledTool)) {
-								tools.saveCalendarAccess(Long.valueOf(configuration.getCalendarAccess()));
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			//configuration
+			BGConfigBusinessGroup configuration = (BGConfigBusinessGroup)runContext.get("configuration");
+			if(!configuration.getToolsToEnable().isEmpty() || !configuration.getToolsToDisable().isEmpty()) {
+				
+				for(BusinessGroup group:groups) {
+					CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+					for(String enabledTool:configuration.getToolsToEnable()) {
+						tools.setToolEnabled(enabledTool, true);
+						if(CollaborationTools.TOOL_FOLDER.equals(enabledTool)) {
+							tools.saveFolderAccess(Long.valueOf(configuration.getFolderAccess()));
+							
+							Quota quota = configuration.getQuota();
+							if(quota != null) {
+								String path = tools.getFolderRelPath();
+								Quota fQuota = quotaManager.createQuota(path, quota.getQuotaKB(), quota.getUlLimitKB());
+								quotaManager.setCustomQuotaKB(fQuota);
 							}
-						}
-						for(String disabledTool:configuration.getToolsToDisable()) {
-							tools.setToolEnabled(disabledTool, false);
+							
+						} else if (CollaborationTools.TOOL_CALENDAR.equals(enabledTool)) {
+							tools.saveCalendarAccess(Long.valueOf(configuration.getCalendarAccess()));
 						}
 					}
+					for(String disabledTool:configuration.getToolsToDisable()) {
+						tools.setToolEnabled(disabledTool, false);
+					}
 				}
-				if(configuration.getResources() != null && !configuration.getResources().isEmpty()) {
-					businessGroupService.addResourcesTo(groups, configuration.getResources());
-				}
-				return StepsMainRunController.DONE_MODIFIED;
 			}
+			if(configuration.getResources() != null && !configuration.getResources().isEmpty()) {
+				businessGroupService.addResourcesTo(groups, configuration.getResources());
+			}
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		businessGroupWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("config.group"), "o_sel_groups_config_wizard");
@@ -832,7 +859,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		}
 		
-		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
 			return;
@@ -843,13 +870,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		}
 
 		Step start = new BGEmailSelectReceiversStep(ureq, groups);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				//mails are send by the last controller of the wizard
-				wControl.setInfo(translate("msg.send.ok"));
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			//mails are send by the last controller of the wizard
+			wControl.setInfo(translate("msg.send.ok"));
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		emailWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, translate("email.group"), "o_sel_groups_email_wizard");
@@ -870,7 +894,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		}
 		
-		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
 			return;
@@ -933,43 +957,56 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), false, getLocale());
 	}
 	
-	protected void doSearch(UserRequest ureq, SearchEvent event) {
-		search(event);
-		
-		//back button
-		ContextEntry currentEntry = getWindowControl().getBusinessControl().getCurrentContextEntry();
-		if(currentEntry != null) {
-			currentEntry.setTransientState(event);
-		}
-		addToHistory(ureq, this);
+	public boolean hasTab() {
+		return tableEl.getSelectedFilterTab() != null;
 	}
 	
-	protected void doSearch(FlexiTableSearchEvent event) {
-		BusinessGroupQueryParams params = getDefaultSearchParams();
-		params.setNameOrDesc(event.getSearch());
-		loadModel(params);
-	}
-
-	private void search(SearchEvent event) {
-		if(event == null) {
-			loadModel(null);
-		} else {
-			BusinessGroupQueryParams params = getSearchParams(event);
-			loadModel(params);
-		}
+	protected void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		tableEl.setSelectedFilterTab(ureq, tab);
+		changeFilterTab(ureq, tab);
+		doSearch(ureq, tab);
 	}
 	
-	protected abstract BusinessGroupQueryParams getSearchParams(SearchEvent event);
+	protected abstract void changeFilterTab(UserRequest ureq, FlexiFiltersTab tab);
 	
 	protected abstract BusinessGroupQueryParams getDefaultSearchParams();
 	
-	protected boolean doDefaultSearch() {
+	protected final boolean doDefaultSearch() {
 		BusinessGroupQueryParams params = getDefaultSearchParams();
 		return loadModel(params) > 0;
 	}
 	
+	protected void doSearch(UserRequest ureq, FlexiTableSearchEvent event) {
+		BusinessGroupQueryParams params = getDefaultSearchParams();
+		if("reset".equals(event.getCommand())) {
+			if(tableEl.getSelectedFilterTab() != null) {
+				doSearch(ureq, tableEl.getSelectedFilterTab());
+			} else {
+				doDefaultSearch();
+			}
+		} else {
+			applyFiltersToQueryParams(event.getSearch(), event.getFilters(), params);
+			loadModel(params);
+		}
+		tableEl.addToHistory(ureq);
+	}
+	
+	protected void doSearch(UserRequest ureq, FlexiFiltersTab tab) {
+		changeFilterTab(ureq, tab);
+		
+		if(tab == null || tab.getSelectionBehavior() == TabSelectionBehavior.clear) {
+			groupTableModel.setObjects(new ArrayList<>());
+			tableEl.reset(true, true, true);
+		} else if(tab.getSelectionBehavior() == TabSelectionBehavior.reloadData) {
+			BusinessGroupQueryParams params = getDefaultSearchParams();
+			applyFiltersToQueryParams(tableEl.getQuickSearchString(), tableEl.getSelectedFilters(), params);
+			loadModel(params);
+		}
+		tableEl.addToHistory(ureq);
+	}
+	
 	private void doSelect(UserRequest ureq, List<? extends BusinessGroupRef> items) {
-		List<BusinessGroup> selection = toBusinessGroups(ureq, items, false);
+		List<BusinessGroup> selection = toBusinessGroups(items, false);
 		fireEvent(ureq, new BusinessGroupSelectionEvent(selection));
 	}
 	
@@ -990,7 +1027,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		}
 
-		final List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+		final List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.size() < 2) {
 			showWarning("msg.alleasttwo.editable.group");
 			return;
@@ -1036,8 +1073,8 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	 * @param ureq
 	 * @param selectedItems
 	 */
-	private void confirmDelete(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems) {
-		List<BusinessGroup> groups = toBusinessGroups(ureq, selectedItems, true);
+	private void confirmDefinitivelyDelete(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems) {
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
 			return;
@@ -1063,28 +1100,127 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		if(managedNames.length() > 0) {
 			showWarning("error.managed.group", managedNames.toString());
 		} else {
-			deleteDialogBox = new BusinessGroupDeleteDialogBoxController(ureq, getWindowControl(), groups);
-			listenTo(deleteDialogBox);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteDialogBox.getInitialComponent(),
+			confirmDefinitivelyDeleteController = new ConfirmBusinessGroupDefinitivelyDeleteController(ureq, getWindowControl(), groups, false);
+			listenTo(confirmDefinitivelyDeleteController);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDefinitivelyDeleteController.getInitialComponent(),
 					true, translate("dialog.modal.bg.delete.title"));
 			cmc.activate();
 			listenTo(cmc);
 		}
 	}
 	
-	protected final List<BusinessGroup> toBusinessGroups(UserRequest ureq, List<? extends BusinessGroupRef> items, boolean editableOnly) {
+
+	private void confirmStartChangeStatus(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems, BusinessGroupStatusEnum newStatus) {
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
+			return;
+		}
+		
+		StringBuilder names = new StringBuilder();
+		StringBuilder managedNames = new StringBuilder();
+		BusinessGroupManagedFlag managedFlag = newStatus == BusinessGroupStatusEnum.inactive
+				? BusinessGroupManagedFlag.inactivate : BusinessGroupManagedFlag.delete;
+		
+		for(BusinessGroup group:groups) {
+			String gname = group.getName() == null ? "???" : group.getName();
+			if(BusinessGroupManagedFlag.isManaged(group, managedFlag)) {
+				if(managedNames.length() > 0) managedNames.append(", ");
+				managedNames.append(gname);
+			} else {
+				if(names.length() > 0) names.append(", ");
+				names.append(gname);
+			}
+		}
+		
+		if(managedNames.length() > 0) {
+			showWarning("error.managed.group", managedNames.toString());
+		} else {
+			confirmStartChangeStatusController = new ConfirmBusinessGroupStartChangeStatusController(ureq, getWindowControl(), groups, newStatus);
+			listenTo(confirmStartChangeStatusController);
+			
+			String key = "dialog.modal.bg.delete.title";
+			if(newStatus == BusinessGroupStatusEnum.inactive) {
+				if(groups.size() == 1) {
+					key = "dialog.modal.bg.inactivate.title.singular";
+				} else {
+					key = "dialog.modal.bg.inactivate.title.plural";
+				}
+			}
+					
+			String title = translate(key, new String[] { names.toString(), Integer.toString(groups.size()) });
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmStartChangeStatusController.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+	
+
+	private void confirmChangeStatus(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems, BusinessGroupStatusEnum newStatus) {
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
+			return;
+		}
+		
+		StringBuilder names = new StringBuilder();
+		StringBuilder managedNames = new StringBuilder();
+		BusinessGroupManagedFlag managedFlag = newStatus == BusinessGroupStatusEnum.inactive
+				? BusinessGroupManagedFlag.inactivate : BusinessGroupManagedFlag.delete;
+		
+		for(BusinessGroup group:groups) {
+			String gname = group.getName() == null ? "???" : group.getName();
+			if(BusinessGroupManagedFlag.isManaged(group, managedFlag)) {
+				if(managedNames.length() > 0) managedNames.append(", ");
+				managedNames.append(gname);
+			} else {
+				if(names.length() > 0) names.append(", ");
+				names.append(gname);
+			}
+		}
+		
+		if(managedNames.length() > 0) {
+			showWarning("error.managed.group", managedNames.toString());
+		} else {
+			confirmChangeStatusController = new ConfirmBusinessGroupChangeStatusController(ureq, getWindowControl(), groups, newStatus);
+			listenTo(confirmChangeStatusController);
+			
+			String key = "dialog.modal.bg.delete.title";
+			if(newStatus == BusinessGroupStatusEnum.inactive) {
+				if(groups.size() == 1) {
+					key = "dialog.modal.bg.inactivate.title.singular";
+				} else {
+					key = "dialog.modal.bg.inactivate.title.plural";
+				}
+			}
+					
+			String title = translate(key, new String[] { names.toString(), Integer.toString(groups.size()) });
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeStatusController.getInitialComponent(), true, title);
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+	
+	protected final List<BusinessGroup> toBusinessGroups(List<? extends BusinessGroupRef> items, boolean editableOnly) {
 		List<Long> groupKeys = new ArrayList<>();
 		for(BusinessGroupRef item:items) {
 			groupKeys.add(item.getKey());
 		}
 		if(editableOnly) {
-			filterEditableGroupKeys(ureq, groupKeys);
+			filterEditableGroupKeys(groupKeys);
 		}
 		return businessGroupService.loadBusinessGroups(groupKeys);
 	}
 	
-	protected boolean filterEditableGroupKeys(UserRequest ureq, List<Long> groupKeys) {
-		Roles roles = ureq.getUserSession().getRoles();
+	protected boolean filterEditableGroupKeys(List<Long> groupKeys) {
 		if(roles.isAdministrator() || roles.isGroupManager()) {
 			return false;
 		}
@@ -1104,33 +1240,6 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		return groupKeys.size() != countBefore;
 	}
 	
-	/**
-	 * Deletes the group. Checks if user is in owner group,
-	 * otherwise does nothing
-	 * 
-	 * @param ureq
-	 * @param doSendMail specifies if notification mails should be sent to users of delted group
-	 */
-	private void doDelete(UserRequest ureq, boolean doSendMail, List<BusinessGroup> groups) {
-		Roles roles = ureq.getUserSession().getRoles();
-		for(BusinessGroup group:groups) {
-			//check security
-			boolean ow = roles.isAdministrator() || roles.isGroupManager()
-					|| businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name());
-
-			if (ow) {
-				if (doSendMail) {
-					String businessPath = getWindowControl().getBusinessControl().getAsString();
-					businessGroupService.deleteBusinessGroupWithMail(group, businessPath, getIdentity(), getLocale());
-				} else {
-					businessGroupService.deleteBusinessGroup(group);
-				}
-				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_DELETED, getClass(), LoggingResourceable.wrap(group));
-			}
-		}
-		showInfo("info.group.deleted");
-	}
-	
 	protected void reloadModel() {
 		loadModel(lastSearchParams);
 	}
@@ -1147,25 +1256,114 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			groupTableModel.setObjects(Collections.<BGTableItem>emptyList());
 			tableEl.reset(true, true, true);
 			return 0;
-		} else {
-			List<BGTableItem> items = searchTableItems(params);
-			if(filter != null) {
-				for(Iterator<BGTableItem> groupIt=items.iterator(); groupIt.hasNext(); ) {
-					if(!filter.accept(groupIt.next())) {
-						groupIt.remove();
-					}
+		}
+		
+		List<BGTableItem> items = searchTableItems(params);
+		if(filter != null) {
+			for(Iterator<BGTableItem> groupIt=items.iterator(); groupIt.hasNext(); ) {
+				if(!filter.accept(groupIt.next())) {
+					groupIt.remove();
 				}
 			}
-			
-			groupTableModel.setObjects(items);
-			tableEl.reset(true, true, true);
-			return items.size();
+		}
+		
+		groupTableModel.setObjects(items);
+		tableEl.reset(true, true, true);
+		return items.size();
+	}
+	
+	protected void applyFiltersToQueryParams(String quickSearch, List<FlexiTableFilter> filters, BusinessGroupQueryParams params) {
+		params.setNameOrDesc(quickSearch);
+		if(filters != null) {
+			filters.forEach(f -> applyFilterToQueryParams(f, params));
+		}
+		
+		// check security, only administrator are allowed to search everywhere
+		if(!params.isAttendee() && !params.isOwner() && !params.isWaiting()
+				&& (params.getPublicGroups() == null || !params.getPublicGroups().booleanValue())
+				&& !params.isAuthorConnection() && !isAdminSearchAllowed()) {
+			params.setOwner(true);
+			params.setAttendee(true);
+			params.setWaiting(true);
+		}
+	}
+	
+	private boolean isAdminSearchAllowed() {
+		return roles.isAdministrator() || roles.isGroupManager() 
+				|| (roles.isLearnResourceManager() && groupModule.isResourceManagersAllowedToLinkGroups());
+	}
+	
+	protected void applyFilterToQueryParams(FlexiTableFilter tableFilter, BusinessGroupQueryParams params) {
+		switch(BGSearchFilter.valueOf(tableFilter.getFilter())) {
+			case ID:
+				params.setIdRef(tableFilter.getValue());
+				break;
+			case MARKED:
+				params.setMarked(StringHelper.containsNonWhitespace(tableFilter.getValue()));
+				break;
+			case ROLE:
+				String role = tableFilter.getValue();
+				if(role == null || "none".equals(role)) {// security, only admin are allowed to see all
+					params.setAttendee(!admin);
+					params.setOwner(!admin);
+					params.setWaiting(!admin);
+				} else {
+					params.setAttendee("all".equals(role) || "attendee".equals(role));
+					params.setOwner("all".equals(role) || "owner".equals(role));
+					params.setWaiting("all".equals(role) || "waiting".equals(role));
+				}
+				break;
+			case COACH:
+				params.setOwnerName(tableFilter.getValue());
+				break;
+			case AUTHOR:
+				params.setAuthorConnection(StringHelper.containsNonWhitespace(tableFilter.getValue()));
+				break;	
+			case DESCRIPTION:
+				params.setDescription(tableFilter.getValue());
+				break;
+			case COURSETITLE:
+				params.setCourseTitle(tableFilter.getValue());
+				break;
+			case OPEN:
+				params.setPublicGroups(BGSearchFilter.OPEN.yesNoTo(tableFilter));
+				break;
+			case MANAGED:
+				params.setManaged(BGSearchFilter.MANAGED.yesNoTo(tableFilter));
+				break;
+			case RESOURCES:
+				params.setResources(BGSearchFilter.RESOURCES.yesNoTo(tableFilter));
+				break;
+			case HEADLESS:
+				params.setHeadless(StringHelper.containsNonWhitespace(tableFilter.getValue()));
+				break;
+			case LASTVISIT:
+				String lastVisit = tableFilter.getValue();
+				if(StringHelper.containsNonWhitespace(lastVisit)) {
+					Date lastUsage = DateUtils.addDays(new Date(), -Integer.parseInt(lastVisit));
+					params.setLastUsageBefore(CalendarUtils.startOfDay(lastUsage));
+				} else {
+					params.setLastUsageBefore(null);
+				}
+				break;
+			case LIFECYCLE:
+				String lifecycleStatus = tableFilter.getValue();
+				if(StringHelper.containsNonWhitespace(lifecycleStatus)) {
+					params.setLifecycleStatus(LifecycleSyntheticStatus.valueOf(lifecycleStatus));
+					params.setLifecycleStatusReference(new Date());
+				} else {
+					params.setLifecycleStatus(null);
+					params.setLifecycleStatusReference(null);
+				}
+				break;
+			default:
+				break;
 		}
 	}
 	
 	protected static class RoleColumnDescriptor extends CustomRenderColumnDescriptor {
 		public RoleColumnDescriptor(Locale locale) {
-			super(Cols.role.i18n(), Cols.role.ordinal(), null, locale,  ColumnDescriptor.ALIGNMENT_LEFT, new BGRoleCellRenderer(locale));
+			super(Cols.role.i18nHeaderKey(), Cols.role.ordinal(), null, locale,  ColumnDescriptor.ALIGNMENT_LEFT, new BGRoleCellRenderer(locale));
 		}
 
 		@Override
@@ -1176,6 +1374,31 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				return MEMBERSHIP_COMPARATOR.compare((BusinessGroupMembership)a, (BusinessGroupMembership)b);
 			}
 			return super.compareTo(rowa, rowb);
+		}
+	}
+	
+	public enum BGSearchFilter {
+		ID,
+		MARKED,
+		ROLE,
+		COACH,
+		AUTHOR,
+		DESCRIPTION,
+		COURSETITLE,
+		OPEN,
+		MANAGED,
+		RESOURCES,
+		HEADLESS,
+		LASTVISIT,
+		LIFECYCLE;
+		
+		public Boolean yesNoTo(FlexiTableFilter tableFilter) {
+			if("yes".equals(tableFilter.getValue())) {
+				return Boolean.TRUE;
+			} else if("no".equals(tableFilter.getValue())) {
+				return Boolean.FALSE;
+			} 
+			return null;
 		}
 	}
 }

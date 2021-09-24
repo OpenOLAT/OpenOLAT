@@ -32,13 +32,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -63,6 +63,7 @@ import org.olat.course.nodes.projectbroker.datamodel.ProjectImpl;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.properties.Property;
@@ -89,6 +90,8 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 
 	private static final String ATTACHEMENT_DIR_NAME = "projectbroker_attach";
 	private CacheWrapper<String,ProjectBroker> projectCache;
@@ -254,8 +257,9 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	 * @see org.olat.course.nodes.projectbroker.service.ProjectBrokerManager#deleteProject(org.olat.course.nodes.projectbroker.datamodel.Project)
 	 */
 	@Override
-	public void deleteProject(final Project project, final boolean deleteGroup, final CourseEnvironment courseEnv, final CourseNode cNode) {
-		log.debug("start deleteProject project=" + project);
+	public void deleteProject(final Project project, final boolean deleteGroup,
+			final CourseEnvironment courseEnv, final CourseNode cNode, final Identity deletedBy) {
+		log.debug("start deleteProject project={}", project);
 		final Long projectBrokerId = project.getProjectBroker().getKey();
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
 		
@@ -270,19 +274,20 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 				deleteAllReturnboxFilesOfProject(reloadedProject, courseEnv, cNode);
 			}
 			dbInstance.deleteObject(reloadedProject);
-			log.info("deleteSecurityGroup(project.getCandidateGroup())=" + candidateGroup.getKey());
+			log.info("deleteSecurityGroup(project.getCandidateGroup())={}", candidateGroup.getKey());
 			securityGroupDao.deleteSecurityGroup(candidateGroup);
 			// invalide with removing from cache
 			projectCache.remove(projectBrokerId.toString());
 			if (deleteGroup) {
 				log.debug("start deleteProjectGroupFor project group={}", projectGroup);
-				businessGroupService.deleteBusinessGroup(projectGroup);
+				businessGroupLifecycleManager.deleteBusinessGroup(projectGroup, deletedBy, false);
 			}
 		});
 		
 		log.debug("DONE deleteProjectGroupFor project={}", project);
 	}
 
+	@Override
 	public int getNbrSelectedProjects(Identity identity, List<Project> projectList) {
 		int selectedCounter = 0;
 		for (Iterator<Project> iterator = projectList.iterator(); iterator.hasNext();) {
@@ -299,8 +304,9 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	 * return true, when the project can be selected by the user.
 	 * @see org.olat.course.nodes.projectbroker.datamodel.Project#canBeSelectedBy(org.olat.core.id.Identity)
 	 */
+	@Override
 	public boolean canBeProjectSelectedBy(Identity identity, Project project,  ProjectBrokerModuleConfiguration moduleConfig, int nbrSelectedProjects, boolean isParticipantInAnyProject) {
-		log.debug("canBeSelectedBy: identity=" + identity + "  project=" + project);
+		log.debug("canBeSelectedBy: identity={} project={}", identity, project);
 		// 1. check if already enrolled
 		if (   projectGroupManager.isProjectParticipant(identity, project) 
 				|| projectGroupManager.isProjectCandidate(identity, project)) {
@@ -425,31 +431,31 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	}
 
 	@Override
-	public void deleteProjectBroker(Long projectBrokerId, CourseEnvironment courseEnvironment, CourseNode courseNode) {
-		log.debug("Start deleting projectBrokerId=" + projectBrokerId );
+	public void deleteProjectBroker(Long projectBrokerId, CourseEnvironment courseEnvironment, CourseNode courseNode, Identity deletedBy) {
+		log.debug("Start deleting projectBrokerId={}", projectBrokerId );
 		ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
 		// delete all projects of a project-broker
 		List<Project> deleteProjectList = new ArrayList<>();
 		deleteProjectList.addAll(projectBroker.getProjects());
 		for (Iterator<Project> iterator = deleteProjectList.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
-			deleteProject(project, true, courseEnvironment, courseNode);
-			log.info(Tracing.M_AUDIT, "ProjectBroker: Deleted project=" + project );
+			deleteProject(project, true, courseEnvironment, courseNode, deletedBy);
+			log.info(Tracing.M_AUDIT, "ProjectBroker: Deleted project={}", project );
 		}
-		log.debug("All projects are deleted for ProjectBroker=" + projectBroker);
-		projectGroupManager.deleteAccountManagerGroup(courseEnvironment.getCoursePropertyManager(), courseNode);
+		log.debug("All projects are deleted for ProjectBroker={}", projectBroker);
+		projectGroupManager.deleteAccountManagerGroup(courseEnvironment.getCoursePropertyManager(), courseNode, deletedBy);
 		ProjectBroker reloadedProjectBroker = (ProjectBroker) dbInstance.loadObject(projectBroker, true);		
 		dbInstance.deleteObject(reloadedProjectBroker);
-		// invalide with removing from cache
+		// invalid with removing from cache
 		projectCache.remove(projectBrokerId.toString());
-		log.info(Tracing.M_AUDIT, "ProjectBroker: Deleted ProjectBroker=" + projectBroker);
+		log.info(Tracing.M_AUDIT, "ProjectBroker: Deleted ProjectBroker={}", projectBroker);
 	}
 
 	@Override
 	public void saveAttachedFile(Project project, String fileName, VFSLeaf uploadedItem, CourseEnvironment courseEnv, CourseNode cNode, Identity savedBy) {
-		log.debug("saveAttachedFile file-name=" + uploadedItem.getName());
+		log.debug("saveAttachedFile file-name={}", uploadedItem.getName());
 		VFSContainer uploadVFSContainer = VFSManager.olatRootContainer(getAttamchmentRelativeRootPath(project,courseEnv,cNode), null);
-		log.debug("saveAttachedFile uploadVFSContainer.relPath=" + uploadVFSContainer.getRelPath());
+		log.debug("saveAttachedFile uploadVFSContainer.relPath={}", uploadVFSContainer.getRelPath());
 		// only one attachment, delete other file 
 		for (Iterator<VFSItem> iterator = uploadVFSContainer.getItems(new VFSSystemItemFilter()).iterator(); iterator.hasNext();) {
 			VFSItem item =  iterator.next();
@@ -463,7 +469,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 			newFile = uploadVFSContainer.createChildLeaf(fileName);
 		}
 		boolean success = VFSManager.copyContent(uploadedItem, newFile, true, savedBy);
-		log.debug("saveAttachedFile success=" + success);
+		log.debug("saveAttachedFile success={}", success);
 	}
 
 	@Override

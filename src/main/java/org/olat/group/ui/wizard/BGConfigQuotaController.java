@@ -73,7 +73,7 @@ public class BGConfigQuotaController extends FormBasicController {
 	 */
 	public Long getQuotaKB() {
 		if(StringHelper.isLong(quotaKB.getValue())) {
-			return new Long(quotaKB.getValue());
+			return Long.valueOf(quotaKB.getValue());
 		}
 		return null;
 	}
@@ -83,7 +83,7 @@ public class BGConfigQuotaController extends FormBasicController {
 	 */
 	public Long getULLimit() {
 		if(StringHelper.isLong(ulLimitKB.getValue())) {
-			return new Long(ulLimitKB.getValue());
+			return Long.valueOf(ulLimitKB.getValue());
 		}
 		return null;
 	}

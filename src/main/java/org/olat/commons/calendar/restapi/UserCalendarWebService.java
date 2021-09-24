@@ -239,7 +239,7 @@ public class UserCalendarWebService {
 			Long groupId = Long.parseLong(id);
 			BusinessGroup group = businessGroupService.loadBusinessGroup(groupId);
 			if(businessGroupService.isIdentityInBusinessGroup(ureq.getIdentity(), group)) {
-				wrapper = collaborationManager.getCalendar(group, ureq, false);
+				wrapper = collaborationManager.getCalendar(group, ureq, false, false);
 			}
 		} else if("course".equals(type) && (calendarModule.isEnableCourseElementCalendar() || calendarModule.isEnableCourseToolCalendar())) {
 			Long courseId = Long.parseLong(id);
@@ -328,7 +328,7 @@ public class UserCalendarWebService {
 				params.addTools(CollaborationTools.TOOL_CALENDAR);
 				List<BusinessGroup> groups = bgm.findBusinessGroups(params, null, 0, -1);
 				for(BusinessGroup group:groups) {
-					KalendarRenderWrapper wrapper = collaborationManager.getCalendar(group, ureq, false);
+					KalendarRenderWrapper wrapper = collaborationManager.getCalendar(group, ureq, false, false);
 					calVisitor.visit(wrapper);
 				}
 			}

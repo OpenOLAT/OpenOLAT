@@ -49,6 +49,7 @@ import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.modules.fo.ReadOnlyForumCallback;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
 import org.olat.modules.fo.Message;
@@ -89,7 +90,7 @@ public class SelectThreadStepForm extends StepFormBasicController {
 		setTranslator(Util.createPackageTranslator(Forum.class, getLocale(), getTranslator()));
 
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
-		foCallback = new DefaultReadOnlyForumCallback();
+		foCallback = new ReadOnlyForumCallback();
 		
 		FOCourseNode node = (FOCourseNode)getFromRunContext(SendMailStepForm.FORUM);
 		ICourse course = (ICourse)getFromRunContext(SendMailStepForm.ICOURSE);

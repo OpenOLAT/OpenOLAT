@@ -91,7 +91,6 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			
 			if (te.isPlaceholderUpdate()) {
 				sb.append("<script>\n")
-				  .append("/* <![CDATA[ */\n")
 				  .append(" function o_up").append(te.getPlaceholderId()).append("(){")
 				  .append(" try {\n")
 				  .append("  jQuery('#").append(id).append("').attr('placeholder',")
@@ -107,7 +106,6 @@ class TextElementRenderer extends DefaultComponentRenderer {
 				  .append(" jQuery('#").append(te.getPlaceholderId()).append("').ready(o_up").append(te.getPlaceholderId()).append(");")
 				  .append(" jQuery('#").append(te.getPlaceholderId()).append("').keyup(o_up").append(te.getPlaceholderId()).append(");")
 				  .append("});\n")
-				  .append("/* ]]> */\n")
 				  .append("</script>\n");
 			}
 		} else {
@@ -126,7 +124,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 		}
 		
 		if(StringHelper.containsNonWhitespace(te.getTextAddOn())) {
-			sb.append("<span class=''>").append(translator.translate(te.getTextAddOn())).append("</span>");
+			sb.append(" <span class=''>").append(translator.translate(te.getTextAddOn())).append("</span>");
 		}
 	}
 }

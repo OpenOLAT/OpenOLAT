@@ -104,6 +104,7 @@ import org.olat.modules.portfolio.ui.BinderController;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.modules.wiki.DryRunAssessmentProvider;
 import org.olat.modules.wiki.WikiManager;
+import org.olat.modules.wiki.WikiReadOnlySecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallback;
 import org.olat.modules.wiki.WikiSecurityCallbackImpl;
 import org.olat.properties.NarrowedPropertyManager;
@@ -257,10 +258,10 @@ public class CollaborationTools implements Serializable {
 		return new SimpleNewsController(ureq, wControl, news);
 	}
 	
-	public Controller createInfoMessageController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
+	public Controller createInfoMessageController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean readOnly) {
 		String accessProperty = getNewsAccessProperty();
 		boolean canAccess = "all".equals(accessProperty);
-		return new InfoGroupRunController(ureq, wControl, ores, canAccess, isAdmin);
+		return new InfoGroupRunController(ureq, wControl, ores, canAccess, isAdmin, readOnly);
 	}
 
 	/**
@@ -272,67 +273,82 @@ public class CollaborationTools implements Serializable {
 	 *          should be possible
 	 * @return a forum controller
 	 */
-	public Controller createForumController(UserRequest ureq, WindowControl wControl, boolean isAdmin, boolean isGuestOnly,
-			final SubscriptionContext subsContext) {
+	public Controller createForumController(UserRequest ureq, WindowControl wControl,
+			boolean isAdmin, boolean isGuestOnly, SubscriptionContext subsContext, boolean readOnly) {
 		
-		final boolean isAdm = isAdmin;
-		final boolean isGuest = isGuestOnly;
 		Forum forum = getForum();
 		
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
 		TitleInfo titleInfo = new TitleInfo(null, trans.translate("collabtools.named.hasForum"));
 		titleInfo.setSeparatorEnabled(true);
-		return ForumUIFactory.getTitledForumController(ureq, wControl, forum, new ForumCallback() {
-			@Override
-			public boolean mayUsePseudonym() {
-				return false;
-			}
+		
+		ForumCallback secCallBack = new ToolForumCallback(isAdmin, isGuestOnly, subsContext, readOnly); 
+		return ForumUIFactory.getTitledForumController(ureq, wControl, forum, secCallBack, titleInfo);
+	}
+	
+	public static class ToolForumCallback implements ForumCallback {
+		
+		private final boolean isAdmin;
+		private final boolean isGuestOnly;
+		private final boolean readOnly;
+		private final SubscriptionContext subsContext;
+		
+		public ToolForumCallback(boolean isAdmin, boolean isGuestOnly, SubscriptionContext subsContext, boolean readOnly) {
+			this.isAdmin = isAdmin;
+			this.isGuestOnly = isGuestOnly;
+			this.subsContext = subsContext;
+			this.readOnly = readOnly;
+		}
+		
+		@Override
+		public boolean mayUsePseudonym() {
+			return false;
+		}
 
-			@Override
-			public boolean mayOpenNewThread() {
-				return true;
-			}
+		@Override
+		public boolean mayOpenNewThread() {
+			return !readOnly;
+		}
 
-			@Override
-			public boolean mayReplyMessage() {
-				return true;
-			}
+		@Override
+		public boolean mayReplyMessage() {
+			return !readOnly;
+		}
 
-			@Override
-			public boolean mayEditOwnMessage() {
-				return true;
-			}
+		@Override
+		public boolean mayEditOwnMessage() {
+			return !readOnly;
+		}
 
-			@Override
-			public boolean mayDeleteOwnMessage() {
-				return true;
-			}
+		@Override
+		public boolean mayDeleteOwnMessage() {
+			return !readOnly;
+		}
 
-			@Override
-			public boolean mayEditMessageAsModerator() {
-				return isAdm;
-			}
+		@Override
+		public boolean mayEditMessageAsModerator() {
+			return isAdmin && !readOnly;
+		}
 
-			@Override
-			public boolean mayDeleteMessageAsModerator() {
-				return isAdm;
-			}
+		@Override
+		public boolean mayDeleteMessageAsModerator() {
+			return isAdmin && !readOnly;
+		}
 
-			@Override
-			public boolean mayArchiveForum() {
-				return !isGuest;
-			}
+		@Override
+		public boolean mayArchiveForum() {
+			return !isGuestOnly;
+		}
 
-			@Override
-			public boolean mayFilterForUser() {
-				return isAdm;
-			}
+		@Override
+		public boolean mayFilterForUser() {
+			return isAdmin;
+		}
 
-			@Override
-			public SubscriptionContext getSubscriptionContext() {
-				return subsContext;
-			}
-		}, titleInfo);
+		@Override
+		public SubscriptionContext getSubscriptionContext() {
+			return subsContext;
+		}
 	}
 	
 	public Forum getForum() {
@@ -384,11 +400,11 @@ public class CollaborationTools implements Serializable {
 	 * @return Copnfigured FolderRunController
 	 */
 	public FolderRunController createFolderController(UserRequest ureq, WindowControl wControl,
-			BusinessGroup businessGroup, boolean isAdmin, final SubscriptionContext subsContext) {
+			BusinessGroup businessGroup, boolean isAdmin, final SubscriptionContext subsContext, boolean readOnly) {
 		// do not use a global translator since in the fututre a collaborationtools
 		// may be shared among users
 		Translator trans = Util.createPackageTranslator(this.getClass(), ureq.getLocale());
-		VFSContainer rootContainer = getSecuredFolder(businessGroup, subsContext, ureq.getIdentity(), isAdmin);
+		VFSContainer rootContainer = getSecuredFolder(businessGroup, subsContext, ureq.getIdentity(), isAdmin, readOnly);
 		VFSContainer namedContainer = new NamedContainerImpl(trans.translate("folder"), rootContainer);
 		return new FolderRunController(namedContainer, true, true, true, ureq, wControl);
 	}
@@ -398,23 +414,28 @@ public class CollaborationTools implements Serializable {
 	 * @return
 	 */
 	public VFSContainer getSecuredFolder(BusinessGroup businessGroup, SubscriptionContext subsContext,
-			Identity identity, boolean isBusinessGroupAdmin) {
+			Identity identity, boolean isBusinessGroupAdmin, boolean readOnly) {
 		if(!isToolEnabled(CollaborationTools.TOOL_FOLDER)) {
 			return null;
 		}
 
 		boolean writeAccess;
-		boolean isOwner = CoreSpringFactory.getImpl(BusinessGroupService.class).hasRoles(identity, businessGroup, GroupRoles.coach.name());
-		if (!(isBusinessGroupAdmin || isOwner)) {
-				// check if participants have read/write access
-			int folderAccess = CollaborationTools.FOLDER_ACCESS_ALL;
-			Long lFolderAccess = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).lookupFolderAccess();
-			if (lFolderAccess != null) {
-				folderAccess = lFolderAccess.intValue();
-			}
-			writeAccess = (folderAccess == CollaborationTools.CALENDAR_ACCESS_ALL);
+		if(readOnly) {
+			writeAccess = false;
 		} else {
-			writeAccess = true;
+			boolean isAdmin = isBusinessGroupAdmin || CoreSpringFactory.getImpl(BusinessGroupService.class)
+					.hasRoles(identity, businessGroup, GroupRoles.coach.name());
+			if (!(isAdmin)) {
+					// check if participants have read/write access
+				int folderAccess = CollaborationTools.FOLDER_ACCESS_ALL;
+				Long lFolderAccess = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup).lookupFolderAccess();
+				if (lFolderAccess != null) {
+					folderAccess = lFolderAccess.intValue();
+				}
+				writeAccess = (folderAccess == CollaborationTools.FOLDER_ACCESS_ALL);
+			} else {
+				writeAccess = true;
+			}
 		}
 
 		String relPath = getFolderRelPath();
@@ -432,10 +453,10 @@ public class CollaborationTools implements Serializable {
 	 * @return Configured WeeklyCalendarController
 	 */
 	public CalendarController createCalendarController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup,
-			boolean isAdmin, boolean isMember) {
+			boolean isAdmin, boolean isMember, boolean readOnly) {
 		
 		CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
-		KalendarRenderWrapper calRenderWrapper = collaborationManager.getCalendar(businessGroup, ureq, isAdmin);
+		KalendarRenderWrapper calRenderWrapper = collaborationManager.getCalendar(businessGroup, ureq, isAdmin, readOnly);
 		calRenderWrapper.setPrivateEventsVisible(isAdmin || isMember);
 	
 		// add linking
@@ -480,10 +501,10 @@ public class CollaborationTools implements Serializable {
 	 * @param chatName
 	 * @return Controller
 	 */
-	public ChatToolController createChatController(UserRequest ureq, WindowControl wControl, BusinessGroup grp, boolean isAdmin) {
+	public ChatToolController createChatController(UserRequest ureq, WindowControl wControl, BusinessGroup grp, boolean isAdmin, boolean readOnly) {
 		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		if (imModule.isEnabled() && imModule.isGroupEnabled()) {
-			return new ChatToolController(ureq, wControl, grp, isAdmin);
+			return new ChatToolController(ureq, wControl, grp, isAdmin, readOnly);
 		}
 		return null;
 	}
@@ -494,14 +515,21 @@ public class CollaborationTools implements Serializable {
 	 * @param wControl
 	 * @return
 	 */
-	public Controller createWikiController(UserRequest ureq, WindowControl wControl) {
+	public Controller createWikiController(UserRequest ureq, WindowControl wControl, boolean readOnly) {
 		// Check for jumping to certain wiki page
 		ContextEntry ce = wControl.getBusinessControl().popLauncherContextEntry();
 
 		Roles roles = ureq.getUserSession().getRoles();
 		SubscriptionContext subContext = new SubscriptionContext(ores, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
 		boolean administrator = roles.isAdministrator() || roles.isGroupManager();
-		WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, administrator, roles.isGuestOnly(), true, false, subContext);
+		boolean guestOnly = roles.isGuestOnly();
+		WikiSecurityCallback callback;
+		if(readOnly) {
+			callback = new WikiReadOnlySecurityCallback(guestOnly, administrator);
+		} else {
+			callback = new WikiSecurityCallbackImpl(null, administrator, guestOnly, true, false, subContext);
+		}
+		
 		String initialPage = null;
 		if (ce != null) { //jump to a certain context
 			OLATResourceable ceOres = ce.getOLATResourceable();
@@ -521,11 +549,11 @@ public class CollaborationTools implements Serializable {
 	 * @return
 	 */
 	public Controller createPortfolioController(final UserRequest ureq, final WindowControl wControl,
-			final TooledStackedPanel stackPanel, final BusinessGroup group) {
+			final TooledStackedPanel stackPanel, final BusinessGroup group, final boolean readOnly) {
 		final NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
 		Property mapProperty = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO);
 		if(mapProperty != null) {
-			return createPortfolioController(ureq, wControl, stackPanel, mapProperty);
+			return createPortfolioController(ureq, wControl, stackPanel, mapProperty, readOnly);
 		}
 		return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, () -> {
 			Controller ctrl;
@@ -536,7 +564,8 @@ public class CollaborationTools implements Serializable {
 				Binder binder = portfolioService.createNewBinder(group.getName(), group.getDescription(), null, null);
 				CoreSpringFactory.getImpl(BinderUserInformationsDAO.class).updateBinderUserInformationsInSync(binder, ureq.getIdentity());
 				mapKeyProperty = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_PORTFOLIO, null, binder.getKey(), "2", null);
-				BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
+				BinderSecurityCallback secCallback = readOnly
+						? BinderSecurityCallbackFactory.getReadOnlyCallback() : BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
 				BinderController binderCtrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());					
 				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
 				binderCtrl.activate(ureq, entries, null);
@@ -546,7 +575,7 @@ public class CollaborationTools implements Serializable {
 				ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_BINDER_CREATED, getClass());
 				npm.saveProperty(mapKeyProperty);
 			} else {
-				ctrl = createPortfolioController(ureq, wControl, stackPanel, mapProperty);
+				ctrl = createPortfolioController(ureq, wControl, stackPanel, mapProperty, readOnly);
 			}
 			return ctrl;
 		});
@@ -560,7 +589,7 @@ public class CollaborationTools implements Serializable {
 	 * @return
 	 */
 	private Controller createPortfolioController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			Property mapProperty) {
+			Property mapProperty, boolean readOnly) {
 		Long key = mapProperty.getLongValue();
 		String version = mapProperty.getStringValue();
 		
@@ -574,7 +603,8 @@ public class CollaborationTools implements Serializable {
 				ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, "", text);
 			} else {
 				portfolioService.updateBinderUserInformations(binder, ureq.getIdentity());
-				BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
+				BinderSecurityCallback secCallback = readOnly
+						? BinderSecurityCallbackFactory.getReadOnlyCallback() : BinderSecurityCallbackFactory.getCallbackForBusinessGroup();
 				ctrl = new BinderController(ureq, wControl, stackPanel, secCallback, binder, BinderConfiguration.createBusinessGroupConfig());
 			}
 		} else {
@@ -584,24 +614,28 @@ public class CollaborationTools implements Serializable {
 		return ctrl;
 	}
 	
-	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
-		return new OpenMeetingsRunController(ureq, wControl, group, null, null, admin, admin, false);
+	public Controller createOpenMeetingsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group,
+			boolean admin, boolean readOnly) {
+		return new OpenMeetingsRunController(ureq, wControl, group, null, null, admin, admin, readOnly);
 	}
 	
-	public Controller createAdobeConnectController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
+	public Controller createAdobeConnectController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group,
+			boolean admin, boolean readOnly) {
 		AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(true, true, true);
-		return new AdobeConnectRunController(ureq, wControl, null, null, group, configuration, admin, admin, false);
+		return new AdobeConnectRunController(ureq, wControl, null, null, group, configuration, admin, admin, readOnly);
 	}
 	
-	public BigBlueButtonRunController createBigBlueButtonController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
+	public BigBlueButtonRunController createBigBlueButtonController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group,
+			boolean admin, boolean readOnly) {
 		BigBlueButtonMeetingDefaultConfiguration configuration = new BigBlueButtonMeetingDefaultConfiguration(false);
 		boolean administrator = admin || "all".equals(getBigBlueButtonAccessProperty());
-		return new BigBlueButtonRunController(ureq, wControl, null, null, group, configuration, administrator, administrator, false);
+		return new BigBlueButtonRunController(ureq, wControl, null, null, group, configuration, administrator, administrator, readOnly);
 	}
 	
-	public TeamsMeetingsRunController createTeamsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
+	public TeamsMeetingsRunController createTeamsController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group,
+			boolean admin, boolean readOnly) {
 		boolean administrator = admin || "all".equals(getTeamsAccessProperty());
-		return new TeamsMeetingsRunController(ureq, wControl, null, null, group, administrator, administrator, false);
+		return new TeamsMeetingsRunController(ureq, wControl, null, null, group, administrator, administrator, readOnly);
 	}
 
 	/**

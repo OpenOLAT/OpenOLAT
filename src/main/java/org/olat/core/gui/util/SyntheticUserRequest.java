@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,27 +41,28 @@ import org.olat.core.util.UserSession;
  */
 public class SyntheticUserRequest implements UserRequest {
 	
+	private final String uuid;
 	private final Locale locale;
 	private final Identity identity;
 	private final Date requestTimestamp;
 	private UserSession userSession = null;
+	private static AtomicInteger count = new AtomicInteger(0);
 	
 	public SyntheticUserRequest(Identity identity, Locale locale) {
 		this.identity = identity;
 		this.locale = locale;
 		requestTimestamp = new Date();
+		uuid = "syn-" + count.incrementAndGet();
 	}
 	
 	public SyntheticUserRequest(Identity identity, Locale locale, UserSession userSession) {
-		this.identity = identity;
-		this.locale = locale;
+		this(identity, locale);
 		this.userSession = userSession;
-		this.requestTimestamp = new Date();
 	} 
 	
 	@Override
 	public String getUuid() {
-		return null;
+		return uuid;
 	}
 	
 	@Override
