@@ -659,6 +659,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			if (teaserImageUploadEl.getUploadFile() != null) {
 				teaserImageSource = courseStyleService.storeImage(course, getIdentity(),
 						teaserImageUploadEl.getUploadFile(), teaserImageUploadEl.getUploadFileName());
+			} else if (teaserImageUploadEl.getInitialFile() != null) {
+				teaserImageSource = courseConfig.getTeaserImageSource();
 			}
 		} else {
 			teaserImageSource = courseStyleService.createEmptyImageSource(type);
@@ -667,6 +669,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		if (ImageSourceType.custom != type) {
 			courseStyleService.deleteImage(course);
+			teaserImageUploadEl.setInitialFile(null);
+			teaserImageUploadEl.reset();
 		}
 			
 		courseConfig.setTeaserImageStyle(teaserImageStyle);
@@ -752,6 +756,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 				: ImageSourceType.DEFAULT_COURSE;
 		teaserImageUploadEl.setVisible(ImageSourceType.custom == type);
 		teaserImageSystemEl.setVisible(ImageSourceType.system == type);
+		if (teaserImageSystemEl.isVisible() && !teaserImageSystemEl.isOneSelected() && teaserImageSystemEl.getKeys().length > 0) {
+			teaserImageSystemEl.select(teaserImageSystemEl.getKey(0), true);
+		}
 		
 		String teaserImageExampleKey = teaserImageStyleEl.isOneSelected() && teaserImageStyleEl.isKeySelected(TeaserImageStyle.cover.name())
 				? "teaser.image.upload.example.cover"

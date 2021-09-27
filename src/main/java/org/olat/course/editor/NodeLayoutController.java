@@ -390,6 +390,8 @@ public class NodeLayoutController extends FormBasicController {
 				if (teaserImageUploadEl.getUploadFile() != null) {
 					teaserImageSource = courseStyleService.storeImage(course, courseNode, getIdentity(),
 							teaserImageUploadEl.getUploadFile(), teaserImageUploadEl.getUploadFileName());
+				} else if (teaserImageUploadEl.getInitialFile() != null) {
+					teaserImageSource = courseNode.getTeaserImageSource();
 				}
 			}
 		} else if (teaserImageTypeEl.isOneSelected()) {
@@ -407,6 +409,8 @@ public class NodeLayoutController extends FormBasicController {
 		
 		if (ImageSourceType.custom != teaserImageSource.getType()) {
 			courseStyleService.deleteImage(course, courseNode);
+			teaserImageUploadEl.setInitialFile(null);
+			teaserImageUploadEl.reset();
 		}
 		
 		courseNode.setTeaserImageStyle(teaserImageStyle);
@@ -442,6 +446,9 @@ public class NodeLayoutController extends FormBasicController {
 		boolean nodeImage = teaserImageNodeEl.isVisible() && teaserImageNodeEl.isOneSelected();
 		teaserImageUploadEl.setVisible(nodeImage && teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.custom.name()));
 		teaserImageSystemEl.setVisible(nodeImage && teaserImageNodeEl.getSelectedKey().equals(ImageSourceType.system.name()));
+		if (teaserImageSystemEl.isVisible() && !teaserImageSystemEl.isOneSelected() && teaserImageSystemEl.getKeys().length > 0) {
+			teaserImageSystemEl.select(teaserImageSystemEl.getKey(0), true);
+		}
 	}
 	
 	private void updateTeaserImageStyleUI() {
