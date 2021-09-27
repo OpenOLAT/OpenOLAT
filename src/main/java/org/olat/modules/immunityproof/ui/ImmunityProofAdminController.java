@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
@@ -55,10 +56,12 @@ public class ImmunityProofAdminController extends BasicController implements Act
 	private final Link configurationLink;
 	private final Link commissionersLink;
 	private final Link entranceCodesLink;
+	private final Link testAutomaticDetectionLink;
 	
 	private ImmunityProofConfigurationController configurationController;
 	private ImmunityProofManageCommissionersController commissionersController;
 	private ImmunityProofEntranceCodesController entranceCodesController;
+	private ImmunityProofTestScriptController testScriptController;
 	
 	@Autowired
 	private ImmunityProofModule immunityProofModule;
@@ -70,9 +73,10 @@ public class ImmunityProofAdminController extends BasicController implements Act
 		
 		mainVC = createVelocityContainer("immunity_proof_admin");
 		
-		configurationLink = org.olat.core.gui.components.link.LinkFactory.createLink("configuration", mainVC, this);
-		commissionersLink = org.olat.core.gui.components.link.LinkFactory.createLink("commissioners", mainVC, this);
-		entranceCodesLink = org.olat.core.gui.components.link.LinkFactory.createLink("entrance.codes", mainVC, this);
+		configurationLink = LinkFactory.createLink("configuration", mainVC, this);
+		commissionersLink = LinkFactory.createLink("commissioners", mainVC, this);
+		entranceCodesLink = LinkFactory.createLink("entrance.codes", mainVC, this);
+		testAutomaticDetectionLink = LinkFactory.createLink("test.automatic.detection", mainVC, this);
 		
 		segments = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segments.setDontShowSingleSegment(true);
@@ -96,6 +100,8 @@ public class ImmunityProofAdminController extends BasicController implements Act
                     openCommissioners(ureq);
                 } else if (clickedLink == entranceCodesLink) {
                     openQRCodes(ureq);
+				} else if (clickedLink == testAutomaticDetectionLink) {
+					openTesting(ureq);
                 }
             }
         }
@@ -128,9 +134,13 @@ public class ImmunityProofAdminController extends BasicController implements Act
 			if (!segments.getSegments().contains(entranceCodesLink)) {
 				segments.addSegment(entranceCodesLink, false);
 			}
+			if (!segments.getSegments().contains(testAutomaticDetectionLink)) {
+				segments.addSegment(testAutomaticDetectionLink, false);
+			}
 		} else {
 			segments.removeSegment(commissionersLink);
 			segments.removeSegment(entranceCodesLink);
+			segments.removeSegment(testAutomaticDetectionLink);
 		}
 	}
 	
@@ -159,6 +169,7 @@ public class ImmunityProofAdminController extends BasicController implements Act
 
         mainVC.put("segmentCmp", commissionersController.getInitialComponent());
 	}
+
 	private void openQRCodes(UserRequest ureq) {
 		if (entranceCodesController == null) {
             OLATResourceable ores = OresHelper.createOLATResourceableInstance("EntranceCodes", 0l);
@@ -170,6 +181,19 @@ public class ImmunityProofAdminController extends BasicController implements Act
         }
 
         mainVC.put("segmentCmp", entranceCodesController.getInitialComponent());
+	}
+
+	private void openTesting(UserRequest ureq) {
+		if (testScriptController == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("TestScript", 0l);
+			WindowControl bwControl = addToHistory(ureq, ores, null);
+			testScriptController = new ImmunityProofTestScriptController(ureq, bwControl);
+			listenTo(testScriptController);
+		} else {
+			addToHistory(ureq, testScriptController);
+		}
+
+		mainVC.put("segmentCmp", testScriptController.getInitialComponent());
 	}
 
 }
