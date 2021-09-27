@@ -27,8 +27,17 @@ package org.olat.ims.lti13;
  */
 public enum LTI13ToolType {
 	
+	/**
+	 * External tool with specific configuration for a course element.
+	 */
 	EXTERNAL,
+	/**
+	 * Tools template shared across different deployments
+	 */
 	EXT_TEMPLATE,
+	/**
+	 * Not used (backwards compatibility)
+	 */
 	SHARED
 
 }

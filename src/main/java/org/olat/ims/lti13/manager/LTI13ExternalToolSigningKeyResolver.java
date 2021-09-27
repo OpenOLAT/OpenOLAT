@@ -62,16 +62,19 @@ public class LTI13ExternalToolSigningKeyResolver implements SigningKeyResolver {
 	@Override
 	public Key resolveSigningKey(JwsHeader header, Claims claims) {
 		try {
-			String clientId = claims.get("sub", String.class);
-			String iss = claims.get("iss", String.class);
-			if(iss != null && iss.equals(clientId)) {
-				List<LTI13Tool> tools = lti13Service.getToolsByClientId(clientId);
-				if(tools.size() == 1) {
+			String iss = claims.getIssuer();
+			String sub = claims.getSubject();// client id
+			if(iss != null && iss.equals(sub)) {
+				List<LTI13Tool> tools = lti13Service.getToolsByClientId(sub);
+				if(tools.isEmpty()) {
+					log.error("Client ID not found: {}", sub);
+				} else if(tools.size() == 1) {
 					tool = tools.get(0);
+				} else if(tools.size() > 1) {
+					log.error("Several tools with same Client ID found: {}", sub);
 				}
-			}
-			if(tool == null) {
-				tool = lti13Service.getToolBy(iss, clientId);
+			} else {
+				tool = lti13Service.getToolBy(iss, sub);
 			}
 			if(tool != null) {
 				if(tool.getPublicKeyTypeEnum() == PublicKeyType.KEY) {
@@ -83,8 +86,9 @@ public class LTI13ExternalToolSigningKeyResolver implements SigningKeyResolver {
 					LTI13Key key = lti13Service.getKey(publicKeyUrl, kid);
 					return key.getPublicKey();
 				}
+			} else {
+				log.error("Client ID not found: {}", sub);
 			}
-			
 			return null;
 		} catch (Exception e) {
 			log.error("", e);
