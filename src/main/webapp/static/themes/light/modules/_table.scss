@@ -471,6 +471,10 @@ a.o_orderby, a.o_orderby:hover {
 	justify-content: space-between;
 	width: 100%;
 	
+	&.o_table_batch_show {
+		display: none;
+	}
+	
 	.o_table_search {
 		flex: 1;
 	}

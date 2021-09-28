@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
@@ -117,6 +118,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private FormLink correctionButton;
 	private FormLink pullButton;
 	private FormLink resetButton;
+	
+	private FormLink bulkExportResultsButton;
+	private FormLink bulkStatsButton;
+	private FormLink bulkCorrectionButton;
 
 	private Controller retrieveConfirmationCtr;
 	private QTI21ResetDataController resetDataCtrl;
@@ -207,8 +212,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
-		//bulk
-		super.initMultiSelectionTools(ureq, formLayout);
+		super.initBulkStatusTools(ureq, formLayout);
 		
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
 		if(((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry)) {
@@ -221,6 +225,17 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(qti21) {
 			statsButton = uifactory.addFormLink("button.stats", formLayout, Link.BUTTON);
 			statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
+			
+			bulkStatsButton = uifactory.addFormLink("button.stats", formLayout, Link.BUTTON);
+			bulkStatsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
+			tableEl.addBatchButton(bulkStatsButton);
+
+			exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
+			exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+			
+			bulkExportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
+			bulkExportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+			tableEl.addBatchButton(bulkExportResultsButton);
 		}
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
@@ -238,6 +253,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					correctionButton = uifactory.addFormLink("correction.test.title", formLayout, Link.BUTTON);
 					correctionButton.setElementCssClass("o_sel_correction");
 					correctionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
+					
+					bulkCorrectionButton = uifactory.addFormLink("correction.test.title", formLayout, Link.BUTTON);
+					bulkCorrectionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
+					tableEl.addBatchButton(bulkCorrectionButton);
 				}
 				if(courseNode.getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, false)) {
 					validateButton = uifactory.addFormLink("validate.xml.signature", formLayout, Link.BUTTON);
@@ -246,10 +265,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			}
 		}
 		
-		if(qti21) {
-			exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
-			exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
-		}
+		super.initBulkEmailTool(ureq, formLayout);
 	}
 	
 	private boolean isTestRunning() {
@@ -407,17 +423,30 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 
 	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if(fiSrc != bulkExportResultsButton && fiSrc != exportResultsButton) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(extraTimeButton == source) {
 			doConfirmExtraTime(ureq);
 		} else if(exportResultsButton == source) {
 			doExportResults(ureq);
+		} else if(bulkExportResultsButton == source) {
+			doBulkExportResults(ureq);
 		} else if(statsButton == source) {
 			doLaunchStatistics(ureq);
+		}  else if(bulkStatsButton == source) {
+			doLaunchBulkStatistics(ureq);
 		} else if(validateButton == source) {
 			doValidateSignature(ureq);
 		} else if(correctionButton == source) {
 			doStartCorrection(ureq);
+		} else if(bulkCorrectionButton == source) {
+			doStartBulkCorrection(ureq);
 		} else if(pullButton == source) {
 			doConfirmPull(ureq);
 		} else if(resetButton == source) {
@@ -478,6 +507,15 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	private void doExportResults(UserRequest ureq) {
 		Identities identities = getIdentities(true);
+		doExportResults(ureq, identities);
+	}
+
+	private void doBulkExportResults(UserRequest ureq) {
+		List<Identity> identities = getSelectedIdentities(row -> true);
+		doExportResults(ureq, new Identities(identities, false));
+	}
+	
+	private void doExportResults(UserRequest ureq, Identities identities) {
 		if (!identities.isEmpty()) {
 			MediaResource resource;
 			CourseEnvironment courseEnv = getCourseEnvironment();
@@ -506,7 +544,16 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	private void doStartCorrection(UserRequest ureq) {
 		AssessmentToolOptions asOptions = getOptions();
-
+		doStartCorrection(ureq, asOptions);
+	}
+	
+	private void doStartBulkCorrection(UserRequest ureq) {
+		AssessmentToolOptions asOptions = new AssessmentToolOptions();
+		asOptions.setIdentities(getSelectedIdentities(row -> true));
+		doStartCorrection(ureq, asOptions);
+	}
+	
+	private void doStartCorrection(UserRequest ureq, AssessmentToolOptions asOptions) {
 		CorrectionOverviewController correctionCtrl = new CorrectionOverviewController(ureq, getWindowControl(), stackPanel,
 				getCourseEnvironment(), asOptions, (IQTESTCourseNode)courseNode);
 		long numOfAssessmentEntriesDone = usersTableModel.getObjects().stream()
@@ -642,8 +689,24 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 	}
 	
+	private void doLaunchBulkStatistics(UserRequest ureq) {
+		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
+			AssessmentToolOptions options = new AssessmentToolOptions();
+			List<Identity> selectedIdentities = getSelectedIdentities(row -> true);
+			options.setIdentities(selectedIdentities);
+			Controller statisticsCtrl = new QTI21StatisticsToolController(ureq, getWindowControl(), 
+					stackPanel, getCourseEnvironment(), options, (IQTESTCourseNode)courseNode);
+			listenTo(statisticsCtrl);
+			stackPanel.pushController(translate("button.stats"), statisticsCtrl);
+		} else {
+			showWarning("error.qti12");
+		}
+	}
+	
 	private void doConfirmExtraTime(UserRequest ureq) {
-		List<IdentityRef> identities = getSelectedIdentities();
+		Predicate<AssessedIdentityElementRow> filter = row -> row.getAssessmentStatus() != AssessmentEntryStatus.done;
+		List<IdentityRef> identities = getSelectedIdentitiesRef(filter);
 		if(identities == null || identities.isEmpty()) {
 			showWarning("warning.users.extra.time");
 			return;

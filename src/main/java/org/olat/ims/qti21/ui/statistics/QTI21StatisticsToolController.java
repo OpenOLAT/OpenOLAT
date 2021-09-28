@@ -111,6 +111,8 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 			searchParams.setLimitToGroups(bGroups);
 		} else if(asOptions.getAlternativeGroupsOfIdentities() != null) {
 			searchParams.setLimitToGroups(asOptions.getAlternativeGroupsOfIdentities());
+		} else if(asOptions.getIdentities() != null && !asOptions.getIdentities().isEmpty()) {
+			searchParams.setLimitToIdentities(asOptions.getIdentities());
 		} else {
 			searchParams.setViewNonMembers(asOptions.isNonMembers());
 		}

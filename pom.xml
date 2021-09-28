@@ -159,6 +159,7 @@
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/fullcalendar/*</exclude>
 										<exclude>**/paella/**/*</exclude>
+										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
@@ -198,6 +199,7 @@
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
+										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
@@ -330,6 +332,7 @@
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
+										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
@@ -373,6 +376,7 @@
 										<exclude>**/mediaelementjs/*</exclude>
 										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/paella/**/*</exclude>
+										<exclude>**/qrscanner/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>

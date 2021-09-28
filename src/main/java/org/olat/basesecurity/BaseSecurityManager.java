@@ -618,23 +618,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 
 	@Override
 	public List<Identity> loadIdentityByKeys(Collection<Long> identityKeys) {
-		if (identityKeys == null || identityKeys.isEmpty()) {
-			return Collections.emptyList();
-		}
-		StringBuilder sb = new StringBuilder(512);
-		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
-		  .append(" inner join fetch ident.user user")
-		  .append(" where ident.key in (:keys)");
-		
-		List<Identity> identities = new ArrayList<>(identityKeys.size());
-		for (List<Long> chunkOfIdentityKeys : PersistenceHelper.collectionOfChunks(new ArrayList<>(identityKeys))) {
-			List<Identity> chunkOfIdentities = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Identity.class)
-				.setParameter("keys", chunkOfIdentityKeys)
-				.getResultList();
-			identities.addAll(chunkOfIdentities);
-		}
-		return identities;
+		return identityDao.loadByKeys(identityKeys);
+	}
+
+	@Override
+	public List<Identity> loadIdentityByRefs(Collection<IdentityRef> identityRefs) {
+		return identityDao.loadByRefs(identityRefs);
 	}
 
 	@Override

@@ -2187,10 +2187,10 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll, 
 		jQuery('#' + dispatchId + '_bab').each(function(index, el) {
 			if (showSelectAll) {
 				jQuery(el).addClass("o_table_batch_hide").removeClass("o_table_batch_show");
-				jQuery(el).prev('.o_table_toolbar').show(); 	
+				jQuery(el).prev('.o_table_toolbar').addClass("o_table_batch_hide").removeClass("o_table_batch_show");
 			} else {
-				jQuery(el).addClass("o_table_batch_show").removeClass("o_table_batch_hide");	
-				jQuery(el).prev('.o_table_toolbar').hide();
+				jQuery(el).addClass("o_table_batch_show").removeClass("o_table_batch_hide");
+				jQuery(el).prev('.o_table_toolbar').addClass("o_table_batch_show").removeClass("o_table_batch_hide");
 			}
 		});
 		

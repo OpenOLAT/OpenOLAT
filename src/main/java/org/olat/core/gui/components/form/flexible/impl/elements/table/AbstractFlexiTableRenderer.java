@@ -256,7 +256,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderer.render(searchCmp, sb, args);
 		}
 		
-		sb.append("<div class='o_table_toolbar clearfix'>");
+		boolean isBulk = hasVisibleBulkActions(ftE.getComponent()) && ftE.hasMultiSelectedIndex();
+		sb.append("<div class='o_table_toolbar").append(" o_table_batch_show", " o_table_batch_hide",  isBulk).append(" clearfix'>");
 		
 		sb.append("<div class='o_table_search o_noprint").append(" o_table_search_extended", ftE.getExtendedSearchButton() != null).append("'>");
 		// search

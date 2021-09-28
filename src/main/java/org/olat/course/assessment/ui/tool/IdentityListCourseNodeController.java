@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -262,14 +263,19 @@ public class IdentityListCourseNodeController extends FormBasicController
 		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
 		return AssessedIdentityListState.valueOf(selectedTab, filters, tableEl.isFiltersExpanded());
 	}
-
-	@Override
-	public List<IdentityRef> getSelectedIdentities() {
+	
+	/**
+	 * Collect the user selected identities in the table as references.
+	 * 
+	 * @param filter A predicate to filter the rows (mandatory)
+	 * @return A list of identities
+	 */
+	public List<IdentityRef> getSelectedIdentitiesRef(Predicate<AssessedIdentityElementRow> filter) {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
 		for(Integer i:selections) {
 			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
-			if(row != null && row.getAssessmentStatus() != AssessmentEntryStatus.done) {
+			if(row != null && filter.test(row) ) {
 				rows.add(row);
 			}
 		}
@@ -283,6 +289,18 @@ public class IdentityListCourseNodeController extends FormBasicController
 			selectedIdentities.add(new IdentityRefImpl(row.getIdentityKey()));
 		}
 		return selectedIdentities;
+	}
+	
+	/**
+	 * Collect the user selected identities in the table and load them
+	 * on the database.
+	 * 
+	 * @param filter A predicate to filter the rows (mandatory)
+	 * @return A list of identities
+	 */
+	public List<Identity> getSelectedIdentities(Predicate<AssessedIdentityElementRow> filter) {
+		List<IdentityRef> refs = getSelectedIdentitiesRef(filter);
+		return securityManager.loadIdentityByRefs(refs);
 	}
 
 	@Override
@@ -497,7 +515,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 		return courseAssessmentService.getAssessmentConfig(courseNode).isAssessable();
 	}
 	
-	protected void initMultiSelectionTools(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
+	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
+		initBulkStatusTools(ureq, formLayout);
+		initBulkEmailTool(ureq, formLayout);
+	}
+
+	protected void initBulkStatusTools(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
 		if(courseAssessmentService.getAssessmentConfig(courseNode).isAssessable()) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);
 			bulkDoneButton.setElementCssClass("o_sel_assessment_bulk_done");
@@ -510,7 +533,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
 			bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkVisibleButton);
-			
+		}
+	}
+	
+	protected void initBulkEmailTool(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
+		if(courseAssessmentService.getAssessmentConfig(courseNode).isAssessable()) {
 			bulkEmailButton = uifactory.addFormLink("bulk.email", formLayout, Link.BUTTON);
 			bulkEmailButton.setElementCssClass("o_sel_assessment_bulk_email");
 			bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
