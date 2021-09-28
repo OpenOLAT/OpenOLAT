@@ -41,6 +41,10 @@
     		mixedLabel: 'mixed',
     		prefix: ''
         }, params);
+        
+        if(this.settings.scale > 2.0) {
+        	this.settings.scale = 2.0;
+        }
 		
 		this.divPanel = panels.get(0);
 		this.divPanelId = this.divPanel.getAttribute("id");
@@ -123,11 +127,15 @@
 			}).on('dragmove', onDragMove).on('resizemove', onResizeMove).on('dragend resizeend', onEnd);
 			
 		}
+		console.log('Init scale');
 		this.scale();
 		return this;
 	}
 	
 	DrawingV2.prototype.scale = function() {
+		var origw = jQuery(this.editorPanel).width();
+		var origh = jQuery(this.editorPanel).height();
+		console.log('Scale', origw, origh, this.settings.scale);
 		var newWidth = this.scaleVal(jQuery(this.editorPanel).width());
 		var newHeight = this.scaleVal(jQuery(this.editorPanel).height());
 		jQuery(this.editorPanel).width(newWidth);
