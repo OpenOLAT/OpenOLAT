@@ -19,11 +19,15 @@
  */
 package org.olat.ims.lti13.manager;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.net.URL;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +44,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
@@ -81,12 +86,14 @@ import org.olat.ims.lti13.LTI13SharedToolDeployment;
 import org.olat.ims.lti13.LTI13SharedToolService;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
 import org.olat.ims.lti13.LTI13Tool;
+import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.ims.lti13.OIDCApi;
 import org.olat.ims.lti13.model.AccessTokenKey;
 import org.olat.ims.lti13.model.AccessTokenTimed;
 import org.olat.ims.lti13.model.AssessmentEntryWithUserId;
+import org.olat.ims.lti13.model.JwtToolBundle;
 import org.olat.ims.lti13.model.LTI13PlatformImpl;
 import org.olat.ims.lti13.model.LTI13PlatformWithInfos;
 import org.olat.ims.lti13.model.json.LineItem;
@@ -109,14 +116,19 @@ import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 /**
  * 
@@ -559,26 +571,136 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	}
 
 	@Override
-	public LTI13Key getKey(String jwkSetUri, String kid) {
+	public List<LTI13Key> getKeys(String jwkSetUri, String alg, String kid) {
 		List<LTI13Key> keys = lti13KeyDao.getKeys(jwkSetUri);
-		for(LTI13Key key:keys) {
-			if(key.getKeyId().equals(kid)) {
-				return key;
+		if(StringHelper.containsNonWhitespace(kid)) {
+			for(LTI13Key key:keys) {
+				if(key.getKeyId().equals(kid)) {
+					return List.of(key);
+				}
+			}
+		} else if(!keys.isEmpty()) {
+			List<LTI13Key> cachedKeys = new ArrayList<>();
+			for(LTI13Key key:keys) {
+				String algorithm = key.getAlgorithm();
+				if(alg == null || alg.equals(algorithm)) {
+					cachedKeys.add(key);
+				}
+			}
+			if(!cachedKeys.isEmpty()) {
+				return cachedKeys;
 			}
 		}
 		
 		dbInstance.commit();
 		try {
-			JWKSet publicKeys = JWKSet.load(new URL(jwkSetUri));
-			JWK jwk = publicKeys.getKeyByKeyId(kid);
-			String algorithm = jwk.getAlgorithm().toString();
-			PublicKey publicKey = jwk.toRSAKey().toPublicKey();
-			return lti13KeyDao.createKey(jwkSetUri, kid, algorithm, publicKey);
+			JWKSet publicKeys = loadJWKSet(jwkSetUri);
+			if(StringHelper.containsNonWhitespace(kid)) {
+				JWK jwk = publicKeys.getKeyByKeyId(kid);
+				LTI13Key key = cacheKey(jwkSetUri, jwk);
+				return List.of(key);
+			}
+			
+			keys = new ArrayList<>();
+			for(JWK publicJwk:publicKeys.getKeys()) {
+				String algorithm = publicJwk.getAlgorithm().toString();
+				LTI13Key key = cacheKey(jwkSetUri, publicJwk);
+				if(alg == null || algorithm == null || alg.equals(algorithm)) {
+					keys.add(key);
+				}
+			}
+			return keys;
 		} catch (Exception e) {
 			log.error("", e);
-			return null;
+			return List.of();
 		} finally {
 			dbInstance.commit();
+		}
+	}
+	
+	private JWKSet loadJWKSet(String jwkSetUri) throws IOException, ParseException {
+		URI uri = URI.create(jwkSetUri);
+		String scheme = uri.getScheme();
+		JWKSet publicKeys;
+		if("file".equals(scheme) && Settings.isJUnitTest()) {
+			publicKeys = JWKSet.load(new File(uri));
+		} else {
+			publicKeys = JWKSet.load(new URL(jwkSetUri));
+		}
+		return publicKeys;
+	}
+	
+	private LTI13Key cacheKey(String jwkSetUri, JWK jwk) throws JOSEException {
+		String pkid = jwk.getKeyID();
+		String algorithm = jwk.getAlgorithm().toString();
+		PublicKey publicKey = jwk.toRSAKey().toPublicKey();
+		return lti13KeyDao.createKey(jwkSetUri, pkid, algorithm, publicKey);
+	}
+	
+	@Override
+	public JwtToolBundle getAndVerifyClientAssertion(String clientAssertion) {
+		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
+		try {
+			Jwt<?, ?> jwt = Jwts.parserBuilder()
+				.setSigningKeyResolver(signingResolver)
+				.build()
+				.parse(clientAssertion);
+			log.debug("Token: {}", jwt);
+			return new JwtToolBundle(jwt, signingResolver.getTool());
+		} catch (SignatureException | IllegalArgumentException e) {
+			// if a tool was found with several possible keys, loop them
+			if(signingResolver.getTool() != null && signingResolver.getTool().getPublicKeyTypeEnum() == PublicKeyType.URL) {
+				return verifyAlternativeKeys(clientAssertion, signingResolver);
+			}	
+			log.error("", e);
+		} catch (ExpiredJwtException | MalformedJwtException e) {
+			log.error("", e);
+		}
+		return null;
+	}
+	
+	private JwtToolBundle verifyAlternativeKeys(String clientassertion, LTI13ExternalToolSigningKeyResolver signingResolver) {
+		// loop the cached keys
+		if(signingResolver.hasFoundMultipleKeys()) {
+			List<LTI13Key> keys = signingResolver.getFoundKeys();
+			for(LTI13Key key:keys) {
+				JwtToolBundle verifiedBundle = getAndVerify(clientassertion, key.getPublicKey(), signingResolver.getTool());
+				if(verifiedBundle != null) {
+					return verifiedBundle;
+				}
+			}
+		}
+		
+		try {
+			// failed, update the cached key
+			String jwkSetUrl = signingResolver.getTool().getPublicKeyUrl();
+			JWKSet publicKeys = loadJWKSet(jwkSetUrl);
+			for(JWK jwk:publicKeys.getKeys()) {
+				PublicKey publicKey = jwk.toRSAKey().toPublicKey();
+				JwtToolBundle verifiedBundle = getAndVerify(clientassertion, publicKey, signingResolver.getTool());
+				if(verifiedBundle != null) {
+					// cache the new key
+					cacheKey(jwkSetUrl, jwk);
+					return verifiedBundle;
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
+	}
+	
+	private JwtToolBundle getAndVerify(String clientassertion, PublicKey publicKey, LTI13Tool tool) {
+		try {
+			Jwt<?, ?> jwt = Jwts.parserBuilder()
+				.setSigningKeyResolver(new PublicKeyResolver(publicKey))
+				.build()
+				.parse(clientassertion);
+			log.debug("Token: {}", jwt);
+			return new JwtToolBundle(jwt, tool);
+		} catch (SignatureException | IllegalArgumentException e) {
+			log.debug("Signature issue by looping potential key: {}", publicKey, e);
+			return null;
 		}
 	}
 

@@ -20,15 +20,7 @@
 package org.olat.ims.lti13.manager;
 
 import java.security.Key;
-import java.util.List;
-
-import org.apache.logging.log4j.Logger;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.Tracing;
-import org.olat.ims.lti13.LTI13Key;
-import org.olat.ims.lti13.LTI13Platform;
-import org.olat.ims.lti13.LTI13Service;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.security.PublicKey;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
@@ -36,42 +28,25 @@ import io.jsonwebtoken.SigningKeyResolver;
 
 /**
  * 
- * Initial date: 9 mars 2021<br>
+ * Initial date: 27 sept. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LTI13SharedToolSigningKeyResolver implements SigningKeyResolver {
+public class PublicKeyResolver implements SigningKeyResolver {
 	
-	private static final Logger log = Tracing.createLoggerFor(LTI13SharedToolSigningKeyResolver.class);
+	private PublicKey publicKey;
 	
-	private LTI13Platform tool;
-	
-	@Autowired
-	private LTI13Service lti13Service;
-	
-	public LTI13SharedToolSigningKeyResolver(LTI13Platform tool) {
-		CoreSpringFactory.autowireObject(this);
-		this.tool = tool;
+	public PublicKeyResolver(PublicKey publicKey) {
+		this.publicKey = publicKey;
 	}
 
 	@Override
 	public Key resolveSigningKey(JwsHeader header, Claims claims) {
-		try {
-			log.debug("resolveSigningKey: {} claims: {}", header, claims);
-			String kid = header.getKeyId();
-			String alg = header.getAlgorithm();
-			String jwksSetUri = tool.getJwkSetUri();
-			List<LTI13Key> keys = lti13Service.getKeys(jwksSetUri, alg, kid);
-			return keys == null || keys.isEmpty() ? null : keys.get(0).getPublicKey();
-		} catch (Exception e) {
-			log.error("", e);
-			return null;
-		}
+		return publicKey;
 	}
 
 	@Override
 	public Key resolveSigningKey(JwsHeader header, String plaintext) {
-		log.debug("resolveSigningKey: {} claims: {}", header, plaintext);
-		return null;
+		return publicKey;
 	}
 }

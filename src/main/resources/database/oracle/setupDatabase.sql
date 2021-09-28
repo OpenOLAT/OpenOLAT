@@ -2584,7 +2584,7 @@ create table o_lti_key (
    id number(20) generated always as identity,
    creationdate date not null,
    lastmodified date not null,
-   l_key_id varchar2(255) not null,
+   l_key_id varchar2(255),
    l_public_key CLOB,
    l_private_key CLOB,
    l_algorithm varchar2(64) not null,

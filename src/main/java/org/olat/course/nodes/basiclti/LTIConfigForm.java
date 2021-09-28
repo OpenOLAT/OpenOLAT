@@ -66,6 +66,7 @@ import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
+import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.LTI13ToolType;
 import org.olat.modules.ModuleConfiguration;
@@ -106,7 +107,7 @@ public class LTIConfigForm extends FormBasicController {
 	private TextElement tkey;
 	private TextElement tpass;
 	
-	private TextElement clientIdEl;
+	private StaticTextElement clientIdEl;
 	private StaticTextElement deploymentIdEl;
 	private SingleSelection ltiVersionEl; 
 	private SingleSelection publicKeyTypeEl;
@@ -196,6 +197,8 @@ public class LTIConfigForm extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private LTI13Service lti13Service;
+	@Autowired
+	private LTI13IDGenerator idGenerator;
 	@Autowired
 	private NodeAccessService nodeAccessService;
 	
@@ -351,11 +354,16 @@ public class LTIConfigForm extends FormBasicController {
 		}
 		
 		String clientId = tool == null ? null : tool.getClientId();
-		clientIdEl = uifactory.addTextElement("config.client.id", "config.client.id", 255, clientId, formLayout);
+		clientIdEl = uifactory.addStaticTextElement("config.client.id", clientId, formLayout);
+		if(!StringHelper.containsNonWhitespace(clientId)) {
+			clientIdEl.setExampleKey("config.client.id.example", null);
+		}
 
 		String deploymentId = toolDeployement == null ? null : toolDeployement.getDeploymentId();
 		deploymentIdEl = uifactory.addStaticTextElement("config.deployment.id", deploymentId, formLayout);
-		deploymentIdEl.setExampleKey("config.deployment.id.example", null);
+		if(!StringHelper.containsNonWhitespace(deploymentId)) {
+			deploymentIdEl.setExampleKey("config.deployment.id.example", null);
+		}
 		
 		SelectionValues kValues = new SelectionValues();
 		kValues.add(SelectionValues.entry(PublicKeyType.KEY.name(), translate("config.public.key.type.key")));
@@ -390,10 +398,13 @@ public class LTIConfigForm extends FormBasicController {
 			if(toolDeployement != null && toolDeployement.getTool().getToolTypeEnum() == LTI13ToolType.EXT_TEMPLATE) {
 				backupToolDeployement = toolDeployement;
 				toolDeployement = null;
+				tool = null;
 			}
 			thost.setValue(null);
-			clientIdEl.setValue(null);
+			clientIdEl.setValue("");
+			clientIdEl.setExampleKey("config.client.id.example", null);
 			deploymentIdEl.setValue("");
+			deploymentIdEl.setExampleKey("config.deployment.id.example", null);
 			publicKeyEl.setValue(null);
 			publicKeyUrlEl.setValue(null);
 			initiateLoginUrlEl.setValue(null);
@@ -416,7 +427,7 @@ public class LTIConfigForm extends FormBasicController {
 				thost.setValue(tool.getToolUrl());
 			}
 			clientIdEl.setValue(tool.getClientId());
-			clientIdEl.setEnabled(false);
+			clientIdEl.setExampleKey(null, null);
 			publicKeyTypeEl.select(tool.getPublicKeyTypeEnum().name(), true);
 			publicKeyTypeEl.setEnabled(configurable);
 			publicKeyEl.setValue(tool.getPublicKey());
@@ -432,10 +443,12 @@ public class LTIConfigForm extends FormBasicController {
 				backupToolDeployement = toolDeployement;
 				toolDeployement = null;
 				deploymentIdEl.setValue("");
+				deploymentIdEl.setExampleKey("config.deployment.id.example", null);
 			} else if(backupToolDeployement != null && backupToolDeployement.getTool().equals(tool)) {
 				toolDeployement = backupToolDeployement;
 				backupToolDeployement = null;
 				deploymentIdEl.setValue(toolDeployement.getDeploymentId());
+				deploymentIdEl.setExampleKey(null, null);
 			}
 		}
 		updateUI();
@@ -450,7 +463,6 @@ public class LTIConfigForm extends FormBasicController {
 		
 		// LTI 1.3
 		clientIdEl.setVisible(lti13);
-		clientIdEl.setEnabled(!sharedTool);
 		deploymentIdEl.setVisible(lti13);
 		publicKeyTypeEl.setVisible(lti13);
 		publicKeyTypeEl.setEnabled(!sharedTool);
@@ -764,18 +776,23 @@ public class LTIConfigForm extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) { 
 		boolean allOk = super.validateFormLogic(ureq);
-		boolean lti13 = ltiVersionEl.isOneSelected()
-				&& (CONFIGKEY_LTI_13.equals(ltiVersionEl.getSelectedKey()) || StringHelper.isLong(ltiVersionEl.getSelectedKey()));
+		boolean localLti13 = ltiVersionEl.isOneSelected()
+				&& CONFIGKEY_LTI_13.equals(ltiVersionEl.getSelectedKey());
+		boolean sharedLti13 = ltiVersionEl.isOneSelected()
+				&& StringHelper.isLong(ltiVersionEl.getSelectedKey());
 		try {
 			thost.clearError();
 			URL url = new URL(thost.getValue());
 			if(url.getHost() == null) {
 				thost.setErrorKey("LTConfigForm.invalidurl", null);
 				allOk &= false;
-			} else if(lti13 && tool != null
+			} else if(sharedLti13 && tool != null
 					&& StringHelper.containsNonWhitespace(tool.getToolUrl())
 					&& !(new URL(tool.getToolUrl()).getHost().equals(url.getHost()))) {
 				thost.setErrorKey("LTConfigForm.urlToolIncompatible", new String[] { new URL(tool.getToolUrl()).getHost() });
+				allOk &= false;
+			} else if(localLti13 && !"https".equalsIgnoreCase(url.getProtocol())) {
+				thost.setErrorKey("LTConfigForm.invalidhttpsurl", null);
 				allOk &= false;
 			}
 		} catch (MalformedURLException e) {
@@ -788,25 +805,17 @@ public class LTIConfigForm extends FormBasicController {
 		}
 		
 		//lti 1.3
-		if(clientIdEl != null) {
-			clientIdEl.clearError();
-		}
 		if(publicKeyTypeEl != null) {
 			publicKeyTypeEl.clearError();
 			publicKeyEl.clearError();
 			publicKeyUrlEl.clearError();
 		}
-		if(lti13) {
+		if(localLti13) {
 			if(publicKeyTypeEl != null && publicKeyTypeEl.isOneSelected()
 					&& PublicKeyType.URL.name().equals(publicKeyTypeEl.getSelectedKey())) {
 				allOk &= validateTextElement(publicKeyUrlEl, 32000, true);
 			} else {
 				allOk &= validateTextElement(publicKeyEl, 128000, true);
-			}
-			
-			if(clientIdEl != null && !StringHelper.containsNonWhitespace(clientIdEl.getValue())) {
-				clientIdEl.setErrorKey("error.missing.clientid.or.deployment", customTypeKeys);
-				allOk &= false;
 			}
 		}
 		
@@ -951,12 +960,12 @@ public class LTIConfigForm extends FormBasicController {
 	
 	private ModuleConfiguration getUpdatedConfigLti13() {
 		String targetUrl = thost.getValue();
-		String clientId = clientIdEl.getValue();
 		String initiateLoginUrl = initiateLoginUrlEl.getValue();
 		String redirectUrl = redirectUrlEl.getValue();
 		
 		boolean canUpdateTool = tool == null || LTI13ToolType.EXTERNAL.equals(tool.getToolTypeEnum());
 		if(tool == null) {
+			String clientId = idGenerator.newId();
 			tool = lti13Service.createExternalTool(courseEntry.getDisplayname(), targetUrl, clientId,
 					initiateLoginUrl, redirectUrl, LTI13ToolType.EXTERNAL);
 		} else if(canUpdateTool) {
@@ -991,6 +1000,9 @@ public class LTIConfigForm extends FormBasicController {
 			toolDeployement.setTargetUrl(targetUrl);
 		}
 		deploymentIdEl.setValue(toolDeployement.getDeploymentId());
+		if(StringHelper.containsNonWhitespace(toolDeployement.getDeploymentId())) {
+			deploymentIdEl.setExampleKey(null, null);
+		}
 		
 		List<String> sendAttributes = new ArrayList<>();
 		if(sendName.isAtLeastSelected(1)) {
@@ -1024,6 +1036,11 @@ public class LTIConfigForm extends FormBasicController {
 		toolDeployement = lti13Service.updateToolDeployment(toolDeployement);
 		tool = toolDeployement.getTool();
 		tool.getKey();// prevent lazy loading exception
+
+		clientIdEl.setValue(tool.getClientId());
+		if(StringHelper.containsNonWhitespace(tool.getClientId())) {
+			clientIdEl.setExampleKey(null, null);
+		}
 		
 		config.setStringValue(CONFIGKEY_13_DEPLOYMENT_KEY, toolDeployement.getKey().toString());
 		getUpdateConfigCommon();

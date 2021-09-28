@@ -13,6 +13,9 @@ public class ImmunityProofContext {
 	private boolean certificateBelongsToUser;
 	private Date safeUntil;
 
+	private StringBuilder errors;
+	private StringBuilder output;
+
 	public String getQrCode() {
 		return qrCode;
 	}
@@ -59,6 +62,22 @@ public class ImmunityProofContext {
 
 	public void setSafeUntil(Date safeUntil) {
 		this.safeUntil = safeUntil;
+	}
+
+	public StringBuilder getErrors() {
+		return errors;
+	}
+
+	public void setErrors(StringBuilder errors) {
+		this.errors = errors;
+	}
+
+	public StringBuilder getOutput() {
+		return output;
+	}
+
+	public void setOutput(StringBuilder output) {
+		this.output = output;
 	}
 
 }
