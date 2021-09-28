@@ -28,6 +28,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -125,12 +126,12 @@ public class FlexiTableSingleSelectionFilter extends FlexiTableFilter implements
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl) {
+	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
 		return new FlexiFilterSingleSelectionController(ureq, wControl, this, getValue());
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Object preselectedValue) {
+	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
 		String preselectedKey = preselectedValue instanceof String ? (String)preselectedValue : null;
 		return new FlexiFilterSingleSelectionController(ureq, wControl, this, preselectedKey);
 	}

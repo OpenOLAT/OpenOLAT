@@ -507,7 +507,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	}
 	
 	private void doOpenFilter(UserRequest ureq, FormItem button, FlexiTableExtendedFilter filter) {
-		filterCtrl = filter.getController(ureq, wControl);
+		filterCtrl = filter.getController(ureq, wControl, component.getTranslator());
 		filterCtrl.addControllerListener(this);
 
 		filtersCallout = new CloseableCalloutWindowController(ureq, wControl, filterCtrl.getInitialComponent(),

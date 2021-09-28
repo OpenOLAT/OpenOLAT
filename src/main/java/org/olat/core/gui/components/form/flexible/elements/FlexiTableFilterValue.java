@@ -20,6 +20,8 @@
 package org.olat.core.gui.components.form.flexible.elements;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -47,6 +49,14 @@ public class FlexiTableFilterValue implements Serializable {
 	
 	public static final FlexiTableFilterValue valueOf(String filter, Serializable value) {
 		return new FlexiTableFilterValue(filter, value);
+	}
+	
+	public static final FlexiTableFilterValue valueOf(Enum<?> filter, List<String> values) {
+		return valueOf(filter.name(), values);
+	}
+	
+	public static final FlexiTableFilterValue valueOf(String filter, List<String> values) {
+		return new FlexiTableFilterValue(filter, new ArrayList<>(values));
 	}
 	
 	public String getFilter() {

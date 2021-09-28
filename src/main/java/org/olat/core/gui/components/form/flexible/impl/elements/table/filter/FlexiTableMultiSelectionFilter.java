@@ -30,6 +30,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -190,12 +191,12 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl) {
+	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator) {
 		return new FlexiFilterMultiSelectionController(ureq, wControl, this, getValues());
 	}
 
 	@Override
-	public Controller getController(UserRequest ureq, WindowControl wControl, Object preselectedValue) {
+	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue) {
 		List<String> preselectedKeys = convert(preselectedValue);
 		return new FlexiFilterMultiSelectionController(ureq, wControl, this, preselectedKeys);
 	}

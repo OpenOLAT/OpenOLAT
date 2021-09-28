@@ -25,6 +25,8 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 
 /**
+ * This is a tab with a preset of filters.
+ * 
  * 
  * Initial date: 10 août 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -44,6 +46,15 @@ public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFi
 		super(id, label, selectionBehavior);
 	}
 
+	/**
+	 * 
+	 * @param id The id of the tab, will be used for the business path
+	 * @param label The label of the tab
+	 * @param selectionBehavior Behavior if the tab is selected
+	 * @param implicitValueFilters a list of filters and theirs values, the filters
+	 * 		will be implicit, always selected and invisible to the user.
+	 * @return The configuration of a tab
+	 */
 	public static FlexiFilterTabPreset presetWithImplicitFilters(String id, String label,
 			TabSelectionBehavior selectionBehavior, List<FlexiTableFilterValue> implicitValueFilters) {
 		FlexiFilterTabPreset preset = new FlexiFilterTabPreset(id, label, selectionBehavior);
@@ -57,6 +68,28 @@ public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFi
 		return preset;
 	}
 	
+	/**
+	 * 
+	 * @param id The id of the tab, will be used for the business path
+	 * @param label The label of the tab
+	 * @param selectionBehavior Behavior if the tab is selected
+	 * @param valueFilters a list of filters and theirs values, the filters
+	 * 		will be explicit, selected and visible to the user which can change them.
+	 * @return The configuration of a tab
+	 */
+	public static FlexiFilterTabPreset presetWithFilters(String id, String label,
+			TabSelectionBehavior selectionBehavior, List<FlexiTableFilterValue> valueFilters) {
+		FlexiFilterTabPreset preset = new FlexiFilterTabPreset(id, label, selectionBehavior);
+		preset.implicitFilters = new ArrayList<>();
+		preset.filtersValues = valueFilters;
+		return preset;
+	}
+	
+	/**
+	 * 
+	 * @param preset A tab to copy
+	 * @return The configuration of a tab
+	 */
 	public static FlexiFilterTabPreset copyOf(FlexiFilterTabPreset preset) {
 		FlexiFilterTabPreset copy = new FlexiFilterTabPreset(preset.getId(), preset.getLabel());
 		copy.setElementCssClass(preset.getElementCssClass());

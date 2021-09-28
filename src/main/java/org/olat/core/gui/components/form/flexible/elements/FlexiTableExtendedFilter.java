@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -69,8 +70,8 @@ public interface FlexiTableExtendedFilter {
 	 * @param wControl The window control
 	 * @return
 	 */
-	public Controller getController(UserRequest ureq, WindowControl wControl);
+	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator);
 	
-	public Controller getController(UserRequest ureq, WindowControl wControl, Object preselectedValue);
+	public Controller getController(UserRequest ureq, WindowControl wControl, Translator translator, Object preselectedValue);
 
 }
