@@ -2551,7 +2551,7 @@ create table o_lti_key (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
-   l_key_id varchar(255) not null,
+   l_key_id varchar(255),
    l_public_key mediumtext,
    l_private_key mediumtext,
    l_algorithm varchar(64) not null,

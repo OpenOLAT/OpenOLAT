@@ -2573,7 +2573,7 @@ create table o_lti_key (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
-   l_key_id varchar(255) not null,
+   l_key_id varchar(255),
    l_public_key text,
    l_private_key text,
    l_algorithm varchar(64) not null,

@@ -20,11 +20,13 @@
 package org.olat.ims.lti13.manager;
 
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.ims.lti13.LTI13Key;
 import org.olat.ims.lti13.LTI13Service;
@@ -47,6 +49,8 @@ public class LTI13ExternalToolSigningKeyResolver implements SigningKeyResolver {
 	private static final Logger log = Tracing.createLoggerFor(LTI13ExternalToolSigningKeyResolver.class);
 	
 	private LTI13Tool tool;
+	private boolean withKid;
+	private List<LTI13Key> foundKeys;
 	
 	@Autowired
 	private LTI13Service lti13Service;
@@ -58,33 +62,63 @@ public class LTI13ExternalToolSigningKeyResolver implements SigningKeyResolver {
 	public LTI13Tool getTool() {
 		return tool;
 	}
+	
+	public List<LTI13Key> getFoundKeys() {
+		return foundKeys;
+	}
+	
+	public boolean hasFoundMultipleKeys() {
+		return foundKeys != null && foundKeys.size() > 1;
+	}
+	
+	public boolean isWithKid() {
+		return withKid;
+	}
 
 	@Override
 	public Key resolveSigningKey(JwsHeader header, Claims claims) {
 		try {
 			String iss = claims.getIssuer();
 			String sub = claims.getSubject();// client id
-			if(iss != null && iss.equals(sub)) {
-				List<LTI13Tool> tools = lti13Service.getToolsByClientId(sub);
-				if(tools.isEmpty()) {
-					log.error("Client ID not found: {}", sub);
-				} else if(tools.size() == 1) {
-					tool = tools.get(0);
-				} else if(tools.size() > 1) {
-					log.error("Several tools with same Client ID found: {}", sub);
+			List<LTI13Tool> tools = lti13Service.getToolsByClientId(sub);
+			if(tools.isEmpty()) {
+				log.error("Client ID not found: {}", sub);
+			} else if(tools.size() == 1) {
+				tool = tools.get(0);
+			} else if(StringHelper.containsNonWhitespace(iss)) {
+				List<LTI13Tool> byIssuers = new ArrayList<>();
+				for(LTI13Tool t:tools) {
+					if(iss.equals(t.getToolUrl())) {
+						byIssuers.add(tool);
+					}
 				}
-			} else {
-				tool = lti13Service.getToolBy(iss, sub);
+				if(tools.isEmpty()) {
+					log.error("Client ID/Issuer not found: {}/{}", sub, iss);
+				} else if(byIssuers.size() == 1) {
+					tool = byIssuers.get(0);
+				} else {
+					log.error("Several tools with same Client ID/Issuer found: {}/{}", sub, iss);
+				}
 			}
+
 			if(tool != null) {
 				if(tool.getPublicKeyTypeEnum() == PublicKeyType.KEY) {
 					String publicKeyContent = tool.getPublicKey();
 					return CryptoUtil.string2PublicKey(publicKeyContent);
 				} else if(tool.getPublicKeyTypeEnum() == PublicKeyType.URL) {
 					String kid = header.getKeyId();
+					withKid = StringHelper.containsNonWhitespace(kid);
+					String alg = header.getAlgorithm();
 					String publicKeyUrl = tool.getPublicKeyUrl();
-					LTI13Key key = lti13Service.getKey(publicKeyUrl, kid);
-					return key.getPublicKey();
+					List<LTI13Key> keys = lti13Service.getKeys(publicKeyUrl, alg, kid);
+					if(keys.size() == 1) {
+						return keys.get(0).getPublicKey();
+					}
+					if(keys.size() > 1) {
+						foundKeys = keys;
+						return keys.get(0).getPublicKey();
+					}
+					return null;
 				}
 			} else {
 				log.error("Client ID not found: {}", sub);

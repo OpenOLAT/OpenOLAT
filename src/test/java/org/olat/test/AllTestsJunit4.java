@@ -427,6 +427,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.lti13.manager.LTI13ToolDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13ToolDeploymentDAOTest.class,
 	org.olat.ims.lti13.manager.LTI13AssessmentEntryDAOTest.class,
+	org.olat.ims.lti13.manager.LTI13ExternalToolSigningKeyResolverTest.class,
 	org.olat.modules.qpool.manager.MetadataConverterHelperTest.class,
 	org.olat.modules.qpool.manager.QuestionDAOTest.class,
 	org.olat.modules.qpool.manager.FileStorageTest.class,

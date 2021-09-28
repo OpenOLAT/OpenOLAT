@@ -57,8 +57,8 @@ import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Constants.Errors;
 import org.olat.ims.lti13.LTI13Constants.UserAttributes;
-import org.olat.ims.lti13.manager.LTI13ExternalToolSigningKeyResolver;
 import org.olat.ims.lti13.manager.LTI13PlatformSigningPrivateKeyResolver;
+import org.olat.ims.lti13.model.JwtToolBundle;
 import org.olat.ims.lti13.model.json.AccessToken;
 import org.olat.ims.lti13.model.json.Context;
 import org.olat.ims.lti13.model.json.LaunchPresentation;
@@ -502,15 +502,8 @@ public class LTI13PlatformDispatcherDelegate {
 	
 	public void handleTokenClientCredentials(HttpServletRequest request, HttpServletResponse response) {
 		String clientassertion = request.getParameter(LTI13Constants.OAuth.CLIENT_ASSERTION);
-		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
-		Jwt<?,?> jwt = Jwts.parserBuilder()
-				.setSigningKeyResolver(signingResolver)
-				.build()
-				.parse(clientassertion);
-		log.debug("Token: {}", jwt);
-		
-		LTI13Tool tool = signingResolver.getTool();
-		handleTokenClientCredentials(jwt, tool, request, response);
+		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(clientassertion);
+		handleTokenClientCredentials(bundle.getJwt(), bundle.getTool(), request, response);
 	}
 	
 	public void handleToken(String obj, HttpServletRequest request, HttpServletResponse response) {
@@ -534,14 +527,9 @@ public class LTI13PlatformDispatcherDelegate {
 		}
 		
 		try {
-			LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
 			String clientassertion = request.getParameter(LTI13Constants.OAuth.CLIENT_ASSERTION);
-			Jwt<?,?> jwt = Jwts.parserBuilder()
-				.setSigningKeyResolver(signingResolver)
-				.build()
-				.parse(clientassertion);
-			log.debug("Token: {}", jwt);
-			handleTokenClientCredentials(jwt, signingResolver.getTool(), request, response);
+			JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(clientassertion);
+			handleTokenClientCredentials(bundle.getJwt(), bundle.getTool(), request, response);
 		} catch (Exception e) {
 			log.error("",  e);
 		}
