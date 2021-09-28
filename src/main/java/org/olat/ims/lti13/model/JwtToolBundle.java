@@ -17,27 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.lti13;
+package org.olat.ims.lti13.model;
+
+import org.olat.ims.lti13.LTI13Tool;
+
+import io.jsonwebtoken.Jwt;
 
 /**
  * 
- * Initial date: 23 févr. 2021<br>
+ * Initial date: 27 sept. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum LTI13ToolType {
+public class JwtToolBundle {
 	
-	/**
-	 * External tool with specific configuration for a course element.
-	 */
-	EXTERNAL,
-	/**
-	 * Tools template shared across different deployments
-	 */
-	EXT_TEMPLATE,
-	/**
-	 * Not used (backwards compatibility)
-	 */
-	SHARED
+	private final Jwt<?,?> jwt;
+	private final LTI13Tool tool;
+	
+	public JwtToolBundle(Jwt<?,?> jwt, LTI13Tool tool) {
+		this.jwt = jwt;
+		this.tool = tool;
+	}
 
+	public Jwt<?, ?> getJwt() {
+		return jwt;
+	}
+
+	public LTI13Tool getTool() {
+		return tool;
+	}
 }

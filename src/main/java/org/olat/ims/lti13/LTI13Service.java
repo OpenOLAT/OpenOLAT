@@ -27,6 +27,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
+import org.olat.ims.lti13.model.JwtToolBundle;
 import org.olat.ims.lti13.model.LTI13PlatformWithInfos;
 import org.olat.ims.lti13.model.json.LineItem;
 import org.olat.ims.lti13.model.json.Result;
@@ -134,7 +135,7 @@ public interface LTI13Service {
 	
 	public PublicKey getPlatformPublicKey(String kid);
 	
-	public LTI13Key getKey(String jwkSetUri, String kid);
+	public List<LTI13Key> getKeys(String jwkSetUri, String alg, String kid);
 	
 	// Identity management
 	
@@ -146,6 +147,8 @@ public interface LTI13Service {
 	
 	public void checkMembership(Identity identity, GroupRoles role, LTI13SharedToolDeployment deployment);
 	
+	
+	public JwtToolBundle getAndVerifyClientAssertion(String clientAssertion);
 	
 	public OAuth2AccessToken getAccessToken(LTI13Platform tool, List<String> scopes);
 	
