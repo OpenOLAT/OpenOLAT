@@ -1192,14 +1192,27 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
-		copyButton.setVisible(deletedTab != tab);
-		deleteButton.setVisible(deletedTab != tab);
-		restoreButton.setVisible(deletedTab != tab);
-		sendMailButton.setVisible(deletedTab != tab);
-		modifyOwnersButton.setVisible(deletedTab != tab);
-		restoreButton.setVisible(deletedTab == tab);
-		deletePermanentlyButton.setVisible(deletedTab == tab);
-		
+		if(copyButton != null) {
+			copyButton.setVisible(deletedTab != tab);
+		}
+		if(deleteButton != null) {
+			deleteButton.setVisible(deletedTab != tab);
+		}
+		if(restoreButton != null) {
+			restoreButton.setVisible(deletedTab != tab);
+		}
+		if(sendMailButton != null) {
+			sendMailButton.setVisible(deletedTab != tab);
+		}
+		if(modifyOwnersButton != null) {
+			modifyOwnersButton.setVisible(deletedTab != tab);
+		}
+		if(restoreButton != null) {
+			restoreButton.setVisible(deletedTab == tab);
+		}
+		if(deletePermanentlyButton != null) {
+			deletePermanentlyButton.setVisible(deletedTab == tab);
+		}
 		if(searchTab == tab) {
 			tableEl.setEmptyTableSettings("author.search.empty", "author.search.empty.hint", "o_CourseModule_icon");
 		} else {
