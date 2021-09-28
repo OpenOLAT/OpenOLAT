@@ -215,6 +215,9 @@ public interface BaseSecurity {
 	 */
 	public List<Identity> loadIdentityByKeys(Collection<Long> identityKeys);
 	
+	public List<Identity> loadIdentityByRefs(Collection<IdentityRef> identityRefs);
+	
+	
 	/**
 	 * Load a list of identities (short) by their keys
 	 * @param identityKeys

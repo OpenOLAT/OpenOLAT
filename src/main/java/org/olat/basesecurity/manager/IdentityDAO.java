@@ -21,6 +21,7 @@ package org.olat.basesecurity.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,6 +60,37 @@ public class IdentityDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	
+	public List<Identity> loadByRefs(Collection<IdentityRef> identityRefs) {
+		if (identityRefs == null || identityRefs.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<Long> identityKeys = identityRefs.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toList());
+		return loadByKeys(identityKeys);
+	}
+	
+	public List<Identity> loadByKeys(Collection<Long> identityKeys) {
+		if (identityKeys == null || identityKeys.isEmpty()) {
+			return Collections.emptyList();
+		}
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" where ident.key in (:keys)");
+		
+		List<Identity> identities = new ArrayList<>(identityKeys.size());
+		for (List<Long> chunkOfIdentityKeys : PersistenceHelper.collectionOfChunks(new ArrayList<>(identityKeys))) {
+			List<Identity> chunkOfIdentities = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("keys", chunkOfIdentityKeys)
+				.getResultList();
+			identities.addAll(chunkOfIdentities);
+		}
+		return identities;
+	}
 	
 	public Identity findIdentityByName(String identityName) {
 		if (identityName == null) throw new AssertException("findIdentitybyName: name was null");

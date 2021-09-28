@@ -36,6 +36,7 @@ import javax.persistence.TypedQuery;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21StatisticsManager;
@@ -133,6 +134,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			sb.append(" and asession.identity.key in ( select membership.identity.key from bgroupmember membership")
 			  .append("   where membership.group in (:baseGroups) and membership.role='").append(GroupRole.participant).append("'")
 			  .append(" )");
+		} else if(searchParams.getLimitToIdentities() != null && !searchParams.getLimitToIdentities().isEmpty()) {
+			sb.append(" and asession.identity.key in (:limitIdentityKeys)");
 		} else {
 			//limit to participants
 			sb.append(" and (asession.identity.key in ( select membership.identity.key from repoentrytogroup as rel, bgroupmember membership ")
@@ -170,6 +173,10 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			//
 		} else if(searchParams.getLimitToGroups() != null && !searchParams.getLimitToGroups().isEmpty()) {
 			query.setParameter("baseGroups", searchParams.getLimitToGroups());
+		} else if(searchParams.getLimitToIdentities() != null && !searchParams.getLimitToIdentities().isEmpty()) {
+			List<Long> keys = searchParams.getLimitToIdentities().stream()
+					.map(Identity::getKey).collect(Collectors.toList());
+			query.setParameter("limitIdentityKeys", keys);
 		}
 	}
 
