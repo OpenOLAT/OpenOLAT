@@ -226,14 +226,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			statsButton = uifactory.addFormLink("button.stats", formLayout, Link.BUTTON);
 			statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
 			
-			bulkStatsButton = uifactory.addFormLink("button.stats", formLayout, Link.BUTTON);
+			bulkStatsButton = uifactory.addFormLink("bulk.stats", "button.stats", null, formLayout, Link.BUTTON);
 			bulkStatsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
 			tableEl.addBatchButton(bulkStatsButton);
 
 			exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
 			exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 			
-			bulkExportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
+			bulkExportResultsButton = uifactory.addFormLink("bulk.export", "button.export", null, formLayout, Link.BUTTON);
 			bulkExportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 			tableEl.addBatchButton(bulkExportResultsButton);
 		}
@@ -254,7 +254,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					correctionButton.setElementCssClass("o_sel_correction");
 					correctionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 					
-					bulkCorrectionButton = uifactory.addFormLink("correction.test.title", formLayout, Link.BUTTON);
+					bulkCorrectionButton = uifactory.addFormLink("bulk.test.title", "correction.test.title", null, formLayout, Link.BUTTON);
 					bulkCorrectionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 					tableEl.addBatchButton(bulkCorrectionButton);
 				}
