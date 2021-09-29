@@ -72,7 +72,7 @@ import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
-import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonError;
 import org.olat.modules.bigbluebutton.model.BigBlueButtonErrorCodes;
@@ -808,7 +808,7 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 		String name = topic.getTitle();
 		String subIdent = topic.getSubIdent();
 		BigBlueButtonMeeting meeting = bigBlueButtonManager.createAndPersistMeeting(name, entry, subIdent, null, identity);
-		meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum.auto);
+		meeting.setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishedRoles.defaultValues());
 		meeting.setDescription(topic.getDescription());
 		meeting.setStartDate(appointment.getStart());
 		meeting.setEndDate(appointment.getEnd());

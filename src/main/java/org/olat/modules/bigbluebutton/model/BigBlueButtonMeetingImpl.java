@@ -42,7 +42,7 @@ import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.repository.RepositoryEntry;
@@ -382,17 +382,13 @@ public class BigBlueButtonMeetingImpl implements Persistable, BigBlueButtonMeeti
 	}
 	
 	@Override
-	public BigBlueButtonRecordingsPublishingEnum getRecordingsPublishingEnum() {
-		return BigBlueButtonRecordingsPublishingEnum.secureValueOf(recordingsPublishing);
+	public BigBlueButtonRecordingsPublishedRoles[] getRecordingsPublishingEnum() {
+		return BigBlueButtonRecordingsPublishedRoles.toArray(recordingsPublishing);
 	}
 
 	@Override
-	public void setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum recordingsPublishing) {
-		if(recordingsPublishing == null) {
-			this.recordingsPublishing = BigBlueButtonRecordingsPublishingEnum.auto.name();
-		} else {
-			this.recordingsPublishing = recordingsPublishing.name();
-		}
+	public void setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishedRoles[] roles) {
+		this.recordingsPublishing = BigBlueButtonRecordingsPublishedRoles.toString(roles);
 	}
 
 	@Override

@@ -202,9 +202,9 @@ public interface BigBlueButtonMeeting extends ModifiedInfo, CreateInfo {
 	 * 
 	 * @return
 	 */
-	public BigBlueButtonRecordingsPublishingEnum getRecordingsPublishingEnum();
+	public BigBlueButtonRecordingsPublishedRoles[] getRecordingsPublishingEnum();
 
-	public void setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishingEnum publishing);
+	public void setRecordingsPublishingEnum(BigBlueButtonRecordingsPublishedRoles[] publishing);
 	
 	public Boolean getRecord();
 

@@ -45,7 +45,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.bigbluebutton.BigBlueButtonManager;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.bigbluebutton.ui.EditBigBlueButtonMeetingController;
@@ -78,7 +78,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 	private SingleSelection templateEl;
 	private SingleSelection layoutEl;
 	private SingleSelection recordEl;
-	private SingleSelection publishingEl;
+	private MultipleSelectionElement publishingEl;
 	private SingleSelection joinPolicyEl;
 
 	private RecurringMeetingsContext meetingsContext;
@@ -160,12 +160,17 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		recordEl.select(yesNoKeys[0], true);
 		
 		SelectionValues publishKeyValues = new SelectionValues();
-		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishingEnum.auto.name(), translate("meeting.publishing.auto")));
-		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishingEnum.manual.name(), translate("meeting.publishing.manual")));
-		publishingEl = uifactory.addRadiosVertical("meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
-		BigBlueButtonRecordingsPublishingEnum publish = meetingsContext.getRecordingsPublishing() == null
-				? BigBlueButtonRecordingsPublishingEnum.auto :  meetingsContext.getRecordingsPublishing();
-		publishingEl.select(publish.name(), true);
+		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.coach.name(), translate("publish.to.coach")));
+		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.participant.name(), translate("publish.to.participant")));
+		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.all.name(), translate("publish.to.all")));
+		publishKeyValues.add(SelectionValues.entry(BigBlueButtonRecordingsPublishedRoles.guest.name(), translate("publish.to.guest")));
+		publishingEl = uifactory.addCheckboxesHorizontal("meeting.publishing", "meeting.publishing", formLayout, publishKeyValues.keys(), publishKeyValues.values());
+		publishingEl.setHelpTextKey("meeting.publishing.hint", null);
+		BigBlueButtonRecordingsPublishedRoles[] publishedRoles = meetingsContext.getRecordingsPublishing() == null
+				? BigBlueButtonRecordingsPublishedRoles.defaultValues() :  meetingsContext.getRecordingsPublishing();
+		for(BigBlueButtonRecordingsPublishedRoles publish:publishedRoles) {
+			publishingEl.select(publish.name(), true);
+		}
 
 		SelectionValues layoutKeyValues = new SelectionValues();
 		layoutKeyValues.add(SelectionValues.entry(BigBlueButtonMeetingLayoutEnum.standard.name(), translate("layout.standard")));
@@ -425,10 +430,10 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		meetingsContext.setJoinPolicy(JoinPolicyEnum.valueOf(joinPolicyEl.getSelectedKey()));
 		
-		if(publishingEl.isVisible() && publishingEl.isOneSelected()) {
-			meetingsContext.setRecordingsPublishing(BigBlueButtonRecordingsPublishingEnum.valueOf(publishingEl.getSelectedKey()));
+		if(publishingEl.isVisible()) {
+			meetingsContext.setRecordingsPublishing(BigBlueButtonRecordingsPublishedRoles.toArray(publishingEl.getSelectedKeys()));
 		} else {
-			meetingsContext.setRecordingsPublishing(BigBlueButtonRecordingsPublishingEnum.manual);
+			meetingsContext.setRecordingsPublishing(null);
 		}
 		if(recordEl.isVisible() && recordEl.isOneSelected()) {
 			meetingsContext.setRecord(Boolean.valueOf(yesNoKeys[0].equals(recordEl.getSelectedKey())));

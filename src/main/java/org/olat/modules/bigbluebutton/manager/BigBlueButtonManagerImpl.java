@@ -90,7 +90,6 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsHandler;
 import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
-import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.GuestPolicyEnum;
@@ -1226,14 +1225,12 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	
 	private BigBlueButtonRecordingReference syncReference(BigBlueButtonRecording recording, BigBlueButtonMeeting meeting) {
 		try {
-			BigBlueButtonRecordingsPublishedRoles role;
-			if(meeting.getRecordingsPublishingEnum() == BigBlueButtonRecordingsPublishingEnum.auto) {
-				role = BigBlueButtonRecordingsPublishedRoles.all;
-			} else {
-				role = BigBlueButtonRecordingsPublishedRoles.none;
+			BigBlueButtonRecordingsPublishedRoles[] roles = meeting.getRecordingsPublishingEnum(); 
+			if(roles == null || roles.length == 0 || roles[0] == null) {
+				roles = new BigBlueButtonRecordingsPublishedRoles[] { BigBlueButtonRecordingsPublishedRoles.none };
 			}
-			BigBlueButtonRecordingReference reference = bigBlueButtonRecordingReferenceDao.createReference(recording, meeting,
-					new BigBlueButtonRecordingsPublishedRoles[] { role });
+			BigBlueButtonRecordingReference reference = bigBlueButtonRecordingReferenceDao
+					.createReference(recording, meeting, roles);
 			dbInstance.commit();
 			return reference;
 		} catch (Exception e) {
