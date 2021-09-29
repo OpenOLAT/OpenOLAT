@@ -19,6 +19,10 @@
  */
 package org.olat.modules.bigbluebutton;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.olat.core.util.StringHelper;
 
 /**
@@ -34,6 +38,10 @@ public enum BigBlueButtonRecordingsPublishedRoles {
 	none,
 	all;
 	
+	public static final BigBlueButtonRecordingsPublishedRoles[] defaultValues() {
+		return new BigBlueButtonRecordingsPublishedRoles[] { BigBlueButtonRecordingsPublishedRoles.all };
+	}
+	
 	public static final boolean has(BigBlueButtonRecordingsPublishedRoles[] roles, BigBlueButtonRecordingsPublishedRoles roleToHave) {
 		if(roles == null || roles.length == 0) return false;
 		
@@ -48,23 +56,41 @@ public enum BigBlueButtonRecordingsPublishedRoles {
 	public static final BigBlueButtonRecordingsPublishedRoles secureValueOf(String val) {
 		BigBlueButtonRecordingsPublishedRoles publishing = BigBlueButtonRecordingsPublishedRoles.none;
 		if(StringHelper.containsNonWhitespace(val)) {
-			for(BigBlueButtonRecordingsPublishedRoles l:values()) {
-				if(l.name().equals(val)) {
-					publishing = l;
+			if("auto".equals(val)) {
+				publishing = BigBlueButtonRecordingsPublishedRoles.none;
+			} else {
+				for(BigBlueButtonRecordingsPublishedRoles l:values()) {
+					if(l.name().equals(val)) {
+						publishing = l;
+					}
 				}
 			}
 		}
 		return publishing;
 	}
 	
-	public static BigBlueButtonRecordingsPublishedRoles[] valueOfArray(String roles) {
+	public static BigBlueButtonRecordingsPublishedRoles[] toArray(String roles) {
 		BigBlueButtonRecordingsPublishedRoles[] rolesEnum;
 		if(StringHelper.containsNonWhitespace(roles)) {
 			String[] roleArr = roles.split(",");
 			rolesEnum = new BigBlueButtonRecordingsPublishedRoles[roleArr.length];
 			for(int i=roleArr.length; i-->0; ) {
-				rolesEnum[i] = BigBlueButtonRecordingsPublishedRoles.valueOf(roleArr[i]);
+				rolesEnum[i] = secureValueOf(roleArr[i]);
 			}
+		} else {
+			rolesEnum = new BigBlueButtonRecordingsPublishedRoles[0];
+		}
+		return rolesEnum;
+	}
+	
+	public static BigBlueButtonRecordingsPublishedRoles[] toArray(Collection<String> roles) {
+		BigBlueButtonRecordingsPublishedRoles[] rolesEnum;
+		if(roles != null && !roles.isEmpty()) {
+			List<BigBlueButtonRecordingsPublishedRoles> rolesList = new ArrayList<>(roles.size());
+			for(String role:roles) {
+				rolesList.add(secureValueOf(role));
+			}
+			rolesEnum = rolesList.toArray(new BigBlueButtonRecordingsPublishedRoles[rolesList.size()]);
 		} else {
 			rolesEnum = new BigBlueButtonRecordingsPublishedRoles[0];
 		}

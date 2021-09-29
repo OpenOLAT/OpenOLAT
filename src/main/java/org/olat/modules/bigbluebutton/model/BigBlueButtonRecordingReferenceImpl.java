@@ -142,7 +142,7 @@ public class BigBlueButtonRecordingReferenceImpl implements Persistable, BigBlue
 
 	@Override
 	public BigBlueButtonRecordingsPublishedRoles[] getPublishToEnum() {
-		return BigBlueButtonRecordingsPublishedRoles.valueOfArray(publishTo);
+		return BigBlueButtonRecordingsPublishedRoles.toArray(publishTo);
 	}
 
 	@Override

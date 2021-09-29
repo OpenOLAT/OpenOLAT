@@ -1253,7 +1253,7 @@ create table o_bbb_meeting (
    b_end_with_followuptime timestamp,
    b_main_presenter varchar(255),
    b_directory varchar(64) default null,
-   b_recordings_publishing varchar(16) default 'auto',
+   b_recordings_publishing varchar(128) default 'all',
    b_record bool default null,
    b_join_policy varchar(32) default 'disabled' not null,
    fk_creator_id int8,

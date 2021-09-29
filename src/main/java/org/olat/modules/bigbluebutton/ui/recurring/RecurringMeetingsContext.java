@@ -28,7 +28,7 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingLayoutEnum;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeetingTemplate;
-import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishingEnum;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecordingsPublishedRoles;
 import org.olat.modules.bigbluebutton.BigBlueButtonTemplatePermissions;
 import org.olat.modules.bigbluebutton.JoinPolicyEnum;
 import org.olat.repository.RepositoryEntry;
@@ -56,7 +56,7 @@ public class RecurringMeetingsContext {
 	private Boolean record;
 	private JoinPolicyEnum joinPolicy;
 	private BigBlueButtonMeetingLayoutEnum layout;
-	private BigBlueButtonRecordingsPublishingEnum recordingsPublishing;
+	private BigBlueButtonRecordingsPublishedRoles[] recordingsPublishing;
 	
 	private BigBlueButtonMeetingTemplate template;
 	
@@ -153,11 +153,11 @@ public class RecurringMeetingsContext {
 		this.record = record;
 	}
 
-	public BigBlueButtonRecordingsPublishingEnum getRecordingsPublishing() {
+	public BigBlueButtonRecordingsPublishedRoles[] getRecordingsPublishing() {
 		return recordingsPublishing;
 	}
 
-	public void setRecordingsPublishing(BigBlueButtonRecordingsPublishingEnum recordingsPublishing) {
+	public void setRecordingsPublishing(BigBlueButtonRecordingsPublishedRoles[] recordingsPublishing) {
 		this.recordingsPublishing = recordingsPublishing;
 	}
 

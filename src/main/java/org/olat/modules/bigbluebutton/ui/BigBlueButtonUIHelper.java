@@ -51,7 +51,7 @@ public class BigBlueButtonUIHelper {
 	
 	public static void updateTemplateInformations(SingleSelection templateEl, FormItem externalLinkEl,
 			MultipleSelectionElement passwordEnableEl, TextElement passwordEl,
-			SingleSelection publishingEl, SingleSelection recordEl,
+			MultipleSelectionElement publishingEl, SingleSelection recordEl,
 			List<BigBlueButtonMeetingTemplate> templates, boolean meetingExists) {
 		templateEl.setExampleKey(null, null);
 		if(templateEl.isOneSelected()) {
