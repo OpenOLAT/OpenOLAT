@@ -376,7 +376,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 					if(isDisadvantagedUser(mode, identity)) {
 						myModes.add(mode);
 					}
-				} else {
+				} else if(mode.getStatus() != Status.end) {
 					myModes.add(mode);
 				}
 			}
