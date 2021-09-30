@@ -332,9 +332,12 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	}
 	
 	public boolean isTaxonomyLinkingReady() {
-		List<Taxonomy> linkedTaxonomies = getLinkedTaxonomies();
+		if(!taxonomyLinkingEnabled) {
+			return false;
+		}
 		
-		return taxonomyLinkingEnabled && linkedTaxonomies != null && !linkedTaxonomies.isEmpty();
+		List<Taxonomy> linkedTaxonomies = getLinkedTaxonomies();
+		return linkedTaxonomies != null && !linkedTaxonomies.isEmpty();
 	}
 	
 	public void setTaxonomyLinkingEnabled(boolean taxonomyLinkingEnabled) {

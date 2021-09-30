@@ -129,6 +129,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	protected PageListDataModel model;
 	protected final TooledStackedPanel stackPanel;
 	protected final VelocityContainer rowVC;
+	protected final boolean taxonomyLinkingEnabled;
 	
 	protected List<Category> activeCategoryFilters;
 	protected List<TaxonomyLevel> activeCompetenceFilters;
@@ -165,6 +166,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		this.secCallback = secCallback;
 		this.withSections = withSections;
 		this.withComments = withComments;
+		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		rowVC = createVelocityContainer("portfolio_element_row");
 		
 		activeCategoryFilters = new ArrayList<>();
@@ -181,6 +183,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		this.withSections = withSections;
 		this.withComments = withComments;
 		this.stackPanel = null;
+		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		rowVC = createVelocityContainer("portfolio_element_row");
 		
 		activeCategoryFilters = new ArrayList<>();
@@ -708,12 +711,11 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	}
 	
 	private void addCompetencesToRow(PortfolioElementRow row) {
-		if (!portfolioV2Module.isTaxonomyLinkingReady() || row == null || row.getPage() == null) {
+		if (!taxonomyLinkingEnabled || row == null || row.getPage() == null) {
 			return;
 		}
 		
 		List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(row.getPage(), true);
-		
 		row.setPageCompetences(competences);
 	}
 	

@@ -32,6 +32,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
@@ -49,6 +50,7 @@ public class PortfolioElementRow {
 	
 	private final Page page;
 	private final Section section;
+	private final Binder binder;
 	private Assignment assignment;
 	private PageUserStatus userInfosStatus;
 	private final AssessmentSection assessmentSection;
@@ -60,6 +62,7 @@ public class PortfolioElementRow {
 	
 	private final boolean assessable;
 	private final boolean assignments;
+	private int assignmentPos;
 
 	private Collection<String> pageCategories;
 	private Collection<TaxonomyCompetence> pageCompetences = new ArrayList<>();
@@ -92,6 +95,7 @@ public class PortfolioElementRow {
 		shared = false;
 		type = RowType.section;
 		this.section = section;
+		binder = section == null ? null : section.getBinder();
 		this.assessable = assessable;
 		this.assignments = assignments;
 		this.assessmentSection = assessmentSection;
@@ -100,7 +104,8 @@ public class PortfolioElementRow {
 	public PortfolioElementRow(Page page, AssessmentSection assessmentSection,
 			boolean assessable) {
 		this.page = page;
-		this.section = page.getSection();
+		section = page.getSection();
+		binder = section.getBinder();
 		shared = page.getBody().getUsage() > 1;
 		type = RowType.page;
 		this.assessable = assessable;
@@ -108,11 +113,10 @@ public class PortfolioElementRow {
 		this.assessmentSection = assessmentSection;
 	}
 	
-	private int assignmentPos;
-	
 	public PortfolioElementRow(Assignment assignment, Section section, int assignmentPos) {
 		this.assignment = assignment;
 		this.section = section;
+		binder = section == null ? null : section.getBinder();
 		this.assignmentPos = assignmentPos;
 		
 		page = null;
@@ -251,8 +255,8 @@ public class PortfolioElementRow {
 			} else {
 				return "Multiple";
 			}
-		} else if (section != null && section.getBinder() != null) {
-			return section.getBinder().getTitle();
+		} else if(binder != null) {
+			return binder.getTitle();
 		} else {
 			return null;
 		}
