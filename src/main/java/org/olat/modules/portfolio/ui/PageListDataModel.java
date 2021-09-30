@@ -71,7 +71,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		try {
 			rows = sorter.sort();
 		} catch (IllegalArgumentException e) {
-			log.error("Cannot sort with: " + orderBy , e);
+			log.error("Cannot sort with: {}", orderBy , e);
 			return;
 		}
 		
