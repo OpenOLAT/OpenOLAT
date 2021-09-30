@@ -105,7 +105,7 @@ public class PortfolioElementRow {
 			boolean assessable) {
 		this.page = page;
 		section = page.getSection();
-		binder = section.getBinder();
+		binder = section == null ? null : section.getBinder();
 		shared = page.getBody().getUsage() > 1;
 		type = RowType.page;
 		this.assessable = assessable;
