@@ -1073,6 +1073,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 					task = dbInstance.getCurrentEntityManager().merge(task);
 				}	
 				dbInstance.commit();
+				File taskFile = new File(getTasksDirectory(courseEnv, cNode) + File.separator + taskName);
+				createSubmissionFromTask(identity, businessGroup, courseEnv, cNode, taskFile, doerIdentity, nextStep);
 				syncAssessmentEntry(task, cNode, null, false, doerIdentity, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
