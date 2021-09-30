@@ -1825,14 +1825,14 @@
 			<version>2.11.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jcodec</groupId>
+			<groupId>org.openolat</groupId>
 			<artifactId>jcodec</artifactId>
-			<version>0.2.5</version>
+			<version>0.2.5.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jcodec</groupId>
+			<groupId>org.openolat</groupId>
 			<artifactId>jcodec-javase</artifactId>
-			<version>0.2.5</version>
+			<version>0.2.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
