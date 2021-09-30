@@ -33,8 +33,12 @@ import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofType;
  */
 public interface ImmunityProofService {
 	
-	public void createImmunityProof(Identity identity, ImmunityProofType type, Date safeUntil, boolean sendMail, boolean validated, boolean deleteOtherImmunityProof);
+	public void createImmunityProof(Identity identity, ImmunityProofType type, Date safeUntil, boolean sendMail,
+			boolean validated, boolean deleteOtherImmunityProof);
 	
+	public void createImmunityProofFromCertificate(Identity identity, Date safeUntil, boolean sendMail,
+			boolean deleteOtherImmunityProof);
+
 	public ImmunityProof updateImmunityProof(ImmunityProof immunityProof);
 	
 	public ImmunityProof getImmunityProof(Identity identity);
