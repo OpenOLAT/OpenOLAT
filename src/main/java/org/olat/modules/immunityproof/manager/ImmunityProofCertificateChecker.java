@@ -4,12 +4,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.immunityproof.ImmunityProofContext;
+import org.olat.modules.immunityproof.ImmunityProofModule;
 
 public class ImmunityProofCertificateChecker extends Thread {
 
@@ -21,7 +28,11 @@ public class ImmunityProofCertificateChecker extends Thread {
 	private final List<String> cmd;
 	private final CountDownLatch doneSignal;
 
-	public ImmunityProofCertificateChecker(ImmunityProofContext context, List<String> cmd, CountDownLatch doneSignal) {
+	private ImmunityProofModule immunityProofModule; // Autowiring is not working here
+
+	public ImmunityProofCertificateChecker(ImmunityProofModule immunityProofModule, ImmunityProofContext context,
+			List<String> cmd, CountDownLatch doneSignal) {
+		this.immunityProofModule = immunityProofModule;
 		this.cmd = cmd;
 		this.context = context;
 		this.doneSignal = doneSignal;
@@ -43,7 +54,7 @@ public class ImmunityProofCertificateChecker extends Thread {
 
 			ProcessBuilder builder = new ProcessBuilder(cmd);
 			process = builder.start();
-			context = executeProcess(context, process);
+			executeProcess(context, process);
 			doneSignal.countDown();
 		} catch (IOException e) {
 			log.error("Could not spawn convert sub process", e);
@@ -51,10 +62,10 @@ public class ImmunityProofCertificateChecker extends Thread {
 		}
 	}
 
-	private final ImmunityProofContext executeProcess(ImmunityProofContext context, Process proc) {
+	private final void executeProcess(ImmunityProofContext context, Process proc) {
 
-		StringBuilder errors = new StringBuilder();
-		StringBuilder output = new StringBuilder();
+		StringBuilder errorBuilder = new StringBuilder();
+		StringBuilder outputBuilder = new StringBuilder();
 		String line;
 
 		InputStream stderr = proc.getErrorStream();
@@ -63,7 +74,7 @@ public class ImmunityProofCertificateChecker extends Thread {
 		line = null;
 		try {
 			while ((line = berr.readLine()) != null) {
-				errors.append(line);
+				errorBuilder.append(line);
 			}
 		} catch (IOException e) {
 			//
@@ -75,35 +86,177 @@ public class ImmunityProofCertificateChecker extends Thread {
 		line = null;
 		try {
 			while ((line = br.readLine()) != null) {
-				output.append(line);
+				outputBuilder.append(line);
 			}
 		} catch (IOException e) {
 			//
 		}
 
 		if (log.isDebugEnabled()) {
-			log.debug("Error: {}", errors.toString());
-			log.debug("Output: {}", output.toString());
+			log.debug("Error: {}", errorBuilder.toString());
+			log.debug("Output: {}", outputBuilder.toString());
 		}
-
+		
+		String output = outputBuilder.toString();
+		String error = errorBuilder.toString();
+		
+		String validKeyUsage = "Valid Key Usage: True";
+		String signatureValid = "Signature Valid: True";
+		String payload = "Payload";
+		
+		// Clear context
+		context.setCertificateBelongsToUser(false);
+		context.setCertificateFound(false);
+		context.setCertificateValid(false);
+		context.setSafeUntil(null);
+		
 		try {
 			int exitValue = proc.waitFor();
+			boolean signaturAndKeyAreValid = output.contains(validKeyUsage) && output.contains(signatureValid);
 
-			if (exitValue == 0) {
-				if (output.length() == 0) {
-					context.setCertificateFound(false);
-				} else {
-					context.setCertificateFound(true);
+			if (exitValue != 0 || !signaturAndKeyAreValid) {
+				context.setCertificateFound(false);
+				System.out.println(output);
+				System.out.println(error);
+				return;
+			}
+
+			String[] outputArray = output.split(payload);
+			int firstJsonBracket = outputArray[1].indexOf("{");
+			int lastJsonBracket = outputArray[1].lastIndexOf("}") + 1;
+			String jsonPayloadString = outputArray[1].substring(firstJsonBracket, lastJsonBracket);
+
+			JSONObject jsonPayload = new JSONObject(jsonPayloadString);
+
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			List<SimpleDateFormat> timeFormats = new ArrayList<>();
+			timeFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+			timeFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss[+-]hh"));
+			timeFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss[+-]hhmm"));
+			timeFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss[+-]hh:mm"));
+			long daysToMs = 24l * 60 * 60 * 1000;
+
+			Date birthdate = null;
+			String firstName = null;
+			String lastName = null;
+
+			try {
+				birthdate = dateFormat.parse(jsonPayload.getString("dob"));
+			} catch (Exception e) {
+			}
+
+			try {
+				firstName = jsonPayload.getJSONObject("nam").getString("fn");
+			} catch (Exception e) {
+			}
+
+			try {
+				lastName = jsonPayload.getJSONObject("nam").getString("gn");
+			} catch (Exception e) {
+			}
+
+			if (jsonPayload.has("v")) {
+				// Vaccination
+				JSONObject vaccination = jsonPayload.getJSONArray("v").getJSONObject(0);
+				// Check for COVID 19
+				if (vaccination.getInt("tg") != 840539006) {
+					return;
+				}
+
+				// Check for amount of doses
+				if (vaccination.getInt("dn") < vaccination.getInt("sd")) {
+					return;
+				}
+
+				// Check date of vaccination
+				Date vaccinationDate = dateFormat.parse(vaccination.getString("dt"));
+				if (vaccinationDate.after(new Date())) {
+					return;
+				}
+
+				context.setSafeUntil(
+						new Date(vaccinationDate.getTime() + immunityProofModule.getValidityVaccination() * daysToMs));
+
+			} else if (jsonPayload.has("t")) {
+				// Test
+				JSONObject test = jsonPayload.getJSONObject("v");
+				// Check for COVID 19
+				if (test.getInt("tg") != 840539006) {
+					return;
+				}
+
+				// Sample collection date
+				Date testDate = parseTime(timeFormats, test.getString("sc"));
+				if (testDate.after(new Date())) {
+					return;
+				}
+
+				// Check PCR test
+				if (test.getString("tt").equals("LP6464-4")) {
+					context.setSafeUntil(
+							new Date(testDate.getTime() + immunityProofModule.getValidityPCR() * daysToMs));
+				}
+				// Check rapid test
+				else if (test.getString("tt").equals("LP217198-3")) {
+					context.setSafeUntil(
+							new Date(testDate.getTime() + immunityProofModule.getValidityAntigen() * daysToMs));
+				}
+				
+			} else if (jsonPayload.has("r")) {
+				// Recovery
+				JSONObject recovery = jsonPayload.getJSONObject("v");
+				// Check for COVID 19
+				if (recovery.getInt("tg") != 840539006) {
+					return;
+				}
+
+				// Recovery Dates
+				Date validFrom = dateFormat.parse(recovery.getString("df"));
+				Date validUntil = dateFormat.parse(recovery.getString("du"));
+
+				if (validFrom.before(new Date())) {
+					// Maximal validity due to internal rules
+					Date maxValidity = new Date(
+							validFrom.getTime() + immunityProofModule.getValidityRecovery() * daysToMs);
+
+					if (validUntil.before(maxValidity)) {
+						context.setSafeUntil(validUntil);
+					} else {
+						context.setSafeUntil(maxValidity);
+					}
 				}
 			}
-		} catch (InterruptedException e) {
-			//
+
+			context.setCertificateFound(true);
+			context.setCertificateValid(true);
+
+			// Check if it belongs to user
+			if (context.getIdentity() != null) {
+				// Removed for testing
+				context.setCertificateBelongsToUser(true);
+			}
+
+
+		} catch (Exception e) {
+			// Go on
 		}
 
-		context.setOutput(output);
-		context.setErrors(errors);
+		context.setOutput(outputBuilder);
+		context.setErrors(errorBuilder);
 
-		return context;
+		return;
+	}
+
+	private Date parseTime(List<SimpleDateFormat> formats, String timeString) {
+		for (SimpleDateFormat pattern : formats) {
+			try {
+				return pattern.parse(timeString);
+
+			} catch (ParseException pe) {
+			}
+		}
+
+		return null;
 	}
 
 	public ImmunityProofContext getContext() {

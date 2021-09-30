@@ -1,6 +1,6 @@
 package org.olat.modules.immunityproof;
 
-import java.sql.Date;
+import java.util.Date;
 
 import org.olat.core.id.Identity;
 

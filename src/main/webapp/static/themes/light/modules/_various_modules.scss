@@ -811,6 +811,28 @@ div.o_reminder_custom_email {
 	height: 256px;
 }
 
+/* QR-Code scanner */
+.o_qr_scanner_wrapper {
+	position: relative;
+	
+	&:after {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		content: '';
+		background-image: url('#{$o-images-path}qr-scanner.png');
+		background-position: center top;
+		background-repeat: no-repeat;
+		background-size: cover;
+	}
+	
+	.o_qr_scanner {
+		border-radius: $border-radius-base;
+	}
+}
+
 /* busy screen */
 #o_ajax_busy { 
 	position: absolute; 

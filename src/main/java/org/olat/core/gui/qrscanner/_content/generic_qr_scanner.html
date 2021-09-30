@@ -10,7 +10,6 @@
 	</div>
 </div>
 
-<script src='$r.staticLink("js/qrscanner/qr-scanner.umd.min.js")'></script>
 <script>
 var cameraInput = document.getElementById("o_qr_scanner");
 var warning = document.getElementById("o_qr_scanner_warning");
@@ -89,7 +88,7 @@ function onQrCodeFound(qrCode) {
 
 function initScanner() {
   if (navigator.mediaDevices.getUserMedia) {
-    QrScanner.WORKER_PATH = '$r.staticLink("js/qrscanner/qr-scanner.umd.min.js")';
+    QrScanner.WORKER_PATH = '$r.staticLink("js/qrscanner/qr-scanner-worker.min.js")';
     
     qrScanner = new QrScanner(cameraInput, qrCode => onQrCodeFound(qrCode), QrScanner._onDecodeError, getScanRegion);
     qrScanner.setInversionMode("both");
@@ -117,5 +116,7 @@ function initCameraAndScanner() {
 	
 	cameraInput.classList.remove("hidden");
 }
+
+initCameraAndScanner();
  
 </script>

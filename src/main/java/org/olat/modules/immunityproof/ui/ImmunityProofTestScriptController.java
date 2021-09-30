@@ -81,7 +81,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		CountDownLatch doneSignal = new CountDownLatch(1);
 		ImmunityProofContext context = new ImmunityProofContext();
 
-		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(context, cmds,
+		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,
+				context, cmds,
 				doneSignal);
 		certificateChecker.start();
 
@@ -113,7 +114,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		CountDownLatch doneSignal = new CountDownLatch(1);
 		ImmunityProofContext context = new ImmunityProofContext();
 
-		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(context, cmds,
+		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,
+				context, cmds,
 				doneSignal);
 		certificateChecker.start();
 
@@ -153,7 +155,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		CountDownLatch doneSignal = new CountDownLatch(1);
 		ImmunityProofContext context = new ImmunityProofContext();
 
-		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(context, cmds,
+		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,
+				context, cmds,
 				doneSignal);
 		certificateChecker.start();
 

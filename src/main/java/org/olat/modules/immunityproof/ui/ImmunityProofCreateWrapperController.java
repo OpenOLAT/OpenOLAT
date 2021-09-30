@@ -16,6 +16,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
 
 public class ImmunityProofCreateWrapperController extends BasicController {
 
@@ -77,6 +78,8 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 		} else if (source == automaticController) {
 			if (event == Event.DONE_EVENT) {
 				segments.setVisible(false);
+
+				fireEvent(ureq, new ImmunityProofAddedEvent(editedIdentity));
 			}
 		} else if (source == manualController) {
 

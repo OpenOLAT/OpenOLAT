@@ -1,7 +1,9 @@
+
 package org.olat.core.gui.qrscanner;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -13,12 +15,17 @@ public class GenericQrScanController extends BasicController {
 
 	private final VelocityContainer mainVC;
 
-	private boolean isScanning;
+	private boolean isScanning = true;
 
 	public GenericQrScanController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("generic_qr_scanner");
+		
+		String[] js = new String[]{"js/qrscanner/qr-scanner.umd.min.js", "js/qrscanner/qr-scanner-worker.min.js"};
+		JSAndCSSComponent qrScannerJS = new JSAndCSSComponent("glossHelpJs", js, null);
+		
+		mainVC.put("qrScannerJS", qrScannerJS);
 
 		putInitialPanel(mainVC);
 	}
@@ -44,7 +51,7 @@ public class GenericQrScanController extends BasicController {
 		// because the code is not in DOM yet
 		if (!isScanning) {
 			JSCommand startScanner = new JSCommand(
-					"try { setTimeout(() => {jQuery(initCameraAndScanner);}, 250); } catch(e) { console.log(e); }");
+					"jQuery(initCameraAndScanner);");
 			getWindowControl().getWindowBackOffice().sendCommandTo(startScanner);
 
 			isScanning = true;
@@ -56,7 +63,7 @@ public class GenericQrScanController extends BasicController {
 		// not closed again properly
 		if (isScanning) {
 			JSCommand stopScanner = new JSCommand(
-					"try { setTimeout(() => {jQuery(cleanUpScanner);}, 250); } catch(e) { console.log(e); }");
+					"jQuery(cleanUpScanner);");
 			getWindowControl().getWindowBackOffice().sendCommandTo(stopScanner);
 
 			isScanning = false;

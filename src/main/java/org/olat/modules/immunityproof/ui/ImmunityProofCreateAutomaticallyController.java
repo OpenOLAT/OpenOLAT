@@ -9,15 +9,16 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.qrscanner.GenericQrScanController;
 import org.olat.core.gui.qrscanner.QrCodeDetectedEvent;
 import org.olat.core.id.Identity;
@@ -26,24 +27,32 @@ import org.olat.core.util.Util;
 import org.olat.modules.immunityproof.ImmunityProof;
 import org.olat.modules.immunityproof.ImmunityProofContext;
 import org.olat.modules.immunityproof.ImmunityProofModule;
+import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.manager.ImmunityProofCertificateChecker;
+import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
+import org.olat.modules.immunityproof.ui.event.ImmunityProofFoundEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class ImmunityProofCreateAutomaticallyController extends FormBasicController {
 
 	private static final Logger log = Tracing.createLoggerFor(ImmunityProofCreateAutomaticallyController.class);
 
+	private FormLayoutContainer buttonLayout;
+
 	private FormLink scanLink;
 	private FormLink uploadLink;
+	private FormSubmit submitLink;
 
-	private FormLayoutContainer qrScanContainer;
-	private FileElement certificateUploadEl;
-
+	private CloseableModalController cmc;
 	private GenericQrScanController scanController;
+	private ImmunityProofUploadCertificateController uploadCertificateController;
+
 	private ImmunityProofContext context;
 
 	@Autowired
 	private ImmunityProofModule immunityProofModule;
+	@Autowired
+	private ImmunityProofService immunityProofService;
 
 	public ImmunityProofCreateAutomaticallyController(UserRequest ureq, WindowControl wControl,
 			Identity editedIdentity) {
@@ -60,7 +69,7 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+		buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonLayout.setRootForm(mainForm);
 		buttonLayout.setLabel("automatic.scan.import", null);
 		formLayout.add(buttonLayout);
@@ -70,25 +79,19 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 		uploadLink = uifactory.addFormLink("automatic.import", buttonLayout, Link.BUTTON);
 		uploadLink.setIconLeftCSS("o_icon o_icon_lg o_icon_upload");
 
-		qrScanContainer = FormLayoutContainer.createCustomFormLayout("pdfPreview", getTranslator(),
-				velocity_root + "/immunity_proof_scanner.html");
-		qrScanContainer.setRootForm(mainForm);
-		qrScanContainer.setLabel("automatic.scan", null);
-		qrScanContainer.setVisible(false);
-		formLayout.add(qrScanContainer);
+		FormLayoutContainer formButtonLayout = FormLayoutContainer.createButtonLayout("form.buttons", getTranslator());
+		formButtonLayout.setRootForm(mainForm);
+		formLayout.add(formButtonLayout);
 
-		certificateUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "automatic.import",
-				formLayout);
-		certificateUploadEl.setMaxUploadSizeKB(10000, "automatic.import.file.size.error", null);
-		certificateUploadEl.setVisible(false);
-
+		submitLink = uifactory.addFormSubmitButton("submit", formButtonLayout);
+		submitLink.setVisible(false);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == uploadLink) {
-			doShowUpload();
+			doShowUpload(ureq);
 		} else if (source == scanLink) {
 			doShowScan(ureq);
 		}
@@ -101,64 +104,91 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 				QrCodeDetectedEvent qrCodeEvent = (QrCodeDetectedEvent) event;
 				context.setQrCode(qrCodeEvent.getQrCode());
 				
-				// getWindowControl().setInfo("QR Code Detected", qrCodeEvent.getQrCode());
-
-				doCheckCertificate(context);
+				doCheckCertificate(ureq, context);
 			}
+
+			cleanUp();
+		} else if (source == uploadCertificateController) {
+			if (event instanceof ImmunityProofFoundEvent) {
+
+				// TODO FOR TESTING
+				immunityProofService.createImmunityProofFromCertificate(context.getIdentity(), context.getSafeUntil(),
+						true, true);
+
+				fireEvent(ureq, new ImmunityProofAddedEvent(context.getIdentity()));
+			}
+		} else if (source == cmc) {
+			cmc.deactivate();
+
+			cleanUp();
 		}
 	}
 
-	private void doShowUpload() {
-		certificateUploadEl.setVisible(true);
-		qrScanContainer.setVisible(false);
+	private void cleanUp() {
+		removeAsListenerAndDispose(uploadCertificateController);
+		removeAsListenerAndDispose(scanController);
+		removeAsListenerAndDispose(cmc);
 
-		if (scanController != null) {
-			scanController.stopScanner();
-		}
+		uploadCertificateController = null;
+		scanController = null;
+		cmc = null;
+	}
+
+	private void doShowUpload(UserRequest ureq) {
+		uploadCertificateController = new ImmunityProofUploadCertificateController(ureq, getWindowControl(), context);
+		listenTo(uploadCertificateController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("cancel"),
+				uploadCertificateController.getInitialComponent(), true, translate("add.immunity.proof"));
+
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doShowScan(UserRequest ureq) {
-		if (scanController == null) {
-			scanController = new GenericQrScanController(ureq, getWindowControl());
-			listenTo(scanController);
+		scanController = new GenericQrScanController(ureq, getWindowControl());
+		listenTo(scanController);
 
-			qrScanContainer.put("scanner", scanController.getInitialComponent());
-		}
+		cmc = new CloseableModalController(getWindowControl(), translate("cancel"),
+				scanController.getInitialComponent(), true, translate("add.immunity.proof"));
 
-		certificateUploadEl.setVisible(false);
-		qrScanContainer.setVisible(true);
-
-		scanController.startScanner();
+		listenTo(cmc);
+		cmc.activate();
 	}
 
-	private void doCheckCertificate(ImmunityProofContext context) {
+	private void doCheckCertificate(UserRequest ureq, ImmunityProofContext context) {
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
 		cmds.add(context.getQrCode());
 		CountDownLatch doneSignal = new CountDownLatch(1);
 
-		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(context, cmds,
+		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,
+				context, cmds,
 				doneSignal);
 		certificateChecker.start();
 
 		try {
-			if (doneSignal.await(3000, TimeUnit.MILLISECONDS)) {
-				if (log.isDebugEnabled()) {
-					log.debug("Successfully validated certificate: {}", context);
-				}
+			if (doneSignal.await(5000, TimeUnit.MILLISECONDS)) {
+				// Reload context for safety
+				context = certificateChecker.getContext();
 
-				if (context.isCertificateFound()) {
-				getWindowControl()
-						.setWarning("Successfully validated COVID Certificate" + "<br><br>" + context.getQrCode());
+				if (context.isCertificateFound() && context.isCertificateValid()
+						&& context.isCertificateBelongsToUser()) {
+					// TODO Ask for mail and removal
+					immunityProofService.createImmunityProofFromCertificate(context.getIdentity(),
+							context.getSafeUntil(), true, true);
+
+					fireEvent(ureq, Event.DONE_EVENT);
+
 				} else {
-					getWindowControl().setError("No Certificate found" + "<br><br>" + context.getQrCode());
+					getWindowControl().setWarning("Please provide a valid COVID certificate.");
 				}
 			} else {
-				log.warn("Cannot validate certificate in 3s: {}", context);
+				log.warn("Cannot validate certificate in 5s: {}", context);
 				
 				getWindowControl()
-						.setError("Timeout - Could not validate Certificate" + "<br><br>" + context.getQrCode());
+						.setError("Timeout - Could not validate Certificate" + "<br><br>" + "Please try again!");
 			}
 		} catch (InterruptedException e) {
 			log.error("", e);

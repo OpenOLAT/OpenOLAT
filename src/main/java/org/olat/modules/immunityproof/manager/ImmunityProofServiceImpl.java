@@ -62,6 +62,20 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 	}
 
 	@Override
+	public void createImmunityProofFromCertificate(Identity identity, Date safeUntil, boolean sendMail,
+			boolean deleteOtherImmunityProof) {
+		if (deleteOtherImmunityProof) {
+			deleteImmunityProof(identity);
+		}
+
+		if (safeUntil == null) {
+			return;
+		}
+
+		immunityProofDAO.createImmunityProof(identity, safeUntil, sendMail, true);
+	}
+
+	@Override
 	public ImmunityProof getImmunityProof(Identity identity) {
 		if (identity == null) {
 			return null;
