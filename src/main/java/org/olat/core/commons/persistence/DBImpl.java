@@ -43,6 +43,10 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
+import org.hibernate.event.spi.PostUpdateEventListener;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.stat.Statistics;
 import org.infinispan.hibernate.cache.v53.InfinispanRegionFactory;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -118,6 +122,13 @@ public class DBImpl implements DB, Destroyable {
 	 */
 	public void setDbVendor(String dbVendor) {
 		this.dbVendor = dbVendor;
+	}
+	
+	public void appendPostUpdateEventListener(PostUpdateEventListener listener) {
+		SessionFactoryImpl sessionFactory = emf.unwrap(SessionFactoryImpl.class);
+		EventListenerRegistry registry = sessionFactory.getServiceRegistry().getService(EventListenerRegistry.class);
+		registry.getEventListenerGroup(EventType.POST_UPDATE).appendListener(listener);
+		registry.getEventListenerGroup(EventType.POST_COMMIT_UPDATE).appendListener(listener);
 	}
 
 	/**

@@ -221,6 +221,7 @@ public class UserTest extends OlatTestCase {
 		u5.setLastName("newuser");
 		u5.setEmail("new@user.com");
 		u5.setCreationDate(new Date());
+		u5.getPreferences();
 		dbInstance.saveObject(u5);
 		u5.setProperty(UserConstants.EMAIL, "updated@email.com");
 		userManager.updateUser(() -> Long.valueOf(123), u5);

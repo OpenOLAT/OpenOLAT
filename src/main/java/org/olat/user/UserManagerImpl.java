@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -76,6 +77,8 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
 import org.olat.user.manager.ManifestBuilder;
+import org.olat.user.manager.UserChangeListeners;
+import org.olat.user.manager.UserChangeListeners.ChangedEvent;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -113,6 +116,8 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 
 	private CacheWrapper<Serializable,String> userToFullnameCache;
 	private CacheWrapper<Long,String> userToNameCache;
+	
+	private final UserChangeListeners listener = new UserChangeListeners();
   
 	/**
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
@@ -128,6 +133,8 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 				.getCache(UserManager.class.getSimpleName(), "userfullname");
 		userToNameCache = coordinatorManager.getCoordinator().getCacher()
 				.getCache(UserManager.class.getSimpleName(), "username");
+		
+		dbInstance.appendPostUpdateEventListener(listener);
 		
 	}
 
@@ -285,16 +292,19 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	@Override
 	public User updateUser(IdentityRef identityRef, User user) {
 		if (user == null) throw new AssertException("User object is null!");
-		
-		// Detach to load the old values from the database.
-		dbInstance.getCurrentEntityManager().detach(user);
-		User oldUser = loadUserByKey(user.getKey());
-		// Get the changes
-		List<UserPropertyChangedEvent> events = getChangedEvents(identityRef, oldUser, user);
+
 		// Update in the database
 		User updatedUser = dbInstance.getCurrentEntityManager().merge(user);
-		// Send the events
-		sendDeferredEvents(identityRef, events);
+		// commit for the events
+		dbInstance.commit();
+		
+		List<ChangedEvent> changes = listener.flushEvents(updatedUser);
+		if(!changes.isEmpty() && identityRef != null) {
+			List<UserPropertyChangedEvent> events = changes.stream()
+					.map(change -> new UserPropertyChangedEvent(identityRef.getKey(), change.getPropertyName(), change.getOldState(), change.getState()))
+					.collect(Collectors.toList());
+			sendDeferredEvents(identityRef, events);
+		}
 		return updatedUser;
 	}
 	
