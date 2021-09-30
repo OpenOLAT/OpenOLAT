@@ -102,7 +102,9 @@ public class LearningPathTreeNode extends CourseTreeNode {
 	}
 
 	private boolean hasNotExcludedEvaluation() {
-		return assessmentEvaluation != null && AssessmentObligation.excluded != assessmentEvaluation.getObligation().getCurrent();
+		return assessmentEvaluation == null
+				|| assessmentEvaluation.getObligation() == null
+				|| AssessmentObligation.excluded != assessmentEvaluation.getObligation().getCurrent();
 	}
 	
 }

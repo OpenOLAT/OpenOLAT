@@ -63,9 +63,10 @@ public class FormParticipationRuleSPITest extends OlatTestCase {
 	
 	@Test
 	public void shoudGetIndividualsToRemind() {
-		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry courseEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry courseEntryOther = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry formEntry = JunitTestHelper.deployBasicCourse(author);
 		
 		Identity participantDone = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		repositoryService.addRole(participantDone, courseEntry, GroupRoles.participant.name());

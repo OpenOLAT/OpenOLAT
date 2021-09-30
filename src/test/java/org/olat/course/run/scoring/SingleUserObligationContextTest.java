@@ -36,7 +36,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -64,8 +63,6 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 	private OrganisationService organisationService;
 	@Autowired
 	private CurriculumService curriculumService;
-	@Autowired
-	private AssessmentService assessmentService;
 	
 	@Before
 	public void setUp() {
@@ -124,11 +121,12 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		organisationService.addMember(organisationOther, identityOther, OrganisationRoles.author);
 		dbInstance.commitAndCloseSession();
 		
-		SingleUserObligationContext sut = new SingleUserObligationContext();
+		SingleUserObligationContext sutIdentity = new SingleUserObligationContext();
+		SingleUserObligationContext sutIdentityOther = new SingleUserObligationContext();
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sut.isMember(identity, organisation)).isTrue();
-		softly.assertThat(sut.isMember(identity, organisationOther)).isFalse();
-		softly.assertThat(sut.isMember(identityOther, organisation)).isFalse();
+		softly.assertThat(sutIdentity.isMember(identity, organisation)).isTrue();
+		softly.assertThat(sutIdentity.isMember(identity, organisationOther)).isFalse();
+		softly.assertThat(sutIdentityOther.isMember(identityOther, organisation)).isFalse();
 		softly.assertAll();
 	}
 	
@@ -145,12 +143,14 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		curriculumService.addMember(curriculumElementOther, participantOther, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 		
-		SingleUserObligationContext sut = new SingleUserObligationContext();
+		SingleUserObligationContext sutParticipant = new SingleUserObligationContext();
+		SingleUserObligationContext sutCoach = new SingleUserObligationContext();
+		SingleUserObligationContext sutParticipantOther = new SingleUserObligationContext();
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sut.isParticipant(participant, curriculumElement)).isTrue();
-		softly.assertThat(sut.isParticipant(participant, curriculumElementOther)).isFalse();
-		softly.assertThat(sut.isParticipant(coach, curriculumElement)).isFalse();
-		softly.assertThat(sut.isParticipant(participantOther, curriculumElement)).isFalse();
+		softly.assertThat(sutParticipant.isParticipant(participant, curriculumElement)).isTrue();
+		softly.assertThat(sutParticipant.isParticipant(participant, curriculumElementOther)).isFalse();
+		softly.assertThat(sutCoach.isParticipant(coach, curriculumElement)).isFalse();
+		softly.assertThat(sutParticipantOther.isParticipant(participantOther, curriculumElement)).isFalse();
 		softly.assertAll();
 	}
 	

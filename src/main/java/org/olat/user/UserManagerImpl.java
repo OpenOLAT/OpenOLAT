@@ -299,6 +299,8 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	}
 	
 	List<UserPropertyChangedEvent> getChangedEvents(IdentityRef identityRef, User oldUser, User updatedUser) {
+		if (identityRef == null || oldUser == null) return Collections.emptyList();
+		
 		List<UserPropertyHandler> userPropertyHandlers = userPropertiesConfig.getAllUserPropertyHandlers();
 		List<UserPropertyChangedEvent> events = new ArrayList<>();
 		for (UserPropertyHandler propertyHandler : userPropertyHandlers) {
