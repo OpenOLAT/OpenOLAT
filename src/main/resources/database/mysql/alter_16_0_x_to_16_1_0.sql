@@ -15,3 +15,25 @@ alter table o_gp_business add constraint gb_bus_inactivateby_idx foreign key (fk
 
 alter table o_gp_business add constraint gb_bus_softdeletedby_idx foreign key (fk_softdeletedby_id) references o_bs_identity (id);
 
+
+-- Assessment
+create table o_as_score_accounting_trigger (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   e_identifier varchar(64) not null,
+   e_business_group_key bigint,
+   e_organisation_key bigint,
+   e_curriculum_element_key bigint,
+   e_user_property_name varchar(64),
+   e_user_property_value varchar(128),
+   fk_entry bigint not null not null,
+   e_subident varchar(64) not null,
+   primary key (id)
+);
+alter table o_as_score_accounting_trigger ENGINE = InnoDB;
+
+alter table o_as_score_accounting_trigger add constraint satrigger_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_satrigger_bs_group_idx on o_as_score_accounting_trigger (e_business_group_key);
+create index idx_satrigger_org_idx on o_as_score_accounting_trigger (e_organisation_key);
+create index idx_satrigger_curele_idx on o_as_score_accounting_trigger (e_curriculum_element_key);
+create index idx_satrigger_userprop_idx on o_as_score_accounting_trigger (e_user_property_value, e_user_property_name);

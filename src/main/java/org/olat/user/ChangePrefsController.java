@@ -368,7 +368,7 @@ class UserPrefsResetForm extends FormBasicController {
 				preferences.setNotificationInterval(null);
 				preferences.setPresenceMessagesPublic(false);
 				preferences.setReceiveRealMail(null);
-				um.updateUser(user);
+				um.updateUser(tobeChangedIdentity, user);
 				PropertyManager pm = PropertyManager.getInstance();
 				pm.deleteProperties(tobeChangedIdentity, null, null, null, "charset");
 			}

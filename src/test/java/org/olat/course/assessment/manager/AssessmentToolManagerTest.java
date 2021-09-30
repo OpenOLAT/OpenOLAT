@@ -19,6 +19,9 @@
  */
 package org.olat.course.assessment.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
+
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -37,9 +40,11 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -332,6 +337,111 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(3, statisticsAsAdmin.getLoggedIn());
 		Assert.assertEquals(4, statisticsAsAdmin.getNumOfParticipantsLoggedIn());
 	}
-
+	
+	@Test
+	public void getStatistics_excludeInvisibled() {
+		// Course and users
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		String subIdent = random();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity4, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		// Assessment data
+		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
+		ae1.setScore(BigDecimal.valueOf(1.0));
+		ae1.setPassed(Boolean.TRUE);
+		ae1.setObligation(null);
+		assessmentEntryDao.updateAssessmentEntry(ae1);
+		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
+		ae2.setScore(BigDecimal.valueOf(4.0));
+		ae2.setPassed(Boolean.TRUE);
+		ae2.setObligation(Overridable.of(AssessmentObligation.mandatory));
+		assessmentEntryDao.updateAssessmentEntry(ae2);
+		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
+		ae3.setScore(BigDecimal.valueOf(1.0));
+		ae3.setPassed(Boolean.TRUE);
+		ae3.setObligation(Overridable.of(AssessmentObligation.optional));
+		assessmentEntryDao.updateAssessmentEntry(ae3);
+		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, null);
+		ae4.setScore(BigDecimal.valueOf(0.0));
+		ae4.setPassed(Boolean.FALSE);
+		ae4.setObligation(Overridable.of(AssessmentObligation.excluded));
+		assessmentEntryDao.updateAssessmentEntry(ae4);
+		
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
+		params.setExcludeExcluded(true);
+		AssessmentStatistics statistics = assessmentToolManager.getStatistics(admin, params);
+		
+		Assert.assertEquals(2d, statistics.getAverageScore().doubleValue(), 0.0001);
+		Assert.assertEquals(0, statistics.getCountFailed());
+		Assert.assertEquals(3, statistics.getCountPassed());
+	}
+	
+	@Test
+	public void getAssessmentEntries_excludeExcluded() {
+		// Course and users
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		String subIdent = random();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity4, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		// Assessment data
+		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
+		ae1.setObligation(null);
+		assessmentEntryDao.updateAssessmentEntry(ae1);
+		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
+		ae2.setObligation(Overridable.of(AssessmentObligation.mandatory));
+		assessmentEntryDao.updateAssessmentEntry(ae2);
+		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
+		ae3.setObligation(Overridable.of(AssessmentObligation.optional));
+		assessmentEntryDao.updateAssessmentEntry(ae3);
+		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, null);
+		ae4.setObligation(Overridable.of(AssessmentObligation.excluded));
+		assessmentEntryDao.updateAssessmentEntry(ae4);
+		
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
+		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3, ae4);
+		
+		params.setExcludeExcluded(true);
+		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3);
+	}
+	
+	@Test
+	public void getIdentityKeys() {
+		// Just a small test to validate the query syntax
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		String subIdent = random();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
+		List<Long> keys = assessmentToolManager.getIdentityKeys(admin, params, null);
+		
+		assertThat(keys).containsExactly(assessedIdentity1.getKey());
+	}
 
 }

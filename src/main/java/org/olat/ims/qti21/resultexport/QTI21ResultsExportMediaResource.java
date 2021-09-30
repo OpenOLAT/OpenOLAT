@@ -72,6 +72,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -326,16 +328,29 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			
 			Boolean passed = null;
 			BigDecimal score = null;
+			String obligationString = null;
 			if(assessmentEntryMap.containsKey(identity)) {
 				AssessmentEntry assessmentEntry = assessmentEntryMap.get(identity);
 				passed = assessmentEntry.getPassed();
 				score = assessmentEntry.getScore();
+				if (assessmentEntry.getObligation() != null && assessmentEntry.getObligation().getCurrent() != null) {
+					switch (assessmentEntry.getObligation().getCurrent()) {
+					case mandatory:
+						obligationString = translator.translate("obligation.mandatory"); break;
+					case optional:
+						obligationString = translator.translate("obligation.optional"); break;
+					case excluded:
+						obligationString = translator.translate("obligation.excluded"); break;
+					default:
+						break;
+					}
+				}
 			}
 			
 			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";
 			String memberEmail = userManager.getUserDisplayEmail(identity, ureq.getLocale());
 			AssessedMember member = new AssessedMember(nickname, lastNameOrAnonymous, firstName,
-					memberEmail, assessments.size(), passed, score, linkToUser);
+					memberEmail, assessments.size(), passed, score, obligationString, linkToUser);
 			
 			String singleUserInfoHTML = createResultListingHTML(assessments, assessmentDocuments, member);
 			convertToZipEntry(zout, idDir + "index.html", singleUserInfoHTML);
@@ -410,6 +425,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		ctx.put("t", translator);
 		ctx.put("rootTitle", translator.translate("table.overview"));
 		ctx.put("assessedMembers", assessedMembers);
+		ctx.put("hasObligation", Boolean.valueOf(NodeAccessType.of(courseEnv).getType().equals(LearningPathNodeAccessProvider.TYPE)));
 
 		String template = FileUtils.load(QTI21ResultsExportMediaResource.class
 				.getResourceAsStream("_content/qtiUserlisting.html"), "utf-8");

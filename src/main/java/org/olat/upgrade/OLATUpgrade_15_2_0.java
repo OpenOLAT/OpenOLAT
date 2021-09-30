@@ -125,7 +125,7 @@ public class OLATUpgrade_15_2_0 extends OLATUpgrade {
 				continue;
 			}
 			identity.getUser().setProperty(UserConstants.NICKNAME, name);
-			userManager.updateUser(identity.getUser());
+			userManager.updateUser(identity, identity.getUser());
 			
 			if(count++ % 25 == 0) {
 				dbInstance.commitAndCloseSession();

@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -44,6 +45,8 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -78,11 +81,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LearningPathListController extends FormBasicController implements TooledController {
 	
+	private static final String KEY_EXCLUDED_SHOW = "excluded.show";
+	private static final String KEY_EXCLUDED_HIDE = "excluded.hide";
 	private static final String CMD_END_DATE = "endDate";
 	private static final String CMD_OBLIGATION = "obligation";
 	
 	private final AtomicInteger counter = new AtomicInteger();
 	private final TooledStackedPanel stackPanel;
+	private SingleSelection excludedToggleEl;
 	private FlexiTableElement tableEl;
 	private LearningPathDataModel dataModel;
 	private Link resetStatusLink;
@@ -104,7 +110,7 @@ public class LearningPathListController extends FormBasicController implements T
 
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment userCourseEnv, boolean canEdit) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "identity_nodes");
 		this.userCourseEnv = userCourseEnv;
 		this.stackPanel = stackPanel;
 		this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -114,6 +120,16 @@ public class LearningPathListController extends FormBasicController implements T
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (canEdit) {
+			SelectionValues excludedKV = new SelectionValues();
+			excludedKV.add(new SelectionValue(KEY_EXCLUDED_HIDE, translate("excluded.hide"), "o_primary", true));
+			excludedKV.add(new SelectionValue(KEY_EXCLUDED_SHOW, translate("excluded.show"), "o_primary", true));
+			excludedToggleEl = uifactory.addButtonGroupSingleSelectHorizontal("excluded.toggle", formLayout, excludedKV);
+			excludedToggleEl.select(excludedToggleEl.getKey(0), true);
+			excludedToggleEl.addActionListener(FormEvent.ONCHANGE);
+		}
+		
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
 		// Learning path status icon
@@ -142,7 +158,7 @@ public class LearningPathListController extends FormBasicController implements T
 		columnsModel.addFlexiColumnModel(learningProgressModel);
 		
 		// Status
-		FlexiCellRenderer statusRenderer = new AssessmentStatusCellRenderer(getTranslator());
+		FlexiCellRenderer statusRenderer = new AssessmentStatusCellRenderer(getTranslator(), false);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status, statusRenderer));
 		
 		// Course element configs
@@ -185,6 +201,12 @@ public class LearningPathListController extends FormBasicController implements T
 	void loadModel() {
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		LearningPathCourseTreeModelBuilder learningPathCourseTreeModelBuilder = new LearningPathCourseTreeModelBuilder(userCourseEnv);
+		if (excludedToggleEl != null) {
+			boolean showExcluded = excludedToggleEl.isKeySelected(KEY_EXCLUDED_SHOW);
+			if (showExcluded) {
+				learningPathCourseTreeModelBuilder.setShowExcluded(showExcluded);
+			}
+		}
 		GenericTreeModel learningPathTreeModel = learningPathCourseTreeModelBuilder.build();
 		List<LearningPathRow> rows = forgeRows(learningPathTreeModel);
 		dataModel.setObjects(rows);
@@ -234,6 +256,9 @@ public class LearningPathListController extends FormBasicController implements T
 
 	private void forgeEndDate(LearningPathRow row) {
 		Overridable<Date> endDate = row.getEndDate();
+		if (endDate == null) {
+			return;
+		}
 		if (!canEdit && !endDate.isOverridden()) {
 			// Show date as plain text
 			return;
@@ -262,6 +287,8 @@ public class LearningPathListController extends FormBasicController implements T
 				sb.append(translate("config.obligation.mandatory"));
 			} else if (AssessmentObligation.optional == obligation.getCurrent()) {
 				sb.append(translate("config.obligation.optional"));
+			} else if (AssessmentObligation.excluded == obligation.getCurrent()) {
+				sb.append(translate("config.obligation.excluded"));
 			}
 			if (obligation.isOverridden()) {
 				sb.append(" <i class='o_icon o_icon_info'> </i>");
@@ -276,6 +303,8 @@ public class LearningPathListController extends FormBasicController implements T
 				translatedObligation = translate("config.obligation.mandatory");
 			} else if (AssessmentObligation.optional == obligation.getCurrent()) {
 				translatedObligation = translate("config.obligation.optional");
+			} else if (AssessmentObligation.excluded == obligation.getCurrent()) {
+				translatedObligation = translate("config.obligation.excluded");
 			}
 			row.setTranslatedObligation(translatedObligation);
 		}
@@ -311,7 +340,9 @@ public class LearningPathListController extends FormBasicController implements T
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
+		if (source == excludedToggleEl) {
+			loadModel();
+		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink) source;
 			if (CMD_END_DATE.equals(link.getCmd())) {
 				doEditEndDate(ureq, link);
@@ -380,10 +411,7 @@ public class LearningPathListController extends FormBasicController implements T
 		removeAsListenerAndDispose(obligationEditCtrl);
 		
 		CourseNode courseNode = (CourseNode)link.getUserObject();
-		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(
-				userCourseEnv.getIdentityEnvironment().getIdentity(), courseEntry, courseNode.getIdent());
-		
-		obligationEditCtrl = new ObligationEditController(ureq, getWindowControl(), assessmentEntry, canEdit);
+		obligationEditCtrl = new ObligationEditController(ureq, getWindowControl(), courseEntry, courseNode, userCourseEnv, canEdit);
 		listenTo(obligationEditCtrl);
 		
 		CalloutSettings settings = new CalloutSettings();

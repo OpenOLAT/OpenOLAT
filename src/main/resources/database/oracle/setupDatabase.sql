@@ -1472,6 +1472,20 @@ create table o_as_entry (
    unique(fk_identity, fk_entry, a_subident)
 );
 
+create table o_as_score_accounting_trigger (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   e_identifier varchar2(64) not null,
+   e_business_group_key number(20),
+   e_organisation_key number(20),
+   e_curriculum_element_key number(20),
+   e_user_property_name varchar2(64),
+   e_user_property_value varchar2(128),
+   fk_entry number(20) not null,
+   e_subident varchar2(64) not null,
+   primary key (id)
+);
+
 create table o_as_compensation (
    id number(20) generated always as identity,
    creationdate timestamp not null,
@@ -4237,6 +4251,13 @@ create index idx_as_entry_to_refentry_idx on o_as_entry (fk_reference_entry);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start);
+
+alter table o_as_score_accounting_trigger add constraint satrigger_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_satrigger_re_idx on o_as_score_accounting_trigger (fk_entry);
+create index idx_satrigger_bs_group_idx on o_as_score_accounting_trigger (e_business_group_key);
+create index idx_satrigger_org_idx on o_as_score_accounting_trigger (e_organisation_key);
+create index idx_satrigger_curle_idx on o_as_score_accounting_trigger (e_curriculum_element_key);
+create index idx_satrigger_userprop_idx on o_as_score_accounting_trigger (e_user_property_value, e_user_property_name);
 
 -- disadvantage compensation
 alter table o_as_compensation add constraint compensation_ident_idx foreign key (fk_identity) references o_bs_identity (id);

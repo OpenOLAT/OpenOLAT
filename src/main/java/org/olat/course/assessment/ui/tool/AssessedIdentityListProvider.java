@@ -74,19 +74,23 @@ public class AssessedIdentityListProvider implements ListProvider {
 	@Override
 	public void getResult(String searchValue, ListReceiver receiver) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, subIdent, referenceEntry, assessmentCallback);
+		params.setExcludeExcluded(true);
 		params.setSearchString(searchValue);
 
 		int maxEntries = MAX_ENTRIES;
 		List<IdentityShort> res = assessmentToolManager.getShortAssessedIdentities(coach, params, maxEntries);
+		List<Long> entryIdentityKey = assessmentToolManager.getIdentityKeys(coach, params, null);
 
 		boolean hasMore = false;
 		for (Iterator<IdentityShort> it_res = res.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {
-			maxEntries--;
 			IdentityShort ident = it_res.next();
-			String key = ident.getKey().toString();
-			String displayKey = ident.getNickName();
-			String displayText = userManager.getUserDisplayName(ident);
-			receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
+			if (entryIdentityKey.contains(ident.getKey())) {
+				maxEntries--;
+				String key = ident.getKey().toString();
+				String displayKey = ident.getNickName();
+				String displayText = userManager.getUserDisplayName(ident);
+				receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
+			}
 		}					
 		if(hasMore){
 			receiver.addEntry(".....",".....");

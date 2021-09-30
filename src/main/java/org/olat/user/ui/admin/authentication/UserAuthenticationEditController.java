@@ -117,7 +117,7 @@ public class UserAuthenticationEditController extends FormBasicController {
 			User user = identity.getUser();
 			if(oldValue.equals(user.getProperty(UserConstants.NICKNAME, getLocale()))) {
 				user.setProperty(UserConstants.NICKNAME, newUsername);
-				userManager.updateUser(user);
+				userManager.updateUser(identity, user);
 			}	
 		}
 		dbInstance.commit();

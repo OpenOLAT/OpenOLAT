@@ -27,6 +27,7 @@ import javax.persistence.PersistenceException;
 
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -154,6 +155,11 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 	
 	@Override
+	public boolean hasAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry) {
+		return assessmentEntryDao.hasAssessmentEntry(assessedIdentity, entry);
+	}
+	
+	@Override
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start) {
 		return assessmentEntryDao.getRootEntriesWithStartOverSubEntries(start);
 	}
@@ -161,6 +167,11 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	@Override
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit) {
 		assessmentEntryDao.setLastVisit(nodeAssessment, lastVisit);
+	}
+
+	@Override
+	public List<Long> getExcludedIdentityKeys(RepositoryEntry entry, String subIdent) {
+		return assessmentEntryDao.loadExcludedIdentityKeys(entry, subIdent);
 	}
 
 	@Override

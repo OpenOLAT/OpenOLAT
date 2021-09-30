@@ -148,13 +148,13 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 		Identity identityZ = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		User userZ = identityZ.getUser();
 		userZ.setProperty(UserConstants.LASTNAME, "Z");
-		UserManager.getInstance().updateUser(userZ);
+		UserManager.getInstance().updateUser(identityZ, userZ);
 		EvaluationFormParticipation participationZ = qualityTestHelper.createParticipation(survey, identityZ);
 		qualityTestHelper.createContext(dataCollection, participationZ);
 		Identity identityA = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		User userA = identityA.getUser();
 		userA.setProperty(UserConstants.LASTNAME, "A");
-		UserManager.getInstance().updateUser(userA);
+		UserManager.getInstance().updateUser(identityA, userA);
 		EvaluationFormParticipation participationA = qualityTestHelper.createParticipation(survey, identityA);
 		qualityTestHelper.createContext(dataCollection, participationA);
 		dbInstance.commitAndCloseSession();

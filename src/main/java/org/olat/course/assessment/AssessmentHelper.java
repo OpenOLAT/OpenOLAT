@@ -63,6 +63,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * Description:<br>
@@ -276,7 +277,7 @@ public class AssessmentHelper {
 		//cluster_OK the formatter is not multi-thread and costly to create
 		synchronized(scoreFormat) {
 			try {
-				return new Float(scoreFormat.parse(score).floatValue());
+				return Float.valueOf(scoreFormat.parse(score).floatValue());
 			} catch (ParseException e) {
 				log.error("", e);
 				return null;
@@ -284,11 +285,6 @@ public class AssessmentHelper {
 		}
 	}
 	
-	/**
-	 * 
-	 * @param course
-	 * @return
-	 */
 	public static TreeModel assessmentTreeModel(ICourse course) {
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		GenericTreeModel gtm = new GenericTreeModel();
@@ -371,25 +367,6 @@ public class AssessmentHelper {
 		return data;
 	}
 	
-	/**
-	 * Calculated 
-	 * 
-	 * 
-	 * @param evaluatedScoreAccounting
-	 * @param userCourseEnv
-	 * @param discardEmptyNodes
-	 * @param discardComments
-	 * @return
-	 */
-	public static List<AssessmentNodeData> getAssessmentNodeDataList(ScoreAccounting evaluatedScoreAccounting, UserCourseEnvironment userCourseEnv,
-			boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments) {
-		List<AssessmentNodeData> data = new ArrayList<>(50);
-		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
-				evaluatedScoreAccounting, userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data, null);
-		return data;
-	}
-	
-	
 	public static int getAssessmentNodeDataList(int recursionLevel, CourseNode courseNode, ScoreAccounting scoreAccounting,
 			UserCourseEnvironment userCourseEnv, boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments,
 			List<AssessmentNodeData> data, AssessmentNodesLastModified lastModifications) {
@@ -407,13 +384,14 @@ public class AssessmentHelper {
 		// 2) Get data of this node only if
 		// - it has any wrapped children  or
 		// - it is of an assessable course node type
+		// - is not excluded from the learning path
 		boolean hasDisplayableValuesConfigured = false;
 		boolean hasDisplayableUserValues = false;
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if (numOfChildren > 0 || assessmentConfig.isAssessable()) {
+		AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(courseNode);
+		if (isNotExcluded(scoreEvaluation) && (numOfChildren > 0 || assessmentConfig.isAssessable())) {
 			 if (assessmentConfig.isAssessable()) {
-				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(courseNode);
 				assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
 				assessmentNodeData.setNumOfAssessmentDocs(scoreEvaluation.getNumOfAssessmentDocs());
 				assessmentNodeData.setUserVisibility(scoreEvaluation.getUserVisible());
@@ -502,5 +480,11 @@ public class AssessmentHelper {
 			return 0;
 		}
 		return numOfChildren + 1;//add itself
+	}
+
+	private static boolean isNotExcluded(AssessmentEvaluation scoreEvaluation) {
+		return scoreEvaluation.getObligation() == null 
+				|| scoreEvaluation.getObligation().getCurrent() == null
+				|| scoreEvaluation.getObligation().getCurrent() != AssessmentObligation.excluded;
 	}
 }

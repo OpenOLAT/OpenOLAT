@@ -1417,6 +1417,20 @@ create table o_as_entry (
    unique (fk_identity, fk_entry, a_subident)
 );
 
+create table o_as_score_accounting_trigger (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   e_identifier varchar(64) not null,
+   e_business_group_key bigint,
+   e_organisation_key bigint,
+   e_curriculum_element_key bigint,
+   e_user_property_name varchar(64),
+   e_user_property_value varchar(128),
+   fk_entry bigint not null not null,
+   e_subident varchar(64) not null,
+   primary key (id)
+);
+
 create table o_as_compensation (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -3669,6 +3683,7 @@ alter table o_as_eff_statement ENGINE = InnoDB;
 alter table o_as_user_course_infos ENGINE = InnoDB;
 alter table o_as_mode_course ENGINE = InnoDB;
 alter table o_as_entry ENGINE = InnoDB;
+alter table o_as_score_accounting_trigger ENGINE = InnoDB;
 alter table o_as_compensation ENGINE = InnoDB;
 alter table o_as_compensation_log ENGINE = InnoDB;
 alter table o_as_mode_course_to_area ENGINE = InnoDB;
@@ -4175,6 +4190,12 @@ alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_r
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start);
+
+alter table o_as_score_accounting_trigger add constraint satrigger_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_satrigger_bs_group_idx on o_as_score_accounting_trigger (e_business_group_key);
+create index idx_satrigger_org_idx on o_as_score_accounting_trigger (e_organisation_key);
+create index idx_satrigger_curele_idx on o_as_score_accounting_trigger (e_curriculum_element_key);
+create index idx_satrigger_userprop_idx on o_as_score_accounting_trigger (e_user_property_value, e_user_property_name);
 
 -- disadvantage compensation
 alter table o_as_compensation add constraint compensation_ident_idx foreign key (fk_identity) references o_bs_identity (id);

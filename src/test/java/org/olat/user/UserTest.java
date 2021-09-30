@@ -223,7 +223,7 @@ public class UserTest extends OlatTestCase {
 		u5.setCreationDate(new Date());
 		dbInstance.saveObject(u5);
 		u5.setProperty(UserConstants.EMAIL, "updated@email.com");
-		userManager.updateUser(u5);
+		userManager.updateUser(() -> Long.valueOf(123), u5);
 		userManager.loadUserByKey(u5.getKey());
 		assertTrue(u5.getProperty(UserConstants.EMAIL, null).equals("updated@email.com"));
 	}
@@ -241,7 +241,7 @@ public class UserTest extends OlatTestCase {
 		// change preferences values and look it up (test only one
 		// attribute, we assume that getters and setters do work!)
 		u1.getPreferences().setLanguage("de");
-		userManager.updateUser(u1);
+		userManager.updateUser(() -> Long.valueOf(123), u1);
 		User u1test = userManager.loadUserByKey(u1.getKey());
 		assertTrue(u1test.getPreferences().getLanguage().matches("de"));
 	}
@@ -283,7 +283,7 @@ public class UserTest extends OlatTestCase {
 		// setting null should remove this property but first reload user
 		User user = userManager.loadUserByKey(identity.getUser().getKey());
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "bla@bla.ch");		
-		userManager.updateUser(user);
+		userManager.updateUser(() -> Long.valueOf(123), user);
 		dbInstance.commitAndCloseSession();
 		
 		// try to find it via deleted property
@@ -304,7 +304,7 @@ public class UserTest extends OlatTestCase {
 		//update user first name
 		user = userManager.loadUserByKey(identity.getUser().getKey());
 		user.setProperty(UserConstants.FIRSTNAME, "rotwein");
-		userManager.updateUser(user);
+		userManager.updateUser(() -> Long.valueOf(123), user);
 		dbInstance.commitAndCloseSession();
 
 		// try to find it via old property

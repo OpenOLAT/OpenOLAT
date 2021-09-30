@@ -43,6 +43,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.Version;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
@@ -51,7 +52,6 @@ import org.olat.core.id.Persistable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -385,8 +385,9 @@ public class UserImpl implements User {
 	public void setPreferences(Preferences prefs){
 		this.preferences = (PreferencesImpl)prefs;	
 	}
-
-	public String getUserProperty(String name) {
+	
+	@Override
+	public String getProperty(String name) {
 		switch(name) {
 			case UserConstants.FIRSTNAME: return firstName;
 			case UserConstants.LASTNAME: return lastName;

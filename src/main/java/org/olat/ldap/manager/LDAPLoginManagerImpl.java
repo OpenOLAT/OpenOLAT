@@ -545,7 +545,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				user.setProperty(staticProperty.getKey(), staticProperty.getValue());
 			}
 		}
-		userManager.updateUser(user);
+		userManager.updateUser(identityRef, user);
 		dbInstance.commit();
 		
 		// check WebDAV authentication

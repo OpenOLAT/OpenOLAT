@@ -1439,6 +1439,20 @@ create table o_as_entry (
    unique(fk_identity, fk_entry, a_subident)
 );
 
+create table o_as_score_accounting_trigger (
+   id bigserial,
+   creationdate timestamp not null,
+   e_identifier varchar(64) not null,
+   e_business_group_key int8,
+   e_organisation_key int8,
+   e_curriculum_element_key int8,
+   e_user_property_name varchar(64),
+   e_user_property_value varchar(128),
+   fk_entry int8 not null not null,
+   e_subident varchar(64) not null,
+   primary key (id)
+);
+
 create table o_as_compensation (
    id bigserial,
    creationdate timestamp not null,
@@ -4101,6 +4115,13 @@ create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start) where a_date_start is not null;
 create index idx_as_entry_root_id_idx on o_as_entry (id) where a_entry_root=true;
 create index idx_as_entry_root_fk_idx on o_as_entry (fk_entry, fk_identity) where a_entry_root=true;
+
+alter table o_as_score_accounting_trigger add constraint satrigger_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_satrigger_re_idx on o_as_score_accounting_trigger (fk_entry);
+create index idx_satrigger_bs_group_idx on o_as_score_accounting_trigger (e_business_group_key) where e_business_group_key is not null;
+create index idx_satrigger_org_idx on o_as_score_accounting_trigger (e_organisation_key) where e_organisation_key is not null;
+create index idx_satrigger_curle_idx on o_as_score_accounting_trigger (e_curriculum_element_key) where e_curriculum_element_key is not null;
+create index idx_satrigger_userprop_idx on o_as_score_accounting_trigger (e_user_property_value, e_user_property_name) where e_user_property_value is not null;
 
 -- disadvantage compensation
 alter table o_as_compensation add constraint compensation_ident_idx foreign key (fk_identity) references o_bs_identity (id);

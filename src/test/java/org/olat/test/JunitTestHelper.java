@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
@@ -482,7 +483,7 @@ public class JunitTestHelper {
 		}
 	}
 	
-	public static class IdentityWithLogin {
+	public static class IdentityWithLogin implements IdentityRef {
 		
 		private final Identity identity;
 		private final String login;
@@ -494,6 +495,7 @@ public class JunitTestHelper {
 			this.password = password;
 		}
 		
+		@Override
 		public Long getKey() {
 			return identity.getKey();
 		}

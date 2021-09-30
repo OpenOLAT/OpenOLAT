@@ -27,10 +27,12 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -47,6 +49,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	static final int VERSION_CURRENT = 1;
 	static final String CONFIG_KEY_DURATION = "duration";
 	static final String CONFIG_KEY_OBLIGATION = "obligation";
+	static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
 	static final String CONFIG_KEY_START = "start.date";
 	static final String CONFIG_KEY_END = "end.date";
 	static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
@@ -129,6 +132,16 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 		} else {
 			moduleConfiguration.remove(CONFIG_KEY_OBLIGATION);
 		}
+	}
+
+	@Override
+	public List<ExceptionalObligation> getExceptionalObligations() {
+		return moduleConfiguration.getList(CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS, ExceptionalObligation.class);
+	}
+
+	@Override
+	public void setExceptionalObligations(List<ExceptionalObligation> exeptionalObligations) {
+		moduleConfiguration.setList(CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS, exeptionalObligations);
 	}
 
 	@Override

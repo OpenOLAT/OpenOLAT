@@ -289,6 +289,14 @@ public interface CurriculumService {
 	public List<CurriculumElement> getCurriculumElements(CurriculumElementRef parentElement);
 	
 	/**
+	 * Returns the number of curriculum elements linked to the entry;
+	 *
+	 * @param entry
+	 * @return
+	 */
+	public Long getCuriculumElementCount(RepositoryEntryRef entry);
+	
+	/**
 	 * Return all the curriculum elements linked to the specified repository entry.
 	 * The method fetch the curriculums and organizations associated with elements.
 	 * 
@@ -376,7 +384,7 @@ public interface CurriculumService {
 	
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Curriculum curriculum, Identity identity);
 	
-	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities);
+	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<? extends CurriculumElementRef> elements, Identity... identities);
 	
 	public void updateCurriculumElementMemberships(Identity doer, Roles roles, List<CurriculumElementMembershipChange> changes, MailPackage mailing);
 	

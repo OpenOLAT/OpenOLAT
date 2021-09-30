@@ -31,6 +31,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -43,12 +44,18 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 
 	private static final AccessEvaluator accessEvaluator = new LinearAccessEvaluator();
 	
+	private boolean showExcluded = false;
+	
 	@Autowired
 	private LearningPathService learningPathService;
 	
 	public LearningPathCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
 		CoreSpringFactory.autowireObject(this);
+	}
+	
+	public void setShowExcluded(boolean showExcluded) {
+		this.showExcluded = showExcluded;
 	}
 
 	@Override
@@ -57,7 +64,8 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		SequenceConfig sequenceConfig = learningPathService.getSequenceConfig(courseNode);
 		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, treeLevel, sequenceConfig, assessmentEvaluation);
 				
-		learningPathTreeNode.setVisible(true);
+		boolean visible = showExcluded || isVisible(userCourseEnv, assessmentEvaluation);
+		learningPathTreeNode.setVisible(visible);
 		boolean accessible = accessEvaluator.isAccessible(learningPathTreeNode, userCourseEnv);
 		learningPathTreeNode.setAccessible(accessible);
 		String iconDecorator1CssClass = getIconDecorator1CssClass(sequenceConfig, assessmentEvaluation, userCourseEnv);
@@ -69,6 +77,12 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		}
 		
 		return learningPathTreeNode;
+	}
+
+	private boolean isVisible(UserCourseEnvironment userCourseEnv, AssessmentEvaluation assessmentEvaluation) {
+		if (assessmentEvaluation == null || userCourseEnv.isAdmin() || userCourseEnv.isCoach()) return true;
+		
+		return AssessmentObligation.excluded != assessmentEvaluation.getObligation().getCurrent();
 	}
 
 	private String getIconDecorator1CssClass(SequenceConfig sequenceConfig, AssessmentEvaluation assessmentEvaluation, UserCourseEnvironment userCourseEnv) {
@@ -89,9 +103,6 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		} else {
 			cssClasses += " o_lp_contains_no_sequence";
 		}	
-		
-		
-		
 		
 		return cssClasses;
 	}

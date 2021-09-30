@@ -17,6 +17,9 @@
 					<th scope="col">$t.translate("table.all.score")</th>
 					<th scope="col">$t.translate("table.all.passed")</th>
 					<th scope="col">$t.translate("table.all.tries")</th>
+					#if($hasObligation)
+						<th scope="col">$t.translate("table.all.obligation")</th>
+					#end
 				</tr>
 			</thead>
 			<tbody>
@@ -28,6 +31,9 @@
 					<td>$member.scoreString</td>
 					<td>$member.passedIcon</td>
 					<td>$member.attempts</td>
+					#if($hasObligation)
+						<td>$!member.obligationString</td
+					#end
 				</tr>
 				#end
 			</tbody>

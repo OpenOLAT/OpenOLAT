@@ -22,6 +22,8 @@ package org.olat.course.run.scoring;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.id.Identity;
+import org.olat.course.Structure;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.st.assessment.WithoutSequenceBlocker;
@@ -144,7 +146,9 @@ class AccountingEvaluatorsFactory {
 	private static class NoneObligationEvaluator implements ObligationEvaluator {
 
 		@Override
-		public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode) {
+		public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation,
+				CourseNode courseNode, Identity identity, Structure runStructure,
+				ScoreAccounting scoreAccounting, ObligationContext obligationContext) {
 			return Overridable.empty();
 		}
 

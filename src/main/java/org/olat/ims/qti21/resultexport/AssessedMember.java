@@ -39,10 +39,11 @@ public class AssessedMember {
 	private int attempts;
 	private Boolean passed;
 	private BigDecimal score;
+	private String obligationString;
 	private String href;
 
-	public AssessedMember(String nickname, String lastname, String firstname, String email,
-			int attempts, Boolean passed, BigDecimal score, String href) {
+	public AssessedMember(String nickname, String lastname, String firstname, String email, int attempts,
+			Boolean passed, BigDecimal score, String obligationString, String href) {
 		this.nickname = nickname;
 		this.lastname = lastname;
 		this.firstname = firstname;
@@ -50,6 +51,7 @@ public class AssessedMember {
 		this.attempts = attempts;
 		this.passed = passed;
 		this.score = score;
+		this.obligationString = obligationString;
 		this.href = href;
 	}
 	
@@ -82,6 +84,10 @@ public class AssessedMember {
 		return val == null ? "" : val;
 	}
 	
+	public String getObligationString() {
+		return obligationString;
+	}
+
 	public String getHref() {
 		return href;
 	}

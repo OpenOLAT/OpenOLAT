@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.NullObligationContext;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -71,7 +72,7 @@ public class MandatoryObligationEvaluatorTest {
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(AssessmentObligation.optional);
 		CourseNode courseNode = new STCourseNode();
 		
-		Overridable<AssessmentObligation> obligation = sut.getObligation(currentEvaluation, courseNode);
+		Overridable<AssessmentObligation> obligation = sut.getObligation(currentEvaluation, courseNode, null, null, null, NullObligationContext.create());
 		
 		assertThat(obligation.getCurrent()).isEqualTo(AssessmentObligation.optional);
 	}

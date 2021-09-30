@@ -1,0 +1,10 @@
+<div class="form-horizontal o_lp_report_nodes">
+	#if($r.available("excluded.toggle"))
+		<div class="o_lp_excluded_toggle">
+			$r.render("excluded.toggle")
+		</div>
+	#end
+	<div class="o_lp_nodes">
+		$r.render("table")
+	</div>
+</div>

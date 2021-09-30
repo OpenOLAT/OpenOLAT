@@ -63,7 +63,7 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(id);
 		id.getUser().setProperty(UserConstants.INSTITUTIONALEMAIL, "inst_" + id.getUser().getEmail());
-		userManager.updateUser(id.getUser());
+		userManager.updateUser(id, id.getUser());
 		dbInstance.commitAndCloseSession();
 		
 		// update its password
@@ -97,8 +97,8 @@ public class WebDAVAuthManagerTest extends OlatTestCase {
 		String uuid = UUID.randomUUID().toString();
 		id1.getUser().setProperty(UserConstants.INSTITUTIONALEMAIL, uuid);
 		id2.getUser().setProperty(UserConstants.INSTITUTIONALEMAIL, uuid);
-		userManager.updateUser(id1.getUser());
-		userManager.updateUser(id2.getUser());
+		userManager.updateUser(id1, id1.getUser());
+		userManager.updateUser(id2, id2.getUser());
 		dbInstance.commitAndCloseSession();
 		
 		// update  password id 1

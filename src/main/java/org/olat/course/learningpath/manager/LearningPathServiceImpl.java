@@ -21,16 +21,29 @@ package org.olat.course.learningpath.manager;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
+import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
+import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ScoreAccountingTrigger;
+import org.olat.course.assessment.ScoreAccountingTriggerData;
+import org.olat.course.editor.PublishEvent;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.SequenceConfig;
 import org.olat.course.learningpath.model.SequenceConfigImpl;
+import org.olat.course.learningpath.obligation.ExceptionalObligation;
+import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -46,13 +59,20 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class LearningPathServiceImpl implements LearningPathService {
+public class LearningPathServiceImpl implements LearningPathService, GenericEventListener {
 	
 	@Autowired
 	private LearningPathRegistry registry;
 	@Autowired
 	private RepositoryService respositoryService;
-
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+	
+	@PostConstruct
+	public void init() {
+		CourseModule.registerForCourseType(this, null);
+	}
+	
 	@Override
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
 		return registry.getLearningPathNodeHandler(courseNode).getConfigs(courseNode);
@@ -94,7 +114,64 @@ public class LearningPathServiceImpl implements LearningPathService {
 		}
 		return null;
 	}
+
+	@Override
+	public List<ExceptionalObligationHandler> getExceptionalObligationHandlers() {
+		return registry.getExceptionalObligationHandler();
+	}
+
+	@Override
+	public ExceptionalObligationHandler getExceptionalObligationHandler(String type) {
+		return registry.getExceptionalObligationHandler(type, false);
+	}
+
+	@Override
+	public void syncExceptionalObligations(Long courseResId) {
+		ICourse course = CourseFactory.loadCourse(courseResId);
+		if (course == null) return;
+		
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<ScoreAccountingTrigger> scoreAccountingTrigger = courseAssessmentService.getScoreAccountingTriggers(courseEntry);
+		
+		// Create ScoreAccountingTriggers of created ExceptionalObligations
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		TreeVisitor tv = new TreeVisitor(createExceptionalObligations(courseEntry, scoreAccountingTrigger), rootNode, true);
+		tv.visitAll();
+		
+		// Delete ScoreAccountingTrigger of deleted ExceptionalObligations
+		courseAssessmentService.deleteScoreAccountingTriggers(scoreAccountingTrigger);
+	}
 	
+	/**
+	 * Creates a ScoreAccountingTriggers for every ExceptionalObligation of the CourseNode if not found but needed.
+	 * Removes ScoreAccountingTriggers from the list if an according ExceptionalObligation exists.
+	 * 
+	 * @param courseEntry 
+	 * @param scoreAccountingTriggers
+	 * @return
+	 */
+	private Visitor createExceptionalObligations(RepositoryEntry courseEntry, List<ScoreAccountingTrigger> scoreAccountingTriggers) {
+		return iNode -> {
+			if (iNode instanceof CourseNode) {
+				CourseNode courseNode = (CourseNode)iNode;
+				List<ExceptionalObligation> nodeExceptionalObligations = getConfigs(courseNode).getExceptionalObligations();
+				for (ExceptionalObligation exceptionalObligation : nodeExceptionalObligations) {
+					ExceptionalObligationHandler exceptionalObligationHandler = registry.getExceptionalObligationHandler(exceptionalObligation.getType(), true);
+					if (exceptionalObligationHandler != null && exceptionalObligationHandler.hasScoreAccountingTrigger()) {
+						boolean found = scoreAccountingTriggers.removeIf(ref -> ref.getIdentifier().equals(exceptionalObligation.getIdentifier()));
+						if (!found) {
+							ScoreAccountingTriggerData data = exceptionalObligationHandler.getScoreAccountingTriggerData(exceptionalObligation);
+							if (data != null) {
+								data.setIdentifier(exceptionalObligation.getIdentifier());
+								courseAssessmentService.createScoreAccountingTrigger(courseEntry, courseNode.getIdent(), data);
+							}
+						}
+					}
+				}
+			}
+		};
+	}
+
 	@Override
 	public List<CourseNode> getUnsupportedCourseNodes(ICourse course) {
 		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
@@ -123,6 +200,20 @@ public class LearningPathServiceImpl implements LearningPathService {
 		CourseFactory.saveCourse(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		return lpEntry;
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof PublishEvent) {
+			PublishEvent pe = (PublishEvent) event;
+			if (pe.getState() == PublishEvent.PUBLISH && pe.isEventOnThisNode()) {
+				ICourse course = CourseFactory.loadCourse(pe.getPublishedCourseResId());
+				if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+					syncExceptionalObligations(pe.getPublishedCourseResId());
+					courseAssessmentService.evaluateAllAsync(pe.getPublishedCourseResId());
+				}
+			}
+		}
 	}
 	
 }

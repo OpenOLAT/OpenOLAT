@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -50,6 +51,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -60,11 +62,14 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.EventBus;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.properties.Property;
@@ -278,9 +283,41 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	}
 
 	@Override
-	public User updateUser(User usr) {
-		if (usr == null) throw new AssertException("User object is null!");
-		return dbInstance.getCurrentEntityManager().merge(usr);
+	public User updateUser(IdentityRef identityRef, User user) {
+		if (user == null) throw new AssertException("User object is null!");
+		
+		// Detach to load the old values from the database.
+		dbInstance.getCurrentEntityManager().detach(user);
+		User oldUser = loadUserByKey(user.getKey());
+		// Get the changes
+		List<UserPropertyChangedEvent> events = getChangedEvents(identityRef, oldUser, user);
+		// Update in the database
+		User updatedUser = dbInstance.getCurrentEntityManager().merge(user);
+		// Send the events
+		sendDeferredEvents(identityRef, events);
+		return updatedUser;
+	}
+	
+	List<UserPropertyChangedEvent> getChangedEvents(IdentityRef identityRef, User oldUser, User updatedUser) {
+		List<UserPropertyHandler> userPropertyHandlers = userPropertiesConfig.getAllUserPropertyHandlers();
+		List<UserPropertyChangedEvent> events = new ArrayList<>();
+		for (UserPropertyHandler propertyHandler : userPropertyHandlers) {
+			String name = propertyHandler.getName();
+			String oldValue = oldUser.getProperty(name);
+			String newValue = updatedUser.getProperty(name);
+			if (!Objects.equals(oldValue, newValue)) {
+				events.add(new UserPropertyChangedEvent(identityRef.getKey(), name, oldValue, newValue));
+			}
+		}
+		return events;
+	}
+	
+	private void sendDeferredEvents(IdentityRef identityRef, List<? extends MultiUserEvent> events) {
+		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Identity.class, identityRef.getKey());
+		for(MultiUserEvent event:events) {
+			eventBus.fireEventToListenersOf(event, ores);
+		}
 	}
 
 	@Override
@@ -291,7 +328,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		} catch (Exception e) {
 			log.warn("Error update usernames cache", e);
 		}
-		User user = updateUser(identity.getUser());
+		User user = updateUser(identity, identity.getUser());
 		((IdentityImpl)identity).setUser(user);
 		return true;
 	}

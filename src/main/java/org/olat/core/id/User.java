@@ -75,7 +75,7 @@ public interface User extends CreateInfo, Persistable {
 	public void setPreferences(Preferences prefs);
 
 	/**
-	 * Set the value for the given user property identifyer
+	 * Set the value for the given user property identifier
 	 * 
 	 * @param propertyName The user property identifyer
 	 * @param propertyValue The new value or NULL if no value is used
@@ -83,11 +83,11 @@ public interface User extends CreateInfo, Persistable {
 	public void setProperty(String propertyName, String propertyValue);
 
 	/**
-	 * Get a user property value for the given property identifyer. The local
+	 * Get a user property value for the given property identifier. The local
 	 * might be used to format the returned value if it is an internationalized
 	 * value
 	 * 
-	 * @param propertyName The user property identifyer
+	 * @param propertyName The user property identifier
 	 * @param locale The locale used for proper display or NULL if the default
 	 *          locale should be used. In many cases it is ok to use NULL in any
 	 *          case, e.g. the users firstname will not be internationalized in
@@ -96,6 +96,16 @@ public interface User extends CreateInfo, Persistable {
 	 * @return The value or NULL if no value is set
 	 */
 	public String getProperty(String propertyName, Locale locale);
+	
+	/**
+	 * Get a user property value for the given property identifier. 
+	 * This method should not used in GUI views, instead use
+	 * {@link #getProperty(propertyName, locale) getProperty}.
+	 *
+	 * @param propertyName
+	 * @return
+	 */
+	public String getProperty(String propertyName);
 
 	/**
 	 * internal use only.

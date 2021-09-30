@@ -21,30 +21,52 @@ package org.olat.course.learningpath.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.JSCommand;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.config.CompletionType;
-import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.LearningPathTranslations;
+import org.olat.course.learningpath.obligation.ExceptionalObligation;
+import org.olat.course.learningpath.obligation.ExceptionalObligationController;
+import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
+import org.olat.course.learningpath.ui.ExceptionalObligationDataModel.ExceptionalObligationCols;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
@@ -58,23 +80,45 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LearningPathNodeConfigController extends FormBasicController {	
 
+	private static final String CMD_ADD_EXEPTIONAL_OBLIGATION = "add.exeptional.obligation";
+	
 	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = FullyAssessedTrigger.nodeVisited.name();
 	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = FullyAssessedTrigger.confirmed.name();
 	public static final String CONFIG_VALUE_TRIGGER_STATUS_DONE = FullyAssessedTrigger.statusDone.name();
 	public static final String CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW = FullyAssessedTrigger.statusInReview.name();
 	public static final String CONFIG_VALUE_TRIGGER_SCORE = FullyAssessedTrigger.score.name();
 	public static final String CONFIG_VALUE_TRIGGER_PASSED = FullyAssessedTrigger.passed.name();
+
+	private static final String[] EXCEPTIONAL_OBLIGATION_KEYS = { "on" };
+	private static final String[] EXCEPTIONAL_OBLIGATION_VALUES = { "" };
+	private static final String MANDATORY_PREFIX = "mandatory_";
+	private static final String EXCLUDED_PREFIX = "excluded_";
+	private static final String OPTIONAL_PREFIX = "optional_";
+	private static final String CMD_DELETE = "delete";
 	
 	private SingleSelection obligationEl;
+	private FormLayoutContainer obligationCont;
+	private ExceptionalObligationDataModel dataModel;
+	private FlexiTableElement tableEl;
+	private FormLink showExceptionalObligationLink;
+	private FormLink hideExceptionalObligationLink;
 	private DateChooser startDateEl;
 	private DateChooser endDateEl;
 	private TextElement durationEl;
 	private SingleSelection triggerEl;
 	private TextElement scoreCutEl;
+	
+	private CloseableModalController cmc;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
+	private ExceptionalObligationController exceptionalObligationCreateCtrl;
 
-	private final CourseConfig courseConfig;
+	private final RepositoryEntry courseEntry;
+	private final ICourse course;
+	private final CourseNode courseNode;
 	private final LearningPathConfigs learningPathConfigs;
 	private final LearningPathEditConfigs editConfigs;
+	private AssessmentObligation selectedObligation;
+	private List<ExceptionalObligationRow> allRows;
 	
 	@Autowired
 	private LearningPathService learningPathService;
@@ -82,29 +126,70 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public LearningPathNodeConfigController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode, LearningPathEditConfigs editConfigs) {
 		super(ureq, wControl);
-		this.courseConfig = CourseFactory.loadCourse(courseEntry).getCourseConfig();
+		this.courseEntry = courseEntry;
+		this.course = CourseFactory.loadCourse(courseEntry);
+		this.courseNode = courseNode;
 		this.learningPathConfigs = learningPathService.getConfigs(courseNode);
 		this.editConfigs = editConfigs;
+		this.selectedObligation = learningPathConfigs.getObligation() != null
+				? learningPathConfigs.getObligation()
+				: LearningPathConfigs.OBLIGATION_DEFAULT;
+		
 		initForm(ureq);
+		loadExceptionalObligations();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
 		setFormContextHelp("Learning path element");
-		formLayout.setElementCssClass("o_sel_learnpath_element");
+		formLayout.setElementCssClass("o_lp_config_edit");
+		
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
 		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
+		obligationKV.add(entry(AssessmentObligation.excluded.name(), translate("config.obligation.excluded")));
 		obligationEl = uifactory.addRadiosHorizontal("config.obligation", formLayout, obligationKV.keys(), obligationKV.values());
 		obligationEl.addActionListener(FormEvent.ONCHANGE);
-		AssessmentObligation obligation = learningPathConfigs.getObligation() != null
-				? learningPathConfigs.getObligation()
-				: LearningPathConfigs.OBLIGATION_DEFAULT;
-		String obligationKey = obligation.name();
+		String obligationKey = selectedObligation.name();
 		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
 			obligationEl.select(obligationKey, true);
 		}
+		
+		obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), velocity_root + "/config_obligation.html");
+		obligationCont.setRootForm(mainForm);
+		formLayout.add(obligationCont);
+		
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.type));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.mandatory));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.optional));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.excluded));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.delete));
+		
+		dataModel = new ExceptionalObligationDataModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), obligationCont);
+		tableEl.setElementCssClass("o_lp_exobli_table");
+		tableEl.setCustomizeColumns(false);
+		tableEl.setNumOfRowsEnabled(false);
+		
+		DropdownItem addExceptionalObligationDropdown = uifactory.addDropdownMenu("config.exceptional.obligation.add",
+				"config.exceptional.obligation.add", null, obligationCont, getTranslator());
+		addExceptionalObligationDropdown.setOrientation(DropdownOrientation.normal);
+		addExceptionalObligationDropdown.setExpandContentHeight(true);
+		
+		learningPathService.getExceptionalObligationHandlers().stream()
+				.sorted((h1, h2) -> Integer.compare(h1.getSortValue(), h2.getSortValue()))
+				.forEach(handler -> addHandlerToDropdown(addExceptionalObligationDropdown, handler));
+		
+		showExceptionalObligationLink = uifactory.addFormLink("show.exceptional.obligation", "off", "off", obligationCont, Link.LINK);
+		showExceptionalObligationLink.setCustomEnabledLinkCSS("o_button_toggle");
+		showExceptionalObligationLink.setIconLeftCSS("o_icon o_icon_toggle");
+		
+		hideExceptionalObligationLink = uifactory.addFormLink("hide.exceptional.obligation", "on", "on", obligationCont, Link.LINK);
+		hideExceptionalObligationLink.setCustomEnabledLinkCSS("o_button_toggle o_on");
+		hideExceptionalObligationLink.setIconLeftCSS("o_icon o_icon_toggle");
 		
 		Date startDate = learningPathConfigs.getStartDate();
 		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);
@@ -143,6 +228,14 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		updateUI();
 	}
 
+	private void addHandlerToDropdown(DropdownItem dropdown, ExceptionalObligationHandler handler) {
+		if (handler.isShowAdd(courseEntry)) {
+			FormLink link = uifactory.addFormLink(handler.getType(), CMD_ADD_EXEPTIONAL_OBLIGATION, handler.getAddI18nKey(), null, obligationCont, Link.LINK);
+			link.setUserObject(handler);
+			dropdown.addElement(link);
+		}
+	}
+
 	private SelectionValues getTriggerKV() {
 		SelectionValues triggerKV = new SelectionValues();
 		if (editConfigs.isTriggerNodeVisited()) {
@@ -176,10 +269,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		AssessmentObligation obligation = obligationEl.isOneSelected()
-				? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
-				: LearningPathConfigs.OBLIGATION_DEFAULT;
-		boolean obligationMandatory = AssessmentObligation.mandatory.equals(obligation);
+		boolean obligationMandatory = hasMandatoryObligation();
 		endDateEl.setVisible(obligationMandatory);
 				
 		durationEl.setMandatory(isDurationMandatory());
@@ -188,14 +278,196 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		scoreCutEl.setVisible(triggerScore);
 	}
 	
+	private void updateExceptionalObligationsUI(boolean showExceptional) {
+		obligationEl.select(selectedObligation.name(), true);
+		obligationEl.setVisible(!showExceptional);
+		flc.setDirty(true);
+		
+		if (showExceptional) {
+			obligationCont.setLabel("config.obligation", null);
+		} else {
+			obligationCont.setLabel(null, null);
+		}
+		obligationCont.contextPut("exceptional", Boolean.valueOf(showExceptional));
+	}
+
+	private void loadExceptionalObligations() {
+		List<ExceptionalObligation> exceptionalObligations = new ArrayList<>(learningPathConfigs.getExceptionalObligations());
+		allRows = new ArrayList<>(exceptionalObligations.size());
+		addDefaultObligationRow(allRows);
+		addExceptionalObligationRows(exceptionalObligations);
+		
+		updateExceptionalObligationsUI(allRows.size() > 1); // One for the default obligation
+	}
+
+	private void addDefaultObligationRow(List<ExceptionalObligationRow> rows) {
+		ExceptionalObligationRow row = new ExceptionalObligationRow(null);
+		row.setName(translate("exceptional.obligation.default.type"));
+		row.setType(null);
+		SingleSelection mandatoryEl = uifactory.addRadiosHorizontal(MANDATORY_PREFIX + "default",
+				obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
+		mandatoryEl.setAllowNoSelection(true);
+		mandatoryEl.addActionListener(FormEvent.ONCHANGE);
+		mandatoryEl.setUserObject(row);
+		row.setMandatoryEl(mandatoryEl);
+		
+		SingleSelection optionalEl = uifactory.addRadiosHorizontal(OPTIONAL_PREFIX + "default",
+				obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
+		optionalEl.setAllowNoSelection(true);
+		optionalEl.addActionListener(FormEvent.ONCHANGE);
+		optionalEl.setUserObject(row);
+		row.setOptionalEl(optionalEl);
+		
+		SingleSelection excludedEl = uifactory.addRadiosHorizontal(EXCLUDED_PREFIX + "default",
+				obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
+		excludedEl.setAllowNoSelection(true);
+		excludedEl.addActionListener(FormEvent.ONCHANGE);
+		excludedEl.setUserObject(row);
+		row.setExcludedEl(excludedEl);
+		
+		updateExceptionalObligationRadioSelection(row);
+		
+		rows.add(row);
+	}
+
+	private void addExceptionalObligationRows(List<ExceptionalObligation> exceptionalObligations) {
+		for (ExceptionalObligation exceptionalObligation : exceptionalObligations) {
+			ExceptionalObligationRow row = new ExceptionalObligationRow(exceptionalObligation);
+			
+			// The exceptional obligation is obsolete if it has the same obligation as the default obligation
+			if (selectedObligation != exceptionalObligation.getObligation()) {
+				appendTypeName(row, exceptionalObligation);
+				
+				// If row has no name the exceptional obligation is obsolete, e.g. the user was deleted.
+				if (StringHelper.containsNonWhitespace(row.getName())) {
+					row.setObligation(exceptionalObligation.getObligation());
+					
+					SingleSelection mandatoryEl = uifactory.addRadiosHorizontal(MANDATORY_PREFIX + CodeHelper.getRAMUniqueID(),
+							obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
+					mandatoryEl.setAllowNoSelection(true);
+					mandatoryEl.addActionListener(FormEvent.ONCHANGE);
+					mandatoryEl.setUserObject(row);
+					row.setMandatoryEl(mandatoryEl);
+					
+					SingleSelection optionalEl = uifactory.addRadiosHorizontal(OPTIONAL_PREFIX + CodeHelper.getRAMUniqueID(),
+							obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
+					optionalEl.setAllowNoSelection(true);
+					optionalEl.addActionListener(FormEvent.ONCHANGE);
+					optionalEl.setUserObject(row);
+					row.setOptionalEl(optionalEl);
+					
+					SingleSelection excludedEl = uifactory.addRadiosHorizontal(EXCLUDED_PREFIX + CodeHelper.getRAMUniqueID(),
+							obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
+					excludedEl.setAllowNoSelection(true);
+					excludedEl.addActionListener(FormEvent.ONCHANGE);
+					excludedEl.setUserObject(row);
+					row.setExcludedEl(excludedEl);
+					
+					updateExceptionalObligationRadioSelection(row);
+					updateExceptionalObligationRadioVisiblity(row);
+					
+					String linkName = CMD_DELETE + CodeHelper.getRAMUniqueID();
+					FormLink deleteLink = uifactory.addFormLink(linkName, CMD_DELETE, "delete", null, obligationCont, Link.LINK);
+					deleteLink.setUserObject(row);
+					row.setDeleteLink(deleteLink);
+					
+					allRows.add(row);
+				}
+			}
+		}
+		
+		resetTable();
+	}
+
+	private void appendTypeName(ExceptionalObligationRow row, ExceptionalObligation exceptionalObligation) {
+		ExceptionalObligationHandler exceptionalObligationHandler = learningPathService.getExceptionalObligationHandler(exceptionalObligation.getType());
+		if (exceptionalObligationHandler != null) {
+			row.setName(exceptionalObligationHandler.getDisplayName(getTranslator(), exceptionalObligation, courseEntry));
+			row.setType(exceptionalObligationHandler.getDisplayType(getTranslator(), exceptionalObligation));
+		}
+	}
+	
+	private void resetTable() {
+		List<ExceptionalObligationRow> rows = allRows.stream()
+				.filter(this::isRowVisible)
+				.collect(Collectors.toList());
+		dataModel.setObjects(rows);
+		tableEl.reset(false, false, true);
+	}
+
+	private boolean isRowVisible(ExceptionalObligationRow row) {
+		if (row.isDeleted()) return false;
+		
+		return row.isDefaultObligation() || row.getObligation() != selectedObligation;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == obligationEl) {
+			selectedObligation = obligationEl.isOneSelected()
+					? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
+					: LearningPathConfigs.OBLIGATION_DEFAULT;
+			updateExceptionalObligations();
 			updateUI();
+			markDirty();
+		} else if (source == showExceptionalObligationLink) {
+			updateExceptionalObligationsUI(true);
+		} else if (source == hideExceptionalObligationLink) {
+			updateExceptionalObligationsUI(false);
 		} else if (source == triggerEl) {
 			updateUI();
+			markDirty();
+		} else if (source instanceof SingleSelection) {
+			ExceptionalObligationRow row = (ExceptionalObligationRow)source.getUserObject();
+			doUpdatedExceptionalObligation(row, source);
+			markDirty();
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if(CMD_DELETE.equals(cmd)) {
+				ExceptionalObligationRow row = (ExceptionalObligationRow)source.getUserObject();
+				doDeleteExceptionalObligation(row.getExceptionalObligation());
+				markDirty();
+			} else if (CMD_ADD_EXEPTIONAL_OBLIGATION.equals(cmd)){
+				ExceptionalObligationHandler handler = (ExceptionalObligationHandler)link.getUserObject();
+				doAddExceptionalObligations(ureq, handler);
+				markDirty();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void markDirty() {
+		String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
+		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (exceptionalObligationCreateCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				List<ExceptionalObligation> exceptionalObligations = exceptionalObligationCreateCtrl.getExceptionalObligations();
+				if (!exceptionalObligations.isEmpty()) {
+					doInitExceptionalObligations(exceptionalObligations);
+					doAddExceptionalObligations(exceptionalObligations);
+					markDirty();
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(exceptionalObligationCreateCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(cmc);
+		exceptionalObligationCreateCtrl = null;
+		toolsCalloutCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -245,10 +517,22 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		AssessmentObligation obligation = obligationEl.isOneSelected()
-				? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
-				: LearningPathConfigs.OBLIGATION_DEFAULT;
-		learningPathConfigs.setObligation(obligation);
+		learningPathConfigs.setObligation(selectedObligation);
+		
+		List<ExceptionalObligation> exeptionalObligations = null;
+		if (!obligationEl.isVisible()) {
+			List<ExceptionalObligationRow> rows = dataModel.getObjects();
+			exeptionalObligations = new ArrayList<>(rows.size());
+			for (ExceptionalObligationRow row : rows) {
+				if (row.isExceptionalObligation()) {
+					ExceptionalObligation exceptionalObligation = row.getExceptionalObligation();
+					exceptionalObligation.setObligation(row.getObligation());
+					exeptionalObligations.add(exceptionalObligation);
+				}
+			}
+		}
+		learningPathConfigs.setExceptionalObligations(exeptionalObligations);
+		loadExceptionalObligations();
 		
 		Date startDate = startDateEl.getDate();
 		learningPathConfigs.setStartDate(startDate);
@@ -281,9 +565,113 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	}
 	
 	private boolean isDurationMandatory() {
-		return CompletionType.duration.equals(courseConfig.getCompletionType())
-				&& obligationEl.isOneSelected()
-				&& AssessmentObligation.mandatory.name().equals(obligationEl.getSelectedKey());
+		return CompletionType.duration.equals(course.getCourseConfig().getCompletionType())
+				&& hasMandatoryObligation();
+	}
+
+	private boolean hasMandatoryObligation() {
+		if (AssessmentObligation.mandatory == selectedObligation) return true;
+		
+		if (!obligationEl.isVisible()) {
+			for (ExceptionalObligationRow row : dataModel.getObjects()) {
+				if (AssessmentObligation.mandatory == row.getObligation()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private void doAddExceptionalObligations(UserRequest ureq, ExceptionalObligationHandler handler) {
+		guardModalController(exceptionalObligationCreateCtrl);
+		
+		exceptionalObligationCreateCtrl = handler.createCreationController(ureq, getWindowControl(), courseEntry, courseNode);
+		listenTo(exceptionalObligationCreateCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", exceptionalObligationCreateCtrl.getInitialComponent(), true,
+				translate("config.exceptional.obligation.add"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doInitExceptionalObligations(List<ExceptionalObligation> exceptionalObligations) {
+		AssessmentObligation defaultObligation = AssessmentObligation.mandatory;
+		if (AssessmentObligation.mandatory == selectedObligation) {
+			defaultObligation = AssessmentObligation.optional;
+		}
+		for (ExceptionalObligation exceptionalObligation : exceptionalObligations) {
+			exceptionalObligation.setIdentifier(UUID.randomUUID().toString());
+			exceptionalObligation.setObligation(defaultObligation);
+		}
+	}
+
+	private void doAddExceptionalObligations(List<ExceptionalObligation> exceptionalObligations) {
+		addExceptionalObligationRows(exceptionalObligations);
+	}
+
+	private void updateExceptionalObligations() {
+		for (ExceptionalObligationRow row : allRows) {
+			updateExceptionalObligationRadioSelection(row);
+			updateExceptionalObligationRadioVisiblity(row);
+		}
+		
+		resetTable();
+	}
+
+	private void doUpdatedExceptionalObligation(ExceptionalObligationRow row, FormItem source) {
+		if (row.isDefaultObligation()) {
+			if (source.getName().startsWith(MANDATORY_PREFIX)) {
+				selectedObligation =  AssessmentObligation.mandatory;
+			} else if (source.getName().startsWith(OPTIONAL_PREFIX)) {
+				selectedObligation =  AssessmentObligation.optional;
+			} else if (source.getName().startsWith(EXCLUDED_PREFIX)) {
+				selectedObligation =  AssessmentObligation.excluded;
+			}
+			updateExceptionalObligations();
+			updateUI();
+		} else {
+			if (source.getName().startsWith(MANDATORY_PREFIX)) {
+				row.setObligation(AssessmentObligation.mandatory);
+			} else if (source.getName().startsWith(OPTIONAL_PREFIX)) {
+				row.setObligation(AssessmentObligation.optional);
+			} else if (source.getName().startsWith(EXCLUDED_PREFIX)) {
+				row.setObligation(AssessmentObligation.excluded);
+			}
+		}
+		updateExceptionalObligationRadioSelection(row);
+	}
+	
+	private void updateExceptionalObligationRadioSelection(ExceptionalObligationRow row) {
+		AssessmentObligation obligation = row.isExceptionalObligation()
+				? row.getObligation()
+				: selectedObligation;
+		row.getMandatoryEl().select(row.getMandatoryEl().getKey(0), AssessmentObligation.mandatory == obligation);
+		row.getOptionalEl().select(row.getOptionalEl().getKey(0), AssessmentObligation.optional == obligation);
+		row.getExcludedEl().select(row.getExcludedEl().getKey(0), AssessmentObligation.excluded == obligation);
+	}
+	
+	private void updateExceptionalObligationRadioVisiblity(ExceptionalObligationRow row) {
+		if (row.isDefaultObligation()) return;
+		
+		row.getMandatoryEl().setVisible(AssessmentObligation.mandatory != selectedObligation);
+		row.getOptionalEl().setVisible(AssessmentObligation.optional != selectedObligation);
+		row.getExcludedEl().setVisible(AssessmentObligation.excluded != selectedObligation);
+	}
+	
+	private void doDeleteExceptionalObligation(ExceptionalObligation exceptionalObligation) {
+		for (ExceptionalObligationRow row : allRows) {
+			if (hasSameIdentifer(row, exceptionalObligation)) {
+				row.setDeleted(true);
+			}
+		}
+		resetTable();
+		updateExceptionalObligationsUI(true);
+	}
+
+	private boolean hasSameIdentifer(ExceptionalObligationRow row, ExceptionalObligation exceptionalObligation) {
+		return row.isExceptionalObligation()
+				&& row.getExceptionalObligation().getIdentifier() != null
+				&& row.getExceptionalObligation().getIdentifier().equals(exceptionalObligation.getIdentifier());
 	}
 	
 }

@@ -37,6 +37,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -49,6 +51,7 @@ import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.repository.RepositoryEntry;
@@ -69,6 +72,8 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
+	private AssessmentService assessmentService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
@@ -84,6 +89,13 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 			if(courseNode instanceof GTACourseNode) {
 				identities = evaluateRule(entry, (GTACourseNode)courseNode, r);
+				
+				if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+					List<Long> excludedIdentityKeys = assessmentService.getExcludedIdentityKeys(entry, courseNode.getIdent());
+					if (!excludedIdentityKeys.isEmpty()) {
+						identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
+					}
+				}
 			}
 		}
 		return identities == null ? Collections.<Identity>emptyList() : identities;

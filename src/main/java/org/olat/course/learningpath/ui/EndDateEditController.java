@@ -76,11 +76,11 @@ public class EndDateEditController extends FormBasicController implements Contro
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		infoEl = uifactory.addStaticTextElement("info", null, null, formLayout);
-		
 		endDateEl = uifactory.addDateChooser("override.end.date", null, formLayout);
 		endDateEl.setDateChooserTimeEnabled(true);
 		endDateEl.addActionListener(FormEvent.ONCHANGE);
+
+		infoEl = uifactory.addStaticTextElement("info", null, null, formLayout);
 		
 		buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

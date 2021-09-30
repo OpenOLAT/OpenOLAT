@@ -298,7 +298,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		List<IdentityShort> foundIdList = securityManager.loadIdentityShortByKeys(List.of(id.getKey()));
 		Assert.assertNotNull(foundIdList);
 		assertThat(foundIdList)
-			.extracting(idShort -> idShort.getKey())
+			.extracting(IdentityShort::getKey)
 			.contains(id.getKey());
 	}
 
@@ -357,7 +357,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		List<IdentityShort> identities = securityManager.searchIdentityShort(login, 32000);
 		assertThat(identities)
 			.isNotNull()
-			.extracting(identity -> identity.getKey())
+			.extracting(IdentityShort::getKey)
 			.contains(id.getKey());
 	}
 	
@@ -371,7 +371,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		List<IdentityShort> identities = securityManager.searchIdentityShort(login + " hello world", 32000);
 		assertThat(identities)
 			.isNotNull()
-			.extracting(identity -> identity.getKey())
+			.extracting(IdentityShort::getKey)
 			.contains(id.getKey());
 	}
 	
@@ -405,7 +405,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 				Collections.singletonList(defOrganisation), null,  32000);
 		assertThat(identities)
 			.isNotNull()
-			.extracting(identity -> identity.getKey())
+			.extracting(IdentityShort::getKey)
 			.contains(id.getKey());
 	}
 	
@@ -788,7 +788,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		// Email of the user changed: The authentications are not valid any longer.
 		user.setProperty(UserConstants.EMAIL, "new@trashcmail.com");
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "new@trashcmail.com");
-		userManager.updateUser(user);
+		userManager.updateUser(identity, user);
 		dbInstance.commitAndCloseSession();
 		
 		securityManager.deleteInvalidAuthenticationsByEmail(email);

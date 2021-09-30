@@ -132,13 +132,14 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private IdentityPowerSearchQueries identitySearchQueries;
 
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm) {
-		this(ureq, wControl, rootForm, null, true);
+		this(ureq, wControl, rootForm, null, true, false);
 	}
 	
-	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm, GroupRoles repositoryEntryRole, boolean multiSelection) {
+	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm,
+			GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
 		
-		init(ureq, wControl, repositoryEntryRole, multiSelection, false);
+		init(ureq, repositoryEntryRole, multiSelection, showSelectButton);
 
 		initForm(ureq);
 	}
@@ -146,12 +147,12 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, GroupRoles repositoryEntryRole, boolean multiSelection) {
 		super(ureq, wControl, "usersearchext");
 		
-		init(ureq, wControl, repositoryEntryRole, multiSelection, true);
+		init(ureq, repositoryEntryRole, multiSelection, true);
 		
 		initForm(ureq);
 	}
 	
-	private void init(UserRequest ureq, WindowControl wControl, GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
+	private void init(UserRequest ureq, GroupRoles repositoryEntryRole, boolean multiSelection, boolean showSelectButton) {
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 

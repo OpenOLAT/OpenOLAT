@@ -397,6 +397,18 @@ public class CurriculumElementDAO {
 		return infos;
 	}
 	
+	public Long countElements(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select count(*) from curriculumelement el")
+		  .append(" inner join el.group bGroup")
+		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" where rel.entry.key=:entryKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", entry.getKey())
+				.getSingleResult();
+	}
+	
 	public List<CurriculumElement> loadElements(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el from curriculumelement el")
@@ -870,7 +882,7 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	public List<CurriculumElementMembership> getMembershipInfos(List<? extends CurriculumRef> curriculums, Collection<CurriculumElement> elements, Identity... identities) {
+	public List<CurriculumElementMembership> getMembershipInfos(List<? extends CurriculumRef> curriculums, Collection<? extends CurriculumElementRef> elements, Identity... identities) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el.key, membership from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
@@ -901,7 +913,7 @@ public class CurriculumElementDAO {
 		}
 		if(elements != null && !elements.isEmpty()) {
 			List<Long> elementKeys = elements.stream()
-					.map(CurriculumElement::getKey).collect(Collectors.toList());
+					.map(CurriculumElementRef::getKey).collect(Collectors.toList());
 			query.setParameter("elementKeys", elementKeys);
 		}
 		if(curriculums != null &&!curriculums.isEmpty()) {

@@ -39,6 +39,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
@@ -181,12 +182,13 @@ class I18nConfigSubNewLangController extends FormBasicController {
 	 * @param localeKey
 	 */
 	private void updateUserLocaleAndLogout(UserRequest ureq, String localeKey) {
-		User currUser = ureq.getIdentity().getUser();
+		Identity identity = ureq.getIdentity();
+		User currUser = identity.getUser();
 		// direct DB calls have to be made here because the 
 		// user manager is not available in the core
 		currUser = UserManager.getInstance().loadUserByKey(currUser.getKey());
 		currUser.getPreferences().setLanguage(localeKey);
-		UserManager.getInstance().updateUser(currUser);
+		UserManager.getInstance().updateUser(identity, currUser);
 		DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
 	}
 

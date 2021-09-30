@@ -28,6 +28,7 @@ package org.olat.modules.assessment.model;
 public enum AssessmentObligation {
 	
 	mandatory,
-	optional
+	optional,
+	excluded
 
 }

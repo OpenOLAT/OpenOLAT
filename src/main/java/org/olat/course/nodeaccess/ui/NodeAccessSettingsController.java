@@ -20,7 +20,6 @@
 package org.olat.course.nodeaccess.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
-import static org.olat.modules.assessment.model.AssessmentObligation.mandatory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,10 +60,12 @@ import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -107,7 +108,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 		setFormContextHelp("Learning path course");
 		String nodeAccessTypeName = nodeAccessService.getNodeAccessTypeName(courseConfig.getNodeAccessType(),
 				getLocale());
-		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);;
+		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);
 		
 		if (!LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType()) && !readOnly) {
 			FormLayoutContainer migrationCont = FormLayoutContainer.createButtonLayout("migrationButtons", getTranslator());
@@ -315,7 +316,22 @@ public class NodeAccessSettingsController extends FormBasicController {
 		@Override
 		public boolean test(CourseNode courseNode) {
 			LearningPathConfigs configs = learningPathService.getConfigs(courseNode);
-			return mandatory.equals(configs.getObligation()) && configs.getDuration() == null;
+			return configs.getDuration() == null && hasMandatoryObligation(configs);
+		}
+		
+		private boolean hasMandatoryObligation(LearningPathConfigs configs) {
+			if (AssessmentObligation.mandatory == configs.getObligation()) return true;
+			
+			List<ExceptionalObligation> exceptionalObligations = configs.getExceptionalObligations();
+			if (exceptionalObligations != null) {
+				for (ExceptionalObligation exceptionalObligation : exceptionalObligations) {
+					if (AssessmentObligation.mandatory == exceptionalObligation.getObligation()) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
 		}
 	}
 	

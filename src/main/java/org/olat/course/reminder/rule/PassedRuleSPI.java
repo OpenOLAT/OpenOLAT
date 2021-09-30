@@ -38,10 +38,13 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.PassedRuleEditor;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -96,6 +99,8 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
@@ -180,6 +185,13 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 			
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if(Mode.none != assessmentConfig.getPassedMode()) {
+				if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+					List<Long> excludedIdentityKeys = assessmentService.getExcludedIdentityKeys(entry, courseNode.getIdent());
+					if (!excludedIdentityKeys.isEmpty()) {
+						identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
+					}
+				}
+				
 				Set<Status> status = Status.split(statusValue);
 				List<Long> matchedIdentityKeys = helperDao.getPassed(entry, courseNode, identities, status);
 				identities.removeIf(identity -> !matchedIdentityKeys.contains(identity.getKey()));

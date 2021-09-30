@@ -760,7 +760,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		
 		Assert.assertEquals(2, assessmentEnries.size());
 		Map<Long, AssessmentEntryScoring> keysToCompletion = assessmentEnries.stream()
-				.collect(Collectors.toMap(ae -> ae.getRepositoryEntryKey(), Function.identity()));
+				.collect(Collectors.toMap(AssessmentEntryScoring::getRepositoryEntryKey, Function.identity()));
 		Assert.assertEquals(1, keysToCompletion.get(entry1.getKey()).getCompletion().intValue());
 		Assert.assertEquals(0, keysToCompletion.get(entry2.getKey()).getCompletion().intValue());
 	}
@@ -1166,4 +1166,52 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertTrue(assessmentEntries.contains(nodeAssessmentId6));
 		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId7));
 	}
+	
+	@Test
+	public void hasAssessmentEntry() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-24");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-25");
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, random(), null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(assessmentEntryDao.hasAssessmentEntry(assessedIdentity1, entry));
+		Assert.assertFalse(assessmentEntryDao.hasAssessmentEntry(assessedIdentity2, entry));
+	}
+	
+	@Test
+	public void getExcludedIdentityKeys() {
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-26a");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-26b");
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-26c");
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-26d");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = random();
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				subIdent, null, null);
+		nodeAssessmentId1.setObligation(null);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId1);
+		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				subIdent, null, null);
+		nodeAssessmentId2.setObligation(Overridable.of(AssessmentObligation.mandatory));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId2);
+		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry,
+				subIdent, null, null);
+		nodeAssessmentId3.setObligation(Overridable.of(AssessmentObligation.optional));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId3);
+		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry,
+				subIdent, null, null);
+		nodeAssessmentId4.setObligation(Overridable.of(AssessmentObligation.excluded));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId4);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> identityKeys = assessmentEntryDao.loadExcludedIdentityKeys(entry, subIdent);
+		
+		Assert.assertNotNull(identityKeys);
+		Assert.assertEquals(1, identityKeys.size());
+		Assert.assertTrue(identityKeys.contains(assessedIdentity4.getKey()));
+	}
+
 }

@@ -21,9 +21,13 @@ package org.olat.course.nodes.st.assessment;
 
 import java.util.List;
 
+import org.olat.core.id.Identity;
+import org.olat.course.Structure;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ObligationEvaluator;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -36,7 +40,9 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class MandatoryObligationEvaluator implements ObligationEvaluator {
 
 	@Override
-	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode) {
+	public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation,
+			CourseNode courseNode, Identity identity, Structure runStructure,
+			ScoreAccounting scoreAccounting, ObligationContext obligationContext) {
 		return currentEvaluation.getObligation();
 	}
 

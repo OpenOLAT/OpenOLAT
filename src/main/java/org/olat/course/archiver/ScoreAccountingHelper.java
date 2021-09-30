@@ -60,19 +60,20 @@ import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroupService;
@@ -150,6 +151,7 @@ public class ScoreAccountingHelper {
 		int headerColCnt = 0;
 		Translator t = Util.createPackageTranslator(ScoreAccountingArchiveController.class, locale);
 
+		boolean obligationOk = NodeAccessType.of(course).getType().equals(LearningPathNodeAccessProvider.TYPE);
 		String sequentialNumber = t.translate("column.header.seqnum");
 		String login = t.translate("column.header.businesspath");
 		// user properties are dynamic
@@ -160,11 +162,15 @@ public class ScoreAccountingHelper {
 		String at = t.translate("column.header.attempts");
 		String il = t.translate("column.header.initialLaunchDate");
 		String slm = t.translate("column.header.scoreLastModified");
+		String obli = t.translate("column.header.obligation");
 		String na = t.translate("column.field.notavailable");
 		String mi = t.translate("column.field.missing");
 		String yes = t.translate("column.field.yes");
 		String no = t.translate("column.field.no");
 		String submitted = t.translate("column.field.submitted");
+		String oblim = t.translate("column.field.mandatory");
+		String oblio = t.translate("column.field.optional");
+		String oblie = t.translate("column.field.excluded");
 
 		Row headerRow1 = sheet.newRow();
 		headerRow1.addCell(headerColCnt++, sequentialNumber);
@@ -194,6 +200,7 @@ public class ScoreAccountingHelper {
 				header1ColCnt += scoreOk ? 1 : 0;
 				header1ColCnt += passedOk ? 1 : 0;
 				header1ColCnt += attemptsOk ? 1 : 0;
+				header1ColCnt += obligationOk ? 1 : 0;
 				header1ColCnt++;//last modified
 				header1ColCnt += commentOk ? 1 : 0;
 				header1ColCnt++;//coach comment
@@ -222,6 +229,9 @@ public class ScoreAccountingHelper {
 				}
 				if(attemptsOk) {
 					headerRow2.addCell(header2ColCnt++, at);
+				}
+				if(obligationOk) {
+					headerRow2.addCell(header2ColCnt++, obli);
 				}
 				headerRow2.addCell(header2ColCnt++, slm);//last modified
 				if (commentOk) {
@@ -268,7 +278,6 @@ public class ScoreAccountingHelper {
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 			ScoreAccounting scoreAccount = uce.getScoreAccounting();
 			scoreAccount.evaluateAll();
-			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 
 			for (CourseNode acnode:myNodes) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
@@ -298,7 +307,7 @@ public class ScoreAccountingHelper {
 				}
 
 				if (scoreOk || passedOk || commentOk || attemptsOk) {
-					ScoreEvaluation se = scoreAccount.evalCourseNode(acnode);
+					AssessmentEvaluation se = scoreAccount.evalCourseNode(acnode);
 
 					if (scoreOk) {
 						Float score = se.getScore();
@@ -325,32 +334,45 @@ public class ScoreAccountingHelper {
 					}
 
 					if (attemptsOk) {
-						Integer attempts = am.getNodeAttempts(acnode, identity);
-						int a = attempts == null ? 0 : attempts.intValue();
+						int a = se.getAttempts() == null ? 0 : se.getAttempts().intValue();
 						dataRow.addCell(dataColCnt++, a, null);
 					}
+					
+					if (obligationOk) {
+						if (se.getObligation() != null && se.getObligation().getCurrent() != null) {
+							switch (se.getObligation().getCurrent()) {
+							case mandatory:
+								dataRow.addCell(dataColCnt++, oblim); break;
+							case optional:
+								dataRow.addCell(dataColCnt++, oblio); break;
+							case excluded:
+								dataRow.addCell(dataColCnt++, oblie); break;
+							default:
+								break;
+							}
+						} else {
+							dataRow.addCell(dataColCnt++, mi);
+						}
+					}
 
-					Date lastModified = am.getScoreLastModifiedDate(acnode, identity);
-					if(lastModified != null) {
-						dataRow.addCell(dataColCnt++, lastModified, workbook.getStyles().getDateStyle());
+					if(se.getLastModified() != null) {
+						dataRow.addCell(dataColCnt++, se.getLastModified(), workbook.getStyles().getDateStyle());
 					} else {
 						dataRow.addCell(dataColCnt++, mi);
 					}
 
 					if (commentOk) {
 						// Comments for user
-						String comment = am.getNodeComment(acnode, identity);
-						if (comment != null) {
-							dataRow.addCell(dataColCnt++, comment);
+						if (se.getComment() != null) {
+							dataRow.addCell(dataColCnt++, se.getComment());
 						} else {
 							dataRow.addCell(dataColCnt++, mi);
 						}
 					}
 
 					// Always export comments for tutors
-					String coachComment = am.getNodeCoachComment(acnode, identity);
-					if (coachComment != null) {
-						dataRow.addCell(dataColCnt++, coachComment);
+					if (se.getCoachComment() != null) {
+						dataRow.addCell(dataColCnt++, se.getCoachComment());
 					} else {
 						dataRow.addCell(dataColCnt++, mi);
 					}

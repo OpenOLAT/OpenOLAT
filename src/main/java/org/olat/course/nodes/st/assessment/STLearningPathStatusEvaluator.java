@@ -71,11 +71,13 @@ public class STLearningPathStatusEvaluator implements StatusEvaluator {
 		boolean hasMandatory = false;
 		boolean done = true;
 		for (AssessmentEvaluation child : children) {
-			if (isNotStarted(child)) {
-				notStarted = true;
-			}
-			if (isInProgess(child)) {
-				inProgress = true;
+			if (isNotExcluded(child)) {
+				if (isNotStarted(child)) {
+					notStarted = true;
+				}
+				if (isInProgess(child)) {
+					inProgress = true;
+				}
 			}
 			if (isMandatory(child)) {
 				hasMandatory = true;
@@ -97,8 +99,7 @@ public class STLearningPathStatusEvaluator implements StatusEvaluator {
 	}
 	
 	private boolean isNotStarted(AssessmentEvaluation assessmentEvaluation) {
-		return isInProgess(assessmentEvaluation)
-				|| AssessmentEntryStatus.notStarted.equals(assessmentEvaluation.getAssessmentStatus());
+		return AssessmentEntryStatus.notStarted.equals(assessmentEvaluation.getAssessmentStatus());
 	}
 
 	private boolean isInProgess(AssessmentEvaluation assessmentEvaluation) {
@@ -110,6 +111,11 @@ public class STLearningPathStatusEvaluator implements StatusEvaluator {
 	private boolean isMandatory(AssessmentEvaluation evaluation) {
 		return evaluation.getObligation() != null && AssessmentObligation.mandatory == evaluation.getObligation().getCurrent();
 	}
+	
+	private boolean isNotExcluded(AssessmentEvaluation evaluation) {
+		return evaluation.getObligation() == null || AssessmentObligation.excluded != evaluation.getObligation().getCurrent();
+	}
+	
 	private boolean isNotFullyAssessed(AssessmentEvaluation assessmentEvaluation) {
 		return !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
 	}

@@ -44,6 +44,7 @@ public class SearchAssessedIdentityParams {
 	private boolean passed;
 	private boolean failed;
 	private List<AssessmentEntryStatus> assessmentStatus;
+	private boolean excludeExcluded;
 	
 	private String searchString;
 	private List<Long> businessGroupKeys;
@@ -107,6 +108,14 @@ public class SearchAssessedIdentityParams {
 
 	public void setFailed(boolean failed) {
 		this.failed = failed;
+	}
+
+	public boolean isExcludeExcluded() {
+		return excludeExcluded;
+	}
+
+	public void setExcludeExcluded(boolean excludeExcluded) {
+		this.excludeExcluded = excludeExcluded;
 	}
 
 	public List<AssessmentEntryStatus> getAssessmentStatus() {

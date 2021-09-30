@@ -20,7 +20,9 @@
 package org.olat.course.learningpath;
 
 import java.util.Date;
+import java.util.List;
 
+import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -47,6 +49,10 @@ public interface LearningPathConfigs {
 	public AssessmentObligation getObligation();
 	
 	public void setObligation(AssessmentObligation obligation);
+	
+	public List<ExceptionalObligation> getExceptionalObligations();
+	
+	public void setExceptionalObligations(List<ExceptionalObligation> exeptionalObligations);
 	
 	public Date getStartDate();
 	

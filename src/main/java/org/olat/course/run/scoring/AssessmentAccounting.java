@@ -36,6 +36,8 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -59,6 +61,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private final CourseConfig courseConfig;
 	private Map<String, AssessmentEntry> identToEntry = new HashMap<>();
 	private final Map<CourseNode, AssessmentEvaluation> courseNodeToEval = new HashMap<>();
+	private ObligationContext obligationContext;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -66,7 +69,15 @@ public class AssessmentAccounting implements ScoreAccounting {
 	public AssessmentAccounting(UserCourseEnvironment userCourseEnvironment) {
 		this.userCourseEnvironment = userCourseEnvironment;
 		this.courseConfig = userCourseEnvironment.getCourseEnvironment().getCourseConfig();
+		this.obligationContext = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnvironment).getType())
+				? new SingleUserObligationContext()
+				: NullObligationContext.create();
 		CoreSpringFactory.autowireObject(this);
+	}
+	
+	@Override
+	public void setObligationContext(ObligationContext obligationContext) {
+		this.obligationContext = obligationContext;
 	}
 
 	@Override
@@ -157,7 +168,9 @@ public class AssessmentAccounting implements ScoreAccounting {
 		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
-		Overridable<AssessmentObligation> obligation = obligationEvaluator.getObligation(result, courseNode);
+		Overridable<AssessmentObligation> obligation = obligationEvaluator.getObligation(result, courseNode,
+				userCourseEnvironment.getIdentityEnvironment().getIdentity(),
+				userCourseEnvironment.getCourseEnvironment().getRunStructure(), this, obligationContext);
 		result.setObligation(obligation);
 		
 		StartDateEvaluator startDateEvaluator = evaluators.getStartDateEvaluator();

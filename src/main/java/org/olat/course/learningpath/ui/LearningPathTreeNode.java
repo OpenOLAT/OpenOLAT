@@ -54,15 +54,15 @@ public class LearningPathTreeNode extends CourseTreeNode {
 	}
 
 	public Date getStartDate() {
-		return assessmentEvaluation != null? assessmentEvaluation.getStartDate(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getStartDate(): null;
 	}
 
 	public Overridable<Date> getEndDate() {
-		return assessmentEvaluation != null? assessmentEvaluation.getEndDate(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getEndDate(): null;
 	}
 
 	public Integer getDuration() {
-		return assessmentEvaluation != null? assessmentEvaluation.getDuration(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getDuration(): null;
 	}
 
 	public Overridable<AssessmentObligation> getObligation() {
@@ -70,35 +70,39 @@ public class LearningPathTreeNode extends CourseTreeNode {
 	}
 	
 	public Date getFirstVisit() {
-		return assessmentEvaluation != null? assessmentEvaluation.getFirstVisit(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getFirstVisit(): null;
 	}
 	
 	public Date getLastVisit() {
-		return assessmentEvaluation != null? assessmentEvaluation.getLastVisit(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getLastVisit(): null;
 	}
 
 	public AssessmentEntryStatus getAssessmentStatus() {
-		return assessmentEvaluation != null? assessmentEvaluation.getAssessmentStatus(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getAssessmentStatus(): null;
 	}
 
 	public Date getAssessmentDone() {
-		return assessmentEvaluation != null? assessmentEvaluation.getAssessmentDone(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getAssessmentDone(): null;
 	}
 
 	public Boolean getFullyAssessed() {
-		return assessmentEvaluation != null? assessmentEvaluation.getFullyAssessed(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getFullyAssessed(): null;
 	}
 	
 	public Date getFullyAssessedDate() {
-		return assessmentEvaluation != null? assessmentEvaluation.getFullyAssessedDate(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getFullyAssessedDate(): null;
 	}
 
 	public Double getCompletion() {
-		return assessmentEvaluation != null? assessmentEvaluation.getCompletion(): null;
+		return hasNotExcludedEvaluation()? assessmentEvaluation.getCompletion(): null;
 	}
 
 	public AssessmentEvaluation getAssessmentEvaluation() {
-		return assessmentEvaluation;
+		return hasNotExcludedEvaluation()? assessmentEvaluation: null;
+	}
+
+	private boolean hasNotExcludedEvaluation() {
+		return assessmentEvaluation != null && AssessmentObligation.excluded != assessmentEvaluation.getObligation().getCurrent();
 	}
 	
 }

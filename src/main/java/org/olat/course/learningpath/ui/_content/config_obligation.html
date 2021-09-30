@@ -1,0 +1,21 @@
+<div class="o_lp_obligation_config">
+	#if ($exceptional)
+		<div class="o_config">
+			$r.render("table")
+			<div class="o_button_group o_button_group_left">
+				$r.render("config.exceptional.obligation.add")
+			</div>
+		</div>
+	#end
+	<div class="o_toggle o_small">
+		<div>
+		#if ($exceptional)
+			<span>$r.translate("config.exceptional.obligation.hide")</span>
+			$r.render("hide.exceptional.obligation")
+		#else
+			<span>$r.translate("config.exceptional.obligation.show")</span>
+			$r.render("show.exceptional.obligation")
+		#end
+		</div>
+	</div>
+</div>

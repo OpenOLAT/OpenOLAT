@@ -238,6 +238,14 @@ public class UpdateIdentity implements Identity {
 		}
 
 		@Override
+		public String getProperty(String propertyName) {
+			if(updatedProperties.containsKey(propertyName)) {
+				return updatedProperties.get(propertyName);
+			}
+			return user.getProperty(propertyName);
+		}
+
+		@Override
 		public void setIdentityEnvironmentAttributes(Map<String, String> identEnvAttribs) {
 			//
 		}

@@ -85,6 +85,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 		return name;
 	}
 	
+	@Override
 	public String getDatabaseColumnName() {
 		return databaseColumnName;
 	}
@@ -134,7 +135,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 	 */
 	protected String getInternalValue(User user) {
 		if (user instanceof UserImpl) {
-			String value = ((UserImpl)user).getUserProperty(name);
+			String value = ((UserImpl)user).getProperty(name);
 			if("_".equals(value) && "oracle".equals(DBFactory.getInstance().getDbVendor())) {
 				value = null;
 			}

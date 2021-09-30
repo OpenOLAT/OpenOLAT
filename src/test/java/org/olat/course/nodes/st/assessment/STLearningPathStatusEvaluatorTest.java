@@ -191,6 +191,18 @@ public class STLearningPathStatusEvaluatorTest {
 		
 		assertThat(status).isEqualTo(AssessmentEntryStatus.done);
 	}
+	
+	@Test
+	public void shouldIgnoreInvisibleChildren() {
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.notStarted, AssessmentObligation.mandatory);
+		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.inReview, AssessmentObligation.excluded);
+		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.notStarted, AssessmentObligation.mandatory);
+		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.notStarted);
+	}
 
 	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, assessmentStatus, null, fullyAssessd, null,

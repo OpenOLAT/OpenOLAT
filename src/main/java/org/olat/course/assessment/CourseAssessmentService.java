@@ -47,6 +47,7 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -317,12 +318,30 @@ public interface CourseAssessmentService {
 	public AssessmentCourseNodeController getCourseNodeRunController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, UserCourseEnvironment coachCourseEnv);
 	
+	public ScoreAccountingTrigger createScoreAccountingTrigger(RepositoryEntry entry, String subIdent,
+			ScoreAccountingTriggerData data);
+
+	public void deleteScoreAccountingTriggers(List<ScoreAccountingTrigger> scoreAccountingTrigger);
+
+	public void deleteScoreAccountingTriggers(RepositoryEntry entry);
+	
+	public List<ScoreAccountingTrigger> getScoreAccountingTriggers(RepositoryEntryRef entryRef);
+
+	public List<RepositoryEntry> getTriggeredRepositoryEntries(ScoreAccountingTriggerSearchParams searchParams);
+	
 	/**
 	 * Recalculates all AssessmentEvaluation of all users in the course.
 	 *
 	 * @param course
 	 */
 	public void evaluateAll(ICourse course);
+	
+	/**
+	 * Recalculates all AssessmentEvaluation of all users in the course asynchronously.
+	 *
+	 * @param courseResId
+	 */
+	public void evaluateAllAsync(Long courseResId);
 	
 	/**
 	 * Evaluates the all assessment entries of a repository entry / user when the

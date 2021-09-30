@@ -32,10 +32,13 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.AttemptsRuleEditor;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -57,6 +60,8 @@ public class AttemptsRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	@Override
 	public int getSortValue() {
@@ -125,7 +130,14 @@ public class AttemptsRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 				log.warn("Attempts rule in course {} ({}) is missing a course element", entry.getKey(), entry.getDisplayname());
 				return;
 			}
-
+			
+			if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+				List<Long> excludedIdentityKeys = assessmentService.getExcludedIdentityKeys(entry, courseNode.getIdent());
+				if (!excludedIdentityKeys.isEmpty()) {
+					identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
+				}
+			}
+			
 			Map<Long, Integer> attempts = helperDao.getAttempts(entry, courseNode, identities);
 			
 			for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {

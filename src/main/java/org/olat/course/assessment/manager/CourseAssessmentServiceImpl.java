@@ -22,17 +22,16 @@ package org.olat.course.assessment.manager;
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -45,6 +44,9 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ScoreAccountingTrigger;
+import org.olat.course.assessment.ScoreAccountingTriggerData;
+import org.olat.course.assessment.ScoreAccountingTriggerSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentHandler;
@@ -54,7 +56,6 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.scoring.AccountingEvaluators;
@@ -73,10 +74,9 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -96,11 +96,13 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private ScoreAccountingTriggerDAO scoreAccountingTriggerDAO;
+	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
-	private RepositoryService repositoryService;
+	private TaskExecutorManager taskExecutorManager;
 	
 	@Autowired
 	private List<AssessmentHandler> loadedAssessmentHandlers;
@@ -417,25 +419,42 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		am.updateLastVisited(courseNode, assessedIdentity, new Date());
 		return false;
 	}
+	
+	@Override
+	public ScoreAccountingTrigger createScoreAccountingTrigger(RepositoryEntry entry, String subIdent,
+			ScoreAccountingTriggerData data) {
+		return scoreAccountingTriggerDAO.create(entry, subIdent, data);
+	}
+	
+	@Override
+	public void deleteScoreAccountingTriggers(List<ScoreAccountingTrigger> scoreAccountingTrigger) {
+		scoreAccountingTriggerDAO.delete(scoreAccountingTrigger);
+	}
+	
+	@Override
+	public void deleteScoreAccountingTriggers(RepositoryEntry entry) {
+		scoreAccountingTriggerDAO.delete(entry);
+	}
+	
+	@Override
+	public List<ScoreAccountingTrigger> getScoreAccountingTriggers(RepositoryEntryRef entryRef) {
+		return scoreAccountingTriggerDAO.load(entryRef);
+	}
+
+	@Override
+	public List<RepositoryEntry> getTriggeredRepositoryEntries(ScoreAccountingTriggerSearchParams searchParams) {
+		return scoreAccountingTriggerDAO.load(searchParams);
+	}
 
 	@Override
 	public void evaluateAll(ICourse course) {
-		log.debug("Evaluate all score accountings for course {}", course);
-		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		CoursePropertyManager pm = courseEnv.getCoursePropertyManager();
-		
-		Set<Identity> identities = new HashSet<>();
-		List<Identity> assessedIdentities = pm.getAllIdentitiesWithCourseAssessmentData(null);
-		identities.addAll(assessedIdentities);
-		List<Identity> members = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
-		identities.addAll(members);
-		
-		for(Identity identity: identities) {
-			evaluateAll(courseEnv, identity);
-			log.debug("Evaluated score accounting in course {} for {}", course, identity);
-			dbInstance.commitAndCloseSession();
-		}
+		new ScoreAccountingEvaluateAllWorker(course.getResourceableId()).run();
+	}
+	
+	@Override
+	public void evaluateAllAsync(Long courseResId) {
+		ScoreAccountingEvaluateAllWorker worker = new ScoreAccountingEvaluateAllWorker(courseResId);
+		taskExecutorManager.execute(worker);
 	}
 
 	private void evaluateAll(CourseEnvironment courseEnv, Identity assessedIdentity) {

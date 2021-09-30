@@ -50,7 +50,7 @@ public class AssignGraderBySearchController extends StepFormBasicController {
 			Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "import_search");
 		this.assignGrader = assignGrader;
-		searchController = new UserSearchFlexiController(ureq, wControl, rootForm, null,  false);
+		searchController = new UserSearchFlexiController(ureq, wControl, rootForm, null,  false, false);
 		listenTo(searchController);
 		initForm (ureq);
 	}

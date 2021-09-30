@@ -25,23 +25,9 @@
 
 package org.olat.course.assessment;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.gui.control.Event;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
-import org.olat.course.CourseFactory;
-import org.olat.course.CourseModule;
-import org.olat.course.ICourse;
-import org.olat.course.Structure;
-import org.olat.course.editor.PublishEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -57,17 +43,10 @@ import org.springframework.stereotype.Service;
  * @author patrickb
  */
 @Service("assessmentModule")
-public class AssessmentModule extends AbstractSpringModule implements GenericEventListener {
-	
-	private static final Logger log = Tracing.createLoggerFor(AssessmentModule.class);
-
-	private List<Long> upcomingWork;
+public class AssessmentModule extends AbstractSpringModule {
 	
 	@Value("${assessment.mode:enabled}")
 	private String assessmentModeEnabled;
-	
-	@Autowired
-	private CourseModule courseModule;
 	
 	@Autowired
 	public AssessmentModule(CoordinatorManager coordinatorManager) {
@@ -82,103 +61,12 @@ public class AssessmentModule extends AbstractSpringModule implements GenericEve
 	@Override
 	public void init() {
 		updateProperties();
-		upcomingWork = new ArrayList<>();
-		/*
-		 * always last step, register for course events
-		 */
-		courseModule.registerForCourseType(this, null);
-		/*
-		 * no more code after here!
-		 */
 	}
 	
 	private void updateProperties() {
 		String enabledObj = getStringPropertyValue("assessment.mode", true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			assessmentModeEnabled = enabledObj;
-		}
-	}
-
-	@Override
-	public void destroy() {
-		/*
-		 * first step in destroy, deregister for course events
-		 */
-		//no longer listen to changes
-		courseModule.deregisterForCourseType(this);
-		/*
-		 * no other code before here!
-		 */
-		//check that working queue is empty
-		if(!upcomingWork.isEmpty()) {
-			//hanging work!!
-			log.warn("still some Efficiency Statement recalculations open!!");
-		}
-	}
-
-	/**
-	 * Called at course publish.
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
-	@Override
-	public void event(Event event) {
-		if (event instanceof PublishEvent) {
-			PublishEvent pe = (PublishEvent) event;
-			if (pe.getState() == PublishEvent.PRE_PUBLISH && pe.isEventOnThisNode()) {
-				// PRE PUBLISH -> check node for changes
-				addToUpcomingWork(pe);
-			} else if (pe.getState() == PublishEvent.PUBLISH && pe.isEventOnThisNode()) {
-				// a publish event, check if it matches a previous checked
-				prepareUpdate(pe.getPublishedCourseResId());
-			}
-		}
-	}
-	
-	private void prepareUpdate(Long resId) {
-		boolean recalc = false;
-		synchronized (upcomingWork) { //o_clusterOK by:ld synchronized OK - only one cluster node must update the EfficiencyStatements (the course is locked for editing) (same as e.g. file indexer)
-			recalc = upcomingWork.contains(resId);
-			if (recalc) {
-				for(; upcomingWork.remove(resId); ) {
-					//remove all with the same res id
-				}
-			}
-		}
-	}
-
-	/**
-	 * @param pe
-	 */
-	private void addToUpcomingWork(PublishEvent pe) {
-		ICourse course = CourseFactory.loadCourse(pe.getPublishedCourseResId());
-		boolean courseEfficiencyEnabled = course.getCourseEnvironment().getCourseConfig().isEfficencyStatementEnabled();
-		if (!courseEfficiencyEnabled) {
-			// no efficiency enabled, stop here.
-			return;
-		}
-		// deleted + inserted + modified node ids -> changedNodeIds
-		Set<String> changedNodeIds = pe.getDeletedCourseNodeIds();
-		changedNodeIds.addAll(pe.getInsertedCourseNodeIds());
-		changedNodeIds.addAll(pe.getModifiedCourseNodeIds());
-		//
-		boolean courseAssessmentChanged = false;
-		Structure courseRun = course.getRunStructure();
-		for (Iterator<String> iter = changedNodeIds.iterator(); iter.hasNext();) {
-			String nodeId = iter.next();
-			boolean wasNodeAsessable = AssessmentHelper.checkIfNodeIsAssessable(courseRun.getNode(nodeId));
-			boolean isNodeAssessable = AssessmentHelper.checkIfNodeIsAssessable(course.getEditorTreeModel().getCourseNode(nodeId));
-			//if node was or became assessable
-			if (wasNodeAsessable || isNodeAssessable) {				
-				courseAssessmentChanged = true;
-				break;
-			}
-		}
-		if (!courseAssessmentChanged) {
-			// assessment changes detected, stop here
-			return;
-		}
-		synchronized (upcomingWork) { //o_clusterOK by:ld synchronized OK - only one cluster node must update the EfficiencyStatements (the course is locked for editing)
-			upcomingWork.add(course.getResourceableId());
 		}
 	}
 

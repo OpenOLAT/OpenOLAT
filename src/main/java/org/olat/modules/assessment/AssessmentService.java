@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -92,8 +93,20 @@ public interface AssessmentService {
 	
 	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(CurriculumElement curriculumElement, List<Long> identityKeys);
 	
+	public boolean hasAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry);
+	
 	public List<AssessmentEntry> getRootEntriesWithStartOverSubEntries(Date start);
 
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
+	
+	/**
+	 * Get the key of all identities which have the obligation "excluded".
+	 * 
+	 *
+	 * @param entry
+	 * @param subIdent
+	 * @return
+	 */
+	public List<Long> getExcludedIdentityKeys(RepositoryEntry entry, String subIdent);
 
 }

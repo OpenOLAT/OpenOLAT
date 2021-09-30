@@ -549,16 +549,19 @@ public class IdentityListCourseNodeController extends FormBasicController
 	@Override
 	public void reload(@SuppressWarnings("unused") UserRequest ureq) {
 		SearchAssessedIdentityParams params = getSearchParameters();
+		
+		// Get the identities and remove identity without assessment entry.
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
-		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
+		List<Long> entryIdentityKeys = assessmentToolManager.getIdentityKeys(getIdentity(), params, null);
+		assessedIdentities.removeIf(identity -> !entryIdentityKeys.contains(identity.getKey()));
 
-		// reduce assessment entry to allowed identities
+		// Get the assessment entries and put it in a map
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
-		assessmentEntries.stream()
+		assessmentToolManager.getAssessmentEntries(getIdentity(), params, null).stream()
 			.filter(entry -> entry.getIdentity() != null)
 			.forEach(entry -> entryMap.put(entry.getIdentity().getKey(), entry));
 		
-		// status need an assessment entry, remove identity without assessment entry
+		// Apply filters
 		if((params.getAssessmentStatus() != null && !params.getAssessmentStatus().isEmpty()) || params.isPassed() || params.isFailed()) {
 			List<Identity> assessedIdentitiesWithEntry = new ArrayList<>();
 			for(Identity assessedIdentity:assessedIdentities) {
@@ -573,7 +576,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 					assessedIdentitiesWithEntry.add(assessedIdentity);
 				}	
 			}
-			assessedIdentities = assessedIdentitiesWithEntry;	
+			assessedIdentities = assessedIdentitiesWithEntry;
 		}
 		
 		Map<Long,String> assessmentEntriesKeysToGraders = Collections.emptyMap();
@@ -616,6 +619,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	protected SearchAssessedIdentityParams getSearchParameters() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), referenceEntry, assessmentCallback);
+		params.setExcludeExcluded(true);
 		
 		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, "status");
@@ -670,6 +674,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 				options.setNonMembers(params.isNonMembers());
 			} else {
 				List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
+				List<Long> entryIdentityKeys = assessmentToolManager.getIdentityKeys(getIdentity(), params, null);
+				assessedIdentities.removeIf(identity -> !entryIdentityKeys.contains(identity.getKey()));
 				options.setIdentities(assessedIdentities);
 				fillAlternativeToAssessableIdentityList(options, params);
 			}

@@ -20,9 +20,11 @@
 package org.olat.course.nodes.st.assessment;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -35,6 +37,8 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  *
  */
 public class STLearningPathConfigs implements LearningPathConfigs {
+	
+	static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
 
 	private final ModuleConfiguration moduleConfigs;
 
@@ -66,6 +70,16 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	@Override
 	public void setObligation(AssessmentObligation obligation) {
 		//
+	}
+
+	@Override
+	public List<ExceptionalObligation> getExceptionalObligations() {
+		return moduleConfigs.getList(CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS, ExceptionalObligation.class);
+	}
+
+	@Override
+	public void setExceptionalObligations(List<ExceptionalObligation> exeptionalObligations) {
+		moduleConfigs.setList(CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS, exeptionalObligations);
 	}
 
 	@Override

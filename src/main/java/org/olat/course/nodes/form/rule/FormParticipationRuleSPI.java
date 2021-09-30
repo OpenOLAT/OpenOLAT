@@ -34,12 +34,15 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.ui.FormBeforeDueDateRuleEditor;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -66,6 +69,8 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements 
 
 	@Autowired
 	private FormManager formManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
@@ -152,10 +157,16 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements 
 				.map(EvaluationFormParticipation::getExecutor)
 				.collect(Collectors.toList());
 		
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		List<Long> excludedIdentityKeys = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())
+			? assessmentService.getExcludedIdentityKeys(courseEntry, formCourseNode.getIdent())
+			: Collections.emptyList();
+		
 		List<Identity> identities = repositoryEntryRelationDao.getMembers(courseEntry, RepositoryEntryRelationType.all,
 				GroupRoles.participant.name());
 		for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
-			if(participants.contains(identityIt.next())) {
+			Identity identity = identityIt.next();
+			if(participants.contains(identity) || excludedIdentityKeys.contains(identity.getKey())) {
 				identityIt.remove();
 			}
 		}

@@ -1888,6 +1888,25 @@
 					</bean>
 				</entry>
 
+				<entry key="org.olat.course.learningpath.obligation.UserPropertyExceptionalObligationHandler">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Properties used in the learning path execution exceptions." />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyZipCode" />
+								<ref bean="userPropertyRegion" />
+								<ref bean="userPropertyCity" />
+								<ref bean="userPropertyCountry" />
+								<ref bean="userPropertyInstitutionalName" />
+								<ref bean="userPropertyInstitutionalUserIdentifier" />
+								<ref bean="userPropertyInstitutionalEmail" />
+								<ref bean="userPropertyOrgUnit" />
+								<ref bean="userPropertyStudySubject" />
+							</list>
+						</property>
+					</bean>
+				</entry>
+
 				<entry key="org.olat.course.reminder.ui.CourseSendReminderListController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Properties used in the send reminder list" />

@@ -22,10 +22,12 @@ package org.olat.course.learningpath.manager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
 import org.olat.course.nodes.CourseNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +47,8 @@ class LearningPathRegistry {
 	private List<LearningPathNodeHandler> learningPathNodeHandlers;
 	private Map<String, LearningPathNodeHandler> nodeTypeToLearningPathNodeHandlers;
 	private LearningPathNodeHandler nonLearningPathNodeHandler;
+	@Autowired
+	private List<ExceptionalObligationHandler> exceptionalObligationHandlers;
 	
 	@PostConstruct
 	void initProviders() {
@@ -73,4 +77,19 @@ class LearningPathRegistry {
 	LearningPathNodeHandler getLearningPathNodeHandler(CourseNode courseNode) {
 		return getLearningPathNodeHandler(courseNode.getType());
 	}
+	
+	List<ExceptionalObligationHandler> getExceptionalObligationHandler() {
+		return exceptionalObligationHandlers.stream()
+				.filter(ExceptionalObligationHandler::isEnabled)
+				.collect(Collectors.toList());
+	}
+	
+	ExceptionalObligationHandler getExceptionalObligationHandler(String type, boolean disabled) {
+		return exceptionalObligationHandlers.stream()
+				.filter(handler -> disabled || handler.isEnabled())
+				.filter(handler -> handler.getType().equals(type))
+				.findFirst()
+				.orElseGet(() -> null);
+	}
+	
 }

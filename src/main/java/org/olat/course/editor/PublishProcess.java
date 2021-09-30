@@ -61,7 +61,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
-import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -498,9 +497,6 @@ public class PublishProcess {
 		
 		//commit all changes before sending an event
 		DBFactory.getInstance().commitAndCloseSession();
-		
-		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-		nodeAccessService.onCoursePublished(course);
 		
 		/*
 		 * broadcast event

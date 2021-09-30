@@ -102,6 +102,11 @@ public class QueryUserHelper implements User {
 
 	@Override
 	public String getProperty(String propertyName, Locale locale) {
+		return getProperty(propertyName);
+	}
+
+	@Override
+	public String getProperty(String propertyName) {
 		return userProperty;
 	}
 

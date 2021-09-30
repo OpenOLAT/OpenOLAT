@@ -107,6 +107,7 @@ public class ShibbolethManagerImplTest {
 				.thenReturn(identityMock);
 		when(userManagerMock.createUser(null, null, null)).thenReturn(userMock);
 		when(identityMock.getUser()).thenReturn(userMock);
+		when(identityMock.getKey()).thenReturn(Long.valueOf(1));
 		when(userMock.getPreferences()).thenReturn(preferencesMock);
 		when(attributesMock.syncUser(any(User.class))).then(returnsFirstArg());
 		when(attributesMock.getAcRawValues()).thenReturn("values");
@@ -219,7 +220,7 @@ public class ShibbolethManagerImplTest {
 
 		sut.syncUser(identityMock, attributesMock);
 
-		verify(userManagerMock).updateUser(userMock);
+		verify(userManagerMock).updateUser(identityMock, userMock);
 	}
 
 	@Test
@@ -228,7 +229,7 @@ public class ShibbolethManagerImplTest {
 
 		sut.syncUser(identityMock, attributesMock);
 
-		verify(userManagerMock, never()).updateUser(userMock);
+		verify(userManagerMock, never()).updateUser(identityMock, userMock);
 	}
 
 	private class TestableShibbolethManagerImpl extends ShibbolethManagerImpl {

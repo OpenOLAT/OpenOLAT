@@ -29,6 +29,8 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -113,21 +115,28 @@ public class PassCounter {
 				CourseNode courseNode = (CourseNode)node;
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 				if (Mode.setByNode == assessmentConfig.getPassedMode() && !assessmentConfig.ignoreInCourseAssessment()) {
-					passable++;
 					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
-					Boolean userVisible = assessmentEvaluation.getUserVisible();
-					if (userVisible != null && userVisible.booleanValue()) {
-						Boolean nodePassed = assessmentEvaluation.getPassed();
-						if (nodePassed != null) {
-							if (nodePassed) {
-								passed++;
-							} else {
-								failed++;
+					if (isNotExcluded(assessmentEvaluation)) {
+						passable++;
+						Boolean userVisible = assessmentEvaluation.getUserVisible();
+						if (userVisible != null && userVisible.booleanValue()) {
+							Boolean nodePassed = assessmentEvaluation.getPassed();
+							if (nodePassed != null) {
+								if (nodePassed) {
+									passed++;
+								} else {
+									failed++;
+								}
 							}
 						}
 					}
 				}
 			}
+		}
+		
+		private boolean isNotExcluded(AssessmentEvaluation assessmentEvaluation) {
+			Overridable<AssessmentObligation> obligation = assessmentEvaluation.getObligation();
+			return obligation.getCurrent() == null || obligation.getCurrent() != AssessmentObligation.excluded;
 		}
 
 	}

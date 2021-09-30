@@ -28,6 +28,8 @@ import org.olat.course.nodes.CourseNode;
  *
  */
 public interface ScoreAccounting {
+	
+	void setObligationContext(ObligationContext obligationContext);
 
 	/**
 	 * Retrieve all the score evaluations for all course nodes

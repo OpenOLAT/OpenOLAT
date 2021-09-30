@@ -39,7 +39,7 @@ public class LearnPathCourseElementEditorPage {
 	}
 	
 	public LearnPathCourseElementEditorPage setCompletionCriterion(FullyAssessedTrigger trigger) {
-		By triggerBy = By.xpath("//fieldset[contains(@class,'o_sel_learnpath_element')]//div[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "']");
+		By triggerBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//div[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "']");
 		OOGraphene.waitElement(triggerBy, browser);
 		browser.findElement(triggerBy).click();
 		OOGraphene.waitBusy(browser);
@@ -47,7 +47,7 @@ public class LearnPathCourseElementEditorPage {
 	}
 	
 	public LearnPathCourseElementEditorPage save() {
-		By saveBy = By.cssSelector("fieldset.o_sel_learnpath_element button.btn.btn-primary");
+		By saveBy = By.cssSelector("fieldset.o_lp_config_edit button.btn.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

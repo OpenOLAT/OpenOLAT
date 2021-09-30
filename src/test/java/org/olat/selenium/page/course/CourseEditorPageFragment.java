@@ -147,7 +147,7 @@ public class CourseEditorPageFragment {
 	}
 	
 	public LearnPathCourseElementEditorPage selectTabLearnPath() {
-		By learnPathTabBy = By.cssSelector("fieldset.o_sel_learnpath_element");
+		By learnPathTabBy = By.cssSelector("fieldset.o_lp_config_edit");
 		selectTab(learnPathTabBy);
 		return new LearnPathCourseElementEditorPage(browser);
 	}

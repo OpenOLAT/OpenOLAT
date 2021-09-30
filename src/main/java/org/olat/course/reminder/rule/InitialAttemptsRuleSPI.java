@@ -19,21 +19,28 @@
  */
 package org.olat.course.reminder.rule;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.InitialAttemptsRuleEditor;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -52,8 +59,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI implements CourseNodeRuleSPI {
 
+	private static final Logger log = Tracing.createLoggerFor(InitialAttemptsRuleSPI.class);
+	
 	@Autowired
 	private ReminderRuleDAO helperDao;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	@Override
 	public String getLabelI18nKey() {
@@ -113,11 +124,23 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI implements
 
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+			if (courseNode == null) {
+				log.error("Initial attempt in course " + entry.getKey() + " (" + entry.getDisplayname() + ") is missing a course element");
+				return Collections.emptyMap();
+			}
+			
+			List<Identity> attemptIdentities = new ArrayList<>(identities);
+			if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+				List<Long> excludedIdentityKeys = assessmentService.getExcludedIdentityKeys(entry, courseNode.getIdent());
+				if (!excludedIdentityKeys.isEmpty()) {
+					attemptIdentities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
+				}
+			}
 			
 			// We use the last attempt date because, we do not know the first attempt date.
 			// Since the reminder is sent only once, this should not matter (unless a
 			// reminder is explicitly sent multiple times by the admin).
-			return helperDao.getLastAttemptsDates(entry, courseNode, identities);
+			return helperDao.getLastAttemptsDates(entry, courseNode, attemptIdentities);
 		}
 		return null;
 	}

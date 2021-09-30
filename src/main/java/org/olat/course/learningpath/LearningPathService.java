@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
+import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 
@@ -39,9 +40,31 @@ public interface LearningPathService {
 	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode);
 	
 	public SequenceConfig getSequenceConfig(CourseNode courseNode);
-
+	
+	
+	/**
+	 * Get all enabled ExceptionalObligationHandler ordered by sort value.
+	 * 
+	 * @return 
+	 */
+	public List<ExceptionalObligationHandler> getExceptionalObligationHandlers();
+	
+	/**
+	 * 
+	 * @param type
+	 * @return the ExceptionalObligationHandler or null if not found or not enabled.
+	 */
+	public ExceptionalObligationHandler getExceptionalObligationHandler(String type);
+	
+	/**
+	 * Synchronize the exceptional obligations from the course run structure to the database.
+	 *
+	 * @param courseResId
+	 */
+	public void syncExceptionalObligations(Long courseResId);
+	
 	public List<CourseNode> getUnsupportedCourseNodes(ICourse course);
-
+	
 	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity);
 
 }

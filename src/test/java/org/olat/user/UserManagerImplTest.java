@@ -24,16 +24,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationProvider;
 import org.olat.registration.RegistrationManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 
 /**
@@ -266,6 +274,57 @@ public class UserManagerImplTest {
 		
 		String expectedValue = userKey + "@" + issuer;
 		assertThat(ensuredEmail).isEqualTo(expectedValue);
+	}
+	
+	@Test
+	public void shouldGetPropertyChangedEvents() {
+		List<UserPropertyHandler> handlers = new ArrayList<>();
+		UserPropertyHandler handler1 = mock(UserPropertyHandler.class);
+		when(handler1.getName()).thenReturn("institutionalName");
+		handlers.add(handler1);
+		UserPropertyHandler handler2 = mock(UserPropertyHandler.class);
+		when(handler2.getName()).thenReturn("institutionalUserIdentifier");
+		handlers.add(handler2);
+		UserPropertyHandler handler3 = mock(UserPropertyHandler.class);
+		when(handler3.getName()).thenReturn("institutionalEmail");
+		handlers.add(handler3);
+		UserPropertyHandler handler4 = mock(UserPropertyHandler.class);
+		when(handler4.getName()).thenReturn("orgUnit");
+		handlers.add(handler4);
+		UserPropertyHandler handler5 = mock(UserPropertyHandler.class);
+		when(handler5.getName()).thenReturn("studySubject");
+		handlers.add(handler5);
+		UserPropertiesConfig userPropertiesConfig = mock(UserPropertiesConfig.class);
+		when(userPropertiesConfig.getAllUserPropertyHandlers()).thenReturn(handlers);
+		sut.setUserPropertiesConfig(userPropertiesConfig);
+		
+		TransientIdentity oldUser = new TransientIdentity();
+		oldUser.setProperty("institutionalName", "old");
+		oldUser.setProperty("institutionalUserIdentifier", "old");
+		oldUser.setProperty("institutionalEmail", null);
+		oldUser.setProperty("orgUnit", "old");
+		oldUser.setProperty("studySubject", null);
+		TransientIdentity updatedUser = new TransientIdentity();
+		updatedUser.setProperty("institutionalName", "old");
+		updatedUser.setProperty("institutionalUserIdentifier", "new");
+		updatedUser.setProperty("institutionalEmail", "new");
+		updatedUser.setProperty("orgUnit", null);
+		updatedUser.setProperty("studySubject", null);
+		
+		List<UserPropertyChangedEvent> changedEvents = sut.getChangedEvents(oldUser, oldUser, updatedUser);
+		
+		Map<String, UserPropertyChangedEvent> propertyToEvent = changedEvents.stream()
+				.collect(Collectors.toMap(UserPropertyChangedEvent::getPropertyName, Function.identity()));
+		assertThat(propertyToEvent).hasSize(3);
+		UserPropertyChangedEvent notSameEvent = propertyToEvent.get("institutionalUserIdentifier");
+		assertThat(notSameEvent.getOldValue()).isEqualTo("old");
+		assertThat(notSameEvent.getNewValue()).isEqualTo("new");
+		UserPropertyChangedEvent nullValueEvent = propertyToEvent.get("institutionalEmail");
+		assertThat(nullValueEvent.getOldValue()).isNull();
+		assertThat(nullValueEvent.getNewValue()).isEqualTo("new");
+		UserPropertyChangedEvent valueNullEvent = propertyToEvent.get("orgUnit");
+		assertThat(valueNullEvent.getOldValue()).isEqualTo("old");
+		assertThat(valueNullEvent.getNewValue()).isNull();
 	}
 	
 }

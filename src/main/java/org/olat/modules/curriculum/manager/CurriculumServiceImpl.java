@@ -45,11 +45,13 @@ import org.olat.basesecurity.model.IdentityToRoleKey;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.EventBus;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.coach.manager.CoachingDAO;
@@ -535,6 +537,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumElementInfos> getCurriculumElementsWithInfos(CurriculumRef curriculum) {
 		return curriculumElementDao.loadElementsWithInfos(curriculum);
 	}
+	
+	@Override
+	public Long getCuriculumElementCount(RepositoryEntryRef entry) {
+		return curriculumElementDao.countElements(entry);
+	}
 
 	@Override
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry) {
@@ -613,7 +620,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities) {
+	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<? extends CurriculumElementRef> elements, Identity... identities) {
 		return curriculumElementDao.getMembershipInfos(null, elements, identities);
 	}
 	
@@ -725,11 +732,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			throw new AssertException("Inherited are automatic");
 		}
 		
-		List<CurriculumElement> membershipAdded = new ArrayList<>();
+		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
 		GroupMembership membership = groupDao.getMembership(element.getGroup(), member, role.name());
 		if(membership == null) {
 			groupDao.addMembershipOneWay(element.getGroup(), member, role.name(), inheritanceMode);
-			membershipAdded.add(element);
+			events.add(CurriculumElementMembershipEvent.identityAdded(element, member, role));
 		} else if(membership.getInheritanceMode() != inheritanceMode) {
 			groupDao.updateInheritanceMode(membership, inheritanceMode);
 		}
@@ -740,38 +747,42 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				GroupMembership inheritedMembership = groupDao.getMembership(descendant.getGroup(), member, role.name());
 				if(inheritedMembership == null) {
 					groupDao.addMembershipOneWay(descendant.getGroup(), member, role.name(), GroupMembershipInheritance.inherited);
-					membershipAdded.add(element);
+					events.add(CurriculumElementMembershipEvent.identityAdded(element, member, role));
 				} else if(inheritedMembership.getInheritanceMode() == GroupMembershipInheritance.none) {
 					groupDao.updateInheritanceMode(inheritedMembership, GroupMembershipInheritance.inherited);
 				}
 			}
 		}
 		
-		fireMemberAddedEvent(membershipAdded, member, role);
+		sendDeferredEvents(events);
 	}
 
 	@Override
 	public void removeMember(CurriculumElement element, IdentityRef member) {
+		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
+
 		List<GroupMembership> memberships = groupDao.getMemberships(element.getGroup(), member);
-		
 		groupDao.removeMembership(element.getGroup(), member);
 		
 		CurriculumElementNode elementNode = null;
 		for(GroupMembership membership:memberships) {
 			if(membership.getInheritanceMode() == GroupMembershipInheritance.none) {
 				groupDao.removeMembership(membership);
+				events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, membership.getRole()));
 			} else if(membership.getInheritanceMode() == GroupMembershipInheritance.root) {
 				String role = membership.getRole();
 				groupDao.removeMembership(membership);
+				events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, membership.getRole()));
 				
 				if(elementNode == null) {
 					elementNode = curriculumElementDao.getDescendantTree(element);
 				}
 				for(CurriculumElementNode child:elementNode.getChildrenNode()) {
-					removeInherithedMembership(child, member, role);
+					removeInherithedMembership(child, member, role, events);
 				}
 			}
 		}
+		sendDeferredEvents(events);
 	}
 	
 	/**
@@ -781,23 +792,28 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	 * @param elementNode The organization node
 	 * @param member The user to remove
 	 * @param role The role
+	 * @param events 
 	 */
-	private void removeInherithedMembership(CurriculumElementNode elementNode, IdentityRef member, String role) {
+	private void removeInherithedMembership(CurriculumElementNode elementNode, IdentityRef member, String role, List<CurriculumElementMembershipEvent> events) {
 		GroupMembership membership = groupDao
 				.getMembership(elementNode.getElement().getGroup(), member, role);
 		if(membership != null && membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
 			groupDao.removeMembership(membership);
+			events.add(CurriculumElementMembershipEvent.identityRemoved(elementNode.getElement(), member, membership.getRole()));
+			
 			for(CurriculumElementNode child:elementNode.getChildrenNode()) {
-				removeInherithedMembership(child, member, role);
+				removeInherithedMembership(child, member, role, events);
 			}
 		}
 	}
 
 	@Override
 	public void removeMember(CurriculumElement element, IdentityRef member, CurriculumRoles role) {
+		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
 		GroupMembership membership = groupDao.getMembership(element.getGroup(), member, role.name());
 		
 		groupDao.removeMembership(element.getGroup(), member, role.name());
+		events.add(CurriculumElementMembershipEvent.identityRemoved(element, member, role));
 		
 		if(membership != null && (membership.getInheritanceMode() == GroupMembershipInheritance.root
 				|| membership.getInheritanceMode() == GroupMembershipInheritance.none)) {
@@ -806,19 +822,23 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					|| membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
 				CurriculumElementNode elementNode = curriculumElementDao.getDescendantTree(element);
 				for(CurriculumElementNode child:elementNode.getChildrenNode()) {
-					removeInherithedMembership(child, member, role.name());
+					removeInherithedMembership(child, member, role.name(), events);
 				}
 			}
 		}
+		sendDeferredEvents(events);
 	}
 
 	@Override
 	public void removeMembers(CurriculumElement element, List<Identity> members, boolean overrideManaged) {
+		List<CurriculumElementMembershipEvent> events = new ArrayList<>();
 		if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.members) || overrideManaged) {
 			for(Identity member:members) {
 				groupDao.removeMembership(element.getGroup(), member);
+				events.add(CurriculumElementMembershipEvent.identityRemoved(element, member));
 			}
 		}
+		sendDeferredEvents(events);
 	}
 
 	@Override
@@ -998,19 +1018,19 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return true;
 	}
 	
-	private void fireMemberAddedEvent(Collection<? extends CurriculumElementRef> elements, Identity member,
-			CurriculumRoles role) {
-		CurriculumElementMembershipEvent event = new CurriculumElementMembershipEvent(
-				CurriculumElementMembershipEvent.MEMEBER_ADDED, elements, member, role);
-		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event,
-				OresHelper.lookupType(CurriculumElement.class));
+	private void sendDeferredEvents(List<CurriculumElementMembershipEvent> events) {
+		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
+		for(CurriculumElementMembershipEvent event:events) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CurriculumElement.class, event.getCurriculumElementKey());
+			eventBus.fireEventToListenersOf(event, ores);
+		}
 	}
 	
 	private void fireRepositoryEntryAddedEvent(CurriculumElementRef element, RepositoryEntryRef entry) {
 		CurriculumElementRepositoryEntryEvent event = new CurriculumElementRepositoryEntryEvent(REPOSITORY_ENTRY_ADDED,
 				element.getKey(), entry.getKey());
-		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event,
-				OresHelper.lookupType(CurriculumElement.class));
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CurriculumElement.class, event.getCurriculumElementKey());
+		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, ores);
 	}
 	
 }

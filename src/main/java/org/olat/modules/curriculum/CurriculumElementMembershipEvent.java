@@ -19,10 +19,7 @@
  */
 package org.olat.modules.curriculum;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.util.event.MultiUserEvent;
 
 /**
@@ -36,20 +33,38 @@ public class CurriculumElementMembershipEvent extends MultiUserEvent {
 	private static final long serialVersionUID = -4147709424125454372L;
 	
 	public static final String MEMEBER_ADDED = "curriculum.element.member.added.event";
+	public static final String MEMEBER_REMOVED = "curriculum.element.member.removed.event";
 
-	private final Collection<Long> curriculumElementKeys;
+	private final Long curriculumElementKey;
 	private final Long identityKey;
 	private final CurriculumRoles role;
 	
-	public CurriculumElementMembershipEvent(String command, Collection<? extends CurriculumElementRef> elements, Identity identity, CurriculumRoles role) {
+	public CurriculumElementMembershipEvent(String command, CurriculumElementRef element, IdentityRef identity, CurriculumRoles role) {
 		super(command);
-		this.curriculumElementKeys = elements.stream().map(CurriculumElementRef::getKey).collect(Collectors.toList());
+		this.curriculumElementKey = element.getKey();
 		this.identityKey = identity.getKey();
 		this.role = role;
 	}
-
-	public Collection<Long>  getCurriculumElementKeys() {
-		return curriculumElementKeys;
+	
+	public static CurriculumElementMembershipEvent identityAdded(CurriculumElementRef element, IdentityRef identity, CurriculumRoles role) {
+		return new CurriculumElementMembershipEvent(MEMEBER_ADDED, element, identity, role);
+	}
+	
+	public static CurriculumElementMembershipEvent identityRemoved(CurriculumElementRef element, IdentityRef identity) {
+		return new CurriculumElementMembershipEvent(MEMEBER_REMOVED, element, identity, null);
+	}
+	
+	public static CurriculumElementMembershipEvent identityRemoved(CurriculumElementRef element, IdentityRef identity, String roleValue) {
+		CurriculumRoles role = CurriculumRoles.isValueOf(roleValue)? CurriculumRoles.valueOf(roleValue): null;
+		return identityRemoved(element, identity, role);
+	}
+	
+	public static CurriculumElementMembershipEvent identityRemoved(CurriculumElementRef element, IdentityRef identity, CurriculumRoles role) {
+		return new CurriculumElementMembershipEvent(MEMEBER_REMOVED, element, identity, role);
+	}
+	
+	public Long getCurriculumElementKey() {
+		return curriculumElementKey;
 	}
 
 	public Long getIdentityKey() {

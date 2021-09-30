@@ -164,10 +164,11 @@ public abstract class UserManager {
 	/**
 	 * Updates a user in the database. 
 	 * 
-	 * @param usr The user object to be updated
+	 * @param identityRef 
+	 * @param user The user object to be updated
 	 * @return The true if successfully updated
 	 */
-	public abstract User updateUser(User usr);
+	public abstract User updateUser(IdentityRef identityRef, User user);
 
 	/**
 	 * Updates the user object for a given identity

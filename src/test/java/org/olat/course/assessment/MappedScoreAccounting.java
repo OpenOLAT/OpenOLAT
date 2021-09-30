@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
 
 /**
@@ -38,6 +39,11 @@ public class MappedScoreAccounting implements ScoreAccounting {
 	
 	public void put(CourseNode courseNode, AssessmentEvaluation evaluation) {
 		nodeToEvaluation.put(courseNode, evaluation);
+	}
+
+	@Override
+	public void setObligationContext(ObligationContext obligationContext) {
+		//
 	}
 
 	@Override

@@ -192,6 +192,11 @@ public class EMailIdentity implements Identity {
 
 		@Override
 		public String getPropertyOrIdentityEnvAttribute(String propertyName, Locale propLocale) {
+			return getProperty(propertyName);
+		}
+
+		@Override
+		public String getProperty(String propertyName) {
 			return data.get(propertyName);
 		}
 

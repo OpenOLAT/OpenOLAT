@@ -108,15 +108,15 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 		}
 
 		User user = identity.getUser();
-		syncAndPersistUser(user, shibbolethAttributes);
+		syncAndPersistUser(identity, user, shibbolethAttributes);
 		addToAuthorsGroup(identity, shibbolethAttributes);
 		createAndBookAdvanceOrders(identity, shibbolethAttributes);
 	}
 
-	private void syncAndPersistUser(User user, ShibbolethAttributes shibbolethAttributes) {
+	private void syncAndPersistUser(Identity identity, User user, ShibbolethAttributes shibbolethAttributes) {
 		if (shibbolethAttributes.hasDifference(user)) {
 			User syncedUser = shibbolethAttributes.syncUser(user);
-			userManager.updateUser(syncedUser);
+			userManager.updateUser(identity, syncedUser);
 		}
 	}
 

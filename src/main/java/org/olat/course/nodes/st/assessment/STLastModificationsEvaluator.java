@@ -25,6 +25,8 @@ import java.util.List;
 import org.olat.core.util.DateUtils;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.LastModificationsEvaluator;
+import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -40,11 +42,18 @@ public class STLastModificationsEvaluator implements LastModificationsEvaluator 
 		Date lastUserModified = currentEvaluation.getLastUserModified();
 		Date lastCoachModified = currentEvaluation.getLastCoachModified();
 		for (AssessmentEvaluation child : children) {
-			lastUserModified = DateUtils.getLater(lastUserModified, child.getLastUserModified());
-			lastCoachModified = DateUtils.getLater(lastCoachModified, child.getLastCoachModified());
+			if (isNotExcluded(child)) {
+				lastUserModified = DateUtils.getLater(lastUserModified, child.getLastUserModified());
+				lastCoachModified = DateUtils.getLater(lastCoachModified, child.getLastCoachModified());
+			}
 		}
 		
 		return LastModificationsEvaluator.of(lastUserModified, lastCoachModified);
+	}
+	
+	private boolean isNotExcluded(AssessmentEvaluation assessmentEvaluation) {
+		Overridable<AssessmentObligation> obligation = assessmentEvaluation.getObligation();
+		return obligation.getCurrent() == null || obligation.getCurrent() != AssessmentObligation.excluded;
 	}
 
 }

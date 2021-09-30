@@ -35,10 +35,13 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.ScoreRuleEditor;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -61,6 +64,8 @@ public class ScoreRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
@@ -137,6 +142,13 @@ public class ScoreRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 				// The rule is invalid if the curse node has no score (anymore). Send no reminder at all.
 				identities.clear();
 				return;
+			}
+			
+			if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+				List<Long> excludedIdentityKeys = assessmentService.getExcludedIdentityKeys(entry, courseNode.getIdent());
+				if (!excludedIdentityKeys.isEmpty()) {
+					identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
+				}
 			}
 			
 			scores = helperDao.getScores(entry, courseNode, identities);

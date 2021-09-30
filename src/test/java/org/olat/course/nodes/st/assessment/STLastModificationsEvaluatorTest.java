@@ -31,6 +31,8 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
+import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -46,13 +48,13 @@ public class STLastModificationsEvaluatorTest {
 	public void shouldGetLaterFromChildren() {
 		Date lastUserModified = toDate(LocalDateTime.of(2012, 8, 19, 12, 0, 0));
 		Date lastCoachModified = toDate(LocalDateTime.of(2012, 1, 9, 0, 1, 1));
-		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(lastUserModified, lastCoachModified);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(lastUserModified, lastCoachModified, AssessmentObligation.mandatory);
 		Date lastUserModifiedChild1 = toDate(LocalDateTime.of(2016, 8, 19, 12, 0, 0));
 		Date lastCoachModifiedChild1 = lastCoachModified;
-		AssessmentEvaluation evaluationChild1 = createAssessmentEvaluation(lastUserModifiedChild1, lastCoachModifiedChild1);
+		AssessmentEvaluation evaluationChild1 = createAssessmentEvaluation(lastUserModifiedChild1, lastCoachModifiedChild1, AssessmentObligation.mandatory);
 		Date lastUserModifiedChild2 = lastUserModified;
 		Date lastCoachModifiedChild2 = toDate(LocalDateTime.of(2016, 8, 19, 12, 0, 0));
-		AssessmentEvaluation evaluationChild2 = createAssessmentEvaluation(lastUserModifiedChild2, lastCoachModifiedChild2);
+		AssessmentEvaluation evaluationChild2 = createAssessmentEvaluation(lastUserModifiedChild2, lastCoachModifiedChild2, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(evaluationChild1, evaluationChild2);
 		
 		LastModifications lastModifications = sut.getLastModifications(currentEvaluation, children);
@@ -67,7 +69,7 @@ public class STLastModificationsEvaluatorTest {
 	public void shouldNotChangeDatedIfItHasNoChildren() {
 		Date lastUserModified = toDate(LocalDateTime.of(2016, 8, 19, 12, 0, 0));
 		Date lastCoachModified = toDate(LocalDateTime.of(2012, 1, 9, 0, 1, 1));
-		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(lastUserModified, lastCoachModified);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(lastUserModified, lastCoachModified, AssessmentObligation.mandatory);
 		
 		LastModifications lastModifications = sut.getLastModifications(currentEvaluation, Collections.emptyList());
 		
@@ -76,10 +78,32 @@ public class STLastModificationsEvaluatorTest {
 		softly.assertThat(lastModifications.getLastCoachModified()).isEqualTo(lastCoachModified);
 		softly.assertAll();
 	}
+	
+	@Test
+	public void shouldIgnoreInvisibleChildren() {
+		Date lastUserModified = toDate(LocalDateTime.of(2012, 8, 19, 12, 0, 0));
+		Date lastCoachModified = toDate(LocalDateTime.of(2012, 1, 9, 0, 1, 1));
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(lastUserModified, lastCoachModified, AssessmentObligation.mandatory);
+		Date lastUserModifiedChild1 = toDate(LocalDateTime.of(2016, 8, 19, 12, 0, 0));
+		Date lastCoachModifiedChild1 = toDate(LocalDateTime.of(2016, 8, 19, 12, 0, 0));
+		AssessmentEvaluation evaluationChild1 = createAssessmentEvaluation(lastUserModifiedChild1, lastCoachModifiedChild1, AssessmentObligation.mandatory);
+		Date lastUserModifiedChild2 = toDate(LocalDateTime.of(2017, 8, 19, 12, 0, 0));
+		Date lastCoachModifiedChild2 = toDate(LocalDateTime.of(2017, 8, 19, 12, 0, 0));
+		AssessmentEvaluation evaluationChild2 = createAssessmentEvaluation(lastUserModifiedChild2, lastCoachModifiedChild2, AssessmentObligation.excluded);
+		List<AssessmentEvaluation> children = Arrays.asList(evaluationChild1, evaluationChild2);
+		
+		LastModifications lastModifications = sut.getLastModifications(currentEvaluation, children);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(lastModifications.getLastUserModified()).isEqualTo(lastUserModifiedChild1);
+		softly.assertThat(lastModifications.getLastCoachModified()).isEqualTo(lastCoachModifiedChild1);
+		softly.assertAll();
+	}
 
-	private AssessmentEvaluation createAssessmentEvaluation(Date lastUserModified, Date lastCoachModified) {
+
+	private AssessmentEvaluation createAssessmentEvaluation(Date lastUserModified, Date lastCoachModified, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, 0, null, lastUserModified, lastCoachModified, null, null, null, null, null, null, null);
+				null, null, null, 0, null, lastUserModified, lastCoachModified, null, null, null, Overridable.of(obligation), null, null, null);
 	}
 
 }

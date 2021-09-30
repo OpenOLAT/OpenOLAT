@@ -27,7 +27,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathConfigs.FullyAssessedResult;
@@ -195,11 +194,6 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 		return setDone
 				? fullyAssessed? AssessmentEntryStatus.done: AssessmentEntryStatus.notStarted
 				: courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnvironment).getAssessmentStatus();
-	}
-
-	@Override
-	public void onCoursePublished(ICourse course) {
-		courseAssessmentService.evaluateAll(course);
 	}
 
 }

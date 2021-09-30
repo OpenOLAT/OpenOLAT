@@ -27,7 +27,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.logging.Tracing;
-import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -165,11 +164,5 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
 		return getNodeAccessProvider(type).onNodeVisited(courseNode, userCourseEnv);
-	}
-
-	@Override
-	public void onCoursePublished(ICourse course) {
-		NodeAccessType type = NodeAccessType.of(course);
-		getNodeAccessProvider(type).onCoursePublished(course);
 	}
 }

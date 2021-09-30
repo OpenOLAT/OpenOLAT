@@ -924,7 +924,7 @@ public class CoachingDAOTest extends OlatTestCase {
 		partUser.setProperty(UserConstants.FIRSTNAME, "Rei");
 		partUser.setProperty(UserConstants.LASTNAME, "Ayanami");
 		partUser.setProperty(UserConstants.EMAIL, "rei.ayanami@openolat.com");
-		partUser = userManager.updateUser(partUser);
+		partUser = userManager.updateUser(participant, partUser);
 		dbInstance.commitAndCloseSession();
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);

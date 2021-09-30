@@ -71,6 +71,16 @@ public interface AssessmentToolManager {
 	public List<GradingAssignment> getGradingAssignments(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) ;
 	
 	/**
+	 * Return the keys of the identities with an assessment entry.
+	 *
+	 * @param coach
+	 * @param params
+	 * @param status
+	 * @return
+	 */
+	public List<Long> getIdentityKeys(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
+	
+	/**
 	 * 
 	 * @param assessedIdentity
 	 * @param entry

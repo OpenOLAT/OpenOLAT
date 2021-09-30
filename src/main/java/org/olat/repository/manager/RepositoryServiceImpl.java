@@ -62,6 +62,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.certificate.CertificatesManager;
@@ -546,6 +547,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		dbInstance.commit();
 		//delete all consents
 		CoreSpringFactory.getImpl(CourseDisclaimerManager.class).removeAllConsents(entry);
+		dbInstance.commit();
+		//delete score accounting triggers
+		CoreSpringFactory.getImpl(CourseAssessmentService.class).deleteScoreAccountingTriggers(entry);
+		dbInstance.commit();
 		//detach portfolio if there are some lost
 		CoreSpringFactory.getImpl(PortfolioService.class).detachCourseFromBinders(entry);
 		dbInstance.commit();

@@ -74,7 +74,7 @@ public class UserDAOTest extends OlatTestCase {
 		String institutionalEmail = UUID.randomUUID() + "@trashmail.com";
 		User user = identity.getUser();
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
-		userManager.updateUser(user);
+		userManager.updateUser(identity, user);
 		
 		Identity foundIdentity = sut.findUniqueIdentityByEmail(institutionalEmail);
 		
@@ -94,7 +94,7 @@ public class UserDAOTest extends OlatTestCase {
 		String email = identity.getUser().getEmail();
 		User userWithSameEmail = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao").getUser();
 		userWithSameEmail.setProperty(UserConstants.EMAIL, email);
-		userManager.updateUser(userWithSameEmail);
+		userManager.updateUser(identity, userWithSameEmail);
 		
 		Identity foundIdentity = sut.findUniqueIdentityByEmail(email);
 		
@@ -107,7 +107,7 @@ public class UserDAOTest extends OlatTestCase {
 		String email = identity.getUser().getEmail();
 		User userWithInstitutionalEmail = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao").getUser();
 		userWithInstitutionalEmail.setProperty(UserConstants.INSTITUTIONALEMAIL, email);
-		userManager.updateUser(userWithInstitutionalEmail);
+		userManager.updateUser(identity, userWithInstitutionalEmail);
 		
 		Identity foundIdentity = sut.findUniqueIdentityByEmail(email);
 		
@@ -120,7 +120,7 @@ public class UserDAOTest extends OlatTestCase {
 		String email = identity.getUser().getEmail();
 		User userWithSameEmail = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao").getUser();
 		userWithSameEmail.setProperty(UserConstants.EMAIL, email + "suffix");
-		userManager.updateUser(userWithSameEmail);
+		userManager.updateUser(identity, userWithSameEmail);
 		
 		Identity foundIdentity = sut.findUniqueIdentityByEmail(email);
 		
@@ -150,7 +150,7 @@ public class UserDAOTest extends OlatTestCase {
 		User user = identity.getUser();
 		String institutionalEmail = "INSTITUTION@openolat.org";
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
-		userManager.updateUser(user);
+		userManager.updateUser(identity, user);
 		
 		boolean isInUse = sut.isEmailInUse(institutionalEmail);
 		
@@ -172,18 +172,18 @@ public class UserDAOTest extends OlatTestCase {
 		Identity identityWithoutEmail1 = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userWithoutEmail1 = identityWithoutEmail1.getUser();
 		userWithoutEmail1.setProperty(UserConstants.EMAIL, null);
-		userManager.updateUser(userWithoutEmail1);
+		userManager.updateUser(identityWithoutEmail1, userWithoutEmail1);
 		
 		Identity identityWithoutEmailDeleted = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userWithoutEmailDeleted= identityWithoutEmailDeleted.getUser();
 		userWithoutEmailDeleted.setProperty(UserConstants.EMAIL, null);
-		userManager.updateUser(userWithoutEmailDeleted);
+		userManager.updateUser(identityWithoutEmailDeleted, userWithoutEmailDeleted);
 		userLifecycleManager.deleteIdentity(identityWithoutEmailDeleted, null);
 		
 		Identity identityWithoutEmail2 = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userWithoutEmail2 = identityWithoutEmail2.getUser();
 		userWithoutEmail2.setProperty(UserConstants.EMAIL, null);
-		userManager.updateUser(userWithoutEmail2);
+		userManager.updateUser(identityWithoutEmail2, userWithoutEmail2);
 		
 		Identity identityWithEmail = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		
@@ -199,25 +199,25 @@ public class UserDAOTest extends OlatTestCase {
 		Identity identityEmailDuplicate1 = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userEmailDuplicate1 = identityEmailDuplicate1.getUser();
 		userEmailDuplicate1.setProperty(UserConstants.EMAIL, emailDuplicate);
-		userManager.updateUser(userEmailDuplicate1);
+		userManager.updateUser(identityEmailDuplicate1, userEmailDuplicate1);
 		
 		Identity identityWithUniqueEmail = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		
 		Identity identityEmailDuplicate2 = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userEmailDuplicate2 = identityEmailDuplicate2.getUser();
 		userEmailDuplicate2.setProperty(UserConstants.EMAIL, emailDuplicate);
-		userManager.updateUser(userEmailDuplicate2);
+		userManager.updateUser(identityEmailDuplicate2, userEmailDuplicate2);
 		
 		Identity identityEmailDuplicateDeleted = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userEmailDuplicateDeleted = identityEmailDuplicateDeleted.getUser();
 		userEmailDuplicateDeleted.setProperty(UserConstants.EMAIL, emailDuplicate);
-		userManager.updateUser(userEmailDuplicateDeleted);
+		userManager.updateUser(identityEmailDuplicateDeleted, userEmailDuplicateDeleted);
 		userLifecycleManager.deleteIdentity(identityEmailDuplicateDeleted, null);
 
 		Identity identityEmailDuplicate3 = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User userEmailDuplicate3 = identityEmailDuplicate3.getUser();
 		userEmailDuplicate3.setProperty(UserConstants.EMAIL, emailDuplicate);
-		userManager.updateUser(userEmailDuplicate3);
+		userManager.updateUser(identityEmailDuplicate3, userEmailDuplicate3);
 		
 		List<Identity> identitiesWithDuplicateEmail = sut.findVisibleIdentitiesWithEmailDuplicates();
 		

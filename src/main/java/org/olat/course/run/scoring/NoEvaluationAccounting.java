@@ -33,6 +33,11 @@ import org.olat.course.nodes.CourseNode;
 public class NoEvaluationAccounting implements ScoreAccounting {
 
 	@Override
+	public void setObligationContext(ObligationContext obligationContext) {
+		//
+	}
+	
+	@Override
 	public void evaluateAll() {
 		//
 	}

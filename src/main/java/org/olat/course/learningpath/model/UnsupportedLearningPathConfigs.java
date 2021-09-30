@@ -20,9 +20,11 @@
 package org.olat.course.learningpath.model;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -56,6 +58,16 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public void setObligation(AssessmentObligation obligation) {
+		//
+	}
+
+	@Override
+	public List<ExceptionalObligation> getExceptionalObligations() {
+		return null;
+	}
+
+	@Override
+	public void setExceptionalObligations(List<ExceptionalObligation> exeptionalObligations) {
 		//
 	}
 

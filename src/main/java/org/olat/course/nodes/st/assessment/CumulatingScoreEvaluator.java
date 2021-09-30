@@ -31,6 +31,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluator;
+import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -111,7 +113,7 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 				if (Mode.setByNode == assessmentConfig.getScoreMode() && !assessmentConfig.ignoreInCourseAssessment()) {
 					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
 					Boolean userVisible = assessmentEvaluation.getUserVisible();
-					if (userVisible != null && userVisible.booleanValue()) {
+					if (userVisible != null && userVisible.booleanValue() && isNotExcluded(assessmentEvaluation)) {
 						Float score = assessmentEvaluation.getScore();
 						if (score != null) {
 							sum += score.floatValue();
@@ -120,6 +122,11 @@ class CumulatingScoreEvaluator implements ScoreEvaluator {
 					}
 				}
 			}
+		}
+
+		private boolean isNotExcluded(AssessmentEvaluation assessmentEvaluation) {
+			Overridable<AssessmentObligation> obligation = assessmentEvaluation.getObligation();
+			return obligation.getCurrent() == null || obligation.getCurrent() != AssessmentObligation.excluded;
 		}
 	}
 	

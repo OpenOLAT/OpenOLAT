@@ -33,6 +33,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentEntryScoring;
@@ -176,6 +177,21 @@ public class AssessmentEntryDAO {
 		}
 		List<AssessmentEntry> entries = query.getResultList();
 		return entries.isEmpty() ? null : entries.get(0);
+	}
+	
+	public boolean hasAssessmentEntry(IdentityRef assessedIdentity, RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("select new java.lang.Boolean(count(data) > 0)");
+		sb.append("  from assessmententry data");
+		sb.append(" where data.repositoryEntry.key=:repositoryEntryKey and data.identity.key=:identityKey");
+		
+		Boolean exists = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Boolean.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("identityKey", assessedIdentity.getKey())
+				.getSingleResult();
+		return exists.booleanValue();
 	}
 	
 	public AssessmentEntry resetAssessmentEntry(AssessmentEntry nodeAssessment) {
@@ -563,6 +579,25 @@ public class AssessmentEntryDAO {
 				.createQuery(sb.toString(), AssessmentEntry.class)
 				.setParameter("start", start)
 				.getResultList();
+	}
+
+	public List<Long> loadExcludedIdentityKeys(RepositoryEntry entry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae.identity.key");
+		sb.append("  from assessmententry ae");
+		sb.and().append("ae.obligation='").append(AssessmentObligation.excluded).append("'");
+		sb.and().append("ae.repositoryEntry.key=:entryKey");
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			sb.and().append("ae.subIdent=:subIdent");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", entry.getKey());
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+		return query.getResultList();
 	}
 	
 	/**

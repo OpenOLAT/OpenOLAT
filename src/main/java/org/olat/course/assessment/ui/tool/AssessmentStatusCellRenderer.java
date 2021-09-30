@@ -39,13 +39,16 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 public class AssessmentStatusCellRenderer implements FlexiCellRenderer {
 	
 	private final Translator trans;
+	private final boolean showNoStatus;
 	
 	public AssessmentStatusCellRenderer(Locale locale) {
 		trans = Util.createPackageTranslator(AssessmentStatusCellRenderer.class, locale);
+		showNoStatus = true;
 	}
 	
-	public AssessmentStatusCellRenderer(Translator trans) {
+	public AssessmentStatusCellRenderer(Translator trans, boolean showNoStatus) {
 		this.trans = trans;
+		this.showNoStatus = showNoStatus;
 	}
 
 	@Override
@@ -60,7 +63,7 @@ public class AssessmentStatusCellRenderer implements FlexiCellRenderer {
 				case inReview: render(renderer, target, "o_icon_status_in_review", "assessment.status.inReview"); break;
 				case done: render(renderer, target, "o_icon_status_done", "assessment.status.done"); break;
 			}	
-		} else {
+		} else if (showNoStatus) {
 			target.append("-");
 		}
 	}

@@ -362,7 +362,7 @@ public class UserWebService {
 					.createAndPersistIdentityAndUserWithOrganisation(identityName, user.getLogin(), user.getExternalId(), newUser,
 							provider, BaseSecurity.DEFAULT_ISSUER, user.getLogin(), user.getPassword(), null, null);
 			post(newUser, user, getLocale(request));
-			userManager.updateUser(newUser);
+			userManager.updateUser(id, newUser);
 			return Response.ok(get(id)).build();
 		}
 		
@@ -904,7 +904,7 @@ public class UserWebService {
 			}
 			String oldEmail = retrievedUser.getEmail();
 			post(retrievedUser, user, getLocale(request));
-			userManager.updateUser(retrievedUser);
+			userManager.updateUser(retrievedIdentity, retrievedUser);
 			securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 			return Response.ok(get(retrievedIdentity, true, true)).build();
 		}

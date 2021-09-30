@@ -65,7 +65,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 			case start: return row.getStartDate();
 			case end: return row.getEndDateFormItem() != null
 					? row.getEndDateFormItem()
-					: row.getEndDate().getCurrent();
+					: row.getEndDate() != null? row.getEndDate().getCurrent(): null;
 			case obligation: return row.getObligationFormItem() != null
 					? row.getObligationFormItem()
 					: row.getTranslatedObligation();

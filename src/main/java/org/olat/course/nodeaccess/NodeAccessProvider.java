@@ -22,7 +22,6 @@ package org.olat.course.nodeaccess;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
@@ -70,7 +69,5 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 
 	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			AssessmentEntryStatus status);
-
-	public void onCoursePublished(ICourse course);
 
 }

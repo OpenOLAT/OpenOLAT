@@ -384,6 +384,15 @@
 		margin-top: 20px;
 	}
 }
+.o_lp_report_nodes {
+	.o_lp_excluded_toggle {
+		text-align: right;
+		margin-right: 47px;
+	}
+	.o_lp_excluded_toggle + .o_lp_nodes {
+		margin-top: -34px;
+	}
+}
 
 .o_labeled.o_lp_not_accessible { background-color: $o-lp-not-accessible; border-color: $o-lp-not-accessible; }
 .o_labeled.o_lp_ready { background-color: $o-lp-ready; border-color: $o-lp-ready; }
