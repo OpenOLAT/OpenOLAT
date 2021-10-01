@@ -215,7 +215,10 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
+		cmds.add("--certs-file");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/european_trustlits.json");
 		cmds.add(context.getQrCode());
+
 		CountDownLatch doneSignal = new CountDownLatch(1);
 
 		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,

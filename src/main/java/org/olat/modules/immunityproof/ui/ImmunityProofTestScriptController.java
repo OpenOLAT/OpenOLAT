@@ -116,6 +116,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
+		cmds.add("--certs-file");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/european_trustlits.json");
 		cmds.add("--image");
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/examples/valid_cert.png");
 
@@ -157,6 +159,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
+		cmds.add("--certs-file");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/european_trustlits.json");
 		cmds.add("--image");
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/examples/no_cert.png");
 
