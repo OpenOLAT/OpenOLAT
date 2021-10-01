@@ -31,9 +31,10 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-around;
-	flex-direction: column;
-	
+	flex-direction: column;	
 	margin-bottom: 1em;
+	position: relative;
+	overflow:hidden;	
 }
 
 .o_immunity_proof_status {
@@ -61,7 +62,27 @@
 		background-color: $o-ip-none-bg-color;	
 		-webkit-text-stroke: 2px darken($o-ip-none-bg-color, 25%);
 	}
+	
+	&:before {
+		position: absolute;	
+		top: -50%;
+		left: -50%;
+		width: 200%;
+		height: 200%;
+		content: '';
+		/* adapted pattern from here: https://pattern.monster/japanese-pattern-3/ */
+		background-image: url("data:image/svg+xml,<svg id='patternId' width='100%' height='100%' xmlns='http://www.w3.org/2000/svg'><defs><pattern id='a' patternUnits='userSpaceOnUse' width='69.141' height='40' patternTransform='scale(0.5) rotate(0)'><rect x='0' y='0' width='100%' height='100%' fill='hsla(0, 0%, 100%, 0)'/><path d='M69.212 40H46.118L34.57 20 46.118 0h23.094l11.547 20zM57.665 60H34.57L23.023 40 34.57 20h23.095l11.547 20zm0-40H34.57L23.023 0 34.57-20h23.095L69.212 0zM34.57 60H11.476L-.07 40l11.547-20h23.095l11.547 20zm0-40H11.476L-.07 0l11.547-20h23.095L46.118 0zM23.023 40H-.07l-11.547-20L-.07 0h23.094L34.57 20z'  stroke-width='0.5' stroke='hsla(0, 0%, 100%, 0.41)' fill='none'/></pattern></defs><rect width='800%' height='800%' transform='translate(0,0)' fill='url(%23a)'/></svg>");
+		animation: o_rotate 200s infinite linear;
+	}    
 }
+@keyframes o_rotate { 
+   from { 
+         transform: rotate(0deg); 
+     } to { 
+         transform: rotate(360deg); 
+     }
+}
+
 
 .o_immunity_proof_state_icon {
 	font-size: 7em;
