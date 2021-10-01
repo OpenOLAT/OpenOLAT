@@ -97,7 +97,7 @@ public class FormManagerTest extends OlatTestCase {
 		
 		
 		UserCourseEnvironment ownerCourseEnv = createUserCourseEnvironment(courseEntry, owner);
-		List<FormParticipation> formParticipations = sut.getFormParticipations(survey, ownerCourseEnv);
+		List<FormParticipation> formParticipations = sut.getFormParticipations(survey, ownerCourseEnv, new FormParticipationSearchParams());
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(formParticipations).as("Owner should see members and not members").hasSize(3);
@@ -179,7 +179,7 @@ public class FormManagerTest extends OlatTestCase {
 		
 		
 		UserCourseEnvironment coachCourseEnv = createUserCourseEnvironment(courseEntry, coach);
-		List<FormParticipation> formParticipations = sut.getFormParticipations(survey, coachCourseEnv);
+		List<FormParticipation> formParticipations = sut.getFormParticipations(survey, coachCourseEnv, new FormParticipationSearchParams());
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(formParticipations).as("Coach should see members").hasSize(2);

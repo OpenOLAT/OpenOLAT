@@ -171,8 +171,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(params.getSubIdent() != null) {
 			sf.append(" and aentry.subIdent=:subIdent");
 		}
-		if(params.isExcludeExcluded()) {
-			sf.append(" and (aentry.obligation is null or aentry.obligation != '").append(AssessmentObligation.excluded).append("')");
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			sf.append(" and (");
+			if (params.getAssessmentObligations().contains(AssessmentObligation.mandatory)) {
+				sf.append("aentry.obligation is null or ");
+			}
+			sf.append(" aentry.obligation in (:assessmentObligations))");
 		}
 		sf.append(" and (aentry.identity.key in");
 		if(params.isAdmin()) {
@@ -207,7 +211,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(params.getSubIdent() != null) {
 			stats.setParameter("subIdent", params.getSubIdent());
 		}
-		
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			stats.setParameter("assessmentObligations", params.getAssessmentObligations());
+		}
 
 		AssessmentStatistics entry = new AssessmentStatistics();
 		List<Object[]> results = stats.getResultList();
@@ -602,6 +608,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(status != null) {
 			list.setParameter("assessmentStatus", status.name());
 		}
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			list.setParameter("assessmentObligations", params.getAssessmentObligations());
+		}
 	}
 	
 	private void applySearchAssessedIdentityParams(QueryBuilder sb, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
@@ -615,8 +624,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(status != null) {
 			sb.append(" and aentry.status=:assessmentStatus");
 		}
-		if(params.isExcludeExcluded()) {
-			sb.append(" and (aentry.obligation is null or aentry.obligation != '").append(AssessmentObligation.excluded).append("')");
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			sb.append(" and (");
+			if (params.getAssessmentObligations().contains(AssessmentObligation.mandatory)) {
+				sb.append("aentry.obligation is null or ");
+			}
+			sb.append(" aentry.obligation in (:assessmentObligations))");
 		}
 		sb.append(" and (aentry.identity.key in");
 		if(params.isAdmin()) {

@@ -339,7 +339,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getStatistics_excludeInvisibled() {
+	public void getStatistics_filterByObligation() {
 		// Course and users
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
@@ -358,7 +358,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
 		ae1.setScore(BigDecimal.valueOf(1.0));
 		ae1.setPassed(Boolean.TRUE);
-		ae1.setObligation(null);
+		ae1.setObligation(null); // should be treated like mandatory
 		assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
 		ae2.setScore(BigDecimal.valueOf(4.0));
@@ -378,7 +378,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
-		params.setExcludeExcluded(true);
+		params.setAssessmentObligations(List.of(AssessmentObligation.mandatory, AssessmentObligation.optional));
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(admin, params);
 		
 		Assert.assertEquals(2d, statistics.getAverageScore().doubleValue(), 0.0001);
@@ -387,7 +387,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getAssessmentEntries_excludeExcluded() {
+	public void getAssessmentEntries_filterByObligation() {
 		// Course and users
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
@@ -421,7 +421,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3, ae4);
 		
-		params.setExcludeExcluded(true);
+		params.setAssessmentObligations(List.of(AssessmentObligation.mandatory, AssessmentObligation.optional));
 		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3);
 	}

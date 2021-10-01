@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 
@@ -38,8 +39,9 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CheckListAssessmentRow {
 	
-	private Long[] groupKeys;
-	private Long[] curriculumElementKeys;
+	private List<Long> groupKeys;
+	private List<Long> curriculumElementKeys;
+	private AssessmentObligation assessmentObligation;
 	private final Long identityKey;
 	private final String identityName;
 	private final String[] identityProps;
@@ -70,31 +72,28 @@ public class CheckListAssessmentRow {
 		return identityName;
 	}
 
-	public Long[] getGroupKeys() {
+	public List<Long> getGroupKeys() {
 		return groupKeys;
 	}
-	
-	public void addGroupKey(Long groupKey) {
-		if(groupKeys == null) {
-			this.groupKeys = new Long[]{ groupKey };
-		} else {
-			Long[] newKeys = new Long[groupKeys.length + 1];
-			newKeys[0] = groupKey;
-			System.arraycopy(groupKeys, 0, newKeys, 1, groupKeys.length);
-			groupKeys = newKeys;
-		}
-	}
 
-	public void setGroupKeys(Long[] groupKeys) {
+	public void setGroupKeys(List<Long> groupKeys) {
 		this.groupKeys = groupKeys;
 	}
 	
-	public Long[] getCurriculumElmentKeys() {
+	public List<Long> getCurriculumElmentKeys() {
 		return curriculumElementKeys;
 	}
 	
-	public void setCurriculumElementKeys(Long[] curriculumElementKeys) {
+	public void setCurriculumElementKeys(List<Long> curriculumElementKeys) {
 		this.curriculumElementKeys = curriculumElementKeys;
+	}
+
+	public AssessmentObligation getAssessmentObligation() {
+		return assessmentObligation;
+	}
+
+	public void setAssessmentObligation(AssessmentObligation assessmentObligation) {
+		this.assessmentObligation = assessmentObligation;
 	}
 
 	public String getIdentityProp(int index) {

@@ -41,6 +41,7 @@ import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.InitialAttemptsRuleEditor;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -131,7 +132,7 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI implements
 			
 			List<Identity> attemptIdentities = new ArrayList<>(identities);
 			if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
-				List<Long> excludedIdentityKeys = assessmentService.getExcludedIdentityKeys(entry, courseNode.getIdent());
+				List<Long> excludedIdentityKeys = assessmentService.getIdentityKeys(entry, courseNode.getIdent(), AssessmentObligation.EXCLUDED);
 				if (!excludedIdentityKeys.isEmpty()) {
 					attemptIdentities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
 				}

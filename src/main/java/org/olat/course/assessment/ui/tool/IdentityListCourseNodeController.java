@@ -101,6 +101,8 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -112,6 +114,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
@@ -158,6 +161,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final boolean showTitle;
+	private final boolean learningPath;
 
 	private FlexiFilterTabPreset passedTab;
 	private FlexiFilterTabPreset failedTab;
@@ -218,6 +222,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessmentCallback = assessmentCallback;
 		courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
+		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(courseEnv).getType());
 		
 		if(courseNode.needsReferenceToARepositoryEntry()) {
 			referenceEntry = courseNode.getReferencedRepositoryEntry();
@@ -353,7 +358,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void initFiltersPresets(AssessmentConfig assessmentConfig) {
-		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		List<FlexiFilterTabPreset> tabs = new ArrayList<>();
 		
 		allTab = FlexiFilterTabPreset.presetWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
 				TabSelectionBehavior.nothing, List.of());
@@ -370,6 +375,13 @@ public class IdentityListCourseNodeController extends FormBasicController
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "failed")));
 			failedTab.setElementCssClass("o_sel_assessment_failed");
 			tabs.add(failedTab);
+		}
+		
+		if (learningPath) {
+			tabs.forEach(tab -> {
+				tab.setDefaultFiltersValues(List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION, 
+						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()))));
+			});
 		}
 
 		tableEl.setFilterTabs(true, tabs);
@@ -388,6 +400,17 @@ public class IdentityListCourseNodeController extends FormBasicController
 		statusValues.add(SelectionValues.entry("notStarted", translate("filter.notStarted")));
 		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.status"),
 				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
+		
+		// obligation
+		if (learningPath) {
+			SelectionValues obligationValues = new SelectionValues();
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
+			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
+			filters.add(obligationFilter);
+		}
 
 		SelectionValues groupValues = new SelectionValues();
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
@@ -619,7 +642,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	protected SearchAssessedIdentityParams getSearchParameters() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), referenceEntry, assessmentCallback);
-		params.setExcludeExcluded(true);
 		
 		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, "status");
@@ -634,7 +656,18 @@ public class IdentityListCourseNodeController extends FormBasicController
 				params.setAssessmentStatus(assessmentStatus);
 			}
 		}
-
+		
+		FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
+		if (obligationFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
+			if (!filterValues.isEmpty()) {
+				List<AssessmentObligation> assessmentObligations = filterValues.stream()
+						.map(AssessmentObligation::valueOf)
+						.collect(Collectors.toList());
+				params.setAssessmentObligations(assessmentObligations);
+			}
+		}
+		
 		List<Long> businessGroupKeys = null;
 		List<Long> curriculumElementKeys = null;
 		if(group != null) {

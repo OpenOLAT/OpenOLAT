@@ -106,7 +106,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		return tabs;
 	}
 
-	public void setFilterTabs(List<FlexiFiltersTab> tabs) {
+	public void setFilterTabs(List<? extends FlexiFiltersTab> tabs) {
 		this.tabs = new ArrayList<>(tabs);
 	}
 	

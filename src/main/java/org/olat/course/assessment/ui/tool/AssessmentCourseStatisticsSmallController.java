@@ -32,6 +32,7 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,7 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		String rootNodeIdent = course.getRunStructure().getRootNode().getIdent();
 		
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNodeIdent, null, assessmentCallback);
+		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(getIdentity(), params);
 		mainVC.contextPut("numOfAssessedIdentities", numOfAssessedIdentities);
 		

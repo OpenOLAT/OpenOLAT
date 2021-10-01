@@ -186,15 +186,15 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			} else if(event == AssessmentCourseOverviewController.SELECT_NODES_EVENT) {
 				doSelectUsersView(ureq, null);
 			} else if(event == AssessmentCourseOverviewController.SELECT_PASSED_EVENT) {
-				doSelectUsersView(ureq, new AssessedIdentityListState("passed", null, "Passed", false));
+				doSelectUsersView(ureq, new AssessedIdentityListState("passed", null, null, "Passed", false));
 			} else if(event == AssessmentCourseOverviewController.SELECT_FAILED_EVENT) {
-				doSelectUsersView(ureq, new AssessedIdentityListState("failed", null, "Failed", false));
+				doSelectUsersView(ureq, new AssessedIdentityListState("failed", null, null, "Failed", false));
 			} else if (event instanceof UserSelectionEvent) {
 				UserSelectionEvent use = (UserSelectionEvent)event;
 				if(use.getCourseNodeIdents() == null || use.getCourseNodeIdents().isEmpty() || use.getCourseNodeIdents().size() > 1) {
 					OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
 					List<ContextEntry> entries = BusinessControlFactory.getInstance()
-							.createCEListFromResourceable(resource, new AssessedIdentityListState("inReview", null, null, true));
+							.createCEListFromResourceable(resource, new AssessedIdentityListState("inReview", null, null, null, true));
 					doSelectUsersView(ureq, null).activate(ureq, entries, null);
 				} else {
 					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(use.getCourseNodeIdents().get(0)));

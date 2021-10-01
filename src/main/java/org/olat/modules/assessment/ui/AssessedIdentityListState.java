@@ -44,25 +44,28 @@ public class AssessedIdentityListState implements StateEntry {
 
 	public static final String FILTER_STATUS = "status";
 	public static final String FILTER_GROUPS = "groups";
+	public static final String FILTER_OBLIGATION = "obligation";
 	
 	private String tabId;
 	private boolean filtersExpanded;
 	private String status;
 	private List<String> groupKeys;
+	private List<String> obligations;
 	
 	public AssessedIdentityListState() {
 		//
 	}
 	
-	public AssessedIdentityListState(String status, List<String> groupKeys, String tabId, boolean filtersExpanded) {
+	public AssessedIdentityListState(String status, List<String> groupKeys, List<String> obligations, String tabId, boolean filtersExpanded) {
 		this.tabId = tabId;
 		this.status = status;
 		this.groupKeys = groupKeys;
+		this.obligations = obligations;
 		this.filtersExpanded = filtersExpanded;
 	}
 	
 	public static AssessedIdentityListState valueOf(String statusValue) {
-		return new AssessedIdentityListState(statusValue, null, null, false);
+		return new AssessedIdentityListState(statusValue, null, null, null, false);
 	}
 	
 	public static AssessedIdentityListState valueOf(FlexiFiltersTab tab, List<FlexiTableFilter> filters, boolean filtersExpanded) {
@@ -82,6 +85,12 @@ public class AssessedIdentityListState implements StateEntry {
 				} else {
 					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
 				}
+			} else if(FILTER_OBLIGATION.equals(filter.getFilter())) {
+				if(filter instanceof FlexiTableMultiSelectionFilter) {
+					state.setObligations(((FlexiTableMultiSelectionFilter)filter).getValues());
+				} else {
+					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
+				}
 			}
 		}
 		return state;
@@ -97,6 +106,10 @@ public class AssessedIdentityListState implements StateEntry {
 					&& getGroupKeys() != null
 					&& filter instanceof FlexiTableMultiSelectionFilter) {
 				((FlexiTableMultiSelectionFilter)filter).setValues(getGroupKeys());
+			} else if(FILTER_OBLIGATION.equals(filter.getFilter())
+					&& getObligations() != null
+					&& filter instanceof FlexiTableMultiSelectionFilter) {
+				((FlexiTableMultiSelectionFilter)filter).setValues(getObligations());
 			}
 		}
 	}
@@ -125,8 +138,16 @@ public class AssessedIdentityListState implements StateEntry {
 		this.groupKeys = groupKeys;
 	}
 
+	public List<String> getObligations() {
+		return obligations;
+	}
+
+	public void setObligations(List<String> obligations) {
+		this.obligations = obligations;
+	}
+
 	@Override
 	public AssessedIdentityListState clone() {
-		return new AssessedIdentityListState(status, groupKeys, tabId, filtersExpanded);
+		return new AssessedIdentityListState(status, groupKeys, obligations, tabId, filtersExpanded);
 	}
 }

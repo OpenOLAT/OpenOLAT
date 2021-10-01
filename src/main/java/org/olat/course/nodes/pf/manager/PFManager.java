@@ -61,9 +61,8 @@ import org.olat.course.nodes.pf.ui.DropBoxRow;
 import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroupRef;
 import org.olat.group.manager.BusinessGroupRelationDAO;
-import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -99,6 +98,8 @@ public class PFManager {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	/**
 	 * Resolve an existing drop folder or return null
@@ -519,14 +520,36 @@ public class PFManager {
 		return folderRunContainer;
 	}
 	
-	/**
-	 * Gets the participants for different group or course coaches.
-	 *
-	 * @param id The identity
-	 * @param courseEnv The course environment
-	 * @param admin The user is allowed to see all participants
-	 * @return the participants
-	 */
+	public List<DropBoxRow> getParticipants(ParticipantSearchParams params, PFCourseNode pfNode,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale, CourseEnvironment courseEnv) {
+		List<Identity> allIdentities;
+		if ((params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty())
+				|| (params.getCurriculumElements() != null && !params.getCurriculumElements().isEmpty())) {
+			allIdentities = new ArrayList<>(32);
+			if (params.getBusinessGroupRefs() != null && !params.getBusinessGroupRefs().isEmpty()) {
+				List<Identity> identityList = businessGroupRelationDao.getMembers(params.getBusinessGroupRefs(),
+						GroupRoles.participant.name());
+				allIdentities.addAll(identityList);
+			}
+			if (params.getCurriculumElements() != null && !params.getCurriculumElements().isEmpty()) {
+				List<Identity> identityElementList = curriculumElementDao.getMembers(params.getCurriculumElements(),
+						GroupRoles.participant.name());
+				allIdentities.addAll(identityElementList);
+			}
+		} else {
+			allIdentities = getParticipants(params.getIdentity(), courseEnv, params.isAdmin());
+		}
+		
+		if (params.getAssessmentObligations() != null) {
+			List<Long> identityObligationFiltered = assessmentService.getIdentityKeys(
+					courseEnv.getCourseGroupManager().getCourseEntry(), pfNode.getIdent(),
+					params.getAssessmentObligations());
+			allIdentities.removeIf(identity -> !identityObligationFiltered.contains(identity.getKey()));
+		}
+		
+		return getParticipants(pfNode, userPropertyHandlers, locale, allIdentities, courseEnv);
+	}
+	
 	public List<Identity> getParticipants(Identity id, CourseEnvironment courseEnv, boolean admin) {
 		Set<Identity> identitySet = new HashSet<>();
 		RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
@@ -540,34 +563,6 @@ public class PFManager {
 		
 		// deduplicate list (participants from groups and direct course membership)
 		return identitySet.stream().collect(Collectors.toList());
-	}
-	
-	/**
-	 * Gets the participants for different group or course coaches as TableModel. 
-	 *
-	 * @param id The identity of the user who searches
-	 * @param pfNode  The course element
-	 * @param userPropertyHandlers The list of properties to hold
-	 * @param locale The locale
-	 * @param courseEnv The course environment
-	 * @param admin If the user is an administrator
-	 * @return the participants The list of dropbox
-	 */
-	public List<DropBoxRow> getParticipants(Identity id, PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 
-			Locale locale, CourseEnvironment courseEnv, boolean admin) {
-		List<Identity> identityList = getParticipants(id, courseEnv, admin);
-		return getParticipants(pfNode, userPropertyHandlers, locale, identityList, courseEnv);
-	}
-	
-	public List<DropBoxRow> getParticipants(List<BusinessGroupRef> businessGroupRefs, List<CurriculumElementRef> curriculumElements,
-			PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 
-			Locale locale, CourseEnvironment courseEnv) {
-		List<Identity> allIdentities = new ArrayList<>(32);
-		List<Identity> identityList = businessGroupRelationDao.getMembers(businessGroupRefs, GroupRoles.participant.name());
-		allIdentities.addAll(identityList);
-		List<Identity> identityElementList = curriculumElementDao.getMembers(curriculumElements, GroupRoles.participant.name());
-		allIdentities.addAll(identityElementList);
-		return getParticipants(pfNode, userPropertyHandlers, locale, allIdentities, courseEnv);
 	}
 	
 	private List<DropBoxRow> getParticipants(PFCourseNode pfNode, List<UserPropertyHandler> userPropertyHandlers, 

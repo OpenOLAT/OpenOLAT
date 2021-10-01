@@ -57,6 +57,7 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ToReviewRow;
 import org.olat.modules.assessment.ui.event.UserSelectionEvent;
@@ -145,7 +146,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 	
 	private void loadModel() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
-		params.setExcludeExcluded(true);
+		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		List<AssessmentEntry> entries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, AssessmentEntryStatus.inReview);
 		List<UserToReviewRow> rows = new ArrayList<>();
 		Map<Long,UserToReviewRow> identityKeyToRow = new HashMap<>();

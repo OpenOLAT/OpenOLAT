@@ -45,6 +45,7 @@ import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.PassedRuleEditor;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
@@ -186,7 +187,7 @@ public class PassedRuleSPI implements FilterRuleSPI, CourseNodeRuleSPI {
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if(Mode.none != assessmentConfig.getPassedMode()) {
 				if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
-					List<Long> excludedIdentityKeys = assessmentService.getExcludedIdentityKeys(entry, courseNode.getIdent());
+					List<Long> excludedIdentityKeys = assessmentService.getIdentityKeys(entry, courseNode.getIdent(), AssessmentObligation.EXCLUDED);
 					if (!excludedIdentityKeys.isEmpty()) {
 						identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
 					}

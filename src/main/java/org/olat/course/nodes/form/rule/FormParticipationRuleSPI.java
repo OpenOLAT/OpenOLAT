@@ -43,6 +43,7 @@ import org.olat.course.nodes.form.ui.FormBeforeDueDateRuleEditor;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -159,7 +160,7 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements 
 		
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		List<Long> excludedIdentityKeys = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())
-			? assessmentService.getExcludedIdentityKeys(courseEntry, formCourseNode.getIdent())
+			? assessmentService.getIdentityKeys(courseEntry, formCourseNode.getIdent(), AssessmentObligation.EXCLUDED)
 			: Collections.emptyList();
 		
 		List<Identity> identities = repositoryEntryRelationDao.getMembers(courseEntry, RepositoryEntryRelationType.all,

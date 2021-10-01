@@ -42,6 +42,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -55,10 +56,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
@@ -73,6 +78,8 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
@@ -86,7 +93,11 @@ import org.olat.course.nodes.cl.ui.CheckListAssessmentDataModel.Cols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -104,6 +115,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CheckListAssessmentController extends FormBasicController implements ControllerEventListener {
 	
 	protected static final String USER_PROPS_ID = CheckListAssessmentController.class.getCanonicalName();
+	static final String CURRICULUM_EL_PREFIX = "curriculumelement-";
+	static final String BUSINESS_GROUP_PREFIX = "businessgroup-";
 
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
@@ -118,6 +131,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private final ModuleConfiguration config;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final boolean learningPath;
 
 	private FormSubmit saveButton;
 	private FormCancel cancelButton;
@@ -139,6 +153,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private CheckboxManager checkboxManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	/**
 	 * Use this constructor to launch the checklist.
@@ -155,6 +171,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		this.courseOres = courseOres;
 		this.courseNode = courseNode;
 		this.coachCourseEnv = coachCourseEnv;
+		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType());
 		config = courseNode.getModuleConfiguration();
 		CheckboxList configCheckboxList = (CheckboxList)config.get(CheckListCourseNode.CONFIG_KEY_CHECKBOX);
 		if(configCheckboxList == null) {
@@ -244,10 +261,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 
 		model = new CheckListAssessmentDataModel(checkboxList, new ArrayList<>(), columnsModel, getLocale());
 		table = uifactory.addTableElement(getWindowControl(), "checkbox-list", model, getTranslator(), formLayout);
-		table.setFilters("participants", getFilters(), false);
-
 		table.setExportEnabled(true);
 		table.setCustomizeColumns(true);
+		initFilters();
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		table.setSortSettings(sortOptions);
 		table.setAndLoadPersistedPreferences(ureq, "checklist-assessment-v2-" + courseNode.getIdent());
@@ -270,31 +286,49 @@ public class CheckListAssessmentController extends FormBasicController implement
 		boxAssessmentButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 	}
 	
-	private List<FlexiTableFilter> getFilters() {
-		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		List<BusinessGroup> coachedGroups = coachCourseEnv.isAdmin() ? cgm.getAllBusinessGroups() : coachCourseEnv.getCoachedGroups();
-		List<FlexiTableFilter> filters = new ArrayList<>(coachedGroups.size() + 1);
-		for(BusinessGroup group:coachedGroups) {
-			String groupName = StringHelper.escapeHtml(group.getName());
-			filters.add(new FlexiTableFilter(groupName, "businessgroup-".concat(group.getKey().toString())));
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+		if (learningPath) {
+			SelectionValues obligationValues = new SelectionValues();
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
+			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
+			obligationFilter.setValues(List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()));
+			filters.add(obligationFilter);
 		}
-		List<CurriculumElement> coachedElements = coachCourseEnv.isAdmin() ? cgm.getAllCurriculumElements() : coachCourseEnv.getCoachedCurriculumElements();
-		if(!coachedElements.isEmpty()) {
-			if(!filters.isEmpty()) {
-				filters.add(FlexiTableFilter.SPACER);
-			}
-
-			for(CurriculumElement coachedElement: coachedElements) {
-				String groupName = StringHelper.escapeHtml(coachedElement.getDisplayName());
-				filters.add(new FlexiTableFilter(groupName, "curriculumelement-".concat(coachedElement.getKey().toString())));
+		
+		SelectionValues groupValues = new SelectionValues();
+		
+		List<BusinessGroup> coachedGroups = coachCourseEnv.isAdmin()
+				? coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups()
+				: coachCourseEnv.getCoachedGroups();
+		if(coachedGroups != null) {
+			for(BusinessGroup coachedGroup:coachedGroups) {
+				groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), coachedGroup.getName(),
+						null, "o_icon o_icon_curriculum_element", null, true));
 			}
 		}
 		
-		if(!filters.isEmpty()) {
-			filters.add(FlexiTableFilter.SPACER);
-			filters.add(new FlexiTableFilter(translate("filter.all"), "all"));
+		List<CurriculumElement> coachedElements = coachCourseEnv.isAdmin()
+				? coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllCurriculumElements()
+				: coachCourseEnv.getCoachedCurriculumElements();
+		if(!coachedElements.isEmpty()) {
+			for(CurriculumElement coachedElement: coachedElements) {
+				groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), coachedElement.getDisplayName(),
+						null, "o_icon o_icon_curriculum_element", null, true));
+			}
 		}
-		return filters;
+		
+		if(!groupValues.isEmpty()) {
+			FlexiTableExtendedFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.groups"), "groups", groupValues, true);
+			filters.add(filter);
+		}
+		
+		if (!filters.isEmpty()) {
+			table.setFilters(true, filters, false, true);
+		}
 	}
 	
 	private List<CheckListAssessmentRow> loadDatas() {
@@ -310,6 +344,11 @@ public class CheckListAssessmentController extends FormBasicController implement
 		Map<Long,CheckListAssessmentRow> identityToView = boxList.stream()
 				.collect(Collectors.toMap(CheckListAssessmentRow::getIdentityKey, row -> row, (row1, row2) -> row1));
 		
+		Map<Long, AssessmentObligation> identityKeyToObligation = learningPath
+				? assessmentService.loadAssessmentEntriesBySubIdent(cgm.getCourseEntry(), courseNode.getIdent()).stream()
+						.collect(Collectors.toMap(ae -> ae.getIdentity().getKey(), this::extractObligation))
+				: Collections.emptyMap();
+		
 		List<AssessedIdentity> identityList = checkboxManager
 				.getAssessedIdentities(courseEntry, getIdentity(), coachCourseEnv.isAdmin());
 		for(AssessedIdentity identity:identityList) {
@@ -321,17 +360,25 @@ public class CheckListAssessmentController extends FormBasicController implement
 			
 			List<Long> curriculumElementKeys = identity.getCurriculumElmentKeys();
 			if(!curriculumElementKeys.isEmpty()) {
-				row.setCurriculumElementKeys(curriculumElementKeys.toArray(new Long[curriculumElementKeys.size()]));
+				row.setCurriculumElementKeys(curriculumElementKeys);
 			}
 			List<Long> businessGroupKeys = identity.getBusinessGroupKeys();
 			if(!businessGroupKeys.isEmpty()) {
-				row.setGroupKeys(businessGroupKeys.toArray(new Long[businessGroupKeys.size()]));
+				row.setGroupKeys(businessGroupKeys);
 			}
+			
+			row.setAssessmentObligation(identityKeyToObligation.get(identity.getIdentity().getKey()));
 		}
 		
 		List<CheckListAssessmentRow> views = new ArrayList<>();
 		views.addAll(identityToView.values());
 		return views;
+	}
+	
+	private AssessmentObligation extractObligation(AssessmentEntry assessmentEntry) {
+		return assessmentEntry != null && assessmentEntry.getObligation() != null
+				? assessmentEntry.getObligation().getCurrent()
+				: null;
 	}
 	
 	private List<CheckListAssessmentRow> getAssessmentDataViews(List<AssessmentData> datas, List<Checkbox> checkbox) {
@@ -406,6 +453,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 					CheckListAssessmentRow row = model.getObject(se.getIndex());
 					doOpenIdentity(ureq, row);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				model.filter(table.getSelectedFilters());
+				table.reset(false, false, true);
 			}
 		} else if(pdfExportButton == source) {
 			doExportPDF(ureq);
@@ -458,6 +508,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private void reloadTable() {
 		dbInstance.commit();//make sure all changes are on the database
 		model.setObjects(loadDatas());
+		model.filter(table.getSelectedFilters());
 		table.reloadData();
 	}
 	
@@ -593,13 +644,34 @@ public class CheckListAssessmentController extends FormBasicController implement
 			pdfExport.setCourseNodeTitle(courseNode.getShortTitle());
 			pdfExport.setCourseTitle(course.getCourseTitle());
 			pdfExport.setCourseNodeTitle(courseNode.getShortTitle());
-			String groupName = table.getSelectedFilterValue();
-			pdfExport.setGroupName(groupName);
+			pdfExport.setGroupName(getGroupNames());
 			pdfExport.create(checkboxList, model.getObjects());
 			ureq.getDispatchResult().setResultingMediaResource(pdfExport);
 		} catch (IOException | TransformerException e) {
 			logError("", e);
 		}
+	}
+	
+	private String getGroupNames() {
+		List<FlexiTableFilter> filters = table.getSelectedFilters();
+		if (filters != null && !filters.isEmpty()) {
+			FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, "groups");
+			if(groupsFilter != null) {
+				FlexiTableMultiSelectionFilter filter = (FlexiTableMultiSelectionFilter)groupsFilter;
+				List<String> filterValues = filter.getValues();
+				List<String> groupNames = new ArrayList<>(filterValues.size());
+				for(String filterValue:filterValues) {
+					SelectionValue groupValue = filter.getSelectionValues().get(filterValue);
+					if (groupValue != null) {
+						groupNames.add(groupValue.getValue());
+					}
+				}
+				if (!groupNames.isEmpty()) {
+					return groupNames.stream().collect(Collectors.joining(", "));
+				}
+			}
+		}
+		return null;
 	}
 	
 	private void doCheckedExportPDF(UserRequest ureq) {

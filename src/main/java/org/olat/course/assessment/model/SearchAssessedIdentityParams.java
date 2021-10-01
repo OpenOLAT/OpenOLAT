@@ -19,9 +19,11 @@
  */
 package org.olat.course.assessment.model;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
@@ -44,7 +46,7 @@ public class SearchAssessedIdentityParams {
 	private boolean passed;
 	private boolean failed;
 	private List<AssessmentEntryStatus> assessmentStatus;
-	private boolean excludeExcluded;
+	private Collection<AssessmentObligation> assessmentObligations;
 	
 	private String searchString;
 	private List<Long> businessGroupKeys;
@@ -110,14 +112,6 @@ public class SearchAssessedIdentityParams {
 		this.failed = failed;
 	}
 
-	public boolean isExcludeExcluded() {
-		return excludeExcluded;
-	}
-
-	public void setExcludeExcluded(boolean excludeExcluded) {
-		this.excludeExcluded = excludeExcluded;
-	}
-
 	public List<AssessmentEntryStatus> getAssessmentStatus() {
 		return assessmentStatus;
 	}
@@ -126,6 +120,14 @@ public class SearchAssessedIdentityParams {
 		this.assessmentStatus = assessmentStatus;
 	}
 	
+	public Collection<AssessmentObligation> getAssessmentObligations() {
+		return assessmentObligations;
+	}
+
+	public void setAssessmentObligations(Collection<AssessmentObligation> assessmentObligations) {
+		this.assessmentObligations = assessmentObligations;
+	}
+
 	public boolean hasBusinessGroupKeys() {
 		return businessGroupKeys != null && !businessGroupKeys.isEmpty();
 	}

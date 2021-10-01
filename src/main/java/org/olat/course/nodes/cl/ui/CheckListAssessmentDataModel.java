@@ -19,20 +19,24 @@
  */
 package org.olat.course.nodes.cl.ui;
 
+import static org.olat.course.nodes.cl.ui.CheckListAssessmentController.BUSINESS_GROUP_PREFIX;
+import static org.olat.course.nodes.cl.ui.CheckListAssessmentController.CURRICULUM_EL_PREFIX;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -53,6 +57,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -61,8 +66,7 @@ import org.olat.course.nodes.cl.model.CheckboxList;
  *
  */
 public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<CheckListAssessmentRow>
-	implements FilterableFlexiTableModel, SortableFlexiTableDataModel<CheckListAssessmentRow>,
-	    ExportableFlexiTableDataModel {
+	implements SortableFlexiTableDataModel<CheckListAssessmentRow>, ExportableFlexiTableDataModel {
 	
 	private static final Logger log = Tracing.createLoggerFor(CheckListAssessmentDataModel.class);
 	
@@ -123,22 +127,47 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		return resource;
 	}
 
-	/**
-	 * The filter apply to the groups
-	 * @param key
-	 */
-	@Override
-	public void filter(String searchString, List<FlexiTableFilter> filters) {
+	public void filter(List<FlexiTableFilter> filters) {
 		setObjects(backupRows);
 		
-		Long groupKey = extractKey(filters, "businessgroup-");
-		Long elementKey = extractKey(filters, "curriculumelement-");
-		if(groupKey != null || elementKey != null) {
+		List<AssessmentObligation> obligations = null;
+		List<Long> businessGroupKeys = null;
+		List<Long> curriculumElementKeys = null;
+		if (filters != null && !filters.isEmpty()) {
+			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
+			if (obligationFilter != null) {
+				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
+				if (!filterValues.isEmpty()) {
+					obligations = filterValues.stream()
+							.map(AssessmentObligation::valueOf)
+							.collect(Collectors.toList());
+				}
+			}
+			
+			FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, "groups");
+			if(groupsFilter != null) {
+				businessGroupKeys = new ArrayList<>(filters.size());
+				curriculumElementKeys = new ArrayList<>(filters.size());
+				List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
+				for(String filterValue:filterValues) {
+					if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
+						String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
+						businessGroupKeys.add(Long.valueOf(key));
+					} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
+						String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
+						curriculumElementKeys.add(Long.valueOf(key));
+					}
+				}
+			}
+		}
+		
+		
+		if(obligations != null || businessGroupKeys != null || curriculumElementKeys != null) {
 			List<CheckListAssessmentRow> filteredViews = new ArrayList<>();
 			int numOfRows = getRowCount();
 			for(int i=0; i<numOfRows; i++) {
 				CheckListAssessmentRow view = getObject(i);
-				if(accept(view, groupKey, elementKey)) {
+				if(accept(view, obligations, businessGroupKeys, curriculumElementKeys)) {
 					filteredViews.add(view);
 				}
 			}
@@ -146,42 +175,29 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 		}
 	}
 	
-	private Long extractKey(List<FlexiTableFilter> filters, String marker) {
-		Long key = null;
-		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
-			String filter = filters.get(0).getFilter();
-			if(filter.startsWith(marker)) {
-				try {
-					int index = filter.lastIndexOf('-') + 1;
-					key = Long.parseLong(filter.substring(index));
-				} catch (NumberFormatException e) {
-					//
-				}
-			}
+	private boolean accept(CheckListAssessmentRow view, List<AssessmentObligation> obligations,
+			List<Long> businessGroupKeys, List<Long> curriculumElementKeys) {
+		if (obligations != null && !obligations.isEmpty()) {
+			if (view.getAssessmentObligation() != null && !obligations.contains(view.getAssessmentObligation())) {
+				return false;
+			} else if (view.getAssessmentObligation() == null && !obligations.contains(AssessmentObligation.mandatory)) {
+				return false;
+			} 
 		}
-		return key;
-	}
-	
-	private boolean accept(CheckListAssessmentRow view, Long groupKey, Long elementKey) {
-		boolean accept = false;
 		
-		Long filterKey = null;
-		Long[] keyArray = null;
-		if(groupKey != null) {
-			filterKey = groupKey;
-			keyArray = view.getGroupKeys();
-		} else if(elementKey != null) {
-			filterKey = elementKey;
-			keyArray = view.getCurriculumElmentKeys();
-		}
-		if(filterKey != null && keyArray != null) {
-			for(Long key:keyArray) {
-				if(filterKey.equals(key)) {
-					accept = true;
-				}
+		if (businessGroupKeys != null && !businessGroupKeys.isEmpty()) {
+			if(view.getGroupKeys() == null || !view.getGroupKeys().stream().anyMatch(businessGroupKeys::contains)) {
+				return false;
 			}
 		}
-		return accept;
+		
+		if (curriculumElementKeys != null && !curriculumElementKeys.isEmpty()) {
+			if(view.getCurriculumElmentKeys() == null || !view.getCurriculumElmentKeys().stream().anyMatch(curriculumElementKeys::contains)) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 	@Override

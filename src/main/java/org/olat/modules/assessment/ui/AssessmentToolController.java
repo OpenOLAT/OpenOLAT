@@ -108,9 +108,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			if(event == AssessmentOverviewController.SELECT_USERS_EVENT) {
 				doSelectUsersView(ureq, "Users", null);
 			} else if(event == AssessmentOverviewController.SELECT_PASSED_EVENT) {
-				doSelectUsersView(ureq, "Passed", new AssessedIdentityListState("passed", null, "Passed", false));
+				doSelectUsersView(ureq, "Passed", new AssessedIdentityListState("passed", null, null, "Passed", false));
 			} else if(event == AssessmentOverviewController.SELECT_FAILED_EVENT) {
-				doSelectUsersView(ureq, "NotPassed", new AssessedIdentityListState("failed", null, "Failed", false));
+				doSelectUsersView(ureq, "NotPassed", new AssessedIdentityListState("failed", null, null, "Failed", false));
 			} else if (event instanceof UserSelectionEvent) {
 				UserSelectionEvent use = (UserSelectionEvent)event;
 				OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());

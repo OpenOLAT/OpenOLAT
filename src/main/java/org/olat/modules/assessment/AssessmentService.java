@@ -27,6 +27,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -100,13 +101,14 @@ public interface AssessmentService {
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 	
 	/**
-	 * Get the key of all identities which have the obligation "excluded".
-	 * 
+	 * Get the key of all identities who have the desired obligation.
+	 * AssessmentObligation.mandatory matches null values as well.
 	 *
 	 * @param entry
 	 * @param subIdent
+	 * @param obligations 
 	 * @return
 	 */
-	public List<Long> getExcludedIdentityKeys(RepositoryEntry entry, String subIdent);
+	public List<Long> getIdentityKeys(RepositoryEntry entry, String subIdent, Collection<AssessmentObligation> obligations);
 
 }

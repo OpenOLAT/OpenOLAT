@@ -112,6 +112,10 @@ public class SelectionValues {
 		keyValues.removeIf(kv -> kv.getKey().equals(key));
 	}
 	
+	public SelectionValue get(String key) {
+		return keyValues.stream().filter(kv -> key.equals(kv.getKey())).findFirst().orElse(null);
+	}
+	
 	/**
 	 * Returns a array of all keys. The method creates a new array every time it is invoked.
 	 *

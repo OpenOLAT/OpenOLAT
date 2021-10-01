@@ -834,7 +834,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void setFilterTabs(boolean enable, List<FlexiFiltersTab> tabs) {
+	public void setFilterTabs(boolean enable, List<? extends FlexiFiltersTab> tabs) {
 		String dispatchId = component.getDispatchID().concat("_extTabs");
 		if(enable) {
 			filterTabsEl = new FlexiFilterTabsElementImpl(dispatchId, this, getComponent().getTranslator());

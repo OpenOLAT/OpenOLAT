@@ -581,14 +581,20 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 
-	public List<Long> loadExcludedIdentityKeys(RepositoryEntry entry, String subIdent) {
+	public List<Long> loadIdentityKeys(RepositoryEntry entry, String subIdent, Collection<AssessmentObligation> obligations) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ae.identity.key");
 		sb.append("  from assessmententry ae");
-		sb.and().append("ae.obligation='").append(AssessmentObligation.excluded).append("'");
 		sb.and().append("ae.repositoryEntry.key=:entryKey");
 		if (StringHelper.containsNonWhitespace(subIdent)) {
 			sb.and().append("ae.subIdent=:subIdent");
+		}
+		if (obligations != null && !obligations.isEmpty()) {
+			sb.append(" and (");
+			if (obligations.contains(AssessmentObligation.mandatory)) {
+				sb.append("ae.obligation is null or ");
+			}
+			sb.append(" ae.obligation in (:assessmentObligations))");
 		}
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -596,6 +602,9 @@ public class AssessmentEntryDAO {
 				.setParameter("entryKey", entry.getKey());
 		if (StringHelper.containsNonWhitespace(subIdent)) {
 			query.setParameter("subIdent", subIdent);
+		}
+		if (obligations != null && !obligations.isEmpty()) {
+			query.setParameter("assessmentObligations", obligations);
 		}
 		return query.getResultList();
 	}

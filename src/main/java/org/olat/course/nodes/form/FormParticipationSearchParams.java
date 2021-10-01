@@ -17,24 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.assessment.model;
+package org.olat.course.nodes.form;
 
-import java.util.List;
+import java.util.Collection;
+
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 1 Oct 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AssessmentObligation {
+public class FormParticipationSearchParams {
 	
-	mandatory,
-	optional,
-	excluded;
+	public enum Status { notStarted, inProgress, done }
 	
-	public static final List<AssessmentObligation> NOT_EXCLUDED = List.of(AssessmentObligation.mandatory, AssessmentObligation.optional);
-	public static final List<AssessmentObligation> EXCLUDED = List.of(AssessmentObligation.excluded);
+	private Collection<AssessmentObligation> obligations;
+	private Collection<Status> status;
 
+	public Collection<AssessmentObligation> getObligations() {
+		return obligations;
+	}
+
+	public void setObligations(Collection<AssessmentObligation> obligations) {
+		this.obligations = obligations;
+	}
+
+	public Collection<Status> getStatus() {
+		return status;
+	}
+
+	public void setStatus(Collection<Status> status) {
+		this.status = status;
+	}
 
 }

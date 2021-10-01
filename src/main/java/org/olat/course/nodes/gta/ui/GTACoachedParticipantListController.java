@@ -42,16 +42,21 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,6 +68,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.IdentityMark;
@@ -79,6 +86,8 @@ import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -225,9 +234,37 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			extendButton = uifactory.addFormLink("extend.list", "duedates", "duedates", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(extendButton);
 		}
+		initFilters();
+	}
+	
+	private void initFilters() {
+		if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType())) {
+			SelectionValues obligationValues = new SelectionValues();
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
+			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
+			obligationFilter.setValues(List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()));
+			tableEl.setFilters(true, List.of(obligationFilter), false, true);
+		}
 	}
 	
 	protected void updateModel(UserRequest ureq) {
+		List<AssessmentObligation> filterObligations = null;
+		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
+		if (filters != null && !filters.isEmpty()) {
+			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
+			if (obligationFilter != null) {
+				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
+				if (!filterValues.isEmpty()) {
+					filterObligations = filterValues.stream()
+							.map(AssessmentObligation::valueOf)
+							.collect(Collectors.toList());
+				}
+			}
+		}
+		
 		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
 				.filter(def -> Objects.nonNull(def.getFilename()))
@@ -264,6 +301,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			IdentityMark mark = identityToMarks.get(assessableIdentity.getIdentityKey());
 			if (markedOnly && mark == null) continue;
 			
+			AssessmentEntry assessment = identityToAssessments.get(assessableIdentity.getIdentityKey());
+			if (isExcludedByObligation(filterObligations, assessment)) continue;
+			
 			FormLink markLink = uifactory.addFormLink("mark_" + assessableIdentity.getIdentityKey(), "mark", "", null, null, Link.NONTRANSLATED);
 			markLink.setIconLeftCSS(mark != null ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			markLink.setUserObject(assessableIdentity.getIdentityKey());
@@ -290,7 +330,6 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			int numSubmittedDocs = task != null && task.getSubmissionNumOfDocs() != null ? task.getSubmissionNumOfDocs().intValue() : 0;
 			int numOfCollectedDocs = task != null && task.getCollectionNumOfDocs() != null ? task.getCollectionNumOfDocs().intValue() : 0;
 
-			AssessmentEntry assessment = identityToAssessments.get(assessableIdentity.getIdentityKey());
 			Boolean userVisibility = assessment!=null? assessment.getUserVisibility(): null;
 			BigDecimal score = assessment!=null? assessment.getScore(): null;
 			Boolean passed = assessment!=null? assessment.getPassed(): null;
@@ -314,6 +353,24 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		tableModel.setObjects(rows);
 		tableEl.reset();
+	}
+	
+	private boolean isExcludedByObligation(List<AssessmentObligation> filterObligations, AssessmentEntry assessmentEntry) {
+		if (filterObligations == null || filterObligations.isEmpty() || assessmentEntry == null) {
+			return false;
+		}
+		
+		AssessmentObligation obligation = assessmentEntry.getObligation() != null
+				? assessmentEntry.getObligation().getCurrent()
+				: null;
+		if (obligation != null && !filterObligations.contains(obligation)) {
+			return true;
+		}
+		if (obligation == null && !filterObligations.contains(AssessmentObligation.mandatory)) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	@Override
@@ -356,6 +413,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				} else if(StringHelper.containsNonWhitespace(cmd)) {
 					fireEvent(ureq, new SelectIdentityEvent(row.getIdentity().getIdentityKey()));	
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				updateModel(ureq);
 			}
 		} else if(extendButton == source) {
 			List<CoachedIdentityRow> rows = getSelectedRows();

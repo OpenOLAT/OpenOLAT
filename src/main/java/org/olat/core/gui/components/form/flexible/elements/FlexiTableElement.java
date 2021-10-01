@@ -391,7 +391,7 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	
 	public boolean isFilterTabsEnabled();
 	
-	public void setFilterTabs(boolean enable, List<FlexiFiltersTab> tabs);
+	public void setFilterTabs(boolean enable, List<? extends FlexiFiltersTab> tabs);
 	
 	public FlexiFiltersTab getFilterTabById(String id);
 	

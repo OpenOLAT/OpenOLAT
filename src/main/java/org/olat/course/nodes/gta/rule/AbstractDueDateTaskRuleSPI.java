@@ -52,6 +52,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.repository.RepositoryEntry;
@@ -91,7 +92,7 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 				identities = evaluateRule(entry, (GTACourseNode)courseNode, r);
 				
 				if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
-					List<Long> excludedIdentityKeys = assessmentService.getExcludedIdentityKeys(entry, courseNode.getIdent());
+					List<Long> excludedIdentityKeys = assessmentService.getIdentityKeys(entry, courseNode.getIdent(), AssessmentObligation.EXCLUDED);
 					if (!excludedIdentityKeys.isEmpty()) {
 						identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
 					}

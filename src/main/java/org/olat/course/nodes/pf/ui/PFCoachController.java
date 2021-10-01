@@ -22,6 +22,7 @@ package org.olat.course.nodes.pf.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -63,16 +64,21 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.nodes.pf.manager.PFView;
+import org.olat.course.nodes.pf.manager.ParticipantSearchParams;
 import org.olat.course.nodes.pf.ui.DropBoxTableModel.DropBoxCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.model.BusinessGroupRefImpl;
+import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
@@ -297,6 +303,18 @@ public class PFCoachController extends FormBasicController {
 	}
 	
 	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+		if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(courseEnv).getType())) {
+			SelectionValues obligationValues = new SelectionValues();
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
+			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
+			obligationFilter.setValues(List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()));
+			filters.add(obligationFilter);
+		}
+		
 		SelectionValues groupValues = new SelectionValues();
 		
 		List<BusinessGroup> coachedGroups = userCourseEnv.isAdmin()
@@ -319,31 +337,51 @@ public class PFCoachController extends FormBasicController {
 		
 		if(!groupValues.isEmpty()) {
 			FlexiTableExtendedFilter filter = new FlexiTableMultiSelectionFilter(translate("filter.groups"), "groups", groupValues, true);
-			dropboxTable.setFilters(true, List.of(filter), false, true);
+			filters.add(filter);
+		}
+		
+		if (!filters.isEmpty()) {
+			dropboxTable.setFilters(true, filters, false, true);
 		}
 	}
 	
 	private void loadModel(boolean full) {
 		List<FlexiTableFilter> filters = dropboxTable.getSelectedFilters();
 		List<DropBoxRow> rows;
-		if(filters == null || filters.isEmpty()) {	
-			rows = pfManager.getParticipants(getIdentity(), pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin());
-		} else {
-			List<String> filterValues = ((FlexiTableExtendedFilter)filters.get(0)).getValues();
-			
-			List<BusinessGroupRef> businessGroups = new ArrayList<>(filters.size());
-			List<CurriculumElementRef> curriculumElements = new ArrayList<>(filters.size());
-			for(String filterValue:filterValues) {
-				if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
-					String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
-					businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
-				} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
-					String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
-					curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+		ParticipantSearchParams params = new ParticipantSearchParams();
+		params.setIdentity(getIdentity());
+		params.setAdmin(userCourseEnv.isAdmin());
+		
+		if (filters != null && !filters.isEmpty()) {
+			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
+			if (obligationFilter != null) {
+				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
+				if (!filterValues.isEmpty()) {
+					List<AssessmentObligation> assessmentObligations = filterValues.stream()
+							.map(AssessmentObligation::valueOf)
+							.collect(Collectors.toList());
+					params.setAssessmentObligations(assessmentObligations);
 				}
 			}
-			rows = pfManager.getParticipants(businessGroups, curriculumElements, pfNode, userPropertyHandlers, getLocale(), courseEnv);
+			
+			FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, "groups");
+			if(groupsFilter != null) {
+				List<BusinessGroupRef> businessGroups = new ArrayList<>(filters.size());
+				List<CurriculumElementRef> curriculumElements = new ArrayList<>(filters.size());
+				List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
+				for(String filterValue:filterValues) {
+					if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
+						String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
+						businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
+					} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
+						String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
+						curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+					}
+				}
+			}
 		}
+		
+		rows = pfManager.getParticipants(params, pfNode, userPropertyHandlers, getLocale(), courseEnv);
 		
 		tableModel.setObjects(rows);
 		dropboxTable.reset(full, full, true);

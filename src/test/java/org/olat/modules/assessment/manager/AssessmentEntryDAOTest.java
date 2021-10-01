@@ -26,6 +26,7 @@ import static org.olat.test.JunitTestHelper.random;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -1180,7 +1181,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getExcludedIdentityKeys() {
+	public void getIdentityKeys() {
 		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-26a");
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-26b");
 		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-26c");
@@ -1207,11 +1208,20 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId4);
 		dbInstance.commitAndCloseSession();
 		
-		List<Long> identityKeys = assessmentEntryDao.loadExcludedIdentityKeys(entry, subIdent);
+		Collection<AssessmentObligation> obligations = List.of(AssessmentObligation.excluded);
+		List<Long> identityKeys = assessmentEntryDao.loadIdentityKeys(entry, subIdent, obligations);
 		
 		Assert.assertNotNull(identityKeys);
 		Assert.assertEquals(1, identityKeys.size());
 		Assert.assertTrue(identityKeys.contains(assessedIdentity4.getKey()));
+		
+		obligations = List.of(AssessmentObligation.mandatory);
+		identityKeys = assessmentEntryDao.loadIdentityKeys(entry, subIdent, obligations);
+		
+		Assert.assertNotNull(identityKeys);
+		Assert.assertEquals(2, identityKeys.size());
+		Assert.assertTrue(identityKeys.contains(assessedIdentity1.getKey()));
+		Assert.assertTrue(identityKeys.contains(assessedIdentity2.getKey()));
 	}
 
 }

@@ -23,6 +23,7 @@ import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FIL
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -45,13 +46,16 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.FormParticipation;
+import org.olat.course.nodes.form.FormParticipationSearchParams;
 import org.olat.course.nodes.form.model.FormParticipationImpl;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -95,6 +99,8 @@ public class FormManagerImpl implements FormManager {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private AssessmentService assessmentService;
 
 	@Override
 	public EvaluationFormSurveyIdentifier getSurveyIdentifier(CourseNode courseNode, ICourse course) {
@@ -266,7 +272,8 @@ public class FormManagerImpl implements FormManager {
 	}
 
 	@Override
-	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey, UserCourseEnvironment userCourseEnv) {
+	public List<FormParticipation> getFormParticipations(EvaluationFormSurvey survey,
+			UserCourseEnvironment userCourseEnv, FormParticipationSearchParams searchParams) {
 		List<EvaluationFormParticipation> participations = getParticipations(survey, null, userCourseEnv.isAdmin());
 		
 		List<Identity> coachedIdentities = getCoachedIdentities(userCourseEnv);
@@ -289,11 +296,26 @@ public class FormManagerImpl implements FormManager {
 						session -> session.getParticipation().getKey(),
 						EvaluationFormSession::getSubmissionDate));
 		
+		Map<Long, AssessmentObligation> identityKeyToObligation = searchParams.getObligations() != null && !searchParams.getObligations().isEmpty()
+				? assessmentService.loadAssessmentEntriesBySubIdent(
+								userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+								survey.getIdentifier().getSubident()).stream()
+						.collect(Collectors.toMap(ae -> ae.getIdentity().getKey(), this::extractObligation))
+				: Collections.emptyMap();
+		
 		List<FormParticipation> formParticipations = new ArrayList<>(coachedIdentities.size());
 		for (Identity identity : allIdentities) {
+			if (isExcludedByObligation(searchParams.getObligations(), identityKeyToObligation.get(identity.getKey()))) {
+				continue;
+			}
+			
+			EvaluationFormParticipation participation = identityKeyToParticipations.get(identity.getKey());
+			if (isExcludedByStatus(searchParams.getStatus(), participation)) {
+				continue;
+			}
+			
 			FormParticipationImpl formParticipationImpl = new FormParticipationImpl();
 			formParticipationImpl.setIdentity(identity);
-			EvaluationFormParticipation participation = identityKeyToParticipations.get(identity.getKey());
 			if (participation != null) {
 				formParticipationImpl.setEvaluationFormParticipation(participation);
 				if (EvaluationFormParticipationStatus.done == participation.getStatus()) {
@@ -303,6 +325,38 @@ public class FormManagerImpl implements FormManager {
 			formParticipations.add(formParticipationImpl);
 		}
 		return formParticipations;
+	}
+	
+	private boolean isExcludedByStatus(Collection<FormParticipationSearchParams.Status> status, EvaluationFormParticipation participation) {
+		if (status == null || status.isEmpty()) {
+			return false;
+		}
+		if (status.contains(FormParticipationSearchParams.Status.notStarted) && participation == null) {
+			return false;
+		}
+		if (status.contains(FormParticipationSearchParams.Status.inProgress) 
+				&& participation != null && EvaluationFormParticipationStatus.prepared == participation.getStatus()) {
+			return false;
+		}
+		if (status.contains(FormParticipationSearchParams.Status.done) 
+				&& participation != null && EvaluationFormParticipationStatus. done == participation.getStatus()) {
+			return false;
+		}
+		
+		return true;
+	}
+
+	private boolean isExcludedByObligation(Collection<AssessmentObligation> filterObligations, AssessmentObligation obligation) {
+		if (filterObligations == null || filterObligations.isEmpty()) {
+			return false;
+		}
+		if (obligation != null && !filterObligations.contains(obligation)) {
+			return true;
+		}
+		if (obligation == null && !filterObligations.contains(AssessmentObligation.mandatory)) {
+			return true;
+		}
+		return false;
 	}
 	
 	private List<Identity> getCoachedIdentities(UserCourseEnvironment userCourseEnv) {
@@ -315,6 +369,12 @@ public class FormManagerImpl implements FormManager {
 					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		}
 		return Collections.emptyList();
+	}
+	
+	private AssessmentObligation extractObligation(AssessmentEntry assessmentEntry) {
+		return assessmentEntry != null && assessmentEntry.getObligation() != null
+				? assessmentEntry.getObligation().getCurrent()
+				: null;
 	}
 
 	@Override

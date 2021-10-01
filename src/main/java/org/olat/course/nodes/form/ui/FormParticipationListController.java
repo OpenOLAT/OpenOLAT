@@ -21,6 +21,7 @@ package org.olat.course.nodes.form.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -39,10 +41,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -59,12 +64,17 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.FormParticipation;
+import org.olat.course.nodes.form.FormParticipationSearchParams;
 import org.olat.course.nodes.form.FormSecurityCallback;
 import org.olat.course.nodes.form.ui.FormParticipationTableModel.ParticipationCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -186,14 +196,30 @@ public class FormParticipationListController extends FormBasicController impleme
 		tableEl.setSortSettings(options);
 		tableEl.setEmptyTableSettings("default.tableEmptyMessage", null, FormCourseNode.ICON_CSS);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course.element.form");
+		initFilters();
+	}
+
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+		if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachCourseEnv).getType())) {
+			SelectionValues obligationValues = new SelectionValues();
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.mandatory.name(), translate("filter.mandatory")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.optional.name(), translate("filter.optional")));
+			obligationValues.add(SelectionValues.entry(AssessmentObligation.excluded.name(), translate("filter.excluded")));
+			FlexiTableMultiSelectionFilter obligationFilter = new FlexiTableMultiSelectionFilter(translate("filter.obligation"),
+					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
+			obligationFilter.setValues(List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()));
+			filters.add(obligationFilter);
+		}
 		
-		List<FlexiTableFilter> filters = new ArrayList<>();
-		filters.add(new FlexiTableFilter(translate("participation.status.notStart"), FormParticipationTableModel.FILTER_NOT_START));
-		filters.add(new FlexiTableFilter(translate("participation.status.inProgress"), FormParticipationTableModel.FILTER_IN_PROGRESS));
-		filters.add(new FlexiTableFilter(translate("participation.status.done"), FormParticipationTableModel.FILTER_DONE));
-		filters.add(FlexiTableFilter.SPACER);
-		filters.add(new FlexiTableFilter(translate("table.filter.show.all"), "showAll", true));
-		tableEl.setFilters("", filters, false);
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry(FormParticipationSearchParams.Status.notStarted.name(), translate("participation.status.notStart")));
+		statusValues.add(SelectionValues.entry(FormParticipationSearchParams.Status.inProgress.name(), translate("participation.status.inProgress")));
+		statusValues.add(SelectionValues.entry(FormParticipationSearchParams.Status.done.name(), translate("participation.status.done")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
+				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
+		
+		tableEl.setFilters(true, filters, false, true);
 	}
 
 	@Override
@@ -214,7 +240,7 @@ public class FormParticipationListController extends FormBasicController impleme
 	}
 
 	public void reload() {
-		List<FormParticipation> formParticipations = formManager.getFormParticipations(survey, coachCourseEnv);
+		List<FormParticipation> formParticipations = formManager.getFormParticipations(survey, coachCourseEnv, getSearchParameters());
 		
 		List<FormParticipationRow> rows = new ArrayList<>(formParticipations.size());
 		for (FormParticipation formParticipation: formParticipations) {
@@ -238,6 +264,35 @@ public class FormParticipationListController extends FormBasicController impleme
 		tableEl.reset(false, false, true);
 	}
 	
+	private FormParticipationSearchParams getSearchParameters() {
+		FormParticipationSearchParams params = new FormParticipationSearchParams();
+		
+		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
+		FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
+		if (obligationFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
+			if (!filterValues.isEmpty()) {
+				List<AssessmentObligation> assessmentObligations = filterValues.stream()
+						.map(AssessmentObligation::valueOf)
+						.collect(Collectors.toList());
+				params.setObligations(assessmentObligations);
+			}
+		}
+		
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, "status");
+		if (statusFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
+			if (!filterValues.isEmpty()) {
+				List<FormParticipationSearchParams.Status> status = filterValues.stream()
+						.map(FormParticipationSearchParams.Status::valueOf)
+						.collect(Collectors.toList());
+				params.setStatus(status);
+			}
+		}
+		
+		return params;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
@@ -248,6 +303,8 @@ public class FormParticipationListController extends FormBasicController impleme
 				if(CMD_SELECT.equals(cmd)) {
 					doSelect(ureq, row);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				reload();
 			}
 		} else if (source == excelButton) {
 			doExport(ureq);

@@ -37,6 +37,7 @@ import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -170,8 +171,8 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 
 	@Override
-	public List<Long> getExcludedIdentityKeys(RepositoryEntry entry, String subIdent) {
-		return assessmentEntryDao.loadExcludedIdentityKeys(entry, subIdent);
+	public List<Long> getIdentityKeys(RepositoryEntry entry, String subIdent, Collection<AssessmentObligation> obligations) {
+		return assessmentEntryDao.loadIdentityKeys(entry, subIdent, obligations);
 	}
 
 	@Override
