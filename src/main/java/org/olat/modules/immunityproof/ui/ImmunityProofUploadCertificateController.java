@@ -105,8 +105,11 @@ public class ImmunityProofUploadCertificateController extends FormBasicControlle
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
+		cmds.add("--certs-file");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/european_trustlits.json");
 		cmds.add("--image");
 		cmds.add(path);
+
 		CountDownLatch doneSignal = new CountDownLatch(1);
 
 		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,
@@ -118,11 +121,10 @@ public class ImmunityProofUploadCertificateController extends FormBasicControlle
 				// Reload context for safety
 				context = certificateChecker.getContext();
 
-				if (context.isCertificateFound() && context.isCertificateValid()
-						&& context.isCertificateBelongsToUser()) {
+				if (context.isCertificateFound()) {
 					fireEvent(ureq, new ImmunityProofFoundEvent(context));
 				} else {
-					getWindowControl().setWarning("Please provide a valid COVID certificate.");
+					getWindowControl().setWarning(translate("warning.invalid.certificate"));
 				}
 			} else {
 				getWindowControl()

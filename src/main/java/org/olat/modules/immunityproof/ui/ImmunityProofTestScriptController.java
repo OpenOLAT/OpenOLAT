@@ -33,6 +33,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 	private FormLink testValidCertificateLink;
 	private FormLink testNoCertificateLink;
 
+	private FormLayoutContainer outputEl;
+
 	@Autowired
 	private ImmunityProofModule immunityProofModule;
 
@@ -57,6 +59,13 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		// buttonLayout, Link.BUTTON);
 		testValidCertificateLink = uifactory.addFormLink("test.script.valid", buttonLayout, Link.BUTTON);
 		testNoCertificateLink = uifactory.addFormLink("test.script.no.certificate", buttonLayout, Link.BUTTON);
+
+		String outputPage = Util.getPackageVelocityRoot(getClass()) + "/immunity_proof_script_output.html";
+		outputEl = FormLayoutContainer.createCustomFormLayout("output", getTranslator(), outputPage);
+		outputEl.setRootForm(mainForm);
+		formLayout.add(outputEl);
+
+		outputEl.contextPut("output", "");
 	}
 
 	@Override
@@ -82,16 +91,15 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		ImmunityProofContext context = new ImmunityProofContext();
 
 		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,
-				context, cmds,
-				doneSignal);
+				context, cmds, doneSignal);
 		certificateChecker.start();
 
 		try {
 			if (doneSignal.await(5000, TimeUnit.MILLISECONDS)) {
 				log.info("Successfully run verify-ehc script - Help was shown");
-				getWindowControl()
-						.setInfo("Successfully run verify-ehc script" + "<br><br>" + context.getOutput().toString());
+				getWindowControl().setInfo("Successfully run verify-ehc script!");
 
+				outputEl.contextPut("output", context.getOutput().toString());
 			} else {
 				log.error("Could not run verify-ehc script - Timeout after 5s");
 
@@ -108,6 +116,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
+		cmds.add("--certs-file");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/european_trustlits.json");
 		cmds.add("--image");
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/examples/valid_cert.png");
 
@@ -125,12 +135,12 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 
 				if (context.isCertificateFound()) {
 					log.info("Successfully run verify-ehc script - Certificate was found");
-					getWindowControl().setInfo("Successfully run verify-ehc script - Certificate was found" + "<br><br>"
-							+ context.getOutput().toString());
+					getWindowControl().setInfo("Successfully run verify-ehc script - Certificate was found");
+					outputEl.contextPut("output", context.getOutput().toString());
 				} else {
 					log.error("Successfully run verify-ehc script - Certificate was found");
-					getWindowControl().setError("Successfully run verify-ehc script - No certificate was found"
-							+ "<br><br>" + context.getErrors().toString());
+					getWindowControl().setError("Successfully run verify-ehc script - No certificate was found");
+					outputEl.contextPut("output", context.getOutput().toString());
 				}
 
 			} else {
@@ -149,6 +159,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
+		cmds.add("--certs-file");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/european_trustlits.json");
 		cmds.add("--image");
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/examples/no_cert.png");
 
@@ -166,13 +178,13 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 
 				if (!context.isCertificateFound()) {
 					log.info("Successfully run verify-ehc script - No certificate was found");
-					getWindowControl().setInfo("Successfully run verify-ehc script - No ertificate was found"
-							+ "<br><br>" + context.getErrors().toString());
+					getWindowControl().setInfo("Successfully run verify-ehc script - No ertificate was found");
+					outputEl.contextPut("output", context.getErrors().toString());
 				} else {
-					log.error("Successfully run verify-ehc script - Certificate was found");
-					getWindowControl().setError("Successfully run verify-ehc script - Certificate was found"
-							+ "<br><br>" + context.getOutput().toString() + "<br><br>"
-							+ context.getErrors().toString());
+					log.error("Successfully run verify-ehc script - But certificate was found and it shouldn't be!");
+					getWindowControl().setError(
+							"Successfully run verify-ehc script - But certificate was found and it shouldn't be!");
+					outputEl.contextPut("output", context.getOutput().toString());
 				}
 
 			} else {

@@ -19,9 +19,12 @@
  */
 package org.olat.modules.immunityproof.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
@@ -61,8 +64,10 @@ import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofContext;
 import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.olat.modules.immunityproof.ImmunityProofService;
+import org.olat.modules.immunityproof.manager.ImmunityProofCertificateChecker;
 import org.olat.modules.immunityproof.ui.event.ImmunityProofDeleteEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -97,6 +102,12 @@ public class ImmunityProofConfigurationController extends FormBasicController {
     private FormLink mailAllCertificatesRemovedReset;
     private FormLink mailAllCertificatesRemovedCustomize;
     
+	private FormLayoutContainer scanConfig;
+	private MultipleSelectionElement scanEnabledEl;
+	private IntegerElement firstNameAccordanceEl;
+	private IntegerElement lastNameAccordanceEl;
+	private IntegerElement birthDateAccordanceEl;
+
     private ImmunityProofConfirmResetController confirmResetReminderMailController;
     private ImmunityProofConfirmResetController confirmResetCommissionerAddedMailController;
     private ImmunityProofConfirmResetController confirmResetCommissionerRemovedMailController;
@@ -226,6 +237,20 @@ public class ImmunityProofConfigurationController extends FormBasicController {
         mailCommissionerRemovedReset = uifactory.addFormLink("commissioner.removed.reset", "reset", null, commissionerRemovedButtons, Link.BUTTON);
         mailCommissionerRemovedCustomize = uifactory.addFormLink("commissioner.removed.customize", "customize", null, commissionerRemovedButtons, Link.BUTTON);
 		
+		// Scan config
+		scanConfig = FormLayoutContainer.createDefaultFormLayout("scanConfig", getTranslator());
+		scanConfig.setRootForm(mainForm);
+		scanConfig.setFormTitle(translate("config.scan"));
+		formLayout.add(scanConfig);
+
+		scanEnabledEl = uifactory.addCheckboxesVertical("scan.enabled", scanConfig, enabledOptions.keys(),
+				enabledOptions.values(), 1);
+		scanEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		firstNameAccordanceEl = uifactory.addIntegerElement("accordance.first.name", 0, scanConfig);
+		lastNameAccordanceEl = uifactory.addIntegerElement("accordance.last.name", 0, scanConfig);
+		birthDateAccordanceEl = uifactory.addIntegerElement("accordance.birthdate", 0, scanConfig);
+		birthDateAccordanceEl.setHelpText(translate("accordance.birthdate.help"));
+
 		// Submit button
 		FormLayoutContainer buttonWrapper = FormLayoutContainer.createDefaultFormLayout("buttonWrapper", getTranslator());
 		buttonWrapper.setRootForm(mainForm);
@@ -243,6 +268,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		if (source == enabledEl) {
 			validityConfig.setVisible(enabledEl.isAtLeastSelected(1));
 			mailConfig.setVisible(enabledEl.isAtLeastSelected(1));
+			scanConfig.setVisible(enabledEl.isAtLeastSelected(1));
 		} else if (source == reminderMailReset) {
 			confirmResetReminderMailController = new ImmunityProofConfirmResetController(ureq, getWindowControl(), "reminder.mail.customize");
             cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetReminderMailController.getInitialComponent(), true, translate("reminder.mail.customize"), true, true);
@@ -298,6 +324,10 @@ public class ImmunityProofConfigurationController extends FormBasicController {
             listenTo(confirmDeleteProofController);
             listenTo(cmc);
             cmc.activate();
+		} else if (source == scanEnabledEl) {
+			if (scanEnabledEl.isAtLeastSelected(1) && !verifyScriptSetupSuccessfully()) {
+				scanEnabledEl.select("on", false);
+			}
 		}
 	}
 	
@@ -397,6 +427,11 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		
 		immunityProofModule.setReminderPeriod(reminderBeforeExpirationEl.getIntValue());
 		
+		immunityProofModule.setScanningEnabled(scanEnabledEl.isAtLeastSelected(1));
+		immunityProofModule.setAccordanceFirstName(firstNameAccordanceEl.getIntValue());
+		immunityProofModule.setAccordanceLastName(lastNameAccordanceEl.getIntValue());
+		immunityProofModule.setAccordanceBirthdate(birthDateAccordanceEl.getIntValue());
+
 		loadConfiguration();
 		
 		fireEvent(ureq, FormEvent.CHANGED_EVENT);
@@ -414,6 +449,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		
 		validityConfig.setVisible(immunityProofModule.isEnabled());
 		mailConfig.setVisible(immunityProofModule.isEnabled());
+		scanConfig.setVisible(immunityProofModule.isEnabled());
 		
 		enabledEl.select("on", immunityProofModule.isEnabled());
 		
@@ -424,6 +460,11 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodTestAntigen.setIntValue(immunityProofModule.getValidityAntigen());
 		
 		reminderBeforeExpirationEl.setIntValue(immunityProofModule.getReminderPeriod());
+
+		scanEnabledEl.select("on", immunityProofModule.isScanningEnabled());
+		firstNameAccordanceEl.setIntValue(immunityProofModule.getAccordanceFirstName());
+		lastNameAccordanceEl.setIntValue(immunityProofModule.getAccordanceLastName());
+		birthDateAccordanceEl.setIntValue(immunityProofModule.getAccordanceBirthdate());
 	}
 	
 	private void sendMail() {
@@ -482,4 +523,47 @@ public class ImmunityProofConfigurationController extends FormBasicController {
         
 		}
     }
+
+	private boolean verifyScriptSetupSuccessfully() {
+		List<String> cmds = new ArrayList<String>();
+		cmds.add(immunityProofModule.getPythonDir());
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
+		cmds.add("--certs-file");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/european_trustlits.json");
+		cmds.add("--image");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/examples/valid_cert.png");
+
+		CountDownLatch doneSignal = new CountDownLatch(1);
+		ImmunityProofContext context = new ImmunityProofContext();
+
+		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,
+				context, cmds, doneSignal);
+		certificateChecker.start();
+
+		boolean isActivated = false;
+
+		try {
+			if (doneSignal.await(5000, TimeUnit.MILLISECONDS)) {
+				context = certificateChecker.getContext();
+
+				isActivated = context.isCertificateFound();
+			} else {
+				isActivated = false;
+			}
+		} catch (InterruptedException e) {
+			isActivated = false;
+		}
+
+		certificateChecker.destroyProcess();
+
+		if (isActivated) {
+			log.info("Scanning successfully enabled");
+			getWindowControl().setInfo(translate("info.activated.successfully"));
+		} else {
+			log.error("Scanning could not be enabled");
+			getWindowControl().setError(translate("info.not.activated"));
+		}
+
+		return isActivated;
+	}
 }

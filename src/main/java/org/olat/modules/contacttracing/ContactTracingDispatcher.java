@@ -22,6 +22,7 @@ package org.olat.modules.contacttracing;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -84,6 +85,12 @@ public class ContactTracingDispatcher implements Dispatcher {
 
 		if(pathInfo.contains("close-window")) {
 			DispatcherModule.setNotContent(request.getPathInfo(), response);
+			return;
+		}
+
+		// Redirect to default dispatcher if module is not enabled
+		if (!CoreSpringFactory.getImpl(ContactTracingModule.class).isEnabled()) {
+			DispatcherModule.redirectToDefaultDispatcher(response);
 			return;
 		}
 
