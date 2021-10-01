@@ -28,6 +28,13 @@
 			<expiration max-idle="-1" interval="5000" />
 		</local-cache>
 		
+		<local-cache name="UserChangesListener@listener" simple-cache="true" statistics="true" statistics-available="true">
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory when-full="NONE" />
+			<expiration max-idle="60000" interval="5000" />
+		</local-cache>
+		
 		<local-cache name="VFSLockManager@lock-nulls" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />

@@ -304,21 +304,21 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		ExceptionalObligationRow row = new ExceptionalObligationRow(null);
 		row.setName(translate("exceptional.obligation.default.type"));
 		row.setType(null);
-		SingleSelection mandatoryEl = uifactory.addRadiosHorizontal(MANDATORY_PREFIX + "default",
+		SingleSelection mandatoryEl = uifactory.addRadiosHorizontal(MANDATORY_PREFIX + "default", null,
 				obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
 		mandatoryEl.setAllowNoSelection(true);
 		mandatoryEl.addActionListener(FormEvent.ONCHANGE);
 		mandatoryEl.setUserObject(row);
 		row.setMandatoryEl(mandatoryEl);
 		
-		SingleSelection optionalEl = uifactory.addRadiosHorizontal(OPTIONAL_PREFIX + "default",
+		SingleSelection optionalEl = uifactory.addRadiosHorizontal(OPTIONAL_PREFIX + "default", null,
 				obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
 		optionalEl.setAllowNoSelection(true);
 		optionalEl.addActionListener(FormEvent.ONCHANGE);
 		optionalEl.setUserObject(row);
 		row.setOptionalEl(optionalEl);
 		
-		SingleSelection excludedEl = uifactory.addRadiosHorizontal(EXCLUDED_PREFIX + "default",
+		SingleSelection excludedEl = uifactory.addRadiosHorizontal(EXCLUDED_PREFIX + "default", null,
 				obligationCont, EXCEPTIONAL_OBLIGATION_KEYS, EXCEPTIONAL_OBLIGATION_VALUES);
 		excludedEl.setAllowNoSelection(true);
 		excludedEl.addActionListener(FormEvent.ONCHANGE);

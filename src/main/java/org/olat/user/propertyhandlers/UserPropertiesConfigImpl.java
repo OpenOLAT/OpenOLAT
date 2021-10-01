@@ -98,11 +98,12 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 	public void setUserPropertyHandlers(List<UserPropertyHandler> userPropertyHandlers) {
 		this.userPropertyHandlers = userPropertyHandlers;
 		// populate name lookup map for faster lookup service
-		userPropertyNameLookupMap = new HashMap<>(userPropertyHandlers.size());
+		Map<String,UserPropertyHandler> lookupMap = new HashMap<>(userPropertyHandlers.size());
 		for (UserPropertyHandler propertyHandler : userPropertyHandlers) {
 			String name = propertyHandler.getName();
-			userPropertyNameLookupMap.put(name, propertyHandler);
+			lookupMap.put(name, propertyHandler);
 		}
+		userPropertyNameLookupMap = Map.copyOf(lookupMap);
 	}
 
 	@Override

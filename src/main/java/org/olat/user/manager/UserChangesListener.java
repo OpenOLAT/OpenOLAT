@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 import org.hibernate.event.spi.PostUpdateEvent;
@@ -32,7 +30,9 @@ import org.hibernate.event.spi.PostUpdateEventListener;
 import org.hibernate.persister.entity.EntityPersister;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.cache.CacheWrapper;
 import org.olat.user.UserManager;
+import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -40,13 +40,20 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserChangeListeners implements PostUpdateEventListener {
+public class UserChangesListener implements PostUpdateEventListener {
 
 	private static final long serialVersionUID = 1666311938725742075L;
 	
-	private static final Logger log = Tracing.createLoggerFor(UserChangeListeners.class);
+	private static final Logger log = Tracing.createLoggerFor(UserChangesListener.class);
 	
-	private final ConcurrentMap<Long,List<ChangedEvent>> events = new ConcurrentHashMap<>();
+	private final UserPropertiesConfig userPropertiesConfig;
+	private final CacheWrapper<Long,List<ChangedEvent>> userChangesCache;
+	
+	public UserChangesListener(UserPropertiesConfig userPropertiesConfig,
+			CacheWrapper<Long,List<ChangedEvent>> userChangesCache) {
+		this.userPropertiesConfig = userPropertiesConfig;
+		this.userChangesCache = userChangesCache;
+	}
 
 	@Override
 	public boolean requiresPostCommitHanding(EntityPersister persister) {
@@ -81,19 +88,29 @@ public class UserChangeListeners implements PostUpdateEventListener {
 			List<ChangedEvent> evs = new ArrayList<>();
 			int[] props = event.getDirtyProperties();
 			for(int prop:props) {
-				Object oldState = oldStates[prop];
-				Object state = states[prop];
 				String propertyName = propertyNames[prop];
-				evs.add(new ChangedEvent(propertyName, (String)oldState, (String)state));
+				if(observeProperty(propertyName)) {
+					Object oldState = oldStates[prop];
+					Object state = states[prop];
+					if((oldState == null || oldState instanceof String) && (state == null || state instanceof String)) {
+						evs.add(new ChangedEvent(propertyName, (String)oldState, (String)state));
+					}
+				}
 			}
-			events.put(key, evs);
+			userChangesCache.put(key, evs);
 		} catch (Exception e) {
 			log.error("", e);
 		}
 	}
 	
-	public List<ChangedEvent> flushEvents(User user) {
-		List<ChangedEvent> evs = events.remove(user.getKey());
+	private boolean observeProperty(String propertyName) {
+		return !"version".equals(propertyName) && !"preferences".equals(propertyName) && !"identity".equals(propertyName)
+				&& !"creationDate".equals(propertyName) && !"lastModified".equals(propertyName)
+				&& userPropertiesConfig.getPropertyHandler(propertyName) != null;
+	}
+	
+	public List<ChangedEvent> getAndRemoveEvents(User user) {
+		List<ChangedEvent> evs = userChangesCache.remove(user.getKey());
 		return evs == null ? List.of() : evs;
 	}
 	

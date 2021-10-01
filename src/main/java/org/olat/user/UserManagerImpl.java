@@ -77,8 +77,8 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.registration.RegistrationManager;
 import org.olat.user.manager.ManifestBuilder;
-import org.olat.user.manager.UserChangeListeners;
-import org.olat.user.manager.UserChangeListeners.ChangedEvent;
+import org.olat.user.manager.UserChangesListener;
+import org.olat.user.manager.UserChangesListener.ChangedEvent;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -117,7 +117,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	private CacheWrapper<Serializable,String> userToFullnameCache;
 	private CacheWrapper<Long,String> userToNameCache;
 	
-	private final UserChangeListeners listener = new UserChangeListeners();
+	private UserChangesListener listener;
   
 	/**
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
@@ -134,8 +134,10 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		userToNameCache = coordinatorManager.getCoordinator().getCacher()
 				.getCache(UserManager.class.getSimpleName(), "username");
 		
+		CacheWrapper<Long,List<ChangedEvent>> userChangesCache = coordinatorManager.getCoordinator().getCacher()
+				.getCache(UserChangesListener.class.getSimpleName(), "listener");
+		listener = new UserChangesListener(getUserPropertiesConfig(), userChangesCache);
 		dbInstance.appendPostUpdateEventListener(listener);
-		
 	}
 
 	@Override
@@ -196,7 +198,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 			String email = emails.get(i).toLowerCase();
 			if (!MailHelper.isValidEmailAddress(email)) {
 				emails.remove(i);
-				log.warn("Invalid email address: " + email);
+				log.warn("Invalid email address: {}", email);
 			}
 			else {
 				emails.set(i, email);
@@ -298,7 +300,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 		// commit for the events
 		dbInstance.commit();
 		
-		List<ChangedEvent> changes = listener.flushEvents(updatedUser);
+		List<ChangedEvent> changes = listener.getAndRemoveEvents(updatedUser);
 		if(!changes.isEmpty() && identityRef != null) {
 			List<UserPropertyChangedEvent> events = changes.stream()
 					.map(change -> new UserPropertyChangedEvent(identityRef.getKey(), change.getPropertyName(), change.getOldState(), change.getState()))

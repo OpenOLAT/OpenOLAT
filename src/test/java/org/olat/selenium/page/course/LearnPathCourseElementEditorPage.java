@@ -43,6 +43,9 @@ public class LearnPathCourseElementEditorPage {
 		OOGraphene.waitElement(triggerBy, browser);
 		browser.findElement(triggerBy).click();
 		OOGraphene.waitBusy(browser);
+		By checkedBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//div[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "'][@checked='checked']");
+		OOGraphene.waitElement(checkedBy, browser);
+		OOGraphene.waitingALittleLonger();
 		return this;
 	}
 	
