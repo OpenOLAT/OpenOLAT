@@ -73,6 +73,11 @@ public class ImmunityProofCertificateChecker extends Thread {
 		StringBuilder outputBuilder = new StringBuilder();
 		String line;
 
+		StringBuilder errorLogBuilder = new StringBuilder();
+		StringBuilder outputLogBuilder = new StringBuilder();
+		context.setOutput(outputLogBuilder);
+		context.setErrors(errorLogBuilder);
+
 		InputStream stderr = proc.getErrorStream();
 		InputStreamReader iserr = new InputStreamReader(stderr);
 		BufferedReader berr = new BufferedReader(iserr);
@@ -80,6 +85,7 @@ public class ImmunityProofCertificateChecker extends Thread {
 		try {
 			while ((line = berr.readLine()) != null) {
 				errorBuilder.append(line);
+				errorLogBuilder.append(line).append("<br>");
 			}
 		} catch (IOException e) {
 			//
@@ -92,6 +98,7 @@ public class ImmunityProofCertificateChecker extends Thread {
 		try {
 			while ((line = br.readLine()) != null) {
 				outputBuilder.append(line);
+				outputLogBuilder.append(line).append("<br>");
 			}
 		} catch (IOException e) {
 			//
@@ -187,7 +194,7 @@ public class ImmunityProofCertificateChecker extends Thread {
 
 			} else if (jsonPayload.has("t")) {
 				// Test
-				JSONObject test = jsonPayload.getJSONObject("v");
+				JSONObject test = jsonPayload.getJSONArray("t").getJSONObject(0);
 				// Check for COVID 19
 				if (test.getInt("tg") != 840539006) {
 					return;
@@ -212,7 +219,7 @@ public class ImmunityProofCertificateChecker extends Thread {
 				
 			} else if (jsonPayload.has("r")) {
 				// Recovery
-				JSONObject recovery = jsonPayload.getJSONObject("v");
+				JSONObject recovery = jsonPayload.getJSONArray("r").getJSONObject(0);
 				// Check for COVID 19
 				if (recovery.getInt("tg") != 840539006) {
 					return;
@@ -260,22 +267,23 @@ public class ImmunityProofCertificateChecker extends Thread {
 
 				// Check first name
 				int firstNameAccordance = immunityProofModule.getAccordanceFirstName();
-				boolean firstNameCorrect = true;
+				boolean firstNameCorrect = false;
 
 				if (firstNameAccordance > 0) {
 					String firstNameToCheck = context.getIdentity().getUser().getFirstName();
 
-					if (!firstName.contains(firstNameToCheck) && !firstNameToCheck.contains(firstName)) {
-						firstNameCorrect &= false;
+					if (firstName.contains(firstNameToCheck) || firstNameToCheck.contains(firstName)) {
+						firstNameCorrect = true;
 					} else {
 						int firstNameDistance = levenshteinDistance.apply(firstName, firstNameToCheck);
 
 						if (firstNameDistance > 0) {
-							float firstNameCoverage = (float) firstNameDistance / firstName.length();
-							float firstNameToCheckCoverage = (float) firstNameDistance / firstNameToCheck.length();
+							float firstNameCoverage = 1 - ((float) firstNameDistance / firstName.length());
+							float firstNameToCheckCoverage = 1
+									- ((float) firstNameDistance / firstNameToCheck.length());
 							float firstNameRequiredAccordance = (float) firstNameAccordance / 100;
 
-							firstNameCorrect &= firstNameCoverage >= firstNameRequiredAccordance
+							firstNameCorrect = firstNameCoverage >= firstNameRequiredAccordance
 									|| firstNameToCheckCoverage >= firstNameRequiredAccordance;
 						}
 					}
@@ -285,21 +293,21 @@ public class ImmunityProofCertificateChecker extends Thread {
 
 				// Check last name
 				int lastNameAccordance = immunityProofModule.getAccordanceLastName();
-				boolean lastNameCorrect = true;
+				boolean lastNameCorrect = false;
 				if (lastNameAccordance > 0) {
 					String lastNameToCheck = context.getIdentity().getUser().getLastName();
 
-					if (!lastName.contains(lastNameToCheck) && !lastNameToCheck.contains(lastName)) {
-						lastNameCorrect &= false;
+					if (lastName.contains(lastNameToCheck) || lastNameToCheck.contains(lastName)) {
+						lastNameCorrect = true;
 					} else {
 						int lastNameDistance = levenshteinDistance.apply(lastName, lastNameToCheck);
 
 						if (lastNameDistance > 0) {
-							float lastNameCoverage = (float) lastNameDistance / lastName.length();
-							float lastNameToCheckCoverage = (float) lastNameDistance / lastNameToCheck.length();
+							float lastNameCoverage = 1 - ((float) lastNameDistance / lastName.length());
+							float lastNameToCheckCoverage = 1 - ((float) lastNameDistance / lastNameToCheck.length());
 							float lastNameRequiredAccordance = (float) lastNameAccordance / 100;
 
-							lastNameCorrect &= lastNameCoverage >= lastNameRequiredAccordance
+							lastNameCorrect = lastNameCoverage >= lastNameRequiredAccordance
 									|| lastNameToCheckCoverage >= lastNameRequiredAccordance;
 						}
 					}
@@ -314,9 +322,6 @@ public class ImmunityProofCertificateChecker extends Thread {
 		} catch (Exception e) {
 			// Go on
 		}
-
-		context.setOutput(outputBuilder);
-		context.setErrors(errorBuilder);
 
 		return;
 	}

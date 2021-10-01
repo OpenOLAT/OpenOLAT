@@ -19,9 +19,12 @@
  */
 package org.olat.modules.immunityproof.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
@@ -61,8 +64,10 @@ import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofContext;
 import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.olat.modules.immunityproof.ImmunityProofService;
+import org.olat.modules.immunityproof.manager.ImmunityProofCertificateChecker;
 import org.olat.modules.immunityproof.ui.event.ImmunityProofDeleteEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -240,6 +245,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 
 		scanEnabledEl = uifactory.addCheckboxesVertical("scan.enabled", scanConfig, enabledOptions.keys(),
 				enabledOptions.values(), 1);
+		scanEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		firstNameAccordanceEl = uifactory.addIntegerElement("accordance.first.name", 0, scanConfig);
 		lastNameAccordanceEl = uifactory.addIntegerElement("accordance.last.name", 0, scanConfig);
 		birthDateAccordanceEl = uifactory.addIntegerElement("accordance.birthdate", 0, scanConfig);
@@ -318,6 +324,10 @@ public class ImmunityProofConfigurationController extends FormBasicController {
             listenTo(confirmDeleteProofController);
             listenTo(cmc);
             cmc.activate();
+		} else if (source == scanEnabledEl) {
+			if (scanEnabledEl.isAtLeastSelected(1) && !verifyScriptSetupSuccessfully()) {
+				scanEnabledEl.select("on", false);
+			}
 		}
 	}
 	
@@ -513,4 +523,53 @@ public class ImmunityProofConfigurationController extends FormBasicController {
         
 		}
     }
+
+	private boolean verifyScriptSetupSuccessfully() {
+		List<String> cmds = new ArrayList<String>();
+		cmds.add(immunityProofModule.getPythonDir());
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
+		cmds.add("--image");
+		cmds.add(immunityProofModule.getValidationScriptDir() + "/examples/valid_cert.png");
+
+		CountDownLatch doneSignal = new CountDownLatch(1);
+		ImmunityProofContext context = new ImmunityProofContext();
+
+		ImmunityProofCertificateChecker certificateChecker = new ImmunityProofCertificateChecker(immunityProofModule,
+				context, cmds, doneSignal);
+		certificateChecker.start();
+
+		boolean isActivated = false;
+
+		try {
+			if (doneSignal.await(5000, TimeUnit.MILLISECONDS)) {
+				context = certificateChecker.getContext();
+
+				if (context.isCertificateFound()) {
+					log.info("Scanning successfully enabled");
+					getWindowControl().setInfo("Successfully activated automatic scanning of COVID certificates!");
+					isActivated = true;
+				} else {
+					log.error("Scanning could not be enabled");
+					getWindowControl().setError(
+							"Could not activate automatic scanning of COVID certificates.<br> Please check the state of validation!");
+					isActivated = false;
+				}
+
+			} else {
+				log.error("Scanning could not be enabled");
+				getWindowControl().setError(
+						"Could not activate automatic scanning of COVID certificates.<br> Please check the state of validation!");
+				isActivated = false;
+			}
+		} catch (InterruptedException e) {
+			log.error("Scanning could not be enabled");
+			getWindowControl().setError(
+					"Could not activate automatic scanning of COVID certificates.<br> Please check the state of validation!");
+			isActivated = false;
+		}
+
+		certificateChecker.destroyProcess();
+
+		return isActivated;
+	}
 }

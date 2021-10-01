@@ -238,9 +238,7 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 				}
 			} else {
 				log.warn("Cannot validate certificate in 5s: {}", context);
-				
-				getWindowControl()
-						.setError("Timeout - Could not validate Certificate" + "<br><br>" + "Please try again!");
+				showError("warning.timeout");
 			}
 		} catch (InterruptedException e) {
 			log.error("", e);
