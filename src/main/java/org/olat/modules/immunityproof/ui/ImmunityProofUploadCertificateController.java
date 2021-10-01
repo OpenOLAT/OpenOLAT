@@ -118,11 +118,10 @@ public class ImmunityProofUploadCertificateController extends FormBasicControlle
 				// Reload context for safety
 				context = certificateChecker.getContext();
 
-				if (context.isCertificateFound() && context.isCertificateValid()
-						&& context.isCertificateBelongsToUser()) {
+				if (context.isCertificateFound()) {
 					fireEvent(ureq, new ImmunityProofFoundEvent(context));
 				} else {
-					getWindowControl().setWarning("Please provide a valid COVID certificate.");
+					getWindowControl().setWarning(translate("warning.invalid.certificate"));
 				}
 			} else {
 				getWindowControl()

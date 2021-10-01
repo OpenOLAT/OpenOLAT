@@ -10,11 +10,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.modules.immunityproof.ImmunityProofContext;
 import org.olat.modules.immunityproof.ImmunityProofModule;
 
@@ -137,21 +142,24 @@ public class ImmunityProofCertificateChecker extends Thread {
 			long daysToMs = 24l * 60 * 60 * 1000;
 
 			Date birthdate = null;
-			String firstName = null;
-			String lastName = null;
+			String firstName = "";
+			String lastName = "";
 
 			try {
 				birthdate = dateFormat.parse(jsonPayload.getString("dob"));
+				context.setBirthDate(birthdate);
 			} catch (Exception e) {
 			}
 
 			try {
-				firstName = jsonPayload.getJSONObject("nam").getString("fn");
+				firstName = jsonPayload.getJSONObject("nam").getString("gn");
+				context.setFirstName(firstName);
 			} catch (Exception e) {
 			}
 
 			try {
-				lastName = jsonPayload.getJSONObject("nam").getString("gn");
+				lastName = jsonPayload.getJSONObject("nam").getString("fn");
+				context.setLastName(lastName);
 			} catch (Exception e) {
 			}
 
@@ -232,8 +240,74 @@ public class ImmunityProofCertificateChecker extends Thread {
 
 			// Check if it belongs to user
 			if (context.getIdentity() != null) {
-				// Removed for testing
-				context.setCertificateBelongsToUser(true);
+				boolean certificateBelongsToUser = true;
+				
+				// Check birthdate
+				int birthdateAccordance = immunityProofModule.getAccordanceBirthdate();
+				if (birthdateAccordance == 100) {
+					Locale userLocale = I18nManager.getInstance()
+							.getLocaleOrDefault(context.getIdentity().getUser().getPreferences().getLanguage());
+
+					String birthdateString = context.getIdentity().getUser().getProperty(UserConstants.BIRTHDAY,
+							userLocale);
+					String birthDateToCheck = Formatter.getInstance(userLocale).formatDate(birthdate);
+
+					certificateBelongsToUser &= birthdateString.equals(birthDateToCheck);
+				}
+
+				// Check strings
+				LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+
+				// Check first name
+				int firstNameAccordance = immunityProofModule.getAccordanceFirstName();
+				boolean firstNameCorrect = true;
+
+				if (firstNameAccordance > 0) {
+					String firstNameToCheck = context.getIdentity().getUser().getFirstName();
+
+					if (!firstName.contains(firstNameToCheck) && !firstNameToCheck.contains(firstName)) {
+						firstNameCorrect &= false;
+					} else {
+						int firstNameDistance = levenshteinDistance.apply(firstName, firstNameToCheck);
+
+						if (firstNameDistance > 0) {
+							float firstNameCoverage = (float) firstNameDistance / firstName.length();
+							float firstNameToCheckCoverage = (float) firstNameDistance / firstNameToCheck.length();
+							float firstNameRequiredAccordance = (float) firstNameAccordance / 100;
+
+							firstNameCorrect &= firstNameCoverage >= firstNameRequiredAccordance
+									|| firstNameToCheckCoverage >= firstNameRequiredAccordance;
+						}
+					}
+				}
+
+				certificateBelongsToUser &= firstNameCorrect;
+
+				// Check last name
+				int lastNameAccordance = immunityProofModule.getAccordanceLastName();
+				boolean lastNameCorrect = true;
+				if (lastNameAccordance > 0) {
+					String lastNameToCheck = context.getIdentity().getUser().getLastName();
+
+					if (!lastName.contains(lastNameToCheck) && !lastNameToCheck.contains(lastName)) {
+						lastNameCorrect &= false;
+					} else {
+						int lastNameDistance = levenshteinDistance.apply(lastName, lastNameToCheck);
+
+						if (lastNameDistance > 0) {
+							float lastNameCoverage = (float) lastNameDistance / lastName.length();
+							float lastNameToCheckCoverage = (float) lastNameDistance / lastNameToCheck.length();
+							float lastNameRequiredAccordance = (float) lastNameAccordance / 100;
+
+							lastNameCorrect &= lastNameCoverage >= lastNameRequiredAccordance
+									|| lastNameToCheckCoverage >= lastNameRequiredAccordance;
+						}
+					}
+				}
+
+				certificateBelongsToUser &= lastNameCorrect;
+
+				context.setCertificateBelongsToUser(certificateBelongsToUser);
 			}
 
 

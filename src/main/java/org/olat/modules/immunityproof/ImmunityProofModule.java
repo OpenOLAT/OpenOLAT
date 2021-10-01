@@ -62,6 +62,11 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	
 	private static final String PROP_QR_ENTRANCE_TEXT = 				"immunity.proof.qr.entrance.text";
 	
+	private static final String PROP_SCANNING_ENABLED = "immunity.proof.qr.scanning.enabled";
+	private static final String PROP_ACCORDANCE_FIRST_NAME = "immunity.proof.accordance.first.name";
+	private static final String PROP_ACCORDANCE_LAST_NAME = "immunity.proof.accordance.last.name";
+	private static final String PROP_ACCORDANCE_BIRTHDATE = "immunity.proof.accordance.birthdate";
+
 	@Value("${immunity.proof.enabled}")
 	private boolean enabled;
 	
@@ -85,11 +90,19 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
     @Value("${immunity.proof.qr.entrance.text:}")
     private String qrEntranceTextBackup;
 
+	@Value("${immunity.proof.qr.scanning.enabled}")
+	private boolean scanningEnabled;
 	@Value("${python.dir}")
 	private String pythonDir;
 	@Value("${immunity.proof.script.dir}")
 	private String validationScriptDir;
-	
+	@Value("${immunity.proof.accordance.last.name}")
+	private int accordanceFirstName;
+	@Value("${immunity.proof.accordance.last.name}")
+	private int accordanceLastName;
+	@Value("${immunity.proof.accordance.birthdate}")
+	private int accordanceBirthdate;
+
 	@Autowired
 	public ImmunityProofModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -126,6 +139,11 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		reminderPeriod = getIntPropertyValue(PROP_REMINDER_BEFORE_EXPIRATION, reminderPeriod);
 		
 		qrEntranceText = getStringPropertyValue(PROP_QR_ENTRANCE_TEXT, qrEntranceText);
+
+		scanningEnabled = getBooleanPropertyValue(PROP_SCANNING_ENABLED) || scanningEnabled;
+		accordanceFirstName = getIntPropertyValue(PROP_ACCORDANCE_FIRST_NAME, accordanceFirstName);
+		accordanceLastName = getIntPropertyValue(PROP_ACCORDANCE_LAST_NAME, accordanceLastName);
+		accordanceBirthdate = getIntPropertyValue(PROP_ACCORDANCE_BIRTHDATE, accordanceBirthdate);
 	}
 	
 	public void setEnabled(boolean enabled) {
@@ -253,6 +271,42 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 
 	public String getValidationScriptDir() {
 		return validationScriptDir;
+	}
+
+	public boolean isScanningEnabled() {
+		return scanningEnabled;
+	}
+
+	public void setScanningEnabled(boolean scanningEnabled) {
+		this.scanningEnabled = scanningEnabled;
+		setBooleanProperty(PROP_SCANNING_ENABLED, scanningEnabled, true);
+	}
+
+	public int getAccordanceFirstName() {
+		return accordanceFirstName;
+	}
+
+	public void setAccordanceFirstName(int accordanceFirstName) {
+		this.accordanceFirstName = accordanceFirstName;
+		setIntProperty(PROP_ACCORDANCE_FIRST_NAME, accordanceFirstName, true);
+	}
+
+	public int getAccordanceLastName() {
+		return accordanceLastName;
+	}
+
+	public void setAccordanceLastName(int accordanceLastName) {
+		this.accordanceLastName = accordanceLastName;
+		setIntProperty(PROP_ACCORDANCE_LAST_NAME, accordanceLastName, true);
+	}
+
+	public int getAccordanceBirthdate() {
+		return accordanceBirthdate;
+	}
+
+	public void setAccordanceBirthdate(int accordanceBirthdate) {
+		this.accordanceBirthdate = accordanceBirthdate;
+		setIntProperty(PROP_ACCORDANCE_BIRTHDATE, accordanceBirthdate, true);
 	}
 
 	public enum ImmunityProofType {

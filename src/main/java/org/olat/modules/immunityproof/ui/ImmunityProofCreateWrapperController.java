@@ -16,7 +16,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ImmunityProofCreateWrapperController extends BasicController {
 
@@ -31,6 +33,9 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 
 	private ImmunityProofCreateAutomaticallyController automaticController;
 	private ImmunityProofCreateManuallyController manualController;
+
+	@Autowired
+	private ImmunityProofModule immunityProofModule;
 
 	protected ImmunityProofCreateWrapperController(UserRequest ureq, WindowControl wControl, Identity editedIdentiy,
 			boolean usedAsCovidCommissioner) {
@@ -51,7 +56,12 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 
 		initSegments();
 		putInitialPanel(mainVC);
-		openAutomaticScan(ureq);
+
+		if (immunityProofModule.isScanningEnabled() && !usedAsCovidCommissioner) {
+			openAutomaticScan(ureq);
+		} else {
+			openManualCreation(ureq);
+		}
 	}
 
 	@Override
@@ -89,8 +99,8 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 	}
 
 	private void initSegments() {
-		if (!segments.getSegments().contains(automaticLink)) {
-			segments.addSegment(automaticLink, true);
+		if (!segments.getSegments().contains(automaticLink) && immunityProofModule.isScanningEnabled()) {
+			segments.addSegment(automaticLink, false);
 		}
 
 		if (!segments.getSegments().contains(manualLink)) {
@@ -102,11 +112,14 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 		if (automaticController == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Scan", 0l);
 			WindowControl bwControl = addToHistory(ureq, ores, null);
-			automaticController = new ImmunityProofCreateAutomaticallyController(ureq, bwControl, editedIdentity);
+			automaticController = new ImmunityProofCreateAutomaticallyController(ureq, bwControl, editedIdentity,
+					usedAsCovidCommissioner);
 			listenTo(automaticController);
 		} else {
 			addToHistory(ureq, automaticController);
 		}
+
+		segments.select(automaticLink);
 
 		mainVC.put("segmentCmp", automaticController.getInitialComponent());
 	}
@@ -121,6 +134,8 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 		} else {
 			addToHistory(ureq, manualController);
 		}
+
+		segments.select(manualLink);
 
 		mainVC.put("segmentCmp", manualController.getInitialComponent());
 	}

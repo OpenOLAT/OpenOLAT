@@ -50,7 +50,7 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 	
 	private UserSearchFlexiController userSearchController;
 	
-	private ImmunityProofCreateManuallyController immunityProofCreateController;
+	private ImmunityProofCreateWrapperController immunityProofCreateWrapperController;
 	private ImmunityProofCardController cardController;
 	private CloseableModalController cmc;
 	
@@ -93,7 +93,7 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 			if (event instanceof SingleIdentityChosenEvent) {
 				doAddImmunityProof(ureq, ((SingleIdentityChosenEvent) event).getChosenIdentity());
 			}
-		} else if (source == immunityProofCreateController) {
+		} else if (source == immunityProofCreateWrapperController) {
 			cleanUp();
 			
 			if (event instanceof ImmunityProofAddedEvent) {
@@ -107,10 +107,12 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 	}
 	
 	private void doAddImmunityProof(UserRequest ureq, Identity identity) {
-		immunityProofCreateController = new ImmunityProofCreateManuallyController(ureq, getWindowControl(), identity, true);
-		listenTo(immunityProofCreateController);
+		immunityProofCreateWrapperController = new ImmunityProofCreateWrapperController(ureq, getWindowControl(),
+				identity, true);
+		listenTo(immunityProofCreateWrapperController);
 		
-		cmc = new CloseableModalController(getWindowControl(), translate("cancel"), immunityProofCreateController.getInitialComponent(), true, translate("add.immunity.proof"));
+		cmc = new CloseableModalController(getWindowControl(), translate("cancel"),
+				immunityProofCreateWrapperController.getInitialComponent(), true, translate("add.immunity.proof"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -129,10 +131,10 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 			cmc.deactivate();
 		}
 		
-		removeAsListenerAndDispose(immunityProofCreateController);
+		removeAsListenerAndDispose(immunityProofCreateWrapperController);
 		removeAsListenerAndDispose(cmc);
 		
-		immunityProofCreateController = null;
+		immunityProofCreateWrapperController = null;
 		cmc = null;
 	}
 	
