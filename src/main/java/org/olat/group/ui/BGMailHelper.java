@@ -239,7 +239,7 @@ public class BGMailHelper {
 			}
 			
 			if(isCopy) {
-				String copy = trans.translate("mail.copy.addition", new String[] { group.getName() });
+				String copy = trans.translate("notification.mail.copy.addition", new String[] { group.getName() });
 				body = copy + body;
 			}
 		} else {

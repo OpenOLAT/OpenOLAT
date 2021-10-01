@@ -190,7 +190,7 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 	private void tryToGrantAccess(AdvanceOrder advanceOrder) {
 		if (Status.PENDING == advanceOrder.getStatus()) {
 			List<RepositoryEntry> entries = findRepositoryEntries(advanceOrder);
-			if (!entries.isEmpty()) {
+			if (entries != null && !entries.isEmpty()) {
 				for (RepositoryEntry entry: entries) {
 					grantAccessIfHasNoAccess(advanceOrder, entry);
 				}

@@ -128,7 +128,6 @@ public class DBImpl implements DB, Destroyable {
 		SessionFactoryImpl sessionFactory = emf.unwrap(SessionFactoryImpl.class);
 		EventListenerRegistry registry = sessionFactory.getServiceRegistry().getService(EventListenerRegistry.class);
 		registry.getEventListenerGroup(EventType.POST_UPDATE).appendListener(listener);
-		registry.getEventListenerGroup(EventType.POST_COMMIT_UPDATE).appendListener(listener);
 	}
 
 	/**

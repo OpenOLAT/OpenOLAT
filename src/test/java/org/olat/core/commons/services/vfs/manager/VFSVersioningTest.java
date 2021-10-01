@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -94,7 +95,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		vfsRepositoryService.itemSaved(file, id);
 		VFSMetadata data = vfsRepositoryService.getMetadataFor(file);
 		vfsRepositoryService.updateMetadata(data);
@@ -149,7 +150,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		
 		VFSItem retrievedFile = rootTest.resolve(filename);
 		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(retrievedFile);
@@ -185,7 +186,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = "orig_" + UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		
 		//save a first version
 		for(int i=0; i<2; i++) {
@@ -207,7 +208,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String newFilename = "new_" + UUID.randomUUID().toString() + ".txt";
 		VFSLeaf newFile = rootTest.createChildLeaf(newFilename);
 		int newByteCopied = copyTestTxt(newFile);
-		Assert.assertFalse(newByteCopied == 0);
+		Assert.assertNotEquals(0, newByteCopied);
 		
 		// rename new file to old name
 		newFile.rename(filename);
@@ -226,7 +227,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		
 		//save a first version
 		for(int i=0; i<5; i++) {
@@ -251,7 +252,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		vfsRepositoryService.itemSaved(file, id);
 		VFSMetadata data = vfsRepositoryService.getMetadataFor(file);
 		vfsRepositoryService.updateMetadata(data);
@@ -323,7 +324,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		
 		// set metadata
 		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(file);
@@ -374,7 +375,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-4");
 
@@ -390,7 +391,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a third version
 		InputStream in3 = VFSVersioningTest.class.getResourceAsStream("test.txt");
-		vfsRepositoryService.addVersion(file, id, false, "Version 3", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 3", in3);
 		in3.close();
 		
 		//check if there is only one backup file
@@ -416,7 +417,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		
 		//save a first version
 		for(int i=0; i<2; i++) {
@@ -450,12 +451,12 @@ public class VFSVersioningTest extends OlatTestCase {
 	 * @throws IOException
 	 */
 	@Test
-	public void deleteVersions_withSameFile() throws IOException {
+	public void deleteVersions_withSameFile() throws IOException, URISyntaxException {
 		VFSContainer rootTest = VFSManager.olatRootContainer("/ver-" + UUID.randomUUID(), null);
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-5");
 		
@@ -471,7 +472,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		//save a third version
 		InputStream in3 = VFSVersioningTest.class.getResourceAsStream("test.txt");
-		vfsRepositoryService.addVersion(file, id, false, "Version 3", in2);
+		vfsRepositoryService.addVersion(file, id, false, "Version 3", in3);
 		in3.close();
 		
 		//delete revisions
@@ -517,7 +518,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-6");
 		
@@ -586,7 +587,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		Assert.assertEquals(VFSConstants.YES, file.canMeta());
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-7");
@@ -640,7 +641,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		Assert.assertEquals(VFSConstants.YES, file.canMeta());
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
@@ -675,7 +676,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		Assert.assertEquals(VFSConstants.YES, file.canMeta());
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
@@ -711,7 +712,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		Assert.assertEquals(VFSConstants.YES, file.canMeta());
 		
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-9");
@@ -770,7 +771,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		Assert.assertEquals(VFSConstants.YES, file.canMeta());
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
@@ -817,7 +818,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		String filename = UUID.randomUUID().toString() + ".txt";
 		VFSLeaf file = rootTest.createChildLeaf(filename);
 		int byteCopied = copyTestTxt(file);
-		Assert.assertFalse(byteCopied == 0);
+		Assert.assertNotEquals(0, byteCopied);
 		Assert.assertEquals(VFSConstants.YES, file.canMeta());
 		
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("vers-12");
