@@ -544,31 +544,23 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 			if (doneSignal.await(5000, TimeUnit.MILLISECONDS)) {
 				context = certificateChecker.getContext();
 
-				if (context.isCertificateFound()) {
-					log.info("Scanning successfully enabled");
-					getWindowControl().setInfo("Successfully activated automatic scanning of COVID certificates!");
-					isActivated = true;
-				} else {
-					log.error("Scanning could not be enabled");
-					getWindowControl().setError(
-							"Could not activate automatic scanning of COVID certificates.<br> Please check the state of validation!");
-					isActivated = false;
-				}
-
+				isActivated = context.isCertificateFound();
 			} else {
-				log.error("Scanning could not be enabled");
-				getWindowControl().setError(
-						"Could not activate automatic scanning of COVID certificates.<br> Please check the state of validation!");
 				isActivated = false;
 			}
 		} catch (InterruptedException e) {
-			log.error("Scanning could not be enabled");
-			getWindowControl().setError(
-					"Could not activate automatic scanning of COVID certificates.<br> Please check the state of validation!");
 			isActivated = false;
 		}
 
 		certificateChecker.destroyProcess();
+
+		if (isActivated) {
+			log.info("Scanning successfully enabled");
+			getWindowControl().setInfo(translate("info.activated.successfully"));
+		} else {
+			log.error("Scanning could not be enabled");
+			getWindowControl().setError(translate("info.not.activated"));
+		}
 
 		return isActivated;
 	}
