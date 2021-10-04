@@ -210,10 +210,12 @@ public class StatisticCourseNodesController extends BasicController implements A
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstanceWithoutCheck(selectedNode.getIdent(), 0l), null);
 		if(selectedNode instanceof StatisticResourceNode) {
 			StatisticResourceNode node = (StatisticResourceNode)selectedNode;
+			node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent());
 			currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, node);
 		} else {
 			StatisticResourceNode node = getStatisticNodeInParentLine(selectedNode);
 			if(node != null) {
+				node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent());
 				currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, selectedNode);
 			}
 		}

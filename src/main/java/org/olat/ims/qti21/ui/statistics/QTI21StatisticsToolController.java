@@ -186,6 +186,10 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	private void doSelectNode(UserRequest ureq, TreeNode selectedNode) {
 		removeAsListenerAndDispose(currentCtrl);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(selectedNode.getIdent(), 0l), null);
+		if (selectedNode instanceof StatisticResourceNode) {
+			StatisticResourceNode statisticResourceNode = (StatisticResourceNode) selectedNode;
+			statisticResourceNode.getCourseNode().updateModuleConfigDefaults(false, statisticResourceNode.getCourseNode());
+		}
 		currentCtrl = result.getController(ureq, swControl, stackPanel, selectedNode);
 		if(currentCtrl != null) {
 			listenTo(currentCtrl);
