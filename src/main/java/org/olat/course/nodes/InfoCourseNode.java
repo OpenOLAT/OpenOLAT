@@ -83,7 +83,7 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	public static final String ADMIN_CONDITION_ID = "admininfos";
 	
 	// Configs
-	private static final int CURRENT_VERSION = 4;
+	private static final int CURRENT_VERSION = 5;
 	
 	private static final String LEGACY_KEY_ADMIN_BY_COACH = "admin.by.coach";
 	private static final String LEGACY_KEY_EDIT_BY_COACH = "edit.by.coach";
@@ -157,6 +157,11 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 			config.remove(LEGACY_KEY_EDIT_BY_COACH);
 			config.remove(LEGACY_KEY_EDIT_BY_PARTICIPANT);
 		}
+		if (version < 5) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
+		}
+		
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 	

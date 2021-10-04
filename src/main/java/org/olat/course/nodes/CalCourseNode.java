@@ -73,7 +73,7 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	
 	public static final String TYPE = "cal";
 	
-	private static final int CURRENT_VERSION = 4;
+	private static final int CURRENT_VERSION = 5;
 	public static final String CONFIG_START_DATE = "startDate";
 	public static final String CONFIG_AUTO_DATE = "autoDate";
 	
@@ -132,6 +132,10 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 			// Remove legacy
 			config.remove(LEGACY_KEY_EDIT_BY_COACH);
 			config.remove(LEGACY_KEY_EDIT_BY_PARTICIPANT);
+		}
+		if (config.getConfigurationVersion() < 5) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

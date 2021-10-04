@@ -98,7 +98,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "survey";
 	public static final String SURVEY_ICON = "o_survey_icon";
 
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
 	
 	private static final String LEGACY_KEY_EXECUTION_BY_OWNER = "execution.by.owner";
@@ -277,6 +277,11 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			config.remove(LEGACY_KEY_REPORT_FOR_PARTICIPANT);
 			config.remove(LEGACY_KEY_REPORT_FOR_GUEST);
 		}
+		if (version < 3) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
+		}
+		
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 

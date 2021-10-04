@@ -89,7 +89,7 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	
 	private static final long serialVersionUID = -5307888583081589123L;
 	
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
 	
 	private static final String LEGACY_COACH_MODERATE_ALLOWED = "coach.moderate.allowed";
@@ -250,6 +250,11 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			config.remove(LEGACY_PARTICIPANT_POST_ALLOWED);
 			config.remove(LEGACY_GUEST_POST_ALLOWED);
 		}
+		if (version < 4) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
+		}
+		
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 

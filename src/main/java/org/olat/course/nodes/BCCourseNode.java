@@ -93,7 +93,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	private static final String PACKAGE_BC = Util.getPackageName(BCCourseNodeRunController.class);
 	public static final String TYPE = "bc";
 	
-	private static final int CURRENT_VERSION = 4;
+	private static final int CURRENT_VERSION = 5;
 	public static final String CONFIG_AUTO_FOLDER = "config.autofolder";
 	public static final String CONFIG_SUBPATH = "config.subpath";
 	
@@ -467,6 +467,10 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			// Remove legacy
 			config.remove(LEGACY_KEY_UPLOAD_BY_COACH);
 			config.remove(LEGACY_KEY_UPLOAD_BY_PARTICIPANT);
+		}
+		if (version < 5) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}

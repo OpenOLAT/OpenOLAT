@@ -54,6 +54,16 @@ import org.springframework.stereotype.Service;
 public class NodeRightServiceImpl implements NodeRightService {
 	
 	private static final String KEY_PREFIX = "node.right.";
+	
+	@Override
+	public void initDefaults(ModuleConfiguration moduleConfig, List<NodeRightType> nodeRightTypes) {
+		for (NodeRightType type : nodeRightTypes) {
+			String key = KEY_PREFIX + type.getIdentifier();
+			if (!moduleConfig.has(key)) {
+				moduleConfig.set(key, clone(type.getDefaultRight()));
+			}
+		}
+	}
 
 	@Override
 	public NodeRight getRight(ModuleConfiguration moduleConfig, NodeRightType type) {
