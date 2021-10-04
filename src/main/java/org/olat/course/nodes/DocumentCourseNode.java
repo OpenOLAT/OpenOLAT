@@ -80,7 +80,7 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 	public static final String ICON_CSS = "o_filetype_file";
 
 	// Configs
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_DOC_COURSE_REL_PATH = "doc.course.folder";
 	public static final String CONFIG_DOC_REPO_SOFT_KEY = "doc.repo";
 	public static final String CONFIG_HEIGHT_AUTO = "auto";
@@ -260,6 +260,11 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 			config.remove(LEGACY_KEY_DOWNLOAD_PARTICIPANT);
 			config.remove(LEGACY_KEY_DOWNLOAD_GUEST);
 		}
+		if (version < 4) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
+		}
+		
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 

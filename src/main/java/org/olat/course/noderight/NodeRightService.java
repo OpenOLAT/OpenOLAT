@@ -20,6 +20,7 @@
 package org.olat.course.noderight;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.course.noderight.NodeRight.EditMode;
@@ -36,10 +37,12 @@ import org.olat.modules.ModuleConfiguration;
  */
 public interface NodeRightService {
 	
+	public void initDefaults(ModuleConfiguration moduleConfig, List<NodeRightType> nodeRightTypes);
+	
 	public NodeRight getRight(ModuleConfiguration moduleConfig, NodeRightType type);
 	
 	public void setRight(ModuleConfiguration moduleConfig, NodeRight nodeRight);
-	
+
 	public boolean isGranted(ModuleConfiguration moduleConfig, UserCourseEnvironment userCourseEnv, NodeRightType type);
 
 	public NodeRight clone(NodeRight nodeRight);

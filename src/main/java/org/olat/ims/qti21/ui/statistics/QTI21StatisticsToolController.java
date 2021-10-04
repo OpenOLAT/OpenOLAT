@@ -43,6 +43,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -70,6 +71,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	private final ArchiveOptions options;
 	private final RepositoryEntry testEntry;
 	private final RepositoryEntry courseEntry;
+	private final NodeAccessType nodeAccessType;
 	private QTI21StatisticResourceResult result;
 	private QTI21StatisticsSecurityCallback secCallback;
 
@@ -98,6 +100,7 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 		options.setIdentities(asOptions.getIdentities());
 		courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		testEntry = courseNode.getReferencedRepositoryEntry();
+		nodeAccessType = NodeAccessType.of(courseEnv);
 		
 		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
 		secCallback = new QTI21StatisticsSecurityCallback(asOptions.isAdmin(), asOptions.isAdmin() && deliveryOptions.isAllowAnonym());
@@ -188,6 +191,10 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	private void doSelectNode(UserRequest ureq, TreeNode selectedNode) {
 		removeAsListenerAndDispose(currentCtrl);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(selectedNode.getIdent(), 0l), null);
+		if (selectedNode instanceof StatisticResourceNode) {
+			StatisticResourceNode statisticResourceNode = (StatisticResourceNode) selectedNode;
+			statisticResourceNode.getCourseNode().updateModuleConfigDefaults(false, statisticResourceNode.getCourseNode(), nodeAccessType);
+		}
 		currentCtrl = result.getController(ureq, swControl, stackPanel, selectedNode);
 		if(currentCtrl != null) {
 			listenTo(currentCtrl);

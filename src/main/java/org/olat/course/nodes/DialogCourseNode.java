@@ -98,7 +98,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	@SuppressWarnings("deprecation")
 	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(DialogCourseNodeEditController.class);
 	
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	
 	private static final String LEGACY_KEY_UPLOAD_BY_COACH = "upload.by.coach";
 	private static final String LEGACY_KEY_UPLOAD_BY_PARTICIPANT = "upload.by.participant";
@@ -236,6 +236,11 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 			config.remove(LEGACY_KEY_POST_BY_COACH);
 			config.remove(LEGACY_KEY_POST_BY_PARTICIPANT);
 		}
+		if (version < 4) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
+		}
+		
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 	

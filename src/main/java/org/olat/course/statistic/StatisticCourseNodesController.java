@@ -48,6 +48,7 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -68,6 +69,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 	private Controller currentCtrl;
 	
 	private final StatisticType type;
+	private final NodeAccessType nodeAccessType;
 	private final StatisticResourceOption options;
 	
 	@Autowired
@@ -79,6 +81,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 
 		this.type = type;
 		this.stackPanel = stackPanel;
+		nodeAccessType = NodeAccessType.of(userCourseEnv);
 		options = new StatisticResourceOption();
 
 		if(!reSecurity.isEntryAdmin() && !reSecurity.isOwner()) {
@@ -210,10 +213,12 @@ public class StatisticCourseNodesController extends BasicController implements A
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstanceWithoutCheck(selectedNode.getIdent(), 0l), null);
 		if(selectedNode instanceof StatisticResourceNode) {
 			StatisticResourceNode node = (StatisticResourceNode)selectedNode;
+			node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent(), nodeAccessType);
 			currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, node);
 		} else {
 			StatisticResourceNode node = getStatisticNodeInParentLine(selectedNode);
 			if(node != null) {
+				node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent(), nodeAccessType);
 				currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, selectedNode);
 			}
 		}

@@ -104,7 +104,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 
 	public static final String TYPE = "wiki";
 
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
 	
 	private static final String LEGACY_KEY_EDIT_BY_COACH = "edit.by.coach";
@@ -154,6 +154,10 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 			// Remove legacy
 			config.remove(LEGACY_KEY_EDIT_BY_COACH);
 			config.remove(LEGACY_KEY_EDIT_BY_PARTICIPANT);
+		}
+		if (version < 4) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

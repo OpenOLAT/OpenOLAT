@@ -76,7 +76,7 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 	public static final String ICON_CSS = "o_appointment_icon";
 	
 	// configuration
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_KEY_ORGANIZER_OWNER = "organizer.ower";
 	public static final String CONFIG_KEY_ORGANIZER_COACH = "organizer.coach";
 	
@@ -198,6 +198,10 @@ public class AppointmentsCourseNode extends AbstractAccessableCourseNode {
 		if (version < 3) {
 			config.setBooleanEntry(CONFIG_KEY_ORGANIZER_OWNER, false);
 			config.setBooleanEntry(CONFIG_KEY_ORGANIZER_COACH, true);
+		}
+		if (version < 4) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);
