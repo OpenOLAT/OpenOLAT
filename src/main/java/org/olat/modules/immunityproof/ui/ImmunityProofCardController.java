@@ -37,6 +37,7 @@ import org.olat.core.id.User;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofModule;
 import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.immunityproof.ui.event.ImmunityProofAddedEvent;
@@ -65,6 +66,8 @@ public class ImmunityProofCardController extends FormBasicController {
 	private ImmunityProofCreateManuallyController immunityProofCreateController;
 	private ImmunityProofDeleteConfirmController deleteConfirmController;
 	
+	@Autowired
+	private ImmunityProofModule immunityProofModule;
 	@Autowired
 	private ImmunityProofService immunityProofService;
 	@Autowired
@@ -197,6 +200,7 @@ public class ImmunityProofCardController extends FormBasicController {
 		flc.contextPut("locale", getLocale().toLanguageTag());
 		flc.contextPut("status", status);
 		flc.contextPut("validUntil", validUntil);
+		flc.contextPut("customHelpLink", immunityProofModule.getCustomHelpLink());
 	}
 	
 	private void reset() {		

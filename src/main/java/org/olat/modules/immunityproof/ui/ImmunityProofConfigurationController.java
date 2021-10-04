@@ -92,6 +92,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 	private IntegerElement maxValidityPeriodRecovery;
 	private IntegerElement validityPeriodTestPCR;
 	private IntegerElement validityPeriodTestAntigen;
+	private TextElement customHelpLinkEl;
 	
 	private FormLayoutContainer mailConfig;
 	private IntegerElement reminderBeforeExpirationEl;
@@ -209,6 +210,9 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodTestAntigen.setElementCssClass("form-inline");
 		validityPeriodTestAntigen.setTextAddOn("days");
 		validityPeriodTestAntigen.setHelpTextKey("validity.test.help", null);
+		
+		// Custom help link
+		customHelpLinkEl = uifactory.addTextElement("custom.help.link", -1, "", validityConfig);
 		
 		
 		// Reminder config 
@@ -441,6 +445,8 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		immunityProofModule.setValidityPCR(validityPeriodTestPCR.getIntValue());
 		immunityProofModule.setValidityAntigen(validityPeriodTestAntigen.getIntValue());
 		
+		immunityProofModule.setCustomHelpLink(customHelpLinkEl.getValue());
+		
 		immunityProofModule.setReminderPeriod(reminderBeforeExpirationEl.getIntValue());
 		
 		immunityProofModule.setScanningEnabled(scanEnabledEl.isAtLeastSelected(1));
@@ -476,6 +482,8 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		maxValidityPeriodRecovery.setIntValue(immunityProofModule.getMaxValidityRecovery());
 		validityPeriodTestPCR.setIntValue(immunityProofModule.getValidityPCR());
 		validityPeriodTestAntigen.setIntValue(immunityProofModule.getValidityAntigen());
+		
+		customHelpLinkEl.setValue(immunityProofModule.getCustomHelpLink());
 		
 		reminderBeforeExpirationEl.setIntValue(immunityProofModule.getReminderPeriod());
 

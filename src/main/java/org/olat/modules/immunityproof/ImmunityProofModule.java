@@ -70,6 +70,8 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_ACCORDANCE_FIRST_NAME = 			"immunity.proof.accordance.first.name";
 	private static final String PROP_ACCORDANCE_LAST_NAME =				"immunity.proof.accordance.last.name";
 	private static final String PROP_ACCORDANCE_BIRTHDATE = 			"immunity.proof.accordance.birthdate";
+	
+	private static final String CUSTOM_HELP_LINK = 						"immunity.proof.custom.help.link";
 
 	@Value("${immunity.proof.enabled}")
 	private boolean enabled;
@@ -110,6 +112,9 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	private int accordanceLastName;
 	@Value("${immunity.proof.accordance.birthdate}")
 	private int accordanceBirthdate;
+	
+	@Value("${immunity.proof.custom.help.link}")
+	private String customHelpLink;
 
 	@Autowired
 	public ImmunityProofModule(CoordinatorManager coordinatorManager) {
@@ -154,6 +159,8 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		accordanceFirstName = getIntPropertyValue(PROP_ACCORDANCE_FIRST_NAME, accordanceFirstName);
 		accordanceLastName = getIntPropertyValue(PROP_ACCORDANCE_LAST_NAME, accordanceLastName);
 		accordanceBirthdate = getIntPropertyValue(PROP_ACCORDANCE_BIRTHDATE, accordanceBirthdate);
+		
+		customHelpLink = getStringPropertyValue(CUSTOM_HELP_LINK, customHelpLink);
 	}
 	
 	public void setEnabled(boolean enabled) {
@@ -352,6 +359,15 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	public void setAccordanceBirthdate(int accordanceBirthdate) {
 		this.accordanceBirthdate = accordanceBirthdate;
 		setIntProperty(PROP_ACCORDANCE_BIRTHDATE, accordanceBirthdate, true);
+	}
+	
+	public String getCustomHelpLink() {
+		return customHelpLink;
+	}
+	
+	public void setCustomHelpLink(String customHelpLink) {
+		this.customHelpLink = customHelpLink;
+		setStringProperty(CUSTOM_HELP_LINK, customHelpLink, true);
 	}
 
 	public enum ImmunityProofType {
