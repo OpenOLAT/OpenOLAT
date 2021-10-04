@@ -110,7 +110,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 
 	public static final String TYPE = "fo";
 
-	private static final int CURRENT_VERSION = 5;
+	private static final int CURRENT_VERSION = 6;
 	public static final String CONFIG_FORUM_KEY = "forumKey";
 	public static final String CONFIG_PSEUDONYM_POST_ALLOWED = "pseudonym.post.allowed";
 	public static final String CONFIG_PSEUDONYM_POST_DEFAULT = "pseudonym.post.default";
@@ -579,6 +579,10 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 			config.remove(LEGACY_COACH_MODERATE_ALLOWED);
 			config.remove(LEGACY_COACH_POST_ALLOWED);
 			config.remove(LEGACY_PARTICIPANT_POST_ALLOWED);
+		}
+		if (version < 6) {
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			nodeRightService.initDefaults(config, NODE_RIGHT_TYPES);
 		}
 
 		// Clean up
