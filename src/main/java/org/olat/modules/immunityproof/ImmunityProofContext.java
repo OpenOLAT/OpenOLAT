@@ -3,6 +3,7 @@ package org.olat.modules.immunityproof;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofType;
 
 public class ImmunityProofContext {
 
@@ -15,7 +16,9 @@ public class ImmunityProofContext {
 	private String firstName;
 	private String lastName;
 	private Date birthDate;
-	private Date safeUntil;
+	private Date proofFrom;
+	private Date proofUntil;
+	private ImmunityProofType proofType;
 
 	private StringBuilder errors;
 	private StringBuilder output;
@@ -84,12 +87,28 @@ public class ImmunityProofContext {
 		this.birthDate = birthDate;
 	}
 
-	public Date getSafeUntil() {
-		return safeUntil;
+	public Date getProofFrom() {
+		return proofFrom;
 	}
 
-	public void setSafeUntil(Date safeUntil) {
-		this.safeUntil = safeUntil;
+	public void setProofFrom(Date proofFrom) {
+		this.proofFrom = proofFrom;
+	}
+	
+	public Date getProofUntil() {
+		return proofUntil;
+	}
+	
+	public void setProofUntil(Date proofUntil) {
+		this.proofUntil = proofUntil;
+	}
+	
+	public ImmunityProofType getProofType() {
+		return proofType;
+	}
+	
+	public void setProofType(ImmunityProofType proofType) {
+		this.proofType = proofType;
 	}
 
 	public StringBuilder getErrors() {

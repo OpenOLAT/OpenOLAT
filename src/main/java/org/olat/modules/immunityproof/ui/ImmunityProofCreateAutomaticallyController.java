@@ -51,6 +51,8 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 	private StaticTextElement firstNameEl;
 	private StaticTextElement lastNameEl;
 	private StaticTextElement birthDateEl;
+	private StaticTextElement typeEl;
+	private StaticTextElement validFromEl;
 	private StaticTextElement validUntilEl;
 	private MultipleSelectionElement confirmOverrideEl;
 	private MultipleSelectionElement confirmReminderEl;
@@ -114,6 +116,8 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 		firstNameEl = uifactory.addStaticTextElement("form.name.firstName", "", confirmationLayout);
 		lastNameEl = uifactory.addStaticTextElement("form.name.lastName", "", confirmationLayout);
 		birthDateEl = uifactory.addStaticTextElement("form.name.birthDay", "", confirmationLayout);
+		typeEl = uifactory.addStaticTextElement("proof.method", "", confirmationLayout);
+		validFromEl = uifactory.addStaticTextElement("valid.from", "", confirmationLayout);
 		validUntilEl = uifactory.addStaticTextElement("valid.until", "", confirmationLayout);
 
 		SelectionValues truthOptions = new SelectionValues(
@@ -231,12 +235,9 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 				// Reload context for safety
 				context = certificateChecker.getContext();
 
-				if (!context.isCertificateFound()) {
-					getWindowControl().setWarning("Please provide a valid COVID certificate.");
-				} else if (!context.isCertificateValid()) {
-					getWindowControl().setWarning("Please provide a valid COVID certificate.");
+				if (!context.isCertificateFound() || !context.isCertificateValid()) {
+					getWindowControl().setWarning(translate("warning.invalid.certificate"));
 				} else {
-
 					doShowConfirmation(context);
 				}
 			} else {
@@ -255,6 +256,9 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 			return;
 		}
 		
+		validFromEl.setVisible(false);
+		validUntilEl.setVisible(false);
+		
 		confirmationLayout.setVisible(true);
 		
 		firstNameEl.setValue(context.getFirstName());
@@ -264,9 +268,21 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 			String birthDate = Formatter.getInstance(getLocale()).formatDate(context.getBirthDate());
 			birthDateEl.setValue(birthDate);
 		}
-		if (context.getSafeUntil() != null) {
-			String safeUntil = Formatter.getInstance(getLocale()).formatDate(context.getSafeUntil());
-			validUntilEl.setValue(safeUntil);
+		
+		if (context.getProofType() != null) {
+			typeEl.setValue(translate(immunityProofModule.getI18nKey(context.getProofType())));
+		}
+		
+		if (context.getProofFrom() != null) {
+			String validFrom = Formatter.getInstance(getLocale()).formatDate(context.getProofFrom());
+			validFromEl.setValue(validFrom);
+			validFromEl.setVisible(true);
+		}
+		
+		if (context.getProofUntil() != null) {
+			String validUntil = Formatter.getInstance(getLocale()).formatDate(context.getProofUntil());
+			validUntilEl.setValue(validUntil);
+			validUntilEl.setVisible(true);
 		}
 		
 		confirmOverrideEl.setVisible(immunityProofService.getImmunityProof(context.getIdentity()) != null);
@@ -312,8 +328,11 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		immunityProofService.createImmunityProofFromCertificate(context.getIdentity(), context.getSafeUntil(),
-				confirmReminderEl.isAtLeastSelected(1), true);
+		boolean sendMail = confirmReminderEl.isAtLeastSelected(1);
+		boolean validated = true;
+		boolean deleteOtherProof = confirmOverrideEl.isVisible() && confirmOverrideEl.isAtLeastSelected(1);
+		
+		immunityProofService.createImmunityProof(context.getIdentity(), context.getProofType(), context.getProofFrom(), context.getProofUntil(), sendMail, validated, deleteOtherProof);
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

@@ -22,6 +22,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.modules.immunityproof.ImmunityProofContext;
 import org.olat.modules.immunityproof.ImmunityProofModule;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofType;
 
 public class ImmunityProofCertificateChecker extends Thread {
 
@@ -120,7 +121,9 @@ public class ImmunityProofCertificateChecker extends Thread {
 		context.setCertificateBelongsToUser(false);
 		context.setCertificateFound(false);
 		context.setCertificateValid(false);
-		context.setSafeUntil(null);
+		context.setProofFrom(null);
+		context.setProofUntil(null);
+		context.setProofType(null);
 		
 		try {
 			int exitValue = proc.waitFor();
@@ -189,8 +192,8 @@ public class ImmunityProofCertificateChecker extends Thread {
 					return;
 				}
 
-				context.setSafeUntil(
-						new Date(vaccinationDate.getTime() + immunityProofModule.getValidityVaccination() * daysToMs));
+				context.setProofFrom(vaccinationDate);
+				context.setProofType(ImmunityProofType.vaccination);
 
 			} else if (jsonPayload.has("t")) {
 				// Test
@@ -205,16 +208,17 @@ public class ImmunityProofCertificateChecker extends Thread {
 				if (testDate.after(new Date())) {
 					return;
 				}
-
+				
+				// Save test date
+				context.setProofFrom(testDate);
+				
 				// Check PCR test
 				if (test.getString("tt").equals("LP6464-4")) {
-					context.setSafeUntil(
-							new Date(testDate.getTime() + immunityProofModule.getValidityPCR() * daysToMs));
+					context.setProofType(ImmunityProofType.pcrTest);
 				}
 				// Check rapid test
 				else if (test.getString("tt").equals("LP217198-3")) {
-					context.setSafeUntil(
-							new Date(testDate.getTime() + immunityProofModule.getValidityAntigen() * daysToMs));
+					context.setProofType(ImmunityProofType.antigenTest);
 				}
 				
 			} else if (jsonPayload.has("r")) {
@@ -228,18 +232,10 @@ public class ImmunityProofCertificateChecker extends Thread {
 				// Recovery Dates
 				Date validFrom = dateFormat.parse(recovery.getString("df"));
 				Date validUntil = dateFormat.parse(recovery.getString("du"));
-
-				if (validFrom.before(new Date())) {
-					// Maximal validity due to internal rules
-					Date maxValidity = new Date(
-							validFrom.getTime() + immunityProofModule.getValidityRecovery() * daysToMs);
-
-					if (validUntil.before(maxValidity)) {
-						context.setSafeUntil(validUntil);
-					} else {
-						context.setSafeUntil(maxValidity);
-					}
-				}
+				
+				context.setProofFrom(validFrom);
+				context.setProofUntil(validUntil);
+				context.setProofType(ImmunityProofType.recovery);
 			}
 
 			context.setCertificateFound(true);

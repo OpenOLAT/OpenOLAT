@@ -91,9 +91,7 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 
 				fireEvent(ureq, new ImmunityProofAddedEvent(editedIdentity));
 			}
-		} else if (source == manualController) {
-
-		}
+		} 
 
 		fireEvent(ureq, event);
 	}
