@@ -19,10 +19,13 @@
  */
 package org.olat.modules.curriculum.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getRoles;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -31,10 +34,13 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElementType;
@@ -82,9 +88,14 @@ public class CurriculumElementTypesWebService {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementTypeVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementTypeVO.class)))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient.")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getElementTypes() {
+	public Response getElementTypes(@Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
+		}
+		
 		List<CurriculumElementType> elementTypes = curriculumService.getCurriculumElementTypes();
 		List<CurriculumElementTypeVO> voes = new ArrayList<>(elementTypes.size());
 		for(CurriculumElementType elementType:elementTypes) {
@@ -108,11 +119,16 @@ public class CurriculumElementTypesWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementTypeVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient.")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient.")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json.")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response putCurriculumElementType(CurriculumElementTypeVO curriculumelementType) {
+	public Response putCurriculumElementType(CurriculumElementTypeVO curriculumelementType, @Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
+		}
+		
 		CurriculumElementType savedElementType = saveCurriculumElementType(curriculumelementType);
 		return Response.ok(CurriculumElementTypeVO.valueOf(savedElementType)).build();
 	}
@@ -131,11 +147,16 @@ public class CurriculumElementTypesWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementTypeVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient.")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient.")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json.")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response postCurriculumElementType(CurriculumElementTypeVO curriculumElementType) {
+	public Response postCurriculumElementType(CurriculumElementTypeVO curriculumElementType, @Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
+		}
+		
 		CurriculumElementType savedElementType = saveCurriculumElementType(curriculumElementType);
 		return Response.ok(CurriculumElementTypeVO.valueOf(savedElementType)).build();
 	}
@@ -158,12 +179,17 @@ public class CurriculumElementTypesWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementTypeVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient.")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient.")
 	@ApiResponse(responseCode = "406", description = "application/xml, application/json.")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculumElementType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey,
-			CurriculumElementTypeVO curriculumElementType) {
+			CurriculumElementTypeVO curriculumElementType, @Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
+		}
+		
 		if(curriculumElementType.getKey() == null) {
 			curriculumElementType.setKey(curriculumElementTypeKey);
 		} else if(!curriculumElementTypeKey.equals(curriculumElementType.getKey())) {
@@ -217,9 +243,14 @@ public class CurriculumElementTypesWebService {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),
 					@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementTypeVO.class))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient.")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getCurriculumElementTypes(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey) {
+	public Response getCurriculumElementTypes(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey, @Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
+		}
+		
 		CurriculumElementType elementType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		if(elementType == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -242,10 +273,15 @@ public class CurriculumElementTypesWebService {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementTypeVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementTypeVO.class)))
 				})
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "405", description = "The curriculum element type was not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getAllowedSubTypes(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey) {
+	public Response getAllowedSubTypes(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey, @Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
+		}
+		
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		if(type == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -271,10 +307,16 @@ public class CurriculumElementTypesWebService {
 	@Operation(summary = "Add a sub-type to a specified curriculum element type",
 		description = "Add a sub-type to a specified curriculum element type")
 	@ApiResponse(responseCode = "200", description = "The sub type was added to the allowed sub types")
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "405", description = "The curriculum element type was not found")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response allowSubTaxonomyLevelType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey, @PathParam("subTypeKey") Long subTypeKey) {
+	public Response allowSubTaxonomyLevelType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey,
+			@PathParam("subTypeKey") Long subTypeKey, @Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
+		}
+		
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		CurriculumElementType subType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(subTypeKey));
 		if(type == null) {
@@ -299,7 +341,13 @@ public class CurriculumElementTypesWebService {
 	@ApiResponse(responseCode = "200", description = "The sub type was removed successfully")
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "405", description = "The curriculum element type was not found")
-	public Response disalloweSubType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey, @PathParam("subTypeKey") Long subTypeKey) {
+	public Response disalloweSubType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey,
+			@PathParam("subTypeKey") Long subTypeKey, @Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
+			throw new WebApplicationException(Response.serverError().status(Status.FORBIDDEN).build());
+		}
+		
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		CurriculumElementType subType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(subTypeKey));
 		if(type == null || subType == null) {
