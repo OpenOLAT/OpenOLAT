@@ -13,6 +13,46 @@
 		<!-- customize some of the properties -->
 		<property name="useContextBasedConfig" value="true"/>
 		<property name="scan" value="false"/>
+		<property name="resourcePackages">
+			<set>
+				<value>org.olat.restapi.group</value>
+				<value>org.olat.restapi.i18n</value>
+				<value>org.olat.restapi.repository</value>
+				<value>org.olat.restapi.repository.course</value>
+				<value>org.olat.restapi.repository.course.config</value>
+				<value>org.olat.restapi.security</value>
+				<value>org.olat.restapi.support</value>
+				<value>org.olat.restapi.support.vo</value>
+				<value>org.olat.restapi.support.vo.elements</value>
+				<value>org.olat.restapi.system</value>
+				<value>org.olat.restapi.system.vo</value>
+				<value>org.olat.commons.calendar.restapi</value>
+				<value>org.olat.commons.info.restapi</value>
+				<value>org.olat.core.commons.services.notifications.restapi</value>
+				<value>org.olat.core.commons.services.doceditor.onlyoffice.restapi</value>
+				<value>org.olat.core.commons.services.vfs.restapi</value>
+				<value>org.olat.course.assessment.restapi</value>
+				<value>org.olat.course.certificate.restapi</value>
+				<value>org.olat.course.db.restapi</value>
+				<value>org.olat.course.nodes.co</value>
+				<value>org.olat.course.nodes.en</value>
+				<value>org.olat.modules.bigbluebutton.restapi</value>
+				<value>org.olat.modules.curriculum.restapi</value>
+				<value>org.olat.modules.docpool.restapi</value>
+				<value>org.olat.modules.fo.restapi</value>
+				<value>org.olat.modules.gotomeeting.restapi</value>
+				<value>org.olat.modules.grading.restapi</value>
+				<value>org.olat.modules.lecture.restapi</value>
+				<value>org.olat.modules.openmeetings.restapi</value>
+				<value>org.olat.modules.qpool.restapi</value>
+				<value>org.olat.modules.reminder.restapi</value>
+				<value>org.olat.modules.taxonomy.restapi</value>
+				<value>org.olat.modules.vitero.restapi</value>
+				<value>org.olat.modules.wiki.restapi</value>
+				<value>org.olat.registration.restapi</value>
+				<value>org.olat.user.restapi</value>
+			</set>
+		</property>
 	</bean>
 
 	<jaxrs:server address="/" basePackages="org.olat">

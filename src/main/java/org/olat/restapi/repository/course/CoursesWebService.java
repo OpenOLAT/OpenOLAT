@@ -676,7 +676,7 @@ public class CoursesWebService {
 			addedEntry = repositoryService.update(addedEntry);
 
 			// create an empty course
-			ICourse course = CourseFactory.createCourse(addedEntry, shortTitle, longTitle, "");
+			CourseFactory.createCourse(addedEntry, shortTitle, longTitle, "");
 			CourseFactory.initNodeAccessType(addedEntry, type);
 			log.info(Tracing.M_AUDIT, "Create course: {}", addedEntry);
 			return prepareCourse(addedEntry, shortTitle, longTitle, courseConfigVO);
