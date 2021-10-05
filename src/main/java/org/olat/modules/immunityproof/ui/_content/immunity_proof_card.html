@@ -1,5 +1,16 @@
 <div class="o_immunity_proof_wrapper $status">
-	<h2>$r.translate("proof.heading") $r.contextHelpWithWrapper("COVID+certificate")</h2>
+	<h2>
+		$r.translate("proof.heading") 
+		#if($r.isEmpty($customHelpLink))
+			$r.contextHelpWithWrapper("COVID+certificate")
+		#else
+			<span class="o_chelp_wrapper">
+				<a href="$r.xssScan($customHelpLink)" class="o_chelp" target="_blank" title="$r.translate('help.button')">
+				<i class="o_icon o_icon_help"> </i> $r.translate("help")
+				</a>
+			</span>
+		#end
+	</h2>
 	
 	<div class="row">
 		<div class="col-xs-12 col-sm-6">

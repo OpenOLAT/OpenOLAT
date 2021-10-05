@@ -138,15 +138,6 @@ public class CurriculumsWebService {
 		}
 		return Response.ok(voes.toArray(new CurriculumVO[voes.size()])).build();
 	}
-	
-
-	public CurriculumElementTypesWebService getCurriculumElementTypesWebService(@Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isAdministrator() && !roles.isCurriculumManager()) {
-			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
-		}
-		return new CurriculumElementTypesWebService();
-	}
 
 	/**
 	 * Creates and persists a new curriculum.

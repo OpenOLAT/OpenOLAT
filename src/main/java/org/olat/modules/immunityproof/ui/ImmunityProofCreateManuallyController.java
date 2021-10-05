@@ -295,9 +295,14 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 				type = ImmunityProofType.antigenTest;
 			}
 			
-			if (safeUntilDate != null) {
+			if (safeUntilDate != null && immunityProofModule.getValidity(type) != null) {
 				long daysToMs = 24l * 60 * 60 * 1000;
-				safeUntilDate = new Date(safeUntilDate.getTime() + immunityProofModule.getValidity(type) * daysToMs);
+				Date maxSafeUntilDate = new Date(safeUntilDate.getTime() + immunityProofModule.getValidity(type).getRight() * daysToMs);
+				safeUntilDate = new Date(safeUntilDate.getTime() + immunityProofModule.getValidity(type).getLeft() * daysToMs);
+				Date safeUntil = new Date();
+				safeUntil.setTime(safeUntil.getTime() + immunityProofModule.getValidity(type).getLeft() * daysToMs);
+				
+				safeUntilDate = safeUntil.after(maxSafeUntilDate) ? maxSafeUntilDate : safeUntil;
 			}
 			
 			if (safeUntilDate != null && safeUntilDate.before(existingProof.getSafeDate())) {
@@ -332,29 +337,29 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Date safeUntilDate = null;
+		Date proofFrom = null;
 		ImmunityProofType type = null;
 		
 		if (immunityMethodEl.getSelectedKey().equals(vaccination.getKey())) {
-			safeUntilDate = vaccinationDateChooser.getDate();
+			proofFrom = vaccinationDateChooser.getDate();
 			type = ImmunityProofType.vaccination;
 		} else if (immunityMethodEl.getSelectedKey().equals(recovery.getKey())) {
-			safeUntilDate = recoveryDateChooser.getDate();
+			proofFrom = recoveryDateChooser.getDate();
 			type = ImmunityProofType.recovery;
 		} else if (immunityMethodEl.getSelectedKey().equals(testPCR.getKey())) {
-			safeUntilDate = testPCRDateChooser.getDate();
+			proofFrom = testPCRDateChooser.getDate();
 			type = ImmunityProofType.pcrTest;
 		} else if (immunityMethodEl.getSelectedKey().equals(testAntigen.getKey())) {
-			safeUntilDate = testAntigenDateChooser.getDate();
+			proofFrom = testAntigenDateChooser.getDate();
 			type = ImmunityProofType.antigenTest;
 		} else if (immunityMethodEl.getSelectedKey().equals(medicalCertificate.getKey())) {
-			safeUntilDate = medicalCertificateDateChooser.getDate();
+			proofFrom = medicalCertificateDateChooser.getDate();
 			type = ImmunityProofType.medicalCertificate;
 		}
 		
 		boolean sendMail = confirmReminderEl.isAtLeastSelected(1);
 		
-		immunityProofService.createImmunityProof(editedIdentity, type, safeUntilDate, sendMail, usedByCovidCommissioner, true);
+		immunityProofService.createImmunityProof(editedIdentity, type, proofFrom, null, sendMail, usedByCovidCommissioner, true);
 		
 		fireEvent(ureq, new ImmunityProofAddedEvent(editedIdentity));
 	}

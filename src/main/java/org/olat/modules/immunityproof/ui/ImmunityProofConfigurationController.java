@@ -87,9 +87,12 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 	private FormLayoutContainer validityConfig;
 	private TextElement validVaccines;
 	private IntegerElement validityPeriodVaccination;
+	private IntegerElement maxValidityPeriodVaccination;
 	private IntegerElement validityPeriodRecovery;
+	private IntegerElement maxValidityPeriodRecovery;
 	private IntegerElement validityPeriodTestPCR;
 	private IntegerElement validityPeriodTestAntigen;
+	private TextElement customHelpLinkEl;
 	
 	private FormLayoutContainer mailConfig;
 	private IntegerElement reminderBeforeExpirationEl;
@@ -172,6 +175,12 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodVaccination.setMaxLength(3);
 		validityPeriodVaccination.setElementCssClass("form-inline");
 		validityPeriodVaccination.setTextAddOn("days");
+		
+		maxValidityPeriodVaccination = uifactory.addIntegerElement("validity.max.vaccination", 0, validityConfig);
+		maxValidityPeriodVaccination.setDisplaySize(3);
+		maxValidityPeriodVaccination.setMaxLength(3);
+		maxValidityPeriodVaccination.setElementCssClass("form-inline");
+		maxValidityPeriodVaccination.setTextAddOn("days");
 
 		// Validity period when recovered
 		validityPeriodRecovery = uifactory.addIntegerElement("validity.recovery", 0, validityConfig);
@@ -179,6 +188,12 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodRecovery.setMaxLength(3);
 		validityPeriodRecovery.setElementCssClass("form-inline");
 		validityPeriodRecovery.setTextAddOn("days");
+		
+		maxValidityPeriodRecovery = uifactory.addIntegerElement("validity.max.recovery", 0, validityConfig);
+		maxValidityPeriodRecovery.setDisplaySize(3);
+		maxValidityPeriodRecovery.setMaxLength(3);
+		maxValidityPeriodRecovery.setElementCssClass("form-inline");
+		maxValidityPeriodRecovery.setTextAddOn("days");
 		
 		// Validity period when tested with PCR
 		validityPeriodTestPCR = uifactory.addIntegerElement("validity.test.pcr", 0, validityConfig);
@@ -195,6 +210,9 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodTestAntigen.setElementCssClass("form-inline");
 		validityPeriodTestAntigen.setTextAddOn("days");
 		validityPeriodTestAntigen.setHelpTextKey("validity.test.help", null);
+		
+		// Custom help link
+		customHelpLinkEl = uifactory.addTextElement("custom.help.link", -1, "", validityConfig);
 		
 		
 		// Reminder config 
@@ -421,9 +439,13 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		
 		immunityProofModule.setValidVaccines(validVaccines.getValue());
 		immunityProofModule.setValidityVaccination(validityPeriodVaccination.getIntValue());
+		immunityProofModule.setMaxValidityVaccination(maxValidityPeriodVaccination.getIntValue());
 		immunityProofModule.setValidityRecovery(validityPeriodRecovery.getIntValue());
+		immunityProofModule.setMaxValidityRecovery(maxValidityPeriodRecovery.getIntValue());
 		immunityProofModule.setValidityPCR(validityPeriodTestPCR.getIntValue());
 		immunityProofModule.setValidityAntigen(validityPeriodTestAntigen.getIntValue());
+		
+		immunityProofModule.setCustomHelpLink(customHelpLinkEl.getValue());
 		
 		immunityProofModule.setReminderPeriod(reminderBeforeExpirationEl.getIntValue());
 		
@@ -455,9 +477,13 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		
 		validVaccines.setValue(immunityProofModule.getValidVaccines());
 		validityPeriodVaccination.setIntValue(immunityProofModule.getValidityVaccination());
+		maxValidityPeriodVaccination.setIntValue(immunityProofModule.getMaxValidityVaccination());
 		validityPeriodRecovery.setIntValue(immunityProofModule.getValidityRecovery());
+		maxValidityPeriodRecovery.setIntValue(immunityProofModule.getMaxValidityRecovery());
 		validityPeriodTestPCR.setIntValue(immunityProofModule.getValidityPCR());
 		validityPeriodTestAntigen.setIntValue(immunityProofModule.getValidityAntigen());
+		
+		customHelpLinkEl.setValue(immunityProofModule.getCustomHelpLink());
 		
 		reminderBeforeExpirationEl.setIntValue(immunityProofModule.getReminderPeriod());
 

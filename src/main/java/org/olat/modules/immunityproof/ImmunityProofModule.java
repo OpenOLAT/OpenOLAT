@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
@@ -50,7 +52,9 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_ENABLED = 							"immunity.proof.enabled";
 	
 	private static final String PROP_VALIDITY_VACCINATION = 			"immunity.proof.validity.vaccination";
+	private static final String PROP_MAX_VALIDITY_VACCINATION = 		"immunity.proof.max.validity.vaccination";
 	private static final String PROP_VALIDITY_RECOVERY = 				"immunity.proof.validity.recovery";
+	private static final String PROP_MAX_VALIDITY_RECOVERY =			"immunity.proof.max.validity.recovery";
 	private static final String PROP_VALIDITY_TEST_PCR = 				"immunity.proof.validity.test.pcr";
 	private static final String PROP_VALIDITY_TEST_ANTIGEN = 			"immunity.proof.validity.test.antigen";
 	
@@ -62,18 +66,24 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	
 	private static final String PROP_QR_ENTRANCE_TEXT = 				"immunity.proof.qr.entrance.text";
 	
-	private static final String PROP_SCANNING_ENABLED = "immunity.proof.qr.scanning.enabled";
-	private static final String PROP_ACCORDANCE_FIRST_NAME = "immunity.proof.accordance.first.name";
-	private static final String PROP_ACCORDANCE_LAST_NAME = "immunity.proof.accordance.last.name";
-	private static final String PROP_ACCORDANCE_BIRTHDATE = "immunity.proof.accordance.birthdate";
+	private static final String PROP_SCANNING_ENABLED = 				"immunity.proof.qr.scanning.enabled";
+	private static final String PROP_ACCORDANCE_FIRST_NAME = 			"immunity.proof.accordance.first.name";
+	private static final String PROP_ACCORDANCE_LAST_NAME =				"immunity.proof.accordance.last.name";
+	private static final String PROP_ACCORDANCE_BIRTHDATE = 			"immunity.proof.accordance.birthdate";
+	
+	private static final String CUSTOM_HELP_LINK = 						"immunity.proof.custom.help.link";
 
 	@Value("${immunity.proof.enabled}")
 	private boolean enabled;
 	
 	@Value("${immunity.proof.validity.vaccination}")
 	private int validityVaccination;
+	@Value("${immunity.proof.max.validity.vaccination}")
+	private int maxValidityVaccination;
 	@Value("${immunity.proof.validity.recovery}")
 	private int validityRecovery;
+	@Value("${immunity.proof.max.validity.recovery}")
+	private int maxValidityRecovery;
 	@Value("${immunity.proof.validity.test.pcr}")
 	private int validityPCR;
 	@Value("${immunity.proof.validity.test.antigen}")
@@ -102,6 +112,9 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	private int accordanceLastName;
 	@Value("${immunity.proof.accordance.birthdate}")
 	private int accordanceBirthdate;
+	
+	@Value("${immunity.proof.custom.help.link}")
+	private String customHelpLink;
 
 	@Autowired
 	public ImmunityProofModule(CoordinatorManager coordinatorManager) {
@@ -130,7 +143,9 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		enabled = getBooleanPropertyValue(PROP_ENABLED) || enabled;
 		
 		validityVaccination = getIntPropertyValue(PROP_VALIDITY_VACCINATION, validityVaccination);
+		maxValidityVaccination = getIntPropertyValue(PROP_MAX_VALIDITY_VACCINATION, maxValidityVaccination);
 		validityRecovery = getIntPropertyValue(PROP_VALIDITY_RECOVERY, validityRecovery);
+		maxValidityRecovery = getIntPropertyValue(PROP_MAX_VALIDITY_RECOVERY, maxValidityRecovery);
 		validityPCR = getIntPropertyValue(PROP_VALIDITY_TEST_PCR, validityPCR);
 		validityAntigen = getIntPropertyValue(PROP_VALIDITY_TEST_ANTIGEN, validityAntigen);
 		
@@ -144,6 +159,8 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		accordanceFirstName = getIntPropertyValue(PROP_ACCORDANCE_FIRST_NAME, accordanceFirstName);
 		accordanceLastName = getIntPropertyValue(PROP_ACCORDANCE_LAST_NAME, accordanceLastName);
 		accordanceBirthdate = getIntPropertyValue(PROP_ACCORDANCE_BIRTHDATE, accordanceBirthdate);
+		
+		customHelpLink = getStringPropertyValue(CUSTOM_HELP_LINK, customHelpLink);
 	}
 	
 	public void setEnabled(boolean enabled) {
@@ -160,6 +177,15 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		setIntProperty(PROP_VALIDITY_VACCINATION, validityVaccination, true);
 	}
 	
+	public int getMaxValidityVaccination() {
+		return maxValidityVaccination;
+	}
+	
+	public void setMaxValidityVaccination(int maxValidityVaccination) {
+		this.maxValidityVaccination = maxValidityVaccination;
+		setIntProperty(PROP_MAX_VALIDITY_VACCINATION, maxValidityVaccination, true);
+	}
+	
 	public int getValidityRecovery() {
 		return validityRecovery;
 	}
@@ -167,6 +193,15 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	public void setValidityRecovery(int validityRecovery) {
 		this.validityRecovery = validityRecovery;
 		setIntProperty(PROP_VALIDITY_RECOVERY, validityRecovery, true);
+	}
+	
+	public int getMaxValidityRecovery() {
+		return maxValidityRecovery;
+	}
+	
+	public void setMaxValidityRecovery(int maxValidityRecovery) {
+		this.maxValidityRecovery = maxValidityRecovery;
+		setIntProperty(PROP_MAX_VALIDITY_RECOVERY, maxValidityRecovery, true);
 	}
 	
 	public int getValidityPCR() {
@@ -248,21 +283,38 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
         setStringProperty(PROP_QR_ENTRANCE_TEXT, qrEntranceText, true);
 	}
 	
-	public int getValidity(ImmunityProofType type) {
+	public Pair<Integer, Integer> getValidity(ImmunityProofType type) {
 		switch (type) {
 		case vaccination:
-			return getValidityVaccination();
+			return new ImmutablePair<>(getValidityVaccination(), getMaxValidityVaccination());
 		case recovery:
-			return getValidityRecovery();
+			return new ImmutablePair<>(getValidityRecovery(), getMaxValidityRecovery());
 		case pcrTest:
-			return getValidityPCR();
+			return new ImmutablePair<>(getValidityPCR(), getValidityPCR());
 		case antigenTest:
-			return getValidityAntigen();
+			return new ImmutablePair<>(getValidityAntigen(), getValidityAntigen());
 		case medicalCertificate:
-			return 0;
+			return new ImmutablePair<>(0, 0);
 		}
 		
-		return 0;
+		return null;
+	}
+	
+	public String getI18nKey(ImmunityProofType type) {
+		switch (type) {
+		case vaccination:
+			return "vaccination";
+		case recovery:
+			return "recovery";
+		case pcrTest:
+			return "test.pcr";
+		case antigenTest:
+			return "test.antigen";
+		case medicalCertificate:
+			return "medical.certificate";
+		}
+		
+		return "";
 	}
 	
 	public String getPythonDir() {
@@ -307,6 +359,15 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	public void setAccordanceBirthdate(int accordanceBirthdate) {
 		this.accordanceBirthdate = accordanceBirthdate;
 		setIntProperty(PROP_ACCORDANCE_BIRTHDATE, accordanceBirthdate, true);
+	}
+	
+	public String getCustomHelpLink() {
+		return customHelpLink;
+	}
+	
+	public void setCustomHelpLink(String customHelpLink) {
+		this.customHelpLink = customHelpLink;
+		setStringProperty(CUSTOM_HELP_LINK, customHelpLink, true);
 	}
 
 	public enum ImmunityProofType {

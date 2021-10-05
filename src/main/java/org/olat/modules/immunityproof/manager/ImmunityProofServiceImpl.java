@@ -46,33 +46,29 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 	private ImmunityProofModule immunityProofModule;
 	
 	@Override
-	public void createImmunityProof(Identity identity, ImmunityProofType type, Date inputDate, boolean sendMail, boolean validated, boolean deleteOtherImmunityProof) {
+	public void createImmunityProof(Identity identity, ImmunityProofType type, Date validFrom, Date validUntil, boolean sendMail, boolean validated, boolean deleteOtherImmunityProof) {
 		if (deleteOtherImmunityProof) {
 			deleteImmunityProof(identity);
 		}
 		
-		if (inputDate == null) {
+		if (validFrom == null || immunityProofModule.getValidity(type) == null) {
 			return;
 		}
 		
 		long daysToMs = 24l * 60 * 60 * 1000;
-		Date safeUntil = new Date(inputDate.getTime() + immunityProofModule.getValidity(type) * daysToMs);
+		Date maxSafeUntilDate = new Date(validFrom.getTime() + immunityProofModule.getValidity(type).getRight() * daysToMs);
+		Date safeUntil = new Date();
+		safeUntil.setTime(safeUntil.getTime() + immunityProofModule.getValidity(type).getLeft() * daysToMs);
+			
+		if (safeUntil.after(maxSafeUntilDate)) {
+			safeUntil = maxSafeUntilDate;
+		}
+		
+		if (validUntil != null && safeUntil.after(validUntil)) {
+			safeUntil = validUntil;
+		}
 		
 		immunityProofDAO.createImmunityProof(identity, safeUntil, sendMail, validated);
-	}
-
-	@Override
-	public void createImmunityProofFromCertificate(Identity identity, Date safeUntil, boolean sendMail,
-			boolean deleteOtherImmunityProof) {
-		if (deleteOtherImmunityProof) {
-			deleteImmunityProof(identity);
-		}
-
-		if (safeUntil == null) {
-			return;
-		}
-
-		immunityProofDAO.createImmunityProof(identity, safeUntil, sendMail, true);
 	}
 
 	@Override
