@@ -64,16 +64,16 @@
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.10</org.springframework.version>
 		<org.hibernate.version>5.5.7.Final</org.hibernate.version>
-		<apache.cxf>3.4.4</apache.cxf>
+		<apache.cxf>3.4.5</apache.cxf>
 		<apache.pdfbox>2.0.24</apache.pdfbox>
 		<apache.poi>5.0.0</apache.poi>
 		<apache.log4j>2.14.1</apache.log4j>
 		<org.slf4j>1.7.32</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
-		<io.undertow>2.2.10.Final</io.undertow>
-		<jackson.version>2.12.5</jackson.version>
+		<io.undertow>2.2.12.Final</io.undertow>
+		<jackson.version>2.13.0</jackson.version>
 		<org.mysql.version>8.0.26</org.mysql.version>
-		<org.postgresql.version>42.2.23</org.postgresql.version>
+		<org.postgresql.version>42.2.24</org.postgresql.version>
 		<org.infinispan.version>12.1.7.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
@@ -447,7 +447,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.52.1</version>
+				    <version>3.52.3</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1837,7 +1837,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.0.29</version>
+			<version>3.1.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2328,13 +2328,13 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.23.0-SNAPSHOT</version>
+			<version>0.30.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Overwrite selenium dependency to okhttp v3 -->
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
-			<version>4.9.1</version>
+			<version>4.9.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
@@ -2497,7 +2497,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.20.2</version>
+			<version>3.21.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -2573,7 +2573,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>30.1.1-jre</version>
+			<version>31.0.1-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>
