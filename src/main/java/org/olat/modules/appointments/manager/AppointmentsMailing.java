@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
@@ -47,6 +48,7 @@ import org.olat.modules.appointments.ParticipationSearchParams;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.ui.AppointmentsMainController;
 import org.olat.modules.appointments.ui.AppointmentsUIFactory;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -74,6 +76,7 @@ public class AppointmentsMailing {
 		
 		ParticipationSearchParams participationParams = new ParticipationSearchParams();
 		participationParams.setAppointments(singletonList(appointment));
+		participationParams.setFetchTopics(true);
 		participationParams.setFetchIdentities(true);
 		participationParams.setFetchUser(true);
 		participationDao.loadParticipations(participationParams).stream()
@@ -86,6 +89,7 @@ public class AppointmentsMailing {
 		
 		ParticipationSearchParams participationParams = new ParticipationSearchParams();
 		participationParams.setAppointments(singletonList(appointment));
+		participationParams.setFetchTopics(true);
 		participationParams.setFetchIdentities(true);
 		participationParams.setFetchUser(true);
 		participationDao.loadParticipations(participationParams).stream()
@@ -98,6 +102,7 @@ public class AppointmentsMailing {
 		
 		ParticipationSearchParams participationParams = new ParticipationSearchParams();
 		participationParams.setAppointments(appointments);
+		participationParams.setFetchTopics(true);
 		participationParams.setFetchIdentities(true);
 		participationParams.setFetchUser(true);
 		participationDao.loadParticipations(participationParams).stream()
@@ -109,13 +114,18 @@ public class AppointmentsMailing {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
+		RepositoryEntry entry = appointment.getTopic().getEntry();
+		String repoUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+		String repoName = entry.getDisplayname();
+				
 		Topic topic = appointment.getTopic();
 		String subject = translator.translate(i18nSubject, new String[] {
 				topic.getTitle()
 		});
 		String body = translator.translate(i18nBody, new String[] {
 				userManager.getUserDisplayName(identity.getKey()),
-				createFormatedAppointments(singletonList(appointment), translator)
+				createFormatedAppointments(singletonList(appointment), translator),
+				repoUrl, repoName
 		});
 		
 		MailerResult result = new MailerResult();
@@ -144,10 +154,15 @@ public class AppointmentsMailing {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
+		RepositoryEntry entry = appointments.get(0).getTopic().getEntry();
+		String repoUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+		String repoName = entry.getDisplayname();
+				
 		String subject = translator.translate("mail.appointments.deleted.subject");
 		String body = translator.translate("mail.appointments.deleted.body", new String[] {
 				userManager.getUserDisplayName(identity.getKey()),
-				createFormatedAppointments(appointments, translator)
+				createFormatedAppointments(appointments, translator),
+				repoUrl, repoName
 		});
 		
 		MailerResult result = new MailerResult();
@@ -179,12 +194,17 @@ public class AppointmentsMailing {
 		Identity identity = reloadedParticipation.getIdentity();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
+		
+		RepositoryEntry entry = appointment.getTopic().getEntry();
+		String repoUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+		String repoName = entry.getDisplayname();
 				
 		String subject = translator.translate("mail.participation.created.subject", 
 				new String[] {appointment.getTopic().getTitle() });
 		String body = translator.translate("mail.participation.created.body", new String[] {
 				userManager.getUserDisplayName(identity.getKey()),
-				createFormatedAppointments(Collections.singletonList(appointment), translator)
+				createFormatedAppointments(Collections.singletonList(appointment), translator),
+				repoUrl, repoName
 		});
 		
 		MailerResult result = new MailerResult();
@@ -216,11 +236,16 @@ public class AppointmentsMailing {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
+		RepositoryEntry entry = appointment.getTopic().getEntry();
+		String repoUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+		String repoName = entry.getDisplayname();
+				
 		String subject = translator.translate("mail.participation.deleted.subject", 
 				new String[] {appointment.getTopic().getTitle() });
 		String body = translator.translate("mail.participation.deleted.body", new String[] {
 				userManager.getUserDisplayName(identity.getKey()),
-				createFormatedAppointments(Collections.singletonList(appointment), translator)
+				createFormatedAppointments(Collections.singletonList(appointment), translator),
+				repoUrl, repoName
 		});
 		
 		MailerResult result = new MailerResult();
@@ -254,11 +279,16 @@ public class AppointmentsMailing {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(AppointmentsMainController.class, locale);
 				
+		RepositoryEntry entry = toAppointment.getTopic().getEntry();
+		String repoUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+		String repoName = entry.getDisplayname();
+				
 		String subject = translator.translate("mail.rebooked.subject");
 		String body = translator.translate("mail.rebooked.body", new String[] {
 				userManager.getUserDisplayName(identity.getKey()),
 				createFormatedAppointments(singletonList(fromParticipation.getAppointment()), translator),
-				createFormatedAppointments(singletonList(toAppointment), translator)
+				createFormatedAppointments(singletonList(toAppointment), translator),
+				repoUrl, repoName
 		});
 		
 		MailerResult result = new MailerResult();
