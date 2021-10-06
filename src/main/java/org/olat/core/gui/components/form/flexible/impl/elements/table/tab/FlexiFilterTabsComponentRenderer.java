@@ -49,7 +49,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		FlexiFilterTabsElementImpl tabEl = tabCmp.getFlexiFilterTabsElement();
 
 		List<FlexiFiltersTab> tabs = tabEl.getFilterTabs();
-		List<FlexiFilterTabPreset> customTabs = tabEl.getCustomFilterTabs();
+		List<FlexiFiltersTab> customTabs = tabEl.getCustomFilterTabs();
 		
 		sb.append("<div id=\"o_c").append(tabCmp.getDispatchID()).append("\" class='o_table_tabs'>")
 		  .append("<ul class='o_segments o_segments_tab btn-group' role='navigation'>");

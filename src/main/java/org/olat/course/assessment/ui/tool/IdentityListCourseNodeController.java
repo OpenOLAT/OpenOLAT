@@ -58,8 +58,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
@@ -159,9 +159,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final boolean showTitle;
 
-	private FlexiFilterTabPreset passedTab;
-	private FlexiFilterTabPreset failedTab;
-	private FlexiFilterTabPreset allTab;
+	private FlexiFiltersTab passedTab;
+	private FlexiFiltersTab failedTab;
+	private FlexiFiltersTab allTab;
 	
 	private Link nextLink;
 	private Link previousLink;
@@ -260,7 +260,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	@Override
 	public AssessedIdentityListState getListState() {
 		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
-		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
+		List<FlexiTableFilter> filters = tableEl.getFilters();
 		return AssessedIdentityListState.valueOf(selectedTab, filters, tableEl.isFiltersExpanded());
 	}
 	
@@ -355,18 +355,18 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initFiltersPresets(AssessmentConfig assessmentConfig) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
-		allTab = FlexiFilterTabPreset.presetWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
 				TabSelectionBehavior.nothing, List.of());
 		allTab.setElementCssClass("o_sel_assessment_all");
 		tabs.add(allTab);
 		
 		if(Mode.none != assessmentConfig.getPassedMode()) {
-			passedTab = FlexiFilterTabPreset.presetWithImplicitFilters(PASSED_TAB_ID, translate("filter.passed"),
+			passedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PASSED_TAB_ID, translate("filter.passed"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "passed")));
 			passedTab.setElementCssClass("o_sel_assessment_passed");
 			tabs.add(passedTab);
 			
-			failedTab = FlexiFilterTabPreset.presetWithImplicitFilters(FAILED_TAB_ID, translate("filter.failed"),
+			failedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAILED_TAB_ID, translate("filter.failed"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "failed")));
 			failedTab.setElementCssClass("o_sel_assessment_failed");
 			tabs.add(failedTab);
@@ -617,7 +617,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected SearchAssessedIdentityParams getSearchParameters() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), referenceEntry, assessmentCallback);
 		
-		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
+		List<FlexiTableFilter> filters = tableEl.getFilters();
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, "status");
 		if(statusFilter != null) {
 			String filterValue = ((FlexiTableExtendedFilter)statusFilter).getValue();
@@ -641,14 +641,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 				businessGroupKeys = new ArrayList<>();
 				curriculumElementKeys = new ArrayList<>();
 				List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
-				for(String filterValue:filterValues) {
-					int index = filterValue.indexOf('-');
-					if(index > 0) {
-						Long key = Long.valueOf(filterValue.substring(index + 1));
-						if(filterValue.startsWith("businessgroup-")) {
-							businessGroupKeys.add(key);
-						} else if(filterValue.startsWith("curriculumelement-")) {
-							curriculumElementKeys.add(key);
+				if(filterValues != null) {
+					for(String filterValue:filterValues) {
+						int index = filterValue.indexOf('-');
+						if(index > 0) {
+							Long key = Long.valueOf(filterValue.substring(index + 1));
+							if(filterValue.startsWith("businessgroup-")) {
+								businessGroupKeys.add(key);
+							} else if(filterValue.startsWith("curriculumelement-")) {
+								curriculumElementKeys.add(key);
+							}
 						}
 					}
 				}

@@ -80,8 +80,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
@@ -175,11 +175,11 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	private FlexiTableElement tableEl;
 	
-	private FlexiFilterTabPreset myTab;
-	private FlexiFilterTabPreset myCoursesTab;
-	private FlexiFilterTabPreset bookmarkTab;
-	private FlexiFilterTabPreset searchTab;
-	private FlexiFilterTabPreset deletedTab;
+	private FlexiFiltersTab myTab;
+	private FlexiFiltersTab myCoursesTab;
+	private FlexiFiltersTab bookmarkTab;
+	private FlexiFiltersTab searchTab;
+	private FlexiFiltersTab deletedTab;
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
 	private final SearchAuthorRepositoryEntryViewParams searchParams;
@@ -468,24 +468,24 @@ public class AuthorListController extends FormBasicController implements Activat
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		if(!isGuestOnly) {
-			bookmarkTab = FlexiFilterTabPreset.presetWithImplicitFilters("Bookmarks", translate("search.mark"),
+			bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("search.mark"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.MARKED, "marked")));
 			bookmarkTab.setElementCssClass("o_sel_author_bookmarks");
 			tabs.add(bookmarkTab);
 		}
 		
-		myCoursesTab = FlexiFilterTabPreset.presetWithImplicitFilters("MyCourses", translate("search.my.courses"),
+		myCoursesTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyCourses", translate("search.my.courses"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned"),
 						FlexiTableFilterValue.valueOf(AuthorSourceFilter.TYPE, "CourseModule")));
 		myCoursesTab.setElementCssClass("o_sel_author_courses");
 		tabs.add(myCoursesTab);
 		
-		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.my"),
+		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.my"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned")));
 		myTab.setElementCssClass("o_sel_author_my");
 		tabs.add(myTab);
 		
-		searchTab = new FlexiFilterTabPreset("Search", translate("search.generic"), TabSelectionBehavior.clear);
+		searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.generic"), TabSelectionBehavior.clear);
 		searchTab.setElementCssClass("o_sel_author_search");
 		searchTab.setPosition(FlexiFilterTabPosition.right);
 		searchTab.setLargeSearch(true);
@@ -493,7 +493,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tabs.add(searchTab);
 		
 		if(roles.isAuthor() || hasAdministratorRight) {
-			deletedTab = FlexiFilterTabPreset.presetWithImplicitFilters("Deleted", translate("search.deleted"),
+			deletedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Deleted", translate("search.deleted"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, RepositoryEntryStatusEnum.trash.name())));
 			deletedTab.setElementCssClass("o_sel_author_deleted");
 			deletedTab.setPosition(FlexiFilterTabPosition.right);

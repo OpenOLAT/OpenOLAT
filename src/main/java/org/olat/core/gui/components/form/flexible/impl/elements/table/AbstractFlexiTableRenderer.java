@@ -304,7 +304,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String filterIndication = null;
 		//filter
 		if(ftE.isFilterEnabled()) {
-			List<FlexiTableFilter> filters = ftE.getFilters();
+			List<FlexiTableFilter> filters = ftE.getDropdownFilters();
 			if(filters != null && !filters.isEmpty()) {
 				filterIndication = renderFilterDropdown(sb, ftE, filters, translator);
 			}
@@ -379,7 +379,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		  .append("<i class='o_icon o_icon_filter o_icon-lg'> </i> <b class='caret'> </b></button>")
 		  .append("<div id='table-filters-").append(dispatchId).append("' class='hide'><ul class='o_dropdown list-unstyled' role='menu'>");
 		
-		List<FlexiTableFilter> selectedFilters = ftE.getSelectedFilters();
+		List<FlexiTableFilter> selectedFilters = ftE.getFilters();
 
 		for(FlexiTableFilter filter:filters) {
 			if(FlexiTableFilter.SPACER.equals(filter)) {

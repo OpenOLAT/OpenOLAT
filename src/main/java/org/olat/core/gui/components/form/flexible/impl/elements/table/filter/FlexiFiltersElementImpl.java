@@ -41,9 +41,9 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabsElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.RemoveFiltersEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
@@ -233,6 +233,14 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		return selectedFilters;
 	}
 	
+	public List<FlexiTableFilter> getFilters() {
+		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
+		for(FlexiFilterButton filterItem:filterButtons) {
+			selectedFilters.add((FlexiTableFilter)filterItem.getFilter());
+		}
+		return selectedFilters;
+	}
+	
 	public List<FlexiTableFilter> getEnabledFilters() {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>();
 		for(FlexiFilterButton filterButton:filterButtons) {
@@ -257,7 +265,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 	 * @param preset The target to save the settings to
 	 * @param implicit true to save implicit list too
 	 */
-	public void saveCurrentSettingsTo(FlexiFilterTabPreset preset, boolean implicit) {
+	public void saveCurrentSettingsTo(FlexiFiltersTabImpl preset, boolean implicit) {
 		List<String> enabledFilters = new ArrayList<>();
 		List<String> implicitFilters = new ArrayList<>();
 		List<FlexiTableFilterValue> filterValues = new ArrayList<>();

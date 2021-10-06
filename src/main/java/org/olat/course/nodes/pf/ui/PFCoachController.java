@@ -324,7 +324,7 @@ public class PFCoachController extends FormBasicController {
 	}
 	
 	private void loadModel(boolean full) {
-		List<FlexiTableFilter> filters = dropboxTable.getSelectedFilters();
+		List<FlexiTableFilter> filters = dropboxTable.getFilters();
 		List<DropBoxRow> rows;
 		if(filters == null || filters.isEmpty()) {	
 			rows = pfManager.getParticipants(getIdentity(), pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin());
@@ -333,13 +333,15 @@ public class PFCoachController extends FormBasicController {
 			
 			List<BusinessGroupRef> businessGroups = new ArrayList<>(filters.size());
 			List<CurriculumElementRef> curriculumElements = new ArrayList<>(filters.size());
-			for(String filterValue:filterValues) {
-				if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
-					String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
-					businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
-				} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
-					String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
-					curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+			if(filterValues != null) {
+				for(String filterValue:filterValues) {
+					if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
+						String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
+						businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
+					} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
+						String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
+						curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+					}
 				}
 			}
 			rows = pfManager.getParticipants(businessGroups, curriculumElements, pfNode, userPropertyHandlers, getLocale(), courseEnv);

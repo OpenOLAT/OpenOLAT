@@ -60,8 +60,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
@@ -127,10 +127,10 @@ public class RepositoryEntryListController extends FormBasicController
 	private boolean withPresets;
 	private boolean withSavedSettings;
 	
-	private FlexiFilterTabPreset myTab;
-	private FlexiFilterTabPreset closedTab;
-	private FlexiFilterTabPreset bookmarkTab;
-	private FlexiFilterTabPreset searchTab;
+	private FlexiFiltersTab myTab;
+	private FlexiFiltersTab closedTab;
+	private FlexiFiltersTab bookmarkTab;
+	private FlexiFiltersTab searchTab;
 
 	private final String name;
 	private FlexiTableElement tableEl;
@@ -177,13 +177,7 @@ public class RepositoryEntryListController extends FormBasicController
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
 		this.searchParams = searchParams;
-		if(withPresets) {
-			dataSource = new DefaultRepositoryEntryDataSource(searchParams, this,
-					false, RepositoryEntryStatusEnum.preparationToPublished());
-		} else {
-			dataSource = new DefaultRepositoryEntryDataSource(searchParams, this,
-					searchParams.isMembershipMandatory(), searchParams.getEntryStatus());
-		}
+		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
 		initForm(ureq);
 		
 		if(load) {
@@ -199,11 +193,11 @@ public class RepositoryEntryListController extends FormBasicController
 		return name;
 	}
 	
-	public FlexiFilterTabPreset getBookmarkPreset() {
+	public FlexiFiltersTab getBookmarkPreset() {
 		return bookmarkTab;
 	}
 	
-	public FlexiFilterTabPreset getMyEntriesPreset() {
+	public FlexiFiltersTab getMyEntriesPreset() {
 		return myTab;
 	}
 	
@@ -318,25 +312,25 @@ public class RepositoryEntryListController extends FormBasicController
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		// bookmarks
 		if(!guestOnly) {
-			bookmarkTab = FlexiFilterTabPreset.presetWithImplicitFilters("Bookmarks", translate("search.mark"),
+			bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("search.mark"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.MARKED, "marked")));
 			bookmarkTab.setElementCssClass("o_sel_mycourses_fav");
 			tabs.add(bookmarkTab);
 		}
 		
-		myTab = FlexiFilterTabPreset.presetWithImplicitFilters("My", translate("search.current.courses"),
+		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.current.courses"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		myTab.setElementCssClass("o_sel_mycourses_my");
 		tabs.add(myTab);
 		
-		closedTab = FlexiFilterTabPreset.presetWithImplicitFilters("Closed", translate("search.courses.closed"),
+		closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Closed", translate("search.courses.closed"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		closedTab.setElementCssClass("o_sel_mycourses_closed");
 		tabs.add(closedTab);
 		
 		// search
-		searchTab = new FlexiFilterTabPreset("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
+		searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
 		searchTab.setElementCssClass("o_sel_mycourses_search");
 		searchTab.setPosition(FlexiFilterTabPosition.right);
 		searchTab.setFiltersExpanded(true);

@@ -25,27 +25,21 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 
 /**
- * This is a tab with a preset of filters.
  * 
- * 
- * Initial date: 10 août 2021<br>
+ * Initial date: 6 oct. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFiltersPreset {
+public class FlexiFiltersTabFactory {
 	
-	private List<String> enabledFilters;
-	private List<String> implicitFilters;
-	private List<FlexiTableFilterValue> filtersValues;
-	
-	public FlexiFilterTabPreset(String id, String label) {
-		super(id, label);
+	private FlexiFiltersTabFactory() {
+		//
 	}
 	
-	public FlexiFilterTabPreset(String id, String label, TabSelectionBehavior selectionBehavior) {
-		super(id, label, selectionBehavior);
+	public static FlexiFiltersTab tab(String id, String label, TabSelectionBehavior selectionBehavior) {
+		return new FlexiFiltersTabImpl(id, label, selectionBehavior);
 	}
-
+	
 	/**
 	 * 
 	 * @param id The id of the tab, will be used for the business path
@@ -55,16 +49,16 @@ public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFi
 	 * 		will be implicit, always selected and invisible to the user.
 	 * @return The configuration of a tab
 	 */
-	public static FlexiFilterTabPreset presetWithImplicitFilters(String id, String label,
+	public static FlexiFiltersTab tabWithImplicitFilters(String id, String label,
 			TabSelectionBehavior selectionBehavior, List<FlexiTableFilterValue> implicitValueFilters) {
-		FlexiFilterTabPreset preset = new FlexiFilterTabPreset(id, label, selectionBehavior);
+		FlexiFiltersTabImpl preset = new FlexiFiltersTabImpl(id, label, selectionBehavior);
 		
 		List<String> implicitFilters = new ArrayList<>(implicitValueFilters.size());
 		for(FlexiTableFilterValue implicitValueFilter:implicitValueFilters) {
 			implicitFilters.add(implicitValueFilter.getFilter());
 		}
-		preset.implicitFilters = implicitFilters;
-		preset.filtersValues = implicitValueFilters;
+		preset.setImplicitFilters(implicitFilters);
+		preset.setDefaultFiltersValues(implicitValueFilters);
 		return preset;
 	}
 	
@@ -77,11 +71,11 @@ public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFi
 	 * 		will be explicit, selected and visible to the user which can change them.
 	 * @return The configuration of a tab
 	 */
-	public static FlexiFilterTabPreset presetWithFilters(String id, String label,
+	public static FlexiFiltersTab tabWithFilters(String id, String label,
 			TabSelectionBehavior selectionBehavior, List<FlexiTableFilterValue> valueFilters) {
-		FlexiFilterTabPreset preset = new FlexiFilterTabPreset(id, label, selectionBehavior);
-		preset.implicitFilters = new ArrayList<>();
-		preset.filtersValues = valueFilters;
+		FlexiFiltersTabImpl preset = new FlexiFiltersTabImpl(id, label, selectionBehavior);
+		preset.setImplicitFilters(new ArrayList<>());
+		preset.setDefaultFiltersValues(valueFilters);
 		return preset;
 	}
 	
@@ -90,43 +84,17 @@ public class FlexiFilterTabPreset extends FlexiFiltersTabImpl implements FlexiFi
 	 * @param preset A tab to copy
 	 * @return The configuration of a tab
 	 */
-	public static FlexiFilterTabPreset copyOf(FlexiFilterTabPreset preset) {
-		FlexiFilterTabPreset copy = new FlexiFilterTabPreset(preset.getId(), preset.getLabel());
+	public static FlexiFiltersTab copyOf(FlexiFiltersTab preset) {
+		FlexiFiltersTabImpl copy = new FlexiFiltersTabImpl(preset.getId(), preset.getLabel());
 		copy.setElementCssClass(preset.getElementCssClass());
 
-		List<String> enabled = preset.enabledFilters == null ? null : new ArrayList<>(preset.enabledFilters);
+		List<String> enabled = preset.getEnabledFilters() == null ? null : new ArrayList<>(preset.getEnabledFilters());
 		copy.setEnabledFilters(enabled);
-		List<String> impFilters = preset.implicitFilters == null ? null : new ArrayList<>(preset.implicitFilters);
+		List<String> impFilters = preset.getImplicitFilters() == null ? null : new ArrayList<>(preset.getImplicitFilters());
 		copy.setImplicitFilters(impFilters);
-		List<FlexiTableFilterValue> values = preset.filtersValues == null ? null : new ArrayList<>(preset.filtersValues);
+		List<FlexiTableFilterValue> values = preset.getDefaultFiltersValues() == null ? null : new ArrayList<>(preset.getDefaultFiltersValues());
 		copy.setDefaultFiltersValues(values);
 		return copy;
 	}
 
-	@Override
-	public List<String> getEnabledFilters() {
-		return enabledFilters;
-	}
-	
-	public void setEnabledFilters(List<String> enabledFilters) {
-		this.enabledFilters = enabledFilters;
-	}
-
-	@Override
-	public List<String> getImplicitFilters() {
-		return implicitFilters;
-	}
-
-	public void setImplicitFilters(List<String> implicitFilters) {
-		this.implicitFilters = implicitFilters;
-	}
-
-	@Override
-	public List<FlexiTableFilterValue> getDefaultFiltersValues() {
-		return filtersValues;
-	}
-	
-	public void setDefaultFiltersValues(List<FlexiTableFilterValue> filtersValues) {
-		this.filtersValues = filtersValues;
-	}
 }

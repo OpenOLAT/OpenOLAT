@@ -19,6 +19,10 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.tab;
 
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+
 /**
  * 
  * Initial date: 12 juil. 2021<br>
@@ -32,14 +36,45 @@ public interface FlexiFiltersTab {
 	public String getLabel();
 	
 	public FlexiFilterTabPosition getPosition();
+	
+	public void setPosition(FlexiFilterTabPosition position);
 
 	public String getElementCssClass();
+	
+	public void setElementCssClass(String cssClass);
 	
 	
 	public boolean isFiltersExpanded();
 	
+	public void setFiltersExpanded(boolean expanded);
+	
+	/**
+	 * The small left quick search is replaced by a bigger search field
+	 * placed in the center.
+	 * 
+	 * @return true if the large search field is visible.
+	 */
 	public boolean isLargeSearch();
 	
+	public void setLargeSearch(boolean largeSearch);
+	
 	public TabSelectionBehavior getSelectionBehavior();
+	
+	/**
+	 * List of invisible but always selected filters.
+	 * 
+	 * @return The list of filters ID.
+	 */
+	public List<String> getImplicitFilters();
+	
+	/**
+	 * defined the list of visible filter buttons. If NULL, fallback
+	 * to the preferences of the filters.
+	 * 
+	 * @return List of visible filter buttons.
+	 */
+	public List<String> getEnabledFilters();
+	
+	public List<FlexiTableFilterValue> getDefaultFiltersValues();
 
 }

@@ -279,7 +279,7 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public boolean isFilterEnabled();
 	
-	public List<FlexiTableFilter> getSelectedFilters();
+	public List<FlexiTableFilter> getFilters();
 	
 	/**
 	 * @return The selected key by the filter, or null if no item is selected

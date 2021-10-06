@@ -57,8 +57,6 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
 
-	private final boolean defaultMembershipMandatory;
-	private final RepositoryEntryStatusEnum[] defaultEntryStatus;
 	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
 	
@@ -70,12 +68,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private Integer count;
 	
 	public DefaultRepositoryEntryDataSource(SearchMyRepositoryEntryViewParams searchParams,
-			RepositoryEntryDataSourceUIFactory uifactory, boolean defaultMembershipMandatory,
-			RepositoryEntryStatusEnum[] defaultEntryStatus) {
+			RepositoryEntryDataSourceUIFactory uifactory) {
 		this.uifactory = uifactory;
 		this.searchParams = searchParams;
-		this.defaultMembershipMandatory = defaultMembershipMandatory;
-		this.defaultEntryStatus = defaultEntryStatus;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
@@ -115,7 +110,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		
 		if(filters != null && !filters.isEmpty()) {
 			if(filters.get(0) instanceof FlexiTableExtendedFilter) {
-				resetFilters();
+				searchParams.setFilters(null);
 				for(FlexiTableFilter filter:filters) {
 					setFilter(filter);
 				}
@@ -128,7 +123,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				}
 			}
 		} else {
-			resetFilters();
+			searchParams.setFilters(null);
 		}
 
 		if(StringHelper.containsNonWhitespace(query)) {
@@ -150,15 +145,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			count = Integer.valueOf(views.size());
 		}
 		return results;
-	}
-	
-	private void resetFilters() {
-		searchParams.setIdRefsAndTitle(null);
-		searchParams.setMarked(null);
-		searchParams.setMembershipMandatory(defaultMembershipMandatory);
-		searchParams.setFilters(null);
-		searchParams.setEducationalTypeKeys(null);
-		searchParams.setEntryStatus(defaultEntryStatus);
 	}
 	
 	private void setFilter(FlexiTableFilter filter) {
@@ -184,6 +170,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				searchParams.setEducationalTypeKeys(educationalTypes);
 				break;
 			default:
+				// DATES, BOOKING, PASSED are all old style filters
 				String filterVal = ((FlexiTableExtendedFilter)filter).getValue();
 				if(filterVal != null) {
 					searchParams.addFilter(Filter.valueOf(filterVal));

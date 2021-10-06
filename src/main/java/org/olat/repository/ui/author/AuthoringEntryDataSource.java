@@ -127,10 +127,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			searchParams.setIdRefsAndTitle(null);
 		}
 		
-		if(filters == null) {
-			searchParams.reset();
-		} else {
-			searchParams.reset();
+		if(filters != null) {
 			for(FlexiTableFilter filter:filters) {
 				setFilterValue(filter);
 			}

@@ -67,10 +67,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiFiltersElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.SaveCurrentPresetEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.UpdateCurrentPresetEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabsElementImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.RemoveFiltersEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.SelectFilterTabEvent;
@@ -451,7 +450,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public List<FlexiTableFilter> getSelectedFilters() {
+	public List<FlexiTableFilter> getFilters() {
 		List<FlexiTableFilter> selectedFilters = new ArrayList<>(2);
 		if(filters != null) {
 			for(FlexiTableFilter filter:filters) {
@@ -462,7 +461,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		if(filtersEl != null) {
-			selectedFilters.addAll(filtersEl.getSelectedFilters());
+			selectedFilters.addAll(filtersEl.getFilters());
 		}
 		return selectedFilters;
 	}
@@ -524,7 +523,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return value;
 	}
 	
-	public List<FlexiTableFilter> getFilters() {
+	public List<FlexiTableFilter> getDropdownFilters() {
 		return filters;
 	}
 
@@ -759,8 +758,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				rootFormAvailable(filtersEl);
 			}
 			filtersEl.setFilters(filters);
-			if(this.filterTabsEl != null && filterTabsEl.getSelectedTab() instanceof FlexiFiltersPreset) {
-				FlexiFiltersPreset selectedPreset = (FlexiFiltersPreset)filterTabsEl.getSelectedTab();
+			if(this.filterTabsEl != null && filterTabsEl.getSelectedTab() != null) {
+				FlexiFiltersTab selectedPreset = filterTabsEl.getSelectedTab();
 				filtersEl.setImplicitFilters(selectedPreset.getImplicitFilters());
 			}
 		} else if(filtersEl != null) {
@@ -802,7 +801,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(filterTabsEl == null || filtersEl == null) return;
 
 		String id = "custom_" + CodeHelper.getForeverUniqueID();
-		FlexiFilterTabPreset newPreset = new FlexiFilterTabPreset(id, name, TabSelectionBehavior.reloadData);
+		FlexiFiltersTabImpl newPreset = new FlexiFiltersTabImpl(id, name, TabSelectionBehavior.reloadData);
 		filtersEl.saveCurrentSettingsTo(newPreset, false);
 		filterTabsEl.addCustomFilterTab(newPreset);
 		filterTabsEl.setSelectedTab(newPreset);
@@ -810,10 +809,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void doUpdateCurrentPreset(UserRequest ureq) {
-		if(filterTabsEl == null || !(filterTabsEl.getSelectedTab() instanceof FlexiFilterTabPreset) || filtersEl == null) return;
+		if(filterTabsEl == null || filterTabsEl.getSelectedTab() == null || filtersEl == null) return;
 		
-		FlexiFilterTabPreset preset = (FlexiFilterTabPreset)filterTabsEl.getSelectedTab();
-		filtersEl.saveCurrentSettingsTo(preset, false);
+		FlexiFiltersTab preset = filterTabsEl.getSelectedTab();
+		if(preset instanceof FlexiFiltersTabImpl) {
+			filtersEl.saveCurrentSettingsTo((FlexiFiltersTabImpl)preset, false);
+		}
 		filterTabsEl.getComponent().setDirty(true);
 		saveCustomSettings(ureq);
 	}
@@ -872,10 +873,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		searchLarge = tab.isLargeSearch();
 
-		if(tab instanceof FlexiFiltersPreset) {
-			FlexiFiltersPreset preset = (FlexiFiltersPreset)tab;
-			setFiltersValues(null, preset.getEnabledFilters(), preset.getImplicitFilters(), preset.getDefaultFiltersValues());
-		}
+		setFiltersValues(null, tab.getEnabledFilters(), tab.getImplicitFilters(), tab.getDefaultFiltersValues());
 		
 		if(tab.getSelectionBehavior() == TabSelectionBehavior.reloadData) {
 			reloadData();
@@ -1037,9 +1035,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			int firstResult = currentPage * getPageSize();
 			int maxResults = getPageSize();
 			if(dataModel instanceof FlexiTableDataSource) {
-				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), firstResult, maxResults, orderBy);
+				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), firstResult, maxResults, orderBy);
 			} else {
-				dataSource.load(getSearchText(), getSelectedFilters(), firstResult, maxResults, orderBy);
+				dataSource.load(getSearchText(), getFilters(), firstResult, maxResults, orderBy);
 			}
 		}
 		component.setDirty(true);
@@ -1055,9 +1053,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		int maxResults = getPageSize();
 		
 		if(dataModel instanceof FlexiTableDataSource) {
-			((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), firstResult, maxResults, orderBy);
+			((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), firstResult, maxResults, orderBy);
 		} else if(this.dataSource != null) {
-			dataSource.load(getSearchText(), getSelectedFilters(), firstResult, maxResults, orderBy);
+			dataSource.load(getSearchText(), getFilters(), firstResult, maxResults, orderBy);
 		}
 	}
 
@@ -1368,10 +1366,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			currentPage = 0;
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
-				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), 0, getPageSize(), orderBy);
+				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), 0, getPageSize(), orderBy);
 			} else {
 				dataSource.clear();
-				dataSource.load(getSearchText(), getSelectedFilters(), 0, getPageSize(), orderBy);
+				dataSource.load(getSearchText(), getFilters(), 0, getPageSize(), orderBy);
 			}
 		}
 		reorderMultiSelectIndex();
@@ -1394,10 +1392,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
-				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), 0, getPageSize(), orderBy);
+				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), 0, getPageSize(), orderBy);
 			} else {
 				dataSource.clear();
-				dataSource.load(getSearchText(), getSelectedFilters(), 0, getPageSize(), orderBy);
+				dataSource.load(getSearchText(), getFilters(), 0, getPageSize(), orderBy);
 			}
 		}
 		reorderMultiSelectIndex();
@@ -1423,9 +1421,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		// If not, we need to load all the data and find them
 		if(dataSource != null && multiSelectedIndex.size() != selectedObjects.size()) {
 			if(dataModel instanceof FlexiTableDataSource) {
-				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), 0, -1, orderBy);
+				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), 0, -1, orderBy);
 			} else {
-				dataSource.load(getSearchText(), getSelectedFilters(), 0, -1, orderBy);
+				dataSource.load(getSearchText(), getFilters(), 0, -1, orderBy);
 			}
 			for(int i=dataModel.getRowCount(); i-->0; ) {
 				Object obj = dataModel.getObject(i);
@@ -1524,7 +1522,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		component.setDirty(true);
 		
 		getRootForm().fireFormEvent(ureq, new FlexiTableFilterEvent(FlexiTableReduceEvent.FILTER, this,
-				getQuickSearchString(), getSelectedFilters(), FormEvent.ONCLICK));
+				getQuickSearchString(), getFilters(), FormEvent.ONCLICK));
 	}
 	
 	private void doFocus(int row) {
@@ -1590,9 +1588,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		// ensure the all rows are loaded to export
 		if(dataSource != null) {
 			if(dataModel instanceof FlexiTableDataSource) {
-				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), 0, -1, orderBy);
+				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), 0, -1, orderBy);
 			} else {
-				dataSource.load(getSearchText(), getSelectedFilters(), 0, -1, orderBy);
+				dataSource.load(getSearchText(), getFilters(), 0, -1, orderBy);
 			}
 		}
 		
@@ -1761,11 +1759,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 			}
 			
-			List<FlexiFilterTabPreset> presets = null;
+			List<FlexiFiltersTab> presets = null;
 			if(filterTabsEl != null) {
-				List<FlexiFilterTabPreset> customTabs = filterTabsEl.getCustomFilterTabs();
+				List<FlexiFiltersTab> customTabs = filterTabsEl.getCustomFilterTabs();
 				presets = new ArrayList<>(customTabs.size());
-				for(FlexiFilterTabPreset customTab:customTabs) {
+				for(FlexiFiltersTab customTab:customTabs) {
 					presets.add(customTab);
 				}
 			}
@@ -1795,7 +1793,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				}
 				
 				if(tablePrefs.getCustomTabs() != null && filterTabsEl != null) {
-					for(FlexiFilterTabPreset customTab:tablePrefs.getCustomTabs()) {
+					for(FlexiFiltersTab customTab:tablePrefs.getCustomTabs()) {
 						filterTabsEl.addCustomFilterTab(customTab);
 					}
 				}
@@ -1897,9 +1895,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(key != null) {
 			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH_KEY_SELECTION, key, null);
 		} else if(isSearchEnabled() && isSearchLarge()) {
-			doSearch(ureq, FlexiTableReduceEvent.SEARCH, search, getSelectedFilters());
+			doSearch(ureq, FlexiTableReduceEvent.SEARCH, search, getFilters());
 		} else if(StringHelper.containsNonWhitespace(search)) {
-			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH, search, getSelectedFilters());
+			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH, search, getFilters());
 		} else {
 			resetSearch(ureq);
 		}
@@ -2045,7 +2043,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private List<FlexiTableFilter> getSelectedFilters(List<FlexiTableFilter> changedFilters) {
-		List<FlexiTableFilter> selectedFilters = getSelectedFilters();
+		List<FlexiTableFilter> selectedFilters = getFilters();
 		if(changedFilters != null) {
 			Set<String> selectedfilterNames = selectedFilters.stream()
 					.map(FlexiTableFilter::getFilter)
@@ -2065,14 +2063,28 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		if(filterTabsEl != null) {
 			FlexiFiltersTab tab = filterTabsEl.getSelectedTab();
-			if(tab instanceof FlexiFiltersPreset && filtersEl != null) {
-				FlexiFiltersPreset preset = (FlexiFiltersPreset)tab;
-				filtersEl.setFiltersValues(preset.getEnabledFilters(), preset.getImplicitFilters(), preset.getDefaultFiltersValues(), true);
+			if(tab != null && filtersEl != null) {
+				filtersEl.setFiltersValues(tab.getEnabledFilters(), tab.getImplicitFilters(), tab.getDefaultFiltersValues(), true);
 			}
 			filterTabsEl.getComponent().setDirty(true);
 		}
-		List<FlexiTableFilter> allFilters = filtersEl == null ? null : filtersEl.getAllFilters();
-		doSearch(ureq, FlexiTableReduceEvent.FILTER, getSearchText(), allFilters);
+		
+		if(filterTabsEl != null && filterTabsEl.getSelectedTab() != null
+				&& filterTabsEl.getSelectedTab().getSelectionBehavior() == TabSelectionBehavior.clear
+				&& !StringHelper.containsNonWhitespace(getSearchText())) {
+			resetInternComponents();
+			if(dataSource != null) {
+				if(dataModel instanceof FlexiTableDataSource) {
+					((FlexiTableDataSource<?>)dataModel).clear();
+				} else {
+					dataSource.clear();
+				}
+			} else {
+				getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(this, FormEvent.ONCLICK));
+			}
+		} else {
+			doSearch(ureq, FlexiTableReduceEvent.FILTER, getSearchText(), getFilters());
+		}
 	}
 	
 	@Override
@@ -2080,13 +2092,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		currentPage = 0;
 		if(dataSource != null) {
 			resetInternComponents();
-			boolean clear = this.filterTabsEl != null && filterTabsEl.getSelectedTab() != null
+			boolean clear = filterTabsEl != null && filterTabsEl.getSelectedTab() != null
 					&& filterTabsEl.getSelectedTab().getSelectionBehavior() == TabSelectionBehavior.clear;
 			
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
 				if(!clear) {
-					((FlexiTableDataSource<?>)dataModel).load(null, getSelectedFilters(), 0, getPageSize(), orderBy);
+					((FlexiTableDataSource<?>)dataModel).load(null, getFilters(), 0, getPageSize(), orderBy);
 				}
 			} else {
 				dataSource.clear();
@@ -2098,15 +2110,17 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(this, FormEvent.ONCLICK));
 		}
 	}
+	
+
 
 	@Override
 	public Set<Integer> getMultiSelectedIndex() {
 		if(allSelectedNeedLoadOfWholeModel && dataSource != null) {
 			//ensure the whole data model is loaded
 			if(dataModel instanceof FlexiTableDataSource) {
-				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), 0, -1, orderBy);
+				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), 0, -1, orderBy);
 			} else {
-				dataSource.load(getSearchText(), getSelectedFilters(), 0, -1, orderBy);
+				dataSource.load(getSearchText(), getFilters(), 0, -1, orderBy);
 			}
 			
 			Set<Integer> allIndex = new HashSet<>();
@@ -2279,15 +2293,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			int firstResult = currentPage * getPageSize();
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
-				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getSelectedFilters(), firstResult, getPageSize(), orderBy);//reload needed rows
+				((FlexiTableDataSource<?>)dataModel).load(getSearchText(), getFilters(), firstResult, getPageSize(), orderBy);//reload needed rows
 			} else {
 				dataSource.clear();
-				dataSource.load(getSearchText(), getSelectedFilters(), firstResult, getPageSize(), orderBy);//reload needed rows
+				dataSource.load(getSearchText(), getFilters(), firstResult, getPageSize(), orderBy);//reload needed rows
 			}
 		} else {
 			if(dataModel instanceof FilterableFlexiTableModel) {
 				if(isFilterEnabled()) {
-					List<FlexiTableFilter> filter = getSelectedFilters();
+					List<FlexiTableFilter> filter = getFilters();
 					((FilterableFlexiTableModel)dataModel).filter(getQuickSearchString(), filter);
 				}
 			}
