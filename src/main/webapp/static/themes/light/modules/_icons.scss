@@ -488,6 +488,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_card2brain_icon:before, %o_icon_card2brain { content:"\E800"; font-family: openolat; font-size: 120%; }
 .o_edubase_icon:before, %o_icon_edubase { content:"\E885"; font-family: openolat; }
 .o_edusharing_icon:before, %o_icon_edusharing { content:"\E803"; font-family: openolat; font-size: 90%; }
+.o_mediasite_icon:before, %o_icon_mediasite { content:"\E902"; font-family: openolat; }
 .o_opencast_icon:before, %o_icon_opencast { content:"\E804"; font-family: openolat; }
 .o_livestream_icon:before { content: $fa-var-video-camera;}
 .o_unkown_icon:before { content: $fa-var-user-secret;}
