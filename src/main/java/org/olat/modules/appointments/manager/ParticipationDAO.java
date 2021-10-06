@@ -162,13 +162,13 @@ class ParticipationDAO {
 	private void appendQuery(QueryBuilder sb, ParticipationSearchParams params) {
 		sb.append("  from appointmentparticipation participation");
 		if (isJoinIdentites(params)) {
-			sb.append("      join").append(" fetch", params.isFetchIdentities()).append(" participation.identity ident");
+			sb.append("      join").append(" fetch", params.isFetchIdentities() || params.isFetchUser()).append(" participation.identity ident");
 		}
 		if (isJoinUser(params)) {
 			sb.append("      join").append(" fetch", params.isFetchUser()).append(" ident.user user");
 		}
 		if (isJoinAppointments(params)) {
-			sb.append("      join").append(" fetch", params.isFetchAppointments()).append(" participation.appointment appointment");
+			sb.append("      join").append(" fetch", params.isFetchAppointments() || params.isFetchTopics()).append(" participation.appointment appointment");
 		}
 		if (isJoinTopic(params)) {
 			sb.append("      join").append(" fetch", params.isFetchTopics()).append(" appointment.topic topic");
