@@ -252,12 +252,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	protected void updateModel(UserRequest ureq) {
 		List<AssessmentObligation> filterObligations = null;
-		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
+		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters != null && !filters.isEmpty()) {
 			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
 			if (obligationFilter != null) {
 				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
-				if (!filterValues.isEmpty()) {
+				if (filterValues != null && !filterValues.isEmpty()) {
 					filterObligations = filterValues.stream()
 							.map(AssessmentObligation::valueOf)
 							.collect(Collectors.toList());

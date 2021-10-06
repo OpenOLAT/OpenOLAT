@@ -111,7 +111,7 @@ public class ConfigurationTreeCellRenderer implements FlexiCellRenderer {
 
 	private boolean isFlatSearchAndFilter(FlexiTableElementImpl ftE) {
 		return flatBySearchAndFilter
-				&& (StringHelper.containsNonWhitespace(ftE.getQuickSearchString()) || isFiltered(ftE.getSelectedFilters()));
+				&& (StringHelper.containsNonWhitespace(ftE.getQuickSearchString()) || isFiltered(ftE.getFilters()));
 	}
 	
 	private boolean isFlatSort(FlexiTableElementImpl ftE) {

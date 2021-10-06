@@ -19,6 +19,10 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.tab;
 
+import java.util.List;
+
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+
 /**
  * 
  * Initial date: 12 juil. 2021<br>
@@ -35,6 +39,10 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 	private boolean filtersExpanded;
 	private boolean largeSearch;
 	private TabSelectionBehavior selectionBehavior = TabSelectionBehavior.nothing;
+	
+	private List<String> enabledFilters;
+	private List<String> implicitFilters;
+	private List<FlexiTableFilterValue> defaultFiltersValues;
 	
 	public FlexiFiltersTabImpl(String id, String label) {
 		this(id, label, TabSelectionBehavior.nothing);
@@ -60,7 +68,8 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 	public String getElementCssClass() {
 		return elementCssClass;
 	}
-
+	
+	@Override
 	public void setElementCssClass(String elementCssClass) {
 		this.elementCssClass = elementCssClass;
 	}
@@ -70,6 +79,7 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 		return position;
 	}
 
+	@Override
 	public void setPosition(FlexiFilterTabPosition position) {
 		this.position = position;
 	}
@@ -79,6 +89,7 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 		return filtersExpanded;
 	}
 
+	@Override
 	public void setFiltersExpanded(boolean filtersExpanded) {
 		this.filtersExpanded = filtersExpanded;
 	}
@@ -88,6 +99,7 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 		return largeSearch;
 	}
 
+	@Override
 	public void setLargeSearch(boolean largeSearch) {
 		this.largeSearch = largeSearch;
 	}
@@ -99,5 +111,33 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 
 	public void setSelectionBehavior(TabSelectionBehavior selectionBehavior) {
 		this.selectionBehavior = selectionBehavior;
+	}
+
+	@Override
+	public List<String> getEnabledFilters() {
+		return enabledFilters;
+	}
+
+	public void setEnabledFilters(List<String> enabledFilters) {
+		this.enabledFilters = enabledFilters;
+	}
+
+	@Override
+	public List<String> getImplicitFilters() {
+		return implicitFilters;
+	}
+
+	public void setImplicitFilters(List<String> implicitFilters) {
+		this.implicitFilters = implicitFilters;
+	}
+	
+	@Override
+	public List<FlexiTableFilterValue> getDefaultFiltersValues() {
+		return defaultFiltersValues;
+	}
+
+	@Override
+	public void setDefaultFiltersValues(List<FlexiTableFilterValue> filtersValues) {
+		this.defaultFiltersValues = filtersValues;
 	}
 }

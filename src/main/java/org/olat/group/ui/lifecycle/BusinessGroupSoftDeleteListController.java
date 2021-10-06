@@ -25,8 +25,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
@@ -41,9 +41,9 @@ import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
  */
 public class BusinessGroupSoftDeleteListController extends AbstractBusinessGroupLifecycleListController {
 
-	private FlexiFilterTabPreset softDeleteTab;
-	private FlexiFilterTabPreset softDeleteLongTab;
-	private FlexiFilterTabPreset toDeleteTab;
+	private FlexiFiltersTab softDeleteTab;
+	private FlexiFiltersTab softDeleteLongTab;
+	private FlexiFiltersTab toDeleteTab;
 	
 	private DefaultFlexiColumnModel actionColumn;
 	
@@ -84,16 +84,16 @@ public class BusinessGroupSoftDeleteListController extends AbstractBusinessGroup
 	protected void initFilterTabs(List<FlexiFiltersTab> tabs) {
 		boolean automatic = groupModule.isAutomaticGroupDefinitivelyDeleteEnabled();
 		
-		softDeleteTab = FlexiFilterTabPreset.presetWithImplicitFilters("SoftDeleted", translate("admin.groups.soft.delete.preset"),
+		softDeleteTab = FlexiFiltersTabFactory.tabWithImplicitFilters("SoftDeleted", translate("admin.groups.soft.delete.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.SOFT_DELETE.name())));
 		tabs.add(softDeleteTab);
 		
-		softDeleteLongTab = FlexiFilterTabPreset.presetWithImplicitFilters("LongSoftDeleted", translate("admin.groups.soft.delete.long.preset"),
+		softDeleteLongTab = FlexiFiltersTabFactory.tabWithImplicitFilters("LongSoftDeleted", translate("admin.groups.soft.delete.long.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.SOFT_DELETE_LONG.name())));
 		tabs.add(softDeleteLongTab);
 		
 		if(!automatic) {
-			toDeleteTab = FlexiFilterTabPreset.presetWithImplicitFilters("ToDelete", translate("admin.groups.to.delete.preset"),
+			toDeleteTab = FlexiFiltersTabFactory.tabWithImplicitFilters("ToDelete", translate("admin.groups.to.delete.preset"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.TO_DELETE.name())));
 			tabs.add(toDeleteTab);
 		}

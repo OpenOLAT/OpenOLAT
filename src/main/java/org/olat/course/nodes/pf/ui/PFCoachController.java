@@ -346,7 +346,7 @@ public class PFCoachController extends FormBasicController {
 	}
 	
 	private void loadModel(boolean full) {
-		List<FlexiTableFilter> filters = dropboxTable.getSelectedFilters();
+		List<FlexiTableFilter> filters = dropboxTable.getFilters();
 		List<DropBoxRow> rows;
 		ParticipantSearchParams params = new ParticipantSearchParams();
 		params.setIdentity(getIdentity());
@@ -356,11 +356,13 @@ public class PFCoachController extends FormBasicController {
 			FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
 			if (obligationFilter != null) {
 				List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
-				if (!filterValues.isEmpty()) {
+				if (filterValues != null && !filterValues.isEmpty()) {
 					List<AssessmentObligation> assessmentObligations = filterValues.stream()
 							.map(AssessmentObligation::valueOf)
 							.collect(Collectors.toList());
 					params.setAssessmentObligations(assessmentObligations);
+				} else {
+					params.setAssessmentObligations(null);
 				}
 			}
 			
@@ -369,15 +371,19 @@ public class PFCoachController extends FormBasicController {
 				List<BusinessGroupRef> businessGroups = new ArrayList<>(filters.size());
 				List<CurriculumElementRef> curriculumElements = new ArrayList<>(filters.size());
 				List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
-				for(String filterValue:filterValues) {
-					if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
-						String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
-						businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
-					} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
-						String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
-						curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+				if(filterValues != null) {
+					for(String filterValue:filterValues) {
+						if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
+							String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
+							businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
+						} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
+							String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
+							curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+						}
 					}
 				}
+				params.setBusinessGroupRefs(businessGroups);
+				params.setCurriculumElements(curriculumElements);
 			}
 		}
 		

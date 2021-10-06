@@ -41,8 +41,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -62,18 +62,18 @@ import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
  */
 public class BusinessGroupListController extends AbstractBusinessGroupListController {
 	
-	private FlexiFilterTabPreset bookmarkTab;
-	private FlexiFilterTabPreset myGroupsTab;
+	private FlexiFiltersTab bookmarkTab;
+	private FlexiFiltersTab myGroupsTab;
 	
 	public BusinessGroupListController(UserRequest ureq, WindowControl wControl, String prefsKey) {
 		super(ureq, wControl, "group_list", false, prefsKey, false, null);
 	}
 	
-	public FlexiFilterTabPreset getBookmarkTab() {
+	public FlexiFiltersTab getBookmarkTab() {
 		return bookmarkTab;
 	}
 	
-	public FlexiFilterTabPreset getMyGroupsTab() {
+	public FlexiFiltersTab getMyGroupsTab() {
 		return myGroupsTab;
 	}
 	
@@ -164,17 +164,17 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	protected void initFilterTabs() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
-		bookmarkTab = FlexiFilterTabPreset.presetWithImplicitFilters("Bookmarks", translate("marked.groups"),
+		bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("marked.groups"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.MARKED, "marked")));
 		bookmarkTab.setElementCssClass("o_sel_group_bookmarked_groups");
 		tabs.add(bookmarkTab);
 		
-		myGroupsTab = FlexiFilterTabPreset.presetWithImplicitFilters("MyGroups", translate("my.groups"),
+		myGroupsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyGroups", translate("my.groups"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "all")));
 		myGroupsTab.setElementCssClass("o_sel_group_all_groups");
 		tabs.add(myGroupsTab);
 		
-		FlexiFilterTabPreset searchTab = new FlexiFilterTabPreset("Search", translate("search.generic"), TabSelectionBehavior.clear);
+		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.generic"), TabSelectionBehavior.clear);
 		searchTab.setElementCssClass("o_sel_group_search_groups");
 		searchTab.setPosition(FlexiFilterTabPosition.right);
 		searchTab.setLargeSearch(true);

@@ -25,8 +25,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
@@ -41,10 +41,10 @@ import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
  */
 public class BusinessGroupInactiveListController extends AbstractBusinessGroupLifecycleListController {
 
-	private FlexiFilterTabPreset inactiveTab;
-	private FlexiFilterTabPreset inactiveLongTab;
-	private FlexiFilterTabPreset responseDelayTab;
-	private FlexiFilterTabPreset toSoftDeleteTab;
+	private FlexiFiltersTab inactiveTab;
+	private FlexiFiltersTab inactiveLongTab;
+	private FlexiFiltersTab responseDelayTab;
+	private FlexiFiltersTab toSoftDeleteTab;
 	
 	private DefaultFlexiColumnModel actionColumn;
 	
@@ -93,23 +93,23 @@ public class BusinessGroupInactiveListController extends AbstractBusinessGroupLi
 		// manual + mail:    active, long, to soft delete, response delay
 		// manual + no mail: active, long, to soft delete
 		
-		inactiveTab = FlexiFilterTabPreset.presetWithImplicitFilters("Inactive", translate("admin.groups.inactive.preset"),
+		inactiveTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Inactive", translate("admin.groups.inactive.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.INACTIVE.name())));
 		tabs.add(inactiveTab);
 		
-		inactiveLongTab = FlexiFilterTabPreset.presetWithImplicitFilters("LongInactive", translate("admin.groups.inactive.long.preset"),
+		inactiveLongTab = FlexiFiltersTabFactory.tabWithImplicitFilters("LongInactive", translate("admin.groups.inactive.long.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.INACTIVE_LONG.name())));
 		tabs.add(inactiveLongTab);
 		
 		if(!automatic) {
 			String action = withMail ? LifecycleSyntheticStatus.TO_START_SOFT_DELETE.name() : LifecycleSyntheticStatus.TO_SOFT_DELETE.name();
-			toSoftDeleteTab = FlexiFilterTabPreset.presetWithImplicitFilters("ToSoftDelete", translate("admin.groups.to.soft.delete.preset"),
+			toSoftDeleteTab = FlexiFiltersTabFactory.tabWithImplicitFilters("ToSoftDelete", translate("admin.groups.to.soft.delete.preset"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, action)));
 			tabs.add(toSoftDeleteTab);
 		}
 		
 		if(withMail) {
-			responseDelayTab= FlexiFilterTabPreset.presetWithImplicitFilters("SoftDeleteDelay", translate("admin.groups.inactive.response.delay.preset"),
+			responseDelayTab= FlexiFiltersTabFactory.tabWithImplicitFilters("SoftDeleteDelay", translate("admin.groups.inactive.response.delay.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.INACTIVE_RESPONSE_DELAY.name())));
 			tabs.add(responseDelayTab);
 		}

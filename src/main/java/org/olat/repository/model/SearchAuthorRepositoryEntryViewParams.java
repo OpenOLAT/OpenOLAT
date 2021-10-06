@@ -281,25 +281,6 @@ public class SearchAuthorRepositoryEntryViewParams {
 		}
 	}
 
-	/**
-	 * Reset the search values but not the permissions.
-	 */
-	public void reset() {
-		setMarked(null);
-		setOwnedResourcesOnly(false);
-		setResourceTypes(null);
-		setIdAndRefs(null);
-		setAuthor(null);
-		setDisplayname(null);
-		setDescription(null);
-		setEducationalTypeKeys(null);
-		setTechnicalTypes(null);
-		setTaxonomyLevels(null);
-		setLicenseTypeKeys(null);
-		setResourceUsage(null);
-		setStatus(null);
-	}
-
 	public enum OrderBy {
 		key,
 		favorit,	

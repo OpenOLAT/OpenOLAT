@@ -454,7 +454,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 					doOpenIdentity(ureq, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
-				model.filter(table.getSelectedFilters());
+				model.filter(table.getFilters());
 				table.reset(false, false, true);
 			}
 		} else if(pdfExportButton == source) {
@@ -508,7 +508,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	private void reloadTable() {
 		dbInstance.commit();//make sure all changes are on the database
 		model.setObjects(loadDatas());
-		model.filter(table.getSelectedFilters());
+		model.filter(table.getFilters());
 		table.reloadData();
 	}
 	
@@ -653,21 +653,23 @@ public class CheckListAssessmentController extends FormBasicController implement
 	}
 	
 	private String getGroupNames() {
-		List<FlexiTableFilter> filters = table.getSelectedFilters();
+		List<FlexiTableFilter> filters = table.getFilters();
 		if (filters != null && !filters.isEmpty()) {
 			FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, "groups");
 			if(groupsFilter != null) {
 				FlexiTableMultiSelectionFilter filter = (FlexiTableMultiSelectionFilter)groupsFilter;
 				List<String> filterValues = filter.getValues();
-				List<String> groupNames = new ArrayList<>(filterValues.size());
-				for(String filterValue:filterValues) {
-					SelectionValue groupValue = filter.getSelectionValues().get(filterValue);
-					if (groupValue != null) {
-						groupNames.add(groupValue.getValue());
+				if(filterValues != null) {
+					List<String> groupNames = new ArrayList<>(filterValues.size());
+					for(String filterValue:filterValues) {
+						SelectionValue groupValue = filter.getSelectionValues().get(filterValue);
+						if (groupValue != null) {
+							groupNames.add(groupValue.getValue());
+						}
 					}
-				}
-				if (!groupNames.isEmpty()) {
-					return groupNames.stream().collect(Collectors.joining(", "));
+					if (!groupNames.isEmpty()) {
+						return groupNames.stream().collect(Collectors.joining(", "));
+					}
 				}
 			}
 		}

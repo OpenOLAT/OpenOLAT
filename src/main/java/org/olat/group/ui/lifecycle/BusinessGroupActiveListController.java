@@ -25,8 +25,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPreset;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
@@ -41,10 +41,10 @@ import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
  */
 public class BusinessGroupActiveListController extends AbstractBusinessGroupLifecycleListController {
 
-	private FlexiFilterTabPreset activeTab;
-	private FlexiFilterTabPreset notActiveTab;
-	private FlexiFilterTabPreset responseDelayTab;
-	private FlexiFilterTabPreset toInactivateTab;
+	private FlexiFiltersTab activeTab;
+	private FlexiFiltersTab notActiveTab;
+	private FlexiFiltersTab responseDelayTab;
+	private FlexiFiltersTab toInactivateTab;
 	
 	private DefaultFlexiColumnModel actionColumn;
 	
@@ -93,23 +93,23 @@ public class BusinessGroupActiveListController extends AbstractBusinessGroupLife
 		// manual + mail:    active, long, to inactivate, response delay
 		// manual + no mail: active, long, to inactivate
 		
-		activeTab = FlexiFilterTabPreset.presetWithImplicitFilters("Active", translate("admin.groups.active.preset"),
+		activeTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Active", translate("admin.groups.active.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.ACTIVE.name())));
 		tabs.add(activeTab);
 		
-		notActiveTab = FlexiFilterTabPreset.presetWithImplicitFilters("NotActive", translate("admin.groups.not,active.preset"),
+		notActiveTab = FlexiFiltersTabFactory.tabWithImplicitFilters("NotActive", translate("admin.groups.not,active.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.ACTIVE_LONG.name())));
 		tabs.add(notActiveTab);
 
 		if(!automaticInactivation) {
 			String action = withMail ? LifecycleSyntheticStatus.TO_START_INACTIVATE.name() : LifecycleSyntheticStatus.TO_INACTIVATE.name();
-			toInactivateTab = FlexiFilterTabPreset.presetWithImplicitFilters("ToInactivate", translate("admin.groups.to.inactive.preset"),
+			toInactivateTab = FlexiFiltersTabFactory.tabWithImplicitFilters("ToInactivate", translate("admin.groups.to.inactive.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, action)));
 			tabs.add(toInactivateTab);
 		}
 		
 		if(withMail) {
-			responseDelayTab= FlexiFilterTabPreset.presetWithImplicitFilters("ResponseDelay", translate("admin.groups.response.delay.preset"),
+			responseDelayTab= FlexiFiltersTabFactory.tabWithImplicitFilters("ResponseDelay", translate("admin.groups.response.delay.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.ACTIVE_RESPONSE_DELAY.name())));
 			tabs.add(responseDelayTab);
 		}

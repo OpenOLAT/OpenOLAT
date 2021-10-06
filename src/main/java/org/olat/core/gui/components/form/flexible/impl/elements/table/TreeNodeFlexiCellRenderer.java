@@ -110,7 +110,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 
 	private boolean isFlatSearchAndFilter(FlexiTableElementImpl ftE) {
 		return flatBySearchAndFilter
-				&& (StringHelper.containsNonWhitespace(ftE.getQuickSearchString()) || isFiltered(ftE.getSelectedFilters()));
+				&& (StringHelper.containsNonWhitespace(ftE.getQuickSearchString()) || isFiltered(ftE.getFilters()));//TODO filters
 	}
 	
 	private boolean isFlatSort(FlexiTableElementImpl ftE) {

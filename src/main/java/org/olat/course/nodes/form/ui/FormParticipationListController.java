@@ -267,15 +267,18 @@ public class FormParticipationListController extends FormBasicController impleme
 	private FormParticipationSearchParams getSearchParameters() {
 		FormParticipationSearchParams params = new FormParticipationSearchParams();
 		
-		List<FlexiTableFilter> filters = tableEl.getSelectedFilters();
+		List<FlexiTableFilter> filters = tableEl.getFilters();
 		FlexiTableFilter obligationFilter = FlexiTableFilter.getFilter(filters, "obligation");
 		if (obligationFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)obligationFilter).getValues();
-			if (!filterValues.isEmpty()) {
+			if (filterValues != null && !filterValues.isEmpty()) {
 				List<AssessmentObligation> assessmentObligations = filterValues.stream()
 						.map(AssessmentObligation::valueOf)
 						.collect(Collectors.toList());
 				params.setObligations(assessmentObligations);
+			} else {
+				params.setObligations(null);
+				
 			}
 		}
 		

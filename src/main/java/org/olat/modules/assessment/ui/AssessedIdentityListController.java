@@ -304,7 +304,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			listState.setValuesToFilter(tableEl.getExtendedFilters());
 		}
 
-		updateModel(null, tableEl.getSelectedFilters());
+		updateModel(null, tableEl.getFilters());
 		
 		if(entries != null && !entries.isEmpty()) {
 			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();

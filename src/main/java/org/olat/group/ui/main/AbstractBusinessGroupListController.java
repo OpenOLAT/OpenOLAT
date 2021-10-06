@@ -804,7 +804,6 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			return;
 		} 
 		
-		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAuthor = roles.isAdministrator() || roles.isAuthor() || roles.isLearnResourceManager();
 
 		Step start = new BGConfigToolsStep(ureq, isAuthor);
@@ -999,7 +998,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			tableEl.reset(true, true, true);
 		} else if(tab.getSelectionBehavior() == TabSelectionBehavior.reloadData) {
 			BusinessGroupQueryParams params = getDefaultSearchParams();
-			applyFiltersToQueryParams(tableEl.getQuickSearchString(), tableEl.getSelectedFilters(), params);
+			applyFiltersToQueryParams(tableEl.getQuickSearchString(), tableEl.getFilters(), params);
 			loadModel(params);
 		}
 		tableEl.addToHistory(ureq);

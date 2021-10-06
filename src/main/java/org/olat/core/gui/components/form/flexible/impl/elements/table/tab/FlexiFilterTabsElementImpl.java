@@ -53,7 +53,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 	private final FlexiFilterTabsComponent component;
 	
 	private List<FlexiFiltersTab> tabs;
-	private final List<FlexiFilterTabPreset> customTabs = new ArrayList<>();
+	private final List<FlexiFiltersTab> customTabs = new ArrayList<>();
 	private FlexiFiltersTab selectedTab;
 	private final FormLink removeFiltersButton;
 	private final FlexiTableElementImpl tableEl;
@@ -110,11 +110,11 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 		this.tabs = new ArrayList<>(tabs);
 	}
 	
-	public List<FlexiFilterTabPreset> getCustomFilterTabs() {
+	public List<FlexiFiltersTab> getCustomFilterTabs() {
 		return customTabs;
 	}
 	
-	public void addCustomFilterTab(FlexiFilterTabPreset customPreset) {
+	public void addCustomFilterTab(FlexiFiltersTab customPreset) {
 		customTabs.add(customPreset);
 		component.setDirty(true);
 	}
@@ -136,9 +136,9 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 	public FlexiFiltersTab getFilterTabById(String id) {
 		if(id == null) return null;
 		
-		for(FlexiFilterTabPreset preset:customTabs) {
-			if(id.equals(preset.getId())) {
-				return preset;
+		for(FlexiFiltersTab customTab:customTabs) {
+			if(id.equals(customTab.getId())) {
+				return customTab;
 			}
 		}
 		
@@ -153,11 +153,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 	}
 	
 	public List<String> getImplicitFiltersOfSelectedTab() {
-		if(selectedTab instanceof FlexiFiltersPreset) {
-			FlexiFiltersPreset preset = (FlexiFiltersPreset)selectedTab;
-			return preset.getImplicitFilters();	
-		}
-		return null;
+		return selectedTab == null ? null : selectedTab.getImplicitFilters();
 	}
 	
 	@Override
