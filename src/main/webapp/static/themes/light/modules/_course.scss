@@ -82,18 +82,13 @@
 		padding: $o-cn-style-text-pading;
 	}
 	
-	.o_image {
-		max-width: $o-cn-style-image-width;
-		background-position: center;
-	}
-	
 	&.o_cover > .o_top {
 		background-position: center left;
+		min-height: $o-cn-style-image-height;
 	}
 	
-	.o_image,
+	.o_image > img,
 	&.o_cover > .o_top {
-		min-height: $o-cn-style-image-height;
 		background-repeat: no-repeat;
 		background-color: $o-cn-style-image-bg;
 		&.o_colcat_dark_blue { background-color: $o-cn-style-cat-dark-blue-color; }
@@ -107,6 +102,11 @@
 	}
 	.o_image {
 		max-height: $o-cn-style-image-height;
+		background-position: center;
+		@media (min-width: $screen-xs-max) { 
+			max-width: $o-cn-style-image-width;
+			min-height: $o-cn-style-image-height;
+		}
 	}
 	&.o_cover {
 		/* The second empty div is to press the first div to left side.
@@ -132,36 +132,50 @@
 		.o_top {
 			display: flex;
 			flex-wrap: nowrap;
+			flex-direction: column-reverse;
 			
 			.o_text {
 				margin-right: auto;
 			}
+			
 			.o_image {
 				img {
-					height: $o-cn-style-image-height;
-					max-width: $o-cn-style-image-width;
+					max-height: $o-cn-style-image-height;
+				}
+			}
+			@media (min-width: $screen-xs-max) { 
+				flex-direction: row;
+				.o_image {
+					img {
+						height: $o-cn-style-image-height;
+						max-width: $o-cn-style-image-width;
+					}
 				}
 			}
 		}
 	}
 	&.o_left {
-		.o_top {
-			flex-direction: row-reverse;
+		@media (min-width: $screen-xs-max) { 
+			.o_top {
+				flex-direction: row-reverse;
+			}
 		}
 	}
 	&.o_gradient {
 		.o_image {
 			position:relative;
 		}
-		.o_image:after {
-			content:'';
-			position:absolute;
-			left:0;
-			top:0;
-			width:100%;
-			height:100%;
-			display:inline-block;
-			background: linear-gradient(to right, $o-cn-style-bg, rgba($o-cn-style-bg, 0) 60% );
+		@media (min-width: $screen-xs-max) { 
+			.o_image:after {
+				content:'';
+				position:absolute;
+				left:0;
+				top:0;
+				width:100%;
+				height:100%;
+				display:inline-block;
+				background: linear-gradient(to right, $o-cn-style-bg, rgba($o-cn-style-bg, 0) 60% );
+			}
 		}
 	}
 	
