@@ -70,6 +70,10 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 	private String institutionalUserIdentifierAttributeName;
 	@Value("${azure.adfs.attributename.institutionalName}")
 	private String institutionalNameAttributeName;
+	@Value("${azure.adfs.attributename.department}")
+	private String departmentAttributeName;
+	@Value("${azure.adfs.attributename.country}")
+	private String countryAttributeName;
 	
 	@Autowired
 	private OAuthLoginModule oauthModule;
@@ -144,6 +148,8 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 				user.setId(user.getInstitutionalUserIdentifier());
 			}
 			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName, user.getInstitutionalName()));
+			user.setDepartment(getValue(obj, departmentAttributeName, user.getDepartment()));
+			user.setCountry(getValue(obj, countryAttributeName, user.getCountry()));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
@@ -167,6 +173,8 @@ public class MicrosoftAzureADFSProvider implements OAuthSPI {
 				user.setId(user.getInstitutionalUserIdentifier());
 			}
 			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName, user.getInstitutionalName()));
+			user.setDepartment(getValue(obj, departmentAttributeName, user.getDepartment()));
+			user.setCountry(getValue(obj, countryAttributeName, user.getCountry()));
 		} catch (JSONException | InterruptedException | ExecutionException | IOException e) {
 			log.error("", e);
 		}

@@ -84,6 +84,8 @@ public class UserConstants {
 	public static final String USERNAME  = "userName";
 	/** USERNAME */
 	public static final String NICKNAME  = "nickName";
+	/** DEPARTMENT */
+	public static final String DEPARTMENT  = "department";
 
 	
 	/**

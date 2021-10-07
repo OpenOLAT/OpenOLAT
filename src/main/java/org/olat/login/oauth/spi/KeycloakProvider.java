@@ -67,6 +67,10 @@ public class KeycloakProvider implements OAuthSPI {
 	private String institutionalNameAttributeName;
 	@Value("${oauth.keycloak.default.value.institutionalName}")
 	private String institutionalNameDefaultValue;
+	@Value("${oauth.keycloak.attributename.department}")
+	private String departmentAttributeName;
+	@Value("${oauth.keycloak.attributename.country}")
+	private String countryAttributeName;
 
 	@Autowired
 	private OAuthLoginModule oauthModule;
@@ -129,6 +133,8 @@ public class KeycloakProvider implements OAuthSPI {
 			user.setLastName(getValue(obj, lastNameAttributeName, null));
 			user.setInstitutionalUserIdentifier(getValue(obj, institutionalUserIdentifierAttributeName, null));
 			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName, institutionalNameDefaultValue));
+			user.setDepartment(getValue(obj, departmentAttributeName, null));
+			user.setCountry(getValue(obj, countryAttributeName, null));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
