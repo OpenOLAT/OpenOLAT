@@ -558,6 +558,7 @@ public class AssessmentEntryDAO {
 		sb.append("          from assessmententry subae");
 		sb.append("         where subae.startDate <= :start");
 		sb.append("       )");
+		sb.append("   and re.status").in(RepositoryEntryStatusEnum.preparationToClosed());
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentEntry.class)
