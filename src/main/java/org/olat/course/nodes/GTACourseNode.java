@@ -73,6 +73,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.gta.GTAAssessmentConfig;
@@ -90,11 +91,13 @@ import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTARunController;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
@@ -829,7 +832,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		notificationsManager.delete(subscriptionContext);
 	}
 	
-	public boolean isOptional() {
+	public boolean isOptional(UserCourseEnvironment userCourseEnv) {
+		if (userCourseEnv != null && LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnv).getType())) {
+			AssessmentEvaluation evaluation = userCourseEnv.getScoreAccounting().evalCourseNode(this);
+			if (evaluation != null && evaluation.getObligation() != null && evaluation.getObligation().getCurrent() != null) {
+				return AssessmentObligation.optional == evaluation.getObligation().getCurrent();
+			}
+		}
 		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
 	}
 	

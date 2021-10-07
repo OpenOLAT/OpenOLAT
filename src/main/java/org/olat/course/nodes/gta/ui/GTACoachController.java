@@ -751,7 +751,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
 		}
 		
-		if(task == null && gtaNode.isOptional()) {
+		if(task == null && gtaNode.isOptional(userCourseEnv)) {
 			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
 			task = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
 		}

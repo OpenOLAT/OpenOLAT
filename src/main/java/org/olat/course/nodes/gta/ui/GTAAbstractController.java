@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -57,6 +58,7 @@ import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
@@ -138,6 +140,11 @@ public abstract class GTAAbstractController extends BasicController implements G
 		this.userCourseEnv = userCourseEnv;
 		this.courseEnv = courseEnv;
 		this.courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		if (userCourseEnv == null && assessedIdentity != null) {
+			IdentityEnvironment ienv = new IdentityEnvironment();
+			ienv.setIdentity(assessedIdentity);
+			this.userCourseEnv = new UserCourseEnvironmentImpl(ienv, courseEnv);
+		}
 		
 		this.assessedIdentity = assessedIdentity;
 		this.assessedGroup = assessedGroup;
@@ -197,7 +204,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 		}
 		
-		boolean optional = gtaNode.isOptional();
+		boolean optional = gtaNode.isOptional(userCourseEnv);
 		boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
 		mainVC.contextPut("assignmentEnabled", assignment);
 		if(assignment) {
@@ -532,7 +539,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 			case "revision": stepPreferences.setRevision(showHide); break;
 			case "solution": stepPreferences.setSolution(showHide); break;
 			case "grading": stepPreferences.setGrading(showHide); break;
-			default: {};
+			default: {}
 		}
 		
 		ureq.getUserSession().getGuiPreferences()

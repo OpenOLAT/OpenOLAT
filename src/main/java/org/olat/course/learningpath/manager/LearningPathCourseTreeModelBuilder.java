@@ -80,7 +80,9 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 	}
 
 	private boolean isVisible(UserCourseEnvironment userCourseEnv, AssessmentEvaluation assessmentEvaluation) {
-		if (assessmentEvaluation == null || userCourseEnv.isAdmin() || userCourseEnv.isCoach()) return true;
+		if (assessmentEvaluation == null || assessmentEvaluation.getObligation() == null || userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
+			return true;
+		}
 		
 		return AssessmentObligation.excluded != assessmentEvaluation.getObligation().getCurrent();
 	}
