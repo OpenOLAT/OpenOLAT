@@ -59,6 +59,10 @@ public class ADFSProvider implements OAuthSPI {
 	private String institutionalUserIdentifierAttributeName;
 	@Value("${adfs.attributename.institutionalName}")
 	private String institutionalNameAttributeName;
+	@Value("${adfs.attributename.department}")
+	private String departmentAttributeName;
+	@Value("${adfs.attributename.country}")
+	private String countryAttributeName;
 	
 	@Autowired
 	private OAuthLoginModule oauthModule;
@@ -119,6 +123,8 @@ public class ADFSProvider implements OAuthSPI {
 				user.setId(user.getInstitutionalUserIdentifier());
 			}
 			user.setInstitutionalName(getValue(obj, institutionalNameAttributeName));
+			user.setDepartment(getValue(obj, departmentAttributeName));
+			user.setCountry(getValue(obj, countryAttributeName));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
