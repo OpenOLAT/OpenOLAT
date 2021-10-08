@@ -50,17 +50,16 @@ public class AlphaNumericalComparatorTest {
     	
 		Collections.sort(values, new AlphaNumericalComparator());
 
-		Assert.assertEquals("completionStatus", values.get(0));
-		Assert.assertEquals("1", values.get(1));
-		Assert.assertEquals("2", values.get(2));
-		Assert.assertEquals("10", values.get(3));
-		Assert.assertEquals("dazzle1", values.get(4));
-		Assert.assertEquals("dazzle2", values.get(5));
-		Assert.assertEquals("dazzle2.7", values.get(6));
-		Assert.assertEquals("dazzle2.10", values.get(7));
-		Assert.assertEquals("dazzle10", values.get(8));
-		Assert.assertEquals("EctoMorph6", values.get(9));
-		Assert.assertEquals("EctoMorph7", values.get(10));
-		Assert.assertEquals("EctoMorph62", values.get(11));
+		Assert.assertEquals("1", values.get(0));
+		Assert.assertEquals("2", values.get(1));
+		Assert.assertEquals("10", values.get(2));
+		Assert.assertEquals("dazzle1", values.get(3));
+		Assert.assertEquals("dazzle2", values.get(4));
+		Assert.assertEquals("dazzle2.7", values.get(5));
+		Assert.assertEquals("dazzle2.10", values.get(6));
+		Assert.assertEquals("dazzle10", values.get(7));
+		Assert.assertEquals("EctoMorph6", values.get(8));
+		Assert.assertEquals("EctoMorph7", values.get(9));
+		Assert.assertEquals("EctoMorph62", values.get(10));
 	}
 }
