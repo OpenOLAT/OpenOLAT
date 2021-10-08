@@ -479,7 +479,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		Identity assessedIdentity = rootEntry.getIdentity();
 		evaluateAll(courseEnv, assessedIdentity);
-		log.debug("Evaluated score accounting after start over in course {} for {}", course, assessedIdentity);
+		log.debug("Evaluated score accounting after start over in course {} for {}", rootEntry.getRepositoryEntry(), assessedIdentity);
 		dbInstance.commitAndCloseSession();
 	}
 }
