@@ -103,6 +103,7 @@
 	.o_image {
 		max-height: $o-cn-style-image-height;
 		background-position: center;
+		overflow: hidden;
 		@media (min-width: $screen-xs-max) { 
 			max-width: $o-cn-style-image-width;
 			min-height: $o-cn-style-image-height;
