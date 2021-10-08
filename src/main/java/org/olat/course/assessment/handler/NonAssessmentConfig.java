@@ -137,5 +137,4 @@ public class NonAssessmentConfig implements AssessmentConfig {
 		return false;
 	}
 
-
 }

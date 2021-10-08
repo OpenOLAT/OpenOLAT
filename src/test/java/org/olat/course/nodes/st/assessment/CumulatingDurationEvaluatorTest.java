@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -68,7 +68,7 @@ public class CumulatingDurationEvaluatorTest {
 	
 	private AssessmentEvaluation createAssessmentEvaluation(AssessmentObligation obligation, Integer duration) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, 0, null, null, null, null, null, null, Overridable.of(obligation), duration, null, null);
+				null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), duration, null, null);
 	}
 
 }

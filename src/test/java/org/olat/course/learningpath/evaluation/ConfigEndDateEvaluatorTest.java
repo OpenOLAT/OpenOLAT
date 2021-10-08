@@ -34,6 +34,7 @@ import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.st.assessment.SequentialBlocker;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.Blocker;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -157,7 +158,7 @@ public class ConfigEndDateEvaluatorTest {
 	
 	private AssessmentEvaluation createEvaluation(AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, 0, null, null, null, null, null, Overridable.empty(), Overridable.of(obligation), null,
+				null, null, null, 0, null, null, null, null, null, Overridable.empty(), ObligationOverridable.of(obligation), null,
 				null, null);
 	}
 

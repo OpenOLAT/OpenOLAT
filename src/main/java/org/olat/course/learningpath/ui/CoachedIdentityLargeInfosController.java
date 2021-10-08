@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.admin.user.UserShortDescription;
-import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.admin.user.UserShortDescription.Builder;
+import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -64,9 +64,7 @@ public class CoachedIdentityLargeInfosController extends BasicController {
 		List<BusinessGroup> participantGroups = coachedCourseEnv.getCourseEnvironment().getCourseGroupManager()
 				.getParticipatingBusinessGroups(coachedIdentity);
 		final Collator collator = Collator.getInstance(getLocale());
-		Collections.sort(participantGroups, (a, b) -> {
-			return collator.compare(a.getName(), b.getName());
-		});
+		Collections.sort(participantGroups, (a, b) -> collator.compare(a.getName(), b.getName()));
 		Builder rowsBuilder = Rows.builder();
 		if (!participantGroups.isEmpty()) {
 			String groupNames = participantGroups.stream()

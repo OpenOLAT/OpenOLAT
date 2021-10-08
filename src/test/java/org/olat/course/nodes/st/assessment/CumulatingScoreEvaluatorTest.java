@@ -36,7 +36,7 @@ import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.assessment.CumulatingScoreEvaluator.Score;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -174,7 +174,7 @@ public class CumulatingScoreEvaluatorTest {
 
 	private AssessmentEvaluation createAssessmentEvaluation(Float score, Boolean userVisibility, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(score, null, null, null, null, null, null, userVisibility, null, null, null, null,
-				null, null, null, null, 0, null, null, null, null, null, null, Overridable.of(obligation), null, null, null);
+				null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 
 }

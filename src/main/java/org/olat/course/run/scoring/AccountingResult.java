@@ -22,9 +22,9 @@ package org.olat.course.run.scoring;
 import java.util.Date;
 import java.util.Objects;
 
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -38,7 +38,7 @@ public class AccountingResult extends AssessmentEvaluation {
 	private Date evaluatedStartDate;
 	private Overridable<Date> evaluatedEndDate;
 	private Integer evaluatedDuration;
-	private Overridable<AssessmentObligation> evaluatedObligation;
+	private ObligationOverridable evaluatedObligation;
 	private Float evaluatedScore;
 	private Boolean evaluatedPassed;
 	private Double evaluatedCompletion;
@@ -51,7 +51,7 @@ public class AccountingResult extends AssessmentEvaluation {
 		super(evaluation, evaluation.getAssessmentStatus());
 		this.origin = evaluation;
 		this.evaluatedStartDate = origin.getStartDate();
-		this.evaluatedEndDate = origin.getEndDate();
+		this.evaluatedEndDate = origin.getEndDate().clone();
 		this.evaluatedDuration = origin.getDuration();
 		this.evaluatedObligation = origin.getObligation();
 		this.evaluatedScore = origin.getScore();
@@ -91,11 +91,11 @@ public class AccountingResult extends AssessmentEvaluation {
 	}
 
 	@Override
-	public Overridable<AssessmentObligation> getObligation() {
+	public ObligationOverridable getObligation() {
 		return evaluatedObligation;
 	}
 
-	public void setObligation(Overridable<AssessmentObligation> obligation) {
+	public void setObligation(ObligationOverridable obligation) {
 		this.evaluatedObligation = obligation;
 	}
 
@@ -168,6 +168,7 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getEndDate().getOriginal(), evaluatedEndDate.getOriginal())
 				|| !Objects.equals(origin.getDuration(), evaluatedDuration)
 				|| !Objects.equals(origin.getObligation().getCurrent(), evaluatedObligation.getCurrent())
+				|| !Objects.equals(origin.getObligation().getCurrentConfig(), evaluatedObligation.getCurrentConfig())
 				|| !Objects.equals(origin.getObligation().getOriginal(), evaluatedObligation.getOriginal())
 				|| !Objects.equals(origin.getPassed(), evaluatedPassed)
 				|| !Objects.equals(origin.getScore(), evaluatedScore)

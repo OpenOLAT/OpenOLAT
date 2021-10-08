@@ -22,6 +22,7 @@ package org.olat.course.nodeaccess;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
@@ -45,7 +46,7 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	
 	public boolean isScoreCalculatorSupported();
 
-	public void updateConfigDefaults(CourseNode courseNode, boolean newNode);
+	public void updateConfigDefaults(CourseNode courseNode, boolean newNode, INode parent);
 
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel);

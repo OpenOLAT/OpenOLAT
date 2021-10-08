@@ -40,7 +40,7 @@ import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -346,7 +346,7 @@ public class AverageCompletionEvaluatorTest {
 	private AssessmentEvaluation createAssessmentEvaluation(AssessmentObligation obligation, Integer duration,
 			Double completion, AssessmentEntryStatus status, Boolean fullyAssessed) {
 		return new AssessmentEvaluation(null, null, null, null, null, completion, status, null, fullyAssessed, null,
-				null, null, null, null, null, null, 0, null, null, null, null, null, null, Overridable.of(obligation),
+				null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation),
 				duration, null, null);
 	}
 

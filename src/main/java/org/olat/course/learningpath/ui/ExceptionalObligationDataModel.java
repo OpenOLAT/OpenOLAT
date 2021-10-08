@@ -54,6 +54,7 @@ public class ExceptionalObligationDataModel extends DefaultFlexiTableDataModel<E
 			case mandatory: return row.getMandatoryEl();
 			case optional: return row.getOptionalEl();
 			case excluded: return row.getExcludedEl();
+			case evaluated: return row.getEvaluatedEl();
 			case delete: return row.getDeleteLink();
 			default: return null;
 		}
@@ -70,6 +71,7 @@ public class ExceptionalObligationDataModel extends DefaultFlexiTableDataModel<E
 		mandatory("exceptional.obligation.mandatory"),
 		optional("exceptional.obligation.optional"),
 		excluded("exceptional.obligation.excluded"),
+		evaluated("exceptional.obligation.evaluated"),
 		delete("exceptional.obligation.delete");
 		
 		private final String i18nKey;

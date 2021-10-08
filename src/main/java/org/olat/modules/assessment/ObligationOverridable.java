@@ -17,32 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.run.scoring;
+package org.olat.modules.assessment;
 
-import java.util.List;
-import java.util.Set;
-
-import org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluator;
-import org.olat.course.nodes.CourseNode;
-import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.model.ObligationOverridableImpl;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 8 Oct 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ObligationEvaluator {
+public interface ObligationOverridable extends Overridable<AssessmentObligation> {
 	
-	public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
-			CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator);
-
-	public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
-			CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator,
-			List<AssessmentEvaluation> children);
+	public static ObligationOverridable empty() {
+		return new ObligationOverridableImpl();
+	}
 	
-	public AssessmentObligation getMostImportantExceptionalObligation(Set<AssessmentObligation> assessmentObligations,
-			AssessmentObligation defaultObligation);
+	public static ObligationOverridable of(AssessmentObligation current) {
+		return new ObligationOverridableImpl(current);
+	}
+	
+	public AssessmentObligation getCurrentConfig();
+	
+	public boolean isEvaluatedConfig();
+	
+	public void setEvaluated(AssessmentObligation evaluatedObligation);
+	
+	@Override
+	public ObligationOverridable clone();
 
 }

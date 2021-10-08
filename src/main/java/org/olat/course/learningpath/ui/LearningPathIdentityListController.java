@@ -44,7 +44,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -53,7 +52,6 @@ import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.LearningPathIdentityDataModel.LearningPathIdentityCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
@@ -213,10 +211,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		OLATResourceable identityOres = OresHelper.createOLATResourceableInstance(ORES_TYPE_IDENTITY, coachedIdentity.getKey());
 		WindowControl bwControl = addToHistory(ureq, identityOres, null);
 		
-		IdentityEnvironment identityEnv = new IdentityEnvironment();
-		identityEnv.setIdentity(coachedIdentity);
-		UserCourseEnvironment coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, coachCourseEnv.getCourseEnvironment());
-		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, coachedCourseEnv);
+		currentIdentityCtrl = new LearningPathIdentityController(ureq, bwControl, stackPanel, coachCourseEnv.getCourseEnvironment(), coachedIdentity);
 		listenTo(currentIdentityCtrl);
 		stackPanel.pushController(fullName, currentIdentityCtrl);
 	}

@@ -24,7 +24,6 @@ import java.util.Date;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 
@@ -94,9 +93,9 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public void setEndDate(Overridable<Date> overwritable);
 	
-	public Overridable<AssessmentObligation> getObligation();
+	public ObligationOverridable getObligation();
 	
-	public void setObligation(Overridable<AssessmentObligation> obligation);
+	public void setObligation(ObligationOverridable obligation);
 	
 	public Integer getDuration();
 	

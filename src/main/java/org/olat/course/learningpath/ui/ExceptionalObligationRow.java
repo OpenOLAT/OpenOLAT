@@ -38,6 +38,7 @@ public class ExceptionalObligationRow {
 	private SingleSelection mandatoryEl;
 	private SingleSelection optionalEl;
 	private SingleSelection excludedEl;
+	private SingleSelection evaluatedEl;
 	private FormLink deleteLink;
 	
 	// Field to hold changed state
@@ -98,6 +99,14 @@ public class ExceptionalObligationRow {
 	
 	public void setExcludedEl(SingleSelection excludedEl) {
 		this.excludedEl = excludedEl;
+	}
+
+	public SingleSelection getEvaluatedEl() {
+		return evaluatedEl;
+	}
+
+	public void setEvaluatedEl(SingleSelection evaluatedEl) {
+		this.evaluatedEl = evaluatedEl;
 	}
 
 	public FormLink getDeleteLink() {

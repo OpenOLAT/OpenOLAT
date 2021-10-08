@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -101,8 +102,8 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 	
 	@Override
-	public void updateConfigDefaults(NodeAccessType type, CourseNode courseNode, boolean newNode) {
-		getNodeAccessProvider(type).updateConfigDefaults(courseNode, newNode);
+	public void updateConfigDefaults(NodeAccessType type, CourseNode courseNode, boolean newNode, INode parent) {
+		getNodeAccessProvider(type).updateConfigDefaults(courseNode, newNode, parent);
 	}
 
 	@Override

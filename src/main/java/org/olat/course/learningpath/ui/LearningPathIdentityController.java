@@ -26,7 +26,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 
@@ -42,28 +44,33 @@ public class LearningPathIdentityController extends BasicController {
 	private LearningPathListController learningPathListCtrl;
 
 	public LearningPathIdentityController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachedCourseEnv) {
+			CourseEnvironment courseEnv, Identity coachedIdentity) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("identity");
-		String courseTitle = coachedCourseEnv.getCourseEnvironment().getCourseTitle();
-		mainVC.contextPut("courseTitle", courseTitle);
+		mainVC.contextPut("courseTitle", courseEnv.getCourseTitle());
+		
+		IdentityEnvironment identityEnv = new IdentityEnvironment();
+		identityEnv.setIdentity(coachedIdentity);
+		UserCourseEnvironmentImpl coachedCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
+		// Viewed identity must act as participant only, to get the right assigned / excluded course nodes.
+		coachedCourseEnv.setUserRoles(false, false, true);
 		
 		coachedIdentityLargeInfosCtrl = new CoachedIdentityLargeInfosController(ureq, wControl, coachedCourseEnv);
 		listenTo(coachedIdentityLargeInfosCtrl);
 		mainVC.put("user", coachedIdentityLargeInfosCtrl.getInitialComponent());
 		
-		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, coachedCourseEnv, getCanEdit(coachedCourseEnv));
+		learningPathListCtrl = new LearningPathListController(ureq, wControl, stackPanel, coachedCourseEnv, getCanEdit(courseEnv));
 		listenTo(learningPathListCtrl);
 		mainVC.put("list", learningPathListCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}
 	
-	private boolean getCanEdit(UserCourseEnvironment coachedCourseEnv) {
+	private boolean getCanEdit(CourseEnvironment courseEnv) {
 		IdentityEnvironment identityEnv = new IdentityEnvironment();
 		identityEnv.setIdentity(getIdentity());
-		UserCourseEnvironment myCourseEnv = new UserCourseEnvironmentImpl(identityEnv, coachedCourseEnv.getCourseEnvironment());
+		UserCourseEnvironment myCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
 		return !myCourseEnv.isCourseReadOnly() && (myCourseEnv.isAdmin() || myCourseEnv.isCoach());
 	}
 

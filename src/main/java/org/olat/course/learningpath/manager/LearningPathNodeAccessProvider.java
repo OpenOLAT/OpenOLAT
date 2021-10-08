@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathConfigs.FullyAssessedResult;
@@ -103,8 +104,8 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public void updateConfigDefaults(CourseNode courseNode, boolean newNode) {
-		registry.getLearningPathNodeHandler(courseNode).updateDefaultConfigs(courseNode, newNode);
+	public void updateConfigDefaults(CourseNode courseNode, boolean newNode, INode parent) {
+		registry.getLearningPathNodeHandler(courseNode).updateDefaultConfigs(courseNode, newNode, parent);
 	}
 	
 	@Override

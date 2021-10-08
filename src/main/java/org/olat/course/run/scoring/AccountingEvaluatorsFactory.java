@@ -21,12 +21,13 @@ package org.olat.course.run.scoring;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
-import org.olat.core.id.Identity;
-import org.olat.course.Structure;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluator;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.st.assessment.WithoutSequenceBlocker;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -146,16 +147,21 @@ class AccountingEvaluatorsFactory {
 	private static class NoneObligationEvaluator implements ObligationEvaluator {
 
 		@Override
-		public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation,
-				CourseNode courseNode, Identity identity, Structure runStructure,
-				ScoreAccounting scoreAccounting, ObligationContext obligationContext) {
-			return Overridable.empty();
+		public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
+				CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
+			return ObligationOverridable.empty();
 		}
 
 		@Override
-		public Overridable<AssessmentObligation> getObligation(AssessmentEvaluation currentEvaluation,
-				List<AssessmentEvaluation> children) {
-			return Overridable.empty();
+		public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
+				CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator, List<AssessmentEvaluation> children) {
+			return ObligationOverridable.empty();
+		}
+
+		@Override
+		public AssessmentObligation getMostImportantExceptionalObligation(
+				Set<AssessmentObligation> assessmentObligations, AssessmentObligation defaultObligation) {
+			return null;
 		}
 		
 	}

@@ -182,6 +182,7 @@ public class STAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public boolean isObligationOverridable() {
-		return false;
+		return !isRoot;
 	}
+	
 }

@@ -31,7 +31,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -103,7 +103,7 @@ public class STLastModificationsEvaluatorTest {
 
 	private AssessmentEvaluation createAssessmentEvaluation(Date lastUserModified, Date lastCoachModified, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, 0, null, lastUserModified, lastCoachModified, null, null, null, Overridable.of(obligation), null, null, null);
+				null, null, null, 0, null, lastUserModified, lastCoachModified, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 
 }

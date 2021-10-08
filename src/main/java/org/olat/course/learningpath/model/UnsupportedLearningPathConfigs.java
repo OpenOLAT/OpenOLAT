@@ -19,8 +19,10 @@
  */
 package org.olat.course.learningpath.model;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
@@ -49,6 +51,11 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	@Override
 	public void setDuration(Integer duration) {
 		//
+	}
+
+	@Override
+	public Set<AssessmentObligation> getAvailableObligations() {
+		return Collections.emptySet();
 	}
 
 	@Override

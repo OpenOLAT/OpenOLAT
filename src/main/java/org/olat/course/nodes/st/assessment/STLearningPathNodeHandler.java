@@ -22,6 +22,7 @@ package org.olat.course.nodes.st.assessment;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
@@ -51,19 +52,25 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
-	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode) {
-		// Nothing to update here. The defaults are initialized in the course node itself.
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode, INode parent) {
+		getLearningPathConfigs(courseNode, parent);
 	}
 
 	@Override
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return new STLearningPathConfigs(courseNode.getModuleConfiguration());
+		return getLearningPathConfigs(courseNode, courseNode.getParent());
+	}
+	
+	private LearningPathConfigs getLearningPathConfigs(CourseNode courseNode, INode parent) {
+		STLearningPathConfigs configs = new STLearningPathConfigs(courseNode.getModuleConfiguration());
+		configs.updateDefaults(parent);
+		return configs;
 	}
 
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode) {
-		return new STLearningPathConfigController(ureq, wControl, courseNode.getModuleConfiguration());
+		return new STLearningPathConfigController(ureq, wControl, courseEntry, courseNode);
 	}
 
 	@Override
@@ -82,6 +89,8 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 				config.setStringValue(STCourseNode.CONFIG_SCORE_KEY, STCourseNode.CONFIG_SCORE_VALUE_SUM);
 				config.setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 			}
+			// CONFIG_LP_SEQUENCE_KEY was accidentally set in conventional courses.
+			config.remove(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY);
 		}
 	}
 

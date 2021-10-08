@@ -1399,6 +1399,7 @@ create table o_as_entry (
    a_date_end_mod_date datetime,
    a_duration int8,
    a_obligation varchar(50),
+   a_obligation_config varchar(50),
    a_obligation_original varchar(50),
    a_obligation_mod_date datetime,
    a_first_visit datetime,

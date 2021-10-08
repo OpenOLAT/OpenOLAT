@@ -24,9 +24,9 @@ import java.util.Date;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
@@ -43,7 +43,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	private final Date startDate;
 	private final Overridable<Date> endDate;
 	private final Integer duration;
-	private final Overridable<AssessmentObligation> obligation;
+	private final ObligationOverridable obligation;
 	private final Double completion;
 	private final Integer attempts;
 	private final Date lastAttempt; 
@@ -83,7 +83,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			Boolean fullyAssessed, Date fullyAssessedDate, Date currentRunStart, Double currentRunCompletion, AssessmentRunStatus runStatus,
 			Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs, Date lastModified,
 			Date lastUserModified, Date lastCoachModified, Date assessmentDone, Date startDate,
-			Overridable<Date> endDate, Overridable<AssessmentObligation> obligation, Integer duration, Date firstVisit,
+			Overridable<Date> endDate, ObligationOverridable obligation, Integer duration, Date firstVisit,
 			Date lastVisit) {
 		super(score, passed, assessmentStatus, userVisibility, currentRunStart, currentRunCompletion, runStatus, assessmentID);
 		this.passedOverriden = passedOverriden;
@@ -138,7 +138,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		return duration;
 	}
 
-	public Overridable<AssessmentObligation> getObligation() {
+	public ObligationOverridable getObligation() {
 		return obligation;
 	}
 

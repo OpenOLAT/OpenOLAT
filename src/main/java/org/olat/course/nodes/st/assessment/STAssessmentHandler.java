@@ -72,7 +72,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 	
 	private static final BlockerEvaluator SEQUENTIAL_BLOCKER_EVALUATOR = new STSequentialBlockerEvaluator();
 	private static final BlockerEvaluator WITHOUT_SEQUENCE_BLOCKER_EVALUATOR = new STWithoutSequenceBlockerEvaluator();
-	private static final ObligationEvaluator MANDATORY_OBLIGATION_EVALUATOR = new MandatoryObligationEvaluator();
+	private static final ObligationEvaluator OBLIGATION_EVALUATOR = new STObligationEvaluator();
 	private static final CumulatingDurationEvaluator CUMULATION_DURATION_EVALUATOR = new CumulatingDurationEvaluator();
 	private static final ScoreEvaluator CONDITION_SCORE_EVALUATOR = new ConditionScoreEvaluator();
 	private static final ScoreEvaluator SUM_SCORE_EVALUATOR = new CumulatingScoreEvaluator(false);
@@ -128,7 +128,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig) {
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
 			AccountingEvaluatorsBuilder builder = AccountingEvaluatorsBuilder.builder()
-					.withObligationEvaluator(MANDATORY_OBLIGATION_EVALUATOR)
+					.withObligationEvaluator(OBLIGATION_EVALUATOR)
 					.withDurationEvaluator(CUMULATION_DURATION_EVALUATOR)
 					.withStatusEvaluator(LEARNING_PATH_STATUS_EVALUATOR)
 					.withFullyAssessedEvaluator(FULLY_ASSESSED_EVALUATOR)
@@ -140,8 +140,8 @@ public class STAssessmentHandler implements AssessmentHandler {
 			builder.withCompletionEvaluator(completionEvaluator);
 			
 			ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
-			String sequenceKey = moduleConfig.getStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_DEFAULT);
-			if (STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL.equals(sequenceKey)) {
+			String sequenceKey = moduleConfig.getStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_DEFAULT);
+			if (STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL.equals(sequenceKey)) {
 				builder.withBlockerEvaluator(SEQUENTIAL_BLOCKER_EVALUATOR);
 			} else {
 				builder.withBlockerEvaluator(WITHOUT_SEQUENCE_BLOCKER_EVALUATOR);

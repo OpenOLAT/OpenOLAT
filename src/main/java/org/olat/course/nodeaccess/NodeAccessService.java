@@ -25,6 +25,7 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
@@ -64,8 +65,9 @@ public interface NodeAccessService {
 	 * @param type
 	 * @param courseNode
 	 * @param newNode
+	 * @param parent
 	 */
-	public void updateConfigDefaults(NodeAccessType type, CourseNode courseNode, boolean newNode);
+	public void updateConfigDefaults(NodeAccessType type, CourseNode courseNode, boolean newNode, INode parent);
 
 	/**
 	 * Creates the controller to edit the access configurations of the node.

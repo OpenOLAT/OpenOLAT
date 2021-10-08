@@ -27,6 +27,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.assessment.STLearningPathConfigs;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,13 +47,13 @@ public class LearningPathServiceTest extends OlatTestCase {
 	@Test
 	public void shouldGetSequenceConfig() {
 		CourseNode root = createCourseNode(STCourseNode.TYPE, null);
-		root.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		root.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		
 		CourseNode sp_0_1 = createCourseNode(SPCourseNode.TYPE, root);
 		root.addChild(sp_0_1);
 		
 		CourseNode st1 = createCourseNode(STCourseNode.TYPE, root);
-		st1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		st1.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		root.addChild(st1);
 		CourseNode sp_1_1 = createCourseNode(SPCourseNode.TYPE, st1);
 		st1.addChild(sp_1_1);
@@ -62,13 +63,13 @@ public class LearningPathServiceTest extends OlatTestCase {
 		sp_1_2.addChild(sp_1_2_1);
 		
 		CourseNode st2 = createCourseNode(STCourseNode.TYPE, root);
-		st2.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st2.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		root.addChild(st2);
 		CourseNode st2_1 = createCourseNode(STCourseNode.TYPE, st2);
-		st2_1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st2_1.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		st2.addChild(st2_1);
 		CourseNode st2_1_1 = createCourseNode(STCourseNode.TYPE, st2_1);
-		st2_1_1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		st2_1_1.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		st2_1.addChild(st2_1_1);
 		CourseNode sp2_1_1_1 = createCourseNode(SPCourseNode.TYPE, st2_1_1);
 		st2_1_1.addChild(sp2_1_1_1);
@@ -100,9 +101,9 @@ public class LearningPathServiceTest extends OlatTestCase {
 	@Test
 	public void shouldGetRooSequenceConfig() {
 		CourseNode rootWithout = createCourseNode(STCourseNode.TYPE, null);
-		rootWithout.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		rootWithout.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		CourseNode rootSequential = createCourseNode(STCourseNode.TYPE, null);
-		rootSequential.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY, STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		rootSequential.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(sut.getSequenceConfig(rootWithout).isInSequence()).as("root without in").isEqualTo(false);

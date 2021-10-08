@@ -35,6 +35,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.assessment.STLearningPathConfigs;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -86,21 +87,21 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		// Make the course runtime structure
 		Structure runStructure = courseEnv.getRunStructure();
 		STCourseNode root = (STCourseNode)runStructure.getRootNode();
-		root.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		root.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		SPCourseNode sp_0_1 = new SPCourseNode();
 		root.addChild(sp_0_1);
 		// Structure 1
 		STCourseNode st_1 = new STCourseNode();
-		st_1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		st_1.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		root.addChild(st_1);
 		SPCourseNode sp_1_1 = new SPCourseNode();
 		st_1.addChild(sp_1_1);
 		// Structure 2
 		STCourseNode st_2 = new STCourseNode();
-		st_2.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st_2.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		root.addChild(st_2);
 		SPCourseNode sp_2_1 = new SPCourseNode();
 		st_2.addChild(sp_2_1);
@@ -108,8 +109,8 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		st_2.addChild(sp_2_2);
 		// Structure 3
 		STCourseNode st_3 = new STCourseNode();
-		st_3.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		st_3.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		root.addChild(st_3);
 		SPCourseNode sp_3_1 = new SPCourseNode();
 		st_3.addChild(sp_3_1);
@@ -277,21 +278,21 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		// Make the course runtime structure
 		Structure runStructure = courseEnv.getRunStructure();
 		STCourseNode root = (STCourseNode)runStructure.getRootNode();
-		root.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		root.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		SPCourseNode sp_0_1 = new SPCourseNode();
 		root.addChild(sp_0_1);
 		// Structure 1
 		STCourseNode st_1 = new STCourseNode();
-		st_1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st_1.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		root.addChild(st_1);
 		SPCourseNode sp_1_1 = new SPCourseNode();
 		st_1.addChild(sp_1_1);
 		// Structure 2
 		STCourseNode st_2 = new STCourseNode();
-		st_2.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		st_2.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		root.addChild(st_2);
 		SPCourseNode sp_2_1 = new SPCourseNode();
 		st_2.addChild(sp_2_1);
@@ -299,8 +300,8 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		st_2.addChild(sp_2_2);
 		// Structure 3
 		STCourseNode st_3 = new STCourseNode();
-		st_3.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st_3.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		root.addChild(st_3);
 		SPCourseNode sp_3_1 = new SPCourseNode();
 		st_3.addChild(sp_3_1);
@@ -475,14 +476,14 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		// Make the course runtime structure
 		Structure runStructure = courseEnv.getRunStructure();
 		STCourseNode root = (STCourseNode)runStructure.getRootNode();
-		root.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		root.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		SPCourseNode sp_0_1 = new SPCourseNode();
 		root.addChild(sp_0_1);
 		// Structure 1
 		STCourseNode st_1 = new STCourseNode();
-		st_1.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st_1.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		root.addChild(st_1);
 		SPCourseNode sp_1_1 = new SPCourseNode();
 		st_1.addChild(sp_1_1);
@@ -496,15 +497,15 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		st_1.addChild(sp_1_4);
 		// Structure 11
 		STCourseNode st_11 = new STCourseNode();
-		st_11.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st_11.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		st_1.addChild(st_11);
 		SPCourseNode sp_11_1 = new SPCourseNode();
 		st_11.addChild(sp_11_1);
 		// Structure 2
 		STCourseNode st_2 = new STCourseNode();
-		st_2.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		st_2.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		root.addChild(st_2);
 		SPCourseNode sp_2_1 = new SPCourseNode();
 		st_2.addChild(sp_2_1);
@@ -515,8 +516,8 @@ public class AssessmentAccountingTest extends OlatTestCase {
 		st_2.addChild(sp_2_3);
 		// Structure 21
 		STCourseNode st_21 = new STCourseNode();
-		st_21.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st_21.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		st_2.addChild(st_21);
 		SPCourseNode sp_21_1 = new SPCourseNode();
 		st_21.addChild(sp_21_1);

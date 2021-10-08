@@ -37,7 +37,7 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.learningpath.obligation.PassedExceptionalObligationHandler.Status;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -403,7 +403,7 @@ public class PassedExceptionalObligationHandlerTest {
 
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, passed, null, null, null, null, null, userVisibility, null, null, null,
-				null, null, null, null, null, 1, null, null, null, null, null, null, Overridable.of(obligation), null, null, null);
+				null, null, null, null, null, 1, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 
 }

@@ -31,9 +31,11 @@ public enum AssessmentObligation {
 	
 	mandatory,
 	optional,
-	excluded;
+	excluded,
+	evaluated; // Only for configuration
 	
-	public static final List<AssessmentObligation> NOT_EXCLUDED = List.of(AssessmentObligation.mandatory, AssessmentObligation.optional);
+	public static final List<AssessmentObligation> NOT_EXCLUDED = List.of(AssessmentObligation.mandatory,
+			AssessmentObligation.optional, AssessmentObligation.evaluated);
 	public static final List<AssessmentObligation> EXCLUDED = List.of(AssessmentObligation.excluded);
 
 

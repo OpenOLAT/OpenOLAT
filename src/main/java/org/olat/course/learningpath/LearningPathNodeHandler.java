@@ -22,6 +22,7 @@ package org.olat.course.learningpath;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeProvider;
 import org.olat.repository.RepositoryEntry;
@@ -36,7 +37,7 @@ public interface LearningPathNodeHandler extends CourseNodeProvider {
 	
 	public boolean isSupported();
 	
-	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode);
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode, INode parent);
 	
 	public LearningPathConfigs getConfigs(CourseNode courseNode);
 	

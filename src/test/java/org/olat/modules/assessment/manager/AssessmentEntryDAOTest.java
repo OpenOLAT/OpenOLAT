@@ -49,6 +49,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentEntryScoring;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -400,6 +401,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		nodeAssessment.setDuration(duration);
 		AssessmentObligation obligation = AssessmentObligation.optional;
 		nodeAssessment.setObligation(obligation);
+		AssessmentObligation obligationConfig = AssessmentObligation.evaluated;
+		nodeAssessment.setObligationConfig(obligationConfig);
 		AssessmentObligation obligationOriginal = AssessmentObligation.mandatory;
 		nodeAssessment.setObligationOriginal(obligationOriginal);
 		Date obligationModDate = new GregorianCalendar(2014,1,1,1,1,5).getTime();
@@ -417,6 +420,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		assertThat(reloadedEntry.getEndDate().getModBy()).isEqualTo(modIdentity);
 		assertThat(reloadedEntry.getDuration()).isEqualTo(duration);
 		assertThat(reloadedEntry.getObligation().getCurrent()).isEqualTo(obligation);
+		assertThat(reloadedEntry.getObligation().getCurrentConfig()).isEqualTo(obligationConfig);
 		assertThat(reloadedEntry.getObligation().getOriginal()).isEqualTo(obligationOriginal);
 		assertThat(reloadedEntry.getObligation().getModBy()).isEqualTo(modIdentity);
 		assertThat(reloadedEntry.getObligation().getModDate()).isCloseTo(obligationModDate, Duration.ofMinutes(2).toMillis());
@@ -1196,15 +1200,15 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId1);
 		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
 				subIdent, null, null);
-		nodeAssessmentId2.setObligation(Overridable.of(AssessmentObligation.mandatory));
+		nodeAssessmentId2.setObligation(ObligationOverridable.of(AssessmentObligation.mandatory));
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId2);
 		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry,
 				subIdent, null, null);
-		nodeAssessmentId3.setObligation(Overridable.of(AssessmentObligation.optional));
+		nodeAssessmentId3.setObligation(ObligationOverridable.of(AssessmentObligation.optional));
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId3);
 		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry,
 				subIdent, null, null);
-		nodeAssessmentId4.setObligation(Overridable.of(AssessmentObligation.excluded));
+		nodeAssessmentId4.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId4);
 		dbInstance.commitAndCloseSession();
 		

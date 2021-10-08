@@ -277,11 +277,11 @@ public class BulkChangeController extends FormBasicController {
 			learningPathConfigs.setDuration(duration);
 		}
 		
-		if (isEnabled(obligationEl)) {
-			AssessmentObligation obligation = obligationEl.isOneSelected()
-					? AssessmentObligation.valueOf(obligationEl.getSelectedKey())
-					: LearningPathConfigs.OBLIGATION_DEFAULT;
-			learningPathConfigs.setObligation(obligation);
+		if (isEnabled(obligationEl) && obligationEl.isOneSelected() ) {
+			AssessmentObligation obligation = AssessmentObligation.valueOf(obligationEl.getSelectedKey());
+			if (learningPathConfigs.getAvailableObligations().contains(obligation)) {
+				learningPathConfigs.setObligation(obligation);
+			}
 		}
 	}
 

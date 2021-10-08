@@ -50,7 +50,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.CodeHelper;
@@ -109,7 +108,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private TextElement scoreCutEl;
 	
 	private CloseableModalController cmc;
-	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ExceptionalObligationController exceptionalObligationCreateCtrl;
 
 	private final RepositoryEntry courseEntry;
@@ -136,6 +134,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				: LearningPathConfigs.OBLIGATION_DEFAULT;
 		
 		initForm(ureq);
+		updateUI();
 		loadExceptionalObligations();
 	}
 
@@ -224,8 +223,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		scoreCutEl.setMandatory(true);
 		
 		uifactory.addFormSubmitButton("save", formLayout);
-		
-		updateUI();
 	}
 
 	private void addHandlerToDropdown(DropdownItem dropdown, ExceptionalObligationHandler handler) {
@@ -463,10 +460,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(exceptionalObligationCreateCtrl);
-		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		exceptionalObligationCreateCtrl = null;
-		toolsCalloutCtrl = null;
 		cmc = null;
 	}
 

@@ -46,7 +46,7 @@ public class PostMigrationVisitor implements Visitor {
 			LearningPathNodeHandler lpHandler = registry.getLearningPathNodeHandler(courseNode);
 			lpHandler.onMigrated(courseNode);
 			// Learning path configs have to be initialized like a new course node
-			lpHandler.updateDefaultConfigs(courseNode, true);
+			lpHandler.updateDefaultConfigs(courseNode, true, node.getParent());
 		}
 	}
 

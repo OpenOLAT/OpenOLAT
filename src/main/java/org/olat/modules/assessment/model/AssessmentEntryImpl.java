@@ -46,6 +46,7 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.repository.RepositoryEntry;
 
@@ -146,10 +147,13 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_identity_end_date_mod", nullable=true, insertable=true, updatable=true)
 	private Identity endDateModificationIdentity;
-	private transient Overridable<AssessmentObligation> obligationOverridable;
+	private transient ObligationOverridable obligationOverridable;
 	@Enumerated(EnumType.STRING)
 	@Column(name="a_obligation", nullable=true, insertable=true, updatable=true)
 	private AssessmentObligation obligation;
+	@Enumerated(EnumType.STRING)
+	@Column(name="a_obligation_config", nullable=true, insertable=true, updatable=true)
+	private AssessmentObligation obligationConfig;
 	@Enumerated(EnumType.STRING)
 	@Column(name="a_obligation_original", nullable=true, insertable=true, updatable=true)
 	private AssessmentObligation obligationOriginal;
@@ -438,20 +442,28 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	}
 	
 	@Override
-	public Overridable<AssessmentObligation> getObligation() {
+	public ObligationOverridable getObligation() {
 		if (obligationOverridable == null) {
-			obligationOverridable = new OverridableImpl<>(obligation, obligationOriginal, obligationModIdentity, obligationModDate);
+			obligationOverridable = new ObligationOverridableImpl(obligation, obligationConfig, obligationOriginal, obligationModIdentity, obligationModDate);
 		}
 		return obligationOverridable;
 	}
 	
 	@Override
-	public void setObligation(Overridable<AssessmentObligation> obligation) {
+	public void setObligation(ObligationOverridable obligation) {
 		this.obligationOverridable = obligation;
 	}
 
 	public void setObligation(AssessmentObligation obligation) {
 		this.obligation = obligation;
+	}
+
+	public AssessmentObligation getObligationConfig() {
+		return obligationConfig;
+	}
+
+	public void setObligationConfig(AssessmentObligation obligationConfig) {
+		this.obligationConfig = obligationConfig;
 	}
 
 	public AssessmentObligation getObligationOriginal() {

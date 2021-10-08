@@ -36,15 +36,16 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluator;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.assessment.model.AssessmentObligation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,7 +62,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private final CourseConfig courseConfig;
 	private Map<String, AssessmentEntry> identToEntry = new HashMap<>();
 	private final Map<CourseNode, AssessmentEvaluation> courseNodeToEval = new HashMap<>();
-	private ObligationContext obligationContext;
+	private final ExceptionalObligationEvaluator exceptionalObligationEvaluator;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -69,15 +70,21 @@ public class AssessmentAccounting implements ScoreAccounting {
 	public AssessmentAccounting(UserCourseEnvironment userCourseEnvironment) {
 		this.userCourseEnvironment = userCourseEnvironment;
 		this.courseConfig = userCourseEnvironment.getCourseEnvironment().getCourseConfig();
-		this.obligationContext = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnvironment).getType())
+		
+		ObligationContext obligationContext = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnvironment).getType())
 				? new SingleUserObligationContext()
 				: NullObligationContext.create();
+		this.exceptionalObligationEvaluator = new ExceptionalObligationEvaluator(
+				userCourseEnvironment.getIdentityEnvironment().getIdentity(),
+				userCourseEnvironment.getCourseEnvironment().getRunStructure(), this);
+		this.exceptionalObligationEvaluator.setObligationContext(obligationContext);
+	
 		CoreSpringFactory.autowireObject(this);
 	}
 	
 	@Override
 	public void setObligationContext(ObligationContext obligationContext) {
-		this.obligationContext = obligationContext;
+		this.exceptionalObligationEvaluator.setObligationContext(obligationContext);
 	}
 
 	@Override
@@ -168,9 +175,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
-		Overridable<AssessmentObligation> obligation = obligationEvaluator.getObligation(result, courseNode,
-				userCourseEnvironment.getIdentityEnvironment().getIdentity(),
-				userCourseEnvironment.getCourseEnvironment().getRunStructure(), this, obligationContext);
+		ObligationOverridable obligation = obligationEvaluator.getObligation(result, courseNode, exceptionalObligationEvaluator);
 		result.setObligation(obligation);
 		
 		StartDateEvaluator startDateEvaluator = evaluators.getStartDateEvaluator();
@@ -220,7 +225,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setLastUserModified(lastModifications.getLastUserModified());
 		result.setLastCoachModified(lastModifications.getLastCoachModified());
 		
-		obligation = obligationEvaluator.getObligation(result, children);
+		obligation = obligationEvaluator.getObligation(result, courseNode, exceptionalObligationEvaluator, children);
 		result.setObligation(obligation);
 		
 		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();

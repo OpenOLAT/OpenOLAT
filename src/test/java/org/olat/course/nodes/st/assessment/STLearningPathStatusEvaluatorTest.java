@@ -27,7 +27,7 @@ import java.util.List;
 import org.junit.Test;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.Blocker;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -206,7 +206,7 @@ public class STLearningPathStatusEvaluatorTest {
 
 	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, assessmentStatus, null, fullyAssessd, null,
-				null, null, null, null, null, null, 0, null, null, null, null, null, null, Overridable.of(obligation), null,
+				null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null,
 				null, null);
 	}
 

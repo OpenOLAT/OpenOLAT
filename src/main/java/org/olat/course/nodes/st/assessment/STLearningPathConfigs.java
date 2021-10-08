@@ -21,7 +21,10 @@ package org.olat.course.nodes.st.assessment;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.obligation.ExceptionalObligation;
@@ -38,18 +41,47 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class STLearningPathConfigs implements LearningPathConfigs {
 	
-	static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
-
+	private static final Set<AssessmentObligation> AVAILABLE_OBLIGATIONS = 
+			Set.of(AssessmentObligation.evaluated, AssessmentObligation.excluded);
+	
+	static final String CONFIG_VERSION = "lp.st.configversion";
+	static final int VERSION_CURRENT = 1;
+	public static final String CONFIG_LP_SEQUENCE_KEY = "learning.path.sequence";
+	public static final String CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL = "learning.path.sequence.sequential";
+	public static final String CONFIG_LP_SEQUENCE_VALUE_WITHOUT = "learning.path.sequence.without";
+	public static final String CONFIG_LP_SEQUENCE_DEFAULT = CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL;
+	public static final String CONFIG_KEY_OBLIGATION = "lp.obligation";
+	public static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
+	
 	private final ModuleConfiguration moduleConfigs;
 
 	public STLearningPathConfigs(ModuleConfiguration moduleConfigs) {
 		this.moduleConfigs = moduleConfigs;
 	}
+	
+	public void updateDefaults(INode parent) {
+		int version = moduleConfigs.getIntegerSafe(CONFIG_VERSION, 0);
+		
+		if (version < 1) {
+			// CONFIG_LP_SEQUENCE_KEY was set in STCourseNode.updateModuleConfigDefaults()
+			// in the past (even for not lp nodes)
+			if (!moduleConfigs.has(CONFIG_LP_SEQUENCE_KEY)) {
+				STCourseNode stParent = STCourseNode.getFirstSTParent(parent);
+				String sequence = stParent != null
+						? stParent.getModuleConfiguration().getStringValue(CONFIG_LP_SEQUENCE_KEY, CONFIG_LP_SEQUENCE_DEFAULT)
+						: CONFIG_LP_SEQUENCE_DEFAULT;
+				moduleConfigs.setStringValue(CONFIG_LP_SEQUENCE_KEY, sequence);
+			}
+			moduleConfigs.set(CONFIG_KEY_OBLIGATION, AssessmentObligation.evaluated.name());
+		}
+		
+		moduleConfigs.setIntValue(CONFIG_VERSION, VERSION_CURRENT);
+	}
 
 	@Override
 	public Boolean hasSequentialChildren() {
-		String sequenceConfig = moduleConfigs.getStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY);
-		return STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL.equals(sequenceConfig);
+		String sequenceConfig = moduleConfigs.getStringValue(CONFIG_LP_SEQUENCE_KEY);
+		return CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL.equals(sequenceConfig);
 	}
 	
 	@Override
@@ -63,13 +95,25 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public Set<AssessmentObligation> getAvailableObligations() {
+		return AVAILABLE_OBLIGATIONS;
+	}
+
+	@Override
 	public AssessmentObligation getObligation() {
-		return null;
+		String config = moduleConfigs.getStringValue(CONFIG_KEY_OBLIGATION);
+		return StringHelper.containsNonWhitespace(config)
+				? AssessmentObligation.valueOf(config)
+				: AssessmentObligation.evaluated;
 	}
 
 	@Override
 	public void setObligation(AssessmentObligation obligation) {
-		//
+		if (obligation != null) {
+			moduleConfigs.setStringValue(CONFIG_KEY_OBLIGATION, obligation.name());
+		} else {
+			moduleConfigs.remove(CONFIG_KEY_OBLIGATION);
+		}
 	}
 
 	@Override

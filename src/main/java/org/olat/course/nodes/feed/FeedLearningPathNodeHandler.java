@@ -22,6 +22,7 @@ package org.olat.course.nodes.feed;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
@@ -50,7 +51,7 @@ public abstract class FeedLearningPathNodeHandler implements LearningPathNodeHan
 	}
 
 	@Override
-	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode) {
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode, INode parent) {
 		getLearningPathConfigs(courseNode, newNode);
 	}
 

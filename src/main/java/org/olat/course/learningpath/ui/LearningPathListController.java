@@ -203,9 +203,7 @@ public class LearningPathListController extends FormBasicController implements T
 		LearningPathCourseTreeModelBuilder learningPathCourseTreeModelBuilder = new LearningPathCourseTreeModelBuilder(userCourseEnv);
 		if (excludedToggleEl != null) {
 			boolean showExcluded = excludedToggleEl.isKeySelected(KEY_EXCLUDED_SHOW);
-			if (showExcluded) {
-				learningPathCourseTreeModelBuilder.setShowExcluded(showExcluded);
-			}
+			learningPathCourseTreeModelBuilder.setShowExcluded(showExcluded);
 		}
 		GenericTreeModel learningPathTreeModel = learningPathCourseTreeModelBuilder.build();
 		List<LearningPathRow> rows = forgeRows(learningPathTreeModel);
@@ -281,7 +279,7 @@ public class LearningPathListController extends FormBasicController implements T
 	private void forgeObligation(LearningPathRow row) {
 		Overridable<AssessmentObligation> obligation = row.getObligation();
 		
-		if (isObligationOverridable(row)) {
+		if (isObligationOverridableOpenable(row)) {
 			StringBuilder sb = new StringBuilder();
 			if (AssessmentObligation.mandatory == obligation.getCurrent()) {
 				sb.append(translate("config.obligation.mandatory"));
@@ -310,7 +308,7 @@ public class LearningPathListController extends FormBasicController implements T
 		}
 	}
 
-	private boolean isObligationOverridable(LearningPathRow row) {
+	private boolean isObligationOverridableOpenable(LearningPathRow row) {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(row.getCourseNode());
 		if (!assessmentConfig.isObligationOverridable()) {
 			return false;

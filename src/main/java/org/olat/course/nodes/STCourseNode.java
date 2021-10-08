@@ -107,10 +107,6 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	private static final String ICON_CSS_CLASS = "o_st_icon";
 	
 	private static final int CURRENT_VERSION = 6;
-	public static final String CONFIG_LP_SEQUENCE_KEY = "learning.path.sequence";
-	public static final String CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL = "learning.path.sequence.sequential";
-	public static final String CONFIG_LP_SEQUENCE_VALUE_WITHOUT = "learning.path.sequence.without";
-	public static final String CONFIG_LP_SEQUENCE_DEFAULT = CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL;
 	
 	// Score calculation without conditions.
 	public static final String CONFIG_SCORE_KEY = "score.key";
@@ -418,13 +414,6 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 				config.setConfigurationVersion(4);
 			}
 		}
-		if (config.getConfigurationVersion() < 5) {
-			STCourseNode stParent = getFirstSTParent(parent);
-			String sequence = stParent != null
-					? stParent.getModuleConfiguration().getStringValue(CONFIG_LP_SEQUENCE_KEY, CONFIG_LP_SEQUENCE_DEFAULT)
-					: CONFIG_LP_SEQUENCE_DEFAULT;
-			config.setStringValue(CONFIG_LP_SEQUENCE_KEY, sequence);
-		}
 		if (config.getConfigurationVersion() < 6) {
 			config.set(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_FILTER, STCourseNodeEditController.CONFIG_VALUE_PEEKVIEW_ALL);
 			String childrenFilter = StringHelper.containsNonWhitespace(config.getStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_IDENTS, ""))
@@ -436,7 +425,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 	
-	private STCourseNode getFirstSTParent(INode node) {
+	public static STCourseNode getFirstSTParent(INode node) {
 		if (node != null) {
 			CourseNode courseNode = null;
 			if (node instanceof CourseEditorTreeNode) {

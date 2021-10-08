@@ -40,7 +40,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
@@ -363,17 +363,17 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
 		ae2.setScore(BigDecimal.valueOf(4.0));
 		ae2.setPassed(Boolean.TRUE);
-		ae2.setObligation(Overridable.of(AssessmentObligation.mandatory));
+		ae2.setObligation(ObligationOverridable.of(AssessmentObligation.mandatory));
 		assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
 		ae3.setScore(BigDecimal.valueOf(1.0));
 		ae3.setPassed(Boolean.TRUE);
-		ae3.setObligation(Overridable.of(AssessmentObligation.optional));
+		ae3.setObligation(ObligationOverridable.of(AssessmentObligation.optional));
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, null);
 		ae4.setScore(BigDecimal.valueOf(0.0));
 		ae4.setPassed(Boolean.FALSE);
-		ae4.setObligation(Overridable.of(AssessmentObligation.excluded));
+		ae4.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
 		assessmentEntryDao.updateAssessmentEntry(ae4);
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
@@ -407,13 +407,13 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae1.setObligation(null);
 		assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
-		ae2.setObligation(Overridable.of(AssessmentObligation.mandatory));
+		ae2.setObligation(ObligationOverridable.of(AssessmentObligation.mandatory));
 		assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
-		ae3.setObligation(Overridable.of(AssessmentObligation.optional));
+		ae3.setObligation(ObligationOverridable.of(AssessmentObligation.optional));
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, null);
-		ae4.setObligation(Overridable.of(AssessmentObligation.excluded));
+		ae4.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
 		assessmentEntryDao.updateAssessmentEntry(ae4);
 		
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);

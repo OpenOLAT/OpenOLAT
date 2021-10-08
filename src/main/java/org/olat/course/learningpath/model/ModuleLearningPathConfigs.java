@@ -28,6 +28,7 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.learningpath.FullyAssessedTrigger;
@@ -45,6 +46,9 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	
+	private static final Set<AssessmentObligation> AVAILABLE_OBLIGATIONS = Set.of(AssessmentObligation.mandatory,
+			AssessmentObligation.optional, AssessmentObligation.excluded);
+
 	static final String CONFIG_VERSION = "lp.configversion";
 	static final int VERSION_CURRENT = 1;
 	static final String CONFIG_KEY_DURATION = "duration";
@@ -115,6 +119,11 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public Set<AssessmentObligation> getAvailableObligations() {
+		return AVAILABLE_OBLIGATIONS;
 	}
 
 	@Override

@@ -37,6 +37,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentEntryScoring;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -241,8 +242,9 @@ public class AssessmentEntryDAO {
 			impl.setEndDateOriginal(end.getOriginal());
 			impl.setEndDateModificationIdentity(end.getModBy());
 			impl.setEndDateModificationDate(end.getModDate());
-			Overridable<AssessmentObligation> obligation = nodeAssessment.getObligation();
+			ObligationOverridable obligation = nodeAssessment.getObligation();
 			impl.setObligation(obligation.getCurrent());
+			impl.setObligationConfig(obligation.getCurrentConfig());
 			impl.setObligationOriginal(obligation.getOriginal());
 			impl.setObligationModIdentity(obligation.getModBy());
 			impl.setObligationModDate(obligation.getModDate());

@@ -757,7 +757,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		}
 		
 		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-		nodeAccessService.updateConfigDefaults(nodeAccessType, this, isNewNode);
+		nodeAccessService.updateConfigDefaults(nodeAccessType, this, isNewNode, parent);
 	}
 	
 	@Override

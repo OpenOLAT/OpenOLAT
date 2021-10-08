@@ -22,6 +22,7 @@ package org.olat.course.learningpath.manager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
@@ -54,7 +55,7 @@ public class UnsupportedLearningPathNodeHandler implements LearningPathNodeHandl
 	}
 
 	@Override
-	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode) {
+	public void updateDefaultConfigs(CourseNode courseNode, boolean newNode, INode parent) {
 		//
 	}
 

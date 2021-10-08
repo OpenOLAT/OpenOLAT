@@ -32,6 +32,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.assessment.STLearningPathConfigs;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -78,8 +79,8 @@ public class GetPassedTest extends OlatTestCase {
 		// Make the course runtime structure
 		Structure runStructure = courseEnv.getRunStructure();
 		STCourseNode root = (STCourseNode)runStructure.getRootNode();
-		root.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
+		root.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL);
 		SPCourseNode sp_0_1 = new SPCourseNode();
 		root.addChild(sp_0_1);
 		// Structure 1
@@ -93,8 +94,8 @@ public class GetPassedTest extends OlatTestCase {
 		st_1_1.addChild(cl_1_1_1);
 		// Structure 2
 		STCourseNode st_2 = new STCourseNode();
-		st_2.getModuleConfiguration().setStringValue(STCourseNode.CONFIG_LP_SEQUENCE_KEY,
-				STCourseNode.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
+		st_2.getModuleConfiguration().setStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY,
+				STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT);
 		root.addChild(st_2);
 		MSCourseNode ms_2_1 = new MSCourseNode();
 		ms_2_1.getModuleConfiguration().setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, true);

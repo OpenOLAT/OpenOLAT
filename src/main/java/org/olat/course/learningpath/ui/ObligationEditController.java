@@ -43,17 +43,20 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.course.CourseFactory;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
-import org.olat.course.learningpath.evaluation.ConfigObligationEvaluator;
+import org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluator;
 import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ObligationEvaluator;
 import org.olat.course.run.scoring.SingleUserObligationContext;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -67,8 +70,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ObligationEditController extends FormBasicController implements Controller {
 	
-	private static final ConfigObligationEvaluator OBLIGATION_EVALUATOR = new ConfigObligationEvaluator();
-	
 	private final Formatter formatter;
 	private StaticTextElement infoEl;
 	private SingleSelection obligationEl;
@@ -76,14 +77,19 @@ public class ObligationEditController extends FormBasicController implements Con
 	private FormLink resetOverwriteLink;
 	
 	private final RepositoryEntry courseEntry;
-	private final UserCourseEnvironment userCourseEnv;
 	private final boolean canEdit;
 	private final LearningPathConfigs learningPathConfigs;
+	private final ObligationEvaluator obligationEvaluator;
 	private final AssessmentEntry assessmentEntry;
-	private final Overridable<AssessmentObligation> obligation;
+	private final ObligationOverridable obligation;
+	private final List<ExceptionalObligation> exceptionalObligations;
+	private AssessmentObligation mostImportantExceptionalObligation;
+	
 	
 	@Autowired
 	private LearningPathService learningPathService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
@@ -93,12 +99,29 @@ public class ObligationEditController extends FormBasicController implements Con
 			CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean canEdit) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.courseEntry = courseEntry;
-		this.userCourseEnv = userCourseEnv;
 		this.canEdit = canEdit;
 		this.learningPathConfigs = learningPathService.getConfigs(courseNode);
+		CourseConfig courseConfig = CourseFactory.loadCourse(courseEntry).getCourseConfig();
+		this.obligationEvaluator = courseAssessmentService.getEvaluators(courseNode, courseConfig).getObligationEvaluator();
 		this.assessmentEntry = assessmentService.loadAssessmentEntry(
 				userCourseEnv.getIdentityEnvironment().getIdentity(), courseEntry, courseNode.getIdent());
 		this.obligation = assessmentEntry.getObligation();
+		
+		ExceptionalObligationEvaluator exceptionalObligationEvaluator = new ExceptionalObligationEvaluator(
+				userCourseEnv.getIdentityEnvironment().getIdentity(),
+				userCourseEnv.getCourseEnvironment().getRunStructure(), userCourseEnv.getScoreAccounting());
+		exceptionalObligationEvaluator.setObligationContext(new SingleUserObligationContext());
+		this.exceptionalObligations = exceptionalObligationEvaluator.filterExceptionalObligations(
+				learningPathConfigs.getExceptionalObligations(),
+				learningPathConfigs.getObligation());
+		if (!exceptionalObligations.isEmpty()) {
+			Set<AssessmentObligation> assessmentObligations = exceptionalObligations.stream()
+					.map(ExceptionalObligation::getObligation)
+					.collect(Collectors.toSet());
+			mostImportantExceptionalObligation = obligationEvaluator
+					.getMostImportantExceptionalObligation(assessmentObligations, learningPathConfigs.getObligation());
+		}
+		
 		this.formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
@@ -108,58 +131,23 @@ public class ObligationEditController extends FormBasicController implements Con
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Default obligation
-		String defaultObligationText = null;
-		switch (learningPathConfigs.getObligation()) {
-		case mandatory:
-			defaultObligationText = translate("override.obligation.default.mandatory");
-			break;
-		case optional:
-			defaultObligationText = translate("override.obligation.default.optional");
-			break;
-		case excluded:
-			defaultObligationText = translate("override.obligation.default.excluded");
-			break;
-		default:
-			break;
-		}
+		String translatedObligation = translateObligation(learningPathConfigs.getObligation());
+		String defaultObligationText = translate("override.obligation.default", translatedObligation);
 		uifactory.addStaticTextElement("default.obligation", null, defaultObligationText, formLayout);
 		
 		// Obligation exceptions
-		List<ExceptionalObligation> exceptionalObligations = OBLIGATION_EVALUATOR.filterExceptionalObligations(
-				userCourseEnv.getIdentityEnvironment().getIdentity(),
-				CourseFactory.loadCourse(courseEntry).getRunStructure(),
-				userCourseEnv.getScoreAccounting(), 
-				learningPathConfigs.getExceptionalObligations(),
-				learningPathConfigs.getObligation(),
-				new SingleUserObligationContext());
-		
 		if (!exceptionalObligations.isEmpty()) {
-			Set<AssessmentObligation> assessmentObligations = exceptionalObligations.stream()
-					.map(ExceptionalObligation::getObligation)
-					.collect(Collectors.toSet());
-			AssessmentObligation mostImportantExceptionalObligation = OBLIGATION_EVALUATOR.getMostImportantExceptionalObligation(assessmentObligations, learningPathConfigs.getObligation());
-			
 			String exeptionalObligationText = exceptionalObligations.stream()
 					.filter(eo -> mostImportantExceptionalObligation == eo.getObligation())
 					.map(this::getDisplayText)
 					.filter(Objects::nonNull)
 					.collect(Collectors.joining("<br>"));
 			
-			String exceptionalObligationLabel = null;
-			switch (mostImportantExceptionalObligation) {
-			case mandatory:
-				exceptionalObligationLabel = "override.obligation.exceptions.mandatory";
-				break;
-			case optional:
-				exceptionalObligationLabel = "override.obligation.exceptions.optional";
-				break;
-			case excluded:
-				exceptionalObligationLabel = "override.obligation.exceptions.excluded";
-				break;
-			default:
-				break;
-			}
-			uifactory.addStaticTextElement(exceptionalObligationLabel, exeptionalObligationText, formLayout);
+			StaticTextElement exceptionalObligationEl = uifactory.addStaticTextElement("override.obligation.exceptions",
+					exeptionalObligationText, formLayout);
+			String exceptionalObligationLabel = translate("override.obligation.exceptions",
+					translateObligation(mostImportantExceptionalObligation));
+			exceptionalObligationEl.setLabel(exceptionalObligationLabel, null, false);
 		}
 		
 		// Override
@@ -175,6 +163,16 @@ public class ObligationEditController extends FormBasicController implements Con
 		resetOverwriteLink = uifactory.addFormLink("override.reset", buttonLayout, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
+	
+	private String translateObligation(AssessmentObligation obligation) {
+		switch (obligation) {
+		case mandatory: return translate("override.obligation.mandatory");
+		case optional: return translate("override.obligation.optional");
+		case excluded: return translate("override.obligation.excluded");
+		case evaluated: return translate("override.obligation.evaluated");
+		default: return "-";
+		}
+	}
 
 	private String getDisplayText(ExceptionalObligation exceptionalObligation) {
 		ExceptionalObligationHandler handler = learningPathService.getExceptionalObligationHandler(exceptionalObligation.getType());
@@ -187,40 +185,32 @@ public class ObligationEditController extends FormBasicController implements Con
 
 	private void updateUI() {
 		boolean overridden = obligation.isOverridden();
+		// getCurrent() may be not evaluated at this point!
+		AssessmentObligation current = obligation.getCurrentConfig() != null? obligation.getCurrentConfig(): obligation.getCurrent();
 		if (overridden) {
 			String[] args = new String[] {
+					translateObligation(current),
 					userManager.getUserDisplayName(obligation.getModBy()),
 					formatter.formatDateAndTime(obligation.getModDate())
-				};
-			String infoText = null;
-			switch (obligation.getCurrent()) {
-			case mandatory:
-				infoText = translate("override.obligation.mandatory.info", args);
-				break;
-			case optional:
-				infoText = translate("override.obligation.optional.info", args);
-				break;
-			case excluded:
-				infoText = translate("override.obligation.excluded.info", args);
-				break;
-			default:
-				break;
-			}
+			};
+			String infoText = translate("override.obligation.info", args);
 			infoEl.setValue(infoText);
 		}
 		
-		AssessmentObligation original = overridden? obligation.getOriginal(): obligation.getCurrent();
+		AssessmentObligation original = overridden ? obligation.getOriginal() : current;
 		SelectionValues obligationKV = new SelectionValues();
-		if (!AssessmentObligation.mandatory.equals(original)) {
+		if ((!AssessmentObligation.mandatory.equals(original)) && learningPathConfigs.getAvailableObligations().contains(AssessmentObligation.mandatory)) {
 			obligationKV.add(new SelectionValue(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
-		} if (!AssessmentObligation.optional.equals(original)) {
+		} if ((!AssessmentObligation.optional.equals(original)) && learningPathConfigs.getAvailableObligations().contains(AssessmentObligation.optional)) {
 			obligationKV.add(new SelectionValue(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
-		} if (!AssessmentObligation.excluded.equals(original)) {
+		} if ((!AssessmentObligation.excluded.equals(original)) && learningPathConfigs.getAvailableObligations().contains(AssessmentObligation.excluded)) {
 			obligationKV.add(new SelectionValue(AssessmentObligation.excluded.name(), translate("config.obligation.excluded")));
+		} if ((!AssessmentObligation.evaluated.equals(original))  && learningPathConfigs.getAvailableObligations().contains(AssessmentObligation.evaluated)) {
+			obligationKV.add(new SelectionValue(AssessmentObligation.evaluated.name(), translate("config.obligation.evaluated")));
 		}
 		obligationEl.setKeysAndValues(obligationKV.keys(), obligationKV.values(), null);
-		if (overridden && obligationEl.containsKey(obligation.getCurrent().name())) {
-			obligationEl.select(obligation.getCurrent().name(), true);
+		if (overridden && obligationEl.containsKey(current.name())) {
+			obligationEl.select(current.name(), true);
 		}
 		
 		infoEl.setVisible(overridden);
