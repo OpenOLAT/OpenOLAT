@@ -60,6 +60,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.filter.impl.ConditionalHtmlCommentsFilterTest.class,
 	org.olat.core.util.filter.impl.XMLValidCharacterFilterTest.class,
 	org.olat.core.util.filter.impl.XMLValidEntityFilterTest.class,
+	org.olat.core.util.sort.AlphaNumericalComparatorTest.class,
 	org.olat.core.helpers.SettingsTest.class,
 	org.olat.core.util.coordinate.LockEntryTest.class,
 	org.olat.core.util.StringHelperTest.class,
