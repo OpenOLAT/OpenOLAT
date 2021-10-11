@@ -1612,9 +1612,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			lockMode = mode;
 			lockStatus = LockStatus.need;
 		} else if(lockResource.getResourceableId().equals(mode.getResource().getResourceableId())) {
-			if(mode.getStatus() == Status.leadtime
-					|| (mode.getStatus() == Status.followup && mode.getEndStatus() == EndStatus.all)
-					|| (mode.getStatus() == Status.followup && mode.getEndStatus() == EndStatus.withoutDisadvantage && !hasDisadvantageCompensation(mode))) {
+			if(mode.getStatus() == Status.leadtime || (mode.getStatus() == Status.followup
+					&& (mode.getEndStatus() == EndStatus.all
+						|| ((mode.getEndStatus() == null || mode.getEndStatus() == EndStatus.withoutDisadvantage) && !hasDisadvantageCompensation(mode))))) {
 				if(assessmentGuardCtrl == null) {
 					lockStatus = LockStatus.need;
 				}
