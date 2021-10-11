@@ -285,11 +285,13 @@ public class FormParticipationListController extends FormBasicController impleme
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, "status");
 		if (statusFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
-			if (!filterValues.isEmpty()) {
+			if (filterValues != null && !filterValues.isEmpty()) {
 				List<FormParticipationSearchParams.Status> status = filterValues.stream()
 						.map(FormParticipationSearchParams.Status::valueOf)
 						.collect(Collectors.toList());
 				params.setStatus(status);
+			} else {
+				params.setStatus(null);
 			}
 		}
 		
