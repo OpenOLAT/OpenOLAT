@@ -32,11 +32,13 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.LobAssessmentItemBuilder;
@@ -53,6 +55,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
@@ -401,7 +404,14 @@ public class CSVToAssessmentItemConverter {
 			switch(type) {
 				case "fib": {
 					FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
+					fibItemBuilder.setQuestionType(QTI21QuestionType.fib);
 					itemBuilder = initFIBAssessmentItemBuilder(fibItemBuilder);
+					break;
+				}
+				case "numerical": {
+					FIBAssessmentItemBuilder numericalItemBuilder = new FIBAssessmentItemBuilder("Numerical", EntryType.numerical, qtiSerializer);
+					numericalItemBuilder.setQuestionType(QTI21QuestionType.numerical);
+					itemBuilder = initFIBAssessmentItemBuilder(numericalItemBuilder);
 					break;
 				}
 				case "mc": {
@@ -689,7 +699,12 @@ public class CSVToAssessmentItemConverter {
 			if (itemBuilder instanceof SimpleChoiceAssessmentItemBuilder) {
 				processChoiceSmc(parts, (SimpleChoiceAssessmentItemBuilder)itemBuilder);
 			} else if(itemBuilder instanceof FIBAssessmentItemBuilder) {
-				processChoiceFib(parts, (FIBAssessmentItemBuilder)itemBuilder);
+				FIBAssessmentItemBuilder fibItemBuilder = (FIBAssessmentItemBuilder)itemBuilder;
+				if(fibItemBuilder.getQuestionType() == QTI21QuestionType.fib) {
+					processChoiceFib(parts, fibItemBuilder);
+				} else if(fibItemBuilder.getQuestionType() == QTI21QuestionType.numerical) {
+					processChoiceNumerical(parts, fibItemBuilder);
+				}
 			} else if(itemBuilder instanceof KPrimAssessmentItemBuilder) {
 				processChoiceKprim(parts, (KPrimAssessmentItemBuilder)itemBuilder);
 			} else if(itemBuilder instanceof MatchAssessmentItemBuilder) {
@@ -782,6 +797,60 @@ public class CSVToAssessmentItemConverter {
 		}
 	}
 	
+	private void processChoiceNumerical(String[] parts, FIBAssessmentItemBuilder fibBuilder) {
+		String firstPart = parts[0].toLowerCase();
+		if("text".equals(firstPart) || "texte".equals(firstPart)) {
+			String text = parts[1];
+			if(questionFragements == null) {
+				questionFragements = new ArrayList<>();
+			}
+			questionFragements.add(text);	
+		} else if(StringHelper.containsNonWhitespace(parts[0])) {
+			double score = parseDouble(parts[0], 1.0d);
+			String correctBlank = parts[1];
+			Double correctNumerical = null;
+
+			String responseId = fibBuilder.generateResponseIdentifier();
+			NumericalEntry numericalEntry = fibBuilder.createNumericalEntry(responseId);
+			if(correctBlank.indexOf(';') >= 0) {
+				String[] values = correctBlank.split("[;]");
+				correctNumerical = parseDouble(values[0]);
+				
+				if(parts.length > 2 && values.length > 2) {
+					String toleranceMode = parts[2];
+					if(ToleranceMode.ABSOLUTE.name().equalsIgnoreCase(toleranceMode)) {
+						BigDecimal solution = new BigDecimal(values[0]);
+						BigDecimal lowerBound = new BigDecimal(values[1]);
+						BigDecimal upperBound = new BigDecimal(values[2]);
+						String upperToleranceString = upperBound.subtract(solution).toString();
+						String lowerToleranceString = solution.subtract(lowerBound).toString();
+						numericalEntry.setLowerTolerance(Double.parseDouble(lowerToleranceString));
+						numericalEntry.setUpperTolerance(Double.parseDouble(upperToleranceString));
+						numericalEntry.setToleranceMode(ToleranceMode.ABSOLUTE);
+					} else if(ToleranceMode.RELATIVE.name().equalsIgnoreCase(toleranceMode)) {
+						Double lowerBound = parseDouble(values[1]);
+						Double upperBound = parseDouble(values[2]);
+						numericalEntry.setToleranceMode(ToleranceMode.RELATIVE);
+						numericalEntry.setLowerTolerance(lowerBound);
+						numericalEntry.setUpperTolerance(upperBound);
+					}
+				}
+			} else {
+				correctNumerical = parseDouble(correctBlank);
+				numericalEntry.setToleranceMode(ToleranceMode.EXACT);
+			}
+			
+			numericalEntry.setSolution(correctNumerical);
+			numericalEntry.setScore(score);
+
+			String entry = "<textEntryInteraction responseIdentifier=\"" + responseId + "\"/>";
+			if(questionFragements == null) {
+				questionFragements = new ArrayList<>();
+			}
+			questionFragements.add(entry);	
+		}
+	}
+	
 	private void processChoiceKprim(String[] parts, KPrimAssessmentItemBuilder kprimBuilder) {
 		String firstPart = parts[0].toLowerCase();
 		String answer = parts[1];
@@ -814,6 +883,16 @@ public class CSVToAssessmentItemConverter {
 				textEntry.addAlternative(values[i], score);
 			}
 		}
+	}
+	
+	private Double parseDouble(String value) {
+		if(StringHelper.containsNonWhitespace(value)) {
+			if(value.indexOf(',') >= 0) {
+				value = value.replace(",", ".");
+			}
+			return Double.valueOf(new BigDecimal(value).doubleValue());
+		}
+		return null;
 	}
 	
 	private double parseDouble(String value, double defaultValue) {

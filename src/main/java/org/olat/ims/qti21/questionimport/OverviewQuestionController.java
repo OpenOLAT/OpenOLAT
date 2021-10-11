@@ -123,6 +123,7 @@ public class OverviewQuestionController extends StepFormBasicController {
 				case sc: return translate("item.type.sc");
 				case mc: return translate("item.type.mc");
 				case fib: return translate("item.type.fib");
+				case numerical: return translate("item.type.numerical");
 				case kprim: return translate("item.type.kprim");
 				case essay: return translate("item.type.essay");
 				case match: return translate("item.type.match");
@@ -138,7 +139,7 @@ public class OverviewQuestionController extends StepFormBasicController {
 		}
 	}
 	
-	public static enum Cols implements FlexiColumnDef {
+	public enum Cols implements FlexiColumnDef {
 		hasError("table.header.status"),
 		type("table.header.type"),
 		title("table.header.title"),

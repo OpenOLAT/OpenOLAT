@@ -473,6 +473,12 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		return questionType;
 	}
 	
+	public void setQuestionType(QTI21QuestionType type) {
+		if(type == QTI21QuestionType.numerical || type == QTI21QuestionType.fib) {
+			this.questionType = type;
+		}
+	}
+	
 	@Override
 	public String getQuestion() {
 		return question;

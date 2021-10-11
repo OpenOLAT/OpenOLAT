@@ -29,9 +29,12 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.test.JunitTestHelper;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
@@ -84,5 +87,51 @@ public class CSVToAssessmentItemConverterTest {
 		TextEntryInteraction textEntry3 = (TextEntryInteraction)threeInteractions.get(2);
 		Assert.assertEquals(Integer.valueOf(4), textEntry3.getExpectedLength());
 	}
+	
+	@Test
+	public void importNumerical() throws IOException {
+		ImportOptions options = new ImportOptions();
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, Locale.ENGLISH, qtiSerializer);
+		try(InputStream inStream = JunitTestHelper.class.getResourceAsStream("file_resources/qti21/import_qti21_numerical.txt")) {
+			String input = IOUtils.toString(inStream, StandardCharsets.UTF_8);
+			converter.parse(input);
+		} catch(IOException e) {
+			throw e;
+		}
+		
+		List<AssessmentItemAndMetadata> itemsAndData = converter.getItems();
+		Assert.assertNotNull(itemsAndData);
+		Assert.assertEquals(1, itemsAndData.size());
+		
+		// first item
+		AssessmentItemAndMetadata item = itemsAndData.get(0);
+		FIBAssessmentItemBuilder builder = (FIBAssessmentItemBuilder)item.getItemBuilder();
+		Assert.assertEquals(3.0d, builder.getMaxScoreBuilder().getScore().doubleValue(), 0.00001);
+		
+		List<Interaction> interactions = builder.getAssessmentItem().getItemBody().findInteractions();
+		Assert.assertEquals(3, interactions.size());
+		
+		// check first
+		TextEntryInteraction textEntry1 = (TextEntryInteraction)interactions.get(0);
+		NumericalEntry numerical1 = (NumericalEntry)builder.getEntry(textEntry1.getResponseIdentifier().toString());
+		Assert.assertEquals(42.0d, numerical1.getSolution(), 0.00001);
+		Assert.assertNull(numerical1.getLowerTolerance());
+		Assert.assertNull(numerical1.getUpperTolerance());
+		Assert.assertEquals(ToleranceMode.EXACT, numerical1.getToleranceMode());
 
+		TextEntryInteraction textEntry2 = (TextEntryInteraction)interactions.get(1);
+		NumericalEntry numerical2 = (NumericalEntry)builder.getEntry(textEntry2.getResponseIdentifier().toString());
+		Assert.assertEquals(1.41d, numerical2.getSolution(), 0.00001);
+		Assert.assertEquals(0.01d, numerical2.getLowerTolerance(), 0.00001);
+		Assert.assertEquals(0.01d, numerical2.getUpperTolerance(), 0.00001);
+		Assert.assertEquals(ToleranceMode.ABSOLUTE, numerical2.getToleranceMode());
+		
+		TextEntryInteraction textEntry3 = (TextEntryInteraction)interactions.get(2);
+		NumericalEntry numerical3 = (NumericalEntry)builder.getEntry(textEntry3.getResponseIdentifier().toString());
+		Assert.assertEquals(20.0d, numerical3.getSolution(), 0.00001);
+		Assert.assertEquals(10.0d, numerical3.getLowerTolerance(), 0.00001);
+		Assert.assertEquals(10.0d, numerical3.getUpperTolerance(), 0.00001);
+		Assert.assertEquals(ToleranceMode.RELATIVE, numerical3.getToleranceMode());
+	}
 }
