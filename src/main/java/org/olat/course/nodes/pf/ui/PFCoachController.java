@@ -304,7 +304,7 @@ public class PFCoachController extends FormBasicController {
 		if(coachedGroups != null) {
 			for(BusinessGroup coachedGroup:coachedGroups) {
 				groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), coachedGroup.getName(),
-						null, "o_icon o_icon_curriculum_element", null, true));
+						null, "o_icon o_icon_group", null, true));
 			}
 		}
 
@@ -329,22 +329,26 @@ public class PFCoachController extends FormBasicController {
 		if(filters == null || filters.isEmpty()) {	
 			rows = pfManager.getParticipants(getIdentity(), pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin());
 		} else {
-			List<String> filterValues = ((FlexiTableExtendedFilter)filters.get(0)).getValues();
-			
-			List<BusinessGroupRef> businessGroups = new ArrayList<>(filters.size());
-			List<CurriculumElementRef> curriculumElements = new ArrayList<>(filters.size());
-			if(filterValues != null) {
-				for(String filterValue:filterValues) {
-					if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
-						String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
-						businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
-					} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
-						String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
-						curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+			FlexiTableExtendedFilter groupFilter = (FlexiTableExtendedFilter)filters.get(0);
+			if(groupFilter.isSelected()) {
+				List<String> filterValues = groupFilter.getValues();
+				List<BusinessGroupRef> businessGroups = new ArrayList<>(filters.size());
+				List<CurriculumElementRef> curriculumElements = new ArrayList<>(filters.size());
+				if(filterValues != null) {
+					for(String filterValue:filterValues) {
+						if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
+							String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
+							businessGroups.add(new BusinessGroupRefImpl(Long.valueOf(key)));
+						} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
+							String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
+							curriculumElements.add(new CurriculumElementRefImpl(Long.valueOf(key)));
+						}
 					}
 				}
+				rows = pfManager.getParticipants(businessGroups, curriculumElements, pfNode, userPropertyHandlers, getLocale(), courseEnv);
+			} else {
+				rows = pfManager.getParticipants(getIdentity(), pfNode, userPropertyHandlers, getLocale(), courseEnv, userCourseEnv.isAdmin());
 			}
-			rows = pfManager.getParticipants(businessGroups, curriculumElements, pfNode, userPropertyHandlers, getLocale(), courseEnv);
 		}
 		
 		tableModel.setObjects(rows);
