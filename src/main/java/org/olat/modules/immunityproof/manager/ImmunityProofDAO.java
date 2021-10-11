@@ -19,9 +19,11 @@
  */
 package org.olat.modules.immunityproof.manager;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -92,6 +94,27 @@ public class ImmunityProofDAO {
 		return results.get(0);
 	}
 	
+	public List<ImmunityProof> getImmunityProofs(Collection<? extends IdentityRef> identityRefs) {
+		StringBuilder sb = new StringBuilder(128);
+		
+		sb.append("select proof from immunityProof as proof")
+		  .append(" inner join fetch proof.identity as ident")
+		  .append(" where ident.key in (:identityKeys)")
+		  .append(" order by ident.key asc, proof.safeDate desc");
+		
+		List<Long> identityKeys = identityRefs.stream()
+				.map(IdentityRef::getKey)
+				.collect(Collectors.toList());
+		List<ImmunityProof> proofs = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ImmunityProof.class)
+				.setParameter("identityKeys", identityKeys)
+				.getResultList();
+		
+		//TODO lectures deduplicated the 
+		
+		return proofs;
+	}
+
 	public void deleteImmunityProof(IdentityRef identityRef) {
 		if (identityRef == null) {
 			return;

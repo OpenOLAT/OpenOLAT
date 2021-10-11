@@ -19,6 +19,7 @@
  */
 package org.olat.modules.assessment.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -458,12 +459,25 @@ public class AssessmentEntryDAO {
 		sb.and().append(" ae.identity.key = :identityKey");
 		sb.and().append(" ae.repositoryEntry.key in (:entryKeys)");
 		
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), AssessmentEntryScoring.class)
-				.setParameter("identityKey", assessedIdentity.getKey())
-				.setParameter("entryKeys", entryKeys)
-				.setFlushMode(FlushModeType.COMMIT)
-				.getResultList();
+		List<Long> entryKeysList = new ArrayList<>(entryKeys);
+		List<AssessmentEntryScoring> assessmentEntries = new ArrayList<>(entryKeys.size());
+		
+		int count = 0;
+		int batch = 5000;
+		do {
+			int toIndex = Math.min(count + batch, entryKeysList.size());
+			List<Long> toLoad = entryKeysList.subList(count, toIndex);
+			List<AssessmentEntryScoring> batchOfEntries = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), AssessmentEntryScoring.class)
+					.setParameter("identityKey", assessedIdentity.getKey())
+					.setParameter("entryKeys", toLoad)
+					.setFlushMode(FlushModeType.COMMIT)
+					.getResultList();
+					
+			assessmentEntries.addAll(batchOfEntries);
+			count += batch;
+		} while(count < entryKeysList.size());
+		return assessmentEntries;
 	}
 
 	public List<AssessmentEntryCompletion> loadAvgCompletionsByIdentities(RepositoryEntry entry, Collection<Long> identityKeys) {
@@ -576,6 +590,7 @@ public class AssessmentEntryDAO {
 		sb.append("          from assessmententry subae");
 		sb.append("         where subae.startDate <= :start");
 		sb.append("       )");
+		sb.append("   and re.status").in(RepositoryEntryStatusEnum.preparationToClosed());
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentEntry.class)

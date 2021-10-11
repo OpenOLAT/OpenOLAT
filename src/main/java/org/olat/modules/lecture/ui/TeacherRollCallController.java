@@ -21,9 +21,11 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
@@ -58,6 +60,10 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofModule;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
@@ -70,6 +76,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallDataModel.RollCols;
 import org.olat.modules.lecture.ui.coach.AbsenceNoticeDetailsCalloutController;
+import org.olat.modules.lecture.ui.component.ImmunityProofLevelCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.event.ReopenLectureBlockEvent;
 import org.olat.user.UserManager;
@@ -118,6 +125,7 @@ public class TeacherRollCallController extends FormBasicController {
 	
 	private int numOfLectures;
 	private List<Identity> participants;
+	private boolean immunoStatusEnabled;
 	
 	@Autowired
 	private UserManager userManager;
@@ -127,6 +135,10 @@ public class TeacherRollCallController extends FormBasicController {
 	private LectureService lectureService;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private ImmunityProofModule immunityProofModule;
+	@Autowired
+	private ImmunityProofService immunityProofService;
 	
 	public TeacherRollCallController(UserRequest ureq, WindowControl wControl,
 			LectureBlock block, List<Identity> participants, RollCallSecurityCallback secCallback, boolean withBack) {
@@ -137,6 +149,7 @@ public class TeacherRollCallController extends FormBasicController {
 		this.participants = participants;
 		this.withBack = withBack;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		immunoStatusEnabled = immunityProofModule.isEnabled() && block.isRunningAt(ureq.getRequestTimestamp());
 		
 		numOfLectures = lectureBlock.getCalculatedLecturesNumber();
 
@@ -207,6 +220,11 @@ public class TeacherRollCallController extends FormBasicController {
 		// table
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		
+		if(immunoStatusEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.immunoStatus,
+					new ImmunityProofLevelCellRenderer(getTranslator())));
+		}
 
 		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -306,21 +324,43 @@ public class TeacherRollCallController extends FormBasicController {
 		for(LectureBlockRollCall rollCall:rollCalls) {
 			rollCallMap.put(rollCall.getIdentity(), rollCall);
 		}
-		
+
+		Map<Long,ImmunityProofLevel> immunoStatusMap = getImmunoLevels();
 		List<TeacherRollCallRow> rows = new ArrayList<>(participants.size());
 		for(Identity participant:participants) {
 			AbsenceNotice notice = notices.stream()
 					.filter(n -> n.getIdentity().equals(participant))
 					.findFirst().orElse(null);
 			LectureBlockRollCall rollCall = rollCallMap.get(participant);
-			rows.add(forgeRow(participant, rollCall, notice));
+			ImmunityProofLevel immunoStatus = immunoStatusMap.get(participant.getKey());
+			rows.add(forgeRow(participant, rollCall, notice, immunoStatus));
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 	}
 	
-	private TeacherRollCallRow forgeRow(Identity participant, LectureBlockRollCall rollCall, AbsenceNotice notice) {
-		TeacherRollCallRow row = new TeacherRollCallRow(rollCall, participant, notice, userPropertyHandlers, getLocale());
+	private Map<Long,ImmunityProofLevel> getImmunoLevels() {
+		Map<Long, ImmunityProofLevel> immunoStatusMap;
+		if(immunoStatusEnabled) {
+			Date date = lectureBlock.getStartDate();
+			List<ImmunityProof> proofs = immunityProofService.getImmunityProofs(participants);
+			Map<Long,ImmunityProof> identityKeyToProof = proofs.stream()
+					.collect(Collectors.toMap(p -> p.getIdentity().getKey(), p -> p, (u, v) -> u));
+			
+			immunoStatusMap = new HashMap<>();
+			for(Identity participant:participants) {
+				ImmunityProof proof = identityKeyToProof.get(participant.getKey());
+				ImmunityProofLevel level = immunityProofService.getImmunityProofLevel(proof, date);
+				immunoStatusMap.put(participant.getKey(), level);	
+			}	
+		} else {
+			immunoStatusMap = Map.of();
+		}
+		return immunoStatusMap;
+	}
+	
+	private TeacherRollCallRow forgeRow(Identity participant, LectureBlockRollCall rollCall, AbsenceNotice notice, ImmunityProofLevel immunoStatus) {
+		TeacherRollCallRow row = new TeacherRollCallRow(rollCall, participant, notice, immunoStatus, userPropertyHandlers, getLocale());
 		int numOfChecks = lectureBlock.isCompulsory() ? numOfLectures : 0;
 		MultipleSelectionElement[] checks = new MultipleSelectionElement[numOfChecks];
 		List<Integer> absences = rollCall == null ? Collections.emptyList() : rollCall.getLecturesAbsentList();

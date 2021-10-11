@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.admin.user.UserShortDescription;
+import org.olat.admin.user.UserShortDescription.Builder;
+import org.olat.admin.user.UserShortDescription.Rows;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,12 +42,17 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofModule;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.ui.component.ImmunityProofLevelCellRenderer;
 import org.olat.user.DisplayPortraitController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -79,6 +86,10 @@ public class SingleParticipantCallController extends FormBasicController {
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private ImmunityProofModule immunityProofModule;
+	@Autowired
+	private ImmunityProofService immunityProofService;
 	
 	public SingleParticipantCallController(UserRequest ureq, WindowControl wControl, LectureBlock lectureBlock,
 			Identity calledIdentity) {
@@ -116,7 +127,9 @@ public class SingleParticipantCallController extends FormBasicController {
 			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, true, false);
 			listenTo(portraitCtr);
 			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
-			UserShortDescription userDescr = new UserShortDescription(ureq, getWindowControl(), calledIdentity);
+			
+			Rows additionalRows = getImmunoRow(ureq);
+			UserShortDescription userDescr = new UserShortDescription(ureq, getWindowControl(), calledIdentity, additionalRows);
 			listenTo(userDescr);
 			layoutCont.getFormItemComponent().put("userDescr", userDescr.getInitialComponent());
 		}
@@ -167,6 +180,16 @@ public class SingleParticipantCallController extends FormBasicController {
 		
 		String i18nCloseKey = numOfChecks == 1 ? "close.lecture.block" : "close.lecture.blocks";
 		closeButton = uifactory.addFormLink("close", i18nCloseKey, null, formLayout, Link.BUTTON);
+	}
+	
+	private Rows getImmunoRow(UserRequest ureq) {
+		Builder rowsBuilder = Rows.builder();
+		if (immunityProofModule.isEnabled() && lectureBlock.isRunningAt(ureq.getRequestTimestamp())) {
+			ImmunityProof proof = immunityProofService.getImmunityProof(calledIdentity);
+			ImmunityProofLevel proofLevel = immunityProofService.getImmunityProofLevel(proof, lectureBlock.getStartDate());
+			rowsBuilder.addRowBefore(translate("immuno.status"), ImmunityProofLevelCellRenderer.renderImmunityProofLevel(proofLevel, getTranslator()));
+		}
+		return rowsBuilder.build();
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.id.User;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -39,6 +40,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class IdentitiesLecturesRollCallTableModel extends DefaultFlexiTableDataModel<IdentityLecturesRollCallsRow> 
 implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 	
+	private static final IdentitiesLecturesCols[] COLS = IdentitiesLecturesCols.values();
+	
 	private final Locale locale;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -49,8 +52,11 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 	}
 	
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<IdentityLecturesRollCallsRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(views);
+		}
 	}
 
 	@Override
@@ -62,8 +68,9 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 	@Override
 	public Object getValueAt(IdentityLecturesRollCallsRow row, int col) {	
 		if(col < IdentitiesLecturesRollCallController.USER_PROPS_OFFSET) {
-			switch(IdentitiesLecturesCols.values()[col]) {
+			switch(COLS[col]) {
 				case tools: return row.getTools();
+				case immunoStatus: return row.getImmunoStatus();
 				default: return "ERROR";
 			}
 		}
@@ -96,7 +103,8 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 	
 	public enum IdentitiesLecturesCols implements FlexiSortableColumnDef {
 		status("table.header.status"),
-		tools("table.header.tools");
+		tools("table.header.tools"),
+		immunoStatus("table.header.immuno.status");
 		
 		private final String i18nKey;
 		

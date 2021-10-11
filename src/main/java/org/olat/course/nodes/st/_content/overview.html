@@ -21,7 +21,7 @@
 			</div>
 		</div>
 		#if($r.isNotEmpty($teaserImageUrl) && !$cover)
-			<div class="o_image $item.colorCategoryCss"><img src="$teaserImageUrl"></div>	
+			<div class="o_image"><img class="$item.colorCategoryCss" src="$teaserImageUrl"></div>
 		#end
 	</div>
 	#if($r.isNotEmpty($item.description))

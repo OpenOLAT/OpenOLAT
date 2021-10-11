@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -58,6 +59,10 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.UserListController;
+import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofModule;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
+import org.olat.modules.immunityproof.ImmunityProofService;
 import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.DailyRollCall;
 import org.olat.modules.lecture.LectureBlock;
@@ -74,6 +79,7 @@ import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.SingleParticipantRollCallsController;
 import org.olat.modules.lecture.ui.coach.IdentitiesLecturesRollCallTableModel.IdentitiesLecturesCols;
+import org.olat.modules.lecture.ui.component.ImmunityProofLevelCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.profile.IdentityProfileController;
 import org.olat.modules.lecture.ui.wizard.AbsenceNotice3LecturesEntriesStep;
@@ -102,6 +108,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	
 	private int counter = 0;
 	private final Formatter format;
+	private final boolean immunoStatusEnabled;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<Identity> participants;
 	private List<LectureBlock> lectureBlocks;
@@ -128,6 +135,10 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	private LectureService lectureService;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private ImmunityProofModule immunityProofModule;
+	@Autowired
+	private ImmunityProofService immunityProofService;
 	
 	public IdentitiesLecturesRollCallController(UserRequest ureq, WindowControl wControl,
 			List<Identity> participants, Map<LectureBlock,List<Identity>> lectureBlocks, LecturesSecurityCallback secCallback) {
@@ -150,6 +161,9 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
+		
+		immunoStatusEnabled = immunityProofModule.isEnabled() && lectureBlocks.keySet().stream()
+				.anyMatch(block -> CalendarUtils.isSameDay(block.getStartDate(), ureq.getRequestTimestamp()));
 
 		initForm(ureq);
 		loadModel();
@@ -186,6 +200,10 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(immunoStatusEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentitiesLecturesCols.immunoStatus,
+					new ImmunityProofLevelCellRenderer(getTranslator())));
+		}
 
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -249,10 +267,12 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		List<LectureBlockRollCall> rollCallList = lectureService.getRollCalls(searchParams);
 		Map<RollCallKey,LectureBlockRollCall> rollCallMap = rollCallList.stream()
 				.collect(Collectors.toMap(r -> new RollCallKey(r.getIdentity().getKey(), r.getLectureBlock().getKey()), r -> r, (u, v) -> u));
+		Map<Long,ImmunityProofLevel> immunoLevels = getImmunoLevels();
 		
 		List<IdentityLecturesRollCallsRow> rows = new ArrayList<>(participants.size());
 		for(Identity participant:participants) {
-			IdentityLecturesRollCallsRow row = forgeRow(participant);
+			ImmunityProofLevel immunoStatus = immunoLevels.get(participant.getKey());
+			IdentityLecturesRollCallsRow row = forgeRow(participant, immunoStatus);
 			List<LectureBlock> participatingLectureBlocks = reversedLectureBlocksMap.get(participant);
 			for(LectureBlock lectureBlock:lectureBlocks) {
 				LectureBlockRollCall rollCall = rollCallMap.get(new RollCallKey(participant.getKey(), lectureBlock.getKey()));
@@ -272,8 +292,24 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		tableEl.reset(true, true, true);
 	}
 	
-	private IdentityLecturesRollCallsRow forgeRow(Identity participant) {
-		IdentityLecturesRollCallsRow row = new IdentityLecturesRollCallsRow(participant);
+	private Map<Long,ImmunityProofLevel> getImmunoLevels() {
+		final Map<Long, ImmunityProofLevel> immunoStatusMap;
+		if(immunoStatusEnabled && !lectureBlocks.isEmpty()) {
+			final Date date = lectureBlocks.get(0).getStartDate();
+			final List<ImmunityProof> proofs = immunityProofService.getImmunityProofs(participants);
+			final Map<Long,ImmunityProof> identityKeyToProof = proofs.stream()
+					.collect(Collectors.toMap(p -> p.getIdentity().getKey(), p -> p, (u, v) -> u));
+			immunoStatusMap = participants.stream().collect(Collectors.toMap(Identity::getKey, participant ->
+				immunityProofService.getImmunityProofLevel(identityKeyToProof.get(participant.getKey()), date)
+			));
+		} else {
+			immunoStatusMap = Map.of();
+		}
+		return immunoStatusMap;
+	}
+	
+	private IdentityLecturesRollCallsRow forgeRow(Identity participant, ImmunityProofLevel immunoStatus) {
+		IdentityLecturesRollCallsRow row = new IdentityLecturesRollCallsRow(participant, immunoStatus);
 
 		String linkName = "tools-" + counter++;
 		FormLink toolsLink = uifactory.addFormLink(linkName, "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);

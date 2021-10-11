@@ -37,6 +37,8 @@ import org.olat.modules.lecture.RollCallSecurityCallback;
  */
 public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<TeacherRollCallRow>
 	implements SortableFlexiTableDataModel<TeacherRollCallRow> {
+	
+	private static final RollCols[] COLS = RollCols.values();
 
 	private final Locale locale;
 	private final RollCallSecurityCallback secCallback;
@@ -62,11 +64,12 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 	@Override
 	public Object getValueAt(TeacherRollCallRow row, int col) {
 		if(col < TeacherRollCallController.USER_PROPS_OFFSET) {
-			switch(RollCols.values()[col]) {
+			switch(COLS[col]) {
 				case status: return row.getRollCallStatusEl();
 				case authorizedAbsence: return row.getAuthorizedAbsenceCont();
 				case comment: return row.getCommentEl();
 				case all: return row.getAllLink();
+				case immunoStatus: return row.getImmunoStatus();
 				default: return null;
 			}
 		} else if(col < TeacherRollCallController.CHECKBOX_OFFSET) {
@@ -87,7 +90,8 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 		status("table.header.status"),
 		authorizedAbsence("table.header.authorized.absence"),
 		comment("table.header.comment"),
-		all("all");
+		all("all"),
+		immunoStatus("table.header.immuno.status");
 		
 		private final String i18nKey;
 		

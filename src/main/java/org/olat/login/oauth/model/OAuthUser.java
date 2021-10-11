@@ -36,6 +36,8 @@ public class OAuthUser {
 	private String lastName;
 	private String institutionalUserIdentifier;
 	private String institutionalName;
+	private String department;
+	private String country;
 	private String lang;
 	
 	public String getId() {
@@ -94,6 +96,22 @@ public class OAuthUser {
 		this.institutionalName = institutionalName;
 	}
 
+	public String getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(String department) {
+		this.department = department;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
 	public String getLang() {
 		return lang;
 	}
@@ -109,6 +127,8 @@ public class OAuthUser {
 			case UserConstants.LASTNAME: return lastName;
 			case UserConstants.INSTITUTIONALUSERIDENTIFIER: return institutionalUserIdentifier;
 			case UserConstants.INSTITUTIONALNAME: return institutionalName;
+			case UserConstants.DEPARTMENT: return department;
+			case UserConstants.COUNTRY: return country;
 			default: return null;
 		}	
 	}

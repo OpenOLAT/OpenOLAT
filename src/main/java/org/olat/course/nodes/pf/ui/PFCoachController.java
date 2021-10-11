@@ -322,7 +322,7 @@ public class PFCoachController extends FormBasicController {
 		if(coachedGroups != null) {
 			for(BusinessGroup coachedGroup:coachedGroups) {
 				groupValues.add(new SelectionValue(BUSINESS_GROUP_PREFIX + coachedGroup.getKey(), coachedGroup.getName(),
-						null, "o_icon o_icon_curriculum_element", null, true));
+						null, "o_icon o_icon_group", null, true));
 			}
 		}
 

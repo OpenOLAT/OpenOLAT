@@ -991,6 +991,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry reDeleted = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		Date before = new GregorianCalendar(2010, 2, 8).getTime();
 		Date start = new GregorianCalendar(2010, 2, 10).getTime();
@@ -1028,13 +1029,20 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		ae3SubOver2.setStartDate(after);
 		assessmentEntryDao.updateAssessmentEntry(ae3SubOver2);
 		
+		// Root is not in results: RepositoryEntry is deleted
+		repositoryService.deleteSoftly(reDeleted, identity3, false, false);
+		AssessmentEntry ae4Root = assessmentEntryDao.createAssessmentEntry(identity2, null, reDeleted, random(), Boolean.TRUE, null);
+		AssessmentEntry ae4SubOver1 = assessmentEntryDao.createAssessmentEntry(identity2, null, reDeleted, random(), Boolean.FALSE, null);
+		ae4SubOver1.setStartDate(before);
+		assessmentEntryDao.updateAssessmentEntry(ae4SubOver1);
+		
 		dbInstance.commitAndCloseSession();
 		
 		List<AssessmentEntry> rootEntries = assessmentEntryDao.getRootEntriesWithStartOverSubEntries(start);
 		
 		assertThat(rootEntries)
 				.contains(ae1Root, ae2Root)
-				.doesNotContain(ae1SubOver1, ae1SubOver2, ae2SubOver1, ae3Root, ae3SubOver1, ae3SubOver2);
+				.doesNotContain(ae1SubOver1, ae1SubOver2, ae2SubOver1, ae3Root, ae3SubOver1, ae3SubOver2, ae4Root, ae4SubOver1);
 	}
 	
 	@Test

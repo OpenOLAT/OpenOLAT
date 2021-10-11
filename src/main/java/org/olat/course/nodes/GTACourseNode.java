@@ -544,6 +544,29 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 				visibleAfter.setTime(visibleAfter.getTime() + context.getDateDifference(getIdent()));
 				config.setDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, visibleAfter);
 			}
+		} else {
+			// Note from 11. Oct 2021: Used by regular copy method and synchers
+			//copy tasks
+			File sourceTaskDirectory = gtaManager.getTasksDirectory(sourceCourse.getCourseEnvironment(), this);
+			File copyTaskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
+			FileUtils.copyDirContentsToDir(sourceTaskDirectory, copyTaskDirectory, false, "copy task course node");
+			
+			File taskDefinitions = new File(sourceTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+			if(taskDefinitions.exists()) {
+				File copyTaskDefinitions = new File(copyTaskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
+				FileUtils.copyFileToFile(taskDefinitions, copyTaskDefinitions, false);
+			}
+			
+			//copy solutions
+			File sourceSolutionsDirectory = gtaManager.getSolutionsDirectory(sourceCourse.getCourseEnvironment(), this);
+			File copySolutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
+			FileUtils.copyDirContentsToDir(sourceSolutionsDirectory, copySolutionsDirectory, false, "copy task course node solutions");
+	
+			File solutionDefinitions = new File(sourceSolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+			if(solutionDefinitions.exists()) {
+				File copySolutionDefinitions = new File(copySolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
+				FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
+			}
 		}
 		
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

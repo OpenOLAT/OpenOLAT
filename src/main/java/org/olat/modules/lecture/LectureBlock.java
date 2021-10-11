@@ -125,5 +125,5 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 	 */
 	public Set<LectureBlockToTaxonomyLevel> getTaxonomyLevels();
 
-
+	public boolean isRunningAt(Date date);
 }

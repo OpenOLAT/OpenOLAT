@@ -409,6 +409,14 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	public void setTaxonomyLevels(Set<LectureBlockToTaxonomyLevel> taxonomyLevels) {
 		this.taxonomyLevels = taxonomyLevels;
 	}
+	
+	@Override
+	@Transient
+	public boolean isRunningAt(Date date) {
+		Date start = getStartDate();
+		Date end = getEndDate();
+		return start != null && start.compareTo(date) <= 0 && end != null && date.compareTo(end) <= 0;
+	}
 
 	@Override
 	public int hashCode() {

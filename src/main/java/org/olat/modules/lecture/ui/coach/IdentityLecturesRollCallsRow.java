@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 
@@ -36,12 +37,14 @@ import org.olat.modules.lecture.LectureBlockRollCall;
 public class IdentityLecturesRollCallsRow {
 	
 	private final Identity identity;
+	private final ImmunityProofLevel immunoStatus;
 	private FormLink tools;
 	
 	private List<IdentityLecturesRollCallPart> parts = new ArrayList<>();
 	
-	public IdentityLecturesRollCallsRow(Identity identity) {
+	public IdentityLecturesRollCallsRow(Identity identity, ImmunityProofLevel immunoStatus) {
 		this.identity = identity;
+		this.immunoStatus = immunoStatus;
 	}
 	
 	public String getIdentityName() {
@@ -54,6 +57,10 @@ public class IdentityLecturesRollCallsRow {
 	
 	public Identity getIdentity() {
 		return identity;
+	}
+
+	public ImmunityProofLevel getImmunoStatus() {
+		return immunoStatus;
 	}
 
 	public FormLink getTools() {

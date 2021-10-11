@@ -185,9 +185,14 @@ public class UserShortDescription extends BasicController {
 
 		private Builder() {
 		}
+		
+		public Builder addRowBefore(String column1, String column2) {
+			rows.add(new Row(column1, column2, true));
+			return this;
+		}
 
 		public Builder addRow(String column1, String column2) {
-			rows.add(new Row(column1, column2));
+			rows.add(new Row(column1, column2, false));
 			return this;
 		}
 
@@ -198,12 +203,18 @@ public class UserShortDescription extends BasicController {
 	
 	public static class Row {
 		
+		private final boolean before;
 		private final String column1;
 		private final String column2;
 		
-		private Row(String column1, String column2) {
+		private Row(String column1, String column2, boolean before) {
 			this.column1 = column1;
 			this.column2 = column2;
+			this.before = before;
+		}
+		
+		public boolean isBefore() {
+			return before;
 		}
 
 		public String getColumn1() {

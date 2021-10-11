@@ -34,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.Util;
+import org.olat.core.util.sort.AlphaNumericalComparator;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -59,7 +60,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  *
  */
 public class AssessmentItemPreviewController extends BasicController {
-	
+
 	private static final String DEBUG_OUTCOMES = "qti21-debug-toucomes-toggle";
 	
 	private boolean showOutcomes = false;
@@ -169,7 +170,9 @@ public class AssessmentItemPreviewController extends BasicController {
 		}
 	}
 	
-	public class IdentifierToStringuifiedValue implements Comparable<IdentifierToStringuifiedValue> {
+	public static class IdentifierToStringuifiedValue implements Comparable<IdentifierToStringuifiedValue> {
+
+		private static final AlphaNumericalComparator alphaNumericalComparator = new AlphaNumericalComparator();
 		
 		private String identifier;
 		private String stringuifiedValue;
@@ -189,7 +192,7 @@ public class AssessmentItemPreviewController extends BasicController {
 
 		@Override
 		public int compareTo(IdentifierToStringuifiedValue o) {
-			return identifier.compareToIgnoreCase(o.getIdentifier());
+			return alphaNumericalComparator.compare(identifier, o.identifier);
 		}	
 	}
 }

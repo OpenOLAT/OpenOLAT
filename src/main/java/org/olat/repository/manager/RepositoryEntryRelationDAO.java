@@ -275,19 +275,27 @@ public class RepositoryEntryRelationDAO {
 	 */
 	public void filterMembership(IdentityRef identity, Collection<Long> entries) {
 		if(entries == null || entries.isEmpty()) return;
-
-		List<Object[]> membershipList = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("filterRepositoryEntryRelationMembership", Object[].class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("repositoryEntryKey", entries)
-				.setFlushMode(FlushModeType.COMMIT)
-				.getResultList();
-
-		Set<Object> memberships = new HashSet<>();
-		for(Object[] membership: membershipList) {
-			memberships.add(membership[0]);
-		}
 		
+		List<Long> entryKeysList = new ArrayList<>(entries);
+		Set<Object> memberships = new HashSet<>();
+		
+		int count = 0;
+		int batch = 5000;
+		do {
+			int toIndex = Math.min(count + batch, entryKeysList.size());
+			List<Long> toLoad = entryKeysList.subList(count, toIndex);
+			List<Object[]> membershipList = dbInstance.getCurrentEntityManager()
+					.createNamedQuery("filterRepositoryEntryRelationMembership", Object[].class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("repositoryEntryKey", toLoad)
+					.setFlushMode(FlushModeType.COMMIT)
+					.getResultList();
+			for(Object[] membership: membershipList) {
+				memberships.add(membership[0]);
+			}
+			count += batch;
+		} while(count < entryKeysList.size());
+
 		for(Iterator<Long> entryIt=entries.iterator(); entryIt.hasNext(); ) {
 			if(!memberships.contains(entryIt.next())) {
 				entryIt.remove();
