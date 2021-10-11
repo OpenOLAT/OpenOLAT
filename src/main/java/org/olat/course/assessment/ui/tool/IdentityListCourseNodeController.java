@@ -152,7 +152,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 	public static final String ALL_TAB_ID = "All";
 
 	private int counter = 0;
-	protected final BusinessGroup group;
 	protected final CourseNode courseNode;
 	protected final RepositoryEntry courseEntry;
 	private final RepositoryEntry referenceEntry;
@@ -205,7 +204,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private AssessmentToolManager assessmentToolManager;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		super(ureq, wControl, "identity_courseelement");
 		this.showTitle = showTitle;
@@ -214,7 +213,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(ContactFormController.class, getLocale(), getTranslator()));		
 		
-		this.group = group;
 		this.courseNode = courseNode;
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
@@ -315,10 +313,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 			layoutCont.contextPut("showTitle", showTitle);
 			layoutCont.contextPut("courseNodeTitle", courseNode.getShortTitle());
 			layoutCont.contextPut("courseNodeCssClass", CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
-		
-			if(group != null) {
-				layoutCont.contextPut("businessGroupName", group.getName());
-			}
 		}
 		
 		String select = isSelectable() ? "select" : null;
@@ -672,24 +666,20 @@ public class IdentityListCourseNodeController extends FormBasicController
 		
 		List<Long> businessGroupKeys = null;
 		List<Long> curriculumElementKeys = null;
-		if(group != null) {
-			businessGroupKeys = List.of(group.getKey());
-		} else {
-			FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, "groups");
-			if(groupsFilter != null) {
-				businessGroupKeys = new ArrayList<>();
-				curriculumElementKeys = new ArrayList<>();
-				List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
-				if(filterValues != null) {
-					for(String filterValue:filterValues) {
-						int index = filterValue.indexOf('-');
-						if(index > 0) {
-							Long key = Long.valueOf(filterValue.substring(index + 1));
-							if(filterValue.startsWith("businessgroup-")) {
-								businessGroupKeys.add(key);
-							} else if(filterValue.startsWith("curriculumelement-")) {
-								curriculumElementKeys.add(key);
-							}
+		FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, "groups");
+		if(groupsFilter != null && groupsFilter.isSelected()) {
+			businessGroupKeys = new ArrayList<>();
+			curriculumElementKeys = new ArrayList<>();
+			List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
+			if(filterValues != null) {
+				for(String filterValue:filterValues) {
+					int index = filterValue.indexOf('-');
+					if(index > 0) {
+						Long key = Long.valueOf(filterValue.substring(index + 1));
+						if(filterValue.startsWith("businessgroup-")) {
+							businessGroupKeys.add(key);
+						} else if(filterValue.startsWith("curriculumelement-")) {
+							curriculumElementKeys.add(key);
 						}
 					}
 				}
@@ -706,18 +696,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 		SearchAssessedIdentityParams params = getSearchParameters();
 		AssessmentToolOptions options = new AssessmentToolOptions();
 		options.setAdmin(assessmentCallback.isAdmin());
-		if(group == null) {
-			if(assessmentCallback.isAdmin()) {
-				options.setNonMembers(params.isNonMembers());
-			} else {
-				List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
-				List<Long> entryIdentityKeys = assessmentToolManager.getIdentityKeys(getIdentity(), params, null);
-				assessedIdentities.removeIf(identity -> !entryIdentityKeys.contains(identity.getKey()));
-				options.setIdentities(assessedIdentities);
-				fillAlternativeToAssessableIdentityList(options, params);
-			}
+		if(assessmentCallback.isAdmin()) {
+			options.setNonMembers(params.isNonMembers());
 		} else {
-			options.setGroup(group);
+			List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
+			List<Long> entryIdentityKeys = assessmentToolManager.getIdentityKeys(getIdentity(), params, null);
+			assessedIdentities.removeIf(identity -> !entryIdentityKeys.contains(identity.getKey()));
+			options.setIdentities(assessedIdentities);
+			fillAlternativeToAssessableIdentityList(options, params);
 		}
 		return options;
 	}

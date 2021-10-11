@@ -192,7 +192,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, getWindowControl());
 		identityListCtrl = courseAssessmentService.getIdentityListController(ureq, bwControl, stackPanel, courseNode, courseEntry,
-				null, coachCourseEnv, toolContainer, assessmentCallback, true);
+				coachCourseEnv, toolContainer, assessmentCallback, true);
 		if(identityListCtrl == null) {
 			mainPanel.setContent(new Panel("empty"));
 		} else {

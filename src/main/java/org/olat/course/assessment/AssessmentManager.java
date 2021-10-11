@@ -315,6 +315,5 @@ public interface AssessmentManager {
 	public List<AssessmentEntry> getAssessmentEntries(BusinessGroup group, CourseNode courseNode);
 	
 	public List<AssessmentEntry> getAssessmentEntries(Identity assessedIdentity);
-
 	
 }
