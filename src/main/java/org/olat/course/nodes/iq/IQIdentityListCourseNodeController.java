@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -72,8 +71,6 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
@@ -137,16 +134,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Autowired
 	private GradingService gradingService;
 	@Autowired
-	private BusinessGroupService groupService;
-	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public IQIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+		super(ureq, wControl, stackPanel, courseEntry, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 		if(stackPanel != null) {
 			stackPanel.addListener(this);
 		}
@@ -490,9 +485,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		AssessmentToolOptions asOptions = getOptions();
 		boolean withNonParticipants = false;
 		List<Identity> identities = asOptions.getIdentities();
-		if (group != null) {
-			identities = groupService.getMembers(group, GroupRoles.participant.toString());
-		} else if (identities != null) {
+		if (identities != null) {
 			identities = asOptions.getIdentities();			
 		} else if (asOptions.isAdmin()) {
 			if(allIfAdmin) {

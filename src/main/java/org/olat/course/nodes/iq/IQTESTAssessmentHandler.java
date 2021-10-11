@@ -43,7 +43,6 @@ import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.group.BusinessGroup;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -126,10 +125,10 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		return new IQIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
+		return new IQIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
 				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 

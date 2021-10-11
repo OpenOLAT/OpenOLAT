@@ -45,7 +45,6 @@ import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.Ident
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -76,9 +75,9 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private MSService msService;
 
 	public MSIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+		super(ureq, wControl, stackPanel, courseEntry, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 
 		flc.contextPut("showTitle", Boolean.valueOf(showTitle));
 		flc.setDirty(true);

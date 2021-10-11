@@ -369,14 +369,14 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		if (getAssessmentHandler(courseNode).hasCustomIdentityList()) {
 			return getAssessmentHandler(courseNode).getIdentityListController(ureq, wControl, stackPanel, courseNode,
-					courseEntry, group, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+					courseEntry, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 		}
-		return new IdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
+		return new IdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
 				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 	
@@ -385,7 +385,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			TooledStackedPanel stackPanel, CourseNode courseNode, UserCourseEnvironment coachCourseEnv) {
 		RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		AssessmentToolSecurityCallback assessmentCallback = createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
-		return getIdentityListController(ureq, wControl, stackPanel, courseNode, courseEntry, null, coachCourseEnv,
+		return getIdentityListController(ureq, wControl, stackPanel, courseNode, courseEntry, coachCourseEnv,
 				new AssessmentToolContainer(), assessmentCallback, false);
 	}
 

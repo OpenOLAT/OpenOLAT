@@ -53,7 +53,6 @@ import org.olat.course.run.scoring.RootPassedEvaluator;
 import org.olat.course.run.scoring.ScoreEvaluator;
 import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -182,10 +181,10 @@ public class STAssessmentHandler implements AssessmentHandler {
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		return new STIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
+		return new STIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
 				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 

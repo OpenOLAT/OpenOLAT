@@ -39,7 +39,6 @@ import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -106,10 +105,10 @@ public class MSAssessmentHandler implements AssessmentHandler {
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		return new MSIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
+		return new MSIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
 				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 

@@ -35,7 +35,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
@@ -52,7 +51,6 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
@@ -75,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeController {
 	
 	private FormLink downloadButton;
-	private FormLink groupAssessmentButton;
+	private FormLink bulkDownloadButton;
 	
 	private GroupAssessmentController assessmentCtrl;
 	private BulkAssessmentToolController bulkAssessmentToolCtrl;
@@ -84,9 +82,9 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	private GTAManager gtaManager;
 
 	public GTAIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup group, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+		super(ureq, wControl, stackPanel, courseEntry, courseNode, coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
 	@Override
@@ -105,16 +103,14 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 
 	@Override
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
+		super.initBulkStatusTools(ureq, formLayout);
+		
 		ModuleConfiguration config =  courseNode.getModuleConfiguration();
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
 			&& (config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD))) {
-
-			if(!coachCourseEnv.isCourseReadOnly() && group != null) {
-				groupAssessmentButton = uifactory.addFormLink("assessment.group.tool", formLayout, Link.BUTTON);
-			}
 
 			initBulkDownloadController(formLayout);
 		} else if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
@@ -130,11 +126,15 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 				initBulkDownloadController(formLayout);
 			}
 		}
-		super.initMultiSelectionTools(ureq, formLayout);
+		super.initBulkEmailTool(ureq, formLayout);
 	}
 	
 	private void initBulkDownloadController(FormLayoutContainer formLayout) {
 		downloadButton = uifactory.addFormLink("bulk.download.title", formLayout, Link.BUTTON);
+		
+		bulkDownloadButton = uifactory.addFormLink("batch.download", "bulk.download.title", null, formLayout, Link.BUTTON);
+		bulkDownloadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+		tableEl.addBatchButton(bulkDownloadButton);
 	}
 	
 	private void initBulkAsssessmentTool(UserRequest ureq, FormLayoutContainer formLayout) {
@@ -193,13 +193,20 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		}
 		super.event(ureq, source, event);
 	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
+		if(fiSrc != bulkDownloadButton && fiSrc != downloadButton) {
+			super.propagateDirtinessToContainer(fiSrc, fe);
+		}
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(downloadButton == source) {
 			doDownload(ureq);
-		} else if(groupAssessmentButton == source) {
-			doOpenAssessmentForm(ureq);
+		} else if(bulkDownloadButton == source) {
+			doBulkDownload(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -231,25 +238,21 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 
 	private void doDownload(UserRequest ureq) {
 		AssessmentToolOptions asOptions = getOptions();
-		OLATResource courseOres = getCourseRepositoryEntry().getOlatResource();
-		
 		ArchiveOptions options = new ArchiveOptions();
-		options.setGroup(asOptions.getGroup());
 		options.setIdentities(asOptions.getIdentities());
-		
-		ArchiveResource resource = new ArchiveResource(courseNode, courseOres, options, getLocale());
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		doDownload(ureq, options);
 	}
 	
-	private void doOpenAssessmentForm(UserRequest ureq) {
-		removeAsListenerAndDispose(assessmentCtrl);
-		
-		assessmentCtrl = new GroupAssessmentController(ureq, getWindowControl(), getCourseRepositoryEntry(), (GTACourseNode)courseNode, group);
-		listenTo(assessmentCtrl);
-		
-		String title = translate("grading");
-		cmc = new CloseableModalController(getWindowControl(), "close", assessmentCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
+	private void doBulkDownload(UserRequest ureq) {
+		List<Identity> identities = getSelectedIdentities(row -> true);
+		ArchiveOptions options = new ArchiveOptions();
+		options.setIdentities(identities);
+		doDownload(ureq, options);
+	}
+	
+	private void doDownload(UserRequest ureq, ArchiveOptions options) {
+		OLATResource courseOres = getCourseRepositoryEntry().getOlatResource();
+		ArchiveResource resource = new ArchiveResource(courseNode, courseOres, options, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 }
