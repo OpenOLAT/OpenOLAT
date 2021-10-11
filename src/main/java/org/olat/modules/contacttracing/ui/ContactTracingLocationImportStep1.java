@@ -191,7 +191,7 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 				
 				String[] columns = line.split(delimiter);
 				
-				if (columns.length != 10) {
+				if (columns.length < 8) {
 					allOk = false;
 					inputEl.setErrorKey("contact.tracing.locations.import.excel.error", new String[] {String.valueOf(i + 1)});
 					break;
@@ -206,8 +206,12 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 				location.setTable(StringHelper.xssScan(columns[5]));
 				location.setSeatNumberEnabled(Arrays.stream(trueArray).anyMatch(columns[6]::contains));
 				location.setAccessibleByGuests(Arrays.stream(trueArray).anyMatch(columns[7]::contains));
-				location.setQrId(StringHelper.xssScan(columns[8]));
-				location.setQrText(StringHelper.xssScan(columns[9]));
+				if (columns.length > 8) {
+					location.setQrId(StringHelper.xssScan(columns[8]));
+				}
+				if (columns.length > 9) {
+					location.setQrText(StringHelper.xssScan(columns[9]));
+				}
 				
 				// If QR ID is empty generate one
 				if (!StringHelper.containsNonWhitespace(location.getQrId())) {
