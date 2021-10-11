@@ -246,7 +246,12 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		});
 
 		if(currentSelectedPane > 0) {
-			tabbedPane.setSelectedPane(ureq, currentSelectedPane);
+			if(currentSelectedPane < tabbedPane.getTabCount()) {
+				tabbedPane.setSelectedPane(ureq, currentSelectedPane);
+			} else {
+				// the last tab can modify the list of tabs
+				tabbedPane.setSelectedPane(ureq, tabbedPane.getTabCount() - 1);
+			}
 		}
 	}
 
