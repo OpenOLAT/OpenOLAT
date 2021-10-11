@@ -326,7 +326,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	/**
 	 * @return The number of tabs
 	 */
-	protected int getTabCount() {
+	public int getTabCount() {
 		return tabPanes.size();
 	}
 
