@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.admin.user.UserShortDescription;
+import org.olat.admin.user.UserShortDescription.Builder;
+import org.olat.admin.user.UserShortDescription.Rows;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -50,6 +53,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.immunityproof.ImmunityProof;
+import org.olat.modules.immunityproof.ImmunityProofModule;
+import org.olat.modules.immunityproof.ImmunityProofService;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
@@ -63,6 +70,7 @@ import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.SingleParticipantRollCallsDataModel.RollCallsCols;
 import org.olat.modules.lecture.ui.coach.AbsenceNoticeDetailsCalloutController;
+import org.olat.modules.lecture.ui.component.ImmunityProofLevelCellRenderer;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.component.LectureBlockTimesCellRenderer;
 import org.olat.user.DisplayPortraitController;
@@ -106,6 +114,10 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private ImmunityProofModule immunityProofModule;
+	@Autowired
+	private ImmunityProofService immunityProofService;
 	
 	public SingleParticipantRollCallsController(UserRequest ureq, WindowControl wControl, Identity calledIdentity,
 			List<LectureBlock> lectureBlocks, List<LectureBlockRollCall> rollCalls) {
@@ -155,7 +167,9 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, true, false);
 			listenTo(portraitCtr);
 			layoutCont.getFormItemComponent().put("portrait", portraitCtr.getInitialComponent());
-			UserShortDescription userDescr = new UserShortDescription(ureq, getWindowControl(), calledIdentity);
+			
+			Rows immunoRow = getImmunoRow(ureq);
+			UserShortDescription userDescr = new UserShortDescription(ureq, getWindowControl(), calledIdentity, immunoRow);
 			listenTo(userDescr);
 			layoutCont.getFormItemComponent().put("userDescr", userDescr.getInitialComponent());
 		}
@@ -201,6 +215,24 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", formLayout);
+	}
+	
+	private Rows getImmunoRow(UserRequest ureq) {
+		Builder rowsBuilder = Rows.builder();
+		if (immunityProofModule.isEnabled()) {
+			ImmunityProofLevel proofLevel = null;
+			for(LectureBlock lectureBlock:lectureBlocks) {
+				if(CalendarUtils.isSameDay(lectureBlock.getStartDate(), ureq.getRequestTimestamp())) {
+					ImmunityProof proof = immunityProofService.getImmunityProof(calledIdentity);
+					proofLevel = immunityProofService.getImmunityProofLevel(proof, lectureBlock.getStartDate());
+					break;
+				}
+			}
+			if(proofLevel != null) {
+				rowsBuilder.addRowBefore(translate("immuno.status"), ImmunityProofLevelCellRenderer.renderImmunityProofLevel(proofLevel, getTranslator()));
+			}
+		}
+		return rowsBuilder.build();
 	}
 	
 	private void loadModel() {

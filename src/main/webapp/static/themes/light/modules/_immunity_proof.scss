@@ -83,6 +83,25 @@
      }
 }
 
+.o_immunity_proof_small_status {
+	padding: 1px 10px;
+	border-radius: $border-radius-small;
+
+	&.validated {
+		color: lighten($o-ip-validated-bg-color, 33%);
+		background-color: $o-ip-validated-bg-color;
+	}
+	
+	&.claimed {
+		color: lighten($o-ip-claimed-bg-color, 45%);
+		background-color: $o-ip-claimed-bg-color;
+	}
+	
+	&.none {
+		color: lighten($o-ip-none-bg-color, 48%);
+		background-color: $o-ip-none-bg-color;
+	}
+}
 
 .o_immunity_proof_state_icon {
 	font-size: 7em;
@@ -127,3 +146,4 @@
 		cursor: default;
 	}
 }
+

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.immunityproof;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -39,6 +40,8 @@ public interface ImmunityProofService {
 	
 	public ImmunityProof getImmunityProof(Identity identity);
 	
+	public List<ImmunityProof> getImmunityProofs(Collection<? extends Identity> identities);
+	
 	public void deleteImmunityProof(Identity identity);
 	
 	public void pruneImmunityProofs(Date pruneUntil);
@@ -50,6 +53,8 @@ public interface ImmunityProofService {
 	public List<ImmunityProof> getAllCertificates();
 	
 	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof);
+	
+	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof, Date atDate);
 	
 	public long getImmunityProofCount();
 	

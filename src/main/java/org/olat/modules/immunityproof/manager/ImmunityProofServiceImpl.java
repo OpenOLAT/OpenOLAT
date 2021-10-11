@@ -19,6 +19,7 @@
  */
 package org.olat.modules.immunityproof.manager;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -81,6 +82,11 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 	}
 
 	@Override
+	public List<ImmunityProof> getImmunityProofs(Collection<? extends Identity> identities) {
+		return immunityProofDAO.getImmunityProofs(identities);
+	}
+
+	@Override
 	public void deleteImmunityProof(Identity identity) {
 		immunityProofDAO.deleteImmunityProof(identity);
 	}
@@ -117,9 +123,14 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 	
 	@Override
 	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof) {
+		return getImmunityProofLevel(immunityProof, new Date());
+	}
+
+	@Override
+	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof, Date atDate) {
 		ImmunityProofLevel level = ImmunityProofLevel.none;
 		
-		if (immunityProof != null && immunityProof.getSafeDate().after(new Date())) {
+		if (immunityProof != null && immunityProof.getSafeDate().after(atDate)) {
 			if (immunityProof.isValidated()) {
 				level = ImmunityProofLevel.validated;
 			} else {

@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.id.Identity;
+import org.olat.modules.immunityproof.ImmunityProofModule.ImmunityProofLevel;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
@@ -46,6 +47,8 @@ public class TeacherRollCallRow extends UserPropertiesRow implements RollCallRow
 	private final AbsenceNotice absenceNotice;
 	private LectureBlockRollCall rollCall;
 	
+	private final ImmunityProofLevel immunoStatus;
+	
 	private FormLink allLink;
 	private FormLink reasonLink;
 	private FormLink noticeLink;
@@ -56,10 +59,11 @@ public class TeacherRollCallRow extends UserPropertiesRow implements RollCallRow
 	private FormLayoutContainer authorizedAbsenceCont;
 	
 	public TeacherRollCallRow(LectureBlockRollCall rollCall, Identity identity, AbsenceNotice absenceNotice,
-			List<UserPropertyHandler> propertyHandlers, Locale locale) {
+			ImmunityProofLevel immunoStatus, List<UserPropertyHandler> propertyHandlers, Locale locale) {
 		super(identity, propertyHandlers, locale);
 		this.identity = identity;
 		this.rollCall = rollCall;
+		this.immunoStatus = immunoStatus;
 		this.absenceNotice = absenceNotice;
 	}
 	
@@ -67,6 +71,10 @@ public class TeacherRollCallRow extends UserPropertiesRow implements RollCallRow
 		return identity;
 	}
 	
+	public ImmunityProofLevel getImmunoStatus() {
+		return immunoStatus;
+	}
+
 	@Override
 	public AbsenceNotice getAbsenceNotice() {
 		return absenceNotice;

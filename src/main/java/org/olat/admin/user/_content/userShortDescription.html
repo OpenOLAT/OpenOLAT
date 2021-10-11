@@ -1,5 +1,13 @@
 <div class="o_userShortDescription" id="$r.getCId()">
 <table class="table table-bordered table-condensed table-striped">
+	#foreach($row in $additionalRows.getRows())
+		#if($r.isTrue($row.before))
+		<tr class="o_prop">
+			<th scope="row">$row.getColumn1()</th>
+			<td>$row.getColumn2()</td>
+		</tr>
+		#end
+	#end
 	#if($r.isNotNull($identityKey) && $r.isNotNull($usernamePosition) && $usernamePosition == "top")
 		#if($r.isNotNull($username))
 		<tr class="o_prop o_username">
@@ -33,10 +41,12 @@
 	</tr>
 	#end
 	#foreach($row in $additionalRows.getRows())
+		#if($r.isFalse($row.before))
 		<tr class="o_prop">
-			<th scope="row">$row.getColumn1()</th>
+			<th scope="row">$row.before $row.getColumn1()</th>
 			<td>$row.getColumn2()</td>
 		</tr>
+		#end
 	#end
 </table>
 </div>
