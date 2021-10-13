@@ -123,14 +123,9 @@ public class ImmunityProofServiceImpl implements ImmunityProofService, UserDataD
 	
 	@Override
 	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof) {
-		return getImmunityProofLevel(immunityProof, new Date());
-	}
-
-	@Override
-	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof, Date atDate) {
 		ImmunityProofLevel level = ImmunityProofLevel.none;
 		
-		if (immunityProof != null && immunityProof.getSafeDate().after(atDate)) {
+		if (immunityProof != null && immunityProof.getSafeDate().after(new Date())) {
 			if (immunityProof.isValidated()) {
 				level = ImmunityProofLevel.validated;
 			} else {
