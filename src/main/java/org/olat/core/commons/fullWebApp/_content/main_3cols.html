@@ -139,9 +139,13 @@ jQuery().ready(function() {
 			var visibleWidth = jQuery('#o_main_left_content').width();
 			if (visibleWidth < realWidth) {
 				var viewPortWidth = jQuery(window).width();
-				if (realWidth < (viewPortWidth - 50)) {			
-					var newEmWidth = Math.ceil(realWidth / 14) + 2;
-					jQuery('#o_main_left').width(newEmWidth + 'em');
+				if (viewPortWidth >= 992) {
+					// Only in non-mobile view: use max 1/3 of content
+					var containerWidth = jQuery('#o_main_container').width();
+					// convert px to em: 1em=14px
+					var newWith = (realWidth > (containerWidth / 4)) ? (containerWidth / 4) : realWidth;
+					var newEmWidth = Math.ceil(newWith / 14) + 2;
+					jQuery('#o_main_left').width(newEmWidth + 'em');					
 				}
 			}
 		}	
