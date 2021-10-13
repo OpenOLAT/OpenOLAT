@@ -186,7 +186,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		Builder rowsBuilder = Rows.builder();
 		if (immunityProofModule.isEnabled() && lectureBlock.isRunningAt(ureq.getRequestTimestamp())) {
 			ImmunityProof proof = immunityProofService.getImmunityProof(calledIdentity);
-			ImmunityProofLevel proofLevel = immunityProofService.getImmunityProofLevel(proof, lectureBlock.getStartDate());
+			ImmunityProofLevel proofLevel = immunityProofService.getImmunityProofLevel(proof);
 			rowsBuilder.addRowBefore(translate("immuno.status"), ImmunityProofLevelCellRenderer.renderImmunityProofLevel(proofLevel, getTranslator()));
 		}
 		return rowsBuilder.build();

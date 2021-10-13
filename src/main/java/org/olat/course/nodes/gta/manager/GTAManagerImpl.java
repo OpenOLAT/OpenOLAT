@@ -279,7 +279,11 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		
 		Path taskDefinitionsPath = Paths.get(FolderConfig.getCanonicalRoot(), courseEnv.getCourseBaseContainer().getRelPath(),
 				"gtasks", cNode.getIdent(), TASKS_DEFINITIONS);
-		XStreamHelper.writeObject(taskDefinitionsXstream, taskDefinitionsPath.toFile(), list);
+		File taskDefinitionsFile = taskDefinitionsPath.toFile();
+		if(!taskDefinitionsFile.getParentFile().exists()) {
+			taskDefinitionsFile.getParentFile().mkdirs();
+		}
+		XStreamHelper.writeObject(taskDefinitionsXstream, taskDefinitionsFile, list);
 	}
 
 	@Override

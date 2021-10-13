@@ -54,8 +54,6 @@ public interface ImmunityProofService {
 	
 	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof);
 	
-	public ImmunityProofLevel getImmunityProofLevel(ImmunityProof immunityProof, Date atDate);
-	
 	public long getImmunityProofCount();
 	
 }

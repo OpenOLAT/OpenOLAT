@@ -21,7 +21,6 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -342,7 +341,6 @@ public class TeacherRollCallController extends FormBasicController {
 	private Map<Long,ImmunityProofLevel> getImmunoLevels() {
 		Map<Long, ImmunityProofLevel> immunoStatusMap;
 		if(immunoStatusEnabled) {
-			Date date = lectureBlock.getStartDate();
 			List<ImmunityProof> proofs = immunityProofService.getImmunityProofs(participants);
 			Map<Long,ImmunityProof> identityKeyToProof = proofs.stream()
 					.collect(Collectors.toMap(p -> p.getIdentity().getKey(), p -> p, (u, v) -> u));
@@ -350,7 +348,7 @@ public class TeacherRollCallController extends FormBasicController {
 			immunoStatusMap = new HashMap<>();
 			for(Identity participant:participants) {
 				ImmunityProof proof = identityKeyToProof.get(participant.getKey());
-				ImmunityProofLevel level = immunityProofService.getImmunityProofLevel(proof, date);
+				ImmunityProofLevel level = immunityProofService.getImmunityProofLevel(proof);
 				immunoStatusMap.put(participant.getKey(), level);	
 			}	
 		} else {

@@ -224,7 +224,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			for(LectureBlock lectureBlock:lectureBlocks) {
 				if(CalendarUtils.isSameDay(lectureBlock.getStartDate(), ureq.getRequestTimestamp())) {
 					ImmunityProof proof = immunityProofService.getImmunityProof(calledIdentity);
-					proofLevel = immunityProofService.getImmunityProofLevel(proof, lectureBlock.getStartDate());
+					proofLevel = immunityProofService.getImmunityProofLevel(proof);
 					break;
 				}
 			}

@@ -295,12 +295,11 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	private Map<Long,ImmunityProofLevel> getImmunoLevels() {
 		final Map<Long, ImmunityProofLevel> immunoStatusMap;
 		if(immunoStatusEnabled && !lectureBlocks.isEmpty()) {
-			final Date date = lectureBlocks.get(0).getStartDate();
 			final List<ImmunityProof> proofs = immunityProofService.getImmunityProofs(participants);
 			final Map<Long,ImmunityProof> identityKeyToProof = proofs.stream()
 					.collect(Collectors.toMap(p -> p.getIdentity().getKey(), p -> p, (u, v) -> u));
 			immunoStatusMap = participants.stream().collect(Collectors.toMap(Identity::getKey, participant ->
-				immunityProofService.getImmunityProofLevel(identityKeyToProof.get(participant.getKey()), date)
+				immunityProofService.getImmunityProofLevel(identityKeyToProof.get(participant.getKey()))
 			));
 		} else {
 			immunoStatusMap = Map.of();
