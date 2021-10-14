@@ -1356,6 +1356,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case wiki: doWiki(ureq); break;
 						case forum: doForum(ureq); break;
 						case documents: doDocuments(ureq); break;
+						case bigbluebutton: doBigBlueButton(ureq); break;
+						case teams: doTeams(ureq); break;
 					}
 					delayedClose = null;
 				} else {
@@ -1562,6 +1564,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				FolderRunController folderCtrl = doCourseFolder(ureq);
 				if(folderCtrl != null) {
 					folderCtrl.activatePath(ureq, BusinessControlFactory.getInstance().getPath(entries.get(0)));
+				}
+			} else if("CourseNode".equals(type)) {
+				// free to stack for the run main controller
+				if(currentToolCtr != null) {
+					toolbarPanel.popController(currentToolCtr);
+					toolControllerDone(ureq);
 				}
 			}
 		}
