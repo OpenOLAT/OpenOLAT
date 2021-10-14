@@ -52,6 +52,9 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.callbacks.FullAccessCallback;
+import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.AsyncExportManager;
@@ -215,13 +218,18 @@ public class CourseLogsArchiveController extends BasicController implements Gene
 		String targetDir = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), course.getCourseTitle()).getPath();
 	
 		String relPath = "";
+		VFSSecurityCallback secCallback;
 		if (targetDir.startsWith(personalFolderDir)) {
 			// that should always be the case
 			relPath = targetDir.substring(personalFolderDir.length()).replace("\\", "/");
 			targetDir = targetDir.substring(0, personalFolderDir.length());
+			secCallback = new FullAccessCallback();
+		} else {
+			secCallback = new ReadOnlyCallback();
 		}
 	
 		VFSContainer targetFolder = new LocalFolderImpl(new File(targetDir));
+		targetFolder.setLocalSecurityCallback(secCallback);
 		FolderRunController bcrun = new FolderRunController(targetFolder, true, ureq, getWindowControl());
 		Component folderComponent = bcrun.getInitialComponent();
 		if (relPath.length()!=0) {
