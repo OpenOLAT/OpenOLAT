@@ -112,6 +112,15 @@ public enum RepositoryEntryStatusEnum {
 		};
 	}
 	
+	public static boolean isInArray(RepositoryEntryStatusEnum val, RepositoryEntryStatusEnum[] array) {
+		for(int i=array.length; i-->0; ) {
+			if(val == array[i]) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public static boolean isValid(String string) {
 		boolean allOk = false;
 		if(StringHelper.containsNonWhitespace(string)) {

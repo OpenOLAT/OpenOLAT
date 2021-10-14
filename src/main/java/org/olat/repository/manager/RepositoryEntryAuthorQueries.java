@@ -413,7 +413,7 @@ public class RepositoryEntryAuthorQueries {
 			if(roles == null) {
 				sb.append(" and membership.role not ").in(OrganisationRoles.guest, OrganisationRoles.invitee, GroupRoles.waiting)
 				  .append(") and (v.allUsers=true or v.bookable=true) and v.status ");
-				if(params.hasStatus()) {
+				if(params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.publishedAndClosed())) {
 					sb.in(params.getStatus());
 				} else {
 					sb.in(RepositoryEntryStatusEnum.publishedAndClosed());
@@ -430,17 +430,20 @@ public class RepositoryEntryAuthorQueries {
 				} 
 				
 				sb.append(" )");
-				  // standard users
-				sb.append("     or (membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
-				  .append("       and (v.allUsers=true or v.bookable=true) and v.status ");
-				if(params.hasStatus()) {
-					sb.in(params.getStatus());
-				} else {
-					sb.in(RepositoryEntryStatusEnum.publishedAndClosed());
-				} 
-				sb.append(" )");
+				
+				// standard users are limited to published and closed
+				if(!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.publishedAndClosed()))) {
+					sb.append("     or (membership.role not ").in(OrganisationRoles.invitee, OrganisationRoles.guest, GroupRoles.waiting)
+					  .append("       and (v.allUsers=true or v.bookable=true) and v.status ");
+					if(params.hasStatus()) {
+						sb.in(params.getStatus());
+					} else {
+						sb.in(RepositoryEntryStatusEnum.publishedAndClosed());
+					} 
+					sb.append(" )");
+				}
 				  
-				if(roles.isAuthor()) {
+				if(roles.isAuthor() && (!params.hasStatus() || (params.hasStatus() && hasOnly(params, RepositoryEntryStatusEnum.reviewToClosed())))) {
 					sb.append(" or ( membership.role ='").append(OrganisationRoles.author).append("'")
 					  .append("   and v.status ");
 					if(params.hasStatus()) {
@@ -448,9 +451,21 @@ public class RepositoryEntryAuthorQueries {
 					} else {
 						sb.in(RepositoryEntryStatusEnum.reviewToClosed());
 					}
-					sb.append(" and (v.canCopy=true or v.canReference=true or v.canDownload=true)").append(" )");
+					sb.append(" and (v.canCopy=true or v.canReference=true or v.canDownload=true))");
 				}
 				sb.append(" ))");
+			}
+		}
+		return true;
+	}
+	
+	private boolean hasOnly(SearchAuthorRepositoryEntryViewParams params, RepositoryEntryStatusEnum[] allowed) {
+		if(!params.hasStatus()) return false;
+		
+		RepositoryEntryStatusEnum[] status = params.getStatus();
+		for(int i=status.length; i-->0; ) {
+			if(!RepositoryEntryStatusEnum.isInArray(status[i], allowed)) {
+				return false;
 			}
 		}
 		return true;
