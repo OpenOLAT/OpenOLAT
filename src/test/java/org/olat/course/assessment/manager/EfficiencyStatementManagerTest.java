@@ -19,20 +19,26 @@
  */
 package org.olat.course.assessment.manager;
 
+import static org.junit.Assert.assertTrue;
+
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -57,6 +63,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EfficiencyStatementManagerTest extends OlatTestCase {
+	
+	private static final Logger log = Tracing.createLoggerFor(EfficiencyStatementManagerTest.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -102,6 +110,83 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertNotNull(statementLight.getLastModified());
 		Assert.assertTrue(statementLight.getPassed());
 		Assert.assertEquals(6.0f, statementLight.getScore(), 0.00001);
+	}
+	
+	@Test
+	public void persistOrLoadOnHighLoad() throws URISyntaxException {
+		RepositoryEntry re = deployTestcourse();
+		
+		//add some members
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("Eff-Part-High-Load-1");
+		repositoryService.addRole(participant, re, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+
+		//make statements
+	   
+		int NUM_OF_THREADS = 20;
+
+		final CountDownLatch finishCount = new CountDownLatch(NUM_OF_THREADS);
+		List<PersistAndLoadThread> threads = new ArrayList<>(NUM_OF_THREADS);
+		for(int i=0; i<NUM_OF_THREADS; i++) {
+			threads.add(new PersistAndLoadThread(participant, re, finishCount));
+		}
+		
+		// remove the participants
+		for(PersistAndLoadThread thread:threads) {
+			thread.start();
+		}
+		
+		// sleep until threads should have terminated/excepted
+		try {
+			finishCount.await(120, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			log.error("", e);
+			Assert.fail();
+		}
+
+		for(PersistAndLoadThread thread:threads) {
+			assertTrue("Subscriber does not exists", thread.isOk());
+		}
+
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private class PersistAndLoadThread extends Thread {
+		
+		private final Identity participant;
+		private final RepositoryEntry re;
+		private final CountDownLatch finishCount;
+		private boolean ok = false;
+		
+		public PersistAndLoadThread(Identity participant, RepositoryEntry re, CountDownLatch finishCount) {
+			this.finishCount = finishCount;
+			this.participant = participant;
+			this.re = re;
+		}
+		
+		public boolean isOk() {
+			return ok;
+		}
+
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(10);
+				UserEfficiencyStatementImpl statement = new UserEfficiencyStatementImpl();
+				statement.setCreationDate(new Date());
+				statement.setLastModified(statement.getCreationDate());
+				statement.setIdentity(participant);
+				statement.setResource(re.getOlatResource());
+				statement.setCourseRepoKey(re.getKey());
+				statement = effManager.persistOrLoad(statement, re, participant);
+				dbInstance.commit();
+				ok = statement != null;
+			} catch (InterruptedException e) {
+				log.error("", e);
+			} finally {
+				finishCount.countDown();
+			}
+		}
 	}
 	
 	@Test
