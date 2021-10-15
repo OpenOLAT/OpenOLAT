@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupQueryParams;
@@ -236,5 +237,13 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 			items.add(item);
 		}
 		return items;
+	}
+
+	@Override
+	protected void doLaunch(UserRequest ureq, BusinessGroup group) {
+		if(isAdmin()) {
+			ureq.getUserSession().putEntry("wild_card_" + group.getKey(), Boolean.TRUE);
+		}
+		super.doLaunch(ureq, group);
 	}
 }

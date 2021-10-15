@@ -378,6 +378,9 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	protected void doLaunch(UserRequest ureq, BusinessGroup group) {	
 		if(tableEl.getSelectedFilterTab() != openGroupsTab
 				|| businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
+			if(isAdmin()) {
+				ureq.getUserSession().putEntry("wild_card_" + group.getKey(), Boolean.TRUE);
+			}
 			super.doLaunch(ureq, group);
 		} else if(tableEl.getSelectedFilterTab() == openGroupsTab) {
 			String businessPath = "[GroupCard:" + group.getKey() + "]";

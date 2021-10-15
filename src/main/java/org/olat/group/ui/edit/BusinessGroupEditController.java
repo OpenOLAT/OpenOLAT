@@ -54,8 +54,10 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.ui.BGControllerFactory;
 import org.olat.group.ui.lifecycle.BusinessGroupStatusController;
@@ -100,6 +102,8 @@ public class BusinessGroupEditController extends BasicController implements Gene
 	private AccessControlModule acModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 
 	/**
 	 * 
@@ -173,8 +177,20 @@ public class BusinessGroupEditController extends BasicController implements Gene
 		String[] title = new String[] { StringHelper.escapeHtml(currBusinessGroup.getName()) };
 		mainVC.contextPut("title", translate("group.edit.title", title));
 		
-		String status = currBusinessGroup.getGroupStatus().name();
-		mainVC.contextPut("status", translate("status." + status));
+		BusinessGroupStatusEnum status = currBusinessGroup.getGroupStatus();
+		
+		String value = translate("status." + status.name());
+		boolean mailSent = false;
+		if(status == BusinessGroupStatusEnum.active) {
+			mailSent = businessGroupLifecycleManager.getInactivationEmailDate(currBusinessGroup) != null;	
+		} else if(status == BusinessGroupStatusEnum.inactive) {
+			mailSent = businessGroupLifecycleManager.getSoftDeleteEmailDate(currBusinessGroup) != null;
+		}
+		
+		if(mailSent) {
+			value += " - " + translate("status.within.reactiontime");
+		}
+		mainVC.contextPut("status", value);
 		mainVC.contextPut("statusCssClass", "o_businessgroup_status_" + status);
 	}
 	
