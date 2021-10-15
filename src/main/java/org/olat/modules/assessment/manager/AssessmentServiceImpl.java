@@ -26,10 +26,11 @@ import java.util.List;
 import javax.persistence.PersistenceException;
 
 import org.apache.logging.log4j.Logger;
-import org.hibernate.exception.ConstraintViolationException;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -70,8 +71,8 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 				dbInstance.commit();
 				assessmentEntry = assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, entryRoot, referenceEntry);
 				dbInstance.commit();
-			} catch(PersistenceException e) {
-				if(e.getCause() instanceof ConstraintViolationException) {
+			} catch(PersistenceException | DBRuntimeException e) {
+				if(PersistenceHelper.isConstraintViolationException(e)) {
 					log.warn("", e);
 					dbInstance.rollback();
 					assessmentEntry = assessmentEntryDao.loadAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent);

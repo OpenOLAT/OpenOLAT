@@ -37,13 +37,14 @@ import java.util.Map;
 import javax.persistence.PersistenceException;
 
 import org.apache.logging.log4j.Logger;
-import org.hibernate.exception.ConstraintViolationException;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -281,13 +282,13 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
 	}
 	
-	private UserEfficiencyStatementImpl persistOrLoad(UserEfficiencyStatementImpl efficiencyProperty, RepositoryEntry entry, Identity identity) {
+	protected UserEfficiencyStatementImpl persistOrLoad(UserEfficiencyStatementImpl efficiencyProperty, RepositoryEntry entry, Identity identity) {
 		try {
 			dbInstance.commit();
 			dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
 			dbInstance.commit();
-		} catch(PersistenceException e) {
-			if(e.getCause() instanceof ConstraintViolationException) {
+		} catch(PersistenceException | DBRuntimeException e) {
+			if(PersistenceHelper.isConstraintViolationException(e)) {
 				log.warn("", e);
 				dbInstance.rollback();
 				efficiencyProperty = getUserEfficiencyStatementFull(entry, identity);
@@ -396,7 +397,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	 * @return Map containing a list of maps that contain the nodeData for this user and course using the
 	 * keys defined in the AssessmentHelper and the title of the course
 	 */
-	public EfficiencyStatement getUserEfficiencyStatementByCourseRepositoryEntry(RepositoryEntry courseRepoEntry, Identity identity){
+	public EfficiencyStatement getUserEfficiencyStatementByCourseRepositoryEntry(RepositoryEntry courseRepoEntry, IdentityRef identity){
 		UserEfficiencyStatementImpl s = getUserEfficiencyStatementFull(courseRepoEntry, identity);
 		if(s == null || s.getStatementXml() == null) {
 			return null;

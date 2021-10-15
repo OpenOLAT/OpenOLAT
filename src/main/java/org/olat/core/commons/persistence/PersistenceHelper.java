@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.hibernate.exception.ConstraintViolationException;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -445,5 +446,17 @@ public class PersistenceHelper {
 		return list.stream()
 			.collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize))
 			.values();
+	}
+	
+	public static boolean isConstraintViolationException(Throwable e) {
+		int count = 0;// prevent some infinite loop
+		do {
+			if(e instanceof ConstraintViolationException) {
+				return true;
+			}
+			e = e.getCause();
+			count++;
+		} while (e != null && count < 10);
+		return false;
 	}
 }

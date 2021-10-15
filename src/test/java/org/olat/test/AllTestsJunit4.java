@@ -222,6 +222,7 @@ import org.junit.runners.Suite;
 	org.olat.course.style.manager.ColorCategoryDAOTest.class,
 	// org.olat.course.statistic.WeeklyStatisticUpdateManagerTest.class,
 	org.olat.modules.assessment.manager.AssessmentEntryDAOTest.class,
+	org.olat.modules.assessment.manager.AssessmentServiceTest.class,
 	org.olat.course.certificate.manager.CertificatesManagerTest.class,
 	org.olat.course.config.CourseConfigManagerImplTest.class,
 	org.olat.course.config.ui.courselayout.CustomConfigManagerTest.class,
