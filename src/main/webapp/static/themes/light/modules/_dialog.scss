@@ -112,10 +112,12 @@ div.o_callout_overlay {
 
 .modal.o_offcanvas_right_modal .modal-dialog {
 	margin: -1px -1px 0 auto;
-	width: 250px;
+	width: 90vw;
+	height: 100vh; 
 	
 	.modal-content {
 		border-radius: 0;
+		min-height: 100%;
 	}
 }
 

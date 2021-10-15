@@ -228,7 +228,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		// num. of entries
 		if(ftE.isNumOfRowsEnabled()) {
-			sb.append("<div>");
+			sb.append("<div class='o_table_rowcount'>");
 			int rowCount = ftE.getTableDataModel().getRowCount();
 			if(rowCount == 1) {
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));

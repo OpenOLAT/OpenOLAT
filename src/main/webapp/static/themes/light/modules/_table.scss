@@ -443,6 +443,10 @@ a.o_orderby, a.o_orderby:hover {
 			display: none;
 		}
 	}
+	
+	.o_table_rowcount {
+		color: $text-muted;
+	}
 }
 
 .o_table_search.o_table_search_extended a.btn.o_table_search_button {
@@ -546,9 +550,8 @@ a.o_orderby, a.o_orderby:hover {
 }
 
 .o_table_filters_and_settings {
-
-	.btn.o_table_reset_filters {
-		width: 100%;
+	.o_button_group.o_reset {
+		margin-top: 0;
 	}
 
 	.o_table_render_types div.form-inline {
@@ -564,8 +567,52 @@ a.o_orderby, a.o_orderby:hover {
 	}
 }
 
-@media (max-width: 720px) {
+/* special styles for mobile view */
+.o_table_modal_settings {
+	ul a {
+		display: flex;
+		flex-wrap: nowrap;
+		align-content: stretch;
+		white-space: nowrap;
+		margin: 1em 0 1em 0;
+	
+		span {
+			flex-grow: 1;
+
+			display: flex;
+			flex-wrap: nowrap;
+			align-content: stretch;
+
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			
+			small {
+				flex-grow: 1;
+				text-align: right;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+				overflow: hidden;				
+				padding: 0 1em 0 1em;
+				/* mysterious fix for vertical alignment with ellipsis */
+				position: relative;
+				bottom: -3px;
+			}
+		}
+		i {
+			flex-grow: 0;
+		}
+	}
+	a+h4, ul+h4 {
+		margin-top: 2em;
+	}
+	
+}
+
+
+@media (max-width: 540px) {
 	.o_table_filters_wrapper.o_collapsed .o_button_group,
+	.o_table_filters_wrapper.o_expanded,
 	.o_table_filters_wrapper.o_table_filters_large_off .o_table_filters_row,
 	.o_table_filters_wrapper.o_table_filters_large_off .o_button_group,
 	.o_table_tools > .btn-group:not(.o_table_settings),
@@ -581,9 +628,15 @@ a.o_orderby, a.o_orderby:hover {
 	.o_table_toolbar .o_table_search input[type='text'] {
 		max-width: 170px;// iPhone SE
 	}
+	
+	.o_table_large_search {
+		/* fix odd alignment on mobile */
+		padding-left: 0px;
+		margin-right: 20px;
+	}
 }
 
-@media (min-width: 720px) {
+@media (min-width: 540px) {
 	.o_table_tools .o_table_settings {
 		display: none;
 	}

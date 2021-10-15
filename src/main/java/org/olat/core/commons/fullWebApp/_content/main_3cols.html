@@ -38,20 +38,44 @@ jQuery().ready(function() {
         handles: 'e',
         containment: '#o_main',
 	    grid: [o_info.emPxFactor, 10000],
+	    start: function() {
+	    	var leftCol = jQuery('#o_main_left');
+			var oldEmWidth = Math.round(leftCol.width() / o_info.emPxFactor);
+			menuState.origWidth=oldEmWidth;
+	    },
 	    stop: function() {
 	    	var leftCol = jQuery('#o_main_left');
 			var newEmWidth = Math.round(leftCol.width() / o_info.emPxFactor);
 			leftCol.width(newEmWidth + 'em');
 			$r.openNoResponseJavaScriptCommand("saveCol1Width"), "newEmWidth", newEmWidth);
+			if (menuState.docked) {
+				## add an indicator that the user understand how to upen the menu again
+				if (newEmWidth <= 2) {
+					jQuery('#o_main_left_toggle').show();				
+					menuState.minimized = true;
+				} else {
+					jQuery('#o_main_left_toggle').hide();								
+					menuState.minimized = false;
+				}				
+			}
 	    }
 	});
 
 	## init offcanvas menu
 	window.menuState = {
+		origWidth : 14,
+		minimized : false,
 		open : true,
 		docked : true			
 	};
 	
+	window.o_restoreMenu = function(duration) {
+		jQuery('#o_main_left_toggle').hide();	
+		menuState.minimized = false;
+		var l = jQuery('#o_main_left');
+		l.transition({'width': menuState.origWidth + 'em'}, duration, function() {});
+		$r.openNoResponseJavaScriptCommand("saveCol1Width"), "newEmWidth", menuState.origWidth);
+	};
 	window.o_showMenu = function(duration) {
 		duration = (typeof duration === "undefined") ? 500 : duration;
 		if (!menuState.open) {
@@ -89,6 +113,7 @@ jQuery().ready(function() {
 					// close menu when something happens on the screen
 					jQuery(document).on('click', '.o_tree_link', o_hideMenu);
 					menuState.docked = false;
+					menuState.minimized = false;
 					o_hideMenu(duration);
 			});							
 		} 
@@ -103,6 +128,7 @@ jQuery().ready(function() {
 				jQuery('#o_main_left_toggle').hide();
 				jQuery(document).off('click', '.o_tree_link', o_hideMenu);
 				menuState.docked = true;
+				o_restoreMenu(100);
 			})			
 		} 
 	};
@@ -117,7 +143,9 @@ jQuery().ready(function() {
 
 	// toggle menu on toggle events
 	jQuery('#o_main_left_toggle').on('click', function() {
-		if (menuState.open) {
+		if (menuState.minimized) {
+			o_restoreMenu(500);
+		} else if (menuState.open) {
 			o_hideMenu(500);
 		} else {
 			o_showMenu(500);
@@ -129,6 +157,11 @@ jQuery().ready(function() {
 	if (jQuery(window).width() < 992 && !(jQuery.support.opacity == false)) {
 		// same breakpoint as bootstrap screen-md, opacity detect IE8
 		o_undockMenu(0);
+	}
+	// init toogle when menu is super small
+	if (Math.round(jQuery('#o_main_left').width() / o_info.emPxFactor) <= 2) {
+		jQuery('#o_main_left_toggle').show();				
+		menuState.minimized = true;
 	}
 	
 	// Adjust width to fit menu content
