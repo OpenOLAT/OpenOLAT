@@ -1,6 +1,8 @@
 <div class="o_table_modal_settings">
 	#if($r.visible("reset.filters"))
-		$r.render("reset.filters")
+		<div class="o_button_group o_reset">
+			$r.render("reset.filters")
+		</div>
 	#end
 	
 	#if($r.visible("sort.settings"))
@@ -28,7 +30,7 @@
 		#end
 		</ul>
 	#end
-	<div class="o_button_group">
+	<div class="o_button_group o_done">
 		$r.render("settings.done")
 	</div>
 </div>
