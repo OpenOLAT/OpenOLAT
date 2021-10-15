@@ -80,7 +80,7 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 	
 	@Override
 	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
-		initButtons(formLayout, ureq, false, true, false);
+		initButtons(formLayout, ureq, false, true, false, false);
 	}
 
 	@Override

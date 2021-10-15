@@ -17,27 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.ui.lifecycle;
+package org.olat.group;
+
+import java.util.Date;
 
 /**
  * 
- * Initial date: 20 sept. 2021<br>
+ * Initial date: 14 oct. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TranslationBundles {
+public interface BusinessGroupLifecycle {
 	
-	private final TranslationBundle subjectBundle;
-	private final TranslationBundle bodyBundle;
+	public BusinessGroupStatusEnum getGroupStatus();
 	
-	public TranslationBundles(TranslationBundle subjectBundle, TranslationBundle bodyBundle) {
-		this.subjectBundle = subjectBundle;
-		this.bodyBundle = bodyBundle;
-	}
+	public Date getLastUsage();
 	
-	public void setVisible(boolean visible) {
-		subjectBundle.setVisible(visible);
-		bodyBundle.setVisible(visible);
-	}
+	/**
+	 * The effective inactivation date, set with the inactive status.
+	 * 
+	 * @return The date where the status inactive was set
+	 */
+	public Date getInactivationDate();
+
+	public Date getInactivationEmailDate();
+
+	public Date getReactivationDate();
+
+	public Date getSoftDeleteEmailDate();
+
+	public Date getSoftDeleteDate();
 
 }

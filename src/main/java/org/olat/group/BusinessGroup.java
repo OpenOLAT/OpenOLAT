@@ -41,7 +41,7 @@ import org.olat.resource.OLATResource;
  *         Comment: All OLAT business group implementation share this interface.
  *         Examples are the buddygroups or the learning groups
  */
-public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateInfo, ModifiedInfo, OLATResourceable {
+public interface BusinessGroup extends BusinessGroupShort, BusinessGroupLifecycle, Persistable, CreateInfo, ModifiedInfo, OLATResourceable {
 
 	/** regular expression to check for valid group names */
 	// commas are not allowed. name is used in course conditions for weak binding
@@ -82,8 +82,6 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	
 	public void setExternalId(String externalId);
 	
-	public BusinessGroupStatusEnum getGroupStatus();
-	
 	public void setGroupStatus(BusinessGroupStatusEnum status);
 	
 	/**
@@ -119,11 +117,6 @@ public interface BusinessGroup extends BusinessGroupShort, Persistable, CreateIn
 	public OLATResource getResource();
 	
 	public Group getBaseGroup();
-
-	/**
-	 * @return last usage of this group
-	 */
-	public Date getLastUsage();
 	
 	public boolean isOwnersVisibleIntern();
 

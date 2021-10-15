@@ -21,6 +21,8 @@ package org.olat.group.ui.lifecycle;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.translator.Translator;
+
 
 /**
  * 
@@ -30,17 +32,17 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
  */
 public class TranslationBundle {
 	
-	private final boolean textArea;
-	private final String i18nKey;
 	private final String labelI18nKey;
+	private final String subjectI18nKey;
+	private final String bodyI18nKey;
 	private final StaticTextElement viewEl;
 	private final FormLink translationLink;
 	
-	public TranslationBundle(String i18nKey, String labelI18nKey, StaticTextElement viewEl, FormLink translationLink, boolean textArea) {
-		this.textArea = textArea;
-		this.i18nKey = i18nKey;
+	public TranslationBundle(String labelI18nKey, String subjectI18nKey, String bodyI18nKey, StaticTextElement viewEl, FormLink translationLink) {
 		this.viewEl = viewEl;
+		this.bodyI18nKey = bodyI18nKey;
 		this.labelI18nKey = labelI18nKey;
+		this.subjectI18nKey = subjectI18nKey;
 		this.translationLink = translationLink;
 	}
 
@@ -48,14 +50,14 @@ public class TranslationBundle {
 		return viewEl;
 	}
 	
-	public boolean isTextArea() {
-		return textArea;
+	public String getSubjectI18nKey() {
+		return subjectI18nKey;
 	}
 
-	public String getI18nKey() {
-		return i18nKey;
+	public String getBodyI18nKey() {
+		return bodyI18nKey;
 	}
-	
+
 	public String getLabelI18nKey() {
 		return labelI18nKey;
 	}
@@ -63,5 +65,10 @@ public class TranslationBundle {
 	public void setVisible(boolean visible) {
 		viewEl.setVisible(visible);
 		translationLink.setVisible(visible);
+	}
+	
+	public void update(Translator translator) {
+		String val = "<strong>" + translator.translate(getSubjectI18nKey()) + "</strong> " + translator.translate(getBodyI18nKey());
+		getViewEl().setValue(val);
 	}
 }

@@ -49,13 +49,13 @@ public class GroupsPage {
 	}
 	
 	public GroupsPage assertOnGroupsPage() {
-		By myGroupsBy = By.cssSelector("div.o_segments a.o_sel_group_all_groups_seg");
+		By myGroupsBy = By.cssSelector("div.o_sel_group_lists");
 		OOGraphene.waitElement(myGroupsBy, browser);
 		return this;
 	}
 	
 	public GroupsPage assertOnMyGroupsSelected() {
-		By myGroupsBy = By.cssSelector("div.o_segments a.btn.btn-primary.o_sel_group_all_groups_seg");
+		By myGroupsBy = By.cssSelector("ul.o_segments a.btn.btn-primary.o_sel_group_my_groups");
 		OOGraphene.waitElement(myGroupsBy, browser);
 		return this;
 	}
@@ -66,7 +66,7 @@ public class GroupsPage {
 	 * @return
 	 */
 	public GroupsPage publishedGroups() {
-		By openGroupsBy = By.className("o_sel_group_open_groups_seg");
+		By openGroupsBy = By.className("o_sel_group_open_groups");
 		browser.findElement(openGroupsBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

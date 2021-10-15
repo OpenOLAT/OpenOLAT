@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.group.BusinessGroupLifecycle;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupShort;
@@ -36,7 +37,7 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
+public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort, BusinessGroupLifecycle {
 	
 	private final Long key;
 	private final Date creationDate;
@@ -49,8 +50,14 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 	private final Integer maxParticipants;
 	private final Boolean waitingListEnabled;
 	private final Boolean autoCloseRanksEnabled;
-	private final BusinessGroupStatusEnum status;
 	private final BusinessGroupManagedFlag[] managedFlags;
+	
+	private final BusinessGroupStatusEnum status;
+	private final Date inactivationDate;
+	private final Date inactivationEmailDate;
+	private final Date reactivationDate;
+	private final Date softDeleteEmailDate;
+	private final Date softDeleteDate;
 	
 	private boolean marked;
 	
@@ -73,7 +80,14 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		waitingListEnabled = businessGroup.getWaitingListEnabled();
 		autoCloseRanksEnabled = businessGroup.getAutoCloseRanksEnabled();
 		maxParticipants = businessGroup.getMaxParticipants();
+		
+		// life cycle
 		status = businessGroup.getGroupStatus();
+		inactivationDate = businessGroup.getInactivationDate();
+		inactivationEmailDate = businessGroup.getInactivationEmailDate();
+		reactivationDate = businessGroup.getReactivationDate();
+		softDeleteDate = businessGroup.getSoftDeleteDate();
+		softDeleteEmailDate = businessGroup.getSoftDeleteEmailDate();
 		
 		String path = "[BusinessGroup:" + businessGroup.getKey() + "]";
 		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
@@ -91,7 +105,14 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		waitingListEnabled = businessGroup.isWaitingListEnabled();
 		autoCloseRanksEnabled = businessGroup.isAutoCloseRanksEnabled();
 		maxParticipants = businessGroup.getMaxParticipants();
+		
+		// life cycle
 		status = businessGroup.getGroupStatus();
+		inactivationDate = businessGroup.getInactivationDate();
+		inactivationEmailDate = businessGroup.getInactivationEmailDate();
+		reactivationDate = businessGroup.getReactivationDate();
+		softDeleteDate = businessGroup.getSoftDeleteDate();
+		softDeleteEmailDate = businessGroup.getSoftDeleteEmailDate();
 		
 		String path = "[BusinessGroup:" + businessGroup.getKey() + "]";
 		url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
@@ -190,10 +211,36 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		this.member = member;
 	}
 	
+	@Override
 	public BusinessGroupStatusEnum getGroupStatus() {
 		return status;
 	}
+
+	@Override
+	public Date getInactivationDate() {
+		return inactivationDate;
+	}
+
+	@Override
+	public Date getInactivationEmailDate() {
+		return inactivationEmailDate;
+	}
+
+	@Override
+	public Date getReactivationDate() {
+		return reactivationDate;
+	}
 	
+	@Override
+	public Date getSoftDeleteEmailDate() {
+		return softDeleteEmailDate;
+	}
+
+	@Override
+	public Date getSoftDeleteDate() {
+		return softDeleteDate;
+	}
+
 	@Override
 	public int hashCode() {
 		return key == null ? -54851 : key.hashCode();

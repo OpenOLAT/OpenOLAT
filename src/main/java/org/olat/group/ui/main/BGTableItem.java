@@ -51,6 +51,10 @@ public class BGTableItem extends BusinessGroupRow {
 	private long numOfOwners;
 	private long numWaiting;
 	
+	private Date plannedInactivationDate;
+	private Date plannedSoftDeleteDate;
+	private Date plannedDeletionDate;
+	
 	public BGTableItem(BusinessGroupRow businessGroup, FormLink markLink, Boolean allowLeave, Boolean allowDelete) {
 		super(businessGroup);
 		this.markLink = markLink;
@@ -172,6 +176,30 @@ public class BGTableItem extends BusinessGroupRow {
 
 	public Boolean getAllowDelete() {
 		return allowDelete;
+	}
+
+	public Date getPlannedInactivationDate() {
+		return plannedInactivationDate;
+	}
+
+	public void setPlannedInactivationDate(Date plannedInactivationDate) {
+		this.plannedInactivationDate = plannedInactivationDate;
+	}
+
+	public Date getPlannedSoftDeleteDate() {
+		return plannedSoftDeleteDate;
+	}
+
+	public void setPlannedSoftDeleteDate(Date plannedSoftDeleteDate) {
+		this.plannedSoftDeleteDate = plannedSoftDeleteDate;
+	}
+
+	public Date getPlannedDeletionDate() {
+		return plannedDeletionDate;
+	}
+
+	public void setPlannedDeletionDate(Date plannedDeletionDate) {
+		this.plannedDeletionDate = plannedDeletionDate;
 	}
 
 	@Override

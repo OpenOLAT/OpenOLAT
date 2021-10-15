@@ -35,6 +35,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
+import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.ui.BGMailHelper;
@@ -51,11 +52,14 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 
 	private MultipleSelectionElement notificationEl;
 	
+	private boolean hasMembers = false;
 	private final BusinessGroupStatusEnum newStatus;
 	private final List<BusinessGroup> groups;
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BusinessGroupModule businessGroupModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -66,6 +70,14 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 		super(ureq, wControl, "confirm_status", Util.createPackageTranslator(BusinessGroupListController.class, ureq.getLocale()));
 		this.newStatus = newStatus;
 		this.groups = groupsToDelete;
+		for(BusinessGroup group:groups) {
+			int numOfMembers = businessGroupService.countMembers(group, GroupRoles.coach.name(), GroupRoles.participant.name());
+			if(numOfMembers > 0) {
+				hasMembers = true;
+				break;
+			}
+		}
+		
 		initForm(ureq);
 	}
 
@@ -81,17 +93,27 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 					layoutCont.contextPut("msg", translate("dialog.modal.bg.inactivate.text.plural", new String[] { names }));
 				}
 			} else if(newStatus == BusinessGroupStatusEnum.trash || newStatus == BusinessGroupStatusEnum.deleted) {
-				layoutCont.contextPut("msg", translate("dialog.modal.bg.delete.text", new String[] { names }));
+				if(groups.size() == 1) {
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.delete.text.singular", new String[] { names }));
+				} else {
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.delete.text.plural", new String[] { names }));
+				}
 			}
 		}
 
 		String[] notifications = new String[] { translate("dialog.modal.bg.mail.text") };
 		notificationEl = uifactory.addCheckboxesHorizontal("notifications", "dialog.modal.bg.mail.text", formLayout, new String[]{ "" },  notifications);
+		notificationEl.setVisible(hasMembers);
+		if((newStatus == BusinessGroupStatusEnum.inactive && businessGroupModule.isMailAfterDeactivation())
+				|| ((newStatus == BusinessGroupStatusEnum.trash || newStatus == BusinessGroupStatusEnum.deleted)
+						&& businessGroupModule.isMailAfterSoftDelete())) {
+			notificationEl.select("", true);
+		}
 
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		String changeKey = "change.status";
 		if(newStatus == BusinessGroupStatusEnum.inactive) {
-			changeKey = "inactivate.group.action";
+			changeKey = "inactivate.group";
 		} else if(newStatus == BusinessGroupStatusEnum.trash || newStatus == BusinessGroupStatusEnum.deleted) {
 			changeKey = "soft.delete.group.action";
 		}
@@ -104,7 +126,7 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 	}
 
 	protected boolean isSendMail() {
-		return notificationEl.isAtLeastSelected(1);
+		return notificationEl.isVisible() && notificationEl.isAtLeastSelected(1);
 	}
 
 	@Override

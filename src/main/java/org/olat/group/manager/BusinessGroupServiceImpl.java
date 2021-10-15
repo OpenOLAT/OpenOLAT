@@ -180,8 +180,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		bg.setDescription(description);
 		bg.setMaxParticipants(maxParticipants);
 		bg.setMinParticipants(minParticipants);
-		bg.setLastUsage(new Date(System.currentTimeMillis()));
-		
+		bg.setLastModified(new Date());
 		//strip
 		if("none".equals(managedFlags) || "".equals(managedFlags)) {
 			managedFlags = null;
@@ -206,12 +205,12 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		
 		Integer previousMaxParticipants = bg.getMaxParticipants();
 		bg.setName(name);
+		bg.setLastModified(new Date());
 		bg.setDescription(description);
 		bg.setMaxParticipants(maxParticipants);
 		bg.setMinParticipants(minParticipants);
 		bg.setWaitingListEnabled(waitingList);
 		bg.setAutoCloseRanksEnabled(autoCloseRanks);
-		bg.setLastUsage(new Date(System.currentTimeMillis()));
 		//auto rank if possible
 
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<>();

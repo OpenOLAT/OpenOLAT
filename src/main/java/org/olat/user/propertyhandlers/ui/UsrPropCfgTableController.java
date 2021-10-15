@@ -46,6 +46,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.InputType;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.SingleKey;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -212,12 +214,11 @@ public class UsrPropCfgTableController extends FormBasicController {
 			String itemname = source.getName();
 			if (itemname.startsWith(FT_NAME_PREFIX_TRANSL)) {
 				// open the singlekeyTranslator-controller callout
-				String key2Translate1 = handler.i18nFormElementLabelKey();
-				String key2Translate2 = handler.i18nColumnDescriptorLabelKey();
-
-				String[] keys2Translate = { key2Translate1, key2Translate2 };
+				SingleKey key2Translate1 = new SingleKey(handler.i18nFormElementLabelKey(), InputType.TEXT_ELEMENT);
+				SingleKey key2Translate2 = new SingleKey(handler.i18nColumnDescriptorLabelKey(), InputType.TEXT_ELEMENT);
+				List<SingleKey>  keys2Translate = List.of(key2Translate1, key2Translate2);
 				singleKeyTrnsCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys2Translate,
-						UserPropertyHandler.class, SingleKeyTranslatorController.InputType.TEXT_ELEMENT, null);
+						UserPropertyHandler.class, null);
 				listenTo(singleKeyTrnsCtrl);
 				removeAsListenerAndDispose(translatorCallout);
 				translatorCallout = new CloseableCalloutWindowController(ureq, getWindowControl(), singleKeyTrnsCtrl.getInitialComponent(),

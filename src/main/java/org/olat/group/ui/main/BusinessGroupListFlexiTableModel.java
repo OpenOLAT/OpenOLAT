@@ -154,10 +154,11 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 					boolean managed = BusinessGroupManagedFlag.isManaged(wrapped.getManagedFlags(), BusinessGroupManagedFlag.resources);
 					return managed ? Boolean.FALSE : Boolean.TRUE;
 				}
-				case status:
-					return wrapped.getGroupStatus();
-				default:
-					return "ERROR";
+				case status: return wrapped.getGroupStatus();
+				case plannedInactivationDate: return wrapped.getPlannedInactivationDate();
+				case plannedSoftDeleteDate: return wrapped.getPlannedSoftDeleteDate();
+				case plannedDeletionDate: return wrapped.getPlannedDeletionDate();
+				default: return "ERROR";
 			}
 		}
 		return null;
@@ -218,7 +219,10 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		card("table.header.businesscard"),
 		externalId("table.header.externalid"),
 		unlink("table.header.unlink"),
-		status("table.header.status");
+		status("table.header.status"),
+		plannedInactivationDate("table.header.planned.inactivation.date"),
+		plannedSoftDeleteDate("table.header.planned.soft.delete.date"),
+		plannedDeletionDate("table.header.planned.deletion.date");
 		
 		private final String i18n;
 		

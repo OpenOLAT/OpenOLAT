@@ -68,6 +68,7 @@ public class ConfirmBusinessGroupStartChangeStatusController extends FormBasicCo
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String i18nAction = "send.mail";
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			String names = BGMailHelper.joinNames(groups);
@@ -77,13 +78,19 @@ public class ConfirmBusinessGroupStartChangeStatusController extends FormBasicCo
 				} else {
 					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.inactivate.text.plural", new String[] { names }));
 				}
+				i18nAction = "inactivate.group.start";
 			} else if(nextStatus == BusinessGroupStatusEnum.trash || nextStatus == BusinessGroupStatusEnum.deleted) {
-				layoutCont.contextPut("msg", translate("dialog.modal.bg.start.delete.text", new String[] { names }));
+				if(groups.size() == 1) {
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.delete.text.singular", new String[] { names }));
+				} else {
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.delete.text.plural", new String[] { names }));
+				}
+				i18nAction = "soft.delete.group.start";
 			}
 		}
 
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("change.status", "send.mail", formLayout);
+		uifactory.addFormSubmitButton("change.status", i18nAction, formLayout);
 	}
 	
 	@Override

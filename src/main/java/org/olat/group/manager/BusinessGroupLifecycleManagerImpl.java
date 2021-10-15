@@ -65,6 +65,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
+import org.olat.group.BusinessGroupLifecycle;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupRef;
@@ -123,17 +124,20 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 	
 	@Override
-	public Date getInactivationDate(BusinessGroup businessGroup) {
+	public Date getInactivationDate(BusinessGroupLifecycle businessGroup) {
 		BusinessGroupStatusEnum status = businessGroup.getGroupStatus();
 		if(status == BusinessGroupStatusEnum.inactive || status == BusinessGroupStatusEnum.deleted || status == BusinessGroupStatusEnum.trash) {
-			return ((BusinessGroupImpl)businessGroup).getInactivationDate();
+			return businessGroup.getInactivationDate();
 		}
 
 		int numOfDaysBeforeDeactivation = businessGroupModule.getNumberOfInactiveDayBeforeDeactivation();
 		Date lastUsage = businessGroup.getLastUsage();
 		Date deactivation = DateUtils.addDays(lastUsage, numOfDaysBeforeDeactivation);
 		
-		if(((BusinessGroupImpl)businessGroup).getReactivationDate() != null) {
+		Date inactivationEmailDate = businessGroup.getInactivationEmailDate();
+		if(inactivationEmailDate != null) {
+			deactivation = DateUtils.addDays(inactivationEmailDate, businessGroupModule.getNumberOfDayBeforeDeactivationMail());
+		} else if(businessGroup.getReactivationDate() != null) {
 			Date reactivation = ((BusinessGroupImpl)businessGroup).getReactivationDate();
 			deactivation = DateUtils.addDays(reactivation, businessGroupModule.getNumberOfDayReactivationPeriod());
 		}
@@ -142,8 +146,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 	
 	@Override
-	public Date getInactivationEmailDate(BusinessGroup businessGroup) {
-		return ((BusinessGroupImpl)businessGroup).getInactivationEmailDate();
+	public Date getInactivationEmailDate(BusinessGroupLifecycle businessGroup) {
+		return businessGroup.getInactivationEmailDate();
 	}
 
 	@Override
@@ -167,25 +171,31 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 
 	@Override
-	public Date getSoftDeleteDate(BusinessGroup businessGroup) {
+	public Date getSoftDeleteDate(BusinessGroupLifecycle businessGroup) {
 		BusinessGroupStatusEnum status = businessGroup.getGroupStatus();
 		if(status == BusinessGroupStatusEnum.active) {
 			return null;
 		}
 		if(status == BusinessGroupStatusEnum.deleted || status == BusinessGroupStatusEnum.trash) {
-			return ((BusinessGroupImpl)businessGroup).getSoftDeleteDate();
+			return businessGroup.getSoftDeleteDate();
 		}
-		
-		long numOfDaysBeforeSoftDelete = businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete();
-		Date inactivationDate = ((BusinessGroupImpl)businessGroup).getInactivationDate();
-		if(inactivationDate != null) {
-			Date now = new Date();
-			long inactiveDays = DateUtils.countDays(inactivationDate, now);
-			
-			long days = numOfDaysBeforeSoftDelete - inactiveDays;
-			return DateUtils.addDays(now, (int)days);
+
+		Date deletionDate = null;
+		Date softDeleteEmailDate = businessGroup.getSoftDeleteEmailDate();
+		if(softDeleteEmailDate != null) {
+			deletionDate = DateUtils.addDays(softDeleteEmailDate, businessGroupModule.getNumberOfDayBeforeSoftDeleteMail());
+		} else {
+			long numOfDaysBeforeSoftDelete = businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete();
+			Date inactivationDate = businessGroup.getInactivationDate();
+			if(inactivationDate != null) {
+				Date now = new Date();
+				long inactiveDays = DateUtils.countDays(inactivationDate, now);
+				
+				long days = numOfDaysBeforeSoftDelete - inactiveDays;
+				deletionDate = DateUtils.addDays(now, (int)days);
+			}
 		}
-		return null;
+		return deletionDate;
 	}
 
 	@Override
@@ -204,14 +214,14 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 
 	@Override
-	public Date getDefinitiveDeleteDate(BusinessGroup businessGroup) {
+	public Date getDefinitiveDeleteDate(BusinessGroupLifecycle businessGroup) {
 		BusinessGroupStatusEnum status = businessGroup.getGroupStatus();
 		if(status != BusinessGroupStatusEnum.trash) {
 			return null;
 		}
 		
 		long numOfDaysBeforeDelete = businessGroupModule.getNumberOfSoftDeleteDayBeforeDefinitivelyDelete();
-		Date softDeleteDate = ((BusinessGroupImpl)businessGroup).getSoftDeleteDate();
+		Date softDeleteDate = businessGroup.getSoftDeleteDate();
 		if(softDeleteDate != null) {
 			Date now = new Date();
 			long softDeleteDays = DateUtils.countDays(now, softDeleteDate);
@@ -303,13 +313,13 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 	
 	private BusinessGroup setBusinessGroupAsInactive(BusinessGroup businessGroup, Identity doer) {
-		businessGroup = changeBusinessGroupStatus(businessGroup, BusinessGroupStatusEnum.inactive, doer);
+		businessGroup = changeBusinessGroupStatus(businessGroup, BusinessGroupStatusEnum.inactive, doer, false);
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_INACTIVATED, getClass(), LoggingResourceable.wrap(businessGroup));
 		return businessGroup;
 	}
 	
 	@Override
-	public BusinessGroup changeBusinessGroupStatus(BusinessGroup businessGroup, BusinessGroupStatusEnum status, Identity doer) {
+	public BusinessGroup changeBusinessGroupStatus(BusinessGroup businessGroup, BusinessGroupStatusEnum status, Identity doer, boolean asOwner) {
 		BusinessGroupImpl reloadedBusinessGroup = (BusinessGroupImpl)businessGroupDao.loadForUpdate(businessGroup);
 		BusinessGroup mergedGroup = null;
 		if(reloadedBusinessGroup != null) {
@@ -317,11 +327,17 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			reloadedBusinessGroup.setGroupStatus(status);
 			if(status == BusinessGroupStatusEnum.active) {
 				reloadedBusinessGroup.setInactivationDate(null);
+				reloadedBusinessGroup.setInactivationEmailDate(null);
 				reloadedBusinessGroup.setInactivatedBy(null);
 				reloadedBusinessGroup.setSoftDeleteDate(null);
+				reloadedBusinessGroup.setSoftDeleteEmailDate(null);
 				reloadedBusinessGroup.setSoftDeletedBy(null);
 				if(BusinessGroupStatusEnum.inactive == previousStatus || BusinessGroupStatusEnum.trash == previousStatus) {
-					reloadedBusinessGroup.setReactivationDate(new Date());
+					if(asOwner) {
+						reloadedBusinessGroup.setLastUsage(new Date());
+					} else {
+						reloadedBusinessGroup.setReactivationDate(new Date());
+					}
 				}
 			} else if(status == BusinessGroupStatusEnum.inactive) {
 				reloadedBusinessGroup.setInactivationDate(new Date());
@@ -460,8 +476,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 
 	@Override
-	public BusinessGroup reactivateBusinessGroup(BusinessGroup businessGroup, Identity doer) {
-		businessGroup = changeBusinessGroupStatus(businessGroup, BusinessGroupStatusEnum.active, doer);
+	public BusinessGroup reactivateBusinessGroup(BusinessGroup businessGroup, Identity doer, boolean asGroupOwner) {
+		businessGroup = changeBusinessGroupStatus(businessGroup, BusinessGroupStatusEnum.active, doer, asGroupOwner);
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_REACTIVATED, getClass(), LoggingResourceable.wrap(businessGroup));
 		return businessGroup;
 	}
@@ -537,7 +553,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 	
 	protected BusinessGroup deleteBusinessGroupSoftly(BusinessGroup businessGroup, Identity deletedBy) {
-		businessGroup = changeBusinessGroupStatus(businessGroup, BusinessGroupStatusEnum.trash, deletedBy);
+		businessGroup = changeBusinessGroupStatus(businessGroup, BusinessGroupStatusEnum.trash, deletedBy, false);
 		
 		List<Long> memberKeys = businessGroupRelationDao
 				.getMemberKeys(Collections.singletonList(businessGroup), GroupRoles.coach.name(), GroupRoles.participant.name());

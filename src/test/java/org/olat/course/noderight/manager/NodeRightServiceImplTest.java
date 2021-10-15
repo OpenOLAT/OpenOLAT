@@ -1318,6 +1318,31 @@ public class NodeRightServiceImplTest {
 		public Date getLastUsage() {
 			return null;
 		}
+		
+		@Override
+		public Date getInactivationDate() {
+			return null;
+		}
+
+		@Override
+		public Date getInactivationEmailDate() {
+			return null;
+		}
+
+		@Override
+		public Date getReactivationDate() {
+			return null;
+		}
+
+		@Override
+		public Date getSoftDeleteEmailDate() {
+			return null;
+		}
+
+		@Override
+		public Date getSoftDeleteDate() {
+			return null;
+		}
 
 		@Override
 		public boolean isOwnersVisibleIntern() {

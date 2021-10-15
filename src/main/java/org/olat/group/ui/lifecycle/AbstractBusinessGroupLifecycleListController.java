@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
 import org.olat.group.model.StatisticsBusinessGroupRow;
@@ -84,16 +85,16 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18nHeaderKey(), Cols.accessTypes.ordinal(),
 				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
 		//launch dates
+		DateFlexiCellRenderer dateCellRenderer = new DateFlexiCellRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.createionDate.i18nHeaderKey(), Cols.createionDate.ordinal(),
-				true, Cols.createionDate.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.firstTime.i18nHeaderKey(), Cols.firstTime.ordinal(),
-				true, Cols.firstTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lastTime.i18nHeaderKey(), Cols.lastTime.ordinal(),
-				true, Cols.lastTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
+				true, Cols.createionDate.name(), FlexiColumnModel.ALIGNMENT_LEFT, dateCellRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.firstTime.i18nHeaderKey(), Cols.firstTime.ordinal(),
+				true, Cols.firstTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, dateCellRenderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastTime.i18nHeaderKey(), Cols.lastTime.ordinal(),
+				true, Cols.lastTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, dateCellRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage));
 		
-		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new BusinessGroupStatusCellRenderer(getTranslator())));
+		initStatusColumnModel(columnsModel);
 
 		DefaultFlexiColumnModel tutorColumnModel = new DefaultFlexiColumnModel(false, Cols.tutorsCount);
 		tutorColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -112,11 +113,16 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 
 		return columnsModel;
 	}
+	
+	protected void initStatusColumnModel(FlexiTableColumnModel columnsModel) {
+		DefaultFlexiColumnModel statusCol = new DefaultFlexiColumnModel(Cols.status, new BusinessGroupStatusCellRenderer(getTranslator()));
+		statusCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(statusCol);
+	}
 
 	@Override
 	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
-		initButtons(formLayout, ureq, false, false, true);
-		// no public
+		initButtons(formLayout, ureq, false, false, false, true);
 	}
 	
 	@Override
@@ -215,6 +221,18 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 			item.setNumOfParticipants(row.getNumOfParticipants());
 			item.setNumWaiting(row.getNumWaiting());
 			item.setNumOfPendings(row.getNumPending());
+			
+			if(item.getGroupStatus() == BusinessGroupStatusEnum.active) {
+				item.setPlannedInactivationDate(businessGroupLifecycleManager.getInactivationDate(row));
+			} else if(item.getGroupStatus() == BusinessGroupStatusEnum.inactive) {
+				item.setPlannedInactivationDate(businessGroupLifecycleManager.getInactivationDate(row));
+				item.setPlannedSoftDeleteDate(businessGroupLifecycleManager.getSoftDeleteDate(row));
+			} else if(item.getGroupStatus() == BusinessGroupStatusEnum.trash) {
+				item.setPlannedInactivationDate(businessGroupLifecycleManager.getInactivationDate(row));
+				item.setPlannedSoftDeleteDate(businessGroupLifecycleManager.getSoftDeleteDate(row));
+				item.setPlannedDeletionDate(businessGroupLifecycleManager.getDefinitiveDeleteDate(row));
+			}
+
 			items.add(item);
 		}
 		return items;

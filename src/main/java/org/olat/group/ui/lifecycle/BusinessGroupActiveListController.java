@@ -22,16 +22,20 @@ package org.olat.group.ui.lifecycle;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
+import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 
 /**
  * 
@@ -73,8 +77,17 @@ public class BusinessGroupActiveListController extends AbstractBusinessGroupLife
 	}
 	
 	@Override
+	protected void initStatusColumnModel(FlexiTableColumnModel columnsModel) {
+		super.initStatusColumnModel(columnsModel);
+		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedInactivationDate, new DateFlexiCellRenderer(getLocale()));
+		plannedCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(plannedCol);
+	}
+	
+	@Override
 	protected FlexiTableColumnModel initColumnModel() {
 		FlexiTableColumnModel columnsModel = super.initColumnModel();
+		
 		boolean withMail = groupModule.getNumberOfDayBeforeDeactivationMail() > 0;
 		String action = withMail ? TABLE_ACTION_START_INACTIVATE : TABLE_ACTION_INACTIVATE;
 		String i18nKey = withMail ? "table.header.start.inactivate" : "table.header.inactivate";
@@ -97,7 +110,7 @@ public class BusinessGroupActiveListController extends AbstractBusinessGroupLife
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.ACTIVE.name())));
 		tabs.add(activeTab);
 		
-		notActiveTab = FlexiFiltersTabFactory.tabWithImplicitFilters("NotActive", translate("admin.groups.not,active.preset"),
+		notActiveTab = FlexiFiltersTabFactory.tabWithImplicitFilters("NotActive", translate("admin.groups.not.active.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.ACTIVE_LONG.name())));
 		tabs.add(notActiveTab);
 
@@ -120,5 +133,23 @@ public class BusinessGroupActiveListController extends AbstractBusinessGroupLife
 		boolean actionVisible = (tab == toInactivateTab);
 		actionColumn.setAlwaysVisible(actionVisible);
 		tableEl.setColumnModelVisible(actionColumn, actionVisible);
+	}
+	
+	@Override
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		super.initButtons(formLayout, ureq);
+
+		boolean withMail = groupModule.getNumberOfDayBeforeDeactivationMail() > 0;
+		if(withMail && !groupModule.isAutomaticGroupInactivationEnabled()) {
+			startInactivateButton = uifactory.addFormLink("table.start.inactivate", TABLE_ACTION_START_INACTIVATE, "table.start.inactivate", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(startInactivateButton);
+		
+			cancelInactivateButton = uifactory.addFormLink("table.cancel.inactivate", TABLE_ACTION_CANCEL_INACTIVATE, "table.cancel.inactivate", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(cancelInactivateButton);
+		}
+		
+		inactivateButton = uifactory.addFormLink("table.inactivate", TABLE_ACTION_INACTIVATE, "table.inactivate", null, formLayout, Link.BUTTON);
+		tableEl.addBatchButton(inactivateButton);
+		// no public
 	}
 }

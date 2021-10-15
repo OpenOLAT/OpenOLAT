@@ -22,6 +22,7 @@ package org.olat.group.ui.main;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -64,6 +65,13 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	
 	private FlexiFiltersTab bookmarkTab;
 	private FlexiFiltersTab myGroupsTab;
+	private FlexiFiltersTab inactiveGroupsTab;
+	private FlexiFiltersTab openGroupsTab;
+	
+	private DefaultFlexiColumnModel leaveCol;
+	private DefaultFlexiColumnModel deleteCol;
+	private DefaultFlexiColumnModel freePlacesCol;
+	private DefaultFlexiColumnModel accessControlLaunchCol;
 	
 	public BusinessGroupListController(UserRequest ureq, WindowControl wControl, String prefsKey) {
 		super(ureq, wControl, "group_list", false, prefsKey, false, null);
@@ -115,14 +123,18 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18nHeaderKey(), Cols.resources.ordinal(),
 				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
 		//access
+		freePlacesCol = new DefaultFlexiColumnModel(Cols.freePlaces.i18nHeaderKey(), Cols.freePlaces.ordinal(), TABLE_ACTION_LAUNCH,
+				true, Cols.freePlaces.name(), new TextFlexiCellRenderer(EscapeMode.none));
+		columnsModel.addFlexiColumnModel(freePlacesCol);
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18nHeaderKey(), Cols.accessTypes.ordinal(),
 				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
 		//launch dates
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.createionDate.i18nHeaderKey(), Cols.createionDate.ordinal(),
 				true, Cols.createionDate.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.firstTime.i18nHeaderKey(), Cols.firstTime.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.firstTime.i18nHeaderKey(), Cols.firstTime.ordinal(),
 				true, Cols.firstTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lastTime.i18nHeaderKey(), Cols.lastTime.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastTime.i18nHeaderKey(), Cols.lastTime.ordinal(),
 				true, Cols.lastTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage));
 		//roles
@@ -145,18 +157,23 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		columnsModel.addFlexiColumnModel(waitingListColumnModel);
 		
 		//actions
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.allowLeave.i18nHeaderKey(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE,
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.leave"), TABLE_ACTION_LEAVE), null)));
+		accessControlLaunchCol = new DefaultFlexiColumnModel(Cols.accessControlLaunch);
+		columnsModel.addFlexiColumnModel(accessControlLaunchCol);
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.allowDelete.i18nHeaderKey(), Cols.allowDelete.ordinal(), TABLE_ACTION_SOFT_DELETE,
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.delete"), TABLE_ACTION_SOFT_DELETE), null)));
+		leaveCol = new DefaultFlexiColumnModel(Cols.allowLeave.i18nHeaderKey(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE,
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.leave"), TABLE_ACTION_LEAVE), null));
+		columnsModel.addFlexiColumnModel(leaveCol);
+		
+		deleteCol = new DefaultFlexiColumnModel(Cols.allowDelete.i18nHeaderKey(), Cols.allowDelete.ordinal(), TABLE_ACTION_SOFT_DELETE,
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.delete"), TABLE_ACTION_SOFT_DELETE), null));
+		columnsModel.addFlexiColumnModel(deleteCol);
 		
 		return columnsModel;
 	}
 
 	@Override
 	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
-		initButtons(formLayout, ureq, true, false, true);
+		initButtons(formLayout, ureq, true, false, true, true);
 		// no public
 	}
 	
@@ -165,14 +182,29 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
 		bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("marked.groups"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.MARKED, "marked")));
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.MARKED, "marked"),
+						FlexiTableFilterValue.valueOf(BGSearchFilter.STATUS, List.of("active", "inactive"))));
 		bookmarkTab.setElementCssClass("o_sel_group_bookmarked_groups");
 		tabs.add(bookmarkTab);
 		
 		myGroupsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyGroups", translate("my.groups"),
-				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "all")));
-		myGroupsTab.setElementCssClass("o_sel_group_all_groups");
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "all"),
+						FlexiTableFilterValue.valueOf(BGSearchFilter.STATUS, List.of("active"))));
+		myGroupsTab.setElementCssClass("o_sel_group_my_groups");
 		tabs.add(myGroupsTab);
+		
+		inactiveGroupsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyInactiveGroups", translate("my.inactivegroups"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "all"),
+						FlexiTableFilterValue.valueOf(BGSearchFilter.STATUS, List.of("inactive"))));
+		inactiveGroupsTab.setElementCssClass("o_sel_group_inactive_groups");
+		tabs.add(inactiveGroupsTab);
+		
+		openGroupsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("OpenGroups", translate("open.groups"),
+				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.OPEN, "yes"),
+						FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "none"),
+						FlexiTableFilterValue.valueOf(BGSearchFilter.STATUS, List.of("active"))));
+		openGroupsTab.setElementCssClass("o_sel_group_open_groups");
+		tabs.add(openGroupsTab);
 		
 		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.generic"), TabSelectionBehavior.clear);
 		searchTab.setElementCssClass("o_sel_group_search_groups");
@@ -182,7 +214,6 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		tabs.add(searchTab);
 
 		tableEl.setFilterTabs(true, tabs);
-		
 		tableEl.setSearchEnabled(true);
 		tableEl.setExtendedSearch(null);
 	}
@@ -210,6 +241,19 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		roleValues.add(SelectionValues.entry("attendee", translate("search.attendee")));
 		roleValues.add(SelectionValues.entry("waiting", translate("search.waiting")));
 		filters.add(new FlexiTableSingleSelectionFilter(translate("search.roles"), BGSearchFilter.ROLE.name(), roleValues, true));
+		
+		// status
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry(BusinessGroupStatusEnum.active.name(), translate("status.active")));
+		statusValues.add(SelectionValues.entry(BusinessGroupStatusEnum.inactive.name(), translate("status.inactive")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("search.status"), BGSearchFilter.STATUS.name(), statusValues, true));
+		
+		// published
+		SelectionValues yesNoValues = new SelectionValues();
+		yesNoValues.add(SelectionValues.entry("all", translate("search.all")));
+		yesNoValues.add(SelectionValues.entry("yes", translate("search.yes")));
+		yesNoValues.add(SelectionValues.entry("no", translate("search.no")));
+		filters.add(new FlexiTableSingleSelectionFilter(translate("search.open"), BGSearchFilter.OPEN.name(), yesNoValues, true));
 
 		// description
 		filters.add(new FlexiTableTextFilter(translate("cif.description"), BGSearchFilter.DESCRIPTION.name(), false));
@@ -219,13 +263,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		if(admin) {
 			// coaches
 			filters.add(new FlexiTableTextFilter(translate("cif.owner"), BGSearchFilter.COACH.name(), false));
-			
-			// published
-			SelectionValues yesNoValues = new SelectionValues();
-			yesNoValues.add(SelectionValues.entry("all", translate("search.all")));
-			yesNoValues.add(SelectionValues.entry("yes", translate("search.yes")));
-			yesNoValues.add(SelectionValues.entry("no", translate("search.no")));
-			filters.add(new FlexiTableSingleSelectionFilter(translate("search.open"), BGSearchFilter.OPEN.name(), yesNoValues, true));
+
 			// managed group
 			if(managedEnable) {
 				filters.add(new FlexiTableSingleSelectionFilter(translate("search.managed"), BGSearchFilter.MANAGED.name(), yesNoValues, true));
@@ -252,16 +290,22 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
-		params.setGroupStatus(List.of(BusinessGroupStatusEnum.active, BusinessGroupStatusEnum.inactive));
-		params.setAttendee(!isAdmin());
-		params.setOwner(!isAdmin());
-		params.setWaiting(!isAdmin());
 		return params;
 	}
 	
 	@Override
 	protected void changeFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
-		//
+		boolean openTab = (tab == openGroupsTab);
+		// special for public groups
+		accessControlLaunchCol.setAlwaysVisible(openTab);
+		tableEl.setColumnModelVisible(accessControlLaunchCol, openTab);
+		freePlacesCol.setAlwaysVisible(openTab);
+		tableEl.setColumnModelVisible(freePlacesCol, openTab);
+		
+		leaveCol.setAlwaysVisible(!openTab);
+		tableEl.setColumnModelVisible(leaveCol, !openTab);
+		deleteCol.setAlwaysVisible(!openTab);
+		tableEl.setColumnModelVisible(deleteCol, !openTab);
 	}
 
 	@Override
@@ -281,8 +325,63 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 			item.setNumOfParticipants(row.getNumOfParticipants());
 			item.setNumWaiting(row.getNumWaiting());
 			item.setNumOfPendings(row.getNumPending());
+			addAccessLink(item);
 			items.add(item);
 		}
 		return items;
+	}
+	
+	private void addAccessLink(BGTableItem item) {
+		String action;
+		BusinessGroupMembership membership = item.getMembership();
+		if(membership != null && membership.isOwner()) {
+			return;
+		} else if(membership != null && (membership.isParticipant() || membership.isWaiting())) {
+			action = TABLE_ACTION_LEAVE;
+		} else if(item.isFull() && !item.isWaitingListEnabled()) {
+			action = null;
+		} else {
+			action = TABLE_ACTION_ACCESS;
+		}
+		
+		String i18nKey;
+		if (membership != null && membership.isParticipant()) {
+			i18nKey = "table.header.leave";
+		} else if (membership != null && membership.isWaiting()) {
+			i18nKey = "table.header.leave.waiting";
+		} else if(item.isFull()) {
+			if(item.isWaitingListEnabled()) {
+				i18nKey = "table.access.waitingList";
+			} else {
+				i18nKey = "table.header.group.full";
+			}
+		} else if(item.isWaitingListEnabled()) {
+			if(item.isFull()) {
+				i18nKey = "table.access.waitingList";
+			}	else {
+				i18nKey = "table.access";
+			}
+		} else {
+			i18nKey = "table.access";
+		}
+		
+		FormLink accessLink = uifactory.addFormLink("open_" + item.getBusinessGroupKey(), action, i18nKey,
+				null, null, Link.LINK);
+		if(action == null) {
+			accessLink.setEnabled(false);
+		}
+		accessLink.setUserObject(item);
+		item.setAccessLink(accessLink);
+	}
+	
+	@Override
+	protected void doLaunch(UserRequest ureq, BusinessGroup group) {	
+		if(tableEl.getSelectedFilterTab() != openGroupsTab
+				|| businessGroupService.isIdentityInBusinessGroup(getIdentity(), group)) {
+			super.doLaunch(ureq, group);
+		} else if(tableEl.getSelectedFilterTab() == openGroupsTab) {
+			String businessPath = "[GroupCard:" + group.getKey() + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} 
 	}
 }

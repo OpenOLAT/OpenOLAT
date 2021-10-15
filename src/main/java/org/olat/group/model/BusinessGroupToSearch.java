@@ -195,6 +195,46 @@ public class BusinessGroupToSearch implements Persistable {
 		return waitingListEnabled;
 	}
 	
+	public Date getInactivationDate() {
+		return inactivationDate;
+	}
+
+	public void setInactivationDate(Date inactivationDate) {
+		this.inactivationDate = inactivationDate;
+	}
+
+	public Date getInactivationEmailDate() {
+		return inactivationEmailDate;
+	}
+
+	public void setInactivationEmailDate(Date inactivationEmailDate) {
+		this.inactivationEmailDate = inactivationEmailDate;
+	}
+
+	public Date getReactivationDate() {
+		return reactivationDate;
+	}
+
+	public void setReactivationDate(Date reactivationDate) {
+		this.reactivationDate = reactivationDate;
+	}
+
+	public Date getSoftDeleteEmailDate() {
+		return softDeleteEmailDate;
+	}
+
+	public void setSoftDeleteEmailDate(Date softDeleteEmailDate) {
+		this.softDeleteEmailDate = softDeleteEmailDate;
+	}
+
+	public Date getSoftDeleteDate() {
+		return softDeleteDate;
+	}
+
+	public void setSoftDeleteDate(Date softDeleteDate) {
+		this.softDeleteDate = softDeleteDate;
+	}
+
 	/**
 	 * Compares the keys.
 	 * @see java.lang.Object#equals(java.lang.Object)

@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -52,6 +53,7 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 
 	private MultipleSelectionElement notificationEl;
 	
+	private boolean hasMembers = false;
 	private final boolean sendEventFirst;
 	private List<BusinessGroup> businessGroups;
 	
@@ -65,6 +67,13 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 		super(ureq, wControl, "confirm_delete", Util.createPackageTranslator(BusinessGroupListController.class, ureq.getLocale()));
 		this.businessGroups = businessGroups;
 		this.sendEventFirst = sendEventFirst;
+		for(BusinessGroup group:businessGroups) {
+			int numOfMembers = businessGroupService.countMembers(group, GroupRoles.coach.name(), GroupRoles.participant.name());
+			if(numOfMembers > 0) {
+				hasMembers = true;
+				break;
+			}
+		}
 		
 		initForm(ureq);
 	}
@@ -73,15 +82,22 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			String names = BGMailHelper.joinNames(businessGroups);
-			String msg = translate("dialog.modal.bg.delete.text", new String[] { names });
+			String msg;
+			if(businessGroups.size() == 1) {
+				msg = translate("dialog.modal.bg.definitively.delete.text.singular", new String[] { names });
+			} else {
+				msg = translate("dialog.modal.bg.definitively.delete.text.plural", new String[] { names });
+			}		
 			((FormLayoutContainer)formLayout).contextPut("msg", msg);
 		}
 		
 		String[] notifications = new String[] { translate("dialog.modal.bg.mail.text") };
 		notificationEl = uifactory.addCheckboxesHorizontal("notifications", "dialog.modal.bg.mail.text", formLayout, new String[]{ "" },  notifications);
-
+		notificationEl.setVisible(hasMembers);
+		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("delete.definitively", "delete.definitively", formLayout);
+		FormSubmit submit = uifactory.addFormSubmitButton("delete.group", "delete.group", formLayout);
+		submit.setElementCssClass("btn btn-default btn-danger");
 	}
 
 	@Override
@@ -92,7 +108,7 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean doSendMail = notificationEl.isAtLeastSelected(1);
+		boolean doSendMail = notificationEl.isVisible() && notificationEl.isAtLeastSelected(1);
 		
 		if(sendEventFirst) {
 			fireEvent(ureq, Event.DONE_EVENT);

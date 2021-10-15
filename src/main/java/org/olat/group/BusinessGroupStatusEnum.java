@@ -19,6 +19,11 @@
  */
 package org.olat.group;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.util.StringHelper;
+
 /**
  * 
  * Initial date: 2 sept. 2021<br>
@@ -43,6 +48,31 @@ public enum BusinessGroupStatusEnum {
 	public static boolean isReadOnly(BusinessGroup businessGroup) {
 		BusinessGroupStatusEnum status = businessGroup.getGroupStatus();
 		return status != active;
+	}
+	
+	public static boolean isValid(String string) {
+		boolean allOk = false;
+		if(StringHelper.containsNonWhitespace(string)) {
+			for(BusinessGroupStatusEnum status:values()) {
+				if(status.name().equals(string)) {
+					allOk = true;
+					break;
+				}
+			}
+		}
+		return allOk;
+	}
+	
+	public static List<BusinessGroupStatusEnum> toList(List<String> status) {
+		List<BusinessGroupStatusEnum> list = new ArrayList<>();
+		if(status != null && !status.isEmpty()) {
+			for(String s:status) {
+				if(isValid(s)) {
+					list.add(valueOf(s));
+				}
+			}
+		}
+		return list;
 	}
 
 }

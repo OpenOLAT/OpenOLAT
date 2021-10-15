@@ -37,9 +37,9 @@ public interface BusinessGroupLifecycleManager {
 	public Identity getSoftDeletedBy(BusinessGroupRef businessGroup);
 	
 	
-	public Date getInactivationDate(BusinessGroup businessGroup);
+	public Date getInactivationDate(BusinessGroupLifecycle businessGroup);
 	
-	public Date getInactivationEmailDate(BusinessGroup businessGroup);
+	public Date getInactivationEmailDate(BusinessGroupLifecycle businessGroup);
 	
 	/**
 	 * 
@@ -48,13 +48,13 @@ public interface BusinessGroupLifecycleManager {
 	 */
 	public long getInactivationResponseDelayUsed(BusinessGroup businessGroup);
 	
-	public Date getSoftDeleteDate(BusinessGroup businessGroup);
+	public Date getSoftDeleteDate(BusinessGroupLifecycle businessGroup);
 	
 	public Date getSoftDeleteEmailDate(BusinessGroup businessGroup);
 	
 	public long getSoftDeleteResponseDelayUsed(BusinessGroup businessGroup);
 	
-	public Date getDefinitiveDeleteDate(BusinessGroup businessGroup);
+	public Date getDefinitiveDeleteDate(BusinessGroupLifecycle businessGroup);
 	
 	public void inactivateAutomaticallyBusinessGroups(Set<BusinessGroup> vetoed);
 	
@@ -98,7 +98,7 @@ public interface BusinessGroupLifecycleManager {
 	 * @param businessGroup The business group
 	 * @return The merged business group
 	 */
-	public BusinessGroup reactivateBusinessGroup(BusinessGroup businessGroup, Identity doer);
+	public BusinessGroup reactivateBusinessGroup(BusinessGroup businessGroup, Identity doer, boolean asGroupOwner);
 	
 	/**
 	 * 
@@ -126,8 +126,16 @@ public interface BusinessGroupLifecycleManager {
 	 */
 	public void deleteBusinessGroup(BusinessGroup businessGroup, Identity deletedBy, boolean withMail);
 	
-	
-	public BusinessGroup changeBusinessGroupStatus(BusinessGroup businessGroup, BusinessGroupStatusEnum status, Identity doer);
+	/**
+	 * change the status of the business group and take care of the  life cycle.
+	 * 
+	 * @param businessGroup The business group
+	 * @param status The new status
+	 * @param doer The user which do the action
+	 * @param asGroupOwner If the user is the actually owner of the group, some worklfow differs
+	 * @return The merged business group
+	 */
+	public BusinessGroup changeBusinessGroupStatus(BusinessGroup businessGroup, BusinessGroupStatusEnum status, Identity doer, boolean asGroupOwner);
 	
 
 }

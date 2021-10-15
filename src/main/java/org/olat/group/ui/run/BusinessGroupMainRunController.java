@@ -335,7 +335,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addLoggingResourceable(LoggingResourceable.wrap(businessGroup));
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OPEN, getClass());
 
-		UserSession usess = ureq.getUserSession();
 		Object wcard = usess.removeEntry("wild_card_" + businessGroup.getKey());
 		
 		isGroupsAdmin = usess.getRoles().isAdministrator()
@@ -453,7 +452,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	}
 	
 	private void updateWarning(UserRequest ureq) {
-		if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.inactive) {
+		if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.inactive
+				|| (businessGroup.getGroupStatus() == BusinessGroupStatusEnum.active && businessGroup.getInactivationEmailDate() != null)) {
 			removeAsListenerAndDispose(warningCtrl);
 			warningCtrl = new InactiveMessageController(ureq, getWindowControl(), businessGroup, isAdmin);
 			listenTo(warningCtrl);

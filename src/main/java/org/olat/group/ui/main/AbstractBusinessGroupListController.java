@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
@@ -140,8 +141,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected static final String TABLE_ACTION_SOFT_DELETE = "bgTblSoftDelete";
 	protected static final String TABLE_ACTION_START_SOFT_DELETE = "bgTblStartSoftDelete";
 	protected static final String TABLE_ACTION_DEFINITIVELY_DELETE = "bgTblDefinitivelyDelete";
+	protected static final String TABLE_ACTION_REACTIVATE = "bgTblReactivate";
 	protected static final String TABLE_ACTION_INACTIVATE = "bgTblInactivate";
 	protected static final String TABLE_ACTION_START_INACTIVATE = "bgTblStartInactivate";
+	protected static final String TABLE_ACTION_CANCEL_INACTIVATE = "bgTblCancelInactivate";
 	protected static final String TABLE_ACTION_SELECT = "bgTblSelect";
 	
 	protected static final BusinessGroupMembershipComparator MEMBERSHIP_COMPARATOR = new BusinessGroupMembershipComparator();
@@ -154,13 +157,21 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	protected FormLink createButton;
 	protected FormLink inactivateButton;
+	protected FormLink startInactivateButton;
+	protected FormLink cancelInactivateButton;
 	protected FormLink softDeleteButton;
+	protected FormLink startSoftDeleteButton;
+	protected FormLink reactivateButton;
+	protected FormLink definitivelyDeleteButton;
+	protected FormLink restoreButton;
 	protected FormLink duplicateButton;
 	protected FormLink configButton;
 	protected FormLink emailButton;
 	protected FormLink usersButton;
 	protected FormLink mergeButton;
 	protected FormLink selectButton;
+
+
 	
 	private ContactFormController contactCtrl;
 	private NewBGController groupCreateController;
@@ -278,7 +289,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 
 	protected abstract void initButtons(FormItemContainer formLayout, UserRequest ureq);
 
-	protected void initButtons(FormItemContainer formLayout, UserRequest ureq, boolean create, boolean select, boolean adminTools) {
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq, boolean create, boolean select, boolean lifecycle, boolean adminTools) {
 		if(create && groupModule.isAllowedCreate(ureq.getUserSession().getRoles())) {
 			createButton = uifactory.addFormLink("create.group", formLayout, Link.BUTTON);
 			createButton.setElementCssClass("o_sel_group_create");
@@ -310,7 +321,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			emailButton = uifactory.addFormLink("table.email", TABLE_ACTION_EMAIL, "table.email", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(emailButton);
 			
-			if(canCreateGroup) {
+			if(canCreateGroup && lifecycle) {
 				inactivateButton = uifactory.addFormLink("table.inactivate", TABLE_ACTION_INACTIVATE, "table.inactivate", null, formLayout, Link.BUTTON);
 				tableEl.addBatchButton(inactivateButton);
 				
@@ -367,8 +378,16 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			doCreate(ureq, getWindowControl(), null);
 		} else if(softDeleteButton == source) {
 			confirmChangeStatus(ureq, getSelectedItems(), BusinessGroupStatusEnum.trash);
+		} else if(startSoftDeleteButton == source) {
+			doConfirmStartChangeStatus(ureq, getSelectedItems(), BusinessGroupStatusEnum.trash);
 		} else if(inactivateButton == source) {
 			confirmChangeStatus(ureq, getSelectedItems(), BusinessGroupStatusEnum.inactive);
+		} else if(startInactivateButton == source) {
+			doConfirmStartChangeStatus(ureq, getSelectedItems(), BusinessGroupStatusEnum.inactive);
+		} else if(cancelInactivateButton == source) {
+			doReactivate(getSelectedItems());
+		} else if(definitivelyDeleteButton == source) {
+			doConfirmDefinitivelyDelete(ureq, getSelectedItems());
 		} else if(duplicateButton == source) {
 			doCopy(ureq, getSelectedItems());
 		} else if(configButton == source) {
@@ -424,15 +443,17 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 					} else if(TABLE_ACTION_LAUNCH.equals(cmd)) {
 						doLaunch(ureq, businessGroup);
 					} else if(TABLE_ACTION_START_SOFT_DELETE.equals(cmd)) {
-						confirmStartChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.trash);
+						doConfirmStartChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.trash);
 					} else if(TABLE_ACTION_SOFT_DELETE.equals(cmd)) {
 						confirmChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.trash);
 					} else if(TABLE_ACTION_START_INACTIVATE.equals(cmd)) {
-						confirmStartChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.inactive);
+						doConfirmStartChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.inactive);
 					} else if(TABLE_ACTION_INACTIVATE.equals(cmd)) {
 						confirmChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.inactive);
+					} else if(TABLE_ACTION_CANCEL_INACTIVATE.equals(cmd)) {
+						confirmChangeStatus(ureq, List.of(item), BusinessGroupStatusEnum.active);
 					} else if(TABLE_ACTION_DEFINITIVELY_DELETE.equals(cmd)) {
-						confirmDefinitivelyDelete(ureq, List.of(item));
+						doConfirmDefinitivelyDelete(ureq, List.of(item));
 					} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 						doEdit(ureq, businessGroup);
 					} else if(TABLE_ACTION_LEAVE.equals(cmd)) {
@@ -1072,7 +1093,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	 * @param ureq
 	 * @param selectedItems
 	 */
-	private void confirmDefinitivelyDelete(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems) {
+	private void doConfirmDefinitivelyDelete(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems) {
 		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
@@ -1108,8 +1129,33 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		}
 	}
 	
+	private void doReactivate(List<? extends BusinessGroupRef> selectedItems) {
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
+			return;
+		}
+		
+		for(BusinessGroup group:groups) {
+			boolean asOwner = this.businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name());
+			businessGroupLifecycleManager.reactivateBusinessGroup(group, getIdentity(), asOwner);
+		}
+		
+		tableEl.deselectAll();
+		reloadModel();
 
-	private void confirmStartChangeStatus(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems, BusinessGroupStatusEnum newStatus) {
+		if(groups.size() == 1) {
+			showInfo("group.reactivated");
+		} else {
+			showInfo("groups.reactivated", new String[] { Integer.toString(groups.size()) });
+		}
+	}
+
+	private void doConfirmStartChangeStatus(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems, BusinessGroupStatusEnum newStatus) {
 		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
@@ -1302,10 +1348,12 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				break;
 			case ROLE:
 				String role = tableFilter.getValue();
-				if(role == null || "none".equals(role)) {// security, only admin are allowed to see all
-					params.setAttendee(!admin);
-					params.setOwner(!admin);
-					params.setWaiting(!admin);
+				if(role == null || "none".equals(role)) {
+					// security, only admin are allowed to see all
+					boolean open = params.getPublicGroups() != null && params.getPublicGroups().booleanValue();	
+					params.setAttendee(!admin && !open);
+					params.setOwner(!admin && !open);
+					params.setWaiting(!admin && !open);
 				} else {
 					params.setAttendee("all".equals(role) || "attendee".equals(role));
 					params.setOwner("all".equals(role) || "owner".equals(role));
@@ -1325,7 +1373,13 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				params.setCourseTitle(tableFilter.getValue());
 				break;
 			case OPEN:
-				params.setPublicGroups(BGSearchFilter.OPEN.yesNoTo(tableFilter));
+				Boolean publicOnly = BGSearchFilter.OPEN.yesNoTo(tableFilter);
+				if(publicOnly != null &&  publicOnly.booleanValue()) {
+					params.setAttendee(false);
+					params.setOwner(false);
+					params.setWaiting(false);
+				}
+				params.setPublicGroups(publicOnly);
 				break;
 			case MANAGED:
 				params.setManaged(BGSearchFilter.MANAGED.yesNoTo(tableFilter));
@@ -1344,6 +1398,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				} else {
 					params.setLastUsageBefore(null);
 				}
+				break;
+			case STATUS:
+				List<String> groupStatus = ((FlexiTableMultiSelectionFilter)tableFilter).getValues();
+				params.setGroupStatus(BusinessGroupStatusEnum.toList(groupStatus));
 				break;
 			case LIFECYCLE:
 				String lifecycleStatus = tableFilter.getValue();
@@ -1389,6 +1447,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		RESOURCES,
 		HEADLESS,
 		LASTVISIT,
+		STATUS,
 		LIFECYCLE;
 		
 		public Boolean yesNoTo(FlexiTableFilter tableFilter) {

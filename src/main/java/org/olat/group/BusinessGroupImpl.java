@@ -175,23 +175,6 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	public BusinessGroupImpl() {
 	// used by spring
 	}
-
-	/**
-	 * convenience constructor
-	 * 
-	 * @param groupName
-	 * @param description
-	 */
-	public BusinessGroupImpl(String groupName, String description) {
-		setName(groupName);
-		setDescription(description);
-		// per default no waiting-list
-		Boolean disabled = Boolean.valueOf(false);
-		setWaitingListEnabled(disabled);
-		setAutoCloseRanksEnabled(disabled);
-		setLastUsage(new Date());
-		setLastModified(new Date());
-	}
 	
 	@Override
 	public Long getKey() {
@@ -201,6 +184,10 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	@Override
 	public Date getCreationDate() {
 		return creationDate;
+	}
+	
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	@Override

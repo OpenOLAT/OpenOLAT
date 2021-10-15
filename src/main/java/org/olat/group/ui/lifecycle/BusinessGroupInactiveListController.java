@@ -22,16 +22,20 @@ package org.olat.group.ui.lifecycle;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
+import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 
 /**
  * 
@@ -72,6 +76,14 @@ public class BusinessGroupInactiveListController extends AbstractBusinessGroupLi
 		}
 	}
 	
+	@Override
+	protected void initStatusColumnModel(FlexiTableColumnModel columnsModel) {
+		super.initStatusColumnModel(columnsModel);
+		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedSoftDeleteDate, new DateFlexiCellRenderer(getLocale()));
+		plannedCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(plannedCol);
+	}
+
 	@Override
 	protected FlexiTableColumnModel initColumnModel() {
 		FlexiTableColumnModel columnsModel = super.initColumnModel();
@@ -120,5 +132,22 @@ public class BusinessGroupInactiveListController extends AbstractBusinessGroupLi
 		boolean actionVisible = (tab == toSoftDeleteTab);
 		actionColumn.setAlwaysVisible(actionVisible);
 		tableEl.setColumnModelVisible(actionColumn, actionVisible);
+	}
+	
+	@Override
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		super.initButtons(formLayout, ureq);
+
+		boolean withMail = groupModule.getNumberOfDayBeforeSoftDeleteMail() > 0;
+		if(withMail && !groupModule.isAutomaticGroupSoftDeleteEnabled()) {
+			startSoftDeleteButton = uifactory.addFormLink("table.start.soft.delete", TABLE_ACTION_START_SOFT_DELETE, "table.start.soft.delete", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(startSoftDeleteButton);
+		
+			reactivateButton = uifactory.addFormLink("table.reactivate", TABLE_ACTION_REACTIVATE, "table.reactivate", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(reactivateButton);
+		}
+		
+		softDeleteButton = uifactory.addFormLink("table.soft.delete", TABLE_ACTION_SOFT_DELETE, "table.soft.delete", null, formLayout, Link.BUTTON);
+		tableEl.addBatchButton(softDeleteButton);
 	}
 }

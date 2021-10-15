@@ -22,16 +22,20 @@ package org.olat.group.ui.lifecycle;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.group.model.BusinessGroupQueryParams.LifecycleSyntheticStatus;
+import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 
 /**
  * 
@@ -72,6 +76,14 @@ public class BusinessGroupSoftDeleteListController extends AbstractBusinessGroup
 	}
 	
 	@Override
+	protected void initStatusColumnModel(FlexiTableColumnModel columnsModel) {
+		super.initStatusColumnModel(columnsModel);
+		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedDeletionDate, new DateFlexiCellRenderer(getLocale()));
+		plannedCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(plannedCol);
+	}
+
+	@Override
 	protected FlexiTableColumnModel initColumnModel() {
 		FlexiTableColumnModel columnsModel = super.initColumnModel();
 		String i18nKey = "table.header.defintively.delete";
@@ -104,5 +116,19 @@ public class BusinessGroupSoftDeleteListController extends AbstractBusinessGroup
 		boolean actionVisible = (tab == toDeleteTab);
 		actionColumn.setAlwaysVisible(actionVisible);
 		tableEl.setColumnModelVisible(actionColumn, actionVisible);
+	}
+	
+	@Override
+	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
+		super.initButtons(formLayout, ureq);
+		
+		definitivelyDeleteButton = uifactory.addFormLink("table.definitively.delete", TABLE_ACTION_DEFINITIVELY_DELETE, "table.definitively.delete", null, formLayout, Link.BUTTON);
+		tableEl.addBatchButton(definitivelyDeleteButton);
+		
+		restoreButton = uifactory.addFormLink("table.restore", TABLE_ACTION_DEFINITIVELY_DELETE, "table.restore", null, formLayout, Link.BUTTON);
+		tableEl.addBatchButton(restoreButton);
+
+		inactivateButton = uifactory.addFormLink("table.inactivate", TABLE_ACTION_REACTIVATE, "table.inactivate", null, formLayout, Link.BUTTON);
+		tableEl.addBatchButton(inactivateButton);
 	}
 }

@@ -110,6 +110,10 @@ public class SegmentViewComponent extends AbstractComponent  {
 		return segments.isEmpty();
 	}
 	
+	public int size() {
+		return segments.size();
+	}
+	
 	public List<Component> getSegments() {
 		return segments;
 	}

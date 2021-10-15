@@ -102,13 +102,13 @@ public class BusinessGroupStatusController extends FormBasicController {
 		setFormTitle("fieldset.legend.status");
 
 		Formatter formatter = Formatter.getInstance(getLocale());
-		BusinessGroupStatusEnum status = businessGroup.getGroupStatus();
-		uifactory.addStaticTextElement("status", translate("status." + status.name()), formLayout);
+		initStatusForm(formLayout);
 		
 		Date creationDate = businessGroup.getCreationDate();
 		String creation = formatter.formatDate(creationDate);
 		uifactory.addStaticTextElement("status.creation", creation, formLayout);
-		
+
+		BusinessGroupStatusEnum status = businessGroup.getGroupStatus();
 		if(status == BusinessGroupStatusEnum.active) {
 			initActiveForm(formLayout, ureq, formatter);
 		} else if(status == BusinessGroupStatusEnum.inactive) {
@@ -116,6 +116,24 @@ public class BusinessGroupStatusController extends FormBasicController {
 		} else if(status == BusinessGroupStatusEnum.trash) {
 			initSoftDeletedForm(formLayout, ureq, formatter);
 		}
+	}
+	
+
+	private void initStatusForm(FormItemContainer formLayout) {
+		BusinessGroupStatusEnum status = businessGroup.getGroupStatus();
+		String value = translate("status." + status.name());
+		boolean mailSent = false;
+		if(status == BusinessGroupStatusEnum.active) {
+			mailSent = businessGroupLifecycleManager.getInactivationEmailDate(businessGroup) != null;	
+		} else if(status == BusinessGroupStatusEnum.inactive) {
+			mailSent = businessGroupLifecycleManager.getSoftDeleteEmailDate(businessGroup) != null;
+		}
+		
+		if(mailSent) {
+			value += " - " + translate("status.within.reactiontime");
+		}
+		
+		uifactory.addStaticTextElement("status", value, formLayout);
 	}
 	
 	private void initActiveForm(FormItemContainer formLayout, UserRequest ureq, Formatter formatter) {
@@ -126,37 +144,50 @@ public class BusinessGroupStatusController extends FormBasicController {
 		boolean withMail = businessGroupModule.getNumberOfDayBeforeDeactivationMail() > 0;
 		String mode = buildMode(businessGroupModule.isAutomaticGroupInactivationEnabled(), withMail);
 		uifactory.addStaticTextElement("status.mode", mode, formLayout);
-		
-		Date inactivationDate = businessGroupLifecycleManager.getInactivationDate(businessGroup);
-		String inactivation = formatter.formatDate(inactivationDate);
-		long days = DateUtils.countDays(ureq.getRequestTimestamp(), inactivationDate);
-		String inactivationI18n = days <= 1 ? "status.inactivation.at.sing" : "status.inactivation.at";
-		uifactory.addStaticTextElement("status.inactivation", translate(inactivationI18n, new String[] { inactivation, Long.toString(days) }), formLayout);
-		
+
 		int delay = businessGroupModule.getNumberOfDayBeforeDeactivationMail();
 		if(delay > 0) {
 			long used = businessGroupLifecycleManager.getInactivationResponseDelayUsed(businessGroup);
 			if(used >= 0) {
 				String[] responseArgs = new String[] { Integer.toString(delay), Long.toString(used) };
 				String response;
-				if(used == 0l) {
-					response = translate("status.inactivation.delay.days", responseArgs);
-				} else if(used == 1l) {
-					response = translate("status.inactivation.delay.days.of.sing", responseArgs);
-					
+				if(delay == 1l) {
+					response = translate("status.inactivation.delay.days.of.singular", responseArgs);
 				} else {
 					response = translate("status.inactivation.delay.days.of", responseArgs);
 				}
 				uifactory.addStaticTextElement("status.inactivation.delay", response, formLayout);
 			}
 		}
+
+		Date inactivationDate = businessGroupLifecycleManager.getInactivationDate(businessGroup);
+		String inactivation = formatter.formatDate(inactivationDate);
+		long days = DateUtils.countDays(ureq.getRequestTimestamp(), inactivationDate);
+		String inactivationI18n;
+		if(days == 0 || days == 1) {
+			inactivationI18n = "status.inactivation.at.singular";
+		} else if(days > 1) {
+			inactivationI18n = "status.inactivation.at";
+		} else if(days == -1) {
+			inactivationI18n = "status.inactivation.overdue.singular";
+		} else {
+			inactivationI18n = "status.inactivation.overdue";
+		}
+		uifactory.addStaticTextElement("status.inactivation", translate(inactivationI18n, new String[] { inactivation, Long.toString(Math.abs(days)) }), formLayout);
+
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		formLayout.add(buttonsCont);
 		
 		if(withMail && hasMembers && businessGroupLifecycleManager.getInactivationEmailDate(businessGroup) == null) {
-			startInactivateButton = uifactory.addFormLink("inactivate.group.start", formLayout, Link.BUTTON);
-			startInactivateButton.setCustomEnabledLinkCSS("btn btn-default btn-danger");
+			startInactivateButton = uifactory.addFormLink("inactivate.group.start", buttonsCont, Link.BUTTON);
+			startInactivateButton.setCustomEnabledLinkCSS("btn btn-default btn-primary");
 		} else {
-			inactivateButton = uifactory.addFormLink("inactivate.group", formLayout, Link.BUTTON);
-			inactivateButton.setCustomEnabledLinkCSS("btn btn-default btn-danger");
+			inactivateButton = uifactory.addFormLink("inactivate.group", buttonsCont, Link.BUTTON);
+			inactivateButton.setCustomEnabledLinkCSS("btn btn-default btn-primary");
+		}
+		
+		if(businessGroupLifecycleManager.getInactivationEmailDate(businessGroup) != null) {
+			reactivateButton = uifactory.addFormLink("cancel.inactivate.group", buttonsCont, Link.BUTTON);
 		}
 	}
 	
@@ -184,11 +215,8 @@ public class BusinessGroupStatusController extends FormBasicController {
 			if(used >= 0) {
 				String[] responseArgs = new String[] { Integer.toString(delay), Long.toString(used) };
 				String response;
-				if(used == 0l) {
-					response = translate("status.soft.delete.delay.days", responseArgs);
-				} else if(used == 1l) {
-					response = translate("status.soft.delete.delay.days.of.sing", responseArgs);
-					
+				if(delay == 1l) {
+					response = translate("status.soft.delete.delay.days.of.singular", responseArgs);
 				} else {
 					response = translate("status.soft.delete.delay.days.of", responseArgs);
 				}
@@ -199,14 +227,16 @@ public class BusinessGroupStatusController extends FormBasicController {
 		Date planedDate = businessGroupLifecycleManager.getSoftDeleteDate(businessGroup);
 		if(planedDate != null) {
 			long numOfDaysBeforeDelete = DateUtils.countDays(ureq.getRequestTimestamp(), planedDate);
-			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(numOfDaysBeforeDelete) };
+			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(Math.abs(numOfDaysBeforeDelete)) };
 			String plan;
-			if(numOfDaysBeforeDelete == 1) {
+			if(numOfDaysBeforeDelete == 0 || numOfDaysBeforeDelete == 1) {
 				plan = translate("status.soft.delete.planned.days.of.singular", args);
 			} else if(numOfDaysBeforeDelete > 1) {
 				plan = translate("status.soft.delete.planned.days.of", args);
+			} else if(numOfDaysBeforeDelete == -1) {
+				plan = translate("status.soft.delete.overdue.days.singular", args);
 			} else {
-				plan = translate("status.soft.delete.planned.days", args);
+				plan = translate("status.soft.delete.overdue.days", args);
 			}
 			uifactory.addStaticTextElement("status.soft.delete.planned", plan, formLayout);
 		}
@@ -216,10 +246,10 @@ public class BusinessGroupStatusController extends FormBasicController {
 		
 		if(withMail && hasMembers && businessGroupLifecycleManager.getSoftDeleteEmailDate(businessGroup) == null) {
 			startSoftDeleteButton = uifactory.addFormLink("soft.delete.group.start", buttonsCont, Link.BUTTON);
-			startSoftDeleteButton.setCustomEnabledLinkCSS("btn btn-default btn-danger");
+			startSoftDeleteButton.setCustomEnabledLinkCSS("btn btn-default btn-primary");
 		} else {
 			softDeleteButton = uifactory.addFormLink("soft.delete.group.action", buttonsCont, Link.BUTTON);
-			softDeleteButton.setCustomEnabledLinkCSS("btn btn-default btn-danger");
+			softDeleteButton.setCustomEnabledLinkCSS("btn btn-default btn-primary");
 		}
 		reactivateButton = uifactory.addFormLink("reactivate.group", buttonsCont, Link.BUTTON);
 	}
@@ -246,14 +276,16 @@ public class BusinessGroupStatusController extends FormBasicController {
 		Date planedDate = businessGroupLifecycleManager.getDefinitiveDeleteDate(businessGroup);
 		if(planedDate != null) {
 			long numOfDaysBeforeDelete = DateUtils.countDays(ureq.getRequestTimestamp(), planedDate);
-			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(numOfDaysBeforeDelete) };
+			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(Math.abs(numOfDaysBeforeDelete)) };
 			String plan;
-			if(numOfDaysBeforeDelete == 1) {
+			if(numOfDaysBeforeDelete == 0 || numOfDaysBeforeDelete == 1) {
 				plan = translate("status.definitive.delete.planned.days.of.singular", args);
 			} else if(numOfDaysBeforeDelete > 1) {
 				plan = translate("status.definitive.delete.planned.days.of", args);
+			} else if(numOfDaysBeforeDelete == -1) {
+				plan = translate("status.definitive.delete.overdue.singular", args);
 			} else {
-				plan = translate("status.definitive.delete.planned.days", args);
+				plan = translate("status.definitive.delete.overdue", args);
 			}
 			uifactory.addStaticTextElement("status.definitive.delete.planned", plan, formLayout);
 		}
@@ -372,7 +404,8 @@ public class BusinessGroupStatusController extends FormBasicController {
 	}
 	
 	private void doReactivate(UserRequest ureq) {
-		businessGroup = businessGroupLifecycleManager.reactivateBusinessGroup(businessGroup, getIdentity());
+		boolean groupOwner = isCoach();
+		businessGroup = businessGroupLifecycleManager.reactivateBusinessGroup(businessGroup, getIdentity(), groupOwner);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -386,5 +419,9 @@ public class BusinessGroupStatusController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDefinitivelyDeleteCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private boolean isCoach() {
+		return businessGroupService.hasRoles(getIdentity(), businessGroup, GroupRoles.coach.name());
 	}
 }

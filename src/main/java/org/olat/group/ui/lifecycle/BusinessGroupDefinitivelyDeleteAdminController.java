@@ -68,6 +68,7 @@ public class BusinessGroupDefinitivelyDeleteAdminController extends FormBasicCon
 		modeValues.add(new SelectionValue("auto", translate("mode.definitively.deletion.auto"), translate("mode.definitively.deletion.auto.desc")));
 		modeValues.add(new SelectionValue("manual", translate("mode.definitively.deletion.manual"), translate("mode.definitively.deletion.manual.desc")));
 		enableDefinitivelyDeleteEl = uifactory.addCardSingleSelectHorizontal("definitively.delete.mode", formLayout, modeValues.keys(), modeValues.values(), modeValues.descriptions(), null);
+		enableDefinitivelyDeleteEl.setElementCssClass("o_radio_cards_lg");
 		enableDefinitivelyDeleteEl.addActionListener(FormEvent.ONCHANGE);
 		
 		boolean automaticEnabled = businessGroupModule.isAutomaticGroupDefinitivelyDeleteEnabled();

@@ -43,6 +43,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.InputType;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.SingleKey;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.ui.BGMailHelper.BGMailTemplate;
@@ -66,8 +68,8 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 	private SpacerElement reactivationMailSpacer;
 	
 	private int counter = 0;
-	private TranslationBundles mailAfterSoftDeleteBundles;
-	private TranslationBundles mailBeforeSoftDeleteBundles;
+	private TranslationBundle mailAfterSoftDeleteBundle;
+	private TranslationBundle mailBeforeSoftDeleteBundle;
 	
 	private CloseableModalController cmc;
 	private SingleKeyTranslatorController translatorCtrl;
@@ -98,6 +100,7 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 		modeValues.add(new SelectionValue("manual-wo", translate("mode.soft.deletion.manual.wo.grace"), translate("mode.soft.deletion.manual.wo.grace.desc")));
 		modeValues.add(new SelectionValue("manual-with", translate("mode.soft.deletion.manual.with.grace"), translate("mode.soft.deletion.manual.with.grace.desc")));
 		enableSoftDeleteEl = uifactory.addCardSingleSelectHorizontal("soft.delete.mode", formLayout, modeValues.keys(), modeValues.values(), modeValues.descriptions(), null);
+		enableSoftDeleteEl.setElementCssClass("o_radio_cards_lg");
 		enableSoftDeleteEl.addActionListener(FormEvent.ONCHANGE);
 		
 		boolean automaticEnabled = businessGroupModule.isAutomaticGroupSoftDeleteEnabled();
@@ -130,9 +133,8 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 		initDays(numberOfDayBeforeSoftDeleteMailEl, "days");
 		
 		// subject + content mail
-		TranslationBundle beforeBundleSubject = initForm("mail.before.soft.delete.subject.label", "notification.mail.before.soft.delete.subject", false, formLayout);
-		TranslationBundle beforeBundle = initForm("mail.before.soft.delete.body.label", "notification.mail.before.soft.delete.body", true, formLayout);
-		mailBeforeSoftDeleteBundles = new TranslationBundles(beforeBundleSubject, beforeBundle);
+		mailBeforeSoftDeleteBundle = initForm("mail.before.soft.delete.label",
+				"notification.mail.before.soft.delete.subject", "notification.mail.before.soft.delete.body", formLayout);
 		
 		// Copy mail before deactivation 
 		List<String> beforeCopyAn = businessGroupModule.getMailCopyBeforeSoftDelete();
@@ -152,9 +154,8 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 		enableMailAfterSoftDeleteEl.addActionListener(FormEvent.ONCHANGE);
 		enableMailAfterSoftDeleteEl.select(businessGroupModule.isMailAfterSoftDelete() ? "true" : "false", true);
 
-		TranslationBundle afterBundleSubject = initForm("mail.after.soft.delete.subject.label", "notification.mail.after.soft.delete.subject", false, formLayout);
-		TranslationBundle afterBundle = initForm("mail.after.soft.delete.body.label", "notification.mail.after.soft.delete.body", true, formLayout);
-		mailAfterSoftDeleteBundles = new TranslationBundles(afterBundleSubject, afterBundle);
+		mailAfterSoftDeleteBundle = initForm("mail.after.soft.delete.label",
+				"notification.mail.after.soft.delete.subject", "notification.mail.after.soft.delete.body", formLayout);
 		
 		// Copy mail before deactivation 
 		List<String> afterCopyAn = businessGroupModule.getMailCopyBeforeSoftDelete();
@@ -162,12 +163,13 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 		copyMailAfterSoftDeleteEl.setPlaceholderKey("copy.mail.help", null);
 	}
 	
-	private TranslationBundle initForm(String labelI18nKey, String textI18nKey, boolean textArea, FormItemContainer formLayout) {
-		String text = translate(textI18nKey);
-		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, text, formLayout);
-		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translation.edit", null, formLayout, Link.LINK);
-		TranslationBundle bundle = new TranslationBundle(textI18nKey, labelI18nKey, viewEl, translationLink, textArea);
+	private TranslationBundle initForm(String labelI18nKey, String subjectI18nKey, String bodyI18nKey, FormItemContainer formLayout) {
+		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, "", formLayout);
+		viewEl.setElementCssClass("o_omit_margin");
+		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translation.edit", null, formLayout, Link.BUTTON);
+		TranslationBundle bundle = new TranslationBundle(labelI18nKey, subjectI18nKey, bodyI18nKey, viewEl, translationLink);
 		translationLink.setUserObject(bundle);
+		bundle.update(getTranslator());
 		return bundle;
 	}
 	
@@ -186,7 +188,7 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(translatorCtrl == source) {
-			doUpdate((TranslationBundle)translatorCtrl.getUserObject());
+			((TranslationBundle)translatorCtrl.getUserObject()).update(getTranslator());
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -237,11 +239,11 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 		numberOfDayBeforeSoftDeleteMailEl.setVisible(reactivationPeriodEnabled);
 		copyMailBeforeSoftDeleteEl.setVisible(reactivationPeriodEnabled);
 		reactivationMailSpacer.setVisible(reactivationPeriodEnabled);
-		mailBeforeSoftDeleteBundles.setVisible(reactivationPeriodEnabled);
+		mailBeforeSoftDeleteBundle.setVisible(reactivationPeriodEnabled);
 		
 		boolean mailAfterDeactivation = enableMailAfterSoftDeleteEl.isOneSelected() && "true".equals(enableMailAfterSoftDeleteEl.getSelectedKey());
 		copyMailAfterSoftDeleteEl.setVisible(mailAfterDeactivation);
-		mailAfterSoftDeleteBundles.setVisible(mailAfterDeactivation);
+		mailAfterSoftDeleteBundle.setVisible(mailAfterDeactivation);
 	}
 
 	@Override
@@ -283,10 +285,12 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 	private void doTranslate(UserRequest ureq, TranslationBundle bundle) {
 		if(guardModalController(translatorCtrl)) return;
 
-		SingleKeyTranslatorController.InputType inputType = bundle.isTextArea() ? SingleKeyTranslatorController.InputType.TEXT_AREA : SingleKeyTranslatorController.InputType.TEXT_ELEMENT;
 		String description = MailHelper.getVariableNamesHelp(BGMailTemplate.allVariableNames(), getLocale());
-		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
-				BusinessGroupListController.class, inputType, description);
+		SingleKey subjectKey = new SingleKey(bundle.getSubjectI18nKey(), InputType.TEXT_ELEMENT);
+		SingleKey bodyKey = new SingleKey(bundle.getBodyI18nKey(), InputType.TEXT_AREA);
+		List<SingleKey> keys = List.of(subjectKey, bodyKey);
+		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys,
+				BusinessGroupListController.class, description);
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 
@@ -294,9 +298,5 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private void doUpdate(TranslationBundle bundle) {
-		bundle.getViewEl().setValue(translate(bundle.getI18nKey()));
 	}
 }

@@ -59,12 +59,12 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	private static final String TXT_NAME_PREFIX = "text.";
 	private static final String LBL_NAME_PREFIX = "lbl.";
 
-	private final String[] i18nItemKeys;
+	private final List<SingleKey> i18nItemKeys;
 	private final Class<?> translatorBaseClass;
-	private final InputType inputType;
 	private final String translatedDescription;
 	private List<I18nRowBundle> bundles;
-	private Map<String, TextElement> textElements;
+	private int counter = 0;
+	
 	private Object uobject;
 
 	@Autowired
@@ -80,7 +80,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	 * @param translatorBaseClass The package to translate
 	 */
 	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, String keyToTranslate, Class<?> translatorBaseClass) {
-		this(ureq, wControl, new String[]{keyToTranslate}, translatorBaseClass, InputType.TEXT_ELEMENT, null);
+		this(ureq, wControl, List.of(new SingleKey(keyToTranslate, InputType.TEXT_ELEMENT)), translatorBaseClass, null);
 	}
 	
 	/**
@@ -89,11 +89,10 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	 * @param wControl The window control
 	 * @param keyToTranslate The key to translate
 	 * @param translatorBaseClass The package to translate
-	 * @param inputType Type of input, textElement, textArea or richTextElement
 	 */
 	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, String keyToTranslate,
 			Class<?> translatorBaseClass, InputType inputType, String translatedDescription) {
-		this(ureq, wControl, new String[]{keyToTranslate}, translatorBaseClass, inputType, translatedDescription);
+		this(ureq, wControl, List.of(new SingleKey(keyToTranslate, inputType)), translatorBaseClass, translatedDescription);
 	}
 	
 	/**
@@ -103,14 +102,12 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	 * @param keysToTranslate array of keys to translate (each key will have the
 	 *          same value, translation is only done once (for each language) !)
 	 * @param translatorBaseClass The package to translate
-	 * @param inputType Type of input, textElement, textArea or richTextElement
 	 * @param translatedDescription the translated form description
 	 */
-	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, String[] keysToTranslate,
-			Class<?> translatorBaseClass, InputType inputType, String translatedDescription) {
+	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, List<SingleKey> keysToTranslates,
+			Class<?> translatorBaseClass, String translatedDescription) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
-		this.inputType = inputType;
-		i18nItemKeys = keysToTranslate;
+		i18nItemKeys = List.copyOf(keysToTranslates);
 		this.translatorBaseClass = translatorBaseClass;
 		this.translatedDescription = translatedDescription;
 		initForm(ureq);
@@ -146,36 +143,40 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		bundles = new ArrayList<>();
 		for (String key : enabledKeys) {
 			Locale loc = i18nMng.getLocaleOrNull(key);
-			if (loc != null) bundles.add(new I18nRowBundle(key, allOverlays.get(loc), loc));
+			if (loc != null) {
+				bundles.add(new I18nRowBundle(key, allOverlays.get(loc), loc));
+			}
 		}
 
 		// build the form
-		textElements = new HashMap<>();
-		for (I18nRowBundle i18nRowBundle : bundles) {
-			String labelId = LBL_NAME_PREFIX + i18nRowBundle.getLanguageKey();
-			String label = i18nRowBundle.getKeyTranslator().getLocale().getDisplayLanguage(getLocale());
+		for (I18nRowBundle bundle:bundles) {
+			String labelId = LBL_NAME_PREFIX + bundle.getLanguageKey();
+			String label = bundle.getKeyTranslator().getLocale().getDisplayLanguage(getLocale());
 			uifactory.addStaticTextElement(labelId, null, label, formLayout);
 
-			String value = "";
-			if (i18nRowBundle.hasTranslationForValue(i18nItemKeys[0])) {
-				value = i18nRowBundle.getKeyTranslator().translate(i18nItemKeys[0]);
+			for(SingleKey i18nItemKey:i18nItemKeys) {
+				String value = "";
+				String i18nKey = i18nItemKey.getI18nKey();
+				if (bundle.hasTranslationForValue(i18nKey)) {
+					value = bundle.getKeyTranslator().translate(i18nKey);
+				}
+				String textId = TXT_NAME_PREFIX + bundle.getLanguageKey() + "." +(++counter);
+				TextElement te;
+				switch (i18nItemKey.getInputType()) {
+					case TEXT_AREA:
+						te = uifactory.addTextAreaElement(textId, null, -1, 8, 60, false, false, value, formLayout);
+						break;
+					case RICH_TEXT_ELEMENT:
+						te = uifactory.addRichTextElementForStringDataMinimalistic(textId, null, value, -1, -1, formLayout, getWindowControl());
+						break;
+					default:
+						te = uifactory.addTextElement(textId, textId, null, 255, value, formLayout);
+						te.setDisplaySize(60);
+						break;
+				}
+				te.setMandatory(true);
+				i18nItemKey.getTextElements().put(bundle.getLanguageKey(), te);
 			}
-			String textId = TXT_NAME_PREFIX + i18nRowBundle.getLanguageKey();
-			TextElement te = null;
-			switch (inputType) {
-				case TEXT_ELEMENT:
-					te = uifactory.addTextElement(textId, textId, null, 255, value, formLayout);
-					te.setDisplaySize(60);
-					break;
-				case TEXT_AREA:
-					te = uifactory.addTextAreaElement(textId, null, -1, 8, 60, false, false, value, formLayout);
-					break;
-				case RICH_TEXT_ELEMENT:
-					te = uifactory.addRichTextElementForStringDataMinimalistic(textId, null, value, -1, -1, formLayout, getWindowControl()); //, null, formLayout, ureq.getUserSession(), getWindowControl());
-					break;
-			}
-			te.setMandatory(true);
-			textElements.put(i18nRowBundle.getLanguageKey(), te);
 		}
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("ok_cancel", getTranslator());
@@ -201,7 +202,7 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	 * @param key
 	 */
 	public void deleteI18nKey(String key){
-		for (I18nRowBundle bundle : bundles) {
+		for (I18nRowBundle bundle:bundles) {
 			I18nItem item = i18nMng.getI18nItem(translatorBaseClass.getPackage().getName(), key, bundle.getOverlayLocale());
 			i18nMng.saveOrUpdateI18nItem(item, "");
 		}
@@ -210,10 +211,11 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// save new values
-		for (I18nRowBundle bundle : bundles) {
-			String newValue = textElements.get(bundle.getLanguageKey()).getValue();
-			for (String itemKey : this.i18nItemKeys) {
-				I18nItem item = i18nMng.getI18nItem(translatorBaseClass.getPackage().getName(), itemKey, bundle.getOverlayLocale());
+		for (I18nRowBundle bundle:bundles) {
+			for (SingleKey i18nItemKey:i18nItemKeys) {
+				String i18nKey = i18nItemKey.getI18nKey();
+				String newValue = i18nItemKey.getTextElements().get(bundle.getLanguageKey()).getValue();
+				I18nItem item = i18nMng.getI18nItem(translatorBaseClass.getPackage().getName(), i18nKey, bundle.getOverlayLocale());
 				i18nMng.saveOrUpdateI18nItem(item, newValue);
 			}
 		}
@@ -268,6 +270,32 @@ public class SingleKeyTranslatorController extends FormBasicController {
 
 		public Translator getKeyTranslator() {
 			return keyTranslator;
+		}
+
+		
+	}
+	
+	public static class SingleKey {
+		
+		private final String i18nKey;
+		private final InputType inputType;
+		private final Map<String,TextElement> textElements = new HashMap<>();
+		
+		public SingleKey(String i18nKey, InputType inputType) {
+			this.i18nKey = i18nKey;
+			this.inputType = inputType;
+		}
+
+		public String getI18nKey() {
+			return i18nKey;
+		}
+
+		public InputType getInputType() {
+			return inputType;
+		}
+		
+		protected Map<String, TextElement> getTextElements() {
+			return textElements;
 		}
 	}
 

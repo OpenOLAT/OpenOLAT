@@ -33,6 +33,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,16 +58,29 @@ public class InactiveMessageController extends BasicController {
 		
 		mainVC = createVelocityContainer("inactive_warn");
 		
-		Date softDeleteDate = businessGroupLifecycleManager.getSoftDeleteDate(businessGroup);
-		long days = DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
-		String i18nKey = days <= 1 ? "warning.readonly.group.singular" : "warning.readonly.group";
+		String i18nKey = "";
+		long days = 0;
+		if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.active) {
+			Date softDeleteDate = businessGroupLifecycleManager.getInactivationDate(businessGroup);
+			days = DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
+			if(groupAdmin) {
+				i18nKey = days > 1 ? "warning.soon.readonly.group.admin.plural" : "warning.soon.readonly.group.admin.singular";
+				reactivateLink = LinkFactory.createCustomLink("reactivate.group", "reactivate", "cancel.inactivate.group", Link.BUTTON_SMALL, mainVC, this);
+			} else {
+				i18nKey = days > 1 ? "warning.soon.readonly.group.plural" : "warning.soon.readonly.group.singular";
+			}
+		} else if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.inactive) {
+			Date softDeleteDate = businessGroupLifecycleManager.getSoftDeleteDate(businessGroup);
+			days = DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
+			if(groupAdmin) {
+				i18nKey = days > 1 ? "warning.readonly.group.admin.plural" : "warning.readonly.group.admin.singular";
+				reactivateLink = LinkFactory.createCustomLink("reactivate.group", "reactivate", "reactivate.group", Link.BUTTON_SMALL, mainVC, this);
+			} else {
+				i18nKey = days > 1 ? "warning.readonly.group.plural" : "warning.readonly.group.singular";
+			}
+		}
 		String message = translate(i18nKey, new String[] { Long.toString(days)} );
 		mainVC.contextPut("message", StringHelper.escapeHtml(message));
-		
-		if(groupAdmin) {
-			reactivateLink = LinkFactory.createCustomLink("reactivate.group", "reactivate", "reactivate.group", Link.BUTTON_SMALL, mainVC, this);
-		}
-		
 		putInitialPanel(mainVC);
 	}
 	
@@ -87,7 +101,7 @@ public class InactiveMessageController extends BasicController {
 	}
 	
 	private void doReactivate(UserRequest ureq) {
-		businessGroup = businessGroupLifecycleManager.reactivateBusinessGroup(businessGroup, getIdentity());
+		businessGroup = businessGroupLifecycleManager.reactivateBusinessGroup(businessGroup, getIdentity(), false);//TODO group
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

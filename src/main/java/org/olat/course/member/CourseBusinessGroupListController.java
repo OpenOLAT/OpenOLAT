@@ -99,7 +99,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 	@Override
 	protected void initButtons(FormItemContainer formLayout, UserRequest ureq) {
-		initButtons(formLayout, ureq, !readOnly, false, false);
+		initButtons(formLayout, ureq, !readOnly, false, false, false);
 		
 		tableEl.setMultiSelect(!readOnly);
 		tableEl.setSelectAllEnable(!readOnly);

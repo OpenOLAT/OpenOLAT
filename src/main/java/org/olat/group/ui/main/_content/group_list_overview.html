@@ -1,4 +1,10 @@
-$r.render("segments")
-<div class="o_segments_content">
+<div class="o_sel_group_lists">
+#if($r.isTrue($withSegment))
+	$r.render("segments")
+	<div class="o_segments_content">
+		$r.render("groupList")
+	</div>
+#else
 	$r.render("groupList")
+#end
 </div>

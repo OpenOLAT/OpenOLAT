@@ -97,7 +97,13 @@ public class BusinessGroupDAO {
 				Integer minParticipants, Integer maxParticipants, boolean waitingListEnabled, boolean autoCloseRanksEnabled,
 				boolean showOwners, boolean showParticipants, boolean showWaitingList, Boolean allowToLeave) {
 
-		BusinessGroupImpl businessgroup = new BusinessGroupImpl(name, description);
+		BusinessGroupImpl businessgroup = new BusinessGroupImpl();
+		businessgroup.setCreationDate(new Date());
+		businessgroup.setLastModified(businessgroup.getCreationDate());
+		businessgroup.setLastUsage(businessgroup.getCreationDate());
+		businessgroup.setName(name);
+		businessgroup.setDescription(description);
+		
 		businessgroup.setGroupStatus(BusinessGroupStatusEnum.active);
 		if(minParticipants != null && minParticipants.intValue() >= 0) {
 			businessgroup.setMinParticipants(minParticipants);
@@ -449,13 +455,12 @@ public class BusinessGroupDAO {
 		}
 
 		List<Long> groupKeys = PersistenceHelper.toKeys(groups);
-		List<Long> res = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
 				.setParameter("groupKeys", groupKeys)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("roles", roles)
 				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
-		return res;
 	}
 	
 	public List<BusinessGroup> findBusinessGroup(Identity identity, int maxResults, BusinessGroupOrder... ordering) {
@@ -477,7 +482,6 @@ public class BusinessGroupDAO {
 					case creationDateDesc: sb.append("bgi.creationDate desc");break;
 				}
 			}
-			//sb.append(" gp.key ");
 		}
 
 		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager()

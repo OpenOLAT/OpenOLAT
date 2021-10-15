@@ -25,7 +25,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
@@ -55,14 +54,12 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class OverviewBusinessGroupListController extends BasicController implements Activateable2 {
 	
 	private Link groupsLink;
-	private Link searchOpenLink;
-	private final Link openGroupsLink;
+	private Link lifecycleLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 
 	private Controller currentCtrl;
 	private BusinessGroupListWrapperController myGroupsCtrl;
-	private OpenBusinessGroupListController openGroupsCtrl;
 	private OverviewBusinessGroupLifecycleController lifecylceCtrl;
 	
 	private final boolean isGuestOnly;
@@ -72,31 +69,24 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		
 		mainVC = createVelocityContainer("group_list_overview");
-		
-		MainPanel mainPanel = new MainPanel("myCoursesMainPanel");
-		mainPanel.setDomReplaceable(false);
-		mainPanel.setContent(mainVC);
-
+	
 		//segmented view
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		if(!isGuestOnly) {
-			groupsLink = LinkFactory.createLink("my.groups", mainVC, this);
+			groupsLink = LinkFactory.createLink("main.menu.title", mainVC, this);
 			groupsLink.setElementCssClass("o_sel_group_all_groups_seg");
 			segmentView.addSegment(groupsLink, false);
 		}
-
-		openGroupsLink = LinkFactory.createLink("open.groups", mainVC, this);
-		openGroupsLink.setElementCssClass("o_sel_group_open_groups_seg");
-		segmentView.addSegment(openGroupsLink, false);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		if(roles.isGroupManager() || roles.isAdministrator()) {
-			searchOpenLink = LinkFactory.createLink("opengroups.search.admin", mainVC, this);
-			searchOpenLink.setElementCssClass("o_sel_group_lifecyle_groups_seg");
-			segmentView.addSegment(searchOpenLink, false);
+			lifecycleLink = LinkFactory.createLink("opengroups.search.admin", mainVC, this);
+			lifecycleLink.setElementCssClass("o_sel_group_lifecyle_groups_seg");
+			segmentView.addSegment(lifecycleLink, false);
+			mainVC.contextPut("withSegment", Boolean.TRUE);
 		}
 		
-		putInitialPanel(mainPanel);
+		putInitialPanel(mainVC);
 	}
 	
 	@Override
@@ -105,7 +95,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void event(UserRequest ureq, Component source, Event event) {			
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
 				SegmentViewEvent sve = (SegmentViewEvent)event;
@@ -116,9 +106,7 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 					BusinessGroupListWrapperController bController = updateGroups(ureq);
 					bController.activate(ureq, null, null);
 					selectedController = bController;
-				} else if (clickedLink == openGroupsLink) {
-					selectedController = updateOpenGroups(ureq);
-				} else if (clickedLink == searchOpenLink) {
+				} else if (clickedLink == lifecycleLink) {
 					OverviewBusinessGroupLifecycleController lifecycleCtrl = updateSearch(ureq);
 					lifecycleCtrl.activate(ureq, null, null);
 					selectedController = lifecycleCtrl;
@@ -131,51 +119,31 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 	private void cleanUp() {
 		removeAsListenerAndDispose(myGroupsCtrl);
 		removeAsListenerAndDispose(lifecylceCtrl);
-		removeAsListenerAndDispose(openGroupsCtrl);
 		myGroupsCtrl = null;
 		lifecylceCtrl = null;
-		openGroupsCtrl = null;
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			if(currentCtrl == null) {
-				if(isGuestOnly) {
-					updateOpenGroups(ureq);
-					segmentView.select(openGroupsLink);
-				} else {
-					updateGroups(ureq).activate(ureq, null, null);
-					segmentView.select(groupsLink);
-				}
+				updateGroups(ureq).activate(ureq, null, null);
+				segmentView.select(groupsLink);
 			}
 			addToHistory(ureq, currentCtrl);
 		} else {
 			ContextEntry entry = entries.get(0);
 			String segment = entry.getOLATResourceable().getResourceableTypeName();
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			if("Groups".equals(segment) || "AllGroups".equals(segment)) {
-				if(isGuestOnly) {
-					updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
-					segmentView.select(openGroupsLink);
-				} else {
-					updateGroups(ureq).activate(ureq, subEntries, state);
-					segmentView.select(groupsLink);
-				}
-			} else if("OwnedGroups".equals(segment)) {
-				updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
-				segmentView.select(openGroupsLink);
-			} else if("Search".equals(segment) && searchOpenLink != null) {
+			if("Groups".equals(segment) || "AllGroups".equals(segment) || "OwnedGroups".equals(segment)) {
+				updateGroups(ureq).activate(ureq, subEntries, state);
+				segmentView.select(groupsLink);
+			} else if("Search".equals(segment) && lifecycleLink != null) {
 				updateSearch(ureq).activate(ureq, subEntries, entry.getTransientState());
-				segmentView.select(searchOpenLink);
+				segmentView.select(lifecycleLink);
 			} else {//default all groups
-				if(isGuestOnly) {
-					updateOpenGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
-					segmentView.select(openGroupsLink);
-				} else {
-					updateGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
-					segmentView.select(groupsLink);
-				}
+				updateGroups(ureq).activate(ureq, subEntries, entry.getTransientState());
+				segmentView.select(groupsLink);
 			}
 		}
 	}
@@ -193,22 +161,6 @@ public class OverviewBusinessGroupListController extends BasicController impleme
 		mainVC.put("groupList", myGroupsCtrl.getInitialComponent());
 		addToHistory(ureq, myGroupsCtrl);
 		return myGroupsCtrl;
-	}
-	
-	private OpenBusinessGroupListController updateOpenGroups(UserRequest ureq) {
-		cleanUp();
-		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("OwnedGroups", 0l);
-		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		openGroupsCtrl = new OpenBusinessGroupListController(ureq, bwControl, "public");
-		listenTo(openGroupsCtrl);
-		currentCtrl = openGroupsCtrl;
-
-		openGroupsCtrl.doDefaultSearch();
-		mainVC.put("groupList", openGroupsCtrl.getInitialComponent());
-		addToHistory(ureq, openGroupsCtrl);
-		return openGroupsCtrl;
 	}
 	
 	private OverviewBusinessGroupLifecycleController updateSearch(UserRequest ureq) {

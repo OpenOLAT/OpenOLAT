@@ -416,8 +416,8 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 				-1, -1, false, false, null);
 		group1 = setLastUsage(group1,  BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -910));
 
-		group1 = lifecycleManager.changeBusinessGroupStatus(group1, BusinessGroupStatusEnum.inactive, coach);
-		group1 = lifecycleManager.changeBusinessGroupStatus(group1, BusinessGroupStatusEnum.active, coach);
+		group1 = lifecycleManager.changeBusinessGroupStatus(group1, BusinessGroupStatusEnum.inactive, coach, false);
+		group1 = lifecycleManager.changeBusinessGroupStatus(group1, BusinessGroupStatusEnum.active, coach, false);
 		dbInstance.commitAndCloseSession();
 		
 		BusinessGroup reloadedGroup1 = businessGroupService.loadBusinessGroup(group1);
@@ -621,8 +621,8 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		setLastUsage(group, BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -180));
 		dbInstance.commitAndCloseSession();
 		
-		group = lifecycleManager.changeBusinessGroupStatus(group, BusinessGroupStatusEnum.inactive, coach);
-		group = lifecycleManager.changeBusinessGroupStatus(group, BusinessGroupStatusEnum.active, coach);
+		group = lifecycleManager.changeBusinessGroupStatus(group, BusinessGroupStatusEnum.inactive, coach, false);
+		group = lifecycleManager.changeBusinessGroupStatus(group, BusinessGroupStatusEnum.active, coach, false);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(group.getLastUsage());

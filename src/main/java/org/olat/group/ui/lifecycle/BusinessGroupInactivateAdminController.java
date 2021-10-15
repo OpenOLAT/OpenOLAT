@@ -43,6 +43,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.InputType;
+import org.olat.core.util.i18n.ui.SingleKeyTranslatorController.SingleKey;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.ui.BGMailHelper.BGMailTemplate;
@@ -67,8 +69,8 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 	private SpacerElement reactivationMailSpacer;
 	
 	private int counter = 0;
-	private TranslationBundles mailAfterDeactivationBundles;
-	private TranslationBundles mailBeforeDeactivationBundles;
+	private TranslationBundle mailAfterDeactivationBundle;
+	private TranslationBundle mailBeforeDeactivationBundle;
 	
 	private CloseableModalController cmc;
 	private SingleKeyTranslatorController translatorCtrl;
@@ -104,6 +106,7 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 		modeValues.add(new SelectionValue("manual-wo", translate("mode.deactivation.manual.wo.grace"), translate("mode.deactivation.manual.wo.grace.desc")));
 		modeValues.add(new SelectionValue("manual-with", translate("mode.deactivation.manual.with.grace"), translate("mode.deactivation.manual.with.grace.desc")));
 		enableDeactivationEl = uifactory.addCardSingleSelectHorizontal("inactivation.mode", formLayout, modeValues.keys(), modeValues.values(), modeValues.descriptions(), null);
+		enableDeactivationEl.setElementCssClass("o_radio_cards_lg");
 		enableDeactivationEl.addActionListener(FormEvent.ONCHANGE);
 		
 		boolean automaticEnabled = businessGroupModule.isAutomaticGroupInactivationEnabled();
@@ -136,10 +139,9 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 		initDays(numberOfDayBeforeDeactivationMailEl, "days");
 		
 		// subject + content mail
-		TranslationBundle beforeBundleSubject = initForm("mail.before.deactivation.subject.label", "notification.mail.before.deactivation.subject", false, formLayout);
-		TranslationBundle beforeBundle = initForm("mail.before.deactivation.body.label", "notification.mail.before.deactivation.body", true, formLayout);
-		mailBeforeDeactivationBundles = new TranslationBundles(beforeBundleSubject, beforeBundle);
-		
+		mailBeforeDeactivationBundle = initForm("mail.before.deactivation.label",
+				"notification.mail.before.deactivation.subject", "notification.mail.before.deactivation.body", formLayout);
+
 		// Copy mail before deactivation 
 		List<String> beforeCopyAn = businessGroupModule.getMailCopyBeforeDeactivation();
 		copyMailBeforeDeactivationEl = uifactory.addTextElement("copy.mail.before.deactivation", -1, StringUtils.join(beforeCopyAn, ", "), formLayout);
@@ -158,9 +160,8 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 		enableMailAfterDeactivationEl.addActionListener(FormEvent.ONCHANGE);
 		enableMailAfterDeactivationEl.select(businessGroupModule.isMailAfterDeactivation() ? "true" : "false", true);
 		
-		TranslationBundle afterBundleSubject = initForm("mail.after.deactivation.subject.label", "notification.mail.after.deactivation.subject", false, formLayout);
-		TranslationBundle afterBundle = initForm("mail.after.deactivation.body.label", "notification.mail.after.deactivation.body", true, formLayout);
-		mailAfterDeactivationBundles = new TranslationBundles(afterBundleSubject, afterBundle);
+		mailAfterDeactivationBundle = initForm("mail.after.deactivation.label",
+				"notification.mail.after.deactivation.subject", "notification.mail.after.deactivation.body", formLayout);
 		
 		// Copy mail before deactivation 
 		List<String> afterCopyAn = businessGroupModule.getMailCopyBeforeDeactivation();
@@ -175,12 +176,13 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 		textEl.setTextAddOn(addOnKey);
 	}
 	
-	private TranslationBundle initForm(String labelI18nKey, String textI18nKey, boolean textArea, FormItemContainer formLayout) {
-		String text = translate(textI18nKey);
-		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, text, formLayout);
-		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translation.edit", null, formLayout, Link.LINK);
-		TranslationBundle bundle = new TranslationBundle(textI18nKey, labelI18nKey, viewEl, translationLink, textArea);
+	private TranslationBundle initForm(String labelI18nKey, String subjectI18nKey, String bodyI18nKey, FormItemContainer formLayout) {
+		StaticTextElement viewEl = uifactory.addStaticTextElement("view." + counter++, labelI18nKey, "", formLayout);
+		viewEl.setElementCssClass("o_omit_margin");
+		FormLink translationLink = uifactory.addFormLink("translate." + counter++, "translation.edit", null, formLayout, Link.BUTTON);
+		TranslationBundle bundle = new TranslationBundle(labelI18nKey,  subjectI18nKey, bodyI18nKey, viewEl, translationLink);
 		translationLink.setUserObject(bundle);
+		bundle.update(getTranslator());
 		return bundle;
 	}
 
@@ -192,7 +194,7 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(translatorCtrl == source) {
-			doUpdate((TranslationBundle)translatorCtrl.getUserObject());
+			((TranslationBundle)translatorCtrl.getUserObject()).update(getTranslator());
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
@@ -244,11 +246,11 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 		numberOfDayBeforeDeactivationMailEl.setVisible(reactivationPeriodEnabled);
 		copyMailBeforeDeactivationEl.setVisible(reactivationPeriodEnabled);
 		reactivationMailSpacer.setVisible(reactivationPeriodEnabled);
-		mailBeforeDeactivationBundles.setVisible(reactivationPeriodEnabled);
+		mailBeforeDeactivationBundle.setVisible(reactivationPeriodEnabled);
 		
 		boolean mailAfterDeactivation = isSendMailAfterDeactiovation();
 		copyMailAfterDeactivationEl.setVisible(mailAfterDeactivation);
-		mailAfterDeactivationBundles.setVisible(mailAfterDeactivation);
+		mailAfterDeactivationBundle.setVisible(mailAfterDeactivation);
 	}
 	
 	private boolean isSendMailAfterDeactiovation() {
@@ -297,10 +299,12 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 	private void doTranslate(UserRequest ureq, TranslationBundle bundle) {
 		if(guardModalController(translatorCtrl)) return;
 
-		SingleKeyTranslatorController.InputType inputType = bundle.isTextArea() ? SingleKeyTranslatorController.InputType.TEXT_AREA : SingleKeyTranslatorController.InputType.TEXT_ELEMENT;
 		String description = MailHelper.getVariableNamesHelp(BGMailTemplate.allVariableNames(), getLocale());
-		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), bundle.getI18nKey(),
-				BusinessGroupListController.class, inputType, description);
+		SingleKey subjectKey = new SingleKey(bundle.getSubjectI18nKey(), InputType.TEXT_ELEMENT);
+		SingleKey bodyKey = new SingleKey(bundle.getBodyI18nKey(), InputType.TEXT_AREA);
+		List<SingleKey> keys = List.of(subjectKey, bodyKey);
+		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), keys,
+				BusinessGroupListController.class, description);
 		translatorCtrl.setUserObject(bundle);
 		listenTo(translatorCtrl);
 
@@ -308,9 +312,5 @@ public class BusinessGroupInactivateAdminController extends FormBasicController 
 		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
-	}
-	
-	private void doUpdate(TranslationBundle bundle) {
-		bundle.getViewEl().setValue(translate(bundle.getI18nKey()));
 	}
 }
