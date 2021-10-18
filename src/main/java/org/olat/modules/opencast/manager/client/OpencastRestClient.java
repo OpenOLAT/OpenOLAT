@@ -143,9 +143,6 @@ public class OpencastRestClient {
 			deleted &= deleteEventFromAdmin(identifier);
 			
 		}
-		if (isEpisodeExisting(identifier)) {
-			deleted &= deleteEpisode(identifier);
-		}
 		return deleted;
 	}
 
@@ -158,7 +155,7 @@ public class OpencastRestClient {
 				CloseableHttpResponse response = client.execute(request)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			log.debug("Status code of: {} {}", uri, statusCode);
-			if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_OK) {
+			if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_ACCEPTED || statusCode == HttpStatus.SC_OK) {
 				return true;
 			}
 		} catch(Exception e) {
@@ -243,24 +240,6 @@ public class OpencastRestClient {
 				String json = EntityUtils.toString(response.getEntity(), "UTF-8");
 				SearchResult result = objectMapper.readValue(json, SearchResult.class);
 				return result.getSearchResults().getTotal() > 0;
-			}
-		} catch(Exception e) {
-			log.error("Cannot send: {}", uri, e);
-		}
-		return false;
-	}
-
-	private boolean deleteEpisode(String identifier) {
-		URI uri = URI.create(opencastModule.getApiPresentationUrl() + "/" + identifier);
-		HttpDelete request = new HttpDelete(uri);
-		decorateRequest(request);
-		
-		try(CloseableHttpClient client = httpClientService.createHttpClient();
-				CloseableHttpResponse response = client.execute(request)) {
-			int statusCode = response.getStatusLine().getStatusCode();
-			log.debug("Status code of: {} {}", uri, statusCode);
-			if (statusCode == HttpStatus.SC_NO_CONTENT || statusCode == HttpStatus.SC_OK) {
-				return true;
 			}
 		} catch(Exception e) {
 			log.error("Cannot send: {}", uri, e);

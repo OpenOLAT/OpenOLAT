@@ -222,7 +222,7 @@ public class BigBlueButtonOpenCastRecordingsHandler implements BigBlueButtonReco
 		for (BigBlueButtonRecording recording : recordings) {
 			boolean ok = opencastService.deleteEvents(recording.getRecordId());			
 			if (!ok) {
-				log.warn("Could not delete open case event::{} for meetingId::{})", recording.getRecordId(),  meeting.getMeetingId());
+				log.warn("Could not delete Opencast event::{} for meetingId::{})", recording.getRecordId(),  meeting.getMeetingId());
 				errors.append(new BigBlueButtonError(BigBlueButtonErrorCodes.unkown));
 				return false;
 			}

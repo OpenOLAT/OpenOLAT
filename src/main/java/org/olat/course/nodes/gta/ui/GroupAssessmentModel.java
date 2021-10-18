@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.id.User;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -58,7 +59,10 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 	
 	@Override
 	public void sort(SortKey sortKey) {
-		//
+		if(sortKey != null) {
+			List<AssessmentRow> views = new SortableFlexiTableModelDelegate<>(sortKey, this, null).sort();
+			super.setObjects(views);
+		}
 	}
 	
 	@Override
