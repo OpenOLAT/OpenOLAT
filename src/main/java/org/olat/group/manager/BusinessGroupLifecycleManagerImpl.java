@@ -138,7 +138,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		if(inactivationEmailDate != null) {
 			deactivation = DateUtils.addDays(inactivationEmailDate, businessGroupModule.getNumberOfDayBeforeDeactivationMail());
 		} else if(businessGroup.getReactivationDate() != null) {
-			Date reactivation = ((BusinessGroupImpl)businessGroup).getReactivationDate();
+			Date reactivation = businessGroup.getReactivationDate();
 			deactivation = DateUtils.addDays(reactivation, businessGroupModule.getNumberOfDayReactivationPeriod());
 		}
 		
