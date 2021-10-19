@@ -665,7 +665,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				reminderLink.setUrl(BusinessControlFactory.getInstance()
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Reminders:0]"));
 				reminderLink.setElementCssClass("o_sel_course_reminders");
-				reminderLink.setVisible(!uce.isCourseReadOnly());
+				reminderLink.setVisible(uce != null && !uce.isCourseReadOnly());
 				tools.addComponent(reminderLink);
 			}
 			
@@ -677,7 +677,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[AssessmentMode:0]"));
 				assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
 				assessmentModeLink.setEnabled(!managed);
-				assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled() && !uce.isCourseReadOnly());
+				assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled() && uce != null && !uce.isCourseReadOnly());
 				tools.addComponent(assessmentModeLink);
 			}
 
