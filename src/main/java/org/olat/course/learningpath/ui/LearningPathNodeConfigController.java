@@ -136,6 +136,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		initForm(ureq);
 		updateUI();
 		loadExceptionalObligations();
+		updateExceptionalObligationsUI(allRows.size() > 1); // One for the default obligation
 	}
 
 	@Override
@@ -188,7 +189,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		hideExceptionalObligationLink = uifactory.addFormLink("hide.exceptional.obligation", "on", "on", obligationCont, Link.LINK);
 		hideExceptionalObligationLink.setCustomEnabledLinkCSS("o_button_toggle o_on");
-		hideExceptionalObligationLink.setIconLeftCSS("o_icon o_icon_toggle");
+		hideExceptionalObligationLink.setIconRightCSS("o_icon o_icon_toggle");
 		
 		Date startDate = learningPathConfigs.getStartDate();
 		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);
@@ -293,8 +294,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		allRows = new ArrayList<>(exceptionalObligations.size());
 		addDefaultObligationRow(allRows);
 		addExceptionalObligationRows(exceptionalObligations);
-		
-		updateExceptionalObligationsUI(allRows.size() > 1); // One for the default obligation
 	}
 
 	private void addDefaultObligationRow(List<ExceptionalObligationRow> rows) {
@@ -528,6 +527,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		}
 		learningPathConfigs.setExceptionalObligations(exeptionalObligations);
 		loadExceptionalObligations();
+		updateExceptionalObligationsUI((Boolean)obligationCont.contextGet("exceptional"));
 		
 		Date startDate = startDateEl.getDate();
 		learningPathConfigs.setStartDate(startDate);
