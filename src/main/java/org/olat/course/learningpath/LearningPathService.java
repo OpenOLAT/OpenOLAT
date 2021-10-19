@@ -22,6 +22,7 @@ package org.olat.course.learningpath;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
 import org.olat.course.nodes.CourseNode;
@@ -36,6 +37,17 @@ import org.olat.repository.RepositoryEntry;
 public interface LearningPathService {
 
 	public LearningPathConfigs getConfigs(CourseNode courseNode);
+	
+	/**
+	 * Get the LearningPathConfigs. This method has to be used, if the courseNode is
+	 * not part of the tree. This is e.g. the case if the courseNode is extracted
+	 * from the CourseEditorTreeNode. The parent may be used to update the configs.
+	 *
+	 * @param courseNode
+	 * @param parent
+	 * @return
+	 */
+	public LearningPathConfigs getConfigs(CourseNode courseNode, INode parent);
 	
 	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode);
 	

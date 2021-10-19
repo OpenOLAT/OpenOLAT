@@ -22,6 +22,7 @@ package org.olat.repository.ui.author.copy.wizard.general;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -256,11 +257,6 @@ public class CourseOverviewStep extends BasicStep {
 			tableItems.setRootForm(mainForm);
 			formLayout.add(tableItems);
 			
-			SelectionValues obligationModes = new SelectionValues();
-			SelectionValue optional = new SelectionValue(AssessmentObligation.optional.name(), translate("config.obligation.optional"));
-			SelectionValue mandatory = new SelectionValue(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory"));
-			obligationModes.add(optional, mandatory);
-			
 			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"));
 			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"));
 			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"));
@@ -273,42 +269,58 @@ public class CourseOverviewStep extends BasicStep {
 			
 			for (CopyCourseOverviewRow row : context.getCourseNodes()) {
 				if (row.getLearningPathConfigs() != null) {
-					if (row.getLearningPathConfigs().getObligation() != null) {
-						// Obligation chooser
-						if (row.getObligationChooser() == null) {
-							SingleSelection obligationChooser = uifactory.addDropdownSingleselect("obligation_" + row.getCourseNode().getIdent(), tableItems, obligationModes.keys(), obligationModes.values());
-							obligationChooser.setUserObject(row);
-							obligationChooser.addActionListener(FormEvent.ONCHANGE);
+					if (row.getObligationChooser() == null && row.getLearningPathConfigs().getObligation() != null && !row.getLearningPathConfigs().getAvailableObligations().isEmpty()) {
+						Set<AssessmentObligation> availableObligations = row.getLearningPathConfigs().getAvailableObligations();
+						SelectionValues obligationModes = new SelectionValues();
+						if (availableObligations.contains(AssessmentObligation.mandatory)) {
+							obligationModes.add(new SelectionValue(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
+						}
+						if (availableObligations.contains(AssessmentObligation.optional)) {
+							obligationModes.add(new SelectionValue(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
+						}
+						if (availableObligations.contains(AssessmentObligation.excluded)) {
+							obligationModes.add(new SelectionValue(AssessmentObligation.excluded.name(), translate("config.obligation.excluded")));
+						}
+						if (availableObligations.contains(AssessmentObligation.evaluated)) {
+							obligationModes.add(new SelectionValue(AssessmentObligation.evaluated.name(), translate("config.obligation.evaluated")));
+						}
+						
+						SingleSelection obligationChooser = uifactory.addDropdownSingleselect("obligation_" + row.getCourseNode().getIdent(), tableItems, obligationModes.keys(), obligationModes.values());
+						obligationChooser.setUserObject(row);
+						obligationChooser.addActionListener(FormEvent.ONCHANGE);
+						if (obligationChooser.containsKey(row.getLearningPathConfigs().getObligation().name())) {
 							obligationChooser.select(row.getLearningPathConfigs().getObligation().name(), true);
-							row.setObligationChooser(obligationChooser);
+						} else {
+							obligationChooser.select(obligationChooser.getKey(0), true);
 						}
+						row.setObligationChooser(obligationChooser);
+					}
 						
-						// Start date chooser
-						Date startDate = calculateDate(row.getStart(), context.getDateDifference());
-						DateChooser startDateChooser = uifactory.addDateChooser("start_" + row.getCourseNode().getIdent(), startDate, tableItems);
-						startDateChooser.setUserObject(row);
-						startDateChooser.addActionListener(FormEvent.ONCHANGE);
-						startDateChooser.setInitialDate(startDate);
-						//startDateChooser.setDateChooserTimeEnabled(true);
-						startDateChooser.setKeepTime(true);
-						row.setNewStartDateChooser(startDateChooser);
-						if (row.getNewStartDate() != null) {
-							startDateChooser.setDate(row.getNewStartDate());
-						}
-						
-						// End date chooser
-						Date endDate = calculateDate(row.getEnd(), context.getDateDifference());
-						DateChooser endDateChooser = uifactory.addDateChooser("end_" + row.getCourseNode().getIdent(), endDate, tableItems);
-						endDateChooser.setUserObject(row);
-						endDateChooser.addActionListener(FormEvent.ONCHANGE);
-						endDateChooser.setInitialDate(endDate);
-						//endDateChooser.setDateChooserTimeEnabled(true);
-						endDateChooser.setKeepTime(true);
-						endDateChooser.setVisible(row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name()));
-						row.setNewEndDateChooser(endDateChooser);
-						if (row.getNewEndDate() != null) {
-							endDateChooser.setDate(row.getNewEndDate());
-						}
+					// Start date chooser
+					Date startDate = calculateDate(row.getStart(), context.getDateDifference());
+					DateChooser startDateChooser = uifactory.addDateChooser("start_" + row.getCourseNode().getIdent(), startDate, tableItems);
+					startDateChooser.setUserObject(row);
+					startDateChooser.addActionListener(FormEvent.ONCHANGE);
+					startDateChooser.setInitialDate(startDate);
+					//startDateChooser.setDateChooserTimeEnabled(true);
+					startDateChooser.setKeepTime(true);
+					row.setNewStartDateChooser(startDateChooser);
+					if (row.getNewStartDate() != null) {
+						startDateChooser.setDate(row.getNewStartDate());
+					}
+					
+					// End date chooser
+					Date endDate = calculateDate(row.getEnd(), context.getDateDifference());
+					DateChooser endDateChooser = uifactory.addDateChooser("end_" + row.getCourseNode().getIdent(), endDate, tableItems);
+					endDateChooser.setUserObject(row);
+					endDateChooser.addActionListener(FormEvent.ONCHANGE);
+					endDateChooser.setInitialDate(endDate);
+					//endDateChooser.setDateChooserTimeEnabled(true);
+					endDateChooser.setKeepTime(true);
+					endDateChooser.setVisible(row.getObligationChooser() != null && row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name()));
+					row.setNewEndDateChooser(endDateChooser);
+					if (row.getNewEndDate() != null) {
+						endDateChooser.setDate(row.getNewEndDate());
 					}
 				}
 				

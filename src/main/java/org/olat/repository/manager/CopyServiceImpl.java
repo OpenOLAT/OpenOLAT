@@ -51,11 +51,12 @@ import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
-import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
+import org.olat.group.ui.main.BGTableItem;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -312,7 +313,7 @@ public class CopyServiceImpl implements CopyService {
 		case custom:
 			switch (context.getCustomGroupCopyType()) {
 				case copy:
-					List<BusinessGroup> groupsToCopy = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(group -> group.getKey()).collect(Collectors.toList()));
+					List<BusinessGroup> groupsToCopy = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(BGTableItem::getKey).collect(Collectors.toList()));
 					List<BusinessGroup> customCopiedGroups = new ArrayList<>();
 					List<BusinessGroupReference> customCopiedGroupReferences = new ArrayList<>();
 					for (BusinessGroup group : groupsToCopy) {
@@ -329,7 +330,7 @@ public class CopyServiceImpl implements CopyService {
 					businessGroupService.addResourcesTo(customCopiedGroups, Collections.singletonList(target));
 					break;
 				case reference:
-					List<BusinessGroup> groupsToReference = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(group -> group.getKey()).collect(Collectors.toList()));
+					List<BusinessGroup> groupsToReference = businessGroupService.loadBusinessGroups(context.getGroups().stream().map(BGTableItem::getKey).collect(Collectors.toList()));
 					businessGroupService.addResourcesTo(groupsToReference, Collections.singletonList(target));
 					
 					List<BusinessGroupReference> newCustomReferencedGroups = new ArrayList<>();
@@ -535,10 +536,9 @@ public class CopyServiceImpl implements CopyService {
 	
 	protected void moveDates(CopyCourseContext context, ICourse course, Map<String, CopyCourseOverviewRow> sourceCourseNodesMap) {
 		if (context.getCourseNodes() != null) {
-			CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
-			
 			for (String ident : sourceCourseNodesMap.keySet()) {
-				LearningPathConfigs targetConfigs = learningPathService.getConfigs(editorTreeModel.getCourseNode(ident));
+				CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(ident);
+				LearningPathConfigs targetConfigs = learningPathService.getConfigs(editorTreeNode.getCourseNode(), editorTreeNode.getParent());
 				
 				// If the course overview step has been shown, the 
 				if (context.isCustomConfigsLoaded()) {

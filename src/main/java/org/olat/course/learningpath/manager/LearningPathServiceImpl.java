@@ -77,7 +77,12 @@ public class LearningPathServiceImpl implements LearningPathService, GenericEven
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
 		return registry.getLearningPathNodeHandler(courseNode).getConfigs(courseNode);
 	}
-
+	
+	@Override
+	public LearningPathConfigs getConfigs(CourseNode courseNode, INode parent) {
+		return registry.getLearningPathNodeHandler(courseNode).getConfigs(courseNode, parent);
+	}
+	
 	@Override
 	public LearningPathEditConfigs getEditConfigs(CourseNode courseNode) {
 		return registry.getLearningPathNodeHandler(courseNode).getEditConfigs();

@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.st.assessment;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -54,9 +55,11 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	public static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
 	
 	private final ModuleConfiguration moduleConfigs;
+	private final boolean isRoot;
 
-	public STLearningPathConfigs(ModuleConfiguration moduleConfigs) {
+	public STLearningPathConfigs(ModuleConfiguration moduleConfigs, INode parent) {
 		this.moduleConfigs = moduleConfigs;
+		this.isRoot = parent == null;
 	}
 	
 	public void updateDefaults(INode parent) {
@@ -96,7 +99,7 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public Set<AssessmentObligation> getAvailableObligations() {
-		return AVAILABLE_OBLIGATIONS;
+		return isRoot? Collections.emptySet(): AVAILABLE_OBLIGATIONS;
 	}
 
 	@Override

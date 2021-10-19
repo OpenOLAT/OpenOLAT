@@ -552,7 +552,8 @@ public class NodeLayoutController extends FormBasicController {
 				overviewBuilder.withTeaserImage(mapper, previewStyle);
 			}
 			if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
-				LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+				CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
+				LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 				overviewBuilder.withDuration(learningPathConfigs.getDuration());
 				overviewBuilder.withStartDate(learningPathConfigs.getStartDate());
 				overviewBuilder.withEndDate(learningPathConfigs.getEndDate());

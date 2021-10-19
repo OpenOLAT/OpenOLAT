@@ -67,6 +67,7 @@ import org.olat.course.learningpath.obligation.ExceptionalObligationController;
 import org.olat.course.learningpath.obligation.ExceptionalObligationHandler;
 import org.olat.course.learningpath.ui.ExceptionalObligationDataModel.ExceptionalObligationCols;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,7 +128,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		this.courseEntry = courseEntry;
 		this.course = CourseFactory.loadCourse(courseEntry);
 		this.courseNode = courseNode;
-		this.learningPathConfigs = learningPathService.getConfigs(courseNode);
+		CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
+		this.learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 		this.editConfigs = editConfigs;
 		this.selectedObligation = learningPathConfigs.getObligation() != null
 				? learningPathConfigs.getObligation()

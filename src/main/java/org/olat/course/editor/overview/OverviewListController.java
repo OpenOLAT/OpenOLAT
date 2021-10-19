@@ -233,7 +233,8 @@ public class OverviewListController extends FormBasicController implements Flexi
 		row.setParent(parent);
 		row.setTranslatedDisplayOption(getTranslatedDisplayOption(courseNode));
 		if (learningPath) {
-			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+			CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
+			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 			row.setDuration(learningPathConfigs.getDuration());
 			row.setTranslatedObligation(getTranslatedObligation(learningPathConfigs));
 			row.setStart(learningPathConfigs.getStartDate());

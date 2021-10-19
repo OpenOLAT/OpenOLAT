@@ -41,6 +41,13 @@ public interface LearningPathNodeHandler extends CourseNodeProvider {
 	
 	public LearningPathConfigs getConfigs(CourseNode courseNode);
 	
+	/**
+	 * @param parent may be used init or update the configs. 
+	 */
+	public default LearningPathConfigs getConfigs(CourseNode courseNode, INode parent) {
+		return getConfigs(courseNode);
+	}
+	
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode);
 	

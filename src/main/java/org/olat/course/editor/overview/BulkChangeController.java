@@ -52,6 +52,7 @@ import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -75,9 +76,10 @@ public class BulkChangeController extends FormBasicController {
 	private Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>();
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
 
+	private final ICourse course;
+	private final List<CourseNode> courseNodes;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private final boolean learningPath;
-	private final List<CourseNode> courseNodes;
 
 	@Autowired
 	private NodeAccessService nodeAccessService;
@@ -90,9 +92,10 @@ public class BulkChangeController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
+		this.course = course;
+		this.courseNodes = courseNodes;
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
-		this.courseNodes = courseNodes;
 		initForm(ureq);
 	}
 
@@ -271,7 +274,8 @@ public class BulkChangeController extends FormBasicController {
 	}
 	
 	private void formOKLearningPath(CourseNode courseNode) {
-		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+		CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
+		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 		if (isEnabled(durationEl)) {
 			Integer duration = Integer.valueOf(durationEl.getValue());
 			learningPathConfigs.setDuration(duration);

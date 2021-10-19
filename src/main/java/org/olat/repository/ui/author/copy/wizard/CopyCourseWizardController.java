@@ -235,7 +235,8 @@ public class CopyCourseWizardController extends BasicController {
 		row.setParent(parent);
 		row.setTranslatedDisplayOption(getTranslatedDisplayOption(courseNode));
 		if (copyContext.isLearningPath()) {
-			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode, editorNode.getParent());
+			row.setDuration(learningPathConfigs.getDuration());
 			row.setDuration(learningPathConfigs.getDuration());
 			row.setTranslatedObligation(getTranslatedObligation(learningPathConfigs));
 			row.setStart(learningPathConfigs.getStartDate());
@@ -322,20 +323,18 @@ public class CopyCourseWizardController extends BasicController {
 		}
 	}
 	
-	private boolean hasDateDependantNodes(List<CopyCourseOverviewRow> courseNodes) {
-		if (courseNodes == null || courseNodes.size() == 0) {
+	private boolean hasDateDependantNodes(List<CopyCourseOverviewRow> rows) {
+		if (rows == null || rows.size() == 0) {
 			return false;
-		} else {
-			for (OverviewRow courseNode : courseNodes) {
-				LearningPathConfigs configs = learningPathService.getConfigs(courseNode.getCourseNode());
-				
-				if (configs.getStartDate() != null || configs.getEndDate() != null) {
-					return true;
-				}
+		} 
+		
+		for (CopyCourseOverviewRow row : rows) {
+			if (row.getLearningPathConfigs().getStartDate() != null || row.getLearningPathConfigs().getEndDate() != null) {
+				return true;
 			}
-			
-			return false;
 		}
+		
+		return false;
 	}
 	
 	private boolean hasLectureBlogs(RepositoryEntry repoEntry) {

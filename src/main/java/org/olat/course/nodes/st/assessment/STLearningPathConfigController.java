@@ -52,6 +52,7 @@ import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseFactory;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
@@ -64,6 +65,7 @@ import org.olat.course.learningpath.ui.ExceptionalObligationRow;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.st.STCourseNodeEditController;
+import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
@@ -113,7 +115,8 @@ public class STLearningPathConfigController extends FormBasicController {
 		this.courseEntry = courseEntry;
 		this.courseNode = courseNode;
 		this.moduleConfig = courseNode.getModuleConfiguration();
-		this.learningPathConfigs = learningPathService.getConfigs(courseNode);
+		CourseEditorTreeNode editorTreeNode = CourseFactory.loadCourse(courseEntry).getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
+		this.learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 		this.selectedObligation = learningPathConfigs.getObligation() != null
 				? learningPathConfigs.getObligation()
 				: AssessmentObligation.evaluated;

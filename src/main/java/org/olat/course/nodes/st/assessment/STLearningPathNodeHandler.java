@@ -61,8 +61,13 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 		return getLearningPathConfigs(courseNode, courseNode.getParent());
 	}
 	
+	@Override
+	public LearningPathConfigs getConfigs(CourseNode courseNode, INode parent) {
+		return getLearningPathConfigs(courseNode, parent);
+	}
+
 	private LearningPathConfigs getLearningPathConfigs(CourseNode courseNode, INode parent) {
-		STLearningPathConfigs configs = new STLearningPathConfigs(courseNode.getModuleConfiguration());
+		STLearningPathConfigs configs = new STLearningPathConfigs(courseNode.getModuleConfiguration(), parent);
 		configs.updateDefaults(parent);
 		return configs;
 	}
