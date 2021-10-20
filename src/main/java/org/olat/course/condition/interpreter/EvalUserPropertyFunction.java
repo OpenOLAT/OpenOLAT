@@ -84,12 +84,12 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 	 *            The property value(s)
 	 * @return true if found, false otherwise
 	 */
-	private boolean checkPropertyValue(UserPropertyHandler propertyHandler, String searchValue, String userValue) {
+	private boolean checkPropertyValue(UserPropertyHandler propertyHandler, String searchValue, String userValue, String delimiter) {
 		switch (functionType) {
 			case FUNCTION_TYPE_HAS_PROPERTY:
-				return checkHasProperty(propertyHandler, searchValue, userValue);
+				return checkHasProperty(propertyHandler, searchValue, userValue, delimiter);
 			case FUNCTION_TYPE_HAS_NOT_PROPERTY:
-				return checkHasNotProperty(propertyHandler, searchValue, userValue);
+				return checkHasNotProperty(propertyHandler, searchValue, userValue, delimiter);
 			case FUNCTION_TYPE_PROPERTY_STARTS_WITH:
 				return userValue.startsWith(searchValue);
 			case FUNCTION_TYPE_PROPERTY_ENDS_WITH:
@@ -103,22 +103,25 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 		}
 	}
 	
-	private boolean checkHasProperty(UserPropertyHandler propertyHandler, String searchValue, String userValue) {
-		if(propertyHandler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)propertyHandler).isMultiSelect()) {
-			String[] userValues = userValue.split(GenericSelectionPropertyHandler.KEY_DELIMITER);
+	private boolean checkHasProperty(UserPropertyHandler propertyHandler, String searchValue, String userValue, String delimiter) {
+		if (delimiter == null) {
+			return userValue.equals(searchValue);			
+		} else {
+			String[] userValues = userValue.split(delimiter);
 			for(String val:userValues) {
 				if(StringHelper.containsNonWhitespace(val) && val.trim().equals(searchValue)) {
 					return true;
 				}
 			}
-			return false;
+			return false;			
 		}
-		return userValue.equals(searchValue);
 	}
 	
-	private boolean checkHasNotProperty(UserPropertyHandler propertyHandler, String searchValue, String userValue) {
-		if(propertyHandler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)propertyHandler).isMultiSelect()) {
-			String[] userValues = userValue.split(GenericSelectionPropertyHandler.KEY_DELIMITER);
+	private boolean checkHasNotProperty(UserPropertyHandler propertyHandler, String searchValue, String userValue, String delimiter) {
+		if (delimiter == null) {
+			return !userValue.equals(searchValue);
+		} else {		
+			String[] userValues = userValue.split(delimiter);
 			for(String val:userValues) {
 				if(StringHelper.containsNonWhitespace(val) && val.trim().equals(searchValue)) {
 					return false;
@@ -126,15 +129,17 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 			}
 			return true;
 		}
-		return !userValue.equals(searchValue);
 	}
 
 	@Override
 	public Object call(Object[] inStack) {
 		/*
-		 * argument check
+		 * argument check:
+		 * 0: property name
+		 * 1: property value to check for
+		 * 2: delimiter if the user value should be treated as multi-value (optional)
 		 */
-		if (inStack.length > 2) {
+		if (inStack.length > 3) {
 			String name = getFunctionName(functionType);
 			return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_FEWER_ARGUMENTS, name, "", "error.fewerargs",
 					"solution.providetwo.attrvalue"));
@@ -161,6 +166,24 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 				String name = getFunctionName(functionType);
 				return handleException( new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT, name, "",
 					"error.argtype.attribvalue", "solution.example.whiteSpace"));
+			}
+		}
+
+		// Optional third parameter can contain a delimiter in case the value shall be interpreted as a multi-value field
+		String delimiter = null;
+		if (inStack.length == 3) {
+			if ((inStack[2] instanceof String)){
+				// don't accept whitespace or true/false as delimiter but things like "," ";" "-x-"...
+				String delimterValue = ((String) inStack[2]).trim();
+				if(StringHelper.containsNonWhitespace(delimterValue) && !delimterValue.equals("true") && !delimterValue.equals("false")){
+					delimiter = delimterValue;
+				}
+			}
+			if (delimiter == null) {
+				// error when delimiter invalid
+				String name = getFunctionName(functionType);
+				return handleException( new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT, name, "",
+						"error.argtype.delimtervalue", "solution.example.name.infunction"));				
 			}
 		}
 		/*
@@ -197,7 +220,13 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 		if (StringHelper.containsNonWhitespace(userValue)) {
 			UserPropertyHandler propHandler = UserManager.getInstance().getUserPropertiesConfig()
 					.getPropertyHandler(propName);
-			match = checkPropertyValue(propHandler, searchValue, userValue);
+			// Selection properties will always be treated as multi-value fields. Override any previously set delimiter
+			// since the selection property knows how it is stored itself best
+			if(propHandler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)propHandler).isMultiSelect()) {
+				delimiter = GenericSelectionPropertyHandler.KEY_DELIMITER;
+			}			
+			// Do the check
+			match = checkPropertyValue(propHandler, searchValue, userValue, delimiter);
 		}
 
 		if (debug) {
