@@ -137,13 +137,20 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 		 * argument check:
 		 * 0: property name
 		 * 1: property value to check for
-		 * 2: delimiter if the user value should be treated as multi-value (optional)
+		 * 2: delimiter if the user value should be treated as multi-value (optional, only for has and hasNot functions)
 		 */
-		if (inStack.length > 3) {
+		if (functionType == FUNCTION_TYPE_HAS_PROPERTY || functionType == FUNCTION_TYPE_HAS_NOT_PROPERTY) {
+			if (inStack.length > 3) {
+				String name = getFunctionName(functionType);
+				return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_FEWER_ARGUMENTS, name, "", "error.fewerargs",
+						"solution.providetwo.attrvalue"));											
+			}
+		} else if (inStack.length > 2) {
 			String name = getFunctionName(functionType);
 			return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_FEWER_ARGUMENTS, name, "", "error.fewerargs",
-					"solution.providetwo.attrvalue"));
-		} else if (inStack.length < 2) {
+					"solution.providetwo.attrvalue"));				
+		}
+		if (inStack.length < 2) {
 			String name = getFunctionName(functionType);
 			return handleException( new ArgumentParseException(ArgumentParseException.NEEDS_MORE_ARGUMENTS, name, "",
 				"error.moreargs", "solution.providetwo.attrvalue"));
