@@ -239,7 +239,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		}
 		// Map the legacy values to still valid values.
 		if (DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT.equals(displayOption)) {
-			return DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT;
+			return DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT;
 		}
 		if (DISPLAY_OPTS_SHORT_TITLE_CONTENT.equals(displayOption)) {
 			return DISPLAY_OPTS_TITLE_CONTENT;
