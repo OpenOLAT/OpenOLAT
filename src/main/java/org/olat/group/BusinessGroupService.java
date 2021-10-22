@@ -382,6 +382,7 @@ public interface BusinessGroupService {
 	
 	public List<Identity> getMembers(List<BusinessGroup> businessGroups, String... roles);
 	
+	public List<Long> getMemberKeys(BusinessGroupRef businessGroup, String... roles);
 	
 	public int countMembers(BusinessGroup businessGroup, String... roles);
 	

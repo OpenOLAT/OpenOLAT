@@ -617,6 +617,11 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	public List<Identity> getIdentitiesWithRole(OrganisationRoles role) {
 		return organisationDao.getIdentities(role.name());
 	}
+	
+	@Override
+	public List<Long> getMemberKeys(OrganisationRef organisation, OrganisationRoles... roles) {
+		return organisationDao.getMemberKeys(organisation, roles);
+	}
 
 	@Override
 	public List<OrganisationMembershipStats> getOrganisationStatistics(OrganisationRef organisation,

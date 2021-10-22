@@ -38,6 +38,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.MultiUserObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -91,6 +92,7 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		CoursePropertyManager pm = courseEnv.getCoursePropertyManager();
+		MultiUserObligationContext obligationContext = new MultiUserObligationContext();
 		
 		Set<Identity> identities = new HashSet<>();
 		List<Identity> assessedIdentities = pm.getAllIdentitiesWithCourseAssessmentData(null);
@@ -99,13 +101,13 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		identities.addAll(members);
 		
 		for(Identity identity: identities) {
-			evaluateAll(courseEnv, identity);
+			evaluateAll(courseEnv, obligationContext, identity);
 			log.debug("Evaluated score accounting in {} for {}", course, identity);
 			dbInstance.commitAndCloseSession();
 		}
 	}
 
-	private void evaluateAll(CourseEnvironment courseEnv, Identity assessedIdentity) {
+	private void evaluateAll(CourseEnvironment courseEnv, MultiUserObligationContext obligationContext, Identity assessedIdentity) {
 		IdentityEnvironment identityEnv = new IdentityEnvironment();
 		identityEnv.setIdentity(assessedIdentity);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
@@ -118,6 +120,7 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 				: null;
 		
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
+		scoreAccounting.setObligationContext(obligationContext);
 		scoreAccounting.evaluateAll(true);
 		
 		AssessmentEvaluation rootAssessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);

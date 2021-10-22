@@ -320,6 +320,27 @@ public class BusinessGroupRelationDAO {
 		return members.getResultList();
 	}
 	
+	public List<Long> getMemberKeys(BusinessGroupRef group, String... roles) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select membership.identity.key from businessgroup as bgroup")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership")
+		  .append(" where bgroup.key=:businessGroupKey");
+		boolean withRoles = roles != null && roles.length > 0 && roles[0] != null;
+		if(withRoles) {
+			sb.append(" and membership.role in (:roles)");
+		}
+		
+		List<String> roleList = GroupRoles.toList(roles);
+		TypedQuery<Long> members = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("businessGroupKey", group.getKey());
+		if(withRoles) {
+			members.setParameter("roles", roleList);
+		}
+		return members.getResultList();
+	}
+	
 	public List<Identity> getMembers(List<? extends BusinessGroupRef> groups, String... roles) {
 		if(groups == null || groups.isEmpty()) return new ArrayList<>();
 		

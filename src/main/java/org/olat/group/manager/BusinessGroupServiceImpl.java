@@ -1624,6 +1624,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		return ids;
 	}
+	
+	@Override
+	public List<Long> getMemberKeys(BusinessGroupRef businessGroup, String... roles) {
+		return businessGroupRelationDAO.getMemberKeys(businessGroup, roles);
+	}
 
 	@Override
 	public int countMembers(BusinessGroup businessGroup, String... roles) {

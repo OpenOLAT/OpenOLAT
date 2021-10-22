@@ -287,6 +287,8 @@ public interface OrganisationService {
 	
 	public List<Identity> getIdentitiesWithRole(OrganisationRoles role);
 	
+	public List<Long> getMemberKeys(OrganisationRef organisation, OrganisationRoles... roles);
+	
 	/**
 	 * 
 	 * @param organisation The organization (mandatory)

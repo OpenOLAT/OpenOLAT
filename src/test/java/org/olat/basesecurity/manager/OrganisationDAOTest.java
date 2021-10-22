@@ -190,6 +190,26 @@ public class OrganisationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getMemberKeys_roles() {
+		Identity memberA1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-A1");
+		Identity memberA2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-A2");
+		Identity memberA3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-A3");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org A", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation, memberA1, OrganisationRoles.groupmanager);
+		organisationService.addMember(organisation, memberA2, OrganisationRoles.user);
+		organisationService.addMember(organisation, memberA3, OrganisationRoles.usermanager);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> memeberKeys = organisationDao.getMemberKeys(organisation, OrganisationRoles.groupmanager, OrganisationRoles.user);
+		Assert.assertNotNull(memeberKeys);
+		Assert.assertEquals(2, memeberKeys.size());
+		Assert.assertTrue(memeberKeys.contains(memberA1.getKey()));
+		Assert.assertTrue(memeberKeys.contains(memberA2.getKey()));
+	}
+	
+	@Test
 	public void getIdentities_role() {
 		Identity member1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-4");
 		Identity member2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-5");

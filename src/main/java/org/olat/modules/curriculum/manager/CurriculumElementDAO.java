@@ -834,7 +834,7 @@ public class CurriculumElementDAO {
 		List<String> roleList = CurriculumRoles.toList(roles);
 		
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select membership.identity.key from curriculumelement el")
+		sb.append("select distinct membership.identity.key from curriculumelement el")
 		  .append(" inner join el.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" where el.key in (:elementKeys) and membership.role in (:roles)");

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupMembershipInheritance;
@@ -292,6 +293,27 @@ public class OrganisationDAO {
 				.getResultList();
 	}
 	
+	public List<Long> getMemberKeys(OrganisationRef organisation, OrganisationRoles... roles) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select distinct membership.identity.key from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where org.key=:organisationKey");
+		boolean withRoles = roles != null && roles.length > 0 && roles[0] != null;
+		if(withRoles) {
+			sb.append(" and membership.role in (:roles)");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("organisationKey", organisation.getKey());
+		if(withRoles) {
+			query.setParameter("roles", OrganisationRoles.toList(roles));
+		}
+			
+		return query.getResultList();
+	}
+	
 	public List<Identity> getIdentities(String role) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select ident from organisation org")
@@ -530,4 +552,6 @@ public class OrganisationDAO {
 			return new OrganisationMembershipStats(role, numOfMembers);
 		}).collect(Collectors.toList());
 	}
+
+
 }

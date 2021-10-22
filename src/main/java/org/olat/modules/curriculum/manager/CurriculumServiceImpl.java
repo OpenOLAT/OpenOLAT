@@ -614,6 +614,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public List<Long> getMemberKeys(List<CurriculumElementRef> elements, String... roles) {
+		return curriculumElementDao.getMemberKeys(elements, roles);
+	}
+	
+	@Override
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Curriculum curriculum, Identity identity) {
 		if(identity == null) return new ArrayList<>();
 		return curriculumElementDao.getMembershipInfos(Collections.singletonList(curriculum), null, identity);

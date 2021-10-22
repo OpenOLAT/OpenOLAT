@@ -47,11 +47,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 2 Sep 2021<br>
+ * Initial date: 22 Sep 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SingleUserObligationContextTest extends OlatTestCase {
+public class MultiUserObligationContextTest extends OlatTestCase {
 	
 	private Identity admin;
 	
@@ -66,7 +66,7 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 	
 	@Before
 	public void setUp() {
-		admin = JunitTestHelper.createAndPersistIdentityAsUser("suoct-admin");
+		admin = JunitTestHelper.createAndPersistIdentityAsUser("uoct-admin");
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		dbInstance.commitAndCloseSession();
 		
-		SingleUserObligationContext sut = new SingleUserObligationContext();
+		MultiUserObligationContext sut = new MultiUserObligationContext();
 		boolean participant = sut.isParticipant(identity, businessGroup);
 		
 		assertThat(participant).isFalse();
@@ -88,7 +88,7 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		businessGroupService.addOwners(admin, Roles.administratorRoles(), Collections.singletonList(identity), businessGroup, null);
 		dbInstance.commitAndCloseSession();
 		
-		SingleUserObligationContext sut = new SingleUserObligationContext();
+		MultiUserObligationContext sut = new MultiUserObligationContext();
 		boolean participant = sut.isParticipant(identity, businessGroup);
 		
 		assertThat(participant).isFalse();
@@ -101,7 +101,7 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		businessGroupService.addParticipants(admin, Roles.administratorRoles(), Collections.singletonList(identity), businessGroup, null);
 		dbInstance.commitAndCloseSession();
 		
-		SingleUserObligationContext sut = new SingleUserObligationContext();
+		MultiUserObligationContext sut = new MultiUserObligationContext();
 		boolean participant = sut.isParticipant(identity, businessGroup);
 		
 		assertThat(participant).isTrue();
@@ -121,12 +121,11 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		organisationService.addMember(organisationOther, identityOther, OrganisationRoles.author);
 		dbInstance.commitAndCloseSession();
 		
-		SingleUserObligationContext sutIdentity = new SingleUserObligationContext();
-		SingleUserObligationContext sutIdentityOther = new SingleUserObligationContext();
+		MultiUserObligationContext sut = new MultiUserObligationContext();
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sutIdentity.isMember(identity, organisation)).isTrue();
-		softly.assertThat(sutIdentity.isMember(identity, organisationOther)).isFalse();
-		softly.assertThat(sutIdentityOther.isMember(identityOther, organisation)).isFalse();
+		softly.assertThat(sut.isMember(identity, organisation)).isTrue();
+		softly.assertThat(sut.isMember(identity, organisationOther)).isFalse();
+		softly.assertThat(sut.isMember(identityOther, organisation)).isFalse();
 		softly.assertAll();
 	}
 	
@@ -143,15 +142,14 @@ public class SingleUserObligationContextTest extends OlatTestCase {
 		curriculumService.addMember(curriculumElementOther, participantOther, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 		
-		SingleUserObligationContext sutParticipant = new SingleUserObligationContext();
-		SingleUserObligationContext sutCoach = new SingleUserObligationContext();
-		SingleUserObligationContext sutParticipantOther = new SingleUserObligationContext();
+		MultiUserObligationContext sut = new MultiUserObligationContext();
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sutParticipant.isParticipant(participant, curriculumElement)).isTrue();
-		softly.assertThat(sutParticipant.isParticipant(participant, curriculumElementOther)).isFalse();
-		softly.assertThat(sutCoach.isParticipant(coach, curriculumElement)).isFalse();
-		softly.assertThat(sutParticipantOther.isParticipant(participantOther, curriculumElement)).isFalse();
+		softly.assertThat(sut.isParticipant(participant, curriculumElement)).isTrue();
+		softly.assertThat(sut.isParticipant(participant, curriculumElementOther)).isFalse();
+		softly.assertThat(sut.isParticipant(coach, curriculumElement)).isFalse();
+		softly.assertThat(sut.isParticipant(participantOther, curriculumElement)).isFalse();
 		softly.assertAll();
 	}
-	
+
+
 }

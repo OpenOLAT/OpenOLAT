@@ -918,6 +918,32 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getMemberKeys_roles() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("m-3");
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "to-group-1", "to-group-1-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(id1, group, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(id3, group, GroupRoles.waiting.name());
+		dbInstance.commitAndCloseSession();
+		
+		// load coaches 
+		List<Long> coacheKeys = businessGroupRelationDao.getMemberKeys(group, GroupRoles.coach.name());
+		Assert.assertNotNull(coacheKeys);
+		Assert.assertEquals(1, coacheKeys.size());
+		Assert.assertTrue(coacheKeys.contains(id1.getKey()));
+		
+		// load coaches and participants
+		List<Long> memberKeys = businessGroupRelationDao.getMemberKeys(group, GroupRoles.coach.name(), GroupRoles.participant.name());
+		Assert.assertNotNull(memberKeys);
+		Assert.assertEquals(2, memberKeys.size());
+		Assert.assertTrue(memberKeys.contains(id1.getKey()));
+		Assert.assertTrue(memberKeys.contains(id2.getKey()));
+	}
+	
+	@Test
 	public void getMembersOrderByDate() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ordered-1");

@@ -19,18 +19,22 @@
  */
 package org.olat.course.run.scoring;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.curriculum.CurriculumElementRef;
+import org.olat.modules.curriculum.CurriculumService;
 
 /**
  * 
@@ -38,12 +42,16 @@ import org.olat.modules.curriculum.CurriculumElementRef;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CourseObligationContext implements ObligationContext {
+public class MultiUserObligationContext implements ObligationContext {
 	
 	private Map<Long, Set<Long>> businessGroupKeyToParticipantIdentityKeys;
+	private Map<Long, Set<Long>> organisationKeyToMembersIdentityKeys;
+	private Map<Long, Set<Long>> curriculumElementKeyToParticipantIdentityKeys;
 	
 	private BusinessGroupService businessGroupService;
-	
+	private OrganisationService organisationService;
+	private CurriculumService curriculumService;
+
 	@Override
 	public boolean isParticipant(Identity identity, BusinessGroupRef businessGroupRef) {
 		if (businessGroupKeyToParticipantIdentityKeys == null) {
@@ -51,9 +59,8 @@ public class CourseObligationContext implements ObligationContext {
 		}
 		businessGroupKeyToParticipantIdentityKeys.computeIfAbsent(businessGroupRef.getKey(),
 				key -> getBusinessGroupService()
-						.getMembers(businessGroupRef, GroupRoles.participant.name()).stream()
-						.map(Identity::getKey)
-						.collect(Collectors.toSet()));
+					.getMemberKeys(businessGroupRef, GroupRoles.participant.name())
+					.stream().collect(Collectors.toSet()));
 		
 		return businessGroupKeyToParticipantIdentityKeys.get(businessGroupRef.getKey()).contains(identity.getKey());
 	}
@@ -67,12 +74,42 @@ public class CourseObligationContext implements ObligationContext {
 
 	@Override
 	public boolean isMember(Identity identity, OrganisationRef organisationRef) {
-		return false;
+		if (organisationKeyToMembersIdentityKeys == null) {
+			organisationKeyToMembersIdentityKeys = new HashMap<>();
+		}
+		organisationKeyToMembersIdentityKeys.computeIfAbsent(organisationRef.getKey(),
+				key -> getOrganisationService()
+						.getMemberKeys(organisationRef, OrganisationRoles.valuesWithoutGuestAndInvitee())
+						.stream().collect(Collectors.toSet()));
+		
+		return organisationKeyToMembersIdentityKeys.get(organisationRef.getKey()).contains(identity.getKey());
+	}
+	
+	private OrganisationService getOrganisationService() {
+		if (organisationService == null) {
+			organisationService = CoreSpringFactory.getImpl(OrganisationService.class);
+		}
+		return organisationService;
 	}
 
 	@Override
 	public boolean isParticipant(Identity identity, CurriculumElementRef curriculumElementRef) {
-		return false;
+		if (curriculumElementKeyToParticipantIdentityKeys == null) {
+			curriculumElementKeyToParticipantIdentityKeys = new HashMap<>();
+		}
+		curriculumElementKeyToParticipantIdentityKeys.computeIfAbsent(curriculumElementRef.getKey(),
+				key -> getCurriculumService()
+						.getMemberKeys(Collections.singletonList(curriculumElementRef), GroupRoles.participant.name())
+						.stream().collect(Collectors.toSet()));
+		
+		return curriculumElementKeyToParticipantIdentityKeys.get(curriculumElementRef.getKey()).contains(identity.getKey());
+	}
+	
+	private CurriculumService getCurriculumService() {
+		if (curriculumService == null) {
+			curriculumService = CoreSpringFactory.getImpl(CurriculumService.class);
+		}
+		return curriculumService;
 	}
 
 }
