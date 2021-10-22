@@ -23,9 +23,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.id.User;
 import org.olat.core.util.CodeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -35,6 +37,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -141,10 +144,6 @@ public class ConditionTest extends OlatTestCase {
 		result = interpreter.evaluateCondition(condition);
 		Assert.assertFalse(condition, result);
 
-		condition = "hasNotUserProperty(\"firstName\", \"firstcondition\", \"firstcondition\")";
-		result = interpreter.evaluateCondition(condition);
-		Assert.assertFalse(condition, result);
-
 		condition = "hasNotUserProperty(\"firstName\", \"someThing\")";
 		result = interpreter.evaluateCondition(condition);
 		Assert.assertTrue(condition, result);
@@ -162,6 +161,83 @@ public class ConditionTest extends OlatTestCase {
 		Assert.assertTrue(condition, result);
 	}
 
+	@Test
+	public void testHasPropertyWithMultiValueFunction() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+
+		String condition = "hasUserProperty(\"orgUnit\", \"a,b,bc\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasUserProperty(\"orgUnit\", \"a\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasUserProperty(\"orgUnit\", \"b\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasUserProperty(\"orgUnit\", \"bc\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasUserProperty(\"orgUnit\", \"a,b\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"orgUnit\", \"a\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"orgUnit\", \"a,b\", \"\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasUserProperty(\"orgUnit\", \"a,b\", \";\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+	}
+
+	@Test
+	public void testHasNotPropertyWithMultiValueFunction() throws Exception {
+		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
+		ConditionInterpreter interpreter = new ConditionInterpreter(uce);
+
+		String condition = "hasNotUserProperty(\"orgUnit\", \"a,b,bc\")";
+		boolean result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+		
+		condition = "hasNotUserProperty(\"orgUnit\", \"a,b,bc\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasNotUserProperty(\"orgUnit\", \"a\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasNotUserProperty(\"orgUnit\", \"b\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasNotUserProperty(\"orgUnit\", \"bc\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertFalse(condition, result);
+
+		condition = "hasNotUserProperty(\"orgUnit\", \"a,b\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasNotUserProperty(\"orgUnit\", \"ab\", \",\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+
+		condition = "hasNotUserProperty(\"orgUnit\", \"a\", \";\")";
+		result = interpreter.evaluateCondition(condition);
+		Assert.assertTrue(condition, result);
+	}
+
+	
 	@Test
 	public void testUserPropertyStartswithFunction() throws Exception {
 		UserCourseEnvironment uce = getUserDemoCourseEnvironment();
@@ -387,6 +463,10 @@ public class ConditionTest extends OlatTestCase {
 	private UserCourseEnvironment getUserDemoCourseEnvironment() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("junit_auth");
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("condition");
+		User user = id.getUser();
+		user.setProperty("orgUnit", "a,b,bc");
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		userManager.updateUser(user);
 		Roles roles = Roles.userRoles();
 		RepositoryEntry re = JunitTestHelper.deployDemoCourse(author);
 		ICourse course = CourseFactory.loadCourse(re);
