@@ -466,7 +466,7 @@ public class ConditionTest extends OlatTestCase {
 		User user = id.getUser();
 		user.setProperty("orgUnit", "a,b,bc");
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
-		userManager.updateUser(user);
+		userManager.updateUser(id, user);
 		Roles roles = Roles.userRoles();
 		RepositoryEntry re = JunitTestHelper.deployDemoCourse(author);
 		ICourse course = CourseFactory.loadCourse(re);
