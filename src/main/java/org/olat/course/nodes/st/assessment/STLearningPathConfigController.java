@@ -83,8 +83,8 @@ public class STLearningPathConfigController extends FormBasicController {
 	
 	private static final String[] EXCEPTIONAL_OBLIGATION_KEYS = { "on" };
 	private static final String[] EXCEPTIONAL_OBLIGATION_VALUES = { "" };
-	private static final String EVALUATED_PREFIX = "evaluated_";
-	private static final String EXCLUDED_PREFIX = "excluded_";
+	private static final String EVALUATED_PREFIX = "eo_evaluated_";
+	private static final String EXCLUDED_PREFIX = "eo_excluded_";
 	private static final String CMD_DELETE = "delete";
 
 	private SingleSelection sequenceEl;
@@ -123,6 +123,7 @@ public class STLearningPathConfigController extends FormBasicController {
 		
 		initForm(ureq);
 		loadExceptionalObligations();
+		updateExceptionalObligationsUI(allRows.size() > 1); // One for the default obligation
 	}
 
 	@Override
@@ -180,7 +181,7 @@ public class STLearningPathConfigController extends FormBasicController {
 		
 		hideExceptionalObligationLink = uifactory.addFormLink("hide.exceptional.obligation", "on", "on", obligationCont, Link.LINK);
 		hideExceptionalObligationLink.setCustomEnabledLinkCSS("o_button_toggle o_on");
-		hideExceptionalObligationLink.setIconLeftCSS("o_icon o_icon_toggle");
+		hideExceptionalObligationLink.setIconRightCSS("o_icon o_icon_toggle");
 		
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
@@ -211,8 +212,6 @@ public class STLearningPathConfigController extends FormBasicController {
 		allRows = new ArrayList<>(exceptionalObligations.size());
 		addDefaultObligationRow(allRows);
 		addExceptionalObligationRows(exceptionalObligations);
-		
-		updateExceptionalObligationsUI(allRows.size() > 1); // One for the default obligation
 	}
 
 	private void addDefaultObligationRow(List<ExceptionalObligationRow> rows) {
@@ -313,8 +312,11 @@ public class STLearningPathConfigController extends FormBasicController {
 		} else if (source == hideExceptionalObligationLink) {
 			updateExceptionalObligationsUI(false);
 		} else if (source instanceof SingleSelection) {
-			ExceptionalObligationRow row = (ExceptionalObligationRow)source.getUserObject();
-			doUpdatedExceptionalObligation(row, source);
+			if (event.getCommand().startsWith("eo_")) {
+				ExceptionalObligationRow row = (ExceptionalObligationRow)source.getUserObject();
+				doUpdatedExceptionalObligation(row, source);
+			}
+			// Sequence and exeptional obligations
 			markDirty();
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -384,6 +386,7 @@ public class STLearningPathConfigController extends FormBasicController {
 		}
 		learningPathConfigs.setExceptionalObligations(exeptionalObligations);
 		loadExceptionalObligations();
+		updateExceptionalObligationsUI((Boolean)obligationCont.contextGet("exceptional"));
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
