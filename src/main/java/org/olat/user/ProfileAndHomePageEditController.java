@@ -70,6 +70,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 
 	private Identity identityToModify;
 	private boolean isAdministrativeUser;
+	private boolean showImmunityProof;
 	
 	@Autowired
 	private ImmunityProofModule immunityProofModule;
@@ -89,6 +90,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		super(ureq, wControl);
 		this.identityToModify = identityToModify;
 		this.isAdministrativeUser = isAdministrativeUser;
+		this.showImmunityProof = identityToModify.equals(getIdentity());
 		setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(ImmunityProof.class, getLocale(), getTranslator()));
 		
@@ -105,7 +107,7 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		
 		immunityProofLink = LinkFactory.createLink("immunity.proof", myContent, this);
 		immunityProofLink.setElementCssClass("o_sel_immunity_proof");
-		if (immunityProofModule.isEnabled()) {
+		if (immunityProofModule.isEnabled() && showImmunityProof) {
 			segmentView.addSegment(immunityProofLink, false);
 		}
 
@@ -182,8 +184,10 @@ public class ProfileAndHomePageEditController extends BasicController implements
 				doOpenProfile(ureq);
 			} else if("HomePage".equalsIgnoreCase(type)) {
 				doOpenHomePageSettings(ureq);
-			} else if("CovidCertificate".equalsIgnoreCase(type)) {
+			} else if("CovidCertificate".equalsIgnoreCase(type) && showImmunityProof) {
 				doOpenImmunityProof(ureq);
+			} else {
+				doOpenProfile(ureq);
 			}
 		}
 	}
