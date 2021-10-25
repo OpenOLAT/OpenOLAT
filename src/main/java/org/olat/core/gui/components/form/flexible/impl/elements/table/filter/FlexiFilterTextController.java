@@ -63,7 +63,6 @@ public class FlexiFilterTextController extends FormBasicController {
 		textEl.setTextAddOn(text);
 	}
 
-
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		textEl = uifactory.addTextElement("text", null, 255, preselectedValue, formLayout);
@@ -71,7 +70,6 @@ public class FlexiFilterTextController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(preselectedValue)) {
 			textEl.setFocus(true);
 		}
-		textEl.setTextAddOn(preselectedValue);
 
 		updateButton = uifactory.addFormLink("update", formLayout, Link.BUTTON_SMALL);
 		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);

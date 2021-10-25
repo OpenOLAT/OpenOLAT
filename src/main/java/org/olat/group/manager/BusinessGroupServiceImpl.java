@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -176,6 +177,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		BusinessGroup bg = businessGroupDAO.loadForUpdate(group);
 
 		Integer previousMaxParticipants = bg.getMaxParticipants();
+		Boolean previousAutoCloseRanks = bg.getAutoCloseRanksEnabled();
+		Boolean previousWaitingList = bg.getWaitingListEnabled();
 		bg.setName(name);
 		bg.setDescription(description);
 		bg.setMaxParticipants(maxParticipants);
@@ -190,7 +193,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 		//auto rank if possible
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<>();
-		autoRankCheck(ureqIdentity, bg, previousMaxParticipants, events);
+		autoRankCheck(ureqIdentity, bg, previousMaxParticipants, previousAutoCloseRanks, previousWaitingList, events);
 		BusinessGroup updatedGroup = businessGroupDAO.merge(bg);
 		dbInstance.commit();
 		BusinessGroupModifiedEvent.fireDeferredEvents(events);
@@ -204,6 +207,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		BusinessGroup bg = businessGroupDAO.loadForUpdate(group);
 		
 		Integer previousMaxParticipants = bg.getMaxParticipants();
+		Boolean previousAutoCloseRanks = bg.getAutoCloseRanksEnabled();
+		Boolean previousWaitingList = bg.getWaitingListEnabled();
 		bg.setName(name);
 		bg.setLastModified(new Date());
 		bg.setDescription(description);
@@ -214,7 +219,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		//auto rank if possible
 
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<>();
-		autoRankCheck(ureqIdentity, bg, previousMaxParticipants, events);
+		autoRankCheck(ureqIdentity, bg, previousMaxParticipants, previousAutoCloseRanks, previousWaitingList, events);
 		BusinessGroup mergedGroup = businessGroupDAO.merge(bg);
 		//prevents lazy loading issues
 		mergedGroup.getBaseGroup().getKey();
@@ -224,6 +229,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 	
 	private void autoRankCheck(Identity identity, BusinessGroup updatedGroup, Integer previousMaxParticipants,
+			Boolean previousAutoCloseRanks, Boolean previousWaitingList,
 			List<BusinessGroupModifiedEvent.Deferred> events) {
 		if(updatedGroup.getWaitingListEnabled() == null || !updatedGroup.getWaitingListEnabled().booleanValue()
 				|| updatedGroup.getAutoCloseRanksEnabled() == null || !updatedGroup.getAutoCloseRanksEnabled().booleanValue()) {
@@ -235,8 +241,9 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				? -1 : updatedGroup.getMaxParticipants().intValue();
 		int previousMaxNumber = previousMaxParticipants == null || previousMaxParticipants.intValue() <= 0
 				? -1 : previousMaxParticipants.intValue();
-		
-		if(currentMaxNumber > previousMaxNumber) {
+		boolean changedList = Objects.equals(updatedGroup.getAutoCloseRanksEnabled(), previousAutoCloseRanks)
+				|| Objects.equals(updatedGroup.getWaitingListEnabled(), previousWaitingList);
+		if(currentMaxNumber > previousMaxNumber || changedList) {
 			//I can rank up some users
 			transferFirstIdentityFromWaitingToParticipant(identity, updatedGroup, null, events);
 		}

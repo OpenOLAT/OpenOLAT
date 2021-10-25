@@ -1316,11 +1316,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			cmc.deactivate();
 			cleanUp();
 		}
+		
 		if (event instanceof AssessmentModeStatusEvent) {
 			setAssessmentModeMessage(ureq);
-		}
-		 if (event == CourseStyleUIFactory.HEADER_CHANGED_EVENT) {
+		} else if (event == CourseStyleUIFactory.HEADER_CHANGED_EVENT) {
 			doReloadCourseNodeHeader(ureq);
+		} else if (event instanceof GoToEvent) {
+			doGoTo(ureq, (GoToEvent)event);
 		}
 		
 		if(editorCtrl == source && source instanceof VetoableCloseController) {
@@ -1577,6 +1579,27 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		RunMainController rmc = getRunMainController();
 		if(rmc != null) {
 			rmc.activate(ureq, entries, state);
+		}
+	}
+	
+	private void doGoTo(UserRequest ureq, GoToEvent e) {
+		if(e.getTargetId() == null) return;
+		
+		if(GoToEvent.GOTO_TOOL.equals(e.getCommand())) {
+			toolControllerDone(ureq);
+			String tool = e.getTargetId().toLowerCase();
+			for(CourseTool cTool:CourseTool.values()) {
+				if(cTool.name().equals(tool)) {
+					doOpenTool(ureq, cTool);
+					break;
+				}
+			}
+		} else if(GoToEvent.GOTO_NODE.equals(e.getCommand())) {
+			if(currentToolCtr != null) {
+				toolbarPanel.popController(currentToolCtr);
+				toolControllerDone(ureq);
+			}
+			getRunMainController().updateTreeAndContent(ureq, e.getTargetId());
 		}
 	}
 	
@@ -2255,6 +2278,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			WindowControl swControl = addToHistory(ureq, ores, null);
 			participatInfoCtrl = new InfoRunController(ureq, swControl, getUserCourseEnvironment(), "ParticipantInfos",
 					secCallback, autoSubscribe);
+			listenTo(participatInfoCtrl);
 
 			pushController(ureq, translate("command.participant.info"), participatInfoCtrl);
 			setActiveTool(participantInfoLink);

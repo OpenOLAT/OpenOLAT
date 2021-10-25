@@ -1,3 +1,21 @@
+<script>
+function o_activateCourseNode(nodeid) {
+	console.log('Activate', nodeid);
+	if (!o_info.linkbusy) {
+		window.focus();
+		$f.openFfXHREvent(false, false, true), 'activateCourseNode', nodeid);
+		o_scrollToElement('#o_top');
+	}
+}
+function o_activateCourseTool(toolname) {
+	if (!o_info.linkbusy) {
+		window.focus();
+		$f.openFfXHREvent(false, false, true), 'activateCourseTool', toolname);
+		o_scrollToElement('#o_top');
+	}
+}
+</script>
+
 #if($infos.isEmpty())
 	<div class="o_empty_state">
 		<div class="o_empty_visual"><i class="o_icon o_icon_empty_indicator"></i><i class="o_icon o_icon_news"></i></div>

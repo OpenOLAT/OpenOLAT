@@ -39,6 +39,7 @@ import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionCon
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -52,6 +53,7 @@ import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.InfoCourseNode;
+import org.olat.course.run.GoToEvent;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -73,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InfoRunController extends BasicController {
 	
+	private InfoDisplayController infoDisplayController;
 	private ContextualSubscriptionController subscriptionController;
 	
 	@Autowired
@@ -156,7 +159,7 @@ public class InfoRunController extends BasicController {
 			listenTo(subscriptionController);
 		}	
 		
-		InfoDisplayController infoDisplayController = new InfoDisplayController(ureq, getWindowControl(), maxResults, duration, secCallback, infoResourceable, resSubPath, businessPath);
+		infoDisplayController = new InfoDisplayController(ureq, getWindowControl(), maxResults, duration, secCallback, infoResourceable, resSubPath, businessPath);
 		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale()));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.owner, translate("wizard.step1.send_option.owner")));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.coach, translate("wizard.step1.send_option.coach")));
@@ -243,6 +246,16 @@ public class InfoRunController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == infoDisplayController) {
+			if(event instanceof GoToEvent) {
+				fireEvent(ureq, event);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	private class InfoOLATResourceable implements OLATResourceable {

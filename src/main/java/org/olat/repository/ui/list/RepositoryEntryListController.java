@@ -59,6 +59,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -386,6 +387,9 @@ public class RepositoryEntryListController extends FormBasicController
 		lifecycleValues.add(SelectionValues.entry("closed", translate("cif.resources.status.closed")));
 		filters.add(new FlexiTableSingleSelectionFilter(translate("cif.resources.status"),
 				FilterButton.STATUS.name(), lifecycleValues, true));
+		
+		// authors / owners
+		filters.add(new FlexiTableTextFilter(translate("cif.author.search"), FilterButton.AUTHORS.name(), true));
 		
 		// educational type
 		SelectionValues educationalTypeKV = new SelectionValues();

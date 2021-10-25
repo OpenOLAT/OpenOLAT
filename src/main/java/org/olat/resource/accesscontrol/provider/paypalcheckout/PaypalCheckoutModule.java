@@ -118,6 +118,7 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 		webhookId = getStringPropertyValue(PAYPAL_WEBHOOK_ID, webhookId);
 		smartButtons = "true".equals(getStringPropertyValue(PAYPAL_SMART_BUTTONS, Boolean.toString(smartButtons)));
 		acceptPendingReview = "true".equals(getStringPropertyValue(PAYPAL_ACCEPT_PENDING_REVIEW, Boolean.toString(acceptPendingReview)));
+		preferredCountries = getStringPropertyValue(PAYPAL_PREFERRED_COUNTRIES, preferredCountries);
 
 		if(!StringHelper.containsNonWhitespace(webhookId) && StringHelper.containsNonWhitespace(clientId) && StringHelper.containsNonWhitespace(clientSecret)) {
 			updateWebhook(clientId, clientSecret);
