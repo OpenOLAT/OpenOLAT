@@ -28,7 +28,7 @@ package org.olat.modules.scorm;
 import java.io.File;
 import java.io.IOException;
 
-import org.jdom.JDOMException;
+import org.jdom2.JDOMException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;

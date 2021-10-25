@@ -45,10 +45,10 @@ package org.olat.modules.scorm.server.servermodels;
 import java.io.File;
 import java.io.IOException;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 
 
 
@@ -252,7 +252,7 @@ public class XMLDocument {
             return null;
         }
         
-        return (Element)parent.getChildren().get(index - 1);
+        return parent.getChildren().get(index - 1);
     }
 
     /**
@@ -294,7 +294,7 @@ public class XMLDocument {
             return null;
         }
         
-        return (Element)parent.getChildren().get(index + 1);
+        return parent.getChildren().get(index + 1);
     }
 
     /**

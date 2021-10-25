@@ -32,8 +32,8 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.SettingsHandler;
@@ -258,10 +258,10 @@ public class ScoDocument extends XMLDocument {
 	private Vector<String[]> getInteractionsNodesFromModel() {
 		Vector<String[]> interactionsElements = new Vector<>();
 		Element id = getElement(getDocument().getRootElement(), "cmi.interactions");
-		List interactionList = id.getChildren("interaction");
-		Iterator listElement = interactionList.iterator();
+		List<Element> interactionList = id.getChildren("interaction");
+		Iterator<Element> listElement = interactionList.iterator();
 		while (listElement.hasNext()) {
-			Element anInteraction = (Element) listElement.next();
+			Element anInteraction = listElement.next();
 			String interactionIndex = anInteraction.getAttributeValue("index");
 
 			String[] interactionIDNameValue = new String[2];
@@ -272,11 +272,11 @@ public class ScoDocument extends XMLDocument {
 			// objectives
 			Element interactionObjectives = anInteraction.getChild("objectives");
 			if (interactionObjectives != null) {
-				List objectiveList = interactionObjectives.getChildren("objective");
+				List<Element> objectiveList = interactionObjectives.getChildren("objective");
 				if (objectiveList != null) {
-					Iterator objListElement = objectiveList.iterator();
+					Iterator<Element> objListElement = objectiveList.iterator();
 					while (objListElement.hasNext()) {
-						Element anObjective = (Element) objListElement.next();
+						Element anObjective = objListElement.next();
 						String objectiveIndex = anObjective.getAttributeValue("index");
 						String[] interactionObjectiveID = new String[2];
 						interactionObjectiveID[0] = "cmi.interactions." + interactionIndex + ".objectives." + objectiveIndex + ".id";
@@ -300,11 +300,11 @@ public class ScoDocument extends XMLDocument {
 
 			Element interactionCorrectResponses = anInteraction.getChild("correct_responses");
 			if (interactionCorrectResponses != null) {
-				List correctResponseList = interactionCorrectResponses.getChildren("correct_response");
+				List<Element> correctResponseList = interactionCorrectResponses.getChildren("correct_response");
 				if (correctResponseList != null) {
-					Iterator correctResponseListElement = correctResponseList.iterator();
+					Iterator<Element> correctResponseListElement = correctResponseList.iterator();
 					while (correctResponseListElement.hasNext()) {
-						Element aCorrectResponse = (Element) correctResponseListElement.next();
+						Element aCorrectResponse = correctResponseListElement.next();
 						String correctResponseIndex = aCorrectResponse.getAttributeValue("index");
 						String[] correctResponse = new String[2];
 						correctResponse[0] = "cmi.interactions." + interactionIndex + ".correct_responses." + correctResponseIndex + ".pattern";
@@ -351,10 +351,10 @@ public class ScoDocument extends XMLDocument {
 	private Vector<String[]> getObjectivesNodesFromModel(int numberOfObjectives) {
 		Vector<String[]> objectiveElements = new Vector<>();
 		Element id = getElement(getDocument().getRootElement(), "cmi.objectives");
-		List objectiveList = id.getChildren("objective");
-		Iterator listElement = objectiveList.iterator();
+		List<Element> objectiveList = id.getChildren("objective");
+		Iterator<Element> listElement = objectiveList.iterator();
 		while (listElement.hasNext()) {
-			Element anObjective = (Element) listElement.next();
+			Element anObjective = listElement.next();
 			String objectiveIndex = anObjective.getAttributeValue("index");
 			Element score = anObjective.getChild("score");
 
@@ -585,10 +585,10 @@ public class ScoDocument extends XMLDocument {
 		// now that the correct number of JDOM nodes exist in the model, we
 		// can start to update each node with the data contained in our hashtable
 		Element interactionElement = getElement(getDocument().getRootElement(), "cmi.interactions");
-		List interactionList = interactionElement.getChildren("interaction");
-		Iterator listElement = interactionList.iterator();
+		List<Element> interactionList = interactionElement.getChildren("interaction");
+		Iterator<Element> listElement = interactionList.iterator();
 		while (listElement.hasNext()) {
-			Element anInteraction = (Element) listElement.next();
+			Element anInteraction = listElement.next();
 			String interactionIndex = anInteraction.getAttributeValue("index");
 			// set the ID for this interaction
 			anInteraction.getChild("id").setText(keyedInteractions.get("cmi.interactions." + interactionIndex + ".id"));
@@ -596,11 +596,11 @@ public class ScoDocument extends XMLDocument {
 			// nodes
 			Element objectives = anInteraction.getChild("objectives");
 			// get the list of <objective> nodes
-			List objList = objectives.getChildren("objective");
-			Iterator objListElement = objList.iterator();
+			List<Element> objList = objectives.getChildren("objective");
+			Iterator<Element> objListElement = objList.iterator();
 			// now go thru all of the child <objective> nodes and update them
 			while (objListElement.hasNext()) {
-				Element anObjective = (Element) objListElement.next();
+				Element anObjective = objListElement.next();
 				// find the correct index for this node
 				String objectiveIndex = anObjective.getAttributeValue("index");
 				// now use that index to get the correct key from the hashtable
@@ -615,11 +615,11 @@ public class ScoDocument extends XMLDocument {
 
 			// correct_responses
 			Element correct_responses = anInteraction.getChild("correct_responses");
-			List crList = correct_responses.getChildren("correct_response");
-			Iterator crListElement = crList.iterator();
+			List<Element> crList = correct_responses.getChildren("correct_response");
+			Iterator<Element> crListElement = crList.iterator();
 			// now go thru all of the child <correct_response> nodes and update them
 			while (crListElement.hasNext()) {
-				Element aCorrectResponse = (Element) crListElement.next();
+				Element aCorrectResponse = crListElement.next();
 				String crIndex = aCorrectResponse.getAttributeValue("index");
 				aCorrectResponse.getChild("pattern").setText(
 						keyedInteractions.get("cmi.interactions." + interactionIndex + ".correct_responses." + crIndex + ".pattern"));
@@ -666,10 +666,10 @@ public class ScoDocument extends XMLDocument {
 			keyedObjectives.put(objectives[i][0], objectives[i][1]);
 		}
 		Element id = getElement(getDocument().getRootElement(), "cmi.objectives");
-		List objectiveList = id.getChildren("objective");
-		Iterator listElement = objectiveList.iterator();
+		List<Element> objectiveList = id.getChildren("objective");
+		Iterator<Element> listElement = objectiveList.iterator();
 		while (listElement.hasNext()) {
-			Element anObjective = (Element) listElement.next();
+			Element anObjective = listElement.next();
 			String objectiveIndex = anObjective.getAttributeValue("index");
 			// set the ID for this objective
 			anObjective.getChild("id").setText(keyedObjectives.get("cmi.objectives." + objectiveIndex + ".id"));

@@ -30,8 +30,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jdom.Element;
-import org.jdom.input.JDOMParseException;
+import org.jdom2.Element;
+import org.jdom2.input.JDOMParseException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.contentpackaging.CP_Core;
@@ -148,7 +148,7 @@ public class ScormManager {
 				throw new OLATRuntimeException(ScormManager.class, "Could not load manifest",ex);
 			}
 			// Package Links - use a clone so we can add referenced elements
-			Element manifestRoot = (Element) _navViewer.getRootElement().clone();
+			Element manifestRoot = _navViewer.getRootElement().clone();
 			// now get the organizations node
 			Element orgs = manifestRoot.getChild(CP_Core.ORGANIZATIONS, manifestRoot.getNamespace());
 			Element[] tmp = _navViewer.getOrganizationList();
@@ -333,10 +333,10 @@ public class ScormManager {
 					// Get the children of the referenced <organization> element and graft
 					// clones
 					if (ref_element != null) {
-						Iterator it = ref_element.getChildren().iterator();
+						Iterator<Element> it = ref_element.getChildren().iterator();
 						while (it.hasNext()) {
-							Element ref_child = (Element) it.next();
-							element.addContent((Element) ref_child.clone());
+							Element ref_child = it.next();
+							element.addContent(ref_child.clone());
 						}
 					}
 				}
@@ -347,9 +347,9 @@ public class ScormManager {
 			menuParent = itemId;
 		}
 		// round we go again...
-		Iterator it = element.getChildren().iterator();
+		Iterator<Element> it = element.getChildren().iterator();
 		while (it.hasNext()) {
-			Element child = (Element) it.next();
+			Element child = it.next();
 			createNavLinks(child, menuParent, useRelativePaths);
 		}
 	}

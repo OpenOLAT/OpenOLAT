@@ -44,8 +44,8 @@ package org.olat.modules.scorm.contentpackaging;
 
 import java.util.Hashtable;
 
-import org.jdom.Document;
-import org.jdom.Namespace;
+import org.jdom2.Document;
+import org.jdom2.Namespace;
 import org.olat.modules.scorm.server.servermodels.XMLUtils;
 
 

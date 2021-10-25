@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
-import org.jdom.Comment;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Parent;
+import org.jdom2.Comment;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Parent;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 
@@ -154,10 +154,10 @@ public class SequencerModel extends XMLDocument {
 	 * @param status
 	 */
 	public void updateDiskModel(String sco, String status) {
-		List itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
-		Iterator itemListElement = itemList.iterator();
+		List<Element> itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
+		Iterator<Element> itemListElement = itemList.iterator();
 		while (itemListElement.hasNext()) {
-			Element anItem = (Element) itemListElement.next();
+			Element anItem = itemListElement.next();
 			if (anItem.getAttributeValue(ITEM_IDENTIFIER).equals(sco)) {
 				anItem.setText(status);
 			}
@@ -177,10 +177,10 @@ public class SequencerModel extends XMLDocument {
 	 */
 	public Map<String,String> getItemsAsHash(String org) {
 		Map<String,String> hash = new Hashtable<>();
-		List itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
-		Iterator itemListElement = itemList.iterator();
+		List<Element> itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
+		Iterator<Element> itemListElement = itemList.iterator();
 		while (itemListElement.hasNext()) {
-			Element anItem = (Element) itemListElement.next();
+			Element anItem = itemListElement.next();
 			hash.put(anItem.getAttributeValue(ITEM_IDENTIFIER), anItem.getText());
 		}
 		return hash;
@@ -212,11 +212,11 @@ public class SequencerModel extends XMLDocument {
 		boolean itemFound = false;
 
 		// check to see if the item is there already, if so reset it
-		List itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
+		List<Element> itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
 		if (itemList != null && !itemList.isEmpty()) {
-			Iterator itemListElement = itemList.iterator();
+			Iterator<Element> itemListElement = itemList.iterator();
 			while (itemListElement.hasNext()) {
-				Element anItem = (Element) itemListElement.next();
+				Element anItem = itemListElement.next();
 				if (anItem.getAttributeValue(ITEM_IDENTIFIER).equals(itemId)) {
 					anItem.setText(value);
 					_items.add(itemId);
@@ -242,6 +242,7 @@ public class SequencerModel extends XMLDocument {
 	 * 
 	 * @throws IOException
 	 */
+	@Override
 	public void saveDocument() throws IOException {
 		saveDocument(false);
 	}
@@ -267,11 +268,11 @@ public class SequencerModel extends XMLDocument {
 	 */
 	protected void removeOldNodes(String[] items) {
 		List<Element> v = new Vector<>();
-		List itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
+		List<Element> itemList = getDocument().getRootElement().getChildren(ITEM_NODE);
 		if (itemList != null && !itemList.isEmpty()) {
-			Iterator itemListElement = itemList.iterator();
+			Iterator<Element> itemListElement = itemList.iterator();
 			while (itemListElement.hasNext()) {
-				Element anItem = (Element) itemListElement.next();
+				Element anItem = itemListElement.next();
 				if (!doesItemExist(anItem.getAttributeValue(ITEM_IDENTIFIER), items)) {
 					// mark this node - (can't delete at the same time as looping
 					// otherwise get concurrent access errors)
@@ -283,7 +284,7 @@ public class SequencerModel extends XMLDocument {
 				Element anItemToDelete = itemsToRemove.next();
 				Parent parent = anItemToDelete.getParent();
 				if (parent != null) {
-					log.warn("item no longer exists so remove " + anItemToDelete.getAttributeValue(ITEM_IDENTIFIER));
+					log.warn("item no longer exists so remove {}", anItemToDelete.getAttributeValue(ITEM_IDENTIFIER));
 					parent.removeContent(anItemToDelete);
 				}
 			}

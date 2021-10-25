@@ -26,9 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.server.servermodels.CMI_DataModel;
@@ -97,7 +97,7 @@ public class ScormPackageHandler extends XMLDocument {
 	public void buildSettings() throws NoItemFoundException {
 		// get the root element of the manifest
 		// NOTE: CLONE IT first- must work on a copy of the original JDOM doc.
-		Element manifestRoot = (Element) getDocument().getRootElement().clone();
+		Element manifestRoot = getDocument().getRootElement().clone();
 		_sequencerModel.setManifestModifiedDate(super.getFile().lastModified());
 		// now get the organizations node
 		Element orgs = manifestRoot.getChild(CP_Core.ORGANIZATIONS, manifestRoot.getNamespace());
@@ -198,10 +198,10 @@ public class ScormPackageHandler extends XMLDocument {
 					// Get the children of the referenced <organization> element and graft
 					// clones
 					if (ref_element != null) {
-						Iterator it = ref_element.getChildren().iterator();
+						Iterator<Element> it = ref_element.getChildren().iterator();
 						while (it.hasNext()) {
-							Element ref_child = (Element) it.next();
-							element.addContent((Element) ref_child.clone());
+							Element ref_child = it.next();
+							element.addContent(ref_child.clone());
 						}
 					}
 				}
@@ -255,9 +255,9 @@ public class ScormPackageHandler extends XMLDocument {
 				}
 			}
 		}
-		Iterator it = element.getChildren().iterator();
+		Iterator<Element> it = element.getChildren().iterator();
 		while (it.hasNext()) {
-			Element child = (Element) it.next();
+			Element child = it.next();
 			iterateThruManifest(child);
 		}
 

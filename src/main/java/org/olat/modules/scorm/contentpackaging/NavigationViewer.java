@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.modules.scorm.SettingsHandler;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
@@ -154,7 +154,9 @@ public class NavigationViewer extends XMLDocument {
 			} else {
 				Element referencedElement = _scormCore.getReferencedElement(element);
 				// does this reference a resource or submanifest
-				if (referencedElement.getName().equals(SCORM12_Core.MANIFEST)) { return SCORM12_Core.MANIFEST; }
+				if (referencedElement.getName().equals(SCORM12_Core.MANIFEST)) {
+					return SCORM12_Core.MANIFEST;
+				}
 				String scoType = referencedElement.getAttributeValue(SCORM12_Core.SCORMTYPE, SCORM12_DocumentHandler.ADLCP_NAMESPACE_12);
 				if (scoType != null) {
 					return scoType;
@@ -200,7 +202,7 @@ public class NavigationViewer extends XMLDocument {
 	 */
 	public Element[] getOrganizationList() {
 		// need to work on a copy here...
-		Element manifestRoot = (Element) getRootElement().clone();
+		Element manifestRoot = getRootElement().clone();
 		Element orgsNode = manifestRoot.getChild(SCORM12_Core.ORGANIZATIONS, getRootElement().getNamespace());
 		return _scormCore.getOrganizations(orgsNode);
 	}
@@ -301,7 +303,7 @@ public class NavigationViewer extends XMLDocument {
 	
 	public int getNumOfSCOs() {
 		int count = 0;
-		Element[] element = _scormCore.getElementsInManifest(getRootElement(), SCORM12_Core.ITEM, getRootElement().getNamespace());
+		Element[] element = _scormCore.getElementsInManifest(getRootElement(), CP_Core.ITEM, getRootElement().getNamespace());
 		for (int i = 0; i < element.length; i++) {
 			if (findScoType(element[i]).equals(SCORM12_Core.SCO)) {
 				count++;
@@ -317,10 +319,10 @@ public class NavigationViewer extends XMLDocument {
 	 */
 	public String[] getAllScoIdentifiers() {
 		List<String> v = new ArrayList<>();
-		Element[] element = _scormCore.getElementsInManifest(this.getRootElement(), SCORM12_Core.ITEM, getRootElement().getNamespace());
+		Element[] element = _scormCore.getElementsInManifest(this.getRootElement(), CP_Core.ITEM, getRootElement().getNamespace());
 		for (int i = 0; i < element.length; i++) {
 			if (findScoType(element[i]).equals(SCORM12_Core.SCO)) {
-				v.add(element[i].getAttributeValue(SCORM12_Core.IDENTIFIER));
+				v.add(element[i].getAttributeValue(CP_Core.IDENTIFIER));
 			}
 		}
 		return v.toArray(new String[v.size()]);

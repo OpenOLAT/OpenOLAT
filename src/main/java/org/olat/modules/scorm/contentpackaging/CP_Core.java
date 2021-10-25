@@ -49,8 +49,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.olat.modules.scorm.server.servermodels.XMLDocument;
 
 
@@ -273,9 +273,9 @@ public class CP_Core {
     }
 
     private void _getElementsInManifest(Element parent, List<Element> v, String elementName, Namespace ns) {
-        Iterator it = parent.getChildren().iterator();
+        Iterator<Element> it = parent.getChildren().iterator();
         while(it.hasNext()) {
-            Element child = (Element)it.next();
+            Element child = it.next();
             if(child.getName().equals(elementName) && child.getNamespace().equals(ns)) {
                 v.add(child);
             }
@@ -306,9 +306,9 @@ public class CP_Core {
         String id = parent.getAttributeValue(IDENTIFIER);
         if(id != null && id.equals(identifier)) return parent;
         
-        Iterator it = parent.getChildren().iterator();
+        Iterator<Element> it = parent.getChildren().iterator();
         while(it.hasNext()) {
-            Element child = (Element)it.next();
+            Element child = it.next();
             if(_doc.isDocumentNamespace(child)) {
                 Element e = getElementByIdentifier(child, identifier);
                 if(e != null) return e;
@@ -325,9 +325,9 @@ public class CP_Core {
     public Element[] getOrganizations(Element orgsElement) {
         List<Element> v = new ArrayList<>();
 
-        Iterator it = orgsElement.getChildren(ORGANIZATION, orgsElement.getNamespace()).iterator();
+        Iterator<Element> it = orgsElement.getChildren(ORGANIZATION, orgsElement.getNamespace()).iterator();
         while(it.hasNext()) {
-            Element orgElement = (Element)it.next();
+            Element orgElement = it.next();
             v.add(orgElement);
         }
 
@@ -559,27 +559,27 @@ public class CP_Core {
         Element resourcesElement = manifestElement.getChild(RESOURCES, manifestElement.getNamespace());
         if(resourcesElement != null) {
             // Resource Elements
-            Iterator it = resourcesElement.getChildren(RESOURCE, resourcesElement.getNamespace()).iterator();
+            Iterator<Element> it = resourcesElement.getChildren(RESOURCE, resourcesElement.getNamespace()).iterator();
             while(it.hasNext()) {
-                Element resourceElement = (Element)it.next();
+                Element resourceElement = it.next();
                 File file = getResourceFile(resourceElement);
                 if(file != null && !v.contains(file)) {
                 	v.add(file);
                 }
                 // File Elements
-                Iterator it2 = resourceElement.getChildren(FILE, resourceElement.getNamespace()).iterator();
+                Iterator<Element> it2 = resourceElement.getChildren(FILE, resourceElement.getNamespace()).iterator();
                 while(it2.hasNext()) {
-                    Element fileElement = (Element)it2.next();
+                    Element fileElement = it2.next();
                     File file2 = getResourceFile(fileElement);
                     if(file2 != null && !v.contains(file2)) v.add(file2);
                 }
             }
         }
         // Recurse Sub-Manifests           
-        List submanifestElement = manifestElement.getChildren(MANIFEST, manifestElement.getNamespace());
-        Iterator listElement = submanifestElement.iterator();
+        List<Element> submanifestElement = manifestElement.getChildren(MANIFEST, manifestElement.getNamespace());
+        Iterator<Element> listElement = submanifestElement.iterator();
         while (listElement.hasNext()) {
-        	Element asubmanifest = (Element) listElement.next();
+        	Element asubmanifest = listElement.next();
         	_getResourceFiles(asubmanifest, v);
         }
     }
@@ -593,9 +593,9 @@ public class CP_Core {
         // Got to be the Resources Element
         if(RESOURCES.equals(resourcesElement.getName()) == false) return null;
         
-        Iterator it = resourcesElement.getChildren(RESOURCE, resourcesElement.getNamespace()).iterator();
+        Iterator<Element> it = resourcesElement.getChildren(RESOURCE, resourcesElement.getNamespace()).iterator();
         while(it.hasNext()) {
-            Element resource = (Element) it.next();
+            Element resource = it.next();
             String tmp = resource.getAttributeValue(HREF);
             if(tmp != null) {
                 // Ignore these chars on compare
@@ -617,9 +617,9 @@ public class CP_Core {
         // Got to be the Resource Element
         if(RESOURCE.equals(resourceElement.getName()) == false) return null;
 
-        Iterator it = resourceElement.getChildren(FILE, resourceElement.getNamespace()).iterator();
+        Iterator<Element> it = resourceElement.getChildren(FILE, resourceElement.getNamespace()).iterator();
         while(it.hasNext()) {
-            Element file = (Element) it.next();
+            Element file = it.next();
             String tmp = file.getAttributeValue(HREF);
             if(tmp != null) {
                 // Ignore these chars on compare

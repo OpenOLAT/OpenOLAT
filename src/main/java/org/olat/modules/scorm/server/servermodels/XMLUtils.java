@@ -49,13 +49,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 
 /**
@@ -157,18 +157,18 @@ public final class XMLUtils {
         }
 
         // Additional Namespace?
-        Iterator it = element.getAdditionalNamespaces().iterator();
+        Iterator<Namespace> it = element.getAdditionalNamespaces().iterator();
         while(it.hasNext()) {
-            Namespace ns1 = (Namespace)it.next();
+            Namespace ns1 = it.next();
             if(ns1.equals(ns)) {
                 return true;
             }
         }
 
         // Recurse children
-        Iterator i = element.getChildren().iterator();
+        Iterator<Element> i = element.getChildren().iterator();
         while(i.hasNext()) {
-            Element child = (Element) i.next();
+            Element child = i.next();
             boolean found = containsNamespace(child, ns);
             if(found) {
                 return true;
