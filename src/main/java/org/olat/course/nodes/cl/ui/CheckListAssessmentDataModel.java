@@ -149,13 +149,15 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 				businessGroupKeys = new ArrayList<>(filters.size());
 				curriculumElementKeys = new ArrayList<>(filters.size());
 				List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
-				for(String filterValue:filterValues) {
-					if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
-						String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
-						businessGroupKeys.add(Long.valueOf(key));
-					} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
-						String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
-						curriculumElementKeys.add(Long.valueOf(key));
+				if(filterValues != null && !filterValues.isEmpty()) {
+					for(String filterValue:filterValues) {
+						if(filterValue.startsWith(BUSINESS_GROUP_PREFIX)) {
+							String key = filterValue.substring(BUSINESS_GROUP_PREFIX.length(), filterValue.length());
+							businessGroupKeys.add(Long.valueOf(key));
+						} else if(filterValue.startsWith(CURRICULUM_EL_PREFIX)) {
+							String key = filterValue.substring(CURRICULUM_EL_PREFIX.length(), filterValue.length());
+							curriculumElementKeys.add(Long.valueOf(key));
+						}
 					}
 				}
 			}
