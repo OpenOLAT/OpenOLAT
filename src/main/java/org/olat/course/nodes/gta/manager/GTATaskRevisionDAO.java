@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskRevision;
 import org.olat.course.nodes.gta.model.TaskRevisionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,5 +84,14 @@ public class GTATaskRevisionDAO {
 				.getResultList();
 		return revisions == null || revisions.isEmpty() ? null : revisions.get(0);
 	}
-
+	
+	public int deleteTaskRevision(TaskList taskList) {
+		StringBuilder taskSb = new StringBuilder(128);
+		taskSb.append("delete from gtataskrevision as taskrev where taskrev.task.key in (")
+		      .append("  select task.key from gtatask as task where task.taskList.key=:taskListKey)");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(taskSb.toString())
+			.setParameter("taskListKey", taskList.getKey())
+			.executeUpdate();
+	}
 }
