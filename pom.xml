@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.3.10</org.springframework.version>
+		<org.springframework.version>5.3.12</org.springframework.version>
 		<org.hibernate.version>5.5.7.Final</org.hibernate.version>
 		<apache.cxf>3.4.5</apache.cxf>
 		<apache.pdfbox>2.0.24</apache.pdfbox>
@@ -72,8 +72,8 @@
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
 		<io.undertow>2.2.12.Final</io.undertow>
 		<jackson.version>2.13.0</jackson.version>
-		<org.mysql.version>8.0.26</org.mysql.version>
-		<org.postgresql.version>42.2.24</org.postgresql.version>
+		<org.mysql.version>8.0.27</org.mysql.version>
+		<org.postgresql.version>42.3.0</org.postgresql.version>
 		<org.infinispan.version>12.1.7.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
@@ -447,7 +447,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.52.3</version>
+				    <version>3.52.5</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1837,7 +1837,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.1.0</version>
+			<version>3.1.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
