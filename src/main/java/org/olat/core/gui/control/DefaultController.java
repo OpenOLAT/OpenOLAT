@@ -179,6 +179,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		}
 	}
 
+	@Override
 	public boolean isControllerListeningTo(ControllerEventListener el) {
 		return listeners != null && listeners.contains(el);
 	}
@@ -209,6 +210,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * Note: This method is final to make sure no subclass fiddles with this - core - framework method. As
 	 *       the framework part includes setting up ThreadLocalUserActivityLogger etc
 	 */
+	@Override
 	public final void dispatchEvent(UserRequest ureq, Component source, Event event) {
 		if (!disposed) {
 			event(ureq, source, event);			
@@ -249,11 +251,13 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	/**
 	 * @see org.olat.core.gui.control.ControllerEventListener#dispatchEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void dispatchEvent(final UserRequest ureq, final Controller source, final Event event) {
 		if (!disposed) {
 			getUserActivityLogger().frameworkSetBusinessPathFromWindowControl(getWindowControl());
 			ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
 
+				@Override
 				public void run() {
 					event(ureq, source, event);
 				}
@@ -332,6 +336,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	/**
 	 * @return Component
 	 */
+	@Override
 	public Component getInitialComponent() {
 		return initialComponent;
 	}
@@ -378,6 +383,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * <p>
 	 * @return UserActivityLogger of this controller or null if no logger is set
 	 */
+	@Override
 	public IUserActivityLogger getUserActivityLogger() {
 		return this.userActivityLogger;
 	}
@@ -394,6 +400,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 *          'this object has been disposed by an other process/user. please
 	 *          click some other link to continue...
 	 */
+	@Override
 	public synchronized void dispose() { //o_clusterOK by:fj
 		// protect setting disposed to true by synchronized block
 		synchronized (DISPOSE_LOCK) {// o_clusterok
@@ -410,6 +417,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		
 		try {
 			ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLoggerWithException(new RunnableWithException() {
+				@Override
 				public void run() throws Exception {
 						doPreDispose();
 						doDispose();
@@ -460,6 +468,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * @see java.lang.Object#toString()
 	 */
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("cListener:");
 		if (listeners == null) {
@@ -521,6 +530,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * 
 	 * @see org.olat.core.gui.control.Controller#isDisposed()
 	 */
+	@Override
 	public boolean isDisposed() {
 		return disposed;
 	}

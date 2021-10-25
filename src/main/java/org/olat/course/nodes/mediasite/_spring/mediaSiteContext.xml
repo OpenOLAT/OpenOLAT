@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="mediaSite" class="org.olat.course.nodes.mediasite.MediaSiteCourseNodeConfiguration" scope="prototype">
+		<property name="order" value="252" />
+	</bean>
+	
+</beans>

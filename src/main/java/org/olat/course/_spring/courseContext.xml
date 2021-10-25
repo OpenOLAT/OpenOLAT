@@ -18,6 +18,7 @@
 	<import resource="classpath:/org/olat/course/nodes/basiclti/_spring/basicLtiContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/card2brain/_spring/card2brainContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/edubase/_spring/edubaseContext.xml"/>
+	<import resource="classpath:/org/olat/course/nodes/mediasite/_spring/mediaSiteContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/info/_spring/infoMessageContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/gotomeeting/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/nodes/openmeetings/_spring/buildingblockContext.xml"/>
