@@ -169,6 +169,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
 				searchParams.setEducationalTypeKeys(educationalTypes);
 				break;
+			case AUTHORS:
+				searchParams.setAuthor(filter.getValue());
+				break;
 			default:
 				// DATES, BOOKING, PASSED are all old style filters
 				String filterVal = ((FlexiTableExtendedFilter)filter).getValue();
@@ -186,7 +189,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		PASSED,
 		BOOKING,
 		DATES,
-		EDUCATIONALTYPE
+		EDUCATIONALTYPE,
+		AUTHORS
 	}
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {
