@@ -71,6 +71,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.run.GoToEvent;
 import org.olat.group.BusinessGroup;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -400,10 +401,12 @@ public class InfoDisplayController extends FormBasicController {
 			maxResults = -1;
 			after = null;
 			loadMessages();
-		}  else if(source == newMsgsLink) {
+		} else if(source == newMsgsLink) {
 			maxResults = maxResultsConfig;
 			after = afterConfig;
 			loadMessages();
+		} else if(source == flc) {
+			doGoTo(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -412,6 +415,16 @@ public class InfoDisplayController extends FormBasicController {
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
 		//nothing to do
+	}
+	
+	private void doGoTo(UserRequest ureq) {
+		String nodeId = ureq.getParameter("activateCourseNode");
+		String tool = ureq.getParameter("activateCourseTool");
+		if(StringHelper.containsNonWhitespace(nodeId)) {
+			fireEvent(ureq, new GoToEvent(GoToEvent.GOTO_NODE, nodeId));
+		} else if(StringHelper.containsNonWhitespace(tool)) {
+			fireEvent(ureq, new GoToEvent(GoToEvent.GOTO_TOOL, tool));
+		}
 	}
 	
 	protected void popupDelete(UserRequest ureq, InfoMessage msg) {

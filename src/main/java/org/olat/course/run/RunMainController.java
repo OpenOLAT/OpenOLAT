@@ -519,9 +519,26 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	protected CourseNode updateCurrentCourseNode(UserRequest ureq) {
 		return updateTreeAndContent(ureq, getCurrentCourseNode(), "", null, null);
 	}
+	
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param nodeId The identifier of the course element
+	 * @return The current course node
+	 */
+	protected CourseNode updateTreeAndContent(UserRequest ureq, String nodeId) {
+		CourseNode identNode = course.getRunStructure().getNode(nodeId);
+		CourseNode node = updateTreeAndContent(ureq, identNode, null);
+		if (node != null) {
+			currentCourseNode = node;
+		} else {
+			getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
+		}
+		return currentCourseNode;
+	}
 
 	/**
-	 * side-effecty to content and luTree
+	 * side-effect to content and luTree
 	 * 
 	 * @param ureq
 	 * @param calledCourseNode the node to jump to, if null = jump to root node
@@ -735,13 +752,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				// Events from the JS function o_activateCourseNode() - activate the given node id
 				String nodeid = ureq.getParameter("nodeid");
 				if (nodeid != null) {
-					CourseNode identNode = course.getRunStructure().getNode(nodeid);
-					CourseNode node = updateTreeAndContent(ureq, identNode, null);
-					if (node != null) {
-						currentCourseNode = node;
-					} else {
-						getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
-					}
+					updateTreeAndContent(ureq, nodeid);
 				}
 			} else if ("activateCourseTool".equals(event.getCommand())) {
 				String toolname = ureq.getParameter("toolname");
@@ -792,7 +803,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			needsRebuildAfter = false;
 		}
 		
-		// event from the current tool (editor, groupmanagement, archiver)	
+		// event from the current tool (editor, group management, archiver)	
 		
 		if (source == currentNodeController) {
 			if (event instanceof OlatCmdEvent) {
@@ -820,7 +831,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				}
 			} else if (event == Event.DONE_EVENT) {
 				// the controller is done.
-				// we have a chance here to test if we need to refresh the evalution.
+				// we have a chance here to test if we need to refresh the evaluation.
 				// this is the case when a test was submitted and scoring has changed ->
 				// preconditions may have changed
 				if (needsRebuildAfterRunDone) {
@@ -841,6 +852,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else if (event instanceof BusinessGroupModifiedEvent) {
 				fireEvent(ureq, event);
 				updateTreeAndContent(ureq, currentCourseNode, null);
+			} else if(event instanceof GoToEvent) {
+				fireEvent(ureq, event);
 			}
 		} else if (source == topPaginationCtrl || source == bottomPaginationCtrl) {
 			if (event == CoursePaginationController.NEXT_EVENT) {
