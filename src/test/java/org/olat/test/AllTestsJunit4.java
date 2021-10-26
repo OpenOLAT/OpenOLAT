@@ -409,6 +409,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.model.xml.OpenOLATAssessementItemsTest.class,
 	org.olat.ims.qti21.model.xml.QTI21ExplorerHandlerTest.class,
 	org.olat.ims.qti21.ui.components.AssessmentRenderFunctionsTest.class,
+	org.olat.ims.qti21.ui.AssessmentTestSessionComparatorTest.class,
 	org.olat.ims.qti21.questionimport.CSVToAssessmentItemConverterTest.class,
 	org.olat.ims.lti.LTIManagerTest.class,
 	org.olat.ims.lti13.LTI13ServiceTest.class,

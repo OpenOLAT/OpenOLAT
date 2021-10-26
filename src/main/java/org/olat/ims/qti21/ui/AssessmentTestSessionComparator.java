@@ -25,6 +25,9 @@ import java.util.Date;
 import org.olat.ims.qti21.AssessmentTestSession;
 
 /**
+ * The comparator places first running sessions, then terminated sessions
+ * and cancelled or exploded at the last places.
+ * 
  * 
  * Initial date: 24 nov. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -56,15 +59,8 @@ public class AssessmentTestSessionComparator implements Comparator<AssessmentTes
 		}
 		
 		if(c == 0) {
-			Date t1 = a1.getTerminationTime();
-			if(t1 == null) {
-				t1 = a1.getFinishTime();
-			}
-			Date t2 = a2.getTerminationTime();
-			if(t2 == null) {
-				t2 = a2.getFinishTime();
-			}
-			
+			Date t1 = getValidDate(a1);
+			Date t2 = getValidDate(a2);
 			if(t1 == null && t2 == null) {
 				c = 0;
 			} else if(t2 == null) {
@@ -89,6 +85,26 @@ public class AssessmentTestSessionComparator implements Comparator<AssessmentTes
 				c = c1.compareTo(c2);
 			}
 		}
+		
+		if(c == 0) {
+			c = a1.getKey().compareTo(a2.getKey());
+		}
+		
 		return -c;
+	}
+	
+	private static final Date getValidDate(AssessmentTestSession a) {
+		if(a.isExploded() || a.isCancelled()) {
+			return null;
+		}
+		
+		Date t = a.getTerminationTime();
+		if(t == null) {
+			t = a.getFinishTime();
+		}
+		if(t == null) {
+			t = a.getCreationDate();
+		}
+		return t;
 	}
 }
