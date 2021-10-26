@@ -22,6 +22,7 @@ package org.olat.modules.lecture.ui;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.TransformerException;
 
@@ -234,6 +235,17 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		tableEl.reset(false, false, true);
 	}
 	
+	private void reloadDeletedRow(LectureBlock lectureBlock) {
+		List<LectureBlockRow> blocks = tableModel.getObjects();
+		List<LectureBlockRow> cleanedBlocks = blocks.stream()
+				.filter(row -> !row.getKey().equals(lectureBlock.getKey()))
+				.collect(Collectors.toList());
+		tableModel.setObjects(cleanedBlocks);
+		tableEl.reset(false, false, true);
+		
+		showWarning("lecture.blocks.not.existing");
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -336,57 +348,73 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	
 	private void doExportLectureBlock(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
-		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-		LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export);
+		if(lectureBlock == null) {
+			reloadDeletedRow(row);
+		} else {
+			List<Identity> teachers = lectureService.getTeachers(lectureBlock);
+			
+			Roles roles = ureq.getUserSession().getRoles();
+			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+			LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
+			ureq.getDispatchResult().setResultingMediaResource(export);
+		}
 	}
 	
 	private void doExportAttendanceList(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
-		List<Identity> participants = lectureService.getParticipants(lectureBlock);
-		if(participants.size() > 1) {
-			Collections.sort(participants, new IdentityComparator(getLocale()));
-		}
-		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(row);
-		List<AbsenceNotice> notices = lectureService.getAbsenceNoticeRelatedTo(lectureBlock);
-
-		try {
-			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
-			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
-			export.create(participants, rollCalls, notices);
-			ureq.getDispatchResult().setResultingMediaResource(export);
-		} catch (IOException | TransformerException e) {
-			logError("", e);
+		if(lectureBlock == null) {
+			reloadDeletedRow(row);
+		} else {
+			List<Identity> participants = lectureService.getParticipants(lectureBlock);
+			if(participants.size() > 1) {
+				Collections.sort(participants, new IdentityComparator(getLocale()));
+			}
+			List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(row);
+			List<AbsenceNotice> notices = lectureService.getAbsenceNoticeRelatedTo(lectureBlock);
+	
+			try {
+				LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
+				export.setTeacher(userManager.getUserDisplayName(getIdentity()));
+				export.create(participants, rollCalls, notices);
+				ureq.getDispatchResult().setResultingMediaResource(export);
+			} catch (IOException | TransformerException e) {
+				logError("", e);
+			}
 		}
 	}
 	
 	private void doExportAttendanceListForSignature(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
-		List<Identity> participants = lectureService.getParticipants(lectureBlock);
-		if(participants.size() > 1) {
-			Collections.sort(participants, new IdentityComparator(getLocale()));
-		}
-		try {
-			LecturesBlockSignaturePDFExport export = new LecturesBlockSignaturePDFExport(lectureBlock, getTranslator());
-			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
-			export.create(participants);
-			ureq.getDispatchResult().setResultingMediaResource(export);
-		} catch (IOException | TransformerException e) {
-			logError("", e);
+		if(lectureBlock == null) {
+			reloadDeletedRow(row);
+		} else {
+			List<Identity> participants = lectureService.getParticipants(lectureBlock);
+			if(participants.size() > 1) {
+				Collections.sort(participants, new IdentityComparator(getLocale()));
+			}
+			try {
+				LecturesBlockSignaturePDFExport export = new LecturesBlockSignaturePDFExport(lectureBlock, getTranslator());
+				export.setTeacher(userManager.getUserDisplayName(getIdentity()));
+				export.create(participants);
+				ureq.getDispatchResult().setResultingMediaResource(export);
+			} catch (IOException | TransformerException e) {
+				logError("", e);
+			}
 		}
 	}
 	
 	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
-		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("LectureBlock", block.getKey());
-		WindowControl swControl = addToHistory(ureq, ores, null);
-		rollCallCtrl = new TeacherRollCallController(ureq, swControl, reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock), false);
-		listenTo(rollCallCtrl);
-		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
+		if(reloadedBlock == null) {
+			reloadDeletedRow(block);
+		} else {		
+			List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("LectureBlock", block.getKey());
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			rollCallCtrl = new TeacherRollCallController(ureq, swControl, reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock), false);
+			listenTo(rollCallCtrl);
+			toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
+		}
 	}
 	
 	private void doOpenCourseLectures(UserRequest ureq, LectureBlockRow row) {
@@ -438,8 +466,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 
 		LectureBlock block = lectureService.getLectureBlock(row);
 		if(block == null) {
-			tableEl.reloadData();
-			showWarning("lecture.blocks.not.existing");
+			reloadDeletedRow(row.getLectureBlock());
 		} else {
 			toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
 			listenTo(toolsCtrl);

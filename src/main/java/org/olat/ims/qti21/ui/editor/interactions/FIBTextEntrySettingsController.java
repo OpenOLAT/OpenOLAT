@@ -21,6 +21,8 @@ package org.olat.ims.qti21.ui.editor.interactions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -35,6 +37,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
@@ -58,6 +61,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	private TextElement placeholderEl;
 	private TextElement expectedLengthEl;
 	private FormLink addFirstAlternative;
+	private FormLink addMultipleAlternativesButton;
 	private MultipleSelectionElement caseSensitiveEl;
 	private FormLayoutContainer alternativesCont;
 	private final List<AlternativeRow> alternativeRows = new ArrayList<>();
@@ -66,6 +70,9 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	private final boolean readOnly;
 	private final boolean restrictedEdit;
 	private final TextEntry interaction;
+	
+	private FIBTextEntryAlternativesController alternativesCtrl;
+	private CloseableCalloutWindowController alternativesCalloutCtrl;
 	
 	public FIBTextEntrySettingsController(UserRequest ureq, WindowControl wControl, TextEntry interaction,
 			boolean restrictedEdit, boolean readOnly) {
@@ -106,6 +113,10 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		addFirstAlternative = uifactory.addFormLink("add.first.alternative", "add", "", null, alternativesCont, Link.LINK | Link.NONTRANSLATED);
 		addFirstAlternative.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		addFirstAlternative.setVisible(!restrictedEdit && !readOnly);
+		
+		addMultipleAlternativesButton = uifactory.addFormLink("add.multi.alternatives", "add.multi", "fib.add.multiple.alternatives", null, alternativesCont, Link.BUTTON);
+		addMultipleAlternativesButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addMultipleAlternativesButton.setVisible(!restrictedEdit && !readOnly);
 
 		List<TextEntryAlternative> alternatives = interaction.getAlternatives();
 		if(alternatives != null && !alternatives.isEmpty()) {
@@ -141,6 +152,23 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	
 	public Identifier getResponseIdentifier() {
 		return interaction.getResponseIdentifier();
+	}
+	
+	private void appendAlternatives(List<String> newAlternatives) {
+		Set<String> currentAlterantives = alternativeRows.stream()
+				.map(row -> row.getAlternative().getAlternative())
+				.collect(Collectors.toSet());
+		
+		for(String newAlternative:newAlternatives) {
+			if(!currentAlterantives.contains(newAlternative)) {
+				TextEntryAlternative alternative = new TextEntryAlternative();
+				alternative.setAlternative(newAlternative);
+				if(interaction.getScore() != null) {
+					alternative.setScore(interaction.getScore().doubleValue());
+				}
+				appendAlternative(alternative, null, false);
+			}
+		}	
 	}
 	
 	private void appendAlternative(TextEntryAlternative alternative, AlternativeRow previousRow, boolean focus) {
@@ -214,6 +242,27 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	}
 	
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(alternativesCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				appendAlternatives(alternativesCtrl.getAlternatives());
+			}
+			alternativesCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(alternativesCalloutCtrl == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(alternativesCalloutCtrl);
+		removeAsListenerAndDispose(alternativesCtrl);
+		alternativesCalloutCtrl = null;
+		alternativesCtrl = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == addFirstAlternative) {
 			TextEntryAlternative alternative = new TextEntryAlternative();
@@ -221,6 +270,8 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 				alternative.setScore(interaction.getScore().doubleValue());
 			}
 			appendAlternative(alternative, null, true);
+		} else if(source == addMultipleAlternativesButton) {
+			doOpenAddVariants(ureq, addMultipleAlternativesButton);
 		} else if(source instanceof FormLink) {
 			for(AlternativeRow alternativeRow:alternativeRows) {
 				if(alternativeRow.getRemoveButton() == source) {
@@ -282,6 +333,18 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+	
+	private void doOpenAddVariants(UserRequest ureq, FormLink link) {
+		alternativesCtrl = new FIBTextEntryAlternativesController(ureq, getWindowControl());
+		listenTo(alternativesCtrl);
+		
+		alternativesCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				alternativesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(alternativesCalloutCtrl);
+		alternativesCalloutCtrl.activate();
+	}
+	
+
 	
 	public class AlternativeRow {
 		

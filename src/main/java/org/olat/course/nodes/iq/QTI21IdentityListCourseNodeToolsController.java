@@ -133,7 +133,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			lastSession = sessionsStatistics.get(0).getTestSession();
 		}
 
-		initTools();	
+		initTools();
 	}
 
 	@Override
