@@ -59,7 +59,7 @@ public class InfinispanCacher implements Cacher {
 
 	@Override
 	public <U, V> CacheWrapper<U, V> getCache(String type, String name) {
-		String cacheName = type + "@" + name;
+		String cacheName = type + "-" + name;
 		if(!cacheManager.cacheExists(cacheName)) {
 			createInfinispanConfiguration(cacheName);
 		}
@@ -90,6 +90,8 @@ public class InfinispanCacher implements Cacher {
 				.isolationLevel(IsolationLevel.READ_COMMITTED);
 			builder.statistics()
 				.enable();
+			builder.encoding()
+				.mediaType("application/x-java-object");
 
 			Configuration configurationOverride = builder.build();
 			cacheManager.defineConfiguration(cacheName, configurationOverride);

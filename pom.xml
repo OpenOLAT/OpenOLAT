@@ -63,7 +63,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
 		<org.springframework.version>5.3.12</org.springframework.version>
-		<org.hibernate.version>5.5.7.Final</org.hibernate.version>
+		<org.hibernate.version>5.6.0.Final</org.hibernate.version>
 		<apache.cxf>3.4.5</apache.cxf>
 		<apache.pdfbox>2.0.24</apache.pdfbox>
 		<apache.poi>5.0.0</apache.poi>
@@ -74,7 +74,7 @@
 		<jackson.version>2.13.0</jackson.version>
 		<org.mysql.version>8.0.27</org.mysql.version>
 		<org.postgresql.version>42.3.0</org.postgresql.version>
-		<org.infinispan.version>12.1.7.Final</org.infinispan.version>
+		<org.infinispan.version>13.0.0.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.2</version.drone>
@@ -2562,6 +2562,12 @@
 			<groupId>org.eu.ingwar.tools</groupId>
 			<artifactId>arquillian-suite-extension</artifactId>
 			<version>1.2.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency><!-- Ingwar needs org.reflection which needs javassist but has scope compile -->
+			<groupId>org.javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.21.0-GA</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

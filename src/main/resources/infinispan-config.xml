@@ -1,111 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="urn:infinispan:config:11.0 https://infinispan.org/schemas/infinispan-config-11.0.xsd"
-        xmlns="urn:infinispan:config:11.0">
+        xsi:schemaLocation="urn:infinispan:config:13.0 https://infinispan.org/schemas/infinispan-config-13.0.xsd"
+        xmlns="urn:infinispan:config:13.0">
 
 	<cache-container name="NonTransactionalCacheManager" default-cache="default">
 		<local-cache name="default" />
 
-		<local-cache name="MapperService@mapper" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="MapperService-mapper" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="10000" when-full="REMOVE" />
 			<expiration max-idle="300000" interval="5000" />
 		</local-cache>
 
-		<local-cache name="OpenMeetingsManager@session" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="OpenMeetingsManager-session" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="10000" when-full="REMOVE" />
 			<expiration max-idle="300000" interval="5000" />
 		</local-cache>
 		
-		<local-cache name="UserSessionManager@usersession" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="UserSessionManager-usersession" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory when-full="NONE" />
 			<expiration max-idle="-1" interval="5000" />
 		</local-cache>
 		
-		<local-cache name="UserChangesListener@listener" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="UserChangesListener-listener" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory when-full="NONE" />
 			<expiration max-idle="60000" interval="5000" />
 		</local-cache>
 		
-		<local-cache name="VFSLockManager@lock-nulls" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="VFSLockManager-lock-nulls" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="50000" when-full="REMOVE" />
 			<expiration max-idle="21600000" interval="5000" />
 		</local-cache>
 		
-		<local-cache name="VFSLockManager@file-locks" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="VFSLockManager-file-locks" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="50000" when-full="REMOVE" />
 			<expiration max-idle="21600000" interval="5000" />
 		</local-cache>
 		
-		<local-cache name="CalendarManager@calendar" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="CalendarManager-calendar" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="500" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="5000" />
 		</local-cache>
 		
-		<local-cache name="AssessmentManager@newpersisting" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="AssessmentManager-newpersisting" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="20000" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="5000" />
 		</local-cache>
 		
-		<local-cache name="QTIHelper@QTI_xml_Documents" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="QTIHelper-QTI_xml_Documents" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="200" when-full="REMOVE" />
 			<expiration max-idle="180000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="QTIWorks@assessmentTests" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="QTIWorks-assessmentTests" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="200" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="QTIWorks@xsltStylesheets" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="QTIWorks-xsltStylesheets" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="200" when-full="REMOVE" />
 			<expiration max-idle="1800000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="QTIWorks@testSessionControllers" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="QTIWorks-testSessionControllers" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="50000" when-full="REMOVE" />
 			<expiration max-idle="7200000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="LTI@states" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="LTI-states" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory when-full="NONE" />
 			<expiration max-idle="7200000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="LTI@accessTokens" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="LTI-accessTokens" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="1021" when-full="REMOVE" />
 			<expiration max-idle="21600000" interval="300000" />
 		</local-cache>
 		
-		<local-cache name="WebDAVManager@webdav" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="WebDAVManager-webdav" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="2013" when-full="REMOVE" />
@@ -113,7 +128,8 @@
 			<!-- max-idle same as session time out for WebDAV session in UserSessionManager -->
 		</local-cache>
 		
-		<local-cache name="WebDAVManager@resources" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="WebDAVManager-resources" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="10000" when-full="REMOVE" />
@@ -121,91 +137,104 @@
 			<!-- max-idle same as session time out for WebDAV session in UserSessionManager -->
 		</local-cache>
 		
-		<local-cache name="UserManager@username" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="UserManager-username" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="20000" when-full="REMOVE" />
 			<expiration max-idle="2700000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="UserManager@userfullname" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="UserManager-userfullname" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="20000" when-full="REMOVE" />
 			<expiration max-idle="2700000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="Velocity@templates" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="Velocity-templates" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="7700" when-full="NONE" />
 			<expiration max-idle="-1" lifespan="-1" interval="-1" />
 		</local-cache>
 		
-		<local-cache name="LoginModule@blockafterfailedattempts" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="LoginModule-blockafterfailedattempts" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="10000" when-full="REMOVE" />
 			<expiration max-idle="300000" lifespan="300000" interval="5000" />
 		</local-cache>
 		
-		<local-cache name="NotificationHelper@userPropertiesCache" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="NotificationHelper-userPropertiesCache" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="2000" when-full="REMOVE" />
 			<expiration max-idle="120000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="GlossaryItemManager@glossary" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="GlossaryItemManager-glossary" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="500" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="WikiManager@wiki" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="WikiManager-wiki" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="500" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="CollaborationToolsFactory@tools" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="CollaborationToolsFactory-tools" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="5000" when-full="REMOVE" />
 			<expiration max-idle="1800000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="CourseFactory@courses" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="CourseFactory-courses" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="1500" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="ProjectBrokerManager@pb" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="ProjectBrokerManager-pb" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="100" when-full="REMOVE" />
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="Path@feed" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="Path-feed" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="5000" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="PdfService@delivery" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="PdfService-delivery" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="50000" when-full="REMOVE" />
 			<expiration max-idle="900000" interval="15000" />
 		</local-cache>
 		
-		<local-cache name="GradingService@courseElementsTitle" simple-cache="true" statistics="true" statistics-available="true">
+		<local-cache name="GradingService-courseElementsTitle" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
 			<transaction mode="NONE" auto-commit="true" />
 			<memory max-count="5000" when-full="REMOVE" />
