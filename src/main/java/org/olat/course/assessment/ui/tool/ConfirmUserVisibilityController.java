@@ -21,6 +21,8 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -29,7 +31,20 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
+import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.modules.assessment.Role;
+import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserPropertiesRow;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -37,16 +52,29 @@ import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ConfirmUserVisibilityController extends FormBasicController {
+public class ConfirmUserVisibilityController<U extends UserPropertiesRow> extends FormBasicController {
 	
 	private static final String[] visibilityKeys = new String[] { "visible", "hidden" };
 	
 	private SingleSelection visibilityEl;
-	private final List<AssessedIdentityElementRow> rows;
 	
-	public ConfirmUserVisibilityController(UserRequest ureq, WindowControl wControl, List<AssessedIdentityElementRow> rows) {
+	private final List<U> rows;
+	private final CourseNode courseNode;
+	private final UserCourseEnvironment coachCourseEnv;
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+	
+	public ConfirmUserVisibilityController(UserRequest ureq, WindowControl wControl, List<U> rows,
+			UserCourseEnvironment coachCourseEnv, CourseNode courseNode) {
 		super(ureq, wControl);
 		this.rows = rows;
+		this.courseNode = courseNode;
+		this.coachCourseEnv = coachCourseEnv;
 		initForm(ureq);
 	}
 
@@ -72,12 +100,37 @@ public class ConfirmUserVisibilityController extends FormBasicController {
 		return visibilityEl.isSelected(0);
 	}
 	
-	public List<AssessedIdentityElementRow> getRows() {
+	public List<U> getRows() {
 		return rows;
 	}
-
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		RepositoryEntry courseEntry = this.coachCourseEnv.getCourseEnvironment()
+				.getCourseGroupManager().getCourseEntry();
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		Boolean visibility = getVisibility();
+		
+		for(UserPropertiesRow row:rows) {
+			Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+			
+			Roles roles = securityManager.getRoles(assessedIdentity);
+			
+			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+			UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+					coachCourseEnv.getCourseReadOnlyDetails());
+			assessedUserCourseEnv.getScoreAccounting().evaluateAll();
+
+			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+					scoreEval.getAssessmentStatus(), visibility,
+					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
+					false, Role.coach);
+			dbInstance.commitAndCloseSession();
+		}
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

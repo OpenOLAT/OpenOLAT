@@ -730,10 +730,18 @@ public class GTAManagerTest extends OlatTestCase {
 		List<Task> assignedTasks = gtaManager.getTasks(participant, re, node);
 		Assert.assertNotNull(assignedTasks);
 		Assert.assertEquals(1, assignedTasks.size());
+
+		// create a revision date
+		gtaManager.createAndPersistTaskRevisionDate(assignedTasks.get(0), 2, TaskProcess.correction);
+		dbInstance.commitAndCloseSession();
+		
+		// create a revision date
+		gtaManager.updateTaskRevisionComment(assignedTasks.get(0), TaskProcess.revision, 1, "Hello", coach);
+		dbInstance.commitAndCloseSession();
 		
 		//delete
 		int numOfDeletedObjects = gtaManager.deleteAllTaskLists(re);
-		Assert.assertEquals(2, numOfDeletedObjects);
+		Assert.assertEquals(4, numOfDeletedObjects);
 		dbInstance.commitAndCloseSession();
 		
 		//check that there isn't any tasks

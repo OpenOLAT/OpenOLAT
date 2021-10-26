@@ -89,7 +89,6 @@ import org.olat.course.nodes.gta.model.TaskDefinitionList;
 import org.olat.course.nodes.gta.model.TaskDueDateImpl;
 import org.olat.course.nodes.gta.model.TaskImpl;
 import org.olat.course.nodes.gta.model.TaskListImpl;
-import org.olat.course.nodes.gta.model.TaskRevisionDateImpl;
 import org.olat.course.nodes.gta.model.TaskRevisionImpl;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -145,6 +144,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	private GTAIdentityMarkDAO gtaMarkDao;
 	@Autowired
 	private GTATaskRevisionDAO taskRevisionDao;
+	@Autowired
+	private GTATaskRevisionDateDAO taskRevisionDateDao;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -788,21 +789,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		
 		int numOfDeletedObjects = 0;
 		if(taskList != null) {
-			StringBuilder sb = new StringBuilder(128);
-			sb.append("delete from gtataskrevisiondate as taskrev where taskrev.task.key in (")
-			  .append("  select task.key from gtatask as task where task.taskList.key=:taskListKey)");
-			numOfDeletedObjects += dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
-				.setParameter("taskListKey", taskList.getKey())
-				.executeUpdate();
-			
-			StringBuilder taskSb = new StringBuilder(128);
-			taskSb.append("delete from gtataskrevision as taskrev where taskrev.task.key in (")
-			      .append("  select task.key from gtatask as task where task.taskList.key=:taskListKey)");
-			numOfDeletedObjects += dbInstance.getCurrentEntityManager()
-				.createQuery(taskSb.toString())
-				.setParameter("taskListKey", taskList.getKey())
-				.executeUpdate();
+			numOfDeletedObjects += taskRevisionDateDao.deleteTaskRevisionDate(taskList);
+			numOfDeletedObjects += taskRevisionDao.deleteTaskRevision(taskList);
 			
 			String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
 			numOfDeletedObjects += dbInstance.getCurrentEntityManager().createQuery(deleteTasks)
@@ -824,9 +812,13 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		
 		String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
 		Query deleteTaskQuery = dbInstance.getCurrentEntityManager().createQuery(deleteTasks);
-		
+
 		int numOfDeletedObjects = 0;
 		for(TaskList taskList:taskLists) {
+			int numOfRevisionDates = taskRevisionDateDao.deleteTaskRevisionDate(taskList);
+			numOfDeletedObjects += numOfRevisionDates;
+			int numOfRevisions = taskRevisionDao.deleteTaskRevision(taskList);
+			numOfDeletedObjects += numOfRevisions;
 			int numOfTasks = deleteTaskQuery.setParameter("taskListKey", taskList.getKey()).executeUpdate();
 			numOfDeletedObjects += numOfTasks;
 			int numOfMarks = gtaMarkDao.deleteMark(taskList);
@@ -1317,14 +1309,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	public TaskRevisionDate createAndPersistTaskRevisionDate(Task task, int revisionLoop, TaskProcess status) {
-		TaskRevisionDateImpl rev = new TaskRevisionDateImpl();
-		rev.setCreationDate(new Date());
-		rev.setDate(rev.getCreationDate());
-		rev.setRevisionLoop(revisionLoop);
-		rev.setStatus(status.name());
-		rev.setTask(task);
-		dbInstance.getCurrentEntityManager().persist(rev);
-		return rev;
+		return taskRevisionDateDao.createAndPersistTaskRevisionDate(task, revisionLoop, status);
 	}
 
 	@Override

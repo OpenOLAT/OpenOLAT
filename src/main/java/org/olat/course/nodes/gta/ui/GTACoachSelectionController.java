@@ -73,7 +73,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private GTACoachedGroupListController groupListCtrl;
 	private GTACoachedParticipantListController participantListCtrl;
 	
-	private final Link backLink, downloadButton;
+	private final Link backLink;
+	private final Link downloadButton;
 	private final VelocityContainer mainVC;
 
 	private final String solutionMapperUri;

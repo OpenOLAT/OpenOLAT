@@ -27,6 +27,8 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.TaskDefinition;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.UserPropertiesRow;
 
 /**
@@ -35,36 +37,32 @@ import org.olat.user.UserPropertiesRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CoachedIdentityRow implements CoachedElementRow {
+public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElementRow {
 
 	private final TaskLight task;
 	private final TaskDefinition taskDefinition;
 	private final Date submissionDueDate;
 	private final Date syntheticSubmissionDate;
 	private final boolean hasSubmittedDocuments;
-	private final UserPropertiesRow identity;
 	private final FormLink markLink;
-	private final Boolean userVisibility;
-	private final BigDecimal score;
-	private final Boolean passed;
+	private final AssessmentEntry assessmentEntry;
+
 	private final int numOfSubmissionDocs;
 	private final int numOfCollectedDocs;
 	
 	private DownloadLink downloadTaskFileLink;
 	
 	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, TaskDefinition taskDefinition, Date submissionDueDate,
-			Date syntheticSubmissionDate, boolean hasSubmittedDocuments, FormLink markLink, Boolean userVisibility,
-			BigDecimal score, Boolean passed, int numOfSubmissionDocs, int numOfCollectedDocs) {
-		this.identity = identity;
+			Date syntheticSubmissionDate, boolean hasSubmittedDocuments, FormLink markLink, AssessmentEntry assessmentEntry,
+			int numOfSubmissionDocs, int numOfCollectedDocs) {
+		super(identity);
 		this.task = task;
 		this.taskDefinition = taskDefinition;
 		this.submissionDueDate = submissionDueDate;
 		this.hasSubmittedDocuments = hasSubmittedDocuments;
 		this.syntheticSubmissionDate = syntheticSubmissionDate;
 		this.markLink = markLink;
-		this.userVisibility = userVisibility;
-		this.score = score;
-		this.passed = passed;
+		this.assessmentEntry = assessmentEntry;
 		this.numOfSubmissionDocs = numOfSubmissionDocs;
 		this.numOfCollectedDocs = numOfCollectedDocs;
 	}
@@ -119,24 +117,24 @@ public class CoachedIdentityRow implements CoachedElementRow {
 		return task;
 	}
 
-	public UserPropertiesRow getIdentity() {
-		return identity;
-	}
-
 	public FormLink getMarkLink() {
 		return markLink;
 	}
 
 	public Boolean getUserVisibility() {
-		return userVisibility;
+		return assessmentEntry == null ? null : assessmentEntry.getUserVisibility();
 	}
 
 	public BigDecimal getScore() {
-		return score;
+		return assessmentEntry == null ? null : assessmentEntry.getScore();
 	}
 
 	public Boolean getPassed() {
-		return passed;
+		return assessmentEntry == null ? null : assessmentEntry.getPassed();
+	}
+	
+	public AssessmentEntryStatus getAssessmentStatus() {
+		return assessmentEntry == null ? null : assessmentEntry.getAssessmentStatus();
 	}
 
 	public int getNumOfSubmissionDocs() {

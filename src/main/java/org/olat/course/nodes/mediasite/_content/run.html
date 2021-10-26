@@ -1,0 +1,9 @@
+<div class="o_iframedisplay">
+	<iframe id="MediaSiteIFrame" src="${mapperUri}?$r.uuid"  marginwidth="0" marginheight="0" #if($width!='auto') width="${width}px" #end height="#if($height!='auto')${height}#else 400#{end}px" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" style="#if($width!='auto') width:${width}px;#end #if($height!='auto')height:${height}px;#{end}"></iframe>
+</div>
+#if(!$height || 'auto' == $height)
+	<script>
+		## no window.onresize due to IE bug which triggers recurstion: http://snook.ca/archives/javascript/ie6_fires_onresize/
+		jQuery(function() { b_resizeIframeToMainMaxHeight("MediaSiteIFrame"); });
+	</script>
+#end
