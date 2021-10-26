@@ -100,7 +100,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 
 	@Override
 	public Object getValueAt(AssessedIdentityElementRow row, int col) {
-		if(col >= 0 && col < IdentityCourseElementCols.values().length) {
+		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
 				case attempts: return row.getAttempts();
 				case userVisibility: return row.getUserVisibility();

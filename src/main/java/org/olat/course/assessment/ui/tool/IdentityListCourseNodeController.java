@@ -177,7 +177,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private List<Controller> bulkToolsList;
 	private AssessedIdentityController currentIdentityCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private ConfirmUserVisibilityController changeUserVisibilityCtrl;
+	private ConfirmUserVisibilityController<AssessedIdentityElementRow> changeUserVisibilityCtrl;
 	private ContactFormController contactCtrl;
 	
 	@Autowired
@@ -269,15 +269,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	 * @return A list of identities
 	 */
 	public List<IdentityRef> getSelectedIdentitiesRef(Predicate<AssessedIdentityElementRow> filter) {
-		Set<Integer> selections = tableEl.getMultiSelectedIndex();
-		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
-		for(Integer i:selections) {
-			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
-			if(row != null && filter.test(row) ) {
-				rows.add(row);
-			}
-		}
-
+		List<AssessedIdentityElementRow> rows = getSelectedRows(filter);
 		if(rows.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -299,6 +291,18 @@ public class IdentityListCourseNodeController extends FormBasicController
 	public List<Identity> getSelectedIdentities(Predicate<AssessedIdentityElementRow> filter) {
 		List<IdentityRef> refs = getSelectedIdentitiesRef(filter);
 		return securityManager.loadIdentityByRefs(refs);
+	}
+	
+	public List<AssessedIdentityElementRow> getSelectedRows(Predicate<AssessedIdentityElementRow> filter) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
+		for(Integer i:selections) {
+			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
+			if(row != null && filter.test(row)) {
+				rows.add(row);
+			}
+		}
+		return rows;
 	}
 
 	@Override
@@ -782,7 +786,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 		} else if(changeUserVisibilityCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				doSetVisibility(ureq, changeUserVisibilityCtrl.getVisibility(), changeUserVisibilityCtrl.getRows());
+				reload(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -996,7 +1000,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if(rows.isEmpty()) {
 			showWarning("warning.bulk.done");
 		} else {
-			changeUserVisibilityCtrl = new ConfirmUserVisibilityController(ureq, getWindowControl(), rows);
+			changeUserVisibilityCtrl = new ConfirmUserVisibilityController<>(ureq, getWindowControl(), rows, coachCourseEnv, courseNode);
 			listenTo(changeUserVisibilityCtrl);
 			
 			String title = translate("change.visibility.title");
@@ -1036,31 +1040,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 			listenTo(cmc);
 		}
 
-	}
-
-	private void doSetVisibility(UserRequest ureq, Boolean visibility, List<AssessedIdentityElementRow> rows) {
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		
-		for(AssessedIdentityElementRow row:rows) {
-			Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-			
-			Roles roles = securityManager.getRoles(assessedIdentity);
-			
-			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-			UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
-					coachCourseEnv.getCourseReadOnlyDetails());
-			assessedUserCourseEnv.getScoreAccounting().evaluateAll();
-
-			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					scoreEval.getAssessmentStatus(), visibility,
-					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
-					false, Role.coach);
-			dbInstance.commitAndCloseSession();
-		}
-		reload(ureq);
 	}
 	
 	private void doSetDone(UserRequest ureq) {

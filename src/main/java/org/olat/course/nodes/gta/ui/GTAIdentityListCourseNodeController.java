@@ -19,10 +19,12 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -35,6 +37,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
@@ -73,10 +76,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeController {
 	
 	private FormLink downloadButton;
+	private FormLink bulkExtendButton;
 	private FormLink bulkDownloadButton;
 	
 	private GroupAssessmentController assessmentCtrl;
 	private BulkAssessmentToolController bulkAssessmentToolCtrl;
+	private EditMultipleDueDatesController editMultipleDueDatesCtrl;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -106,6 +111,12 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		super.initBulkStatusTools(ureq, formLayout);
 		
 		ModuleConfiguration config =  courseNode.getModuleConfiguration();
+		if(gtaManager.isDueDateEnabled((GTACourseNode)courseNode) && !config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
+			bulkExtendButton = uifactory.addFormLink("extend.list", "duedates", "duedates", formLayout, Link.BUTTON);
+			bulkExtendButton.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+			tableEl.addBatchButton(bulkExtendButton);
+		}
+		
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
 			&& (config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
@@ -126,6 +137,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 				initBulkDownloadController(formLayout);
 			}
 		}
+
 		super.initBulkEmailTool(ureq, formLayout);
 	}
 	
@@ -179,7 +191,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(assessmentCtrl == source) {
+		if(assessmentCtrl == source || editMultipleDueDatesCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				reload(ureq);
 			}
@@ -207,6 +219,8 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			doDownload(ureq);
 		} else if(bulkDownloadButton == source) {
 			doBulkDownload(ureq);
+		} else if(bulkExtendButton == source) {
+			doEditMultipleDueDates(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -254,5 +268,39 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		OLATResource courseOres = getCourseRepositoryEntry().getOlatResource();
 		ArchiveResource resource = new ArchiveResource(courseNode, courseOres, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doEditMultipleDueDates(UserRequest ureq) {
+		if(guardModalController(editMultipleDueDatesCtrl)) return;
+		
+		List<AssessedIdentityElementRow> rows = getSelectedRows(row -> true);
+
+		if(rows.isEmpty()) {
+			showWarning("error.atleast.task");
+		} else {
+			GTACourseNode gtaNode = (GTACourseNode)courseNode;
+			RepositoryEntry entry = getCourseRepositoryEntry();
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			TaskList taskList = gtaManager.getTaskList(entry, gtaNode);
+
+			List<Task> tasks = new ArrayList<>(rows.size());
+			for (AssessedIdentityElementRow row : rows) {
+				Task task = gtaManager.getTask(new IdentityRefImpl(row.getIdentityKey()), taskList);
+				if(task == null) {
+					Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+					tasks.add(gtaManager.createAndPersistTask(null, taskList, firstStep, null,  assessedIdentity, gtaNode));
+				} else {
+					tasks.add(task);
+				}
+			}
+	
+			editMultipleDueDatesCtrl = new EditMultipleDueDatesController(ureq, getWindowControl(), tasks, gtaNode, entry, coachCourseEnv.getCourseEnvironment());
+			listenTo(editMultipleDueDatesCtrl);
+			
+			String title = translate("duedates.multiple.user");
+			cmc = new CloseableModalController(getWindowControl(), "close", editMultipleDueDatesCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 }

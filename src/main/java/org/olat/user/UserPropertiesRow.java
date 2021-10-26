@@ -28,7 +28,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
- * This is to build table
+ * This is to build table and reduced the memory needed by IdentityImpl.
  * 
  * Initial date: 08.04.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -59,6 +59,11 @@ public class UserPropertiesRow {
 		}
 	}
 	
+	/**
+	 * @param identity The identity
+	 * @param userPropertyHandlers The handlers which genegrates the properties array
+	 * @param locale The locale
+	 */
 	public UserPropertiesRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		identityProps = new String[userPropertyHandlers.size()];
 		if(identity == null) {
@@ -69,6 +74,16 @@ public class UserPropertiesRow {
 				identityProps[i] = userPropertyHandlers.get(i).getUserProperty(identity.getUser(), locale);
 			}
 		}
+	}
+	
+	/**
+	 * Copy the properties array
+	 * 
+	 * @param row The user properties
+	 */
+	protected UserPropertiesRow(UserPropertiesRow row) {
+		identityProps = row.identityProps;
+		identityKey = row.identityKey;
 	}
 	
 	public Long getIdentityKey() {

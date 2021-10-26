@@ -39,6 +39,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<CoachedIdentityRow> implements SortableFlexiTableDataModel<CoachedIdentityRow> {
 	
+	private static final CGCols[] COLS = CGCols.values();
+	
 	private final Locale locale;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -70,34 +72,34 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 	
 	@Override
 	public Object getValueAt(CoachedIdentityRow row, int col) {
-		if(col == CGCols.mark.ordinal()) {
-			return row.getMarkLink();
-		} else if(col == CGCols.taskStatus.ordinal()) {
-			return row.getTaskStatus();
-		} else if(col == CGCols.taskName.ordinal()) {
-			return row.getDownloadTaskFileLink() == null ? row.getTaskName() : row.getDownloadTaskFileLink();
-		} else if(col == CGCols.taskTitle.ordinal()) {
-			String title = row.getTaskTitle();
-			if(!StringHelper.containsNonWhitespace(title)) {
-				title = row.getTaskName();
+		if(col >= 0 && col < COLS.length) {
+			switch(COLS[col]) {
+				case mark: return row.getMarkLink();
+				case taskStatus: return row.getTaskStatus();
+				case taskName:
+					return row.getDownloadTaskFileLink() == null ? row.getTaskName() : row.getDownloadTaskFileLink();
+				case taskTitle:
+					String title = row.getTaskTitle();
+					if(!StringHelper.containsNonWhitespace(title)) {
+						title = row.getTaskName();
+					}
+					return title;
+				case submissionDate:
+					return SubmissionDateCellRenderer.cascading(row);
+				case userVisibility: return row.getUserVisibility();
+				case score: return row.getScore();
+				case passed: return row.getPassed();
+				case numOfSubmissionDocs:
+					if(row.getCollectionDate() != null) {
+						return row.getNumOfCollectedDocs();
+					}
+					return row.getNumOfSubmissionDocs();
+				case assessmentStatus: return row.getAssessmentStatus();
+				default: return "ERROR";	
 			}
-			return title;
-		} else if(col == CGCols.submissionDate.ordinal()) {
-			return SubmissionDateCellRenderer.cascading(row);
-		} else if(col == CGCols.userVisibility.ordinal()) {
-			return row.getUserVisibility();
-		} else if(col == CGCols.score.ordinal()) {
-			return row.getScore();
-		} else if(col == CGCols.passed.ordinal()) {
-			return row.getPassed();
-		} else if(col == CGCols.numOfSubmissionDocs.ordinal()) {
-			if(row.getCollectionDate() != null) {
-				return row.getNumOfCollectedDocs();
-			}
-			return row.getNumOfSubmissionDocs();
 		} else if(col >= GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
 			int propIndex = col - GTACoachedGroupGradingController.USER_PROPS_OFFSET;
-			return row.getIdentity().getIdentityProp(propIndex);
+			return row.getIdentityProp(propIndex);
 		}
 		return "ERROR";
 	}
@@ -111,7 +113,8 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 		userVisibility("table.header.userVisibility"),
 		score("table.header.score"),
 		passed("table.header.passed"),
-		numOfSubmissionDocs("table.header.num.submissionDocs");
+		numOfSubmissionDocs("table.header.num.submissionDocs"),
+		assessmentStatus("table.header.assessmentStatus");
 		
 		private final String i18nKey;
 		
