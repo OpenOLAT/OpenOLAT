@@ -144,15 +144,6 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		childrenEl = uifactory.addCheckboxesVertical("form.children.selection", formLayout,
 				childrenKeys, childrenValues, childrenCssClasses, 1);
 		childrenEl.addActionListener(FormEvent.ONCLICK);
-		String childrenIdentsConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_IDENTS, "");
-		String[] childrenIdents = childrenIdentsConfig == null ? ArrayHelper.emptyStrings() : childrenIdentsConfig.split(",");
-		for (String childrenIdent : childrenIdents) {
-			for (String childrenKey : childrenKeys) {
-				if (childrenIdent.equals(childrenKey)) {
-					childrenEl.select(childrenKey, true);
-				}
-			}
-		}
 		
 		// Peekview filter
 		SelectionValues peekviewFilterKV = new SelectionValues();
@@ -171,18 +162,30 @@ public class STCourseNodeDisplayConfigFormController extends FormBasicController
 		displayTwoColumns = uifactory.addCheckboxesHorizontal("displayTwoColumns", formLayout, new String[] { "on" }, new String[] { "" });
 		displayTwoColumns.setLabel("displayTwoColumns", null);
 		displayTwoColumns.addActionListener(FormEvent.ONCLICK);
-		int columnsConfig = config.getIntegerSafe(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 1);
-		if (columnsConfig == 2) {
-			displayTwoColumns.select("on", true);
-		}
+
 	}
 	
 	private void updateUI() {
 		String selectedKey = displayTypeEl.getSelectedKey();
 		peekviewFilterEl.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey));
 		childrenFilterEl.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) || DISPLAY_OVERVIEW.equals(selectedKey));
+		
+		String childrenIdentsConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_IDENTS, "");
+		String[] childrenIdents = childrenIdentsConfig == null ? ArrayHelper.emptyStrings() : childrenIdentsConfig.split(",");
+		for (String childrenIdent : childrenIdents) {
+			for (String childrenKey : childrenKeys) {
+				if (childrenIdent.equals(childrenKey)) {
+					childrenEl.select(childrenKey, true);
+				}
+			}
+		}
 		childrenEl.setVisible(childrenFilterEl.isVisible() && childrenFilterEl.isOneSelected() 
 				&& childrenFilterEl.getSelectedKey().equals(STCourseNodeEditController.CONFIG_VALUE_CHILDREN_SELECTION));
+		
+		int columnsConfig = config.getIntegerSafe(STCourseNodeEditController.CONFIG_KEY_COLUMNS, 1);
+		if (columnsConfig == 2) {
+			displayTwoColumns.select("on", true);
+		}
 		displayTwoColumns.setVisible(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW.equals(selectedKey) || DISPLAY_OVERVIEW.equals(selectedKey));
 	}
 

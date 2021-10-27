@@ -122,20 +122,20 @@ public class EvaluationFormHandler implements PageElementHandler {
 		if(pageStatus == null || pageStatus == PageStatus.draft) {
 			if(hasRole(PortfolioRoles.owner, ureq.getIdentity(), accessRights)) {
 				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-				ctrl = new EvaluationFormExecutionController(ureq, wControl, session, false, false, null);
+				ctrl = new EvaluationFormExecutionController(ureq, wControl, session, false, true, true, null);
 			}
 		} else if (assignment.isOnlyAutoEvaluation()) {
 			// only the auto evaluation is shown
 			if(hasRole(PortfolioRoles.owner, ureq.getIdentity(), accessRights)) {
 				boolean readOnly = (pageStatus == PageStatus.published) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
 				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, readOnly, false, null);
+				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
 			} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)
 					|| hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
 					|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
 				Identity owner = getOwner(accessRights);
 				EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, owner);
-				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, true, false, null);
+				ctrl =  new EvaluationFormExecutionController(ureq, wControl, session, true, false, true, null);
 			}
 		} else {
 			if(hasRole(PortfolioRoles.owner, ureq.getIdentity(), accessRights)) {
@@ -146,7 +146,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, survey, false, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, false, null);
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
 				}
 			} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)) {
 				Identity owner = getOwner(accessRights);
@@ -162,7 +162,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, reviewers, survey, true, readOnly, onePage, anonym);
 				} else {
 					EvaluationFormSession session = portfolioService.loadOrCreateSession(survey, ureq.getIdentity());
-					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, null);
+					ctrl = new EvaluationFormExecutionController(ureq, wControl, session, readOnly, !readOnly, true, null);
 				}
 			}
 		}

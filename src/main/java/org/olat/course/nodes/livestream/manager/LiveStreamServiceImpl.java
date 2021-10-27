@@ -19,16 +19,22 @@
  */
 package org.olat.course.nodes.livestream.manager;
 
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
@@ -36,6 +42,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -50,6 +58,7 @@ import org.olat.course.nodes.livestream.LiveStreamModule;
 import org.olat.course.nodes.livestream.LiveStreamService;
 import org.olat.course.nodes.livestream.model.LiveStreamEventImpl;
 import org.olat.course.nodes.livestream.model.UrlTemplate;
+import org.olat.course.nodes.livestream.paella.PlayerProfile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.DisposableBean;
@@ -69,6 +78,7 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 	private static final Logger log = Tracing.createLoggerFor(LiveStreamServiceImpl.class);
 	
 	private ScheduledExecutorService scheduler;
+	private VelocityEngine velocityEngine;
 	
 	@Autowired
 	private LiveStreamModule liveStreamModule;
@@ -80,6 +90,17 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 	private LaunchDAO launchDao;
 	@Autowired
 	private HttpClientService httpClientService;
+	
+	@PostConstruct
+	public void init() {
+		Properties p = new Properties();
+		try {
+			velocityEngine = new VelocityEngine();
+			velocityEngine.init(p);
+		} catch (Exception e) {
+			throw new RuntimeException("config error " + p);
+		}
+	}
 
 	@Override
 	public ScheduledExecutorService getScheduler() {
@@ -289,5 +310,27 @@ public class LiveStreamServiceImpl implements LiveStreamService, DisposableBean 
 		}
 		
 		return false;
+	}
+
+	@Override
+	public String getPaellaConfig(PlayerProfile playerProfile) {
+		VelocityContext context = new VelocityContext();
+		context.put("profilePlayerPluginConfig", playerProfile.getPlayerPluginConfig());
+		return merge(liveStreamModule.getPaellaConfig(), context);
+	}
+	
+	private String merge(String template, VelocityContext context) {
+		boolean result = false;
+		String merged = "";
+		try(Reader in = new StringReader(template);
+			StringWriter out = new StringWriter()) {
+			result = velocityEngine.evaluate(context, out, "live.stream.paella.config", in);
+			out.flush();
+			merged = out.toString();
+		} catch (Exception e) {
+			result = false;
+			log.error("", e);
+		}
+		return result ? merged : null;
 	}
 }

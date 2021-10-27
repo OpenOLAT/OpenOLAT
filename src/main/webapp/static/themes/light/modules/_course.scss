@@ -902,6 +902,7 @@ div.o_correction_navigation {
 	
 		.o_cnd_thumbnail {
 			width: 150px;
+			min-width: 150px;
 			min-height: 150px;
 			background-color: #fff;
 			border-radius: $thumbnail-border-radius;

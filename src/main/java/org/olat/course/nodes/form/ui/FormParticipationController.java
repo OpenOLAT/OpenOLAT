@@ -81,7 +81,7 @@ public class FormParticipationController extends BasicController {
 			EvaluationFormSession session = formManager.loadOrCreateSession(participation);
 			if (session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done) {
 				executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false,
-						FormCourseNode.EMPTY_STATE);
+						false, FormCourseNode.EMPTY_STATE);
 				listenTo(executionCtrl);
 				mainVC.put("evaluationForm", executionCtrl.getInitialComponent());
 			}

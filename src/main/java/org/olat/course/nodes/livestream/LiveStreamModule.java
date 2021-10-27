@@ -43,6 +43,7 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	public static final String LIVE_STREAM_BUFFER_AFTER_MIN = "live.stream.buffer.after.min";
 	public static final String LIVE_STREAM_EDIT_COACH = "live.stream.edit.coach";
 	public static final String LIVE_STREAM_PLAYER_PROFILE = "live.stream.player.profile";
+	public static final String LIVE_STREAM_PAELLA_CONFIG = "live.stream.paella.config";
 
 	@Value("${live.stream.enabled:false}")
 	private boolean enabled;
@@ -58,6 +59,8 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean editCoach;
 	@Value("${live.stream.player.profile:both}")
 	private String playerProfile;
+	@Value("${live.stream.paella.config}")
+	private String paellaConfig;
 	
 	@Autowired
 	public LiveStreamModule(CoordinatorManager coordinatorManager) {
@@ -100,6 +103,8 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 		if(StringHelper.containsNonWhitespace(playerProfileObj)) {
 			playerProfile = playerProfileObj;
 		}
+		
+		paellaConfig = getStringPropertyValue(LIVE_STREAM_PAELLA_CONFIG, paellaConfig);
 	}
 	
 	@Override
@@ -169,6 +174,15 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	public void setPlayerProfile(String playerProfile) {
 		this.playerProfile = playerProfile;
 		setStringProperty(LIVE_STREAM_PLAYER_PROFILE, playerProfile, true);
+	}
+
+	public String getPaellaConfig() {
+		return paellaConfig;
+	}
+
+	public void setPaellaConfig(String paellaConfig) {
+		this.paellaConfig = paellaConfig;
+		setStringProperty(LIVE_STREAM_PAELLA_CONFIG, paellaConfig, true);
 	}
 
 }

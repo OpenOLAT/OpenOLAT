@@ -42,14 +42,17 @@ public class LiveStreamAdminController extends BasicController {
 	
 	private static final String SETTINGS_RES_TYPE = "Settings";
 	private static final String URL_TEMPLATES_RES_TYPE = "UrlTemplates";
+	private static final String PAELLA_RES_TYPE = "Paella";
 	
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
 	private Link settingsLink;
 	private Link urlTemplatesLink;
+	private Link paellaLink;
 	
 	private LiveStreamAdminSettingsController settingsCtrl;
 	private UrlTemplateListController urlTemplatesCtrl;
+	private PaellaAdminController paellaCtrl;
 
 	public LiveStreamAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -60,6 +63,8 @@ public class LiveStreamAdminController extends BasicController {
 		segmentView.addSegment(settingsLink, true);
 		urlTemplatesLink = LinkFactory.createLink("admin.url.templates", mainVC, this);
 		segmentView.addSegment(urlTemplatesLink, false);
+		paellaLink = LinkFactory.createLink("admin.paella", mainVC, this);
+		segmentView.addSegment(paellaLink, false);
 
 		doOpenSettings(ureq);
 		putInitialPanel(mainVC);
@@ -76,6 +81,8 @@ public class LiveStreamAdminController extends BasicController {
 					doOpenSettings(ureq);
 				} else if (clickedLink == urlTemplatesLink){
 					doOpenUrlTemplates(ureq);
+				} else if (clickedLink == paellaLink){
+					doOpenPaella(ureq);
 				}
 			}
 		}
@@ -101,6 +108,17 @@ public class LiveStreamAdminController extends BasicController {
 		urlTemplatesCtrl = new UrlTemplateListController(ureq, swControl);
 		listenTo(urlTemplatesCtrl);
 		mainVC.put("segmentCmp", urlTemplatesCtrl.getInitialComponent());
+	}
+	
+	private void doOpenPaella(UserRequest ureq) {
+		if (paellaCtrl != null) {
+			removeAsListenerAndDispose(paellaCtrl);
+		}
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(PAELLA_RES_TYPE), null);
+		paellaCtrl = new PaellaAdminController(ureq, swControl);
+		listenTo(paellaCtrl);
+		mainVC.put("segmentCmp", paellaCtrl.getInitialComponent());
 	}
 
 	@Override
