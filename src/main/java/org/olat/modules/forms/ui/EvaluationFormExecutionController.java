@@ -109,6 +109,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private EmptyState emptyState;
 	private boolean readOnly;
 	private boolean showDoneButton;
+	private final boolean doneSavesOnly;
 
 	private EvaluationFormSession session;
 	private EvaluationFormResponses responses;
@@ -121,7 +122,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EmptyStateConfig emptyStateConfig) {
-		this(ureq, wControl, null, null, session, null, null, false, true, emptyStateConfig);
+		this(ureq, wControl, null, null, session, null, null, false, true, false, emptyStateConfig);
 	}
 
 	/**
@@ -130,18 +131,18 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	 */
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
 			EvaluationFormResponses responses, Form form, DataStorage storage, Component header) {
-		this(ureq, wControl, form, storage, session, null, header, false, true, null);
+		this(ureq, wControl, form, storage, session, null, header, false, true, false, null);
 		this.responses = responses;
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, EvaluationFormSession session,
-			boolean readOnly, boolean showDoneButton, EmptyStateConfig emptyState) {
-		this(ureq, wControl, null, null, session, null, null, readOnly, showDoneButton, emptyState);
+			boolean readOnly, boolean showDoneButton, boolean doneSavesOnly, EmptyStateConfig emptyState) {
+		this(ureq, wControl, null, null, session, null, null, readOnly, showDoneButton, doneSavesOnly, emptyState);
 	}
 
 	public EvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, Form form, DataStorage storage,
 			EvaluationFormSession session, ExecutionIdentity executionIdentity, Component header, boolean readOnly,
-			boolean showDoneButton, EmptyStateConfig emptyStateConfig) {
+			boolean showDoneButton, boolean doneSavesOnly, EmptyStateConfig emptyStateConfig) {
 		super(ureq, wControl, "execute");
 
 		this.session = session;
@@ -149,6 +150,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
 		this.readOnly = readOnly;
 		this.showDoneButton = showDoneButton;
+		this.doneSavesOnly = doneSavesOnly;
 
 		if (form != null) {
 			this.form = form;
@@ -181,6 +183,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		this.emptyStateConfig = emptyStateConfig != null? emptyStateConfig: EMPTY_STATE_DEFAULTS;
 		this.readOnly = false;
 		this.showDoneButton = false;
+		this.doneSavesOnly = false;
 		this.executionIdentity = new ExecutionIdentity(getIdentity());
 
 		initForm(ureq);
@@ -216,7 +219,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		// force it to have always the same settings
 		mainForm.setMultipartEnabled(true);
 
-		doneLink = uifactory.addFormSubmitButton("save.as.done", "save.as.done", formLayout);
+		String labelKey = doneSavesOnly? "save": "save.as.done";
+		doneLink = uifactory.addFormSubmitButton("save.as.done", labelKey, formLayout);
 		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
 		showHideButtons();
 	}
@@ -287,7 +291,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	}
 
 	private void showHideButtons() {
-		saveLink.setVisible(!readOnly && session != null);
+		saveLink.setVisible(!readOnly && !doneSavesOnly && session != null);
 		doneLink.setVisible(showDoneButton);
 	}
 
@@ -335,7 +339,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		if (!doneLink.isVisible()) return;
 		
 		boolean responsesSaved = doSaveResponses(ureq);
-		if (responsesSaved) {
+		if (responsesSaved && !doneSavesOnly) {
 			doConfirmDone(ureq);
 		}
 	}

@@ -124,7 +124,7 @@ public class StandaloneExecutionController extends BasicController implements Co
 		EvaluationFormSession session = loadOrCreateSesssion(participation);
 		Identity executor = participation.getExecutor() != null? participation.getExecutor(): getIdentity();
 		ExecutionIdentity executionIdentity = new ExecutionIdentity(executor);
-		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, executionIdentity, null, false, true, null);
+		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), null, null, session, executionIdentity, null, false, true, false, null);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());
 	}
