@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -111,11 +112,12 @@ public class StandardResultController extends FormBasicController implements Res
 		String label = document.getTitle();
 		if(label != null) {
 			label = label.trim();
+			if(label.length() > 128) {
+				label = FilterFactory.getHtmlTagsFilter().filter(label);
+				label = Formatter.truncate(label, 128);
+			}
 		}
-		if(label.length() > 128) {
-			label = FilterFactory.getHtmlTagsFilter().filter(label);
-			label = Formatter.truncate(label, 128);
-		}
+		
 		label = StringHelper.escapeHtml(label);
 		docLink = uifactory.addFormLink("open_doc", label, label, formLayout, Link.NONTRANSLATED);
 		docLink.setIconLeftCSS("o_icon o_icon-fw " + icon);
@@ -125,7 +127,13 @@ public class StandardResultController extends FormBasicController implements Res
 			highlightLabel = label;
 		}
 		docHighlightLink = uifactory.addFormLink("open_doc_highlight", highlightLabel, highlightLabel, formLayout, Link.NONTRANSLATED);
-		docHighlightLink.setIconLeftCSS("o_icon o_icon-fw " + icon);
+		docHighlightLink.setIconLeftCSS("o_icon o_icon-fw ".concat(icon));
+		
+		if(StringHelper.containsNonWhitespace(document.getResourceUrl())) {
+			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(document.getResourceUrl());
+			docLink.setUrl(url);
+			docHighlightLink.setUrl(url);
+		}
 	}
 
 	@Override
