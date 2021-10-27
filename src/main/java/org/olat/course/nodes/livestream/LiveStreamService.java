@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.nodes.livestream.model.UrlTemplate;
+import org.olat.course.nodes.livestream.paella.PlayerProfile;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -99,5 +100,13 @@ public interface LiveStreamService {
 	 * @return
 	 */
 	String[] getStreamingUrls(String[] urls);
+	
+	/**
+	 * Returns the paella player config as JSON.
+	 * 
+	 * @param playerProfile
+	 * @return
+	 */
+	String getPaellaConfig(PlayerProfile playerProfile);
 	
 }

@@ -100,7 +100,7 @@ public class FormRunController extends BasicController {
 				doExecutionFinished(ureq);
 			} else if (event instanceof ProgressEvent) {
 				ProgressEvent pe = (ProgressEvent)event;
-				doQuickSaved(pe.getProgress());
+				doQuickSaved(ureq, pe.getProgress());
 			}
 		}
 		super.event(ureq, source, event);
@@ -121,8 +121,9 @@ public class FormRunController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
-	private void doQuickSaved(Double completion) {
+	private void doQuickSaved(UserRequest ureq, Double completion) {
 		formManager.onQuickSave(courseNode, userCourseEnv, completion);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 }
