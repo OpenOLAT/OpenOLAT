@@ -19,8 +19,6 @@
  */
 package org.olat.course.nodes.livestream.paella;
 
-import org.olat.core.gui.render.StringOutput;
-
 /**
  * 
  * Initial date: 17 Dec 2019<br>
@@ -31,19 +29,8 @@ public enum PlayerProfile {
 	
 	both("player.profile.both") {
 		@Override
-		public void appendPlayerConfig(StringOutput sb) {
-			sb.append("      'es.upv.paella.singleStreamProfilePlugin': {");
-			sb.append("          'enabled': true,");
-			sb.append("          'videoSets': [");
-			sb.append("            { 'icon':'professor_icon.svg', 'id':'professor', 'content':['stream1']},");
-			sb.append("            { 'icon':'slide_icon.svg', 'id':'slide', 'content':['stream2']}");
-			sb.append("          ]");
-			sb.append("      },");
-			sb.append("      'es.upv.paella.dualStreamProfilePlugin': { 'enabled':true,");
-			sb.append("        'videoSets': [");
-			sb.append("          { 'icon':'slide_professor_icon.svg', 'id':'slide_over_professor', 'content':['stream1','stream2'] }");
-			sb.append("        ]");
-			sb.append("      },");
+		public String getPlayerPluginConfig() {
+			return "'es.upv.paella.singleStreamProfilePlugin':{'enabled':true,'videoSets':[{'icon':'professor_icon.svg','id':'professor','content':['stream1']},{'icon':'slide_icon.svg','id':'slide','content':['stream2']}]},'es.upv.paella.dualStreamProfilePlugin':{'enabled':true,'videoSets':[{'icon':'slide_professor_icon.svg','id':'slide_over_professor','content':['stream1','stream2']}]}";
 		}
 
 		@Override
@@ -53,13 +40,8 @@ public enum PlayerProfile {
 	},
 	stream1("player.profile.stream1") {
 		@Override
-		public void appendPlayerConfig(StringOutput sb) {
-			sb.append("      'es.upv.paella.singleStreamProfilePlugin': {");
-			sb.append("          'enabled': true,");
-			sb.append("          'videoSets': [");
-			sb.append("            { 'icon':'professor_icon.svg', 'id':'professor', 'content':['stream1']}");
-			sb.append("          ]");
-			sb.append("      },");
+		public String getPlayerPluginConfig() {
+			return "'es.upv.paella.singleStreamProfilePlugin':{'enabled':true,'videoSets':[{'icon':'professor_icon.svg','id':'professor','content':['stream1']}]}";
 		}
 
 		@Override
@@ -69,13 +51,8 @@ public enum PlayerProfile {
 	},
 	stream2("player.profile.stream2") {
 		@Override
-		public void appendPlayerConfig(StringOutput sb) {
-			sb.append("      'es.upv.paella.singleStreamProfilePlugin': {");
-			sb.append("          'enabled': true,");
-			sb.append("          'videoSets': [");
-			sb.append("            { 'icon':'slide_icon.svg', 'id':'slide', 'content':['stream1']}");
-			sb.append("          ]");
-			sb.append("      },");
+		public String getPlayerPluginConfig() {
+			return "'es.upv.paella.singleStreamProfilePlugin':{'enabled':true,'videoSets':[{'icon':'slide_icon.svg','id':'slide','content':['stream1']}]}";
 		}
 
 		@Override
@@ -96,7 +73,7 @@ public enum PlayerProfile {
 		return i18nKey;
 	}
 
-	public abstract void appendPlayerConfig(StringOutput sb);
+	public abstract String getPlayerPluginConfig();
 
 	public abstract String[] filterUrls(String[] urls);
 
