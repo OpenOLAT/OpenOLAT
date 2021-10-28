@@ -39,7 +39,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.MediaSiteCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.mediasite.MediaSiteManager;
 import org.olat.modules.mediasite.MediaSiteModule;
@@ -57,7 +56,6 @@ public class MediaSiteConfigController extends FormBasicController {
 	
 	private final ModuleConfiguration config;
 	private final CourseEnvironment editCourseEnv;
-	private final UserCourseEnvironment userCourseEnv;
 	
 	private MediaSiteCourseNode courseNode;
 	
@@ -75,12 +73,11 @@ public class MediaSiteConfigController extends FormBasicController {
 	@Autowired
 	private MediaSiteManager mediaSiteManager;
 	
-	public MediaSiteConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
+	public MediaSiteConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		
 		this.config = config;
 		this.courseNode = courseNode;
-		this.userCourseEnv = userCourseEnv;
 		this.editCourseEnv = course.getCourseEnvironment();
 		
 		initForm(ureq);
@@ -91,7 +88,7 @@ public class MediaSiteConfigController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		setFormTitle("config.form.title");
-		setFormContextHelp("MediaSite Course Node");
+		setFormContextHelp("Course Element: Mediasite");
 		
 		FormLayoutContainer configLayout = FormLayoutContainer.createDefaultFormLayout("configuration", getTranslator());
 		configLayout.setRootForm(mainForm);
