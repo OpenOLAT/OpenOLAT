@@ -89,6 +89,7 @@ public class MediaSiteAdminController extends FormBasicController {
 		if (usedInAdministration) {
 			setFormTitle("admin.title");
 			setFormDescription("admin.description");
+			setFormContextHelp("MediaSite Configuration");
 			
 			enabledEl = uifactory.addCheckboxesHorizontal("enabled", formLayout, enabledKeys, TranslatorHelper.translateAll(getTranslator(), enabledKeys));
 			enabledEl.addActionListener(FormEvent.ONCHANGE);

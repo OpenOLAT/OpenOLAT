@@ -90,6 +90,9 @@ public class MediaSiteConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
+		setFormTitle("config.form.title");
+		setFormContextHelp("MediaSite Course Node");
+		
 		FormLayoutContainer configLayout = FormLayoutContainer.createDefaultFormLayout("configuration", getTranslator());
 		configLayout.setRootForm(mainForm);
 		formLayout.add(configLayout);
