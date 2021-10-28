@@ -474,7 +474,9 @@ public class UserAdminController extends BasicController implements Activateable
 				listenTo(accessCtr);
 				return accessCtr.getInitialComponent();
 			});
-
+		}
+		
+		if (isAdminOf || isPrincipalOf ||  isUserManagerOf || isRolesManagerOf) {
 			userTabP.addTab(ureq, translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
 				boolean canModify = isAdminOf || isRolesManagerOf;
 				efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(),
