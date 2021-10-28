@@ -96,7 +96,6 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		fileEl.setMaxUploadSizeKB(fileUpload.getMaxUploadSizeKB(), "file.upload.error.limit.exeeded", null);
 		Set<String> mimeTypes = MimeTypeSetFactory.getMimeTypes(fileUpload.getMimeTypeSetKey());
 		fileEl.limitToMimeType(mimeTypes, "file.upload.error.mime.type.wrong", null);
-		fileEl.setHelpTextKey("ul.select.fhelp", null);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	
