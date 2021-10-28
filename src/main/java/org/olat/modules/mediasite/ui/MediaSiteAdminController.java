@@ -36,9 +36,7 @@ import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.MediaSiteCourseNode;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.mediasite.MediaSiteManager;
 import org.olat.modules.mediasite.MediaSiteModule;
-import org.olat.modules.mediasite.manager.MediaSiteVerificationResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,6 +50,7 @@ public class MediaSiteAdminController extends FormBasicController {
 	private final boolean usedInAdministration;
 	
 	private MultipleSelectionElement enabledEl;
+	private MultipleSelectionElement globalServerEnabledEl;
 	private TextElement enterpriseKeyEl;
 	private TextElement enterpriseSecretEl;
 	private TextElement serverNameEl;
@@ -64,8 +63,6 @@ public class MediaSiteAdminController extends FormBasicController {
 		
 	@Autowired
 	private MediaSiteModule mediaSiteModule;
-	@Autowired
-	private MediaSiteManager mediaSiteManager;
 
 	public MediaSiteAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -95,17 +92,27 @@ public class MediaSiteAdminController extends FormBasicController {
 			
 			enabledEl = uifactory.addCheckboxesHorizontal("enabled", formLayout, enabledKeys, TranslatorHelper.translateAll(getTranslator(), enabledKeys));
 			enabledEl.addActionListener(FormEvent.ONCHANGE);
+			
+			globalServerEnabledEl = uifactory.addCheckboxesHorizontal("global.login", formLayout, enabledKeys, TranslatorHelper.translateAll(getTranslator(), enabledKeys));
+			globalServerEnabledEl.addActionListener(FormEvent.ONCHANGE);
+			
+			serverNameEl = uifactory.addTextElement("server.name", -1, null, formLayout);
+			serverNameEl.setMandatory(true);
 		}
 		
-		serverNameEl = uifactory.addTextElement("server.name", -1, null, formLayout);
 		baseUrlEl = uifactory.addTextElement("base.url", -1, null, formLayout);
+		baseUrlEl.setMandatory(true);
 		administrationUrlEl = uifactory.addTextElement("administration.url", -1, null, formLayout);
+		administrationUrlEl.setMandatory(true);
 		enterpriseKeyEl = uifactory.addTextElement("enterprise.key", -1, null, formLayout);
+		enterpriseKeyEl.setMandatory(true);
 		enterpriseSecretEl = uifactory.addTextElement("enterprise.secret", -1, null, formLayout);
+		enterpriseSecretEl.setMandatory(true);
 		usernamePropertyKeyEl = uifactory.addTextElement("username.property.key", -1, null, formLayout);
+		usernamePropertyKeyEl.setMandatory(true);
 		supressDataTransmissionEl = uifactory.addCheckboxesHorizontal("supress.data.transmission", formLayout, enabledKeys, TranslatorHelper.translateAll(getTranslator(), enabledKeys));
 		
-		formItems = Arrays.asList(enterpriseKeyEl, enterpriseSecretEl, serverNameEl, baseUrlEl, usernamePropertyKeyEl, supressDataTransmissionEl);
+		formItems = Arrays.asList(enterpriseKeyEl, enterpriseSecretEl, serverNameEl, baseUrlEl, administrationUrlEl, usernamePropertyKeyEl, supressDataTransmissionEl);
 		
 		if (usedInAdministration) {
 			uifactory.addFormSubmitButton("save", formLayout);
@@ -123,10 +130,6 @@ public class MediaSiteAdminController extends FormBasicController {
 		allOk &= checkMandatoryElement(administrationUrlEl);
 		allOk &= checkMandatoryElement(usernamePropertyKeyEl);
 		
-		if (allOk) {
-			allOk &= testConnection();
-		}
-		
 		return allOk;
 	}
 	
@@ -134,6 +137,7 @@ public class MediaSiteAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if (usedInAdministration) {
 			mediaSiteModule.setEnabled(enabledEl.isAtLeastSelected(1));
+			mediaSiteModule.setGlobalLoginEnabled(globalServerEnabledEl.isAtLeastSelected(1));
 			mediaSiteModule.setEnterpriseKey(enterpriseKeyEl.getValue());
 			mediaSiteModule.setEnterpriseSecret(enterpriseSecretEl.getValue());
 			mediaSiteModule.setServerName(serverNameEl.getValue());
@@ -148,6 +152,9 @@ public class MediaSiteAdminController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enabledEl) {
+			globalServerEnabledEl.setVisible(enabledEl.isAtLeastSelected(1));
+			updateUi();
+		} if (source == globalServerEnabledEl) {
 			updateUi();
 		}
 	}
@@ -157,9 +164,16 @@ public class MediaSiteAdminController extends FormBasicController {
 			enabledEl.select("on", mediaSiteModule.isEnabled());
 		}
 		
+		if (globalServerEnabledEl != null) {
+			globalServerEnabledEl.select("on", mediaSiteModule.isGlobalLoginEnabled());
+		}
+		
+		if (serverNameEl != null) {
+			serverNameEl.setValue(mediaSiteModule.getServerName());
+		}
+		
 		enterpriseKeyEl.setValue(mediaSiteModule.getEnterpriseKey());
 		enterpriseSecretEl.setValue(mediaSiteModule.getEnterpriseSecret());
-		serverNameEl.setValue(mediaSiteModule.getServerName());
 		baseUrlEl.setValue(mediaSiteModule.getBaseURL());
 		administrationUrlEl.setValue(mediaSiteModule.getAdministrationURL());
 		usernamePropertyKeyEl.setValue(mediaSiteModule.getUsernameProperty());
@@ -169,7 +183,6 @@ public class MediaSiteAdminController extends FormBasicController {
 	public void loadFromCourseNodeConfig(ModuleConfiguration config) {
 		enterpriseKeyEl.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_PRIVATE_KEY));
 		enterpriseSecretEl.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_PRIVATE_SECRET));
-		serverNameEl.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_SERVER_NAME));
 		baseUrlEl.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_SERVER_URL));
 		administrationUrlEl.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_ADMINISTRATION_URL));
 		usernamePropertyKeyEl.setValue(config.getStringValue(MediaSiteCourseNode.CONFIG_USER_NAME_KEY, mediaSiteModule.getUsernameProperty()));
@@ -177,11 +190,10 @@ public class MediaSiteAdminController extends FormBasicController {
 	}
 	
 	public boolean safeToModulConfiguration(UserRequest ureq, ModuleConfiguration config) {
-		if (validateFormLogic(ureq) && testConnection()) {
+		if (validateFormLogic(ureq)) {
 			config.setBooleanEntry(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN, true);
 			config.setStringValue(MediaSiteCourseNode.CONFIG_PRIVATE_KEY, enterpriseKeyEl.getValue());
 			config.setStringValue(MediaSiteCourseNode.CONFIG_PRIVATE_SECRET, enterpriseSecretEl.getValue());
-			config.setStringValue(MediaSiteCourseNode.CONFIG_SERVER_NAME, serverNameEl.getValue());
 			config.setStringValue(MediaSiteCourseNode.CONFIG_USER_NAME_KEY, usernamePropertyKeyEl.getValue());
 			config.setStringValue(MediaSiteCourseNode.CONFIG_SERVER_URL, baseUrlEl.getValue());
 			config.setBooleanEntry(MediaSiteCourseNode.CONFIG_SUPRESS_AGREEMENT, supressDataTransmissionEl.isAtLeastSelected(1));
@@ -196,36 +208,21 @@ public class MediaSiteAdminController extends FormBasicController {
 	}
 	
 	private void updateUi() {
-		boolean visible = !usedInAdministration || enabledEl.isAtLeastSelected(1);
+		boolean visible = !usedInAdministration || (globalServerEnabledEl.isAtLeastSelected(1) && enabledEl.isAtLeastSelected(1));
 		
 		formItems.stream().filter(item -> item != null).forEach(test -> test.setVisible(visible));
 	}
 	
 	private boolean checkMandatoryElement(TextElement textElement) {
+		if (textElement == null) {
+			return true;
+		}
+		
 		textElement.clearError();
 		
 		if (!StringHelper.containsNonWhitespace(textElement.getValue())) {
 			textElement.setErrorKey("form.legende.mandatory", null);
 			return false;
-		}
-		
-		return true;
-	}
-	
-	private boolean testConnection() {
-		// TODO Test media site lti configuration
-		String verifyLtiUrl = String.format(baseUrlEl.getValue(), "");
-		String key = enterpriseKeyEl.getValue();
-		String secret = enterpriseSecretEl.getValue();
-
-		MediaSiteVerificationResult verification = 
-				mediaSiteManager.checkEnterpriseLogin(verifyLtiUrl, key, secret);
-		if(verification == null) {
-			showError("admin.verification.unavaible");
-		} else if (verification.isSuccess()) {
-			showInfo("admin.verification.valid");
-		} else {
-			showError("admin.verification.invalid", verification.getMessage());
 		}
 		
 		return true;

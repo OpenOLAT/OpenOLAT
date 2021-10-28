@@ -22,11 +22,15 @@ package org.olat.course.nodes.mediasite;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.nodes.MediaSiteCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -41,10 +45,10 @@ public class MediaSiteEditController extends ActivateableTabbableDefaultControll
 	private MediaSiteConfigController mediaSiteConfigController;
 	private TabbedPane tabbedPane;
 	
-	public MediaSiteEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
+	public MediaSiteEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
-		
-		mediaSiteConfigController = new MediaSiteConfigController(ureq, wControl, config);
+		//(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
+		mediaSiteConfigController = new MediaSiteConfigController(ureq, wControl, config, courseNode, course, userCourseEnv);
 		listenTo(mediaSiteConfigController);
 	}
 
@@ -66,7 +70,7 @@ public class MediaSiteEditController extends ActivateableTabbableDefaultControll
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == mediaSiteConfigController && event.equals(Event.DONE_EVENT)) {
 			mediaSiteConfigController.getUpdatedConfig();
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -74,8 +78,13 @@ public class MediaSiteEditController extends ActivateableTabbableDefaultControll
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
+	}
+
+	@Override
 	protected void doDispose() {
-		// Nothing to do here		
+		//
 	}
 
 }

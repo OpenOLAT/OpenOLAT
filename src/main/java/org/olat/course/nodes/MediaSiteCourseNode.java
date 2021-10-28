@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -42,6 +43,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.mediasite.MediaSiteModule;
+import org.olat.modules.mediasite.ui.MediaSiteAdminController;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -84,9 +86,30 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 		if(oneClickStatusCache!=null) {
 			return oneClickStatusCache[0];
 		}
-		// TODO Check validity of config
+		
 		StatusDescription sd =  StatusDescription.NOERROR;
 		MediaSiteModule mediaSiteModule = CoreSpringFactory.getImpl(MediaSiteModule.class);
+		
+		boolean usesPrivateLogin = getModuleConfiguration().getBooleanSafe(CONFIG_ENABLE_PRIVATE_LOGIN);
+		String moduleId = getModuleConfiguration().getStringValue(CONFIG_ELEMENT_ID);
+		
+		if (!mediaSiteModule.isGlobalLoginEnabled() && !usesPrivateLogin) {
+			String shortKey = "edit.warning.global.login.disabled.short";
+			String longKey = "edit.warning.global.login.disabled";
+			String translPackage = MediaSiteAdminController.class.getPackageName();
+			
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, null, translPackage);
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(MediaSiteEditController.PANE_TAB_VCCONFIG);
+		} else if (!StringHelper.containsNonWhitespace(moduleId)) {
+			String shortKey = "edit.warning.module.id.short";
+			String longKey = "edit.warning.module.id";
+			String translPackage = MediaSiteAdminController.class.getPackageName();
+			
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, null, translPackage);
+			sd.setDescriptionForUnit(getIdent());
+			sd.setActivateableViewIdentifier(MediaSiteEditController.PANE_TAB_VCCONFIG);
+		}
 
 		return sd;
 	}
@@ -99,8 +122,10 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		MediaSiteEditController editController = new MediaSiteEditController(ureq, wControl, getModuleConfiguration());
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
+		
+		MediaSiteEditController editController = new MediaSiteEditController(ureq, wControl, getModuleConfiguration(), (MediaSiteCourseNode) chosenNode, course, euce);
+		
 		return new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, editController);
 		
 	}
@@ -121,7 +146,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 		    runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			runCtrl = new MediaSiteRunController(ureq, wControl, this.getModuleConfiguration());
+			runCtrl = new MediaSiteRunController(ureq, wControl, this, userCourseEnv);
 		}
 		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, "o_mediasite_icon");

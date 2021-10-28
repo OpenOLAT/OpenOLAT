@@ -27,15 +27,27 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
+import org.olat.course.editor.EditorMainController;
 import org.olat.course.nodes.MediaSiteCourseNode;
+import org.olat.course.nodes.basiclti.LTI10DisplayController;
+import org.olat.course.nodes.basiclti.LTIDataExchangeDisclaimerController;
+import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.ui.PostDataMapper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.mediasite.MediaSiteModule;
+import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,25 +56,53 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MediaSiteRunController extends BasicController {
 	
+	private static final String PROP_NAME_DATA_EXCHANGE_ACCEPTED = "MediaSiteDataTransmissionAccepted";
+	
+	private final MediaSiteCourseNode courseNode;
 	private final ModuleConfiguration config;
 	private final boolean showAdministration;
+	private final CourseEnvironment courseEnv;
 	
 	private Panel mainPanel;
+	
+	private LTIDataExchangeDisclaimerController disclaimerCtrl;
 	
 	@Autowired
 	private MediaSiteModule mediaSiteModule;
 	@Autowired
 	private LTIManager ltiManager;
 
-	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
-		this(ureq, wControl, config, false);
+	/**
+	 * Constructor for Run Controller
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param config
+	 * @param userCourseEnv
+	 */
+	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, MediaSiteCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		this(ureq, wControl, courseNode, courseNode.getModuleConfiguration(), userCourseEnv.getCourseEnvironment(), false);
 	}
 	
-	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, boolean showAdministration) {
+	/**
+	 * Constructor to show MediaSite Administration or preview in Course editor
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param config
+	 * @param userCourseEnv
+	 * @param courseEnv
+	 * @param showAdministration
+	 */
+	public MediaSiteRunController(UserRequest ureq, WindowControl wControl, MediaSiteCourseNode courseNode, ModuleConfiguration config, CourseEnvironment courseEnv, boolean showAdministration) {
 		super(ureq, wControl);
 		
+		this.courseNode = courseNode;
 		this.config = config;
 		this.showAdministration = showAdministration;
+		this.courseEnv = courseEnv;
+		
+		setTranslator(Util.createPackageTranslator(LTI10DisplayController.class, getLocale(), getTranslator()));
 		
 		mainPanel = new Panel("mediaSitePanel");
 		runMediaSite(ureq);
@@ -70,13 +110,39 @@ public class MediaSiteRunController extends BasicController {
 	}
 	
 	private void runMediaSite(UserRequest ureq) {
-		VelocityContainer container = createVelocityContainer("run");		
+		boolean usesPrivateLogin = config.getBooleanSafe(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN);
+		
+		if (!usesPrivateLogin && !mediaSiteModule.isGlobalLoginEnabled()) {
+			Translator pT = Util.createPackageTranslator(EditorMainController.class, ureq.getLocale());
+			MessageController messageController = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), null, pT.translate("course.building.block.disabled.user"));
+			//NodeRunConstructionResult ncr = new NodeRunConstructionResult(controller, null, null, null);
+			//nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, null, courseNode, ncr, false);
+			
+			mainPanel.setContent(messageController.getInitialComponent());
+			
+			return;
+		}
+		
+		showDataTranmissionScreenOrContent(ureq);
+	}
+	
+	private void showContent(UserRequest ureq) {
+		VelocityContainer container;
+		
+		if (showAdministration) {
+			container = createVelocityContainer("runPopup");
+		} else {
+			container = createVelocityContainer("run");
+		}
+		
+		
+		boolean usesPrivateLogin = config.getBooleanSafe(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN);
 		
 		String url;
 		String oauth_key;
 		String oauth_secret;
 		
-		if (config.getBooleanSafe(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN)) {
+		if (usesPrivateLogin) {
 			if (showAdministration) {
 				url = config.getStringValue(MediaSiteCourseNode.CONFIG_ADMINISTRATION_URL);
 			} else {
@@ -115,10 +181,80 @@ public class MediaSiteRunController extends BasicController {
 		
 		mainPanel.setContent(container);
 	}
+	
+	private boolean checkHasDataExchangeAccepted(String hash) {
+		boolean dataAccepted = false;
+		CoursePropertyManager propMgr = courseEnv.getCoursePropertyManager();
+		Property prop = propMgr.findCourseNodeProperty(courseNode, getIdentity(), null, PROP_NAME_DATA_EXCHANGE_ACCEPTED);
+		if (prop != null) {
+			// compare if value in property is the same as calculated today. If not, user as to accept again
+			String storedHash = prop.getStringValue();
+			if (storedHash != null && hash != null && storedHash.equals(hash)) {
+				dataAccepted = true;
+			} else {
+				// remove property, not valid anymore
+				propMgr.deleteProperty(prop);
+			}
+		}
+		return dataAccepted;
+	}
+	
+	/**
+	 * Helper to save the user accepted data exchange
+	 */
+	private void storeDataExchangeAcceptance() {
+		String hash = disclaimerCtrl.getHashData();
+		CoursePropertyManager propMgr = courseEnv.getCoursePropertyManager();
+		Property prop = propMgr.createCourseNodePropertyInstance(this.courseNode, getIdentity(), null, PROP_NAME_DATA_EXCHANGE_ACCEPTED, null, null, hash, null);
+		propMgr.saveProperty(prop);
+	}
+	
+	private void showDataTranmissionScreenOrContent(UserRequest ureq) {
+		// only run when user as already accepted to data exchange or no data 
+		// has to be exchanged or when it is configured to not show the accept
+		// dialog
+		boolean usesPrivateLogin = config.getBooleanSafe(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN);
+		boolean skipAcceptLaunchPage = false;
+		String customAttributes = "";
+		
+		if (usesPrivateLogin) {
+			customAttributes = config.getStringValue(MediaSiteCourseNode.CONFIG_USER_NAME_KEY);
+			skipAcceptLaunchPage = config.getBooleanSafe(MediaSiteCourseNode.CONFIG_SUPRESS_AGREEMENT);
+		} else {
+			customAttributes = mediaSiteModule.getUsernameProperty();
+			skipAcceptLaunchPage = mediaSiteModule.isSupressDataTransmissionAgreement();
+		}
+		
+		if (skipAcceptLaunchPage) {
+			showContent(ureq);
+			return;
+		}
+		
+		disclaimerCtrl = new LTIDataExchangeDisclaimerController(ureq, getWindowControl(), true, true, customAttributes);
+		listenTo(disclaimerCtrl);
+		
+		String dataExchangeHash = disclaimerCtrl.getHashData();
+		
+		if (dataExchangeHash != null && checkHasDataExchangeAccepted(dataExchangeHash)) {
+			showContent(ureq);					
+		} else {
+			mainPanel.setContent(disclaimerCtrl.getInitialComponent());
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (disclaimerCtrl == source && event == Event.DONE_EVENT) {
+			storeDataExchangeAcceptance();
+			showContent(ureq);
+		} 
+		
+		super.event(ureq, source, event);
 	}
 
 	@Override

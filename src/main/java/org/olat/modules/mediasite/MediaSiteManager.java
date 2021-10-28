@@ -19,31 +19,11 @@
  */
 package org.olat.modules.mediasite;
 
-import org.olat.modules.mediasite.manager.MediaSiteVerificationResult;
-
 /**
  * Initial date: 14.10.2021<br>
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 public interface MediaSiteManager {
-	
-	/**
-	 * Verifies that a given module id exists
-	 * 
-	 * @param moduleId
-	 * @return
-	 */
-	public boolean checkModuleId(String moduleId);
-	
-	/**
-	 * Verify if the key and the secret of the enterprise login are valid.
-	 *
-	 * @param url the url of the verification service
-	 * @param key the key
-	 * @param secret the secret
-	 * @return MediaSiteVerificationResult the result of the verification
-	 */
-	public MediaSiteVerificationResult checkEnterpriseLogin(String url, String key, String secret);
 
 	/**
 	 * Parse the module id. Remove the unnecessary part
