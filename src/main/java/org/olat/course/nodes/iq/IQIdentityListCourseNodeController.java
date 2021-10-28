@@ -549,8 +549,19 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private void doStartCorrection(UserRequest ureq, AssessmentToolOptions asOptions) {
 		CorrectionOverviewController correctionCtrl = new CorrectionOverviewController(ureq, getWindowControl(), stackPanel,
 				getCourseEnvironment(), asOptions, (IQTESTCourseNode)courseNode);
+		
+		final Set<Long> selectedIdentityKeys;
+		if(asOptions.getIdentities() != null) {
+			selectedIdentityKeys = asOptions.getIdentities().stream()
+					.map(Identity::getKey)
+					.collect(Collectors.toSet());
+		} else {
+			selectedIdentityKeys = null;
+		}
+		
 		long numOfAssessmentEntriesDone = usersTableModel.getObjects().stream()
 				.filter(row -> row.getAssessmentStatus() == AssessmentEntryStatus.done)
+				.filter(row -> selectedIdentityKeys == null || selectedIdentityKeys.contains(row.getIdentityKey()))
 				.count();
 		if(correctionCtrl.getNumberOfAssessedIdentities() == 0) {
 			showWarning("grade.nobody");
