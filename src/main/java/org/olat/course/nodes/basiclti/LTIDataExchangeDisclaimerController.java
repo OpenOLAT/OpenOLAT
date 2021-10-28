@@ -26,7 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -85,8 +84,8 @@ public class LTIDataExchangeDisclaimerController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		VelocityContainer acceptPage = createVelocityContainer("accept");
 		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer acceptPage = (FormLayoutContainer)formLayout;
 			acceptPage.contextPut("userData", userData);
 			acceptPage.contextPut("customUserData", customUserData);
 		}
