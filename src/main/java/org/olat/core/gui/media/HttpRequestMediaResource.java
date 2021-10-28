@@ -26,20 +26,21 @@
 
 package org.olat.core.gui.media;
 
+import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
 
 /**
  * The cache control is set to one hour.
@@ -48,12 +49,12 @@ import org.olat.core.logging.Tracing;
  */
 public class HttpRequestMediaResource implements MediaResource {
 	
-	private static final Logger log = Tracing.createLoggerFor(HttpRequestMediaResource.class);
+	private static final Set<String> headersToCopy = Set.of("accept-ranges",  "www-authenticate", "content-range", "content-length");
 
 	private final HttpResponse response;
 
 	/**
-	 * @param meth
+	 * @param response The response to proxy
 	 */
 	public HttpRequestMediaResource(HttpResponse response) {
 		this.response = response;
@@ -69,9 +70,6 @@ public class HttpRequestMediaResource implements MediaResource {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getContentType()
-	 */
 	@Override
 	public String getContentType() {
 		Header h = response.getFirstHeader("Content-Type");
@@ -79,31 +77,17 @@ public class HttpRequestMediaResource implements MediaResource {
 
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getSize()
-	 */
 	@Override
 	public Long getSize() {
 		Header h = response.getFirstHeader("Content-Length");
-		return h == null ? null : new Long(h.getValue());
+		return h == null ? null : Long.valueOf(h.getValue());
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getInputStream()
-	 */
 	@Override
 	public InputStream getInputStream() {
-		try {
-			return response.getEntity().getContent();
-		} catch (Exception e) {
-			log.error("", e);
-		}
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.media.MediaResource#getLastModified()
-	 */
 	@Override
 	public Long getLastModified() {
 		Header h = response.getFirstHeader("Last-Modified");
@@ -126,17 +110,38 @@ public class HttpRequestMediaResource implements MediaResource {
 			IOUtils.closeQuietly((Closeable)response);
 		}
 	}
-
+	
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		//deliver content-disposition if available to forward this information 
 		//e.g. when someone is delivering generated files and sets the header himself
 		Header h = response.getFirstHeader("Content-Disposition");
-		if (h == null) return;
-		if (h.getValue().toLowerCase().contains("filename")) {
-			hres.setHeader("Content-Disposition", h.getValue());
-		} else {
-			hres.setHeader("Content-Disposition", "filename=" + h.getValue());
+		if(h != null) {
+			if (h.getValue().toLowerCase().contains("filename")) {
+				hres.setHeader("Content-Disposition", h.getValue());
+			} else {
+				hres.setHeader("Content-Disposition", "filename=" + h.getValue());
+			}
+		}
+		
+		for(Header header:response.getAllHeaders()) {
+			String name = header.getName();
+			if(headersToCopy.contains(name.toLowerCase())) {
+				hres.setHeader(name, header.getValue());
+			}
+		}
+		
+		int bufferSize = hres.getBufferSize();
+		try(InputStream in = response.getEntity().getContent();
+				InputStream bis = new BufferedInputStream(in, bufferSize);
+				OutputStream out = hres.getOutputStream()) {
+			IOUtils.copyLarge(bis, out, new byte[bufferSize]);
+		} catch(Exception e) {
+			ServletUtil.handleIOException("client browser probably abort when serving media resource", e);
+		} finally {
+			if(response instanceof Closeable) {
+				IOUtils.closeQuietly((Closeable)response);
+			}
 		}
 	}
 }
