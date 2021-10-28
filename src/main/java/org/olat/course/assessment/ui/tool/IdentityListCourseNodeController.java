@@ -350,23 +350,26 @@ public class IdentityListCourseNodeController extends FormBasicController
 		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());
 	}
 	
-	protected void initFiltersPresets(AssessmentConfig assessmentConfig) {
+	protected final void initFiltersPresets(AssessmentConfig assessmentConfig) {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
 				TabSelectionBehavior.nothing, List.of());
 		allTab.setElementCssClass("o_sel_assessment_all");
+		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
 		if(Mode.none != assessmentConfig.getPassedMode()) {
 			passedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PASSED_TAB_ID, translate("filter.passed"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "passed")));
 			passedTab.setElementCssClass("o_sel_assessment_passed");
+			passedTab.setFiltersExpanded(true);
 			tabs.add(passedTab);
 			
 			failedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAILED_TAB_ID, translate("filter.failed"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "failed")));
 			failedTab.setElementCssClass("o_sel_assessment_failed");
+			failedTab.setFiltersExpanded(true);
 			tabs.add(failedTab);
 		}
 

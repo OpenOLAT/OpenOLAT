@@ -471,6 +471,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("search.mark"),
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.MARKED, "marked")));
 			bookmarkTab.setElementCssClass("o_sel_author_bookmarks");
+			bookmarkTab.setFiltersExpanded(true);
 			tabs.add(bookmarkTab);
 		}
 		
@@ -478,11 +479,13 @@ public class AuthorListController extends FormBasicController implements Activat
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned"),
 						FlexiTableFilterValue.valueOf(AuthorSourceFilter.TYPE, "CourseModule")));
 		myCoursesTab.setElementCssClass("o_sel_author_courses");
+		myCoursesTab.setFiltersExpanded(true);
 		tabs.add(myCoursesTab);
 		
 		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters("My", translate("search.my"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.OWNED, "owned")));
 		myTab.setElementCssClass("o_sel_author_my");
+		myTab.setFiltersExpanded(true);
 		tabs.add(myTab);
 		
 		searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.generic"), TabSelectionBehavior.clear);
@@ -497,6 +500,7 @@ public class AuthorListController extends FormBasicController implements Activat
 					TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(AuthorSourceFilter.STATUS, RepositoryEntryStatusEnum.trash.name())));
 			deletedTab.setElementCssClass("o_sel_author_deleted");
 			deletedTab.setPosition(FlexiFilterTabPosition.right);
+			deletedTab.setFiltersExpanded(true);
 			tabs.add(deletedTab);
 		}
 		
