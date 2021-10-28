@@ -423,7 +423,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		assertThat(reloadedEntry.getEndDate().getModDate()).isCloseTo(endDateModifiactionDate, Duration.ofMinutes(2).toMillis());
 		assertThat(reloadedEntry.getEndDate().getModBy()).isEqualTo(modIdentity);
 		assertThat(reloadedEntry.getDuration()).isEqualTo(duration);
-		assertThat(reloadedEntry.getObligation().getCurrent()).isEqualTo(obligationInherited);
+		assertThat(reloadedEntry.getObligation().getCurrent()).isEqualTo(obligation);
 		assertThat(reloadedEntry.getObligation().getInherited()).isEqualTo(obligationInherited);
 		assertThat(reloadedEntry.getObligation().getEvaluated()).isEqualTo(obligationEvaluated);
 		assertThat(reloadedEntry.getObligation().getConfigCurrent()).isEqualTo(obligationConfig);
