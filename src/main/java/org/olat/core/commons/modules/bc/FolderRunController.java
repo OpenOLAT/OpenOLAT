@@ -117,6 +117,8 @@ public class FolderRunController extends BasicController implements Activateable
 	private CloseableModalController cmc;
 	private Link editQuotaButton;
 	
+	private final Mail canMail;
+	
 	@Autowired
 	private SearchModule searchModule;
 	@Autowired
@@ -130,7 +132,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 */
 	public FolderRunController(UserRequest ureq, WindowControl wControl) {
 		this(new BriefcaseWebDAVMergeSource(ureq.getIdentity(), ureq.getUserSession().getRoles(), UserManager.getInstance().getUserDisplayName(ureq.getIdentity())),
-				true, true, true, ureq, wControl);
+				true, true, Mail.publicOnly, ureq, wControl, null, null, null);
 		//set the resource URL to match the indexer ones
 		setResourceURL("[Identity:" + ureq.getIdentity().getKey() + "][userfolder:0]");
 	}
@@ -195,7 +197,7 @@ public class FolderRunController extends BasicController implements Activateable
 			boolean displayWebDAVLink, boolean displaySearch, boolean canMail, UserRequest ureq,
 			WindowControl wControl, VFSItemFilter filter,
 			CustomLinkTreeModel customLinkTreeModel) {
-		this(rootContainer, displayWebDAVLink, displaySearch, canMail, ureq, wControl, filter, customLinkTreeModel, null);
+		this(rootContainer, displayWebDAVLink, displaySearch, Mail.valueOf(canMail), ureq, wControl, filter, customLinkTreeModel, null);
 	}
 
 	/**
@@ -227,7 +229,7 @@ public class FolderRunController extends BasicController implements Activateable
 	 *            A container to copy files from
 	 */
 	public FolderRunController(VFSContainer rootContainer,
-			boolean displayWebDAVLink, boolean displaySearch, boolean canMail, UserRequest ureq,
+			boolean displayWebDAVLink, boolean displaySearch, Mail canMail, UserRequest ureq,
 			WindowControl wControl, VFSItemFilter filter,
 			CustomLinkTreeModel customLinkTreeModel, VFSContainer externContainerForCopy) {
 		this(rootContainer, displayWebDAVLink, displaySearch, canMail, false, ureq, wControl, filter, customLinkTreeModel, externContainerForCopy);
@@ -266,12 +268,13 @@ public class FolderRunController extends BasicController implements Activateable
 	 *            A container to copy files from
 	 */
 	public FolderRunController(VFSContainer rootContainer,
-			boolean displayWebDAVLink, boolean displaySearch, boolean canMail, boolean isCourseFolder, UserRequest ureq,
+			boolean displayWebDAVLink, boolean displaySearch, Mail canMail, boolean isCourseFolder, UserRequest ureq,
 			WindowControl wControl, VFSItemFilter filter,
 			CustomLinkTreeModel customLinkTreeModel, VFSContainer externContainerForCopy) {
 
 		super(ureq, wControl);
-	
+		
+		this.canMail = canMail;
 		folderContainer = createVelocityContainer("run");
 		editQuotaButton = LinkFactory.createButtonSmall("editQuota", folderContainer, this);
 
@@ -302,7 +305,7 @@ public class FolderRunController extends BasicController implements Activateable
 		
 		boolean isGuest = roles.isGuestOnly();
 		folderComponent = new FolderComponent(ureq, "foldercomp", rootContainer, filter, customLinkTreeModel, externContainerForCopy);
-		folderComponent.setCanMail(isGuest ? false : canMail); // guests can never send mail
+		folderComponent.setCanMail(!isGuest && canMail == Mail.always); // guests can never send mail
 		folderComponent.addListener(this);
 		folderContainer.put("foldercomp", folderComponent);
 		if (displayWebDAVLink && !isGuest) {
@@ -494,9 +497,13 @@ public class FolderRunController extends BasicController implements Activateable
 	}
 	
 	private void updatePathResource(UserRequest ureq) {
-		final String path = "path=" + folderComponent.getCurrentContainerPath();
+		final String containerPath = folderComponent.getCurrentContainerPath();
+		final String path = "path=" + containerPath;
 		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck(path);
 		addToHistory(ureq, ores, null);
+		if(canMail == Mail.publicOnly) {
+			folderComponent.setCanMail(path.startsWith("/public"));
+		}
 	}
 
 	private void enableDisableQuota(UserRequest ureq) {
@@ -608,6 +615,16 @@ public class FolderRunController extends BasicController implements Activateable
 			}
 			
 			updatePathResource(ureq);
+		}
+	}
+	
+	public enum Mail {
+		always,
+		never,
+		publicOnly;
+		
+		public static final Mail valueOf(boolean val) {
+			return val ? always : never;
 		}
 	}
 }
