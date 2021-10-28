@@ -302,6 +302,31 @@ public class ImmunityProofCertificateChecker extends Thread {
 									|| firstNameToCheckCoverage >= firstNameRequiredAccordance;
 						}
 					}
+					
+					if (!firstNameCorrect) {
+						// This is an edge case, repeat everything with lower cased names
+						
+						firstName = firstName.toLowerCase();
+						firstNameToCheck = firstNameToCheck.toLowerCase();
+						
+						if (firstName.contains(firstNameToCheck) || firstNameToCheck.contains(firstName)) {
+							firstNameCorrect = true;
+						} else {
+							int firstNameDistance = levenshteinDistance.apply(firstName, firstNameToCheck);
+
+							if (firstNameDistance > 0) {
+								float firstNameCoverage = 1 - ((float) firstNameDistance / firstName.length());
+								float firstNameToCheckCoverage = 1
+										- ((float) firstNameDistance / firstNameToCheck.length());
+								float firstNameRequiredAccordance = (float) firstNameAccordance / 100;
+
+								firstNameCorrect = firstNameCoverage >= firstNameRequiredAccordance
+										|| firstNameToCheckCoverage >= firstNameRequiredAccordance;
+							}
+						}
+					}
+				} else {
+					firstNameCorrect = true;
 				}
 
 				certificateBelongsToUser &= firstNameCorrect;
@@ -309,6 +334,7 @@ public class ImmunityProofCertificateChecker extends Thread {
 				// Check last name
 				int lastNameAccordance = immunityProofModule.getAccordanceLastName();
 				boolean lastNameCorrect = false;
+				
 				if (lastNameAccordance > 0) {
 					String lastNameToCheck = context.getIdentity().getUser().getLastName();
 
@@ -326,6 +352,30 @@ public class ImmunityProofCertificateChecker extends Thread {
 									|| lastNameToCheckCoverage >= lastNameRequiredAccordance;
 						}
 					}
+					
+					if (!lastNameCorrect) {
+						// This is an edge case, repeat everything with lower cased names
+						
+						lastName = lastName.toLowerCase();
+						lastNameToCheck = lastNameToCheck.toLowerCase();
+						
+						if (lastName.contains(lastNameToCheck) || lastNameToCheck.contains(lastName)) {
+							lastNameCorrect = true;
+						} else {
+							int lastNameDistance = levenshteinDistance.apply(lastName, lastNameToCheck);
+
+							if (lastNameDistance > 0) {
+								float lastNameCoverage = 1 - ((float) lastNameDistance / lastName.length());
+								float lastNameToCheckCoverage = 1 - ((float) lastNameDistance / lastNameToCheck.length());
+								float lastNameRequiredAccordance = (float) lastNameAccordance / 100;
+
+								lastNameCorrect = lastNameCoverage >= lastNameRequiredAccordance
+										|| lastNameToCheckCoverage >= lastNameRequiredAccordance;
+							}
+						}
+					}
+				} else {
+					lastNameCorrect = true;
 				}
 
 				certificateBelongsToUser &= lastNameCorrect;

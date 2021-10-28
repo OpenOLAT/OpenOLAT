@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String MEDIASITE_ENABLED 				= "mediasite.enabled";
+	private static final String MEDIASITE_GLOBAL_LOGIN_ENABLED	= "mediasite.global.login.enabled";
 	private static final String MEDIASITE_ENTERPRISE_KEY 		= "mediasite.enterprise.key";
 	private static final String MEDIASITE_ENTERPRISE_SECRET 	= "mediasite.enterprise.secret";
 	private static final String MEDIASITE_BASE_URL 				= "mediasite.base.url";
@@ -44,6 +45,8 @@ public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff
 	
 	@Value("${mediasite.enabled}")
 	private boolean enabled;
+	@Value("${mediasite.global.login.enabled}")
+	private boolean globalLoginEnabled;
 	@Value("${mediasite.enterprise.key}")
 	private String enterpriseKey;
 	@Value("${mediasite.enterprise.secret}")
@@ -66,6 +69,7 @@ public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff
 	@Override
 	public void init() {
 		enabled = getBooleanPropertyValue(MEDIASITE_ENABLED) || enabled;
+		globalLoginEnabled = getBooleanPropertyValue(MEDIASITE_GLOBAL_LOGIN_ENABLED) || globalLoginEnabled;
 		enterpriseKey = getStringPropertyValue(MEDIASITE_ENTERPRISE_KEY, enterpriseKey);
 		enterpriseSecret = getStringPropertyValue(MEDIASITE_ENTERPRISE_SECRET, enterpriseSecret);
 		baseURL = getStringPropertyValue(MEDIASITE_BASE_URL, baseURL);
@@ -83,6 +87,11 @@ public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setBooleanProperty(MEDIASITE_ENABLED, enabled, true);
+	}
+	
+	public void setGlobalLoginEnabled(boolean globalLoginEnabled) {
+		this.globalLoginEnabled = globalLoginEnabled;
+		setBooleanProperty(MEDIASITE_GLOBAL_LOGIN_ENABLED, globalLoginEnabled, true);
 	}
 	
 	public void setEnterpriseKey(String enterpriseKey) {
@@ -123,6 +132,10 @@ public class MediaSiteModule extends AbstractSpringModule implements ConfigOnOff
 	@Override
 	public boolean isEnabled() {
 		return enabled;
+	}
+	
+	public boolean isGlobalLoginEnabled() {
+		return globalLoginEnabled;
 	}
 	
 	public String getEnterpriseKey() {

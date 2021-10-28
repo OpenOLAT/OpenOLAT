@@ -77,7 +77,7 @@ public class LTI10DisplayController extends BasicController implements LTIDispla
 		this.userCourseEnv = userCourseEnv;
 		roles = ureq.getUserSession().getRoles();
 		this.config = courseNode.getModuleConfiguration();
-		
+	
 		if (display == LTIDisplayOptions.window) {
 			// Use other container for popup opening. Rest of code is the same
 			run = createVelocityContainer("runPopup");			
