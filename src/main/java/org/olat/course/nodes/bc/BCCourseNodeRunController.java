@@ -32,6 +32,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.modules.bc.FolderRunController.Mail;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -191,7 +192,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			}
 	
 			boolean canMail = !userCourseEnv.isCourseReadOnly();
-			frc = new FolderRunController(olatNamed, true, true, canMail, ureq, getWindowControl(), null, null, courseContainer);
+			frc = new FolderRunController(olatNamed, true, true, Mail.valueOf(canMail), ureq, getWindowControl(), null, null, courseContainer);
 			putInitialPanel(frc.getInitialComponent());
 		} else {
 			BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());

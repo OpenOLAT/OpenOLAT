@@ -20,6 +20,7 @@
 package org.olat.course.nodes.pf.ui;
 
 import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.modules.bc.FolderRunController.Mail;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -121,7 +122,7 @@ public class PFParticipantController extends BasicController {
 
 		VFSContainer frc = pfManager.provideParticipantFolder(pfNode, pfView, getTranslator(), courseEnv,
 				assessedIdentity, isCoach, readOnly);
-		folderRunController = new FolderRunController(frc, false, false, false, false, ureq, getWindowControl(), null, null, null);
+		folderRunController = new FolderRunController(frc, false, false, Mail.never, false, ureq, getWindowControl(), null, null, null);
 
 		folderRunController.disableSubscriptionController();
 		listenTo(folderRunController);

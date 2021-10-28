@@ -35,6 +35,7 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
+import org.olat.core.commons.modules.bc.FolderRunController.Mail;
 import org.olat.core.commons.modules.glossary.GlossaryMainController;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.mark.Mark;
@@ -1947,7 +1948,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				CustomLinkTreeModel customLinkTreeModel = new CourseInternalLinkTreeModel(course.getEditorTreeModel());
 	
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("CourseFolder", 0l), null);
-				FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, true, true, ureq, swControl, null, customLinkTreeModel, null);
+				FolderRunController ctrl = new FolderRunController(namedCourseFolder, true, true, Mail.always, true, ureq, swControl, null, customLinkTreeModel, null);
 				ctrl.addLoggingResourceable(LoggingResourceable.wrap(course));
 				courseFolderCtrl = pushController(ureq, translate("command.coursefolder"), ctrl);
 				setActiveTool(folderLink);
