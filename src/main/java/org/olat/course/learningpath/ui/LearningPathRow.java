@@ -25,9 +25,9 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -125,7 +125,7 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 		this.obligationFormItem = obligationFormItem;
 	}
 
-	public Overridable<AssessmentObligation> getObligation() {
+	public ObligationOverridable getObligation() {
 		return learningPathNode.getObligation();
 	}
 

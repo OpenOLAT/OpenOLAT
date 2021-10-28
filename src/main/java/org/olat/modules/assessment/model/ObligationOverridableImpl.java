@@ -30,66 +30,152 @@ import org.olat.modules.assessment.ObligationOverridable;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ObligationOverridableImpl extends OverridableImpl<AssessmentObligation> implements ObligationOverridable {
+public class ObligationOverridableImpl implements ObligationOverridable {
 	
-	private AssessmentObligation currentConfig;
+	private AssessmentObligation current;
+	private AssessmentObligation inherited;
+	private AssessmentObligation evaluated;
+	// Configs
+	private AssessmentObligation configCurrent;
+	private AssessmentObligation configOriginal;
+	private Identity modBy;
+	private Date modDate;
 	
 	public ObligationOverridableImpl() {
 		//
 	}
 	
 	public ObligationOverridableImpl(AssessmentObligation current) {
-		super(current);
+		this.current = current;
+	}
+
+	public ObligationOverridableImpl(AssessmentObligation current, AssessmentObligation inherited, AssessmentObligation evaluated,
+			AssessmentObligation configCurrent, AssessmentObligation configOriginal, Identity modBy, Date modDate) {
+		this.current = current;
+		this.inherited = inherited;
+		this.evaluated = evaluated;
+		this.configCurrent = configCurrent;
+		this.configOriginal = configOriginal;
+		this.modBy = modBy;
+		this.modDate = modDate;
 	}
 	
-	public ObligationOverridableImpl(AssessmentObligation current, AssessmentObligation currentConfig,
-			AssessmentObligation original, Identity modBy, Date modDate) {
-		super(current, original, modBy, modDate);
-		this.currentConfig = currentConfig;
+	@Override
+	public AssessmentObligation getCurrent() {
+		return current;
+	}
+
+	@Override
+	public void setCurrent(AssessmentObligation current) {
+		this.current = current;
+	}
+
+	@Override
+	public AssessmentObligation getInherited() {
+		return inherited;
+	}
+
+	@Override
+	public void setInherited(AssessmentObligation inherited) {
+		this.inherited = inherited;
 	}
 	
 	@Override
-	public AssessmentObligation getCurrentConfig() {
-		return currentConfig;
+	public AssessmentObligation getEvaluated() {
+		return evaluated;
 	}
 
 	@Override
-	public boolean isEvaluatedConfig() {
-		return AssessmentObligation.evaluated == currentConfig;
+	public void setEvaluated(AssessmentObligation evaluated) {
+		this.evaluated = evaluated;
 	}
 
 	@Override
-	public void setEvaluated(AssessmentObligation evaluatedObligation) {
-		if (isEvaluatedConfig()) {
-			super.setCurrentIntern(evaluatedObligation);
-		}
+	public AssessmentObligation getConfigCurrent() {
+		return configCurrent;
 	}
 
 	@Override
-	protected void setCurrentIntern(AssessmentObligation current) {
-		if (AssessmentObligation.evaluated == current) {
-			super.setCurrentIntern(null);
-			currentConfig = current;
+	public void setConfigCurrent(AssessmentObligation configCurrent) {
+		if (isOverridden()) {
+			this.configOriginal = configCurrent;
 		} else {
-			super.setCurrentIntern(current);
-			currentConfig = null;
+			this.configCurrent = configCurrent;
 		}
+	}
+	
+	@Override
+	public AssessmentObligation getConfigOriginal() {
+		return configOriginal;
 	}
 
 	@Override
-	protected AssessmentObligation getCurrentIntern() {
-		if (AssessmentObligation.evaluated == currentConfig) {
-			return currentConfig;
-		}
-		return super.getCurrentIntern();
+	public Identity getModBy() {
+		return modBy;
 	}
 
+	@Override
+	public Date getModDate() {
+		return modDate;
+	}
+
+	@Override
+	public void overrideConfig(AssessmentObligation custom, Identity modBy, Date modDate) {
+		if (!isOverridden()) {
+			this.configOriginal = this.configCurrent;
+		}
+		this.configCurrent = custom;
+		this.modBy = modBy;
+		this.modDate = modDate;
+	}
+
+	@Override
+	public boolean isOverridden() {
+		return modDate != null;
+	}
+	
+	@Override
+	public void reset() {
+		if (isOverridden()) {
+			configCurrent = configOriginal;
+		}
+		configOriginal = null;
+		modBy = null;
+		modDate = null;
+	}
+	
 	@Override
 	public ObligationOverridable clone() {
 		ObligationOverridableImpl clone = new ObligationOverridableImpl();
-		super.cloneValues(clone);
-		clone.currentConfig = currentConfig;
+		clone.current = this.current;
+		clone.inherited = this.inherited;
+		clone.evaluated = this.evaluated;
+		clone.configCurrent = this.configCurrent;
+		clone.configOriginal = this.configOriginal;
+		clone.modBy = this.modBy;
+		clone.modDate = this.modDate;
 		return clone;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("ObligationOverridableImpl [current=");
+		builder.append(current);
+		builder.append(", inherited=");
+		builder.append(inherited);
+		builder.append(", evaluated=");
+		builder.append(evaluated);
+		builder.append(", configCurrent=");
+		builder.append(configCurrent);
+		builder.append(", configOriginal=");
+		builder.append(configOriginal);
+		builder.append(", modBy=");
+		builder.append(modBy);
+		builder.append(", modDate=");
+		builder.append(modDate);
+		builder.append("]");
+		return builder.toString();
+	}
+	
 }

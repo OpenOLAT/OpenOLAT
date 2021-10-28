@@ -43,7 +43,7 @@ public class STFullyAssessedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfAllMandatoryChildrenAreFullyAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
 		AssessmentEvaluation childOptoinalAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.optional);
 		AssessmentEvaluation childOptoinalNotAssessed = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.optional);
@@ -58,7 +58,7 @@ public class STFullyAssessedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfAllMandatoryChildrenAreFullyAssessedEvenIfItIsBlocked() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block();
 		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed);
@@ -70,7 +70,7 @@ public class STFullyAssessedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfItHasNoChildren() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		
 		Boolean fullyAssessed = sut.getFullyAssessed(null, Collections.emptyList(), blocker);
 		
@@ -80,7 +80,7 @@ public class STFullyAssessedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnFalseIfAllAtLeastOneMandatoryChildrenIsNotFullyAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
 		AssessmentEvaluation childMandatoryNotAssessed = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed, childMandatoryNotAssessed);
@@ -92,7 +92,7 @@ public class STFullyAssessedEvaluatorTest {
 	}
 	@Test
 	public void shouldReturnFalseIfAllAtLeastOneMandatoryChildrenIsNotAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation childMandatoryAssessed = createAssessmentEvaluation(Boolean.TRUE, AssessmentObligation.mandatory);
 		AssessmentEvaluation childMandatoryNotAssessed = createAssessmentEvaluation(null, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(childMandatoryAssessed, childMandatoryNotAssessed);
@@ -105,7 +105,7 @@ public class STFullyAssessedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfItHasOnlyOptionalChildren() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation childOptoinalNotAssessed = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.optional);
 		List<AssessmentEvaluation> children = Arrays.asList(childOptoinalNotAssessed);
 		
@@ -116,7 +116,7 @@ public class STFullyAssessedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnFalseIfItHasOnlyOptionalChildrenButItIsBlocked() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block();
 		AssessmentEvaluation childOptoinalNotAssessed1 = createAssessmentEvaluation(Boolean.FALSE, AssessmentObligation.optional);
 		AssessmentEvaluation childOptoinalNotAssessed2 = createAssessmentEvaluation(null, AssessmentObligation.optional);

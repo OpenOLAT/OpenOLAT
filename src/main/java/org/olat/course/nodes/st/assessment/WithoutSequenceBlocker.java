@@ -22,6 +22,7 @@ package org.olat.course.nodes.st.assessment;
 import java.util.Date;
 
 import org.olat.course.run.scoring.Blocker;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -32,11 +33,13 @@ import org.olat.course.run.scoring.Blocker;
 public class WithoutSequenceBlocker implements Blocker {
 
 	private final Blocker parent;
+	private final AssessmentObligation parentObligation;
 	private boolean blocked;
 	private Date startDate;
 	
-	public WithoutSequenceBlocker(Blocker parent) {
+	public WithoutSequenceBlocker(Blocker parent, AssessmentObligation parentObligation) {
 		this.parent = parent;
+		this.parentObligation = parentObligation;
 	}
 
 	@Override
@@ -48,16 +51,22 @@ public class WithoutSequenceBlocker implements Blocker {
 
 	@Override
 	public void block() {
+		if (AssessmentObligation.excluded == parentObligation) return;
+		
 		blocked = true;
 	}
 
 	@Override
 	public void blockNoPassThrough() {
+		if (AssessmentObligation.excluded == parentObligation) return;
+		
 		block();
 	}
 	
 	@Override
 	public void block(Date startDate) {
+		if (AssessmentObligation.excluded == parentObligation) return;
+		
 		this.startDate = startDate;
 		block();
 	}
@@ -67,6 +76,11 @@ public class WithoutSequenceBlocker implements Blocker {
 		return startDate != null
 				? startDate
 				: parent != null? parent.getStartDate(): null;
+	}
+	
+	@Override
+	public AssessmentObligation getParentObligation() {
+		return parentObligation;
 	}
 
 	@Override

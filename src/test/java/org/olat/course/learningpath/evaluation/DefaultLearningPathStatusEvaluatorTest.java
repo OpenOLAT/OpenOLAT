@@ -41,7 +41,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldBlockIfMandatoryAndNotFullyAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.mandatory);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -51,7 +51,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfNotMandatoryAndNotFullyAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.optional);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -61,7 +61,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfMandatoryAndFullyAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, null, AssessmentObligation.mandatory);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -71,7 +71,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotChangeStatusIfBlockedButInProgress() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.inProgress, null);
 		
@@ -82,7 +82,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotChangeStatusIfBlockedButInReview() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.inReview, null);
 		
@@ -93,7 +93,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotChangeStatusIfBlockedButDone() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
 		
@@ -104,7 +104,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldSetInitialStatusIfNotBlocked() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, null, null);
 		
 		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
@@ -114,7 +114,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldSetNotReadyIfBlocked() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, null, null);
 		

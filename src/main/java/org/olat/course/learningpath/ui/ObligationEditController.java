@@ -132,6 +132,13 @@ public class ObligationEditController extends FormBasicController implements Con
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// Inherited
+		if (obligation.getInherited() != null) {
+			String translatedObligation = translateObligation(obligation.getInherited());
+			String inheriteObligationText = translate("override.obligation.inherited", translatedObligation);
+			uifactory.addStaticTextElement("override.obligation.inherited", null, inheriteObligationText, formLayout);
+		}
+		
 		// Default obligation
 		String translatedObligation = translateObligation(learningPathConfigs.getObligation());
 		String defaultObligationText = translate("override.obligation.default", translatedObligation);
@@ -187,11 +194,10 @@ public class ObligationEditController extends FormBasicController implements Con
 
 	private void updateUI() {
 		boolean overridden = obligation.isOverridden();
-		// getCurrent() may be not evaluated at this point!
-		AssessmentObligation current = obligation.getCurrentConfig() != null? obligation.getCurrentConfig(): obligation.getCurrent();
+		AssessmentObligation configCurrent = obligation.getConfigCurrent();
 		if (overridden) {
 			String[] args = new String[] {
-					translateObligation(current),
+					translateObligation(configCurrent),
 					userManager.getUserDisplayName(obligation.getModBy()),
 					formatter.formatDateAndTime(obligation.getModDate())
 			};
@@ -199,7 +205,7 @@ public class ObligationEditController extends FormBasicController implements Con
 			infoEl.setValue(infoText);
 		}
 		
-		AssessmentObligation original = overridden ? obligation.getOriginal() : current;
+		AssessmentObligation original = overridden ? obligation.getConfigOriginal() : configCurrent;
 		SelectionValues obligationKV = new SelectionValues();
 		if ((!AssessmentObligation.mandatory.equals(original)) && learningPathConfigs.getAvailableObligations().contains(AssessmentObligation.mandatory)) {
 			obligationKV.add(new SelectionValue(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
@@ -211,8 +217,8 @@ public class ObligationEditController extends FormBasicController implements Con
 			obligationKV.add(new SelectionValue(AssessmentObligation.evaluated.name(), translate("config.obligation.evaluated")));
 		}
 		obligationEl.setKeysAndValues(obligationKV.keys(), obligationKV.values(), null);
-		if (overridden && obligationEl.containsKey(current.name())) {
-			obligationEl.select(current.name(), true);
+		if (overridden && obligationEl.containsKey(configCurrent.name())) {
+			obligationEl.select(configCurrent.name(), true);
 		}
 		
 		infoEl.setVisible(overridden);
@@ -240,7 +246,7 @@ public class ObligationEditController extends FormBasicController implements Con
 		boolean override = obligationEl.isOneSelected();
 		if (override) {
 			AssessmentObligation selectedObligation = AssessmentObligation.valueOf(obligationEl.getSelectedKey());
-			obligation.override(selectedObligation, getIdentity(), new Date());
+			obligation.overrideConfig(selectedObligation, getIdentity(), new Date());
 		} else {
 			obligation.reset();
 		}

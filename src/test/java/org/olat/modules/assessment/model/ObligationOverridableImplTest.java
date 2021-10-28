@@ -37,141 +37,44 @@ import org.olat.core.id.Identity;
 public class ObligationOverridableImplTest {
 	
 	@Test
-	public void shouldSetCurrent() {
-		AssessmentObligation current = AssessmentObligation.mandatory;
-		ObligationOverridableImpl sut = new ObligationOverridableImpl();
-		
-		sut.setCurrent(current);
-		
-		assertThat(sut.getCurrent()).isEqualTo(current);
-		assertThat(sut.getOriginal()).isNull();
-		assertThat(sut.getModBy()).isNull();
-		assertThat(sut.getModDate()).isNull();
-	}
-	
-	@Test
-	public void shouldSetCurrentEvaluated() {
-		AssessmentObligation current = AssessmentObligation.evaluated;
-		ObligationOverridableImpl sut = new ObligationOverridableImpl();
-		
-		sut.setCurrent(current);
-		
-		assertThat(sut.getCurrentConfig()).isEqualTo(current);
-		assertThat(sut.getOriginal()).isNull();
-		assertThat(sut.getModBy()).isNull();
-		assertThat(sut.getModDate()).isNull();
-	}
-	
-	@Test
-	public void shouldSetEvauated() {
+	public void shouldSetValues() {
 		ObligationOverridableImpl sut = new ObligationOverridableImpl();
 		
 		sut.setCurrent(AssessmentObligation.evaluated);
-		sut.setEvaluated(AssessmentObligation.optional);
+		sut.setInherited(AssessmentObligation.excluded);
+		sut.setEvaluated(AssessmentObligation.mandatory);
+		sut.setConfigCurrent(AssessmentObligation.optional);
+		
+		assertThat(sut.getCurrent()).isEqualTo(AssessmentObligation.evaluated);
+		assertThat(sut.getInherited()).isEqualTo(AssessmentObligation.excluded);
+		assertThat(sut.getEvaluated()).isEqualTo(AssessmentObligation.mandatory);
+		assertThat(sut.getConfigCurrent()).isEqualTo(AssessmentObligation.optional);
+		assertThat(sut.getConfigOriginal()).isNull();
+		assertThat(sut.getModBy()).isNull();
+		assertThat(sut.getModDate()).isNull();
+	}
+	
+	@Test
+	public void shouldOverrideAndReset() {
+		Identity identity = mock(Identity.class);
+		Date modDate = new GregorianCalendar(2020, 2, 19).getTime();
+		ObligationOverridableImpl sut = new ObligationOverridableImpl();
+		sut.setCurrent(AssessmentObligation.optional);
+		sut.setConfigCurrent(AssessmentObligation.excluded);
+		
+		sut.overrideConfig(AssessmentObligation.mandatory, identity, modDate);
 		
 		assertThat(sut.getCurrent()).isEqualTo(AssessmentObligation.optional);
-		assertThat(sut.getCurrentConfig()).isEqualTo(AssessmentObligation.evaluated);
-		assertThat(sut.getOriginal()).isNull();
-		assertThat(sut.getModBy()).isNull();
-		assertThat(sut.getModDate()).isNull();
-	}
-	
-	@Test
-	public void shouldNotSetEvaluatedIfNoConfig() {
-		ObligationOverridableImpl sut = new ObligationOverridableImpl();
-		
-		sut.setCurrent(AssessmentObligation.mandatory);
-		sut.setEvaluated(AssessmentObligation.optional);
-		
-		assertThat(sut.getCurrent()).isEqualTo(AssessmentObligation.mandatory);
-		assertThat(sut.getCurrentConfig()).isNull();
-		assertThat(sut.getOriginal()).isNull();
-		assertThat(sut.getModBy()).isNull();
-		assertThat(sut.getModDate()).isNull();
-	}
-	
-	@Test
-	public void shouldOverride() {
-		Identity identity = mock(Identity.class);
-		Date modDate = new GregorianCalendar(2020, 2, 19).getTime();
-		ObligationOverridableImpl sut = new ObligationOverridableImpl();
-		sut.setCurrent(AssessmentObligation.optional);
-		
-		sut.override(AssessmentObligation.mandatory, identity, modDate);
-		
-		assertThat(sut.getCurrent()).isEqualTo(AssessmentObligation.mandatory);
-		assertThat(sut.getCurrentConfig()).isNull();
-		assertThat(sut.getOriginal()).isEqualTo(AssessmentObligation.optional);
+		assertThat(sut.getConfigCurrent()).isEqualTo(AssessmentObligation.mandatory);
+		assertThat(sut.getConfigOriginal()).isEqualTo(AssessmentObligation.excluded);
 		assertThat(sut.getModBy()).isEqualTo(identity);
 		assertThat(sut.getModDate()).isEqualTo(modDate);
-	}
-	
-	@Test
-	public void shouldOverrideEvaluated() {
-		Identity identity = mock(Identity.class);
-		Date modDate = new GregorianCalendar(2020, 2, 19).getTime();
-		ObligationOverridableImpl sut = new ObligationOverridableImpl();
-		sut.setCurrent(AssessmentObligation.evaluated);
-		sut.setEvaluated(AssessmentObligation.optional);
-		
-		sut.override(AssessmentObligation.mandatory, identity, modDate);
-		
-		assertThat(sut.getCurrent()).isEqualTo(AssessmentObligation.mandatory);
-		assertThat(sut.getCurrentConfig()).isNull();
-		assertThat(sut.getOriginal()).isEqualTo(AssessmentObligation.evaluated);
-		assertThat(sut.getModBy()).isEqualTo(identity);
-		assertThat(sut.getModDate()).isEqualTo(modDate);
-	}
-	
-	@Test
-	public void shouldOverrideByEvaluated() {
-		Identity identity = mock(Identity.class);
-		Date modDate = new GregorianCalendar(2020, 2, 19).getTime();
-		ObligationOverridableImpl sut = new ObligationOverridableImpl();
-		sut.setCurrent(AssessmentObligation.optional);
-		
-		sut.override(AssessmentObligation.evaluated, identity, modDate);
-		
-		assertThat(sut.getCurrent()).isNull();
-		assertThat(sut.getCurrentConfig()).isEqualTo(AssessmentObligation.evaluated);
-		assertThat(sut.getOriginal()).isEqualTo(AssessmentObligation.optional);
-		assertThat(sut.getModBy()).isEqualTo(identity);
-		assertThat(sut.getModDate()).isEqualTo(modDate);
-	}
-
-	@Test
-	public void shouldSetCurrentOfOverridden() {
-		AssessmentObligation original = AssessmentObligation.excluded;
-		AssessmentObligation original2 = AssessmentObligation.optional;
-		AssessmentObligation custom = AssessmentObligation.mandatory;
-		Identity identity = mock(Identity.class);
-		Date modDate = new GregorianCalendar(2020, 2, 19).getTime();
-		ObligationOverridableImpl sut = new ObligationOverridableImpl();
-		sut.setCurrent(original);
-		sut.override(custom, identity, modDate);
-		
-		sut.setCurrent(original2);
-		
-		assertThat(sut.getCurrent()).isEqualTo(custom);
-		assertThat(sut.getOriginal()).isEqualTo(original2);
-		assertThat(sut.getModBy()).isEqualTo(identity);
-		assertThat(sut.getModDate()).isEqualTo(modDate);
-	}
-	
-	@Test
-	public void shouldReset() {
-		AssessmentObligation original = AssessmentObligation.excluded;
-		AssessmentObligation custom = AssessmentObligation.mandatory;
-		Identity identity = mock(Identity.class);
-		Date modDate = new GregorianCalendar(2020, 2, 19).getTime();
-		ObligationOverridableImpl sut = new ObligationOverridableImpl();
-		sut.setCurrent(original);
-		sut.override(custom, identity, modDate);
 		
 		sut.reset();
 		
-		assertThat(sut.getCurrent()).isEqualTo(original);
-		assertThat(sut.getOriginal()).isNull();
+		assertThat(sut.getCurrent()).isEqualTo(AssessmentObligation.optional);
+		assertThat(sut.getConfigCurrent()).isEqualTo(AssessmentObligation.excluded);
+		assertThat(sut.getConfigOriginal()).isNull();
 		assertThat(sut.getModBy()).isNull();
 		assertThat(sut.getModDate()).isNull();
 	}
@@ -184,7 +87,7 @@ public class ObligationOverridableImplTest {
 		ObligationOverridableImpl sut = new ObligationOverridableImpl();
 		assertThat(sut.isOverridden()).isFalse();
 		
-		sut.override(custom, identity, modDate);
+		sut.overrideConfig(custom, identity, modDate);
 		assertThat(sut.isOverridden()).isTrue();
 		
 		sut.reset();

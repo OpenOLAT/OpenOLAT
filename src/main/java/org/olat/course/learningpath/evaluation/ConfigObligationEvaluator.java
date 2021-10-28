@@ -19,17 +19,10 @@
  */
 package org.olat.course.learningpath.evaluation;
 
-import java.util.List;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathService;
-import org.olat.course.learningpath.obligation.ExceptionalObligation;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.nodes.st.assessment.AbstractConfigObligationEvaluator;
 import org.olat.course.run.scoring.ObligationEvaluator;
-import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -38,35 +31,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ConfigObligationEvaluator implements ObligationEvaluator {
-	
-	private LearningPathService learningPathService;
-	
-	@Override
-	public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
-			CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
-		LearningPathConfigs configs = getLearningPathService().getConfigs(courseNode);
-		// Initialize the obligation by the configured standard obligation
-		AssessmentObligation evaluatedObligation = configs.getObligation();
-		
-		// Check if the user is affected by a exceptional obligation
-		List<ExceptionalObligation> exceptionalObligations = configs.getExceptionalObligations();
-		if (exceptionalObligations != null && !exceptionalObligations.isEmpty()) {
-			Set<AssessmentObligation> filtered = exceptionalObligationEvaluator
-					.filterAssessmentObligation(exceptionalObligations, evaluatedObligation);
-			evaluatedObligation = getMostImportantExceptionalObligation(filtered, evaluatedObligation);
-		}
-		
-		ObligationOverridable obligation = currentEvaluation.getObligation().clone();
-		obligation.setCurrent(evaluatedObligation);
-		return obligation;
-	}
-
-	@Override
-	public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
-			CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator, List<AssessmentEvaluation> children) {
-		return currentEvaluation.getObligation();
-	}
+public class ConfigObligationEvaluator extends AbstractConfigObligationEvaluator implements ObligationEvaluator {
 	
 	@Override
 	public AssessmentObligation getMostImportantExceptionalObligation(Set<AssessmentObligation> assessmentObligations,
@@ -87,14 +52,6 @@ public class ConfigObligationEvaluator implements ObligationEvaluator {
 			}
 		}
 		return defaultObligation;
-	}
-
-
-	protected LearningPathService getLearningPathService() {
-		if (learningPathService == null) {
-			learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
-		}
-		return learningPathService;
 	}
 
 }

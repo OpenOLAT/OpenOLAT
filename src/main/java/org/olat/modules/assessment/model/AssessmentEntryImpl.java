@@ -152,6 +152,12 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Column(name="a_obligation", nullable=true, insertable=true, updatable=true)
 	private AssessmentObligation obligation;
 	@Enumerated(EnumType.STRING)
+	@Column(name="a_obligation_inherited", nullable=true, insertable=true, updatable=true)
+	private AssessmentObligation obligationInherited;
+	@Enumerated(EnumType.STRING)
+	@Column(name="a_obligation_evaluated", nullable=true, insertable=true, updatable=true)
+	private AssessmentObligation obligationEvaluated;
+	@Enumerated(EnumType.STRING)
 	@Column(name="a_obligation_config", nullable=true, insertable=true, updatable=true)
 	private AssessmentObligation obligationConfig;
 	@Enumerated(EnumType.STRING)
@@ -444,7 +450,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public ObligationOverridable getObligation() {
 		if (obligationOverridable == null) {
-			obligationOverridable = new ObligationOverridableImpl(obligation, obligationConfig, obligationOriginal, obligationModIdentity, obligationModDate);
+			obligationOverridable = new ObligationOverridableImpl(obligation, obligationInherited, obligationEvaluated,
+					obligationConfig, obligationOriginal, obligationModIdentity, obligationModDate);
 		}
 		return obligationOverridable;
 	}
@@ -456,6 +463,22 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	public void setObligation(AssessmentObligation obligation) {
 		this.obligation = obligation;
+	}
+
+	public AssessmentObligation getObligationInherited() {
+		return obligationInherited;
+	}
+
+	public void setObligationInherited(AssessmentObligation obligationInherited) {
+		this.obligationInherited = obligationInherited;
+	}
+
+	public AssessmentObligation getObligationEvaluated() {
+		return obligationEvaluated;
+	}
+
+	public void setObligationEvaluated(AssessmentObligation obligationEvaluated) {
+		this.obligationEvaluated = obligationEvaluated;
 	}
 
 	public AssessmentObligation getObligationConfig() {

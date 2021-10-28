@@ -1454,6 +1454,8 @@ create table o_as_entry (
    a_date_end_mod_date date,
    a_duration number(20),
    a_obligation varchar2(50),
+   a_obligation_inherited varchar2(50),
+   a_obligation_evaluated varchar2(50),
    a_obligation_config varchar2(50),
    a_obligation_original varchar2(50),
    a_obligation_mod_date date,

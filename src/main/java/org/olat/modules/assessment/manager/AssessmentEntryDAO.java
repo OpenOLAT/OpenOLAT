@@ -245,8 +245,10 @@ public class AssessmentEntryDAO {
 			impl.setEndDateModificationDate(end.getModDate());
 			ObligationOverridable obligation = nodeAssessment.getObligation();
 			impl.setObligation(obligation.getCurrent());
-			impl.setObligationConfig(obligation.getCurrentConfig());
-			impl.setObligationOriginal(obligation.getOriginal());
+			impl.setObligationInherited(obligation.getInherited());
+			impl.setObligationEvaluated(obligation.getEvaluated());
+			impl.setObligationConfig(obligation.getConfigCurrent());
+			impl.setObligationOriginal(obligation.getConfigOriginal());
 			impl.setObligationModIdentity(obligation.getModBy());
 			impl.setObligationModDate(obligation.getModDate());
 		}

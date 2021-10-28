@@ -67,6 +67,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -277,7 +278,7 @@ public class LearningPathListController extends FormBasicController implements T
 	}
 	
 	private void forgeObligation(LearningPathRow row) {
-		Overridable<AssessmentObligation> obligation = row.getObligation();
+		ObligationOverridable obligation = row.getObligation();
 		
 		if (isObligationOverridableOpenable(row)) {
 			StringBuilder sb = new StringBuilder();
@@ -314,7 +315,7 @@ public class LearningPathListController extends FormBasicController implements T
 			return false;
 		}
 		
-		Overridable<AssessmentObligation> obligation = row.getObligation();
+		ObligationOverridable obligation = row.getObligation();
 		if (!canEdit && !obligation.isOverridden()) {
 			return false;
 		}

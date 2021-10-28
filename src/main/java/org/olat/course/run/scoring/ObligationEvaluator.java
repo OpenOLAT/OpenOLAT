@@ -36,7 +36,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public interface ObligationEvaluator {
 	
 	public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
-			CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator);
+			CourseNode courseNode, AssessmentObligation parentObligation, ExceptionalObligationEvaluator exceptionalObligationEvaluator);
 
 	public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
 			CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator,

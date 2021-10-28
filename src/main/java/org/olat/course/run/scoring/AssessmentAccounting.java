@@ -46,6 +46,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -118,8 +119,8 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		if (update) {
 			Blocker blocker = courseAssessmentService.getEvaluators(root, courseConfig).getBlockerEvaluator()
-					.getChildrenBlocker(null);
-			updateEntryRecursiv(root, blocker);
+					.getChildrenBlocker(null, null);
+			updateEntryRecursiv(root, blocker, null);
 		}
 		
 		return false;
@@ -165,7 +166,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		return entry;
 	}
 	
-	private AccountingResult updateEntryRecursiv(CourseNode courseNode, Blocker blocker) {
+	private AccountingResult updateEntryRecursiv(CourseNode courseNode, Blocker blocker, AssessmentObligation parentObligation) {
 		log.debug("Evaluate course node: type '{}', ident: '{}'", courseNode.getType(), courseNode.getIdent());
 		
 		AssessmentEvaluation currentEvaluation = evalCourseNode(courseNode);
@@ -175,7 +176,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
-		ObligationOverridable obligation = obligationEvaluator.getObligation(result, courseNode, exceptionalObligationEvaluator);
+		ObligationOverridable obligation = obligationEvaluator.getObligation(result, courseNode, parentObligation, exceptionalObligationEvaluator);
 		result.setObligation(obligation);
 		
 		StartDateEvaluator startDateEvaluator = evaluators.getStartDateEvaluator();
@@ -197,14 +198,14 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setStatus(status);
 		
 		BlockerEvaluator blockerEvaluator = evaluators.getBlockerEvaluator();
-		Blocker childrenBlocker = blockerEvaluator.getChildrenBlocker(blocker);
+		Blocker childrenBlocker = blockerEvaluator.getChildrenBlocker(blocker, obligation.getCurrent());
 		int childCount = courseNode.getChildCount();
 		List<AssessmentEvaluation> children = new ArrayList<>(childCount);
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode) child;
-				AccountingResult childResult = updateEntryRecursiv(childCourseNode, childrenBlocker);
+				AccountingResult childResult = updateEntryRecursiv(childCourseNode, childrenBlocker, obligation.getCurrent());
 				children.add(childResult);
 			}
 		}

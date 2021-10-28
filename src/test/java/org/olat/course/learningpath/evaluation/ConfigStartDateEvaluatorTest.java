@@ -44,7 +44,7 @@ public class ConfigStartDateEvaluatorTest {
 		SoftAssertions softly = new SoftAssertions();
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
 		
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		Date startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.mandatory, blocker);
 		
 		softly.assertThat(startDate).as("mandatory: start").isEqualTo(inThreeDays);
@@ -53,7 +53,7 @@ public class ConfigStartDateEvaluatorTest {
 		blocker.nextCourseNode();
 		softly.assertThat(blocker.isBlocked()).as("mandatory: block without pass through").isTrue();
 		
-		blocker = new SequentialBlocker();
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.optional, blocker);
 		
 		softly.assertThat(startDate).as("optional: start").isEqualTo(inThreeDays);
@@ -71,14 +71,14 @@ public class ConfigStartDateEvaluatorTest {
 		SoftAssertions softly = new SoftAssertions();
 		Date threeDaysBefore = DateUtils.toDate(LocalDate.now().minusDays(3));
 		
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		Date startDate = sut.evaluateDate(threeDaysBefore, AssessmentObligation.mandatory, blocker);
 		
 		softly.assertThat(startDate).as("mandatory: start").isNull();
 		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isNull();
 		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isFalse();
 		
-		blocker = new SequentialBlocker();
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		startDate = sut.evaluateDate(threeDaysBefore, AssessmentObligation.optional, blocker);
 		
 		softly.assertThat(startDate).as("optional: start").isNull();
@@ -91,14 +91,14 @@ public class ConfigStartDateEvaluatorTest {
 	public void shouldNotBlockIfHasNoStart() {
 		SoftAssertions softly = new SoftAssertions();
 		
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		Date startDate = sut.evaluateDate(null, AssessmentObligation.mandatory, blocker);
 		
 		softly.assertThat(startDate).as("mandatory: start").isNull();
 		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isNull();
 		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isFalse();
 		
-		blocker = new SequentialBlocker();
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		startDate = sut.evaluateDate(null, AssessmentObligation.optional, blocker);
 		
 		softly.assertThat(startDate).as("optional: start").isNull();
@@ -113,7 +113,7 @@ public class ConfigStartDateEvaluatorTest {
 		Date inFourDays = DateUtils.toDate(LocalDate.now().plusDays(4));
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
 
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block(inFourDays);
 		Date startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.mandatory, blocker);
 		
@@ -121,7 +121,7 @@ public class ConfigStartDateEvaluatorTest {
 		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isEqualTo(inFourDays);
 		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isTrue();
 		
-		blocker = new SequentialBlocker();
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block(inFourDays);
 		startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.optional, blocker);
 		
@@ -137,7 +137,7 @@ public class ConfigStartDateEvaluatorTest {
 		Date inTwoDays = DateUtils.toDate(LocalDate.now().plusDays(2));
 		Date inThreeDays = DateUtils.toDate(LocalDate.now().plusDays(3));
 
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block(inTwoDays);
 		Date startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.mandatory, blocker);
 		
@@ -145,7 +145,7 @@ public class ConfigStartDateEvaluatorTest {
 		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isEqualTo(inThreeDays);
 		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isTrue();
 		
-		blocker = new SequentialBlocker();
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block(inTwoDays);
 		startDate = sut.evaluateDate(inThreeDays, AssessmentObligation.optional, blocker);
 		
@@ -161,7 +161,7 @@ public class ConfigStartDateEvaluatorTest {
 		SoftAssertions softly = new SoftAssertions();
 		Date inFourDays = DateUtils.toDate(LocalDate.now().plusDays(4));
 		
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block(inFourDays);
 		Date startDate = sut.evaluateDate(null, AssessmentObligation.mandatory, blocker);
 		
@@ -169,7 +169,7 @@ public class ConfigStartDateEvaluatorTest {
 		softly.assertThat(blocker.getStartDate()).as("mandatory: start (blocker)").isEqualTo(inFourDays);
 		softly.assertThat(blocker.isBlocked()).as("mandatory: blocked").isTrue();
 		
-		blocker = new SequentialBlocker();
+		blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block(inFourDays);
 		startDate = sut.evaluateDate(null, AssessmentObligation.optional, blocker);
 		

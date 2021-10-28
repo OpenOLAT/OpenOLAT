@@ -19,6 +19,8 @@
  */
 package org.olat.course.run.scoring;
 
+import org.olat.modules.assessment.model.AssessmentObligation;
+
 /**
  * 
  * Initial date: 3 Feb 2020<br>
@@ -27,7 +29,7 @@ package org.olat.course.run.scoring;
  */
 public interface BlockerEvaluator {
 	
-	public Blocker getChildrenBlocker(Blocker blocker);
+	public Blocker getChildrenBlocker(Blocker blocker, AssessmentObligation parentObligation);
 
 	public void mergeChildrenBlocker(Blocker blocker, Blocker childrenBlocker);
 

@@ -42,16 +42,16 @@ public class OverridableImpl<T> implements Overridable<T> {
 	}
 	
 	public OverridableImpl(T current) {
-		setCurrentIntern(current);
+		this.current = current;
 	}
 
 	public OverridableImpl(T current, T original, Identity modBy, Date modDate) {
-		setCurrentIntern(current);
+		this.current = current;
 		this.original = original;
 		this.modBy = modBy;
 		this.modDate = modDate;
 	}
-	
+
 	@Override
 	public T getCurrent() {
 		return current;
@@ -62,26 +62,18 @@ public class OverridableImpl<T> implements Overridable<T> {
 		if (isOverridden()) {
 			this.original = current;
 		} else {
-			setCurrentIntern(current);
+			this.current = current;
 		}
-	}
-	
-	protected void setCurrentIntern(T current) {
-		this.current = current;
 	}
 
 	@Override
 	public void override(T custom, Identity modBy, Date modDate) {
 		if (!isOverridden()) {
-			this.original = getCurrentIntern();
+			this.original = this.current;
 		}
-		setCurrentIntern(custom);
+		this.current = custom;
 		this.modBy = modBy;
 		this.modDate = modDate;
-	}
-	
-	protected T getCurrentIntern() {
-		return this.current;
 	}
 
 	@Override
@@ -92,7 +84,7 @@ public class OverridableImpl<T> implements Overridable<T> {
 	@Override
 	public void reset() {
 		if (isOverridden()) {
-			setCurrentIntern(original);
+			current = original;
 		}
 		original = null;
 		modBy = null;
@@ -117,15 +109,11 @@ public class OverridableImpl<T> implements Overridable<T> {
 	@Override
 	public Overridable<T> clone() {
 		OverridableImpl<T> clone = new OverridableImpl<>();
-		cloneValues(clone);
-		return clone;
-	}
-
-	protected void cloneValues(OverridableImpl<T> clone) {
 		clone.current = this.current;
 		clone.original = this.original;
 		clone.modBy = this.modBy;
 		clone.modDate = this.modDate;
+		return clone;
 	}
 
 }

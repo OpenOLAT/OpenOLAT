@@ -115,8 +115,8 @@ class AccountingEvaluatorsFactory {
 	private static class UnchangingBlockerEvaluator implements BlockerEvaluator {
 
 		@Override
-		public Blocker getChildrenBlocker(Blocker blocker) {
-			return blocker != null? blocker: new WithoutSequenceBlocker(null);
+		public Blocker getChildrenBlocker(Blocker blocker, AssessmentObligation parentObligation) {
+			return blocker != null? blocker: new WithoutSequenceBlocker(null, parentObligation);
 		}
 
 		@Override
@@ -147,8 +147,8 @@ class AccountingEvaluatorsFactory {
 	private static class NoneObligationEvaluator implements ObligationEvaluator {
 
 		@Override
-		public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation,
-				CourseNode courseNode, ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
+		public ObligationOverridable getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+				AssessmentObligation parentObligation, ExceptionalObligationEvaluator exceptionalObligationEvaluator) {
 			return ObligationOverridable.empty();
 		}
 

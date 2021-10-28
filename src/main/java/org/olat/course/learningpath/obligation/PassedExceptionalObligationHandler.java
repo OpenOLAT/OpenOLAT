@@ -40,7 +40,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
-import org.olat.modules.assessment.Overridable;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -207,7 +207,7 @@ public class PassedExceptionalObligationHandler implements ExceptionalObligation
 	}
 
 	private boolean isExcluded(AssessmentEvaluation assessmentEvaluation) {
-		Overridable<AssessmentObligation> obligation = assessmentEvaluation.getObligation();
+		ObligationOverridable obligation = assessmentEvaluation.getObligation();
 		return obligation.getCurrent() != null && obligation.getCurrent() == AssessmentObligation.excluded;
 	}
 

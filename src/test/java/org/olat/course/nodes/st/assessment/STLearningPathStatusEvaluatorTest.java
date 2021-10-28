@@ -43,7 +43,7 @@ public class STLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfMandatoryAndNotFullyAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.mandatory);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -53,7 +53,7 @@ public class STLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfNotMandatoryAndNotFullyAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.optional);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -63,7 +63,7 @@ public class STLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldNotBlockIfMandatoryAndFullyAssessed() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, null, AssessmentObligation.mandatory);
 
 		sut.getStatus(currentEvaluation, blocker);
@@ -73,7 +73,7 @@ public class STLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldInitStatusNotStartedIfNotBlocked() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
 		
 		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
@@ -83,7 +83,7 @@ public class STLearningPathStatusEvaluatorTest {
 	
 	@Test
 	public void shouldInitStatusNotReadyIfBlocked() {
-		Blocker blocker = new SequentialBlocker();
+		Blocker blocker = new SequentialBlocker(AssessmentObligation.mandatory);
 		blocker.block();
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
 		

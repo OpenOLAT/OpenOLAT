@@ -21,6 +21,7 @@ package org.olat.course.nodes.st.assessment;
 
 import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.BlockerEvaluator;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -31,8 +32,8 @@ import org.olat.course.run.scoring.BlockerEvaluator;
 public class STSequentialBlockerEvaluator implements BlockerEvaluator {
 
 	@Override
-	public Blocker getChildrenBlocker(Blocker blocker) {
-		Blocker childrenBlocker = new SequentialBlocker();
+	public Blocker getChildrenBlocker(Blocker blocker, AssessmentObligation parentObligation) {
+		Blocker childrenBlocker = new SequentialBlocker(parentObligation);
 		if (blocker != null) {
 			if (blocker.getStartDate() != null) {
 				childrenBlocker.block(blocker.getStartDate());

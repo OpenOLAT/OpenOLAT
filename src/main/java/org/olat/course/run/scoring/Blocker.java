@@ -21,6 +21,8 @@ package org.olat.course.run.scoring;
 
 import java.util.Date;
 
+import org.olat.modules.assessment.model.AssessmentObligation;
+
 /**
  * 
  * Initial date: 3 Feb 2020<br>
@@ -42,6 +44,8 @@ public interface Blocker {
 	void block(Date startDate);
 
 	Date getStartDate();
+	
+	AssessmentObligation getParentObligation();
 	
 	void nextCourseNode();
 

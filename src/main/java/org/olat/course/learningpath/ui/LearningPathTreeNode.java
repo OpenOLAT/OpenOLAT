@@ -25,6 +25,7 @@ import org.olat.course.learningpath.SequenceConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseTreeNode;
+import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -65,7 +66,7 @@ public class LearningPathTreeNode extends CourseTreeNode {
 		return hasNotExcludedEvaluation()? assessmentEvaluation.getDuration(): null;
 	}
 
-	public Overridable<AssessmentObligation> getObligation() {
+	public ObligationOverridable getObligation() {
 		return assessmentEvaluation != null? assessmentEvaluation.getObligation(): null;
 	}
 	

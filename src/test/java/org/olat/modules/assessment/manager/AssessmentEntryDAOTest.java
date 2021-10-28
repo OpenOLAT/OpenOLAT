@@ -401,9 +401,13 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		nodeAssessment.setDuration(duration);
 		AssessmentObligation obligation = AssessmentObligation.optional;
 		nodeAssessment.setObligation(obligation);
-		AssessmentObligation obligationConfig = AssessmentObligation.evaluated;
+		AssessmentObligation obligationInherited = AssessmentObligation.excluded;
+		nodeAssessment.setObligationInherited(obligationInherited);
+		AssessmentObligation obligationEvaluated = AssessmentObligation.optional;
+		nodeAssessment.setObligationEvaluated(obligationEvaluated);
+		AssessmentObligation obligationConfig = AssessmentObligation.mandatory;
 		nodeAssessment.setObligationConfig(obligationConfig);
-		AssessmentObligation obligationOriginal = AssessmentObligation.mandatory;
+		AssessmentObligation obligationOriginal = AssessmentObligation.evaluated;
 		nodeAssessment.setObligationOriginal(obligationOriginal);
 		Date obligationModDate = new GregorianCalendar(2014,1,1,1,1,5).getTime();
 		nodeAssessment.setObligationModDate(obligationModDate);
@@ -419,9 +423,11 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		assertThat(reloadedEntry.getEndDate().getModDate()).isCloseTo(endDateModifiactionDate, Duration.ofMinutes(2).toMillis());
 		assertThat(reloadedEntry.getEndDate().getModBy()).isEqualTo(modIdentity);
 		assertThat(reloadedEntry.getDuration()).isEqualTo(duration);
-		assertThat(reloadedEntry.getObligation().getCurrent()).isEqualTo(obligation);
-		assertThat(reloadedEntry.getObligation().getCurrentConfig()).isEqualTo(obligationConfig);
-		assertThat(reloadedEntry.getObligation().getOriginal()).isEqualTo(obligationOriginal);
+		assertThat(reloadedEntry.getObligation().getCurrent()).isEqualTo(obligationInherited);
+		assertThat(reloadedEntry.getObligation().getInherited()).isEqualTo(obligationInherited);
+		assertThat(reloadedEntry.getObligation().getEvaluated()).isEqualTo(obligationEvaluated);
+		assertThat(reloadedEntry.getObligation().getConfigCurrent()).isEqualTo(obligationConfig);
+		assertThat(reloadedEntry.getObligation().getConfigOriginal()).isEqualTo(obligationOriginal);
 		assertThat(reloadedEntry.getObligation().getModBy()).isEqualTo(modIdentity);
 		assertThat(reloadedEntry.getObligation().getModDate()).isCloseTo(obligationModDate, Duration.ofMinutes(2).toMillis());
 	}

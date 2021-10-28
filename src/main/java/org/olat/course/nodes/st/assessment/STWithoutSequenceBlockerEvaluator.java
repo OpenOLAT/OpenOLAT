@@ -21,6 +21,7 @@ package org.olat.course.nodes.st.assessment;
 
 import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.BlockerEvaluator;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -31,8 +32,8 @@ import org.olat.course.run.scoring.BlockerEvaluator;
 public class STWithoutSequenceBlockerEvaluator implements BlockerEvaluator {
 
 	@Override
-	public Blocker getChildrenBlocker(Blocker blocker) {
-		return new WithoutSequenceBlocker(blocker);
+	public Blocker getChildrenBlocker(Blocker blocker, AssessmentObligation parentObligation) {
+		return new WithoutSequenceBlocker(blocker, parentObligation);
 	}
 
 	@Override
