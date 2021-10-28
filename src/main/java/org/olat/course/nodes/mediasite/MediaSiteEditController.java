@@ -30,7 +30,6 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.MediaSiteCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -45,10 +44,9 @@ public class MediaSiteEditController extends ActivateableTabbableDefaultControll
 	private MediaSiteConfigController mediaSiteConfigController;
 	private TabbedPane tabbedPane;
 	
-	public MediaSiteEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
+	public MediaSiteEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course) {
 		super(ureq, wControl);
-		//(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, MediaSiteCourseNode courseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
-		mediaSiteConfigController = new MediaSiteConfigController(ureq, wControl, config, courseNode, course, userCourseEnv);
+		mediaSiteConfigController = new MediaSiteConfigController(ureq, wControl, config, courseNode, course);
 		listenTo(mediaSiteConfigController);
 	}
 
