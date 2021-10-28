@@ -22,8 +22,10 @@ package org.olat.modules.tu;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -39,6 +41,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -48,7 +51,6 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -63,6 +65,7 @@ import org.olat.core.util.StringHelper;
 public class TunnelMapper implements Mapper {
 	
 	private static final Logger log = Tracing.createLoggerFor(TunnelMapper.class);
+	private static final Set<String> headersToCopy = Set.of("if-range", "range", "connection");
 	
 	private final String proto;
 	private final String host;
@@ -112,7 +115,7 @@ public class TunnelMapper implements Mapper {
 				HttpPost pmeth = new HttpPost(builder.build());
 				List<BasicNameValuePair> pairs = new ArrayList<>();
 				for (String key: params.keySet()) {
-					String vals[] = params.get(key);
+					String[] vals = params.get(key);
 					for(String val:vals) {
 						pairs.add(new BasicNameValuePair(key, val));
 					}
@@ -121,6 +124,8 @@ public class TunnelMapper implements Mapper {
 				HttpEntity entity = new UrlEncodedFormEntity(pairs, "UTF-8");
 				pmeth.setEntity(entity);
 				meth = pmeth;
+			} else {
+				return new NotFoundMediaResource();
 			}
 			
 			// Add olat specific headers to the request, can be used by external
@@ -133,6 +138,14 @@ public class TunnelMapper implements Mapper {
 				meth.addHeader("X-OLAT-FIRSTNAME", u.getProperty(UserConstants.FIRSTNAME, null));
 				meth.addHeader("X-OLAT-EMAIL", u.getProperty(UserConstants.EMAIL, null));
 				meth.addHeader("X-OLAT-USERIP", ipAddress);
+			}
+			
+			for(Enumeration<String> headerIt=hreq.getHeaderNames(); headerIt.hasMoreElements(); ) {
+				String name = headerIt.nextElement();
+				if(headersToCopy.contains(name.toLowerCase())) {
+					String header = hreq.getHeader(name);
+					meth.addHeader(name, header);
+				} 
 			}
 
 			HttpResponse response = httpClient.execute(meth);
@@ -153,7 +166,7 @@ public class TunnelMapper implements Mapper {
 			log.error("", e);
 			return null;
 		} catch (IOException e) {
-			log.error("Error loading URI: " + (meth == null ? "???" : meth.getURI()), e);
+			log.error("Error loading URI: {}", (meth == null ? "???" : meth.getURI()), e);
 			return null;
 		}
 	}

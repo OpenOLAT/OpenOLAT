@@ -26,11 +26,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -135,19 +132,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		Controller runCtrl;
 		
-		if(userCourseEnv.isCourseReadOnly()) {
-			Translator trans = Util.createPackageTranslator(Card2BrainCourseNode.class, ureq.getLocale());
-		    String title = trans.translate("freezenoaccess.title");
-		    String message = trans.translate("freezenoaccess.message");
-		    runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else if (userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly()) {
-			Translator trans = Util.createPackageTranslator(Card2BrainCourseNode.class, ureq.getLocale());
-			String title = trans.translate("guestnoaccess.title");
-			String message = trans.translate("guestnoaccess.message");
-		    runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-		} else {
-			runCtrl = new MediaSiteRunController(ureq, wControl, this, userCourseEnv);
-		}
+		runCtrl = new MediaSiteRunController(ureq, wControl, this, userCourseEnv);
 		
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, userCourseEnv, this, "o_mediasite_icon");
 		return new NodeRunConstructionResult(ctrl);
