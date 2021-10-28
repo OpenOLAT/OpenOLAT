@@ -380,8 +380,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		
 		if (learningPath) {
 			tabs.forEach(tab -> {
-				tab.setDefaultFiltersValues(List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION, 
-						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name()))));
+				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_OBLIGATION, 
+						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
 			});
 		}
 
@@ -645,7 +645,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), referenceEntry, assessmentCallback);
 		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
-		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, "status");
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_STATUS);
 		if(statusFilter != null) {
 			String filterValue = ((FlexiTableExtendedFilter)statusFilter).getValue();
 			if("passed".equals(filterValue)) {

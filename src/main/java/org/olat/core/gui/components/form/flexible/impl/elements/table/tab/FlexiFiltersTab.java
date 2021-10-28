@@ -77,6 +77,18 @@ public interface FlexiFiltersTab {
 	
 	public List<FlexiTableFilterValue> getDefaultFiltersValues();
 	
+	/**
+	 * Set the list of filter values. Replace the current ones.
+	 * 
+	 * @param filtersValues The filters values to add
+	 */
 	public void setDefaultFiltersValues(List<FlexiTableFilterValue> filtersValues);
+	
+	/**
+	 * Append a filter value to the current ones.
+	 * 
+	 * @param filterValue The filter value to add
+	 */
+	public void addDefaultFilterValue(FlexiTableFilterValue filterValue);
 
 }

@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table.tab;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
@@ -139,5 +140,16 @@ public class FlexiFiltersTabImpl implements FlexiFiltersTab {
 	@Override
 	public void setDefaultFiltersValues(List<FlexiTableFilterValue> filtersValues) {
 		this.defaultFiltersValues = filtersValues;
+	}
+
+	@Override
+	public void addDefaultFilterValue(FlexiTableFilterValue filterValue) {
+		if(defaultFiltersValues == null) {
+			defaultFiltersValues = List.of(filterValue);
+		} else {
+			List<FlexiTableFilterValue> newValues = new ArrayList<>(defaultFiltersValues);
+			newValues.add(filterValue);
+			defaultFiltersValues = List.copyOf(newValues);
+		}
 	}
 }
