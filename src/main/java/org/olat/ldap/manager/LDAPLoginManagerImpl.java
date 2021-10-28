@@ -61,7 +61,6 @@ import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -99,6 +98,9 @@ import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserLifecycleManager;
 import org.olat.user.UserManager;
 import org.olat.user.UserModule;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -119,12 +121,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	private static Date lastSyncDate = null; // first sync is always a full sync
 	
 	private Coordinator coordinator;
-	private TaskExecutorManager taskExecutorManager;
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private LDAPDAO ldapDao;
+	@Autowired
+	private Scheduler scheduler;
 	@Autowired
 	private UserModule userModule;
 	@Autowired
@@ -149,9 +152,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 
 	@Autowired
-	public LDAPLoginManagerImpl(CoordinatorManager coordinatorManager, TaskExecutorManager taskExecutorManager) {
+	public LDAPLoginManagerImpl(CoordinatorManager coordinatorManager) {
 		this.coordinator = coordinatorManager.getCoordinator();
-		this.taskExecutorManager = taskExecutorManager;
 		coordinator.getEventBus().registerFor(this, null, ldapSyncLockOres);
 		FrameworkStartupEventChannel.registerForStartupEvent(this);
 	}
@@ -197,11 +199,16 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	@Override
 	public void event(Event event) {
 		if(event instanceof LDAPEvent) {
+			LDAPEvent ldape = (LDAPEvent)event;
 			if(LDAPEvent.SYNCHING.equals(event.getCommand())) {
-				batchSyncIsRunning = true;
+				if(!ldape.isEventOnThisNode()) {
+					batchSyncIsRunning = true;
+				}
 			} else if(LDAPEvent.SYNCHING_ENDED.equals(event.getCommand())) {
-				batchSyncIsRunning = false;
-				lastSyncDate = ((LDAPEvent)event).getTimestamp();
+				if(!ldape.isEventOnThisNode()) {
+					batchSyncIsRunning = false;
+					lastSyncDate = ((LDAPEvent)event).getTimestamp();
+				}
 			} else if(LDAPEvent.DO_SYNCHING.equals(event.getCommand())) {
 				doHandleBatchSync();
 			}
@@ -222,31 +229,23 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				log.error("LDAP connection test failed during module initialization, edit config or contact network administrator");
 			} else {
 				log.info("LDAP login is enabled");
-			}
-			
-			// Start LDAP cron sync job
-			if (ldapLoginModule.isLdapSyncCronSync()) {
-				LDAPError errors = new LDAPError();
-				if (doBatchSync(errors)) {
-					log.info("LDAP start sync: users synced");
+				
+				// Start LDAP cron sync job
+				if (ldapLoginModule.isLdapSyncCronSync()) {
+					doHandleBatchSync();
 				} else {
-					log.warn("LDAP start sync error: {}", errors.get());
+					log.info("LDAP cron sync is disabled");
 				}
-			} else {
-				log.info("LDAP cron sync is disabled");
 			}
 		}
 	}
 	
 	private void doHandleBatchSync() {
-		//fxdiff: also run on nodes != 1 as nodeid = tomcat-id in fx-environment
-		//if(WebappHelper.getNodeId() != 1) return;
-		
-		Runnable batchSyncTask = () -> {
-			LDAPError errors = new LDAPError();
-			doBatchSync(errors);
-		};
-		taskExecutorManager.execute(batchSyncTask);		
+		try {
+			scheduler.triggerJob(new JobKey("LDAP_Cron_Syncer_Job", Scheduler.DEFAULT_GROUP));
+		} catch (SchedulerException e) {
+			log.error("Cannot intterupt the reservation job.", e);
+		}
 	}
 
 	/**
