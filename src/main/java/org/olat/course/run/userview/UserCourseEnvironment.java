@@ -47,6 +47,7 @@ public interface UserCourseEnvironment {
 	 * @return Returns the courseEnvironment.
 	 */
 	public CourseEnvironment getCourseEnvironment();
+	
 	/**
 	 * 
 	 * @return returns a view to the course in the editor
