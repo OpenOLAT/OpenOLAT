@@ -39,8 +39,6 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
@@ -76,8 +74,6 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 	
 	@Autowired
 	private CertificatesManager certificatesManager;
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
 	
 	public AssessedIdentityCertificatesController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv) {
@@ -215,8 +211,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		Float score = scoreEval == null ? null : scoreEval.getScore();
 		Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
 		Double completion = scoreEval == null ? null : scoreEval.getCompletion();
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
-		Float maxScore = assessmentConfig.getMaxScore();
+		Float maxScore = scoreEval == null ? null : scoreEval.getMaxScore();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
 		CertificateConfig config = CertificateConfig.builder()
 				.withCustom1(course.getCourseConfig().getCertificateCustom1())

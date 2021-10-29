@@ -34,6 +34,7 @@ public class AccountingEvaluatorsBuilder {
 			.withObligationEvaluator(AccountingEvaluatorsFactory.createNoneObligationEvaluator())
 			.withDurationEvaluator(AccountingEvaluatorsFactory.createNullDurationEvaluator())
 			.withScoreEvaluator(AccountingEvaluatorsFactory.createUnchangingScoreEvaluator())
+			.withMaxScoreEvaluator(AccountingEvaluatorsFactory.createConfigMaxScoreEvaluator())
 			.withPassedEvaluator(AccountingEvaluatorsFactory.createUnchangingPassedEvaluator())
 			.withRootPassedEvaluator(AccountingEvaluatorsFactory.createUnchangingRootPassedEvaluator())
 			.withCompletionEvaluator(AccountingEvaluatorsFactory.createUnchangingCompletionEvaluator())
@@ -48,6 +49,7 @@ public class AccountingEvaluatorsBuilder {
 	private ObligationEvaluator obligationEvaluator;
 	private DurationEvaluator durationEvaluator;
 	private ScoreEvaluator scoreEvaluator;
+	private MaxScoreEvaluator maxScoreEvaluator;
 	private PassedEvaluator passedEvaluator;
 	private RootPassedEvaluator rootPassedEvaluator;
 	private CompletionEvaluator completionEvaluator;
@@ -86,6 +88,11 @@ public class AccountingEvaluatorsBuilder {
 	
 	public AccountingEvaluatorsBuilder withScoreEvaluator(ScoreEvaluator scoreEvaluator) {
 		this.scoreEvaluator = scoreEvaluator;
+		return this;
+	}
+	
+	public AccountingEvaluatorsBuilder withMaxScoreEvaluator(MaxScoreEvaluator maxScoreEvaluator) {
+		this.maxScoreEvaluator = maxScoreEvaluator;
 		return this;
 	}
 
@@ -144,6 +151,9 @@ public class AccountingEvaluatorsBuilder {
 		impl.scoreEvaluator = this.scoreEvaluator != null
 				? this.scoreEvaluator
 				: AccountingEvaluatorsFactory.createUnchangingScoreEvaluator();
+		impl.maxScoreEvaluator = this.maxScoreEvaluator != null
+				? this.maxScoreEvaluator
+				: AccountingEvaluatorsFactory.createConfigMaxScoreEvaluator();
 		impl.passedEvaluator = this.passedEvaluator != null
 				? this.passedEvaluator
 				: AccountingEvaluatorsFactory.createUnchangingPassedEvaluator();
@@ -181,6 +191,7 @@ public class AccountingEvaluatorsBuilder {
 		private ObligationEvaluator obligationEvaluator;
 		private DurationEvaluator durationEvaluator;
 		private ScoreEvaluator scoreEvaluator;
+		private MaxScoreEvaluator maxScoreEvaluator;
 		private PassedEvaluator passedEvaluator;
 		private RootPassedEvaluator rootPassedEvaluator;
 		private CompletionEvaluator completionEvaluator;
@@ -216,6 +227,11 @@ public class AccountingEvaluatorsBuilder {
 		@Override
 		public ScoreEvaluator getScoreEvaluator() {
 			return scoreEvaluator;
+		}
+
+		@Override
+		public MaxScoreEvaluator getMaxScoreEvaluator() {
+			return maxScoreEvaluator;
 		}
 
 		@Override

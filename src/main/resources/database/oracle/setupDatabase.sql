@@ -1431,6 +1431,7 @@ create table o_as_entry (
    a_attemtps number(20) default null,
    a_last_attempt date null,
    a_score decimal default null,
+   a_max_score decimal default null,
    a_passed number default null,
    a_passed_original number,
    a_passed_mod_date date,

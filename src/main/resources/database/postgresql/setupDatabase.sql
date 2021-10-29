@@ -1398,6 +1398,7 @@ create table o_as_entry (
    a_attemtps int8 default null,
    a_last_attempt timestamp,
    a_score decimal default null,
+   a_max_score decimal default null,
    a_passed bool default null,
    a_passed_original bool,
    a_passed_mod_date timestamp,

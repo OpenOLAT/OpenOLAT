@@ -46,7 +46,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
@@ -240,8 +239,7 @@ public class IdentityCertificatesController extends BasicController implements G
 		Float score = assessmentEval == null ? null : assessmentEval.getScore();
 		Boolean passed = assessmentEval == null ? null : assessmentEval.getPassed();
 		Double completion = assessmentEval == null ? null : assessmentEval.getCompletion();
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
-		Float maxScore = assessmentConfig.getMaxScore();
+		Float maxScore = assessmentEval == null ? null : assessmentEval.getMaxScore();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
 		CertificateConfig config = CertificateConfig.builder()
 				.withCustom1(course.getCourseConfig().getCertificateCustom1())

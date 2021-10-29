@@ -47,6 +47,7 @@ import org.olat.course.run.scoring.BlockerEvaluator;
 import org.olat.course.run.scoring.CompletionEvaluator;
 import org.olat.course.run.scoring.FullyAssessedEvaluator;
 import org.olat.course.run.scoring.LastModificationsEvaluator;
+import org.olat.course.run.scoring.MaxScoreEvaluator;
 import org.olat.course.run.scoring.ObligationEvaluator;
 import org.olat.course.run.scoring.PassedEvaluator;
 import org.olat.course.run.scoring.RootPassedEvaluator;
@@ -76,6 +77,8 @@ public class STAssessmentHandler implements AssessmentHandler {
 	private static final ScoreEvaluator CONDITION_SCORE_EVALUATOR = new ConditionScoreEvaluator();
 	private static final ScoreEvaluator SUM_SCORE_EVALUATOR = new CumulatingScoreEvaluator(false);
 	private static final ScoreEvaluator AVG_SCORE_EVALUATOR = new CumulatingScoreEvaluator(true);
+	private static final MaxScoreEvaluator SUM_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(false);
+	private static final MaxScoreEvaluator AVG_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(true);
 	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
 	private static final RootPassedEvaluator ROOT_PASSED_EVALUATOR = new STRootPassedEvaluator();
 	private static final StatusEvaluator SCORE_STATUS_EVALUATOR = new STConditionStatusEvaluator();
@@ -151,8 +154,10 @@ public class STAssessmentHandler implements AssessmentHandler {
 				String scoreKey = rootConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY);
 				if (STCourseNode.CONFIG_SCORE_VALUE_SUM.equals(scoreKey)) {
 					builder.withScoreEvaluator(SUM_SCORE_EVALUATOR);
+					builder.withMaxScoreEvaluator(SUM_MAX_SCORE_EVALUATOR);
 				} else if (STCourseNode.CONFIG_SCORE_VALUE_AVG.equals(scoreKey)) {
 					builder.withScoreEvaluator(AVG_SCORE_EVALUATOR);
+					builder.withMaxScoreEvaluator(AVG_MAX_SCORE_EVALUATOR);
 				}
 			} else {
 				builder.withNullScoreEvaluator();

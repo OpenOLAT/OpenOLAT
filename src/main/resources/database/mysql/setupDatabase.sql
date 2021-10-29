@@ -1376,6 +1376,7 @@ create table o_as_entry (
    a_attemtps bigint default null,
    a_last_attempt datetime null,
    a_score float(65,30) default null,
+   a_max_score float(65,30) default null,
    a_passed bit default null,
    a_passed_original bit,
    a_passed_mod_date datetime,

@@ -212,10 +212,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		blockerEvaluator.mergeChildrenBlocker(blocker, childrenBlocker);
 		
-		ScoreEvaluator scoreEvaluator = evaluators.getScoreEvaluator();
-		Float score = scoreEvaluator.getScore(result, courseNode, this, userCourseEnvironment.getConditionInterpreter());
-		result.setScore(score);
-		
 		if (durationEvaluator.isDependingOnChildNodes()) {
 			Integer duration = durationEvaluator.getDuration(children);
 			result.setDuration(duration);
@@ -228,6 +224,14 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		obligation = obligationEvaluator.getObligation(result, courseNode, exceptionalObligationEvaluator, children);
 		result.setObligation(obligation);
+		
+		ScoreEvaluator scoreEvaluator = evaluators.getScoreEvaluator();
+		Float score = scoreEvaluator.getScore(result, courseNode, this, userCourseEnvironment.getConditionInterpreter());
+		result.setScore(score);
+		
+		MaxScoreEvaluator maxScoreEvaluator = evaluators.getMaxScoreEvaluator();
+		Float maxScore = maxScoreEvaluator.getMaxScore(result, courseNode, this);
+		result.setMaxScore(maxScore);
 		
 		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
 		Boolean passed = passedEvaluator.getPassed(result, courseNode,
@@ -268,6 +272,8 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setObligation(result.getObligation());
 		BigDecimal score = result.getScore() != null? new BigDecimal(result.getScore()): null;
 		entry.setScore(score);
+		BigDecimal maxScore = result.getMaxScore() != null? new BigDecimal(result.getMaxScore()): null;
+		entry.setMaxScore(maxScore);
 		entry.setPassed(result.getPassed());
 		entry.setCompletion(result.getCompletion());
 		entry.setDuration(result.getDuration());

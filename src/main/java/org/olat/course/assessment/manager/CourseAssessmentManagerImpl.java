@@ -727,9 +727,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				if (templateId != null) {
 					template = certificatesManager.getTemplateById(templateId);
 				}
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
 				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(),
-						assessmentConfig.getMaxScore(), rootEval.getPassed(), rootEval.getCompletion());
+						rootEval.getMaxScore(), rootEval.getPassed(), rootEval.getCompletion());
 				CertificateConfig config = CertificateConfig.builder()
 						.withCustom1(course.getCourseConfig().getCertificateCustom1())
 						.withCustom2(course.getCourseConfig().getCertificateCustom2())

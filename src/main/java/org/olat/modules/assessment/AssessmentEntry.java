@@ -62,6 +62,10 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public void setLastAttempt(Date lastAttempt);
 
 	public void setScore(BigDecimal score);
+	
+	public BigDecimal getMaxScore();
+
+	public void setMaxScore(BigDecimal maxScore);
 
 	public void setPassed(Boolean passed);
 	

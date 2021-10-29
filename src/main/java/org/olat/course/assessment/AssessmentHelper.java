@@ -426,7 +426,9 @@ public class AssessmentHelper {
 							assessmentNodeData.setScore(score);
 							hasDisplayableUserValues = true;
 						}
-						assessmentNodeData.setMaxScore(assessmentConfig.getMaxScore());
+						if (Mode.setByNode == assessmentConfig.getScoreMode() || recursionLevel == 0) {
+							assessmentNodeData.setMaxScore(scoreEvaluation.getMaxScore());
+						}
 						if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
 						}

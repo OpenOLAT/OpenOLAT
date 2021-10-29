@@ -27,31 +27,44 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.MaxScoreEvaluator;
+import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.modules.assessment.ObligationOverridable;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
- * Initial date: 9 Mar 2020<br>
+ * Initial date: 28 Oct 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class MaxScoreCumulator {
+class CumulatingMaxScoreEvaluator implements MaxScoreEvaluator {
 	
 	public interface MaxScore {
 		
 		public Float getSum();
 		
-		public Float getMax();
+		public Float getAverage();
 	}
+	
+	private final boolean average;
 	
 	private CourseAssessmentService courseAssessmentService;
 	
-	// see CumulatingMaxScoreEvaluator
-	MaxScore getMaxScore(CourseNode courseNode) {
-		return getMaxScore(courseNode, courseAssessmentService());
+	CumulatingMaxScoreEvaluator(boolean average) {
+		this.average = average;
 	}
 	
-	MaxScore getMaxScore(CourseNode courseNode, CourseAssessmentService courseAssessmentService) {
-		ScoreVisitor visitor = new ScoreVisitor(courseNode, courseAssessmentService);
+	@Override
+	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting) {
+		MaxScore score = getMaxScore(courseNode, scoreAccounting, courseAssessmentService());
+		// see MaxScoreCumulator
+		return average? score.getAverage(): score.getSum();
+	}
+	
+	MaxScore getMaxScore(CourseNode courseNode, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
+		ScoreVisitor visitor = new ScoreVisitor(courseNode, scoreAccounting, courseAssessmentService);
 		TreeVisitor treeVisitor = new TreeVisitor(visitor, courseNode, true);
 		treeVisitor.visitAll();
 		return visitor;
@@ -64,17 +77,20 @@ class MaxScoreCumulator {
 		return courseAssessmentService;
 	}
 	
+	
 	private final static class ScoreVisitor implements MaxScore, Visitor {
 		
 		private final CourseNode root;
+		private final ScoreAccounting scoreAccounting;
 		private int count;
 		private float sum;
 		private float max = 0;
 		
 		private final CourseAssessmentService courseAssessmentService;
 		
-		private ScoreVisitor(CourseNode root, CourseAssessmentService courseAssessmentService) {
+		private ScoreVisitor(CourseNode root, ScoreAccounting scoreAccounting, CourseAssessmentService courseAssessmentService) {
 			this.root = root;
+			this.scoreAccounting = scoreAccounting;
 			this.courseAssessmentService = courseAssessmentService;
 		}
 		
@@ -84,8 +100,8 @@ class MaxScoreCumulator {
 		}
 
 		@Override
-		public Float getMax() {
-			return count > 0? Float.valueOf(max): null;
+		public Float getAverage() {
+			return count > 0? Float.valueOf(sum / count): null;
 		}
 
 		@Override
@@ -96,16 +112,24 @@ class MaxScoreCumulator {
 				CourseNode courseNode = (CourseNode)node;
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 				if (Mode.setByNode == assessmentConfig.getScoreMode() && !assessmentConfig.ignoreInCourseAssessment()) {
-					Float maxScore = assessmentConfig.getMaxScore();
-					if (maxScore != null) {
-						count++;
-						sum += maxScore.floatValue();
-						if (max < maxScore.floatValue()) {
-							max = maxScore.floatValue();
+					AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
+					if (isNotExcluded(assessmentEvaluation)) {
+						Float maxScore = assessmentEvaluation.getMaxScore();
+						if (maxScore != null) {
+							count++;
+							sum += maxScore.floatValue();
+							if (max < maxScore.floatValue()) {
+								max = maxScore.floatValue();
+							}
 						}
 					}
 				}
 			}
+		}
+
+		private boolean isNotExcluded(AssessmentEvaluation assessmentEvaluation) {
+			ObligationOverridable obligation = assessmentEvaluation.getObligation();
+			return obligation.getCurrent() == null || obligation.getCurrent() != AssessmentObligation.excluded;
 		}
 	}
 	

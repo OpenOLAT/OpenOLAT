@@ -255,6 +255,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 
 		Assert.assertEquals(ae, reloadedAssessmentRef);
 		Assert.assertNull(reloadedAssessmentRef.getScore());
+		Assert.assertNull(reloadedAssessmentRef.getMaxScore());
 		Assert.assertNull(reloadedAssessmentRef.getPassed());
 		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getCurrent());
 		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getOriginal());
@@ -282,6 +283,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Date lastAttempt = new GregorianCalendar(2020, 5, 1).getTime();
 		ae.setLastAttempt(lastAttempt);
 		ae.setScore(BigDecimal.valueOf(2.0));
+		ae.setMaxScore(BigDecimal.valueOf(6.0));
 		ae.setPassed(Boolean.TRUE);
 		ae.setUserVisibility(Boolean.TRUE);
 		ae.setCompletion(Double.valueOf(0.5));
@@ -300,6 +302,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		softly.assertThat(reloaded.getAttempts()).isEqualTo(3);
 		softly.assertThat(reloaded.getLastAttempt()).isCloseTo(lastAttempt, Duration.ofSeconds(2).toMillis());
 		softly.assertThat(reloaded.getScore()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
+		softly.assertThat(reloaded.getMaxScore()).isEqualByComparingTo(BigDecimal.valueOf(6.0));
 		softly.assertThat(reloaded.getPassed()).isTrue();
 		softly.assertThat(reloaded.getUserVisibility()).isTrue();
 		softly.assertThat(reloaded.getCompletion()).isEqualTo(0.5d);

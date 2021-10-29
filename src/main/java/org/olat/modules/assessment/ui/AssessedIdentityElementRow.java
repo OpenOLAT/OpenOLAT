@@ -45,6 +45,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private Boolean userVisibility;
 	private BigDecimal score;
 	private BigDecimal maxScore;
+	private BigDecimal entryMaxScore;
 	private Boolean passed;
 	private Boolean passedOverriden;
 	private Date lastModified;
@@ -75,6 +76,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 		if(entry != null) {
 			attempts = entry.getAttempts();
 			score = entry.getScore();
+			entryMaxScore = entry.getMaxScore();
 			passed = entry.getPassed();
 			passedOverriden = Boolean.valueOf(entry.getPassedOverridable().isOverridden());
 			userVisibility = entry.getUserVisibility();
@@ -87,6 +89,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 		} else {
 			attempts = null;
 			score = null;
+			entryMaxScore = null;
 			passed = null;
 			userVisibility = null;
 			lastModified = lastUserModified = lastCoachModified = null;
@@ -105,7 +108,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	}
 
 	public BigDecimal getMaxScore() {
-		return maxScore;
+		return maxScore != null? maxScore: entryMaxScore;
 	}
 
 	public void setMaxScore(BigDecimal maxScore) {

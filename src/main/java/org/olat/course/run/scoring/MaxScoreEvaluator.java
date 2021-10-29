@@ -19,38 +19,16 @@
  */
 package org.olat.course.run.scoring;
 
+import org.olat.course.nodes.CourseNode;
+
 /**
  * 
- * Initial date: 16 Sep 2019<br>
+ * Initial date: 28 Oct 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AccountingEvaluators {
+public interface MaxScoreEvaluator {
 
-	public BlockerEvaluator getBlockerEvaluator();
-
-	public StartDateEvaluator getStartDateEvaluator();
-
-	public EndDateEvaluator getEndDateEvaluator();
-
-	public ObligationEvaluator getObligationEvaluator();
-
-	public DurationEvaluator getDurationEvaluator();
-	
-	public ScoreEvaluator getScoreEvaluator();
-
-	public MaxScoreEvaluator getMaxScoreEvaluator();
-
-	public PassedEvaluator getPassedEvaluator();
-
-	public RootPassedEvaluator getRootPassedEvaluator();
-
-	public LastModificationsEvaluator getLastModificationsEvaluator();
-
-	public CompletionEvaluator getCompletionEvaluator();
-
-	public StatusEvaluator getStatusEvaluator();
-
-	public FullyAssessedEvaluator getFullyAssessedEvaluator();
+	public Float getMaxScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ScoreAccounting scoreAccounting);
 
 }

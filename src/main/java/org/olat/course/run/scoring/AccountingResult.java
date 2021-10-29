@@ -40,6 +40,7 @@ public class AccountingResult extends AssessmentEvaluation {
 	private Integer evaluatedDuration;
 	private ObligationOverridable evaluatedObligation;
 	private Float evaluatedScore;
+	private Float evaluatedMaxScore;
 	private Boolean evaluatedPassed;
 	private Double evaluatedCompletion;
 	private AssessmentEntryStatus evaluatedStatus;
@@ -55,6 +56,7 @@ public class AccountingResult extends AssessmentEvaluation {
 		this.evaluatedDuration = origin.getDuration();
 		this.evaluatedObligation = origin.getObligation();
 		this.evaluatedScore = origin.getScore();
+		this.evaluatedMaxScore = origin.getMaxScore();
 		this.evaluatedPassed = origin.getPassed();
 		this.evaluatedCompletion = origin.getCompletion();
 		this.evaluatedStatus = origin.getAssessmentStatus();
@@ -106,6 +108,15 @@ public class AccountingResult extends AssessmentEvaluation {
 
 	public void setScore(Float score) {
 		this.evaluatedScore = score;
+	}
+
+	@Override
+	public Float getMaxScore() {
+		return evaluatedMaxScore;
+	}
+
+	public void setMaxScore(Float maxMaxScore) {
+		this.evaluatedMaxScore = maxMaxScore;
 	}
 
 	@Override
@@ -176,6 +187,7 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getObligation().getModDate(), evaluatedObligation.getModDate())
 				|| !Objects.equals(origin.getPassed(), evaluatedPassed)
 				|| !Objects.equals(origin.getScore(), evaluatedScore)
+				|| !Objects.equals(origin.getMaxScore(), evaluatedMaxScore)
 				|| !Objects.equals(origin.getFullyAssessed(), evaluatedFullyAssessed)
 				|| !Objects.equals(origin.getLastUserModified(), evaluatedLastUserModified)
 				|| !Objects.equals(origin.getLastCoachModified(), evaluatedLastCoachModified)

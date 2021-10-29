@@ -89,6 +89,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Date lastAttempt;
 	@Column(name="a_score", nullable=true, insertable=true, updatable=true)
 	private BigDecimal score;
+	@Column(name="a_max_score", nullable=true, insertable=true, updatable=true)
+	private BigDecimal maxScore;
 	private transient Overridable<Boolean> passedOverridable;
 	@Column(name="a_passed", nullable=true, insertable=true, updatable=true)
 	private Boolean passed;
@@ -272,6 +274,15 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		this.score = score;
 	}
 	
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
+
+	@Override
+	public void setMaxScore(BigDecimal maxScore) {
+		this.maxScore = maxScore;
+	}
+
 	@Override
 	public Overridable<Boolean> getPassedOverridable() {
 		if (passedOverridable == null) {

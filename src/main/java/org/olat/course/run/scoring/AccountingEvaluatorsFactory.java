@@ -39,7 +39,7 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class AccountingEvaluatorsFactory {
+public class AccountingEvaluatorsFactory {
 	
 	private static final BlockerEvaluator UNCHANGING_BLOCKER_EVALUATOR = new UnchangingBlockerEvaluator();
 	private static final StartDateEvaluator NO_BLOCKING_START_DATE_EVALUATOR = new NoBlockingStartDateEvaluator();
@@ -48,6 +48,7 @@ class AccountingEvaluatorsFactory {
 	private static final DurationEvaluator NULL_DURATION_EVALUATOR = new NullDurationEvaluator();
 	private static final ScoreEvaluator UNCHANGING_SCORE_EVALUATOR = new UnchangingScoreEvaluator();
 	private static final ScoreEvaluator NULL_SCORE_EVALUATOR = new NullScoreEvaluator();
+	private static final MaxScoreEvaluator CONFIG_MAX_SCORE_EVALUATOR = new ConfigMaxScoreEvaluator();
 	private static final PassedEvaluator UNCHANGING_PASSED_EVALUATOR = new UnchangingPassedEvaluator();
 	private static final RootPassedEvaluator UNCHANGING_ROOT_PASSED_EVALUATOR = new UnchangingRootPassedEvaluator();
 	private static final CompletionEvaluator UNCHANGING_COMPLETION_EVALUATOR = new UnchangingCompletionEvaluator();
@@ -81,6 +82,10 @@ class AccountingEvaluatorsFactory {
 	
 	static ScoreEvaluator createNullScoreEvaluator() {
 		return NULL_SCORE_EVALUATOR;
+	}
+	
+	public static MaxScoreEvaluator createConfigMaxScoreEvaluator() {
+		return CONFIG_MAX_SCORE_EVALUATOR;
 	}
 	
 	static PassedEvaluator createUnchangingPassedEvaluator() {

@@ -34,19 +34,19 @@ import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
-import org.olat.course.nodes.st.assessment.CumulatingScoreEvaluator.Score;
+import org.olat.course.nodes.st.assessment.CumulatingMaxScoreEvaluator.MaxScore;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
- * Initial date: 10.03.2020<br>
+ * Initial date: 29 Oct 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CumulatingScoreEvaluatorTest {
-	
+public class CumulatingMaxScoreEvaluatorTest {
+
 	@Mock
 	private AssessmentConfig configSetByNode;
 	@Mock
@@ -59,7 +59,7 @@ public class CumulatingScoreEvaluatorTest {
 	@Mock
 	private CourseAssessmentService courseAssessmentService;
 	
-	private CumulatingScoreEvaluator sut;
+	private CumulatingMaxScoreEvaluator sut;
 	
 	@Before
 	public void setUp() {
@@ -72,11 +72,11 @@ public class CumulatingScoreEvaluatorTest {
 		when(configSetByNodeIgnore.ignoreInCourseAssessment()).thenReturn(Boolean.TRUE);
 		when(configNone.getScoreMode()).thenReturn(Mode.none);
 
-		sut = new CumulatingScoreEvaluator(true);
+		sut = new CumulatingMaxScoreEvaluator(true);
 	}
 
 	@Test
-	public void shouldGetCummulatingScore() {
+	public void shouldGetCummulatingMaxScore() {
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		// Parent
@@ -84,63 +84,63 @@ public class CumulatingScoreEvaluatorTest {
 		// Child: uncalculated 
 		CourseNode childUncalculated = new Card2BrainCourseNode();
 		parent.addChild(childUncalculated);
-		AssessmentEvaluation childUncalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(14), Boolean.TRUE, AssessmentObligation.mandatory);
+		AssessmentEvaluation childUncalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(14), AssessmentObligation.mandatory);
 		scoreAccounting.put(childUncalculated, childUncalculatedEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(childUncalculated)).thenReturn(configSetByNode);
 		// Child: Calculated
 		CourseNode childCalculated = new STCourseNode();
 		parent.addChild(childCalculated);
-		AssessmentEvaluation childCalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(4), Boolean.TRUE, AssessmentObligation.mandatory);
+		AssessmentEvaluation childCalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(4), AssessmentObligation.mandatory);
 		scoreAccounting.put(childCalculated, childCalculatedEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(childCalculated)).thenReturn(configEvaluated);
 		// Child: uncalculated, not visible
 		CourseNode childUncalculated2 = new STCourseNode();
 		parent.addChild(childUncalculated2);
-		AssessmentEvaluation childCalculatedEvaluation2 = createAssessmentEvaluation(Float.valueOf(3), Boolean.FALSE, AssessmentObligation.mandatory);
+		AssessmentEvaluation childCalculatedEvaluation2 = createAssessmentEvaluation(Float.valueOf(3), AssessmentObligation.excluded);
 		scoreAccounting.put(childUncalculated2, childCalculatedEvaluation2);
 		when(courseAssessmentService.getAssessmentConfig(childUncalculated2)).thenReturn(configSetByNode);
 		// Child: uncalculated 
 		CourseNode childUncalculated3 = new Card2BrainCourseNode();
 		parent.addChild(childUncalculated3);
-		AssessmentEvaluation childUncalculatedEvaluation3 = createAssessmentEvaluation(Float.valueOf(5), Boolean.TRUE, AssessmentObligation.mandatory);
+		AssessmentEvaluation childUncalculatedEvaluation3 = createAssessmentEvaluation(Float.valueOf(5), AssessmentObligation.mandatory);
 		scoreAccounting.put(childUncalculated3, childUncalculatedEvaluation3);
 		when(courseAssessmentService.getAssessmentConfig(childUncalculated3)).thenReturn(configSetByNode);
 		// Child: uncalculated 
 		CourseNode childUncalculatedIgnored = new Card2BrainCourseNode();
 		parent.addChild(childUncalculatedIgnored);
-		AssessmentEvaluation childUncalculatedEvaluationIgnored = createAssessmentEvaluation(Float.valueOf(5), Boolean.TRUE, AssessmentObligation.mandatory);
+		AssessmentEvaluation childUncalculatedEvaluationIgnored = createAssessmentEvaluation(Float.valueOf(5), AssessmentObligation.mandatory);
 		scoreAccounting.put(childUncalculatedIgnored, childUncalculatedEvaluationIgnored);
 		when(courseAssessmentService.getAssessmentConfig(childUncalculatedIgnored)).thenReturn(configSetByNodeIgnore);
 		
 		// Child level 2: uncalculated
 		CourseNode child2Uncalculated = new SPCourseNode();
 		childCalculated.addChild(child2Uncalculated);
-		AssessmentEvaluation child2UncalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(2), Boolean.TRUE, AssessmentObligation.mandatory);
+		AssessmentEvaluation child2UncalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(2), AssessmentObligation.mandatory);
 		scoreAccounting.put(child2Uncalculated, child2UncalculatedEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(child2Uncalculated)).thenReturn(configSetByNode);
 		// Child level 2: calculated
 		CourseNode child2Calculated = new STCourseNode();
 		childCalculated.addChild(child2Calculated);
-		AssessmentEvaluation child2CalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(1), Boolean.TRUE, AssessmentObligation.mandatory);
+		AssessmentEvaluation child2CalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(1), AssessmentObligation.mandatory);
 		scoreAccounting.put(child2Calculated, child2CalculatedEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(child2Calculated)).thenReturn(configEvaluated);
 		// Child level 2: uncalculated, invisible
 		CourseNode child2Invisible = new SPCourseNode();
 		childCalculated.addChild(child2Invisible);
-		AssessmentEvaluation child2Evaluation = createAssessmentEvaluation(Float.valueOf(2), Boolean.TRUE, AssessmentObligation.excluded);
+		AssessmentEvaluation child2Evaluation = createAssessmentEvaluation(Float.valueOf(2), AssessmentObligation.excluded);
 		scoreAccounting.put(child2Invisible, child2Evaluation);
 		when(courseAssessmentService.getAssessmentConfig(child2Invisible)).thenReturn(configSetByNode);
 		
-		Score score = sut.getScore(parent, scoreAccounting, courseAssessmentService);
+		MaxScore maxScore = sut.getMaxScore(parent, scoreAccounting, courseAssessmentService);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(score.getSum()).isEqualTo(21);
-		softly.assertThat(score.getAverage()).isEqualTo(7);
+		softly.assertThat(maxScore.getSum()).isEqualTo(21);
+		softly.assertThat(maxScore.getAverage()).isEqualTo(7);
 		softly.assertAll();
 	}
 	
 	@Test
-	public void shouldReturnNullIfNoChildrenWithScore() {
+	public void shouldReturnNullIfNoChildrenWithMaxScore() {
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		// Parent
@@ -148,32 +148,26 @@ public class CumulatingScoreEvaluatorTest {
 		// Child: Calculated
 		CourseNode childCalculated = new STCourseNode();
 		parent.addChild(childCalculated);
-		AssessmentEvaluation childCalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(4), Boolean.TRUE, AssessmentObligation.mandatory);
+		AssessmentEvaluation childCalculatedEvaluation = createAssessmentEvaluation(Float.valueOf(4), AssessmentObligation.mandatory);
 		scoreAccounting.put(childCalculated, childCalculatedEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(childCalculated)).thenReturn(configEvaluated);
-		// Child: uncalculated, not visible
-		CourseNode childNotVisible = new SPCourseNode();
-		parent.addChild(childNotVisible);
-		AssessmentEvaluation childNotVisibleEvaluation = createAssessmentEvaluation(Float.valueOf(3), Boolean.FALSE, AssessmentObligation.mandatory);
-		scoreAccounting.put(childNotVisible, childNotVisibleEvaluation);
-		when(courseAssessmentService.getAssessmentConfig(childNotVisible)).thenReturn(configSetByNode);
 		// Child: uncalculated, invisible
 		CourseNode childInvisible = new SPCourseNode();
 		childCalculated.addChild(childInvisible);
-		AssessmentEvaluation child2InvisibleEvaluation = createAssessmentEvaluation(Float.valueOf(2), Boolean.TRUE, AssessmentObligation.excluded);
+		AssessmentEvaluation child2InvisibleEvaluation = createAssessmentEvaluation(Float.valueOf(2), AssessmentObligation.excluded);
 		scoreAccounting.put(childInvisible, child2InvisibleEvaluation);
 		when(courseAssessmentService.getAssessmentConfig(childInvisible)).thenReturn(configSetByNode);
 		
-		Score score = sut.getScore(parent, scoreAccounting, courseAssessmentService);
+		MaxScore maxScore = sut.getMaxScore(parent, scoreAccounting, courseAssessmentService);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(score.getSum()).isNull();
-		softly.assertThat(score.getAverage()).isNull();
+		softly.assertThat(maxScore.getSum()).isNull();
+		softly.assertThat(maxScore.getAverage()).isNull();
 		softly.assertAll();
 	}
 
-	private AssessmentEvaluation createAssessmentEvaluation(Float score, Boolean userVisibility, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(score, null, null, null, null, null, null, null, userVisibility, null, null, null,
+	private AssessmentEvaluation createAssessmentEvaluation(Float maxScore, AssessmentObligation obligation) {
+		return new AssessmentEvaluation(null, maxScore,  null, null, null, null, null, null, null, null, null, null,
 				null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation), null, null, null);
 	}
 

@@ -239,7 +239,7 @@ public class STObligationEvaluatorTest {
 
 	private AssessmentEvaluation getAssessmentEvaluation(ObligationOverridable obligation) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null,
-				null, null, null, 0, null, null, null, null, null, null, obligation, null, null, null);
+				null, null, null, null, 0, null, null, null, null, null, null, obligation, null, null, null);
 	}
 	
 }

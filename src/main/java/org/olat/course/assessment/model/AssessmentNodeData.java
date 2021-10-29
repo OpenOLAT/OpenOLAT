@@ -271,7 +271,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	public Map<String,Object> toMap() {
 		Map<String,Object> nodeData = new HashMap<>();
 		
-		nodeData.put(KEY_INDENT, new Integer(recursionLevel));
+		nodeData.put(KEY_INDENT, Integer.valueOf(recursionLevel));
 		nodeData.put(KEY_TYPE, getType());
 		nodeData.put(KEY_TITLE_SHORT, getShortTitle());
 		nodeData.put(KEY_TITLE_LONG, getLongTitle());

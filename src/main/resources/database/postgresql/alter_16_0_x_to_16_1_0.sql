@@ -22,6 +22,7 @@ create index idx_gb_bus_softdeletedby_idx on o_gp_business (fk_softdeletedby_id)
 alter table o_as_entry add a_obligation_inherited varchar(50);
 alter table o_as_entry add a_obligation_evaluated varchar(50);
 alter table o_as_entry add a_obligation_config varchar(50);
+alter table o_as_entry add a_max_score decimal;
 
 create table o_as_score_accounting_trigger (
    id bigserial,

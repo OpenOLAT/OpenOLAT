@@ -130,8 +130,8 @@ public class STRootPassedEvaluatorTest {
 	}
 
 	private AssessmentEvaluation createEvalaution(Boolean passed, Boolean fullyAssessed) {
-		return new AssessmentEvaluation(null, passed, null, null, null, null, null, null, fullyAssessed, null, null,
-				null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
+		return new AssessmentEvaluation(null, null, passed, null, null, null, null, null, null, fullyAssessed, null,
+				null, null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null);
 	}
 	
 	@Test

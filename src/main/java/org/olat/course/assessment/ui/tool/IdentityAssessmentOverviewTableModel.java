@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -101,7 +102,11 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			case passedOverriden: return nodeData.getPassedOverriden();
 			case passed: return nodeData.getPassed();
 			case min: return nodeData.getMinScore();
-			case max: return nodeData.getMaxScore();
+			case max: {
+				if (nodeData.getRecursionLevel() == 0 || !STCourseNode.TYPE.equals(nodeData.getType())) {
+					return nodeData.getMaxScore();
+				}
+			}
 			case status: return nodeData.getAssessmentStatus();
 			case numOfAssessmentDocs: {
 				if(nodeData.getNumOfAssessmentDocs() <= 0) {
