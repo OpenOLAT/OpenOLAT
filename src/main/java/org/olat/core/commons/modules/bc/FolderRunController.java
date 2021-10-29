@@ -502,7 +502,7 @@ public class FolderRunController extends BasicController implements Activateable
 		OLATResourceable ores = OresHelper.createOLATResourceableTypeWithoutCheck(path);
 		addToHistory(ureq, ores, null);
 		if(canMail == Mail.publicOnly) {
-			folderComponent.setCanMail(path.startsWith("/public"));
+			folderComponent.setCanMail(containerPath.startsWith("/public"));
 		}
 	}
 

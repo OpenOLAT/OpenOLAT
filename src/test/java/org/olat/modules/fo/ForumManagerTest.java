@@ -1594,7 +1594,7 @@ public class ForumManagerTest extends OlatTestCase {
 		}
 		Assert.assertNotNull(thePseudoStats);
 		Assert.assertEquals(protectedPseudo.getKey(), thePseudoStats.getKey());
-		Assert.assertEquals(new Long(1l), thePseudoStats.getNumOfMessages());
+		Assert.assertEquals(Long.valueOf(1l), thePseudoStats.getNumOfMessages());
 		
 		//check with search
 	}
@@ -1626,7 +1626,7 @@ public class ForumManagerTest extends OlatTestCase {
 		}
 		Assert.assertNotNull(thePseudoStats);
 		Assert.assertEquals(protectedPseudo.getKey(), thePseudoStats.getKey());
-		Assert.assertEquals(new Long(1l), thePseudoStats.getNumOfMessages());
+		Assert.assertEquals(Long.valueOf(1l), thePseudoStats.getNumOfMessages());
 		
 		//check negative
 		List<PseudonymStatistics> emptyStats = forumManager.getPseudonymStatistics("This string is never a pseudo");
