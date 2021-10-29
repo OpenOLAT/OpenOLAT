@@ -61,6 +61,7 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	private ScoreAccounting sa;
 	private RepositoryEntryLifecycle lifecycle;
 	private final WindowControl windowControl;
+	private final CourseEnvironment courseEnvironment;
 
 	EditorUserCourseEnvironmentImpl(CourseEditorEnv courseEditorEnv, WindowControl windowControl) {
 		this.courseEditorEnv = courseEditorEnv;
@@ -68,11 +69,12 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 		ci = new ConditionInterpreter(this);
 		courseEditorEnv.setConditionInterpreter(ci);
 		sa = new NoEvaluationAccounting();
+		courseEnvironment = new EditorCourseEnvironmentImpl(courseEditorEnv);
 	}
 
 	@Override
 	public CourseEnvironment getCourseEnvironment() {
-		throw new AssertException("should never be called since it is the EDITOR user course environment");
+		return courseEnvironment;
 	}
 
 	@Override
