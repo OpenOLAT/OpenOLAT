@@ -65,7 +65,8 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	@Override
 	public Float getMaxScore() {
 		// According to SCORM Standard, SCORE is between 0 and 100.
-		return Float.valueOf(100);
+		int maxScore = config.getIntegerSafe(ScormEditController.CONFIG_KEY_MAX_SCORE, -1);
+		return maxScore >= 0? Float.valueOf(maxScore) : Float.valueOf(100);
 	}
 
 	@Override

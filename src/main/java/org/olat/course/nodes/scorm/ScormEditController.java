@@ -93,6 +93,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	public static final String CONFIG_ASSESSABLE_TYPE = "assessabletype";
 	public static final String CONFIG_ASSESSABLE_TYPE_SCORE = "score";
 	public static final String CONFIG_ASSESSABLE_TYPE_PASSED = "passed";
+	public static final String CONFIG_KEY_MAX_SCORE = "max.score";
 	public static final String CONFIG_CUTVALUE = "cutvalue";
 	public static final String CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT = MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT;
 	
@@ -196,6 +197,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		boolean attemptsDependOnScore = config.getBooleanSafe(CONFIG_ATTEMPTSDEPENDONSCORE, true);
 		int maxAttempts = config.getIntegerSafe(CONFIG_MAXATTEMPTS, 0);
 		boolean advanceScore = config.getBooleanSafe(CONFIG_ADVANCESCORE, true);
+		int maxScore = config.getIntegerSafe(CONFIG_KEY_MAX_SCORE, -1);
 		int cutvalue = config.getIntegerSafe(CONFIG_CUTVALUE, 0);
 		boolean ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course));
 		boolean ignoreInCourseAssessment = config.getBooleanSafe(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
@@ -203,9 +205,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
 		
-		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons, assessableType, cutvalue,
-				ignoreInCourseAssessmentAvailable, ignoreInCourseAssessment, fullWindow, closeOnFinish, maxAttempts,
-				advanceScore, attemptsDependOnScore);
+		scorevarform = new VarForm(ureq, wControl, showMenu, skipLaunchPage, showNavButtons, assessableType, maxScore,
+				cutvalue, ignoreInCourseAssessmentAvailable, ignoreInCourseAssessment, fullWindow, closeOnFinish,
+				maxAttempts, advanceScore, attemptsDependOnScore);
 		listenTo(scorevarform);
 		cpConfigurationVc.put("scorevarform", scorevarform.getInitialComponent());
 
@@ -290,6 +292,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 				config.setBooleanEntry(CONFIG_SHOWNAVBUTTONS, scorevarform.isShowNavButtons());
 				config.setBooleanEntry(CONFIG_ISASSESSABLE, scorevarform.isAssessable());
 				config.setStringValue(CONFIG_ASSESSABLE_TYPE, scorevarform.getAssessableType());
+				config.setIntValue(CONFIG_KEY_MAX_SCORE, scorevarform.getMaxScore());
 				config.setIntValue(CONFIG_CUTVALUE, scorevarform.getCutValue());
 				config.setBooleanEntry(CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, scorevarform.isIgnoreInCourseAssessment());
 				config.setBooleanEntry(CONFIG_FULLWINDOW, scorevarform.isFullWindow());
@@ -395,6 +398,7 @@ class VarForm extends FormBasicController {
 	private SelectionElement closeOnFinishEl;
 	private SingleSelection isAssessableEl;
 	private SelectionElement skipLaunchPageEl;
+	private TextElement maxScoreEl;
 	private TextElement cutValueEl;
 	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private SingleSelection attemptsEl;
@@ -403,6 +407,7 @@ class VarForm extends FormBasicController {
 	
 	private boolean showMenu, showNavButtons, skipLaunchPage;
 	private String assessableType;
+	private Integer maxScore;
 	private int cutValue;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private boolean ignoreInCourseAssessment;
@@ -415,14 +420,15 @@ class VarForm extends FormBasicController {
 	private int maxattempts;
 	
 	public VarForm(UserRequest ureq, WindowControl wControl, boolean showMenu, boolean skipLaunchPage,
-			boolean showNavButtons, String assessableType, int cutValue, boolean ignoreInCourseAssessmentAvailable,
-			boolean ignoreInCourseAssessment, boolean fullWindow, boolean closeOnFinish, int maxattempts,
-			boolean advanceScore, boolean attemptsDependOnScore) {
+			boolean showNavButtons, String assessableType, int maxScore, int cutValue,
+			boolean ignoreInCourseAssessmentAvailable, boolean ignoreInCourseAssessment, boolean fullWindow,
+			boolean closeOnFinish, int maxattempts, boolean advanceScore, boolean attemptsDependOnScore) {
 		super(ureq, wControl);
 		this.showMenu = showMenu;
 		this.skipLaunchPage = skipLaunchPage;
 		this.showNavButtons = showNavButtons;
 		this.assessableType = assessableType;
+		this.maxScore = maxScore;
 		this.cutValue = cutValue;
 		this.ignoreInCourseAssessmentAvailable = ignoreInCourseAssessmentAvailable;
 		this.ignoreInCourseAssessment = ignoreInCourseAssessment;
@@ -441,6 +447,14 @@ class VarForm extends FormBasicController {
 			};
 		initForm (ureq);
 		updateUI();
+	}
+	
+	public Integer getMaxScore() {
+		String val = maxScoreEl.getValue();
+		if(StringHelper.containsNonWhitespace(val) && StringHelper.isLong(val)) {
+			return Integer.parseInt(val);
+		}
+		return -1;
 	}
 
 	public int getCutValue() {
@@ -507,6 +521,22 @@ class VarForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		maxScoreEl.clearError();
+		if(maxScoreEl.isVisible() && maxScoreEl.isEnabled()) {
+			if(StringHelper.containsNonWhitespace(maxScoreEl.getValue())) {
+				try {
+					int maxScore = Integer.parseInt(maxScoreEl.getValue());
+					if (maxScore < 0 || maxScore > 100) {
+						maxScoreEl.setErrorKey("max.score.validation", null);
+						allOk &= false;
+					}
+				} catch (NumberFormatException e) {
+					maxScoreEl.setErrorKey("max.score.validation", null);
+					allOk &= false;
+				}
+			}
+		}
+		
 		cutValueEl.clearError();
 		if(cutValueEl.isVisible() && cutValueEl.isEnabled()) {
 			if(StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
@@ -553,6 +583,9 @@ class VarForm extends FormBasicController {
 			isAssessableEl.select(assessableKeys[0], true);
 		}
 		
+		String maxScoreVal = maxScore < 0 ? "" : Integer.toString(maxScore);
+		maxScoreEl = uifactory.addTextElement("max.score", 5, maxScoreVal, formLayout);
+		
 		String val = cutValue < 0 ? "" : Integer.toString(cutValue);
 		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 5, val, formLayout);
 		cutValueEl.setDisplaySize(3);
@@ -595,6 +628,7 @@ class VarForm extends FormBasicController {
 		advanceScoreEl.setVisible(assessableKeys[1].equals(isAssessable) || assessableKeys[2].equals(isAssessable));
 		advanceScoreEl.getComponent().setDirty(true);
 		//assessable type score or none -> show "Score needed to pass"
+		maxScoreEl.setVisible(assessableKeys[0].equals(isAssessable) || assessableKeys[1].equals(isAssessable));
 		cutValueEl.setVisible(assessableKeys[0].equals(isAssessable) || assessableKeys[1].equals(isAssessable));
 		ignoreInCourseAssessmentEl.setVisible(ignoreInCourseAssessmentAvailable);
 	}
