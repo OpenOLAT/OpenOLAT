@@ -1044,16 +1044,18 @@ public class ForumManager {
 			newTopMessage.setParent(null);
 			newTopMessage.setThreadtop(null);
 			newTopMessage = dbInstance.getCurrentEntityManager().merge(newTopMessage);
+			// prevent lazy loading issue in event bus
+			final Forum forum = loadForum(newTopMessage.getForum().getKey());
 
 			for(Message message : subthreadList) {
 				message.setThreadtop(newTopMessage);
 				message = dbInstance.getCurrentEntityManager().merge(message);
 			}
 
-			dbInstance.commit();// before sending async event
+			dbInstance.commitAndCloseSession();// before sending async event
 			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.SPLIT, newTopMessage.getKey(), null, null);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(event, newTopMessage.getForum());
+				.fireEventToListenersOf(event, forum);
 		}		
 		return newTopMessage;
 	}
