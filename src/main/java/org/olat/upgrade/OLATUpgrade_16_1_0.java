@@ -22,7 +22,6 @@ package org.olat.upgrade;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
-import org.olat.modules.video.VideoManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -38,8 +37,6 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_16.1.0";
 	private static final String UPDATE_ASSESSMENT_OBLIGATION = "UPDATE ASSESSMENT OBLIGATION";
 	
-	@Autowired
-	private VideoManager videoManager;
 	@Autowired
 	private DB dbInstance;
 
