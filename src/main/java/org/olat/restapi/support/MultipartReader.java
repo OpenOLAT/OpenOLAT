@@ -58,7 +58,7 @@ public class MultipartReader {
 				if(part.getContentType() != null && (StringHelper.containsNonWhitespace(part.getSubmittedFileName()) || !part.getContentType().startsWith("text/plain"))) {
 					contentType = part.getContentType();
 					filename = part.getSubmittedFileName();
-					if(filename != null) {
+					if(filename != null && !filename.contains("..")) {
 						filename = UUID.randomUUID().toString().replace("-", "") + "_" + filename;
 					} else {
 						filename = "upload-" + UUID.randomUUID().toString().replace("-", "");

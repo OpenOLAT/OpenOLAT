@@ -78,14 +78,14 @@ public interface VFSContainer extends VFSItem {
 	 * Create a new child container (of same type) if possible.
 	 * 
 	 * @param name
-	 * @return VFSItem if successfull, null otherwise.
+	 * @return VFSItem if successful, null otherwise.
 	 */
 	public VFSContainer createChildContainer(String name);
 	
 	/**
 	 * Create a new leaf (of same type) if possible,
 	 * @param name
-	 * @return VFSItem if successfull, null otherwise.
+	 * @return VFSItem if successful, null otherwise.
 	 */
 	public VFSLeaf createChildLeaf(String name);
 	
