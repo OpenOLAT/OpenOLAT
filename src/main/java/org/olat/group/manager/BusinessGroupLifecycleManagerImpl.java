@@ -385,12 +385,26 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 				.getResultList();
 	}
 	
+	/**
+	 * If the email date is present, the main criteria is the inactivation email
+	 * date, it overrides the last usage. If not present, the last usage is the most
+	 * important criteria.
+	 * 
+	 * @param usageDate The limit on usage date
+	 * @param emailBeforeDate The limit on email date (optional)
+	 * @param reactivationDateLimit
+	 * @return A list of groups to inactivate
+	 */
 	public List<BusinessGroup> getBusinessGroupsToInactivate(Date usageDate, Date emailBeforeDate, Date reactivationDateLimit) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
-		  .where().append(" bgi.status=:status and ((bgi.lastUsage is null and bgi.creationDate < :lastUsage) or bgi.lastUsage < :lastUsage)");
+		  .where()
+		  .append(" bgi.status=:status")
+		  .and(); 
 		if(emailBeforeDate != null) {
-			sb.and().append(" (bgi.inactivationEmailDate<:emailDate or bgi.lastUsage is null)");	
+			sb.append("(bgi.inactivationEmailDate<:emailDate)");	
+		} else {
+			sb.append("((bgi.lastUsage is null and bgi.creationDate<:lastUsage) or bgi.lastUsage<:lastUsage)");
 		}
 		sb.and().append(" (bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
 		appendBusinessGroupTypesRestrictions(sb);
@@ -398,10 +412,12 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("status", BusinessGroupStatusEnum.active.name())
-				.setParameter("lastUsage", usageDate, TemporalType.TIMESTAMP)
 				.setParameter("reactivationDateLimit", reactivationDateLimit);
 		if(emailBeforeDate != null) {
 			query.setParameter("emailDate", emailBeforeDate);	
+		} else {
+			query.setParameter("lastUsage", usageDate, TemporalType.TIMESTAMP);	
+			
 		}
 		return query.getResultList();
 	}
@@ -418,10 +434,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		// business, lti
 		// business, managed
 		// business, course
-		
-		
-		
-		
+
 		if(types.contains(BusinessGroupLifecycleTypeEnum.business) || types.contains(BusinessGroupLifecycleTypeEnum.lti)) {
 			List<BusinessGroupLifecycleTypeEnum> technicalTypes = new ArrayList<>();
 			if(types.contains(BusinessGroupLifecycleTypeEnum.business)) {
@@ -620,18 +633,21 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	public List<BusinessGroup> getBusinessGroupsToSoftDelete(Date usageDate, Date emailBeforeDate) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
-		  .where().append(" bgi.status=:status and bgi.inactivationDate<:lastUsage");
+		  .where().append(" bgi.status=:status");
 		if(emailBeforeDate != null) {
 			sb.and().append(" bgi.softDeleteEmailDate<:emailDate");	
+		} else {
+			sb.and().append(" bgi.inactivationDate<:lastUsage");
 		}
 		appendBusinessGroupTypesRestrictions(sb);
 
 		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
-				.setParameter("status", BusinessGroupStatusEnum.inactive.name())
-				.setParameter("lastUsage", usageDate, TemporalType.TIMESTAMP);
+				.setParameter("status", BusinessGroupStatusEnum.inactive.name());
 		if(emailBeforeDate != null) {
 			query.setParameter("emailDate", emailBeforeDate, TemporalType.TIMESTAMP);	
+		} else {
+			query.setParameter("lastUsage", usageDate, TemporalType.TIMESTAMP);
 		}
 		return query.getResultList();
 	}

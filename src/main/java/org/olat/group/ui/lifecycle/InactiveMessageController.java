@@ -64,10 +64,26 @@ public class InactiveMessageController extends BasicController {
 			Date softDeleteDate = businessGroupLifecycleManager.getInactivationDate(businessGroup);
 			days = DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
 			if(groupAdmin) {
-				i18nKey = days > 1 ? "warning.soon.readonly.group.admin.plural" : "warning.soon.readonly.group.admin.singular";
+				if(days > 1) {
+					i18nKey = "warning.soon.readonly.group.admin.plural";
+				} else if(days == 1 || days == 0) {
+					i18nKey = "warning.soon.readonly.group.admin.singular";
+				} else if(days == -1) {
+					i18nKey = "warning.soon.readonly.overdue.group.admin.singular";
+				} else {
+					i18nKey = "warning.soon.readonly.overdue.group.admin.plural";
+				}
 				reactivateLink = LinkFactory.createCustomLink("reactivate.group", "reactivate", "cancel.inactivate.group", Link.BUTTON_SMALL, mainVC, this);
 			} else {
-				i18nKey = days > 1 ? "warning.soon.readonly.group.plural" : "warning.soon.readonly.group.singular";
+				if(days > 1) {
+					i18nKey = "warning.soon.readonly.group.plural";
+				} else if(days == 1 || days == 0) {
+					i18nKey = "warning.soon.readonly.group.singular";
+				} else if(days == -1) {
+					i18nKey = "warning.soon.readonly.overdue.group.singular";
+				} else {
+					i18nKey = "warning.soon.readonly.overdue.group.plural";
+				}	
 			}
 		} else if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.inactive) {
 			Date softDeleteDate = businessGroupLifecycleManager.getSoftDeleteDate(businessGroup);
@@ -79,7 +95,7 @@ public class InactiveMessageController extends BasicController {
 				i18nKey = days > 1 ? "warning.readonly.group.plural" : "warning.readonly.group.singular";
 			}
 		}
-		String message = translate(i18nKey, new String[] { Long.toString(days)} );
+		String message = translate(i18nKey, new String[] { Long.toString(Math.abs(days))} );
 		mainVC.contextPut("message", StringHelper.escapeHtml(message));
 		putInitialPanel(mainVC);
 	}

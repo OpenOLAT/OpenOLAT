@@ -416,20 +416,11 @@ public class BusinessGroupQueries {
 			if(lifecycleParams.getLastUsagePeriodStart() != null) {
 				query.setParameter("lastUsagePeriodStart", lifecycleParams.getLastUsagePeriodStart(), TemporalType.TIMESTAMP);
 			}
-			if(lifecycleParams.getLastUsagePeriodEnd() != null) {
-				query.setParameter("lastUsagePeriodEnd", lifecycleParams.getLastUsagePeriodEnd(), TemporalType.TIMESTAMP);
-			}
 			if(lifecycleParams.getInactivationPeriodStart() != null) {
 				query.setParameter("inactivationPeriodStart", lifecycleParams.getInactivationPeriodStart(), TemporalType.TIMESTAMP);
 			}
-			if(lifecycleParams.getInactivationPeriodEnd() != null) {
-				query.setParameter("inactivationPeriodEnd", lifecycleParams.getInactivationPeriodEnd(), TemporalType.TIMESTAMP);
-			}
 			if(lifecycleParams.getSoftDeletePeriodStart() != null) {
 				query.setParameter("softDeletePeriodStart", lifecycleParams.getSoftDeletePeriodStart(), TemporalType.TIMESTAMP);
-			}
-			if(lifecycleParams.getSoftDeletePeriodEnd() != null) {
-				query.setParameter("softDeletePeriodEnd", lifecycleParams.getSoftDeletePeriodEnd(), TemporalType.TIMESTAMP);
 			}
 		}
 	}
@@ -626,47 +617,23 @@ public class BusinessGroupQueries {
 		return DateUtils.addDays(referenceDate, -days);
 	}
 	
-	private Date getEndActiveFocus(Date referenceDate) {
-		int days = businessGroupModule.getNumberOfInactiveDayBeforeDeactivation();
-		if(businessGroupModule.isMailBeforeDeactivation()) {
-			days -= businessGroupModule.getNumberOfDayBeforeDeactivationMail();
-		}
-		return DateUtils.addDays(referenceDate, -days);
-	}
-	
 	private void filterActiveBusinessGroupLifecycleToSearch(QueryBuilder sb, LifecycleSyntheticStatus status,
 			Date referenceDate, LifecycleParams lifecycleParams) {
 		
 		sb.and().append("bgi.status").in(BusinessGroupStatusEnum.active);
 		
 		if(status == LifecycleSyntheticStatus.ACTIVE) {
-			
-			Date endPeriod = getStartActiveFocus(referenceDate);
-			lifecycleParams.setLastUsagePeriodEnd(endPeriod);
-			
-			sb.and().append(" bgi.lastUsage>=:lastUsagePeriodEnd")
-			  .and().append(" bgi.inactivationEmailDate is null");
+			// show all active
 		} else if(status == LifecycleSyntheticStatus.ACTIVE_LONG) {
-			
 			Date startPeriod = getStartActiveFocus(referenceDate);
-			Date endPeriod = getEndActiveFocus(referenceDate);
 			lifecycleParams.setLastUsagePeriodStart(startPeriod);
-			lifecycleParams.setLastUsagePeriodEnd(endPeriod);
-			
-			sb.and().append(" bgi.lastUsage<=:lastUsagePeriodStart and bgi.lastUsage>=:lastUsagePeriodEnd")
-			  .and().append(" bgi.inactivationEmailDate is null");
+			sb.and().append(" bgi.lastUsage<=:lastUsagePeriodStart");
 			
 		} else if(status == LifecycleSyntheticStatus.ACTIVE_RESPONSE_DELAY) {
-			// inactivationEmailDate < 10 days
-			
-			int startDay = businessGroupModule.getNumberOfDayBeforeDeactivationMail();
-			Date startPeriod = DateUtils.addDays(referenceDate, -startDay);
-			lifecycleParams.setLastUsagePeriodStart(startPeriod);
-
-			sb.and().append(" bgi.inactivationEmailDate>=:lastUsagePeriodStart");
+			sb.and().append(" bgi.inactivationEmailDate is not null");
 
 		} else if(status == LifecycleSyntheticStatus.TO_START_INACTIVATE) {
-
+			// manual with E-mail
 			int inactivityDay = businessGroupModule.getNumberOfInactiveDayBeforeDeactivation();
 			int mailDay = businessGroupModule.getNumberOfDayBeforeDeactivationMail();
 			Date startPeriod = DateUtils.addDays(referenceDate, -(inactivityDay - mailDay));
@@ -676,16 +643,13 @@ public class BusinessGroupQueries {
 			  .and().append(" bgi.inactivationEmailDate is null");
 			
 		} else if(status == LifecycleSyntheticStatus.TO_INACTIVATE) {
-			// inactivationEmailDate > 10 days
-			int startDay = businessGroupModule.getNumberOfDayBeforeDeactivationMail();
-			Date startPeriod = DateUtils.addDays(referenceDate, -startDay);
+			// manual without E-mail (without reaction time)
+			int inactivityDay = businessGroupModule.getNumberOfInactiveDayBeforeDeactivation();
+			Date startPeriod = DateUtils.addDays(referenceDate, -inactivityDay);
 			lifecycleParams.setLastUsagePeriodStart(startPeriod);
 			
-			sb.and().append(" bgi.inactivationEmailDate<:lastUsagePeriodStart");
+			sb.and().append(" bgi.lastUsage<:lastUsagePeriodStart");
 		}
-		
-		//TODO group reactivation grace period
-		
 	}
 	
 	private Date getStartInactiveFocus(Date referenceDate) {
@@ -699,47 +663,24 @@ public class BusinessGroupQueries {
 		return DateUtils.addDays(referenceDate, -days);
 	}
 	
-	private Date getEndInactiveFocus(Date referenceDate) {
-		int days = businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete();
-		if(businessGroupModule.isMailBeforeSoftDelete()) {
-			days -= businessGroupModule.getNumberOfDayBeforeSoftDeleteMail();
-		}
-		return DateUtils.addDays(referenceDate, -days);
-	}
-	
 	private void filterInactiveBusinessGroupLifecycleToSearch(QueryBuilder sb, LifecycleSyntheticStatus status,
 			Date referenceDate, LifecycleParams lifecycleParams) {
 		
 		sb.and().append("bgi.status").in(BusinessGroupStatusEnum.inactive);
 		
 		if(status == LifecycleSyntheticStatus.INACTIVE) {
-			
-			Date endPeriod = getStartInactiveFocus(referenceDate);
-			lifecycleParams.setInactivationPeriodEnd(endPeriod);
-			
-			sb.and().append(" bgi.inactivationDate>=:inactivationPeriodEnd")
-			  .and().append(" bgi.softDeleteEmailDate is null");
+			// show all inactivae
 		} else if(status == LifecycleSyntheticStatus.INACTIVE_LONG) {
-			
 			Date startPeriod = getStartInactiveFocus(referenceDate);
-			Date endPeriod = getEndInactiveFocus(referenceDate);
 			lifecycleParams.setInactivationPeriodStart(startPeriod);
-			lifecycleParams.setInactivationPeriodEnd(endPeriod);
-			
-			sb.and().append(" bgi.inactivationDate<=:inactivationPeriodStart and bgi.inactivationDate>=:inactivationPeriodEnd")
-			  .and().append(" bgi.softDeleteEmailDate is null");
+			sb.and().append(" bgi.inactivationDate<=:inactivationPeriodStart");
 			
 		} else if(status == LifecycleSyntheticStatus.INACTIVE_RESPONSE_DELAY) {
-			// softDeleteEmailDate < 10 days
-			
-			int startDay = businessGroupModule.getNumberOfDayBeforeSoftDeleteMail();
-			Date startPeriod = DateUtils.addDays(referenceDate, -startDay);
-			lifecycleParams.setInactivationPeriodStart(startPeriod);
 
-			sb.and().append(" bgi.softDeleteEmailDate>=:inactivationPeriodStart");
+			sb.and().append(" bgi.softDeleteEmailDate is not null");
 
 		} else if(status == LifecycleSyntheticStatus.TO_START_SOFT_DELETE) {
-			// inactivationEmailDate > 10 days
+			// manual with or without E-m
 			int inactivityDay = businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete();
 			int startDay = businessGroupModule.getNumberOfDayBeforeSoftDeleteMail();
 			Date startPeriod = DateUtils.addDays(referenceDate, -(inactivityDay - startDay));
@@ -749,7 +690,7 @@ public class BusinessGroupQueries {
 			  .and().append(" bgi.softDeleteEmailDate is null");
 			
 		} else if(status == LifecycleSyntheticStatus.TO_SOFT_DELETE) {
-			// inactivationEmailDate > 10 days
+			// with E-mail
 			int startDay = businessGroupModule.getNumberOfDayBeforeSoftDeleteMail();
 			Date startPeriod = DateUtils.addDays(referenceDate, -startDay);
 			lifecycleParams.setInactivationPeriodStart(startPeriod);
@@ -766,35 +707,17 @@ public class BusinessGroupQueries {
 		return DateUtils.addDays(referenceDate, -days);
 	}
 	
-	private Date getEndSoftDeleteFocus(Date referenceDate) {
-		int days = businessGroupModule.getNumberOfSoftDeleteDayBeforeDefinitivelyDelete();
-		return DateUtils.addDays(referenceDate, -days);
-	}
-	
 	private void filterSoftDeleteBusinessGroupLifecycleToSearch(QueryBuilder sb, LifecycleSyntheticStatus status,
 			Date referenceDate, LifecycleParams lifecycleParams) {
 
 		sb.and().append("bgi.status").in(BusinessGroupStatusEnum.trash);
 		
 		if(status == LifecycleSyntheticStatus.SOFT_DELETE) {
-			
-			Date endPeriod = getStartSoftDeleteFocus(referenceDate);
-			lifecycleParams.setSoftDeletePeriodEnd(endPeriod);
-			
-			sb.and().append(" bgi.softDeleteDate>:softDeletePeriodEnd");
-		} else if(status == LifecycleSyntheticStatus.SOFT_DELETE_LONG) {
-			
+			// all in trash
+		} else if(status == LifecycleSyntheticStatus.SOFT_DELETE_LONG || status == LifecycleSyntheticStatus.TO_DELETE) {
 			Date startPeriod = getStartSoftDeleteFocus(referenceDate);
-			Date endPeriod = getEndSoftDeleteFocus(referenceDate);
 			lifecycleParams.setSoftDeletePeriodStart(startPeriod);
-			lifecycleParams.setSoftDeletePeriodEnd(endPeriod);
 			
-			sb.and().append(" bgi.softDeleteDate<=:softDeletePeriodStart and bgi.softDeleteDate>=:softDeletePeriodEnd");
-		} else if(status == LifecycleSyntheticStatus.TO_DELETE) {
-			
-			Date startPeriod = getEndSoftDeleteFocus(referenceDate);
-			lifecycleParams.setSoftDeletePeriodStart(startPeriod);
-
 			sb.and().append(" bgi.softDeleteDate<=:softDeletePeriodStart");
 		}
 	}
@@ -982,13 +905,8 @@ public class BusinessGroupQueries {
 	private static class LifecycleParams {
 		
 		private Date lastUsagePeriodStart;
-		private Date lastUsagePeriodEnd;
-		
 		private Date inactivationPeriodStart;
-		private Date inactivationPeriodEnd;
-		
 		private Date softDeletePeriodStart;
-		private Date softDeletePeriodEnd;
 		
 		public Date getLastUsagePeriodStart() {
 			return lastUsagePeriodStart;
@@ -996,14 +914,6 @@ public class BusinessGroupQueries {
 		
 		public void setLastUsagePeriodStart(Date lastUsagePeriodStart) {
 			this.lastUsagePeriodStart = lastUsagePeriodStart;
-		}
-		
-		public Date getLastUsagePeriodEnd() {
-			return lastUsagePeriodEnd;
-		}
-		
-		public void setLastUsagePeriodEnd(Date lastUsagePeriodEnd) {
-			this.lastUsagePeriodEnd = lastUsagePeriodEnd;
 		}
 
 		public Date getInactivationPeriodStart() {
@@ -1014,28 +924,12 @@ public class BusinessGroupQueries {
 			this.inactivationPeriodStart = inactivationPeriodStart;
 		}
 
-		public Date getInactivationPeriodEnd() {
-			return inactivationPeriodEnd;
-		}
-
-		public void setInactivationPeriodEnd(Date inactivationPeriodEnd) {
-			this.inactivationPeriodEnd = inactivationPeriodEnd;
-		}
-
 		public Date getSoftDeletePeriodStart() {
 			return softDeletePeriodStart;
 		}
 
 		public void setSoftDeletePeriodStart(Date softDeletePeriodStart) {
 			this.softDeletePeriodStart = softDeletePeriodStart;
-		}
-
-		public Date getSoftDeletePeriodEnd() {
-			return softDeletePeriodEnd;
-		}
-
-		public void setSoftDeletePeriodEnd(Date softDeletePeriodEnd) {
-			this.softDeletePeriodEnd = softDeletePeriodEnd;
 		}
 	}
 

@@ -314,8 +314,6 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 
 	}
 	
-
-	
 	@Test
 	public void getBusinessGroupsToInactivate() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-2");
@@ -323,9 +321,10 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 				-1, -1, false, false, null);
 		setLastUsage(group1, BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -905));
 		
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(id, "Group cycle 2.1", "", BusinessGroup.BUSINESS_TYPE,
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(id, "Group cycle 2.2", "", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, null);
-		setLastUsage(group2,  BusinessGroupStatusEnum.inactive, DateUtils.addDays(new Date(), -908));
+		((BusinessGroupImpl)group2).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
+		group2 = setLastUsage(group2,  BusinessGroupStatusEnum.inactive, DateUtils.addDays(new Date(), -908));
 		dbInstance.commitAndCloseSession();
 		
 		Date beforeDate = DateUtils.addDays(new Date(), -900);
@@ -342,6 +341,43 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 			}
 			
 			Assert.assertTrue(lastLoginDate.before(beforeDate));
+			assertThat(businessGroupToInactivate.getGroupStatus())
+				.isIn(BusinessGroupStatusEnum.active);
+		}
+	}
+	
+	@Test
+	public void getBusinessGroupsToInactivateEmailDate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-2");
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(id, "Group cycle alt 22.1", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		setLastUsage(group1, BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -905));
+		
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(id, "Group cycle alt 22.2", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		((BusinessGroupImpl)group2).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
+		group2 = setLastUsage(group2,  BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -908));
+		
+		// typically manually start inactivation
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(id, "Group cycle alt 23.2", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		((BusinessGroupImpl)group3).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
+		group3 = setLastUsage(group3,  BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -50));
+		dbInstance.commitAndCloseSession();
+		
+		Date beforeDate = DateUtils.addDays(new Date(), -900);
+		Date emailBeforeDate = DateUtils.addDays(new Date(), -30);
+		Date reactivationDatebefore = DateUtils.addDays(new Date(), -30);
+		List<BusinessGroup> businessGroupsToInactivate = lifecycleManager.getBusinessGroupsToInactivate(beforeDate, emailBeforeDate, reactivationDatebefore);
+		Assert.assertNotNull(businessGroupsToInactivate);
+		Assert.assertFalse(businessGroupsToInactivate.contains(group1));
+		Assert.assertTrue(businessGroupsToInactivate.contains(group2));
+		Assert.assertTrue(businessGroupsToInactivate.contains(group3));
+		
+		for(BusinessGroup businessGroupToInactivate:businessGroupsToInactivate) {
+			Date emailDate = businessGroupToInactivate.getInactivationEmailDate();
+			Assert.assertNotNull(emailDate);
+			Assert.assertTrue(emailDate.before(emailBeforeDate));
 			assertThat(businessGroupToInactivate.getGroupStatus())
 				.isIn(BusinessGroupStatusEnum.active);
 		}

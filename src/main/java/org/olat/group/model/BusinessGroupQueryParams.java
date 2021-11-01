@@ -271,7 +271,13 @@ public class BusinessGroupQueryParams {
 		ACTIVE,
 		ACTIVE_LONG,
 		ACTIVE_RESPONSE_DELAY,
+		/**
+		 * Manual with E-mail
+		 */
 		TO_START_INACTIVATE,
+		/**
+		 * Manual without E-mail
+		 */
 		TO_INACTIVATE,
 		
 		INACTIVE,

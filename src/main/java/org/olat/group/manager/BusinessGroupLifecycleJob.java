@@ -22,8 +22,10 @@ package org.olat.group.manager;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupModule;
@@ -39,6 +41,8 @@ import org.quartz.JobExecutionException;
  */
 @DisallowConcurrentExecution
 public class BusinessGroupLifecycleJob extends JobWithDB {
+	
+	private static final Logger log = Tracing.createLoggerFor(BusinessGroupLifecycleJob.class);
 
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
@@ -46,6 +50,8 @@ public class BusinessGroupLifecycleJob extends JobWithDB {
 		if(businessGroupModule.getGroupLifecycleTypeEnumsList().isEmpty()) {
 			return;
 		}
+		
+		log.info("Start group lifecycle job");
 		
 		BusinessGroupLifecycleManager lifecycleManager = CoreSpringFactory.getImpl(BusinessGroupLifecycleManager.class);
 		
@@ -65,5 +71,7 @@ public class BusinessGroupLifecycleJob extends JobWithDB {
 		if(businessGroupModule.isAutomaticGroupDefinitivelyDeleteEnabled()) {
 			lifecycleManager.definitivelyDeleteBusinessGroups(vetoed);
 		}
+		
+		log.info("End group lifecycle job");
 	}
 }
