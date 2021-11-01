@@ -93,18 +93,23 @@ public class StaticServlet extends HttpServlet {
 			}
 		} else if (pathInfo.startsWith(STATIC_DIR_NAME)) {
 			String staticRelPath = pathInfo.substring(STATIC_DIR_NAME.length() + 1, pathInfo.length());
-			//customizing 
-			CustomStaticFolderManager folderManager = CoreSpringFactory.getImpl(CustomStaticFolderManager.class);
-			File file = new File(folderManager.getRootFile(), staticRelPath);
-			if(file.exists()) {
-				if(file.isDirectory()) {
-					DispatcherModule.sendForbidden(response);
-				} else {
-					MediaResource resource = new FileMediaResource(file);
-		    		ServletUtil.serveResource(request, response, resource);
-				}
-			} else {
+			String normalizedRelPath = ServletUtil.normalizePath(staticRelPath);
+			if (normalizedRelPath == null) {
 				DispatcherModule.sendNotFound(response);
+			} else {
+				//customizing 
+				CustomStaticFolderManager folderManager = CoreSpringFactory.getImpl(CustomStaticFolderManager.class);
+				File file = new File(folderManager.getRootFile(), normalizedRelPath);
+				if(file.exists()) {
+					if(file.isDirectory()) {
+						DispatcherModule.sendForbidden(response);
+					} else {
+						MediaResource resource = new FileMediaResource(file);
+			    		ServletUtil.serveResource(request, response, resource);
+					}
+				} else {
+					DispatcherModule.sendNotFound(response);
+				}
 			}
 		} else {
 			// version provided - remove it

@@ -374,7 +374,13 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	@Override
 	public VFSContainer createChildContainer(String name) {
 		File fNewFile = new File(getBasefile(), name);
-		if (!fNewFile.mkdir()) return null;
+		if(!isInPath(name)) {
+			log.warn("Could not create a new container::{} in container::{} - file out of parent directory", name, getBasefile().getAbsolutePath());
+			return null;
+		}
+		if (!fNewFile.mkdir()) {
+			return null;
+		}
 		LocalFolderImpl locFI =  new LocalFolderImpl(fNewFile, this);
 		locFI.setDefaultItemFilter(defaultFilter);
 		return locFI;
@@ -384,15 +390,19 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	public VFSLeaf createChildLeaf(String name) {
 		File fNewFile = new File(getBasefile(), name);
 		try {
+			if(!isInPath(name)) {
+				log.warn("Could not create a new leaf::{} in container::{} - file out of parent directory", name, getBasefile().getAbsolutePath());
+				return null;
+			}
 			if(!fNewFile.getParentFile().exists()) {
 				fNewFile.getParentFile().mkdirs();
 			}
 			if (!fNewFile.createNewFile()) {
-				log.warn("Could not create a new leaf::" + name + " in container::" + getBasefile().getAbsolutePath() + " - file alreay exists");
+				log.warn("Could not create a new leaf::{} in container::{} - file alreay exists", name, getBasefile().getAbsolutePath());
 				return null;
 			} 
 		} catch (Exception e) {
-			log.error("Error while creating child leaf::" + name + " in container::" + getBasefile().getAbsolutePath(), e);
+			log.error("Error while creating child leaf::{} in container::{}", name, getBasefile().getAbsolutePath(), e);
 			return null;
 		}
 		return new LocalFileImpl(fNewFile, this);

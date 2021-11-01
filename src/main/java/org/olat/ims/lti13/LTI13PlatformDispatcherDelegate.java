@@ -78,6 +78,7 @@ import org.springframework.stereotype.Service;
 import com.nimbusds.jose.util.IOUtils;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -137,10 +138,10 @@ public class LTI13PlatformDispatcherDelegate {
 		String nonce = request.getParameter("nonce");
 		String state = request.getParameter("state");
 		String redirectUri = request.getParameter("redirect_uri");
-		Jwt<?,?> loginHintJwt = loginHint(request.getParameter("login_hint"));
-		log.debug("Start Authorization: state: {} redirectUri: {} loginHint: {} nonce: {}", state, redirectUri, loginHintJwt, nonce);
-		if(loginHintJwt != null) {
-			Claims loginHint = (Claims)loginHintJwt.getBody();
+		Jws<Claims> loginHintJws = loginHint(request.getParameter("login_hint"));
+		log.debug("Start Authorization: state: {} redirectUri: {} loginHint: {} nonce: {}", state, redirectUri, loginHintJws, nonce);
+		if(loginHintJws != null) {
+			Claims loginHint = loginHintJws.getBody();
 			Long deploymentKey = loginHint.get("deploymentKey", Long.class);
 			LTI13ToolDeployment deployment = lti13Service.getToolDeploymentByKey(deploymentKey);
 			if(isRedirectUriAllowed(redirectUri, deployment)) {
@@ -181,12 +182,12 @@ public class LTI13PlatformDispatcherDelegate {
 		return false;
 	}
 	
-	private Jwt<?,?> loginHint(String loginHint) {
+	private Jws<Claims> loginHint(String loginHint) {
 		LTI13PlatformSigningPrivateKeyResolver signingResolver = new LTI13PlatformSigningPrivateKeyResolver();
 		return Jwts.parserBuilder()
 				.setSigningKeyResolver(signingResolver)
 				.build()
-				.parse(loginHint);
+				.parseClaimsJws(loginHint);
 	}
 	
 	/**
@@ -571,7 +572,7 @@ public class LTI13PlatformDispatcherDelegate {
 		sendJSON(at, response);
 	}
 	
-	private Jwt<?,?> getAccessToken(HttpServletRequest request) {
+	private Jws<Claims> getAccessToken(HttpServletRequest request) {
 		String authorization = request.getHeader("authorization");
 		if(authorization.startsWith("Bearer ")) {
 			authorization = authorization.substring("Bearer ".length());
@@ -580,7 +581,7 @@ public class LTI13PlatformDispatcherDelegate {
 				return Jwts.parserBuilder()
 					.setSigningKeyResolver(resolver)
 					.build()
-					.parse(authorization);
+					.parseClaimsJws(authorization);
 			} catch (Exception e) {
 				log.error("", e);
 			}
@@ -599,11 +600,11 @@ public class LTI13PlatformDispatcherDelegate {
 			return;
 		}
 		
-		Jwt<?,?> jwt = getAccessToken(request);
-		if(jwt == null) {
+		Jws<Claims> jws = getAccessToken(request);
+		if(jws == null) {
 			DispatcherModule.sendForbidden("", response);
 		} else {
-			Claims claims = (Claims)jwt.getBody();
+			Claims claims = jws.getBody();
 			String toolIss = claims.getAudience();
 			String clientId = claims.getSubject();
 			
@@ -655,8 +656,8 @@ public class LTI13PlatformDispatcherDelegate {
 			return;
 		}
 		
-		Jwt<?,?> jwt = getAccessToken(request);
-		if(jwt == null) {
+		Jws<Claims> jws = getAccessToken(request);
+		if(jws == null) {
 			DispatcherModule.sendForbidden("", response);
 			return;
 		}	

@@ -388,6 +388,41 @@ public class ForumTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void testUploadAttachmentOutOfBox() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login(id1));
+		
+		URI uri = getForumUriBuilder().path("posts").path(m1.getKey().toString())
+			.queryParam("authorKey", id1.getKey())
+			.queryParam("title", "New message with attachment ")
+			.queryParam("body", "A very interesting response in Thread-1 with an attachment").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		MessageVO message = conn.parse(response, MessageVO.class);
+		assertNotNull(message);
+		
+		//attachment
+		URL portraitUrl = CoursesElementsTest.class.getResource("portrait.jpg");
+		assertNotNull(portraitUrl);
+		File portrait = new File(portraitUrl.toURI());
+		
+		//upload portrait
+		URI attachUri = getForumUriBuilder().path("posts").path(message.getKey().toString()).path("attachments").build();
+		HttpPost attachMethod = conn.createPost(attachUri, MediaType.APPLICATION_JSON);
+		conn.addMultipart(attachMethod, "../../portrait.jpg", portrait);
+		HttpResponse attachResponse = conn.execute(attachMethod);
+		assertEquals(200, attachResponse.getStatusLine().getStatusCode());
+		
+		//check if the file exists
+		VFSContainer container = forumManager.getMessageContainer(message.getForumKey(), message.getKey());
+		VFSItem uploadedFile = container.resolve("portrait.jpg");
+		Assert.assertNull(uploadedFile);
+		
+		conn.shutdown();
+	}
+	
+	@Test
 	public void testUpload64Attachment() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id1));
