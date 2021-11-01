@@ -19,11 +19,11 @@
  */
 package org.olat.course.nodes.gta;
 
+import org.olat.core.util.StringHelper;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -65,32 +65,15 @@ public class GTALearningPathConfigs extends ModuleLearningPathConfigs {
 
 	@Override
 	public AssessmentObligation getObligation() {
-		return moduleConfiguration.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL)
-				? AssessmentObligation.optional
+		String config = moduleConfiguration.getStringValue(GTACourseNode.GTASK_OBLIGATION);
+		return StringHelper.containsNonWhitespace(config)
+				? AssessmentObligation.valueOf(config)
 				: AssessmentObligation.mandatory;
 	}
 
 	@Override
 	public void setObligation(AssessmentObligation obligation) {
-		boolean oldOptional = moduleConfiguration.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
-		boolean optional = obligation != null && AssessmentObligation.optional.equals(obligation);
-		
-		if (optional != oldOptional) {
-			moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_OPTIONAL, optional);
-			
-			boolean sample = moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
-			if (sample) {
-				boolean realtiveDates = moduleConfiguration.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
-				if (realtiveDates) {
-					if (optional) {
-						moduleConfiguration.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-						moduleConfiguration.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
-					} else {
-						moduleConfiguration.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL);
-					}
-				}
-			}
-		}
+		moduleConfiguration.set(GTACourseNode.GTASK_OBLIGATION, obligation.name());
 	}
 
 }

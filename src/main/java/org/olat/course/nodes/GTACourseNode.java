@@ -120,6 +120,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * Setting for group or individual task
 	 */
+	private static final int CURRENT_VERSION = 2;
 	public static final String GTASK_TYPE = "grouptask.type";
 	public static final String GTASK_GROUPS = "grouptask.groups";
 	public static final String GTASK_AREAS = "grouptask.areas";
@@ -144,6 +145,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	
 	public static final String GTASK_TASKS = "grouptask.tasks";
 	
+	public static final String GTASK_OBLIGATION = "grouptask.obligation";
 	public static final String GTASK_RELATIVE_DATES = "grouptask.rel.dates";
 	
 	public static final String GTASK_ASSIGNEMENT_TYPE = "grouptask.assignement.type";
@@ -197,9 +199,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
 		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
 		
+		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
 		if(isNewNode) {
-			//setup default configuration
-			ModuleConfiguration config = getModuleConfiguration();
 			//group task
 			if(getType().equals(TYPE_INDIVIDUAL)) {
 				config.setStringValue(GTASK_TYPE, GTAType.individual.name());
@@ -230,6 +232,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			config.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
 			config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);
 		}
+		if (version < 2) {
+			AssessmentObligation obligation = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL, false)
+					? AssessmentObligation.optional
+					: AssessmentObligation.mandatory;
+			config.set(GTASK_OBLIGATION, obligation.name());
+		}
+		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 
 	@Override
@@ -862,7 +871,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 				return AssessmentObligation.optional == evaluation.getObligation().getCurrent();
 			}
 		}
-		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
+		return getModuleConfiguration().getStringValue(GTACourseNode.GTASK_OBLIGATION).equals(AssessmentObligation.optional.name());
 	}
 	
 	@Override
@@ -927,20 +936,21 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		List<Map.Entry<String, Date>> nodeSpecificDates = new ArrayList<>();
 		ModuleConfiguration config = getModuleConfiguration();
 		
-		Date assignmentDeadline = config.getDateValue(GTASK_ASSIGNMENT_DEADLINE);
-		Date submissionDeadline = config.getDateValue(GTASK_SUBMIT_DEADLINE);
-		Date visibleAfter = config.getDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-		
-		if (assignmentDeadline != null) {
-			nodeSpecificDates.add(Map.entry("gtask.assignment.deadline", assignmentDeadline));
-		}
-		
-		if (submissionDeadline != null) {
-			nodeSpecificDates.add(Map.entry("gtask.submission.deadline", submissionDeadline));
-		}
-		
-		if (visibleAfter != null) {
-			nodeSpecificDates.add(Map.entry("gtask.submission.visibility", visibleAfter));
+		if (config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
+			Date assignmentDeadline = config.getDateValue(GTASK_ASSIGNMENT_DEADLINE);
+			if (assignmentDeadline != null) {
+				nodeSpecificDates.add(Map.entry("gtask.assignment.deadline", assignmentDeadline));
+			}
+			
+			Date submissionDeadline = config.getDateValue(GTASK_SUBMIT_DEADLINE);
+			if (submissionDeadline != null) {
+				nodeSpecificDates.add(Map.entry("gtask.submission.deadline", submissionDeadline));
+			}
+			
+			Date visibleAfter = config.getDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+			if (visibleAfter != null) {
+				nodeSpecificDates.add(Map.entry("gtask.submission.visibility", visibleAfter));
+			}
 		}
 		
 		return nodeSpecificDates;

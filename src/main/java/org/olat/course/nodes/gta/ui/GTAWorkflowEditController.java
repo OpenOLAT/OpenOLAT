@@ -53,7 +53,6 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
@@ -62,6 +61,7 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,7 +133,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		ICourse course = CourseFactory.loadCourse(courseRe);
 		isLearningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		
-		optional = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
+		optional = config.getStringValue(GTACourseNode.GTASK_OBLIGATION).equals(AssessmentObligation.optional.name());
 		
 		initForm(ureq);
 	}
@@ -556,7 +556,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 		
 		if (optionalEl.isVisible()) {
-			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_OPTIONAL, optional);
+			config.setStringValue(GTACourseNode.GTASK_OBLIGATION, AssessmentObligation.optional.name());
 		}
 		
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
@@ -599,18 +599,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean sample = sampleEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION, sample);
 		if(sample) {
+			config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, solutionVisibleToAllEl.isSelected(0));
 			if(relativeDates) {
 				setRelativeDates(solutionVisibleRelDaysEl, GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE,
 						solutionVisibleRelToEl, GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO);
-				if(optional) {
-					config.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-					config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, solutionVisibleToAllEl.isSelected(0));
-				} else {
-					config.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL);
-				}
 			} else {
 				config.setDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, solutionVisibleAfterEl.getDate());
-				config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, solutionVisibleToAllEl.isSelected(0));
 			}
 		} else {
 			config.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
@@ -665,7 +659,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	}
 	
 	public void onNodeConfigChanged() {
-		boolean newOptional = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
+		boolean newOptional = config.getStringValue(GTACourseNode.GTASK_OBLIGATION).equals(AssessmentObligation.optional.name());
 		if (newOptional != optional) {
 			optional = newOptional;
 			updateSolutionDeadline();
