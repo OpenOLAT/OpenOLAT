@@ -19,6 +19,7 @@
  */
 package org.olat.ims.lti13;
 
+import java.security.KeyPair;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,15 +29,18 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.ims.lti13.LTI13Constants.UserSub;
 import org.olat.ims.lti13.LTI13SharedToolService.ServiceType;
+import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
 import org.olat.ims.lti13.manager.LTI13PlatformSigningPrivateKeyResolver;
 import org.olat.ims.lti13.manager.LTI13ServiceImpl;
 import org.olat.ims.lti13.manager.LTI13SharedToolDeploymentDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDAO;
 import org.olat.ims.lti13.manager.LTI13ToolDeploymentDAO;
+import org.olat.ims.lti13.model.JwtToolBundle;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
@@ -46,10 +50,13 @@ import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.impl.DefaultClaims;
+import io.jsonwebtoken.security.Keys;
 
 /**
  * 
@@ -101,13 +108,80 @@ public class LTI13ServiceTest extends OlatTestCase {
 		Assert.assertNotNull(jwtString);
 		
 		LTI13PlatformSigningPrivateKeyResolver signingResolver = new LTI13PlatformSigningPrivateKeyResolver();
-		Jwt<?,?> jwt = Jwts.parserBuilder()
+		Jws<Claims> jwt = Jwts.parserBuilder()
 				.setSigningKeyResolver(signingResolver)
 				.build()
-				.parse(jwtString);
+				.parseClaimsJws(jwtString);
 		
 		Assert.assertNotNull(jwt);
-		Assert.assertEquals(nonce, ((Claims)jwt.getBody()).get("nonce"));
+		Assert.assertEquals(nonce, jwt.getBody().get("nonce"));
+	}
+	
+	@Test
+	public void getAndVerifyClientAssertionToolWithPublicKey() {
+		String issuer = "https://a.openolat.com";
+		String clientId = UUID.randomUUID().toString();
+		KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
+
+		LTI13Tool tool = lti13Service.createExternalTool("GAV-1", issuer, clientId, "", "", LTI13ToolType.EXTERNAL);
+		tool.setPublicKey(CryptoUtil.getPublicEncoded(keyPair.getPublic()));
+		tool.setPublicKeyTypeEnum(PublicKeyType.KEY);
+		tool = lti13Service.updateTool(tool);
+		dbInstance.commitAndCloseSession();
+
+		String nonce = UUID.randomUUID().toString();
+		
+		// signed jwt
+		JwtBuilder builder = Jwts.builder()
+			//headers
+			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, "RS256")
+			.setIssuer(issuer)
+			.setSubject(clientId)
+			.claim("nonce", nonce);
+		
+		String jwtString = builder
+			.signWith(keyPair.getPrivate())
+			.compact();
+		
+		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(jwtString);
+		Jws<Claims> jws = bundle.getJwt();
+		Assert.assertNotNull(jws);
+		Assert.assertEquals(nonce, jws.getBody().get("nonce"));
+		
+		LTI13Tool bTool = bundle.getTool();
+		Assert.assertNotNull(bTool);
+		Assert.assertEquals(tool, bTool);
+	}
+	
+	@Test(expected = UnsupportedJwtException.class)
+	public void getAndVerifyClientAssertionToolWithout() {
+		String issuer = "https://a.openolat.com";
+		String clientId = UUID.randomUUID().toString();
+		KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
+
+		LTI13Tool tool = lti13Service.createExternalTool("GAV-1", issuer, clientId, "", "", LTI13ToolType.EXTERNAL);
+		tool.setPublicKey(CryptoUtil.getPublicEncoded(keyPair.getPublic()));
+		tool.setPublicKeyTypeEnum(PublicKeyType.KEY);
+		tool = lti13Service.updateTool(tool);
+		dbInstance.commitAndCloseSession();
+
+		String nonce = UUID.randomUUID().toString();
+		
+		// signed jwt
+		JwtBuilder builder = Jwts.builder()
+			//headers
+			.setHeaderParam(LTI13Constants.Keys.TYPE, LTI13Constants.Keys.JWT)
+			.setHeaderParam(LTI13Constants.Keys.ALGORITHM, "RS256")
+			.setIssuer(issuer)
+			.setSubject(clientId)
+			.claim("nonce", nonce);
+		
+		String jwtString = builder
+			.compact();
+		
+		JwtToolBundle bundle = lti13Service.getAndVerifyClientAssertion(jwtString);
+		Assert.assertNull(bundle);
 	}
 	
 	@Test

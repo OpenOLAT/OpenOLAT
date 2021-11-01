@@ -66,7 +66,7 @@ import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 
 /**
@@ -181,13 +181,13 @@ public class LTI13ToolDispatcherDelegate {
 		try {
 			OIDCService service = (OIDCService)stateToRequests.get(state);
 			OIDCApi api = service.getApi();
-			Jwt<?,?> jwt = Jwts.parserBuilder()
+			Jws<Claims> jws = Jwts.parserBuilder()
 				.setSigningKeyResolver(new LTI13SharedToolSigningKeyResolver(api.getPlatform()))
 				.setAllowedClockSkewSeconds(300)
 				.build()
-				.parse(idToken);
+				.parseClaimsJws(idToken);
 
-			Claims body = (Claims)jwt.getBody();
+			Claims body = jws.getBody();
 			String targetLinkUri = body.get(LTI13Constants.Claims.TARGET_LINK_URI.url(), String.class);
 			if(!checkTargetLinkUri(targetLinkUri, api.getDeployment())) {
 				DispatcherModule.sendBadRequest(Errors.INVALID_TARGET_LINK_URI, response);

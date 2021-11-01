@@ -21,7 +21,8 @@ package org.olat.ims.lti13.model;
 
 import org.olat.ims.lti13.LTI13Tool;
 
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 
 /**
  * 
@@ -31,15 +32,15 @@ import io.jsonwebtoken.Jwt;
  */
 public class JwtToolBundle {
 	
-	private final Jwt<?,?> jwt;
+	private final Jws<Claims> jwt;
 	private final LTI13Tool tool;
 	
-	public JwtToolBundle(Jwt<?,?> jwt, LTI13Tool tool) {
+	public JwtToolBundle(Jws<Claims> jwt, LTI13Tool tool) {
 		this.jwt = jwt;
 		this.tool = tool;
 	}
 
-	public Jwt<?, ?> getJwt() {
+	public Jws<Claims> getJwt() {
 		return jwt;
 	}
 

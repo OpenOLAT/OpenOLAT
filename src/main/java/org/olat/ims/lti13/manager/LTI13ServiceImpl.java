@@ -122,7 +122,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -641,12 +641,12 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	public JwtToolBundle getAndVerifyClientAssertion(String clientAssertion) {
 		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
 		try {
-			Jwt<?, ?> jwt = Jwts.parserBuilder()
+			Jws<Claims> jws = Jwts.parserBuilder()
 				.setSigningKeyResolver(signingResolver)
 				.build()
-				.parse(clientAssertion);
-			log.debug("Token: {}", jwt);
-			return new JwtToolBundle(jwt, signingResolver.getTool());
+				.parseClaimsJws(clientAssertion);
+			log.debug("Token: {}", jws);
+			return new JwtToolBundle(jws, signingResolver.getTool());
 		} catch (SignatureException | IllegalArgumentException e) {
 			// if a tool was found with several possible keys, loop them
 			if(signingResolver.getTool() != null && signingResolver.getTool().getPublicKeyTypeEnum() == PublicKeyType.URL) {
@@ -692,10 +692,10 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 	
 	private JwtToolBundle getAndVerify(String clientassertion, PublicKey publicKey, LTI13Tool tool) {
 		try {
-			Jwt<?, ?> jwt = Jwts.parserBuilder()
+			Jws<Claims> jwt = Jwts.parserBuilder()
 				.setSigningKeyResolver(new PublicKeyResolver(publicKey))
 				.build()
-				.parse(clientassertion);
+				.parseClaimsJws(clientassertion);
 			log.debug("Token: {}", jwt);
 			return new JwtToolBundle(jwt, tool);
 		} catch (SignatureException | IllegalArgumentException e) {

@@ -599,7 +599,7 @@ public class ForumWebService {
 		return attachToPost(messageKey, filename, in, request);
 	}
 	
-	protected Response attachToPost(Long messageKey, String filename, InputStream file,  HttpServletRequest request) {
+	private Response attachToPost(Long messageKey, String filename, InputStream file,  HttpServletRequest request) {
 		//load message
 		Message mess = fom.loadMessage(messageKey);
 		if(mess == null) {
@@ -611,7 +611,7 @@ public class ForumWebService {
 		return attachToPost(mess, filename, file, request);
 	}
 
-	protected Response attachToPost(Message mess, String filename, InputStream file,  HttpServletRequest request) {
+	private Response attachToPost(Message mess, String filename, InputStream file,  HttpServletRequest request) {
 		Identity identity = getIdentity(request);
 		if(identity == null) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

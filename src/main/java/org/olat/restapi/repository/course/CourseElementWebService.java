@@ -1458,9 +1458,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			String filename = reader.getValue("filename", "task");
 			String taskFolderPath = TACourseNode.getTaskFolderPathRelToFolderRoot(course, parentNode.getCourseNode());
 			VFSContainer taskFolder = VFSManager.olatRootContainer(taskFolderPath, null);
-			VFSLeaf singleFile = (VFSLeaf) taskFolder.resolve("/" + filename);
+			VFSLeaf singleFile = (VFSLeaf)taskFolder.resolve(filename);
 			if (singleFile == null) {
-				singleFile = taskFolder.createChildLeaf("/" + filename);
+				singleFile = taskFolder.createChildLeaf(filename);
 			}
 			File file = reader.getFile();
 			if(file != null) {
@@ -2407,9 +2407,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 			if(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(moduleConfig.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))) {
 				if(in != null && StringHelper.containsNonWhitespace(filename)) {
 					VFSContainer rootContainer = course.getCourseFolderContainer();
-					VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve("/" + filename);
+					VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve(filename);
 					if (singleFile == null) {
-						singleFile = rootContainer.createChildLeaf("/" + filename);
+						singleFile = rootContainer.createChildLeaf(filename);
 					}
 	
 					moduleConfig.set(STCourseNodeEditController.CONFIG_KEY_FILE, "/" + filename);
@@ -2419,7 +2419,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 					FileUtils.closeSafely(in);
 				} else if (StringHelper.containsNonWhitespace(filename)) {
 					VFSContainer rootContainer = course.getCourseFolderContainer();
-					VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve("/" + filename);
+					VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve(filename);
 					if(singleFile != null) {
 						moduleConfig.set(STCourseNodeEditController.CONFIG_KEY_FILE, "/" + filename);
 					}
@@ -2580,9 +2580,9 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
 			newNode.setDisplayOption(CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT);
 			VFSContainer rootContainer = course.getCourseFolderContainer();
-			VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve("/" + filename);
+			VFSLeaf singleFile = (VFSLeaf) rootContainer.resolve(filename);
 			if (singleFile == null) {
-				singleFile = rootContainer.createChildLeaf("/" + filename);
+				singleFile = rootContainer.createChildLeaf(filename);
 			}
 
 			if(in != null) {

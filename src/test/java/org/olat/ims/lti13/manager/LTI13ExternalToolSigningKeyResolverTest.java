@@ -54,7 +54,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 
 /**
@@ -110,12 +110,12 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 
 		// Verify the JWT with the file public key
 		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
-		Jwt<?,?> jwt = Jwts.parserBuilder()
+		Jws<Claims> jwt = Jwts.parserBuilder()
 				.setSigningKeyResolver(signingResolver)
 				.build()
-				.parse(s);
+				.parseClaimsJws(s);
 		log.debug("Token: {}", jwt);
-		Claims body = (Claims)jwt.getBody();
+		Claims body = jwt.getBody();
 		Assert.assertEquals("top", body.get("secret"));
 	}
 	
@@ -157,12 +157,12 @@ public class LTI13ExternalToolSigningKeyResolverTest extends OlatTestCase {
 		String s = jwsObject.serialize();
 		
 		LTI13ExternalToolSigningKeyResolver signingResolver = new LTI13ExternalToolSigningKeyResolver();
-		Jwt<?,?> jwt = Jwts.parserBuilder()
+		Jws<Claims> jwt = Jwts.parserBuilder()
 				.setSigningKeyResolver(signingResolver)
 				.build()
-				.parse(s);
+				.parseClaimsJws(s);
 		log.debug("Token: {}", jwt);
-		Claims body = (Claims)jwt.getBody();
+		Claims body = jwt.getBody();
 		Assert.assertEquals("tip", body.get("secret"));
 	}
 	
