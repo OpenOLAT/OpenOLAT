@@ -91,7 +91,7 @@ public class KPrimEditorController extends FormBasicController {
 		this.restrictedEdit = restrictedEdit;
 		
 		mapperUri = registerCacheableMapper(null, "KPrimEditorController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(itemFile.toURI()));
+				new ResourcesMapper(itemFile.toURI(), rootDirectory));
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		

@@ -110,7 +110,7 @@ public class UnkownItemEditorController extends FormBasicController {
 		assessmentObjectUri = itemFileRef.toURI();
 		
 		mapperUri = registerCacheableMapper(null, "QTI21AlienElement::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(assessmentObjectUri));
+				new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot));
 		
 		initForm(ureq);
 	}

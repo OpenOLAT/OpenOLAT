@@ -629,9 +629,13 @@ public class AssessmentRenderFunctions {
 				value = getDomAttributeValue(attribute);
 				break;
 			case "href":
-			case "src":
 				String uri = getDomAttributeValue(attribute);
-				value = convertLink(component, resolvedAssessmentItem, uri);
+				value = convertLink(component, resolvedAssessmentItem, "href", uri);
+				break;
+			case "src":
+			case "data":
+				String data = getDomAttributeValue(attribute);
+				value = convertLink(component, resolvedAssessmentItem, "data", data);
 				break;
 			default:
 				value = null;
@@ -666,7 +670,7 @@ public class AssessmentRenderFunctions {
   </xsl:function>
 	 */
 	
-	public static final String convertLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {
+	public static final String convertLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String type, String uri) {
 		if(uri != null && (uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:") || uri.startsWith("data:"))) {
 			return uri;
 		}
@@ -674,11 +678,21 @@ public class AssessmentRenderFunctions {
 		if(!StringHelper.containsNonWhitespace(uri)) {
 			uri = "file";
 		}
+		String path = uri;
+		if(path != null && path.startsWith("../")) {
+			for(int i=0; i<10 &&  path.startsWith("../"); i++) {
+				path = path.substring(3, path	.length());
+			}	
+		}
 		String relativePath = component.relativePathTo(resolvedAssessmentItem);
+		// path is not used to deliver the file, the query parameters is relevant 
+		if(path != null) {
+			path = relativePath + path;
+		}
 		if(uri != null) {
 			relativePath += uri;
 		}
-		return component.getMapperUri() + "/" + relativePath + "?href=" + relativePath;
+		return component.getMapperUri() + "/" + path + "?" + type + "=" + relativePath;
 	}
 	
 	public static final String convertSubmissionLink(AssessmentObjectComponent component, String uri) {

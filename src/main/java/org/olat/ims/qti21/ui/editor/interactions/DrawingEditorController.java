@@ -106,7 +106,7 @@ public class DrawingEditorController extends FormBasicController {
 		this.restrictedEdit = restrictedEdit;
 		
 		mapperUri = registerCacheableMapper(null, "DrawingEditorController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(itemFile.toURI()));
+				new ResourcesMapper(itemFile.toURI(), rootDirectory));
 		initForm(ureq);
 	}
 

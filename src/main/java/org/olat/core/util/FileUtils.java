@@ -744,13 +744,13 @@ public class FileUtils {
 	 * @return
 	 */
 	public static boolean isInSubDirectory(File dir, File file) {
-	    if (file == null) {
-	        return false;
-	    }
-	    if (file.equals(dir)) {
-	        return true;
-	    }
-	    return isInSubDirectory(dir, file.getParentFile());
+		if (dir == null || file == null) {
+			return false;
+		}
+		 
+		Path bFile = dir.toPath();
+		Path normalizedPath = file.toPath().normalize();
+		return normalizedPath.startsWith(bFile);
 	}
 	
 	/**

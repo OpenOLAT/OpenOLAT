@@ -13,7 +13,7 @@
 	#end
 	
 	<div id="${containerId}" class="appletContainer" data-openolat="">
-		<canvas id="${containerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="background-image:url('${r.convertLink($interaction.object.data)}');"></canvas>
+		<canvas id="${containerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="background-image:url('${r.convertLinkFull($interaction.object.data)}');"></canvas>
 		<script>
 		jQuery(function() {
 			jQuery('#${containerId}').selectPointInteraction({

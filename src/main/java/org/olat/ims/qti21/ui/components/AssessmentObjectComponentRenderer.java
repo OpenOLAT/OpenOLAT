@@ -769,59 +769,64 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		Attribute<?> attrId = object.getAttributes().get("id");
 		if(attrId != null && attrId.getValue() != null && attrId.getValue().toString().startsWith("olatFlashMovieViewer")) {
 			//this is a OpenOLAT movie and need to be converted
-			/*
-			<span id="olatFlashMovieViewer213060" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
-			  <script src="/raw/fx-111111x11/movie/player.js"></script>
-			  <script defer="defer">// <![CDATA[
-			    BPlayer.insertPlayer("demo-video.mp4","olatFlashMovieViewer213060",320,240,0,0,"video",undefined,false,false,true,undefined);
-			   // ]]></script>
-			</span>
-			*/
-			String id = attrId.getValue().toString();
-			String uniqueId = id + CodeHelper.getForeverUniqueID();
-			Attribute<?> dataAttr = object.getAttributes().get("data");
-			String data = dataAttr.getValue().toString();
-			Attribute<?> attrDataMovie = object.getAttributes().get("data-oo-movie");
-			String dataMovie = attrDataMovie.getValue().toString();
-			
-			if(data != null && !data.startsWith("http://") && !data.startsWith("https://")) {
-				String relativePath = component.relativePathTo(resolvedAssessmentItem);
-				String src = Settings.createServerURI() + component.getMapperUri();
-				if(!src.endsWith("/") && !relativePath.startsWith("/")) {
-					src += "/";
-				}
-				src += relativePath;
-				if(!src.endsWith("/") && !data.startsWith("/")) {
-					src += "/";
-				}
-				src += data;
-				dataMovie = dataMovie.replace(data, src);
-			}
-			
-			String height = "240";
-			String width = "320";
-			//try to guess the height and width
-			if(dataMovie != null) {
-				String[] dataMovieParts = dataMovie.split(",");
-				if(dataMovieParts.length > 3) {
-					width = dataMovieParts[2];
-					height = dataMovieParts[3];
-				}
-				dataMovie = dataMovie.replace(id, uniqueId);
-			}
-
-			sb.append("<span id=\"").append(uniqueId).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:").append(width).append("px; height:").append(height).append("px;\">\n")
-			  .append(" <script src=\"");
-			Renderer.renderStaticURI(sb, "movie/player.js");
-			sb.append("\"></script>\n")
-			  .append(" <script defer=\"defer\">")
-			  .append("  BPlayer.insertPlayer(").append(dataMovie).append(");\n")
-			  .append(" </script>\n")
-			  .append("</span>\n");
+			renderObjectVideo(sb, attrId, object, component, resolvedAssessmentItem);
 		} else {
 			renderStartHtmlTag(sb, component, resolvedAssessmentItem, object, null);
 			renderEndTag(sb, object);
 		}
+	}
+	
+	private final void renderObjectVideo(StringOutput sb, Attribute<?> attrId, Object object, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem) {
+		/*
+		<span id="olatFlashMovieViewer213060" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
+		  <script src="/raw/fx-111111x11/movie/player.js"></script>
+		  <script defer="defer">// <![CDATA[
+		    BPlayer.insertPlayer("demo-video.mp4","olatFlashMovieViewer213060",320,240,0,0,"video",undefined,false,false,true,undefined);
+		   // ]]></script>
+		</span>
+		*/
+		String id = attrId.getValue().toString();
+		String uniqueId = id + CodeHelper.getForeverUniqueID();
+		Attribute<?> dataAttr = object.getAttributes().get("data");
+		String data = dataAttr.getValue().toString();
+		Attribute<?> attrDataMovie = object.getAttributes().get("data-oo-movie");
+		String dataMovie = attrDataMovie.getValue().toString();
+		
+		if(data != null && !data.startsWith("http://") && !data.startsWith("https://")) {
+			String relativePath = component.relativePathTo(resolvedAssessmentItem);
+			String src = Settings.createServerURI() + component.getMapperUri();
+			if(!src.endsWith("/") && !relativePath.startsWith("/")) {
+				src += "/";
+			}
+			src += relativePath;
+			if(!src.endsWith("/") && !data.startsWith("/")) {
+				src += "/";
+			}
+			src += data;
+			dataMovie = dataMovie.replace(data, src);
+		}
+		
+		String height = "240";
+		String width = "320";
+		//try to guess the height and width
+		if(dataMovie != null) {
+			String[] dataMovieParts = dataMovie.split(",");
+			if(dataMovieParts.length > 3) {
+				width = dataMovieParts[2];
+				height = dataMovieParts[3];
+			}
+			dataMovie = dataMovie.replace(id, uniqueId);
+		}
+
+		sb.append("<span id=\"").append(uniqueId).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:").append(width).append("px; height:").append(height).append("px;\">\n")
+		  .append(" <script src=\"");
+		Renderer.renderStaticURI(sb, "movie/player.js");
+		sb.append("\"></script>\n")
+		  .append(" <script defer=\"defer\">")
+		  .append("  BPlayer.insertPlayer(").append(dataMovie).append(");\n")
+		  .append(" </script>\n")
+		  .append("</span>\n");
+		
 	}
 	
 	protected final void renderInfoControl(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,

@@ -294,7 +294,9 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 				columnsModel.addFlexiColumnModel(toolsCol);
 				withTools = true;
 			} else if(recordingsHandler.canDeleteRecordings()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", BRecordingsCols.presentation.ordinal(), "delete",
+						new BooleanCellRenderer(
+								new StaticFlexiCellRenderer(translate("delete"), "delete"), null)));
 			}
 		}
 		
@@ -326,7 +328,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		BigBlueButtonRecordingRow row = new BigBlueButtonRecordingRow(recording, pusblished);
 		if(administrator || moderator) {
 			String recId = recording.getRecording().getRecordId();
-			if(withPublish) {
+			if(withPublish && BigBlueButtonRecording.PRESENTATION.equals(recording.getRecording().getType())) {
 				FormLink publishLink = uifactory.addFormLink("publish-".concat(recId),
 						"publish", "publish.recording", tableEl);
 				row.setPublishLink(publishLink);

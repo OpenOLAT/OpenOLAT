@@ -95,7 +95,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		this.restrictedEdit = restrictedEdit;
 		
 		mapperUri = registerCacheableMapper(null, "DrawingEditorController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(itemFile.toURI()));
+				new ResourcesMapper(itemFile.toURI(), rootDirectory));
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		initForm(ureq);

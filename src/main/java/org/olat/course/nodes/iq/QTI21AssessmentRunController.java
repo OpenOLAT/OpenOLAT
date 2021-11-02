@@ -840,7 +840,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 			File submissionDir = qtiService.getSubmissionDirectory(session);
 			String mapperUri = registerCacheableMapper(ureq, "QTI21CNResults::" + session.getTestEntry().getKey(),
-					new ResourcesMapper(assessmentObjectUri, submissionDir));
+					new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, submissionDir));
 
 			resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(), true, session,
 					fUnzippedDirRoot, mapperUri, null, getDeliveryOptions().getAssessmentResultsOptions(), false, false, true);

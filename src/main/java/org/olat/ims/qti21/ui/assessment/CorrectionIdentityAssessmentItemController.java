@@ -125,7 +125,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		this.assessmentEntryList = assessmentEntryList;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		
-		resourcesMapper = new ResourcesMapper(assessmentObjectUri, submissionDirectoryMaps);
+		resourcesMapper = new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, submissionDirectoryMaps);
 		mapperUri = registerCacheableMapper(null, "QTI21CorrectionsResources::" + testEntry.getKey(), resourcesMapper);
 		
 		initForm(ureq);	

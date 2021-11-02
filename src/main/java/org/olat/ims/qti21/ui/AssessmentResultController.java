@@ -605,7 +605,7 @@ public class AssessmentResultController extends FormBasicController {
 		ControllerCreator creator = (uureq, wwControl) -> {
 			File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
 			String mapperUriForPdf = registerCacheableMapper(uureq, "QTI21DetailsResources::" + candidateSession.getKey(),
-					new ResourcesMapper(assessmentObjectUri, submissionDir));
+					new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, submissionDir));
 			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, anonym,
 					candidateSession, fUnzippedDirRoot, mapperUriForPdf, submissionMapperUri, options, false, true, false);
 			printViewCtrl.flc.contextPut("printCommand", Boolean.TRUE);
