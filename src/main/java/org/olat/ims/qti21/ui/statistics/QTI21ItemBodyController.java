@@ -86,7 +86,7 @@ public class QTI21ItemBodyController extends FormBasicController {
 		inputResourceLocator = ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 		assessmentObjectUri = itemFileRef.toURI();
 		mapperUri = registerCacheableMapper(null, "QTI21StatisticsElement::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(assessmentObjectUri));
+				new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot));
 
 		initForm(ureq);
 	}

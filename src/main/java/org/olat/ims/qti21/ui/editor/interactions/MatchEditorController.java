@@ -111,7 +111,7 @@ public class MatchEditorController extends FormBasicController {
 		this.restrictedEdit = restrictedEdit;
 		
 		mapperUri = registerCacheableMapper(null, "MatchEditorController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(itemFile.toURI()));
+				new ResourcesMapper(itemFile.toURI(), rootDirectory));
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		

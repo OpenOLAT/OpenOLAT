@@ -282,7 +282,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 			File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
 			mapperUri = registerCacheableMapper(ureq, "QTI21Resources::" + testEntry.getKey(),
-					new ResourcesMapper(assessmentObjectUri, submissionDir));
+					new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, submissionDir));
 	
 			/* Handle immediate end of test session */
 			testSessionController.setCurrentRequestTimestamp(ureq.getRequestTimestamp());

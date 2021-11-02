@@ -40,7 +40,7 @@
 			</script> 
 			
 			#foreach($maxChoice in $maxChoices)
-            	<div class="o_item o_$responseIdentifier" style="width:${interaction.object.width}px; height:${interaction.object.height}px; background-image:url('${r.convertLink($interaction.object.data)}');"> </div>
+            	<div class="o_item o_$responseIdentifier" style="width:${interaction.object.width}px; height:${interaction.object.height}px; background-image:url('${r.convertLinkFull($interaction.object.data)}');"> </div>
             #end
 		#end
 		</div>

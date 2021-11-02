@@ -76,7 +76,7 @@ public class UploadEditorController extends FormBasicController {
 		this.restrictedEdit = restrictedEdit;
 		
 		mapperUri = registerCacheableMapper(null, "UploadEditorController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(itemFile.toURI()));
+				new ResourcesMapper(itemFile.toURI(), rootDirectory));
 		initForm(ureq);
 	}
 

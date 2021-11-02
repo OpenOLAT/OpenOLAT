@@ -205,15 +205,15 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String convertLink(String uri) {
-		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
+		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, "href", uri);
 	}
 	
 	public String convertLinkFull(String uri) {
-		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
+		return AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, "data", uri);
 	}
 	
 	public String convertLinkAbsolut(String uri) {
-		String url = AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, uri);
+		String url = AssessmentRenderFunctions.convertLink(avc, resolvedAssessmentItem, "data", uri);
 		String path = Settings.getServerContextPathURI();
 		return path.concat(url);
 	}

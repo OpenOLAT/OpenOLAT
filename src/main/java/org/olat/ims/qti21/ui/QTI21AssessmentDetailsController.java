@@ -614,7 +614,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 		File submissionDir = qtiService.getSubmissionDirectory(session);
 		String mapperUri = registerCacheableMapper(ureq, "QTI21DetailsResources::" + session.getKey(),
-				new ResourcesMapper(assessmentObjectUri, submissionDir));
+				new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, submissionDir));
 		
 		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, false, session,
 				fUnzippedDirRoot, mapperUri, null, QTI21AssessmentResultsOptions.allOptions(), true, true, true);
@@ -697,7 +697,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 		ControllerCreator creator = (uureq, wwControl) -> {
 			String mapperUri = registerCacheableMapper(uureq, "QTI21DetailsResources::" + session.getKey(),
-					new ResourcesMapper(assessmentObjectUri, submissionDir));
+					new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, submissionDir));
 			final AssessmentTestSession ssession = qtiService.getAssessmentTestSession(row.getTestSession().getKey());
 			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, false,
 					ssession, fUnzippedDirRoot, mapperUri, null, QTI21AssessmentResultsOptions.allOptions(), false, true, false);

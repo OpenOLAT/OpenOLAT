@@ -96,7 +96,6 @@
 	<!-- Apache CXF Servlet -->
 	<servlet>
         <servlet-name>RESTServletAdaptor</servlet-name>
-        <display-name>CXF Servlet</display-name>
         <servlet-class>
             org.apache.cxf.transport.servlet.CXFServlet
         </servlet-class>

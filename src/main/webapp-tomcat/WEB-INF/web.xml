@@ -93,7 +93,6 @@
 	<!-- Apache CXF Servlet -->
 	<servlet>
         <servlet-name>RESTServletAdaptor</servlet-name>
-        <display-name>CXF Servlet</display-name>
         <servlet-class>
             org.apache.cxf.transport.servlet.CXFServlet
         </servlet-class>
@@ -267,7 +266,7 @@
     
     <security-constraint>
 		<web-resource-collection>
-			<web-resource-name><strong>restricted methods</strong></web-resource-name>
+			<web-resource-name>restricted methods</web-resource-name>
 			<url-pattern>/*</url-pattern>
 			<http-method>TRACE</http-method>
 		</web-resource-collection>

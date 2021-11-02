@@ -373,6 +373,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 
 	@Override
 	public VFSContainer createChildContainer(String name) {
+		name = cleanFilename(name); // backward compatibility
 		File fNewFile = new File(getBasefile(), name);
 		if(!isInPath(name)) {
 			log.warn("Could not create a new container::{} in container::{} - file out of parent directory", name, getBasefile().getAbsolutePath());
@@ -388,6 +389,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 
 	@Override
 	public VFSLeaf createChildLeaf(String name) {
+		name = cleanFilename(name); // backward compatibility
 		File fNewFile = new File(getBasefile(), name);
 		try {
 			if(!isInPath(name)) {
@@ -406,6 +408,20 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			return null;
 		}
 		return new LocalFileImpl(fNewFile, this);
+	}
+	
+	/**
+	 * It was allowed to have a filename starting with /, but
+	 * it's not legal.
+	 * 
+	 * @param name The name
+	 * @return Name without starting /
+	 */
+	private String cleanFilename(String name) {
+		if(name != null && name.startsWith("/")) {
+			name = name.substring(1, name.length());
+		}
+		return name;
 	}
 
 	@Override

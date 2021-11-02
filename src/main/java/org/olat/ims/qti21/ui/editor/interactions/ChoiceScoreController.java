@@ -84,7 +84,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private int counter = 0;
 	
 	public ChoiceScoreController(UserRequest ureq, WindowControl wControl,
-			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, File itemFileRef,
+			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, File itemFileRef, File rootDirectory,
 			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
@@ -93,7 +93,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		
 		URI assessmentObjectUri = itemFileRef.toURI();
 		mapperUri = registerCacheableMapper(null, "ChoiceScoreController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(assessmentObjectUri));
+				new ResourcesMapper(assessmentObjectUri, rootDirectory));
 		
 		initForm(ureq);
 		validateScoreOfCorrectAnswer();
