@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 
 /**
  * 
@@ -74,6 +75,7 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 			case open: return row.isPublished();
 			case publish: return row.getPublishLink();
 			case tools: return row.getToolsLink();
+			case presentation: return BigBlueButtonRecording.PRESENTATION.equals(row.getType());
 			default: return "ERROR";
 		}
 	}
@@ -100,7 +102,8 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 		open("table.header.recording.open"),
 		publish("table.header.publish"),
 		permanent("table.header.recording.permanent"),
-		tools("table.header.actions");
+		tools("table.header.actions"),
+		presentation("table.header.recording.type");
 		
 		private final String i18nHeaderKey;
 		

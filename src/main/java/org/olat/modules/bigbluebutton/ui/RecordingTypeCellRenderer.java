@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.bigbluebutton.BigBlueButtonRecording;
 
 /**
  * 
@@ -43,7 +44,7 @@ public class RecordingTypeCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator trans) {
-		if("presentation".equals(cellValue)) {
+		if(BigBlueButtonRecording.PRESENTATION.equals(cellValue)) {
 			render(target, translator.translate("recording.type.presentation"), "o_video_icon");
 		} else if ("podcast".equals(cellValue)) {
 			render(target, translator.translate("recording.type.podcast"), "o_podcast_icon");
