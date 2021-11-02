@@ -94,7 +94,7 @@ public class OrderEditorController extends FormBasicController implements SyncAs
 		this.restrictedEdit = restrictedEdit;
 
 		mapperUri = registerCacheableMapper(null, "OrderEditorController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(itemFile.toURI()));
+				new ResourcesMapper(itemFile.toURI(), rootDirectory));
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		

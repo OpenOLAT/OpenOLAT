@@ -137,7 +137,7 @@ public class HotspotEditorController extends FormBasicController {
 		this.restrictedEdit = restrictedEdit;
 		
 		mapperUri = registerCacheableMapper(null, "HotspotEditorController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(itemFile.toURI()));
+				new ResourcesMapper(itemFile.toURI(), rootDirectory));
 		backgroundMapperUri = registerMapper(ureq, new BackgroundMapper(itemFile));
 		initForm(ureq);
 	}

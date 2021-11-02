@@ -318,7 +318,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, itemFile, restrictedEdit, readOnly);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, itemFile, rootDirectory, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -336,7 +336,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, itemFile, restrictedEdit, readOnly);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, itemFile, rootDirectory, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -372,7 +372,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, true,
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, true,
 				restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
@@ -391,7 +391,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, true,
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory, true,
 				restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
@@ -410,7 +410,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new TrueFalseEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, false,
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, itemFile, rootDirectory,false,
 				restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), matchItemBuilder,
@@ -521,7 +521,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new HottextEditorController(ureq, getWindowControl(), hottextItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, itemFile, restrictedEdit, readOnly);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, itemFile, rootDirectory, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), hottextItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),

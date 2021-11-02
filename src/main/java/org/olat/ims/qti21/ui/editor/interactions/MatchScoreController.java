@@ -86,7 +86,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	private Map<DirectedPairValue, MatchScoreWrapper> scoreWrappers = new HashMap<>();
 	
 	public MatchScoreController(UserRequest ureq, WindowControl wControl, MatchAssessmentItemBuilder itemBuilder,
-			AssessmentItemRef itemRef, File itemFileRef, boolean sourceLeft, boolean restrictedEdit, boolean readOnly) {
+			AssessmentItemRef itemRef, File itemFileRef, File rootDirectory, boolean sourceLeft, boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
@@ -95,7 +95,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		
 		URI assessmentObjectUri = itemFileRef.toURI();
 		mapperUri = registerCacheableMapper(null, "MatchScoreController::" + CodeHelper.getRAMUniqueID(),
-				new ResourcesMapper(assessmentObjectUri));
+				new ResourcesMapper(assessmentObjectUri, rootDirectory));
 		
 		initForm(ureq);
 	}

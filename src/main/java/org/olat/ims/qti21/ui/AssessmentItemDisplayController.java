@@ -156,7 +156,8 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
 		submissionDirToDispose = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDirToDispose));
+		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(),
+				new ResourcesMapper(itemFileRef.toURI(), fUnzippedDirRoot, submissionDirToDispose));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -185,7 +186,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
 		submissionDirToDispose = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDirToDispose));
+		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), fUnzippedDirRoot, submissionDirToDispose));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -221,7 +222,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		itemSession = qtiService.getOrCreateAssessmentItemSession(candidateSession, null, assessmentItemIdentifier);
 		
 		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDir));
+		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), fUnzippedDirRoot, submissionDir));
 		
 		itemSessionController = enterSession(ureq);
 		

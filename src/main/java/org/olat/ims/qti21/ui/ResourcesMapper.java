@@ -47,24 +47,28 @@ public class ResourcesMapper implements Mapper {
 	private static final String SUBMISSION_SUBPATH = "submissions/";
 	private static final String ASSESSMENTDOCS_SUBPATH = "assessmentdocs/";
 	
+	private final File rootDirectory;
 	private final URI assessmentObjectUri;
 	private final File submissionDirectory;
 	private final Map<Long,File> submissionDirectoryMaps;
 	
-	public ResourcesMapper(URI assessmentObjectUri) {
+	public ResourcesMapper(URI assessmentObjectUri, File rootDirectory) {
 		this.assessmentObjectUri = assessmentObjectUri;
+		this.rootDirectory = rootDirectory;
 		submissionDirectory = null;
 		submissionDirectoryMaps = null;
 	}
 	
-	public ResourcesMapper(URI assessmentObjectUri, File submissionDirectory) {
+	public ResourcesMapper(URI assessmentObjectUri, File rootDirectory, File submissionDirectory) {
 		this.assessmentObjectUri = assessmentObjectUri;
 		this.submissionDirectory = submissionDirectory;
+		this.rootDirectory = rootDirectory;
 		submissionDirectoryMaps = null;
 	}
 	
-	public ResourcesMapper(URI assessmentObjectUri, Map<Long,File> submissionDirectoryMaps) {
+	public ResourcesMapper(URI assessmentObjectUri, File rootDirectory, Map<Long,File> submissionDirectoryMaps) {
 		this.assessmentObjectUri = assessmentObjectUri;
+		this.rootDirectory = rootDirectory;
 		this.submissionDirectoryMaps = submissionDirectoryMaps;
 		submissionDirectory = null;
 	}
@@ -76,8 +80,14 @@ public class ResourcesMapper implements Mapper {
 		try {
 			File root = new File(assessmentObjectUri.getPath());
 			String href = request.getParameter("href");
+			String data = request.getParameter("data");
+			
+			boolean asData = false;
 			if(StringHelper.containsNonWhitespace(href)) {
 				filename = href;	
+			} else if(StringHelper.containsNonWhitespace(data)) {
+				filename = data;
+				asData = true;
 			} else if(StringHelper.containsNonWhitespace(relPath)) {
 				filename = relPath;
 				if(filename.startsWith("/")) {
@@ -89,8 +99,12 @@ public class ResourcesMapper implements Mapper {
 			if(file.exists()) {
 				if(file.getName().endsWith(".xml")) {
 					resource = new ForbiddenMediaResource();
-				} else if(FileUtils.isInSubDirectory(root.getParentFile(), file)) {
-					resource = new FileMediaResource(file, true);
+				} else if(FileUtils.isInSubDirectory(rootDirectory, file)) {
+					if(asData) {
+						resource = new QTI21FileMediaResource(file);
+					} else {
+						resource = new FileMediaResource(file, true);
+					}
 				} else {
 					resource = new ForbiddenMediaResource();
 				}
