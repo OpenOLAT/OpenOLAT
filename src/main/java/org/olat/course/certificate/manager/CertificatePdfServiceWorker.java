@@ -30,6 +30,10 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -341,15 +345,36 @@ public class CertificatePdfServiceWorker {
 	public static class DateFormatter {
 
 		public String formatDate(Date date, String language) {
-			Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
-			Formatter formatter = Formatter.getInstance(locale);
-			return formatter.formatDate(date);
+			return formatDateInternal(date, language, 0, 0, 0, false);
 		}
-		
+		public String formatDateRelative(Date date, String language, int days, int months, int years) {
+			return formatDateInternal(date, language, days, months, years, false);
+		}		
 		public String formatDateLong(Date date, String language) {
+			return formatDateInternal(date, language, 0, 0, 0, true);
+		}
+		public String formatDateLongRelative(Date date, String language, int days, int months, int years) {
+			return formatDateInternal(date, language, days, months, years, true);
+		}		
+		
+		private String formatDateInternal(Date baseLineDate, String language, int days, int months, int years, boolean longFormat) {
+			if (baseLineDate == null) return null;
+			Date date = baseLineDate;
+			if (days != 0 || months != 0 || years != 0) {
+				LocalDate localDate = LocalDateTime.ofInstant(baseLineDate.toInstant(),ZoneId.systemDefault()).toLocalDate();
+				Period period = Period.of(years, months, days);
+				LocalDate relativeDate = localDate.plus(period);
+				date = Date.from(relativeDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());				
+			}
+			
 			Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
-			Formatter formatter = Formatter.getInstance(locale);
-			return formatter.formatDateLong(date);
+			Formatter formatter = Formatter.getInstance(locale);			
+			
+			if (longFormat) {
+				return formatter.formatDateLong(date);				
+			} else {
+				return formatter.formatDate(date);
+			}
 		}
 	}
 
