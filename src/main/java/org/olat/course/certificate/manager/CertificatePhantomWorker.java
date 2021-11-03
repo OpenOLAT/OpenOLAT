@@ -325,13 +325,13 @@ public class CertificatePhantomWorker {
 			return formatDateInternal(date, language, 0, 0, 0, false);
 		}
 		public String formatDateRelative(Date date, String language, int days, int months, int years) {
-			return formatDateInternal(date, language, 0, 0, 0, false);
+			return formatDateInternal(date, language, days, months, years, false);
 		}		
 		public String formatDateLong(Date date, String language) {
 			return formatDateInternal(date, language, 0, 0, 0, true);
 		}
 		public String formatDateLongRelative(Date date, String language, int days, int months, int years) {
-			return formatDateInternal(date, language, 0, 0, 0, true);
+			return formatDateInternal(date, language, days, months, years, true);
 		}		
 		
 		private String formatDateInternal(Date baseLineDate, String language, int days, int months, int years, boolean longFormat) {
