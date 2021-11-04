@@ -28,6 +28,8 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -55,6 +57,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
@@ -445,8 +448,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
-        super.postCopy(envMapper, processType, course, sourceCrourse, context);
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+        super.postCopy(envMapper, processType, course, sourceCourse, context);
         postImportCopy(envMapper);
     }
 	
@@ -461,8 +464,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		boolean changed = false;
 		if(StringHelper.containsNonWhitespace(calculator.getScoreExpression())) {
 			String score = calculator.getScoreExpression();
-			String processedExpression = KeyAndNameConverter.convertExpressionNameToKey(score, envMapper);
-			processedExpression = KeyAndNameConverter.convertExpressionKeyToKey(score, envMapper);
+			String processedExpression = KeyAndNameConverter.convertExpressionKeyToKey(score, envMapper);
 			if(!processedExpression.equals(score)) {
 				calculator.setScoreExpression(processedExpression);
 				changed = true;
@@ -471,8 +473,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		
 		if(StringHelper.containsNonWhitespace(calculator.getPassedExpression())) {
 			String passed = calculator.getPassedExpression();
-			String processedExpression = KeyAndNameConverter.convertExpressionNameToKey(passed, envMapper);
-			processedExpression = KeyAndNameConverter.convertExpressionKeyToKey(passed, envMapper);
+			String processedExpression = KeyAndNameConverter.convertExpressionKeyToKey(passed, envMapper);
 			if(!processedExpression.equals(passed)) {
 				calculator.setScoreExpression(processedExpression);
 				changed = true;
@@ -483,36 +484,45 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			setScoreCalculator(calculator);
 		}
 	}
-
+	
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
 		
-		//if backwards compatible, convert expression to use names
-		if(backwardsCompatible) {
-			ScoreCalculator calculator = getScoreCalculator();
-			boolean changed = false;
-			if(StringHelper.containsNonWhitespace(calculator.getScoreExpression())) {
-				String score = calculator.getScoreExpression();
-				String processedExpression = KeyAndNameConverter.convertExpressionKeyToName(score, envMapper);
-				if(!processedExpression.equals(score)) {
-					calculator.setScoreExpression(processedExpression);
-					changed = true;
-				}	
+		// update course node references
+		// getScoreCalculator()
+		
+		STCourseNode srcNode = (STCourseNode) sourceCourseNode;
+
+		List<String> snodes = srcNode.getScoreCalculator().getSumOfScoreNodes();
+		if (snodes != null) {
+			getScoreCalculator().setSumOfScoreNodes(
+				snodes.stream()
+					.map(envMapper::getNodeTargetIdent)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList()));
+			if (!getScoreCalculator().isExpertMode()) {
+				getScoreCalculator().setScoreExpression(getScoreCalculator().getScoreExpressionFromEasyModeConfiguration());
 			}
-			
-			if(StringHelper.containsNonWhitespace(calculator.getPassedExpression())) {
-				String passed = calculator.getPassedExpression();
-				String processedExpression = KeyAndNameConverter.convertExpressionKeyToName(passed, envMapper);
-				if(!processedExpression.equals(passed)) {
-					calculator.setScoreExpression(processedExpression);
-					changed = true;
-				}	
+		}
+
+		List<String> spnodes = srcNode.getScoreCalculator().getPassedNodes();
+		if (spnodes != null) {
+			getScoreCalculator().setPassedNodes(
+					spnodes.stream()
+						.map(envMapper::getNodeTargetIdent)
+						.filter(Objects::nonNull)
+						.collect(Collectors.toList()));
+			if (!getScoreCalculator().isExpertMode()) {
+				getScoreCalculator().setPassedExpression(getScoreCalculator().getPassedExpressionFromEasyModeConfiguration());
 			}
-			
-			if(changed) {
-				setScoreCalculator(calculator);
-			}
+		}
+
+		if (getScoreCalculator().isExpertMode()) {
+			getScoreCalculator().setPassedExpression(KeyAndNameConverter
+					.replaceIdsInCondition(getScoreCalculator().getPassedExpression(), envMapper));
+			getScoreCalculator().setScoreExpression(KeyAndNameConverter
+					.replaceIdsInCondition(getScoreCalculator().getScoreExpression(), envMapper));			
 		}
 	}
 
@@ -520,7 +530,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public List<ConditionExpression> getConditionExpressions() {
 		List<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
-		if (parentsConditions.size() > 0) {
+		if (!parentsConditions.isEmpty()) {
 			retVal = new ArrayList<>(parentsConditions);
 		} else {
 			retVal = new ArrayList<>();

@@ -771,17 +771,23 @@ public class TACourseNode extends GenericCourseNode {
 		postImportCondition(conditionScoring, envMapper);
 		postImportCondition(conditionSolution, envMapper);
 	}
-
-	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(conditionTask, envMapper, backwardsCompatible);
-		postExportCondition(conditionDrop, envMapper, backwardsCompatible);
-		postExportCondition(conditionReturnbox, envMapper, backwardsCompatible);
-		postExportCondition(conditionScoring, envMapper, backwardsCompatible);
-		postExportCondition(conditionSolution, envMapper, backwardsCompatible);
-	}
 	
+	@Override
+	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodeConditions(sourceCourseNode, envMapper);
+		
+		// drop conditions
+		configureOnlyGeneralAccess(((TACourseNode)sourceCourseNode).conditionDrop, conditionDrop, envMapper);
+		// returnbox condition
+		configureOnlyGeneralAccess(((TACourseNode)sourceCourseNode).conditionReturnbox, conditionReturnbox, envMapper);
+		// scoring conditions
+		configureOnlyGeneralAccess(((TACourseNode)sourceCourseNode).conditionScoring, conditionScoring, envMapper);
+		// solution conditions
+		configureOnlyGeneralAccess(((TACourseNode)sourceCourseNode).conditionSolution, conditionSolution, envMapper);
+		// task conditions
+		configureOnlyGeneralAccess(((TACourseNode)sourceCourseNode).conditionTask, conditionTask, envMapper);
+	}
+
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new TAAssessmentConfig(getModuleConfiguration()));

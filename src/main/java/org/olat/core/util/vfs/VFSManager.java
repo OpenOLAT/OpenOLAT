@@ -51,6 +51,8 @@ public class VFSManager {
 	
 	private static final Logger log = Tracing.createLoggerFor(VFSManager.class);
 	
+	public static final String SEP = "/";
+	
 	/**
 	 * The method create an instance of VFSLeaf
 	 * but doesn't create the file.
@@ -572,7 +574,9 @@ public class VFSManager {
 		for (int i = sp; i < targetA.length; i++) {
 			buffer.append(targetA[i] + "/");
 		}
-		buffer.deleteCharAt(buffer.length() - 1);
+		if(buffer.length() > 0) {
+			buffer.deleteCharAt(buffer.length() - 1);
+		}
 		return buffer.toString();
 	}
 
@@ -667,7 +671,7 @@ public class VFSManager {
 				rootDir = rootWriteContainer;
 			}
 		}
-		if (rootDir != null && rootDir instanceof LocalFolderImpl) {
+		if (rootDir instanceof LocalFolderImpl) {
 			// finished, we found a local folder we can use to write
 			return new ContainerAndFile(rootDir, relFilePath);
 		} else {
@@ -685,14 +689,17 @@ public class VFSManager {
 	 * @param name
 	 * @return A non existing name based on the given name in the root directory
 	 */
-	public static String similarButNonExistingName(VFSContainer root,
-			String name) {
+
+	public static String similarButNonExistingName(VFSContainer root, String name) {
+		return similarButNonExistingName(root, name, "");
+	}
+	
+	public static String similarButNonExistingName(VFSContainer root, String name, String numberPrefix) {
 		VFSItem existingItem = null;
 		String newName = name;
 		existingItem = root.resolve(newName);
-		int i = 1;
-		while (existingItem != null) {
-			newName = FileUtils.appendNumberAtTheEndOfFilename(name, i++);
+		for(int i = 1; existingItem != null && i<1000; i++) {
+			newName = FileUtils.appendNumberAtTheEndOfFilename(name, i, numberPrefix);
 			existingItem = root.resolve(newName);
 		}
 		return newName;
@@ -888,5 +895,50 @@ public class VFSManager {
 			return localFile.getBasefile() != null && localFile.getBasefile().exists();
 		}
 		return false;
+	}
+	
+	public static final String trimSlash(String path) {
+		if(path != null && path.startsWith(SEP)) {
+			path = path.substring(1, path.length());
+		}
+		if(path != null && path.endsWith(SEP)) {
+			path = path.substring(0, path.length() - 1);
+		}
+		return path;
+	}
+	
+	public static final String removeLeadingSlash(String path) {
+		if(path != null && path.startsWith(SEP)) {
+			path = path.substring(1, path.length());
+		}
+		return path;
+	}
+	
+	public static final String appendLeadingSlash(String path) {
+		if(path == null || path.length() == 0) {
+			return SEP;
+		}
+		if(!path.startsWith(SEP)) {
+			return SEP.concat(path);
+		}
+		return path;
+	}
+	
+	/**
+	 * 
+	 * @param path The path of a directory
+	 * @return Append slash at both ends of the path if needed
+	 */
+	public static final String appendDirectorySlash(String path) {
+		if(path == null || path.length() == 0) {
+			return SEP;
+		}
+		if(!path.startsWith(SEP)) {
+			path = SEP.concat(path);
+		}
+		if(!path.endsWith(SEP)) {
+			path += SEP;
+		}
+		return path;
 	}
 }

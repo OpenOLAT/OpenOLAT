@@ -30,12 +30,15 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -129,8 +132,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNodeSecurityCallback nodeSecCallback, boolean small) {
 		// Use normal view as peekview
-		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, false);
-		return controller;
+		return new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, false);
 	}
 
 	@Override
@@ -138,6 +140,28 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, true);
 		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, "o_ll_icon");
 		return controller;
+	}
+	
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+
+		List<LLModel> links =  getLinks();
+		for(LLModel link:links) {
+			String target = link.getTarget();
+			if(!target.contains("://") && !target.contains("/library/")) {
+				String renamedTarget = envMapper.getRenamedPath(target);
+				if(renamedTarget != null) {
+					renamedTarget = VFSManager.appendLeadingSlash(renamedTarget);
+					link.setTarget(renamedTarget);
+				}
+			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<LLModel> getLinks() {
+		return (List<LLModel>)getModuleConfiguration().get(CONF_LINKLIST);
 	}
 
 	@Override

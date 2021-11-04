@@ -61,6 +61,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeConfigController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -458,7 +459,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
 		
 		if (context != null) {
@@ -529,7 +530,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		postImportCondition(preConditionVisibility, envMapper);
 	}
 	
-	protected void postImportCondition(Condition condition, CourseEnvironmentMapper envMapper) {
+	protected final void postImportCondition(Condition condition, CourseEnvironmentMapper envMapper) {
 		if(condition == null) return;
 		
 		if(condition.isExpertMode()) {
@@ -566,49 +567,49 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			condition.setConditionExpression(condString);
 		}
 	}
-
+	
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		postExportCondition(preConditionAccess, envMapper, backwardsCompatible);
-		postExportCondition(preConditionVisibility, envMapper, backwardsCompatible);
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		postImportCourseNodeConditions(sourceCourseNode, envMapper);
 	}
 	
-	protected void postExportCondition(Condition condition, CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		if(condition == null) return;
-		
-		boolean easy = StringHelper.containsNonWhitespace(condition.getConditionFromEasyModeConfiguration());
-		if(easy) {
-			//already processed?
-			if(condition.getEasyModeGroupAccessIdList() != null 
-					|| condition.getEasyModeGroupAreaAccessIdList() != null) {
-			
-				String groupNames = envMapper.toGroupNames(condition.getEasyModeGroupAccessIdList());
-				condition.setEasyModeGroupAccess(groupNames);
-				String areaNames = envMapper.toAreaNames(condition.getEasyModeGroupAreaAccessIdList());
-				condition.setEasyModeGroupAreaAccess(areaNames);
-				String condString = condition.getConditionFromEasyModeConfiguration();
-				if(backwardsCompatible) {
-					condString = KeyAndNameConverter.convertExpressionKeyToName(condString, envMapper);
-				}
-				condition.setConditionExpression(condString);
-			}
-		} else if(condition.isExpertMode() && backwardsCompatible) {
-			String expression = condition.getConditionExpression();
-			if(StringHelper.containsNonWhitespace(expression)) {
-				String processExpression = KeyAndNameConverter.convertExpressionKeyToName(expression, envMapper);
-				if(!expression.equals(processExpression)) {
-					condition.setConditionExpression(processExpression);
-				}
-			}
-		}
-		
-		if(backwardsCompatible) {
-			condition.setEasyModeGroupAreaAccessIds(null);
-			condition.setEasyModeGroupAccessIds(null);
-			//condition.setConditionUpgraded(null);
+	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
+		if(envMapper.isLearningPathNodeAccess() || envMapper.isSourceCourseLearningPathNodeAccess()) {
+			// Precondition access / visibility are no longer used in the learning path node access course type 
+			removeCourseNodeCondition(preConditionAccess);
+			removeCourseNodeCondition(preConditionVisibility);
+		} else {
+			configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionAccess, preConditionAccess, envMapper);
+			configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionVisibility, preConditionVisibility, envMapper);
 		}
 	}
-	
+
+	protected final void removeCourseNodeCondition(Condition condition) {
+		if(condition != null) {
+			condition.setExpertMode(false);
+			condition.clearEasyConfig();
+		}
+	}
+
+	protected final void configureOnlyGeneralAccess(Condition sourceCondition, Condition targetCondition, CourseEnvironmentMapper envMapper) {
+		if(sourceCondition == null || targetCondition == null) return;
+		
+		if (sourceCondition.isExpertMode()) {
+			String updatedExpression = KeyAndNameConverter.replaceIdsInCondition(sourceCondition.getConditionExpression(), envMapper);
+			targetCondition.setConditionExpression(updatedExpression);
+		} else {
+			// if expert mode is not set, remove easy group and area rules
+			targetCondition.setEasyModeGroupAccess(null);
+			targetCondition.setEasyModeGroupAccessIds(null);
+			targetCondition.setEasyModeGroupAreaAccess(null);
+			targetCondition.setEasyModeGroupAreaAccessIds(null);
+			// remove also begin and end dates as they don't make sense anymore in the new course time frame
+			targetCondition.setEasyModeBeginDate(null);
+			targetCondition.setEasyModeEndDate(null);
+			// recalculate the new condition expression
+			targetCondition.setConditionExpression(targetCondition.getConditionFromEasyModeConfiguration());			
+		}
+	}
 
 	@Override
 	public String getShortName() {
@@ -808,6 +809,16 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		
 		// No dates found
 		return false;		
+	}
+	
+	@Override
+	public boolean hasBusinessGroups() {
+		return false;
+	}
+	
+	@Override
+	public boolean hasBusinessGroupAreas() {
+		return false;
 	}
 	
 	@Override

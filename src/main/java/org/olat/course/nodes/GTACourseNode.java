@@ -70,6 +70,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.LearningPathNodeHandler;
@@ -193,6 +194,18 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
+	}
+	
+	@Override
+	public boolean hasBusinessGroups() {
+		List<Long> groupKeys = getModuleConfiguration().getList(GTACourseNode.GTASK_GROUPS, Long.class);
+		return !groupKeys.isEmpty() || super.hasBusinessGroups();
+	}
+
+	@Override
+	public boolean hasBusinessGroupAreas() {
+		List<Long> areaKeys = getModuleConfiguration().getList(GTACourseNode.GTASK_AREAS, Long.class);
+		return !areaKeys.isEmpty() || super.hasBusinessGroupAreas();
 	}
 	
 	@Override
@@ -602,15 +615,32 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 		mc.set(GTACourseNode.GTASK_AREAS, areaKeys);
 	}
+	
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		gtaManager.createIfNotExists(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), this);
+		
+		if(settings.getCopyType() == CopyType.copy) {
+			copyFiles((GTACourseNode)sourceCourseNode, sourceCourse, this, course);
+		}
+	}
 
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		GTACourseNode cNode = (GTACourseNode)super.createInstanceForCopy(isNewTitle, course, author);
+		copyFiles(this, course, cNode, course);
+		return cNode;
+	}
+	
+	private static final void copyFiles(GTACourseNode sourceNode, ICourse sourceCourse, GTACourseNode targetNode, ICourse targetCourse) {
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
 		//copy tasks
-		File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
-		File copyTaskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), cNode);
+		File taskDirectory = gtaManager.getTasksDirectory(sourceCourse.getCourseEnvironment(), sourceNode);
+		File copyTaskDirectory = gtaManager.getTasksDirectory(targetCourse.getCourseEnvironment(), targetNode);
 		FileUtils.copyDirContentsToDir(taskDirectory, copyTaskDirectory, false, "copy task course node");
 		
 		File taskDefinitions = new File(taskDirectory.getParentFile(), GTAManager.TASKS_DEFINITIONS);
@@ -620,8 +650,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		//copy solutions
-		File solutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), this);
-		File copySolutionsDirectory = gtaManager.getSolutionsDirectory(course.getCourseEnvironment(), cNode);
+		File solutionsDirectory = gtaManager.getSolutionsDirectory(sourceCourse.getCourseEnvironment(), sourceNode);
+		File copySolutionsDirectory = gtaManager.getSolutionsDirectory(targetCourse.getCourseEnvironment(), targetNode);
 		FileUtils.copyDirContentsToDir(solutionsDirectory, copySolutionsDirectory, false, "copy task course node solutions");
 
 		File solutionDefinitions = new File(solutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
@@ -629,9 +659,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			File copySolutionDefinitions = new File(copySolutionsDirectory.getParentFile(), GTAManager.SOLUTIONS_DEFINITIONS);
 			FileUtils.copyFileToFile(solutionDefinitions, copySolutionDefinitions, false);
 		}
-		
-		return cNode;
 	}
+	
 
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String path, String charset) {

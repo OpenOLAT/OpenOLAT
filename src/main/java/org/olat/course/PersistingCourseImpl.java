@@ -306,8 +306,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		
 		CourseFactory.openCourseEditSession(getResourceableId());
 		
-		Structure runStructure = getRunStructure();
-		runStructure.getRootNode().removeAllChildren();
+		getRunStructure().getRootNode().removeAllChildren();
 		
 		// Mark entire structure as dirty / new so the user can re-publish
 		CourseEditorTreeNode editorRootNode = (CourseEditorTreeNode) editorTreeModel.getRootNode();
@@ -382,7 +381,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 			try(InputStream in=vfsItem.getInputStream()) {
 				CoreSpringFactory.getImpl(VFSRepositoryService.class).addVersion(vfsItem, null, false, "", in);
 			} catch (Exception e) {
-				log.error("Cannot versioned " + fileName, e);
+				log.error("Cannot versioned {}", fileName, e);
 			}
 		}
 		XStream xstream = CourseXStreamAliases.getWriteCourseXStream();
@@ -405,7 +404,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 			XStream xstream = CourseXStreamAliases.getReadCourseXStream();
 			return XStreamHelper.readObject(xstream, (VFSLeaf)vfsItem);
 		} catch (Exception e) {
-			log.error("Cannot read course tree file: " + fileName, e);
+			log.error("Cannot read course tree file: {}", fileName, e);
 			throw new CorruptedCourseException("Cannot resolve file: " + fileName + " course=" + toString(), e);
 		}
 	}
@@ -473,26 +472,6 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		return "Course:[" + getResourceableId() + "," + courseTitle + "], " + super.toString();
 	}
 
-}
-
-class NodePostExportVisitor implements Visitor {
-	private final CourseEnvironmentMapper envMapper;
-	private final boolean backwardsCompatible;
-	
-	public NodePostExportVisitor(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		this.envMapper = envMapper;
-		this.backwardsCompatible = backwardsCompatible;
-	}
-	
-	@Override
-	public void visit(INode node) {
-		if(node instanceof CourseEditorTreeNode) {
-			node = ((CourseEditorTreeNode)node).getCourseNode();
-		}
-		if(node instanceof CourseNode) {
-			((CourseNode)node).postExport(envMapper, backwardsCompatible);
-		}
-	}
 }
 
 class NodePostImportVisitor implements Visitor {

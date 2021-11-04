@@ -111,14 +111,8 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	}
 	
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(preConditionAccess, envMapper, backwardsCompatible);
-	}
-	
-	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
-		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
 		
 		if (context != null) {
 			ModuleConfiguration config = getModuleConfiguration();

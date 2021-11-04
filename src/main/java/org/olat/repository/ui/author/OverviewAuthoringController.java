@@ -38,6 +38,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 
 /**
  * 
@@ -63,7 +64,9 @@ public class OverviewAuthoringController extends BasicController implements Acti
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 		
-		authorListCtrl = new AuthorListController(ureq, wControl);
+		AuthorListConfiguration config = AuthorListConfiguration.allEnabled();
+		SearchAuthorRepositoryEntryViewParams searchParams = new SearchAuthorRepositoryEntryViewParams(getIdentity(), roles);
+		authorListCtrl = new AuthorListController(ureq, wControl, searchParams, config);
 		listenTo(authorListCtrl);
 		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);

@@ -64,3 +64,36 @@
 	}
 }
 
+
+/* Copy */
+.o_import_course_nodes {
+	.o_error {
+		padding: 0;
+		margin: 0;
+		border: 0;
+		background-color: inherit;
+		color: $brand-danger;	
+	}
+	
+	.o_warning {
+		padding: 0;
+		margin: 0;
+		border: 0;
+		background-color: inherit;
+		color: $brand-warning;	
+	}
+	
+	.o_info {
+		padding: 0;
+		margin: 0;
+		border: 0;
+		background-color: inherit;
+	}
+	
+	td>p {
+		padding: 0;
+		margin: 0;
+	}
+}
+
+

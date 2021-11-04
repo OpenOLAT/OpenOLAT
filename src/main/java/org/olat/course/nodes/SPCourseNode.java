@@ -27,6 +27,7 @@ package org.olat.course.nodes;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -34,16 +35,24 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
+import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.sp.SPPeekviewController;
@@ -53,6 +62,7 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 
 /**
  * Description:<br>
@@ -62,6 +72,8 @@ import org.olat.repository.RepositoryEntry;
  *         GmbH</a>)
  */
 public class SPCourseNode extends AbstractAccessableCourseNode {
+	
+	private static final Logger log = Tracing.createLoggerFor(SPCourseNode.class);
 
 	private static final long serialVersionUID = -4565145351110778757L;
 	public static final String TYPE = "sp";
@@ -164,6 +176,32 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
+	}
+	
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		if(settings.getCopyType() == CopyType.copy) {
+			VFSContainer sourceCourseFolderCont = sourceCourse.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+			VFSContainer targetCourseFolderCont = course.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+			
+			String filePath = sourceCourseNode.getModuleConfiguration().getStringValue(SPEditController.CONFIG_KEY_FILE);
+			VFSLeaf sourceLeaf = (VFSLeaf)sourceCourseFolderCont.resolve(filePath);
+			
+			String targetRelPath = envMapper.getRenamedPathOrSource(filePath);
+			VFSItem targetItem = targetCourseFolderCont.resolve(targetRelPath);
+			if(targetItem == null && sourceLeaf.exists()) {
+				// document is copied by the process before this step
+				log.warn("Single page's file not copied: {}", targetRelPath);
+			}
+			if(StringHelper.containsNonWhitespace(targetRelPath)) {
+				targetRelPath = VFSManager.appendLeadingSlash(targetRelPath);
+				getModuleConfiguration().setStringValue(SPEditController.CONFIG_KEY_FILE, targetRelPath);
+			}
+		}
 	}
 
 	/**

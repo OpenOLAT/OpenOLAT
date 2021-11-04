@@ -400,7 +400,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 				fNewFile.getParentFile().mkdirs();
 			}
 			if (!fNewFile.createNewFile()) {
-				log.warn("Could not create a new leaf::{} in container::{} - file alreay exists", name, getBasefile().getAbsolutePath());
+				log.warn("Could not create a new leaf::{} in container::{} - file already exists", name, getBasefile().getAbsolutePath());
 				return null;
 			} 
 		} catch (Exception e) {

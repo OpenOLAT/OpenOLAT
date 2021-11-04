@@ -49,6 +49,10 @@ public class CourseContainerOptions {
 	public static final CourseContainerOptions withoutElements() {
 		return new CourseContainerOptions(true, false, true, false, false);
 	}
+	
+	public static final CourseContainerOptions courseFolder() {
+		return new CourseContainerOptions(false, false, true, false, false);
+	}
 
 	public boolean withSharedResource() {
 		return withSharedResource;

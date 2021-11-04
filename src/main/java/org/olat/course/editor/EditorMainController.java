@@ -93,6 +93,9 @@ import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.editor.importnodes.ImportCourseNodes1SelectCourse;
+import org.olat.course.editor.importnodes.ImportCourseNodesContext;
+import org.olat.course.editor.importnodes.ImportCourseNodesFinishStepCallback;
 import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -133,6 +136,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	protected static final String TB_ACTION = "o_tb_do_";
 
 	private static final String CMD_COPYNODE = "copyn";
+	private static final String CMD_IMPORT = "importn";
 	private static final String CMD_MOVENODE = "moven";
 	private static final String CMD_DELNODE = "deln";
 	private static final String CMD_PUBLISH = "pbl";
@@ -143,6 +147,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 
 	// NLS support
 	private static final String NLS_OVERVIEW = "command.overview";
+	private static final String NLS_IMPORT = "command.import.nodes";
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
 	private static final String NLS_HEADER_INSERTNODES = "header.insertnodes";
@@ -179,6 +184,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private ChooseNodeController chooseNodeTypeCtr;
 	private QuickPublishController quickPublishCtr;
 	private NodeStatusController nodeStatusCtr;
+	private StepsMainRunController importNodesCtrl;
 	
 	private LockResult lockEntry;
 	
@@ -189,6 +195,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private Link previewLink, publishLink, closeLink;
 	private Link overviewLink;
 	private Link createNodeLink, deleteNodeLink, moveNodeLink, copyNodeLink;
+	private Link importNodesLink;
 	
 	private CloseableModalController cmc;
 	private CloseableCalloutWindowController calloutCtrl;
@@ -201,7 +208,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private final NodeAccessType nodeAccessType;
 	
 	private static final Logger log = Tracing.createLoggerFor(EditorMainController.class);
-	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
+	private static final String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
 	
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
@@ -309,6 +316,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				nodeTools.addComponent(moveNodeLink);
 				copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "o_icon_copy");
 				nodeTools.addComponent(copyNodeLink);
+				
+				importNodesLink = LinkFactory.createToolLink(CMD_IMPORT, translate(NLS_IMPORT), this,
+						"o_icon_upload");
 
 				overviewLink = LinkFactory.createToolLink(CMD_OVERVIEW, translate(NLS_OVERVIEW), this,
 						"o_icon_description");
@@ -346,6 +356,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	public void initToolbar() {
 		stackPanel.addTool(createNodeLink, Align.left);
 		stackPanel.addTool(nodeTools, Align.left);
+		stackPanel.addTool(importNodesLink, Align.left);
 		stackPanel.addTool(statusLink, Align.right);
 		stackPanel.addTool(overviewLink, Align.right);
 		stackPanel.addTool(previewLink, Align.right);
@@ -412,6 +423,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doMove(ureq, course, true);
 			} else if(statusLink == source) {
 				doOpenStatusOverview(ureq);
+			} else if(importNodesLink == source) {
+				doImportCourseNodes(ureq);
 			}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Component,Event)]", e);			
@@ -462,7 +475,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		chosenNode.copyConfigurationTo(newNode, course, getIdentity());
 		//insert the node
 		CourseEditorTreeNode newCetn = course.getEditorTreeModel().insertCourseNodeAt(newNode, parentNode.getCourseNode(), position);
-		doInsert(ureq, newNode);
+		doPostInsert(ureq, newNode);
 		
 		//copy the children
 		while(cetn.getChildCount() > 0) {
@@ -471,12 +484,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 		
 		//set all dirty
-		TreeVisitor tv = new TreeVisitor( new Visitor() {
-			@Override
-			public void visit(INode node) {
-				((CourseEditorTreeNode)node).setDirty(true);
-			}
-		}, newCetn, true);
+		TreeVisitor tv = new TreeVisitor(node
+				-> ((CourseEditorTreeNode)node).setDirty(true),
+				newCetn, true);
 		tv.visitAll();
 		
 		//mark as deleted
@@ -634,7 +644,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			if(cmd.startsWith(TB_ACTION)) {
 				CourseNode newNode = chooseNodeTypeCtr.getCreatedNode();
 				cleanUp();		
-				doInsert(ureq, newNode);
+				doPostInsert(ureq, newNode);
 			} else if(CMD_MULTI_SP.equals(cmd)) {
 				cleanUp();
 				launchSinglePagesWizard(ureq, course);
@@ -681,19 +691,23 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				removeAsListenerAndDispose(checklistWizard);
 				checklistWizard = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					menuTree.setDirty(true);
 					CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
-					euce.getCourseEditorEnv().validateCourse();
-					StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-					updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+					dirtyTreeAndValidation(ureq);
 				}
+			}
+		} else if (source == importNodesCtrl) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					doPostImport(ureq, course, importNodesCtrl.getRunContext());
+				}
+				cleanUp();
 			}
 		} else if (source == cmc) {
 			cleanUp();
 		} else if (source == moveCopyController) {	
 			cmc.deactivate();
-			if (event == Event.DONE_EVENT) {					
-				menuTree.setDirty(true); // setDirty when moving
+			if (event == Event.DONE_EVENT) {
 				// Repositioning to move/copy course node
 				String nodeId = moveCopyController.getCopyNodeId();				
 				if (nodeId != null) {
@@ -701,11 +715,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					euce.getCourseEditorEnv().setCurrentCourseNodeId(nodeId);					
 					CourseNode copyNode = cetm.getCourseNode(nodeId);
 					initNodeEditor(ureq, copyNode);
-				}												
-				euce.getCourseEditorEnv().validateCourse();
-				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
-				
+				}
+				dirtyTreeAndValidation(ureq);
 			} else if (event == Event.FAILED_EVENT) {				
 				getWindowControl().setError("Error in copy of subtree.");				
 			} else if (event == Event.CANCELLED_EVENT) {
@@ -730,10 +741,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			cmc = null;
 
 			if(event == Event.CHANGED_EVENT) {
-				menuTree.setDirty(true);
-				euce.getCourseEditorEnv().validateCourse();
-				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
-				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
+				dirtyTreeAndValidation(ureq);
 			}
 		} else if (source == alternateCtr) {
 			cmc.deactivate();
@@ -754,16 +762,24 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 		}
     } catch (RuntimeException e) {
-			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Controller,Event)]", e);			
+			log.warn("{} [in event(UserRequest,Controller,Event)]", RELEASE_LOCK_AT_CATCH_EXCEPTION, e);			
 			this.dispose();
 			throw e;
 		}
+	}
+	
+	private void dirtyTreeAndValidation(UserRequest ureq) {
+		menuTree.setDirty(true);
+		euce.getCourseEditorEnv().validateCourse();
+		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
+		updateCourseStatusMessages(ureq.getLocale(), courseStatus);
 	}
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(moveCopyController);
 		removeAsListenerAndDispose(multiSPChooserCtr);
 		removeAsListenerAndDispose(chooseNodeTypeCtr);
+		removeAsListenerAndDispose(importNodesCtrl);
 		removeAsListenerAndDispose(overviewCtrl);
 		removeAsListenerAndDispose(alternateCtr);
 		removeAsListenerAndDispose(calloutCtrl);
@@ -773,6 +789,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		moveCopyController = null;
 		chooseNodeTypeCtr = null;
 		multiSPChooserCtr = null;
+		importNodesCtrl = null;
 		overviewCtrl = null;
 		alternateCtr = null;
 		calloutCtrl = null;
@@ -831,6 +848,38 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), moveCopyController.getInitialComponent(), true, translate(NLS_INSERTNODE_TITLE));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doImportCourseNodes(UserRequest ureq) {
+		if(guardModalController(importNodesCtrl)) return;
+		removeAsListenerAndDispose(importNodesCtrl);
+		removeAsListenerAndDispose(cmc);
+		
+		TreeNode tn = menuTree.getSelectedNode();
+		if (tn == null) {
+			showError(NLS_MOVECOPYNODE_ERROR_SELECTFIRST);
+			return;
+		}
+		
+		CourseEditorTreeNode cetn = cetm.getCourseEditorNodeById(tn.getIdent());
+		ImportCourseNodesContext importContext = new ImportCourseNodesContext(cetn, repoEntry);
+		ImportCourseNodes1SelectCourse step = new ImportCourseNodes1SelectCourse(ureq, importContext);
+		StepRunnerCallback stop = new ImportCourseNodesFinishStepCallback(repoEntry, importContext);
+		
+		String title = translate("import.course.nodes.title");
+		importNodesCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
+		listenTo(importNodesCtrl);
+		getWindowControl().pushAsModalDialog(importNodesCtrl.getInitialComponent());
+	}
+	
+	private void doPostImport(UserRequest ureq, ICourse course, StepsRunContext runContext) {
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		ImportCourseNodesContext importCourseContext = (ImportCourseNodesContext)runContext.get("importCourseContext");	
+		if(importCourseContext != null && importCourseContext.getFirstNode() != null) {
+			doPostInsert(ureq, importCourseContext.getFirstNode().getCourseNode());	
+		} else {
+			dirtyTreeAndValidation(ureq);
+		}	
 	}
 	
 	private void doQuickPublish(UserRequest ureq, ICourse course) {
@@ -918,7 +967,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		}
 	}
 	
-	private void doInsert(UserRequest ureq, CourseNode newNode) {
+	private void doPostInsert(UserRequest ureq, CourseNode newNode) {
 		menuTree.setSelectedNodeId(newNode.getIdent());
 		// update the current node in the editor course environment
 		euce.getCourseEditorEnv().setCurrentCourseNodeId(newNode.getIdent());

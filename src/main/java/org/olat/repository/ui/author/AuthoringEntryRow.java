@@ -92,8 +92,10 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	private final String url;
 	
 	private FormLink markLink;
+	private FormLink infosLink;
 	private FormLink toolsLink;
 	private FormLink referencesLink;
+	private FormLink detailsLink;
 	
 	public AuthoringEntryRow(RepositoryEntryAuthorView view, String fullnameAuthor) {
 		key = view.getKey();
@@ -341,12 +343,28 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 		this.toolsLink = toolsLink;
 	}
 	
+	public FormLink getInfosLink() {
+		return infosLink;
+	}
+
+	public void setInfosLink(FormLink infosLink) {
+		this.infosLink = infosLink;
+	}
+
 	public FormLink getReferencesLink() {
 		return referencesLink;
 	}
 
 	public void setReferencesLink(FormLink referencesLink) {
 		this.referencesLink = referencesLink;
+	}
+
+	public FormLink getDetailsLink() {
+		return detailsLink;
+	}
+
+	public void setDetailsLink(FormLink detailsLink) {
+		this.detailsLink = detailsLink;
 	}
 
 	@Override

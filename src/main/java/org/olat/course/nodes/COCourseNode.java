@@ -47,6 +47,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.co.COEditController;
@@ -115,8 +116,8 @@ public class COCourseNode extends AbstractAccessableCourseNode {
     }
     
     @Override
-    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
-        super.postCopy(envMapper, processType, course, sourceCrourse, context);
+    public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+        super.postCopy(envMapper, processType, course, sourceCourse, context);
         postImportCopy(envMapper);
     }
     
@@ -168,55 +169,36 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         
         //remap the deprecated emailGroupsIds
         List<Long> deprecatedGroupKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, Long.class);
-        if(deprecatedGroupKeys != null && deprecatedGroupKeys.size() > 0) {
+        if(deprecatedGroupKeys != null && !deprecatedGroupKeys.isEmpty()) {
         	deprecatedGroupKeys = envMapper.toGroupKeyFromOriginalKeys(deprecatedGroupKeys);
             mc.set(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS, deprecatedGroupKeys);
         }
         
         //remap the deprecated emailAreasIds
         List<Long> deprecatedAreaKeys = mc.getList(COEditController.CONFIG_KEY_EMAILTOAREA_IDS, Long.class);
-        if(deprecatedAreaKeys != null && deprecatedAreaKeys.size() > 0) {
+        if(deprecatedAreaKeys != null && !deprecatedAreaKeys.isEmpty()) {
         	deprecatedAreaKeys = envMapper.toAreaKeyFromOriginalKeys(deprecatedAreaKeys);
             mc.set(COEditController.CONFIG_KEY_EMAILTOAREA_IDS, deprecatedAreaKeys);
         }
     }
+    
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		ModuleConfiguration mc = getModuleConfiguration();
+		mc.set("emailToGroupCoachesIds", null);
+		mc.set("emailToGroupCoaches", null);
 
-    @Override
-    public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-        super.postExport(envMapper, backwardsCompatible);
-        
-        ModuleConfiguration mc = getModuleConfiguration();
-        @SuppressWarnings("unchecked")
-        List<Long> coachesGroupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID);
-        List<Long> participantsGroupKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID);
-        if(coachesGroupKeys != null ) {
-            String coachesGroupNames = envMapper.toGroupNames(coachesGroupKeys);
-            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP, coachesGroupNames);
-        }
-        if(participantsGroupKeys != null){
-            String participantsGroupNames = envMapper.toGroupNames(participantsGroupKeys);
-            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, participantsGroupNames);
-        }
-        
-        @SuppressWarnings("unchecked")
-        List<Long> coachesAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
-        if(coachesAreaKeys != null) {
-            String coachesAreaNames = envMapper.toAreaNames(coachesAreaKeys);
-            mc.set(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA, coachesAreaNames);
-        }
-        
-        @SuppressWarnings("unchecked")
-        List<Long> participantsAreaKeys = (List<Long>) mc.get(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID);
-        if(participantsAreaKeys != null) {
-            String participantsAreaNames = envMapper.toAreaNames(participantsAreaKeys);    
-            mc.set(COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, participantsAreaNames);
-        }
-        
-        if(backwardsCompatible) {
-            mc.remove(COEditController.CONFIG_KEY_EMAILTOGROUP_IDS);
-            mc.remove(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS);
-        }
-    }
+		mc.set("emailToGroupParticipantsIds", null);
+		mc.set("emailToGroupParticipants", null);
+
+		mc.set("emailToAreaCoachesIds", null);
+		mc.set("emailToAreaCoaches", null);
+
+		mc.set("emailToAreaParticipantsIds", null);
+		mc.set("emailToAreaParticipants", null);
+	}
 
     @Override
     public StatusDescription isConfigValid() {
@@ -230,7 +212,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
          */
         @SuppressWarnings("unchecked")
         List<String> emailList = (List<String>) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
-        boolean isValid = (emailList != null && emailList.size() > 0);
+        boolean isValid = (emailList != null && !emailList.isEmpty());
         Boolean email2owners = getModuleConfiguration().getBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS);
         isValid = isValid || (email2owners != null && email2owners.booleanValue());
         String email2AreaCoaches = (String) getModuleConfiguration().get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA);

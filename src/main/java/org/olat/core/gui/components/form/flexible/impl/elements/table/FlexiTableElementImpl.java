@@ -107,7 +107,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	ControllerEventListener, ComponentEventListener, Disposable {
 	
 	//settings
-	private boolean multiSelect;
+	private SelectionMode multiSelect;
 	private FlexiTableRendererType rendererType = FlexiTableRendererType.classic;
 	private FlexiTableRendererType[] availableRendererType = new FlexiTableRendererType[] {
 		FlexiTableRendererType.classic
@@ -331,14 +331,22 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.footer = footer;
 	}
 
-	@Override
-	public boolean isMultiSelect() {
+	public SelectionMode getSelectionMode() {
 		return multiSelect;
 	}
 	
 	@Override
 	public void setMultiSelect(boolean multiSelect) {
-		this.multiSelect = multiSelect;
+		this.multiSelect = multiSelect ? SelectionMode.multi : SelectionMode.disabled;
+	}
+
+	@Override
+	public void setSelection(boolean enabled, boolean multiSelection) {
+		if(enabled) {
+			multiSelect = multiSelection ? SelectionMode.multi : SelectionMode.single;
+		} else {
+			multiSelect = SelectionMode.disabled;
+		}
 	}
 
 	@Override
@@ -1123,7 +1131,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(checkbox)) {
-			toogleSelectIndex(checkbox);
+			toogleSelectIndex(ureq, checkbox);
 		} else if(StringHelper.containsNonWhitespace(details)) {
 			toogleDetails(details, ureq);
 		} else if(StringHelper.containsNonWhitespace(page)) {
@@ -1931,7 +1939,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void updateSelectAllToggle() {
-		if (isMultiSelect() && multiSelectedIndex != null) {
+		if (multiSelect == SelectionMode.multi && multiSelectedIndex != null) {
 			int count = dataModel.getRowCount();
 			int selectCount = multiSelectedIndex.size();
 			boolean showSelectAll = (selectCount == 0);
@@ -2007,7 +2015,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	protected void doSelect(UserRequest ureq, int index) {
-		getRootForm().fireFormEvent(ureq, new SelectionEvent(ROM_SELECT_EVENT, index, this, FormEvent.ONCLICK));
+		getRootForm().fireFormEvent(ureq, new SelectionEvent(ROW_SELECT_EVENT, index, this, FormEvent.ONCLICK));
 	}
 	
 	protected void doSelect(UserRequest ureq, String selectAction, int index) {
@@ -2137,6 +2145,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	public void setMultiSelectedIndex(Set<Integer> set) {
 		if(multiSelectedIndex == null) {
 			multiSelectedIndex = new HashMap<>();
+		} else {
+			multiSelectedIndex.clear();
 		}
 		for(Integer index:set) {
 			Object objectRow = dataModel.getObject(index.intValue());
@@ -2163,7 +2173,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return 0;
 	}
 	
-	protected void toogleSelectIndex(String selection) {
+	protected void toogleSelectIndex(UserRequest ureq, String selection) {
 		if(multiSelectedIndex == null) {
 			multiSelectedIndex = new HashMap<>();
 		}
@@ -2182,10 +2192,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				if(multiSelectedIndex.remove(row) != null && allSelectedNeedLoadOfWholeModel) {
 					allSelectedNeedLoadOfWholeModel = false;
 				}
+				doSelect(ureq, ROW_UNCHECKED_EVENT, row.intValue());
 			} else {
 				Object objectRow = dataModel.getObject(row.intValue());
 				multiSelectedIndex.put(row, objectRow);
-			}	
+				doSelect(ureq, ROW_CHECKED_EVENT, row.intValue());
+			}
 		} catch (NumberFormatException e) {
 			//can happen
 		}
@@ -2451,5 +2463,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				disposableFormItem.dispose();				
 			}
 		}
+	}
+	
+	public enum SelectionMode {
+		
+		multi,
+		single,
+		disabled
+		
 	}
 }

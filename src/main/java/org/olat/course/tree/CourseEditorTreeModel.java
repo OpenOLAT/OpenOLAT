@@ -84,7 +84,7 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 		newCetn.setNewnode(true);
 		newCetn.setDirty(true);
 		ctnParent.insert(newCetn, pos);
-		log.debug("insertCourseNodeAt - nodeId: " + newNode.getIdent());
+		log.debug("insertCourseNodeAt - nodeId: {}", newNode.getIdent());
 		return newCetn;
 	}
 	
@@ -101,7 +101,7 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 		newCetn.setNewnode(true);
 		newCetn.setDirty(true);
 		ctnParent.addChild(newCetn);
-			log.debug("addCourseNode - nodeId: " + newNode.getIdent());
+			log.debug("addCourseNode - nodeId: {}", newNode.getIdent());
 		return newCetn;
 }
 

@@ -1,4 +1,5 @@
 /**
+
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
@@ -64,6 +65,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
@@ -391,25 +393,60 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		CoreSpringFactory.getImpl(NotificationsManager.class).delete(folderSubContext);
 		// delete filesystem
 		File fFolderRoot = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
-		if (fFolderRoot.exists()) FileUtils.deleteDirsAndFiles(fFolderRoot, true, true);
+		if (fFolderRoot.exists()) {
+			FileUtils.deleteDirsAndFiles(fFolderRoot, true, true);
+		}
 	}
 	
+	/**
+	 * Post import course method
+	 */
 	@Override
 	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
 		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionUploaders, envMapper);
 		postImportCondition(preConditionDownloaders, envMapper);
 	}
-
+	
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(preConditionUploaders, envMapper, backwardsCompatible);
-		postExportCondition(preConditionDownloaders, envMapper, backwardsCompatible);
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		if(((BCCourseNode)sourceCourseNode).isSharedFolder()) {
+			// shared -> do nothing
+		} else if(sourceCourseNode.getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)) {
+			// auto -> copy
+			if(settings.getCopyType() == CopyType.copy) {
+				File targetFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), this));
+				targetFolderNodeDir.mkdirs();
+				final File srcFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(sourceCourse.getCourseEnvironment(), sourceCourseNode));
+				FileUtils.copyDirContentsToDir(srcFolderNodeDir, targetFolderNodeDir, false, "");
+			}
+		} else if(StringHelper.containsNonWhitespace(sourceCourseNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH))) {
+			String relPath = sourceCourseNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH);
+			String newRelPath = VFSManager.appendDirectorySlash(envMapper.getRenamedPathOrSource(relPath));
+			getModuleConfiguration().setStringValue(BCCourseNode.CONFIG_SUBPATH, newRelPath);
+		}
+		
+		if(envMapper.isLearningPathNodeAccess()) {
+			removeCustomPreconditions();
+		}
 	}
 	
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodeConditions(sourceCourseNode, envMapper);
+		
+		if(envMapper.isLearningPathNodeAccess()) {
+			removeCustomPreconditions();
+		} else {
+			configureOnlyGeneralAccess(((BCCourseNode)sourceCourseNode).preConditionDownloaders, preConditionDownloaders, envMapper);
+			configureOnlyGeneralAccess(((BCCourseNode) sourceCourseNode).preConditionUploaders, preConditionUploaders, envMapper);
+		}
+	}
+
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		if (context != null) {
 			CopyType resourceCopyType = null;
 			
@@ -476,7 +513,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 		
-		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
 	}
 
 	@Override
@@ -484,7 +521,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		if (hasCustomPreConditions()) {
 			List<ConditionExpression> retVal;
 			List<ConditionExpression> parentsConditions = super.getConditionExpressions();
-			if (parentsConditions.size() > 0) {
+			if (!parentsConditions.isEmpty()) {
 				retVal = new ArrayList<>(parentsConditions);
 			} else {
 				retVal = new ArrayList<>();

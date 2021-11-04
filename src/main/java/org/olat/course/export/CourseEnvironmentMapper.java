@@ -23,12 +23,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.group.model.BGAreaReference;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupReference;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -36,14 +42,56 @@ import org.olat.group.model.BusinessGroupReference;
  */
 public class CourseEnvironmentMapper {
 
+
 	private final List<BGAreaReference> areas = new ArrayList<>();
 	private final List<BusinessGroupReference> groups = new ArrayList<>();
+	private final Map<String,String> courseNodeIdentMap = new HashMap<>();
 	private final Map<String,Map<String,String>> mapUniqueKeys = new HashMap<>();
+	private final Map<String,String> renamedPath = new HashMap<>();
 	
 	private Identity author;
+	private Boolean learningPathNodeAccess;
+	private final RepositoryEntry courseEntry;
+
+	private final RepositoryEntry sourceCourseEntry;
+	private Boolean sourceCourseLearningPathNodeAccess;
 	
-	public CourseEnvironmentMapper() {
-		//
+	public CourseEnvironmentMapper(RepositoryEntry courseEntry, RepositoryEntry sourceCourseEntry) {
+		this.courseEntry = courseEntry;
+		this.sourceCourseEntry = sourceCourseEntry;
+	}
+	
+	/**
+	 * @return true if the target course is of type learning path.
+	 */
+	public boolean isLearningPathNodeAccess() {
+		if(learningPathNodeAccess == null) {
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			boolean lpnap = LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType());
+			learningPathNodeAccess = Boolean.valueOf(lpnap);
+		}
+		return learningPathNodeAccess.booleanValue();
+	}
+
+	public boolean isSourceCourseLearningPathNodeAccess() {
+		if(sourceCourseLearningPathNodeAccess == null) {
+			ICourse course = CourseFactory.loadCourse(sourceCourseEntry);
+			boolean lpnap = LearningPathNodeAccessProvider.TYPE.equals(course.getCourseConfig().getNodeAccessType().getType());
+			sourceCourseLearningPathNodeAccess = Boolean.valueOf(lpnap);
+		}
+		return sourceCourseLearningPathNodeAccess.booleanValue();
+	}
+	
+	public void addNodeIdentKeyPair(String sourceIdent, String targetIdent) {
+		courseNodeIdentMap.put(sourceIdent, targetIdent);
+	}
+	
+	public String getNodeTargetIdent(String sourceIdent) {
+		return courseNodeIdentMap.get(sourceIdent);
+	}
+	
+	public Set<String> getNodeSourceIds() {
+		return courseNodeIdentMap.keySet();
 	}
 	
 	public Identity getAuthor() {
@@ -70,6 +118,44 @@ public class CourseEnvironmentMapper {
 			return mapUniqueKeys.get(ident).get(sourceKey);
 		}
 		return null;
+	}
+	
+	public boolean isRenamedPath(String sourcePath) {
+		sourcePath = VFSManager.trimSlash(sourcePath);
+		return renamedPath.containsKey(sourcePath);
+	}
+	
+	/**
+	 * 
+	 * @param sourcePath The source path
+	 * @return A target path (without leading slash) or null
+	 */
+	public String getRenamedPath(String sourcePath) {
+		sourcePath = VFSManager.trimSlash(sourcePath);
+		return renamedPath.get(sourcePath);
+	}
+	
+	/**
+	 * 
+	 * @param sourcePath The source path
+	 * @return A target path (without leading slash) if stored or the  source path if not
+	 */
+	public String getRenamedPathOrSource(String sourcePath) {
+		String path = VFSManager.trimSlash(sourcePath);
+		String targetPath = renamedPath.get(path);
+		return targetPath == null ? sourcePath : targetPath;
+	}
+	
+	/**
+	 * The paths are internally saved without leading slash.
+	 * 
+	 * @param sourcePath The path of the source file
+	 * @param targetPath The path of the target file
+	 */
+	public void addRenamedPath(String sourcePath, String targetPath) {
+		sourcePath = VFSManager.trimSlash(sourcePath);
+		targetPath = VFSManager.trimSlash(targetPath);
+		renamedPath.put(sourcePath, targetPath);
 	}
 
 	public List<BGAreaReference> getAreas() {

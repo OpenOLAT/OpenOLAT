@@ -39,6 +39,8 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.model.LicenseImpl;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -344,6 +346,11 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel toolbar, Identity assessedIdentity) {
 		return new QTI21AssessmentDetailsController(ureq, wControl, toolbar, re, assessedIdentity);
+	}
+	
+	@Override
+	public FormBasicController createAuthorSmallDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, Form mainForm) {
+		return null;
 	}
 
 	@Override

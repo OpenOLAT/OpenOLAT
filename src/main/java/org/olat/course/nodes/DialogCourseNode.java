@@ -63,6 +63,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
@@ -281,13 +282,26 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 		postImportCondition(preConditionPoster, envMapper);
 		postImportCondition(preConditionReader, envMapper);
 	}
-
+	
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(preConditionModerator, envMapper, backwardsCompatible);
-		postExportCondition(preConditionPoster, envMapper, backwardsCompatible);
-		postExportCondition(preConditionReader, envMapper, backwardsCompatible);
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		if(envMapper.isLearningPathNodeAccess()) {
+			removeCustomPreconditions();
+		}
+	}
+	
+	@Override
+	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodeConditions(sourceCourseNode, envMapper);
+		
+		// moderator conditions
+		configureOnlyGeneralAccess(((DialogCourseNode)sourceCourseNode).preConditionModerator, preConditionModerator, envMapper);
+		// poster conditions
+		configureOnlyGeneralAccess(((DialogCourseNode)sourceCourseNode).preConditionPoster, preConditionPoster, envMapper);
+		// reader conditions
+		configureOnlyGeneralAccess(((DialogCourseNode)sourceCourseNode).preConditionReader, preConditionReader, envMapper);
 	}
 
 	@Override

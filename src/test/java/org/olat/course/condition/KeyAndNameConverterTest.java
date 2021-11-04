@@ -45,7 +45,7 @@ public class KeyAndNameConverterTest {
 	
 	@Test
 	public void convertBusinessGroupNameToKey() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BusinessGroupMock newGroup = new BusinessGroupMock(567l, "Group 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, 345l, "Group 1");
 		envMapper.getGroups().add(bgRef);
@@ -56,7 +56,7 @@ public class KeyAndNameConverterTest {
 	
 	@Test
 	public void convertBusinessGroupKeyToKey() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BusinessGroupMock newGroup = new BusinessGroupMock(567l, "Group 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, 345l, "Group 1");
 		envMapper.getGroups().add(bgRef);
@@ -67,7 +67,7 @@ public class KeyAndNameConverterTest {
 	
 	@Test
 	public void convertBusinessGroupKeyToName() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BusinessGroupMock newGroup = new BusinessGroupMock(567l, "Group 1");
 		BusinessGroupReference bgRef = new BusinessGroupReference(newGroup, null, null);
 		envMapper.getGroups().add(bgRef);
@@ -78,7 +78,7 @@ public class KeyAndNameConverterTest {
 	
 	@Test
 	public void convertAreaNameToKey() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BGArea newArea = new MockArea(567l, "Area 1");
 		BGAreaReference areaRef = new BGAreaReference(newArea, 345l, "Area 1");
 		envMapper.getAreas().add(areaRef);
@@ -89,7 +89,7 @@ public class KeyAndNameConverterTest {
 	
 	@Test
 	public void convertAreaKeyToKey() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BGArea newArea = new MockArea(567l, "Area 1");
 		BGAreaReference areaRef = new BGAreaReference(newArea, 345l, "Area 1");
 		envMapper.getAreas().add(areaRef);
@@ -100,7 +100,7 @@ public class KeyAndNameConverterTest {
 	
 	@Test
 	public void convertAreaKeyToName() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BGArea newArea = new MockArea(567l, "Area 1");
 		BGAreaReference areaRef = new BGAreaReference(newArea, null, null);
 		envMapper.getAreas().add(areaRef);
@@ -114,7 +114,7 @@ public class KeyAndNameConverterTest {
 	 */
 	@Test
 	public void convertGroupAndAreaNameToKey_sameName() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BGArea newArea = new MockArea(567l, "Test 1");
 		BGAreaReference areaRef = new BGAreaReference(newArea, 345l, "Test 1");
 		envMapper.getAreas().add(areaRef);
@@ -129,7 +129,7 @@ public class KeyAndNameConverterTest {
 	
 	@Test
 	public void convertGroupAndAreaKeyToKey_sameKey() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BGArea newArea = new MockArea(567l, "Area 1");
 		BGAreaReference areaRef = new BGAreaReference(newArea, 345l, "Area 1");
 		envMapper.getAreas().add(areaRef);
@@ -144,7 +144,7 @@ public class KeyAndNameConverterTest {
 	
 	@Test
 	public void convertGroupAndAreaKeyToName_sameKey() {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(null, null);
 		BGArea newArea = new MockArea(567l, "Area 1");
 		BGAreaReference areaRef = new BGAreaReference(newArea, null, null);
 		envMapper.getAreas().add(areaRef);

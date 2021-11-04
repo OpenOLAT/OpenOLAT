@@ -164,12 +164,12 @@ public class SearchAuthorRepositoryEntryViewParams {
 	}
 	
 	public void addResourceTypes(String... types) {
-		if(this.resourceTypes == null) {
-			this.resourceTypes = new ArrayList<>();
+		if(resourceTypes == null) {
+			resourceTypes = new ArrayList<>();
 		}
 		if(types != null) {
 			for(String resourceType:types) {
-				this.resourceTypes.add(resourceType);
+				resourceTypes.add(resourceType);
 			}
 		}
 	}

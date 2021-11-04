@@ -81,6 +81,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ms.MSEditFormController;
@@ -532,6 +533,37 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			Locale locale, boolean withReferences) {
 		super.importNode(importDirectory, course, owner, organisation, locale, withReferences);
 	}
+	
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		copy((ProjectBrokerCourseNode)sourceCourseNode, this, sourceCourse, course, envMapper.getAuthor());
+	}
+
+	@Override
+	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodeConditions(sourceCourseNode, envMapper);
+		
+		// drop conditions
+		configureOnlyGeneralAccess(((ProjectBrokerCourseNode)sourceCourseNode).conditionDrop, conditionDrop, envMapper);
+		// returnbox conditions
+		configureOnlyGeneralAccess(((ProjectBrokerCourseNode)sourceCourseNode).conditionReturnbox, conditionReturnbox, envMapper);
+		// scoring conditions
+		configureOnlyGeneralAccess(((ProjectBrokerCourseNode)sourceCourseNode).conditionScoring, conditionScoring, envMapper);
+		// solution conditions
+		configureOnlyGeneralAccess(((ProjectBrokerCourseNode)sourceCourseNode).conditionProjectBroker, conditionProjectBroker, envMapper);
+	}
+
+	@Override
+	public boolean hasBusinessGroups() {
+		return false;
+	}
+
+	@Override
+	public boolean hasBusinessGroupAreas() {
+		return false;
+	}
 
 	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
@@ -596,7 +628,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 					attachmentOutputStream.close();
 					leafInputStream.close();
 				} catch (IOException e) {
-					log.error("Error while exporting attachments for projectbroker " + project.getTitle(), e);
+					log.error("Error while exporting attachments for projectbroker {}", project.getTitle(), e);
 				}
 			}
 		}
@@ -713,15 +745,6 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 		postImportCondition(conditionProjectBroker, envMapper);
 	}
 
-	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(conditionDrop, envMapper, backwardsCompatible);
-		postExportCondition(conditionScoring, envMapper, backwardsCompatible);
-		postExportCondition(conditionReturnbox, envMapper, backwardsCompatible);
-		postExportCondition(conditionProjectBroker, envMapper, backwardsCompatible);
-	}
-
 	/**
 	 * Do re-arrange the projects in a new project broker after the copy happened
 	 */
@@ -796,33 +819,39 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		// create the instance for the copy
 		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
+		copy(this, copyInstance, course, course, author);
+		return copyInstance;
+	}
+	
+	private static void copy(ProjectBrokerCourseNode sourceCourseNode, CourseNode copyInstance, ICourse sourceCourse, ICourse targetCourse, Identity author) {
 		// get all the different managers
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
+		CoursePropertyManager sourceCpm = sourceCourse.getCourseEnvironment().getCoursePropertyManager();
+		CoursePropertyManager targetCpm = targetCourse.getCourseEnvironment().getCoursePropertyManager();
 		ProjectGroupManager projectGroupManager = CoreSpringFactory.getImpl(ProjectGroupManager.class);
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 
 		// get the pbID from the source pb
-		Long oldProjectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, this);
+		Long oldProjectBrokerId = projectBrokerManager.getProjectBrokerId(sourceCpm, sourceCourseNode);
 		// create a new projectBroker for the copyInstance
 		ProjectBroker newBroker = projectBrokerManager.createAndSaveProjectBroker();
 		Long projectBrokerId = newBroker.getKey();
-		projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, copyInstance);
+		projectBrokerManager.saveProjectBrokerId(projectBrokerId, targetCpm, copyInstance);
 
 		// configure the new Project like the old one
 		// copy the old accountManagergroup to preserve the
 		// "persons in charge"
-		Long originalAccountGroupKey = projectGroupManager.getAccountManagerGroupKey(cpm, this);
+		Long originalAccountGroupKey = projectGroupManager.getAccountManagerGroupKey(sourceCpm, sourceCourseNode);
 		if (originalAccountGroupKey != null) {
-			BusinessGroup originalAccountGroup = projectGroupManager.getAccountManagerGroupFor(cpm, this, course,
-					getShortTitle(), getShortTitle(), null);
+			BusinessGroup originalAccountGroup = projectGroupManager.getAccountManagerGroupFor(sourceCpm, sourceCourseNode, sourceCourse,
+					sourceCourseNode.getShortTitle(), sourceCourseNode.getShortTitle(), null);
 			BusinessGroup newAccountManagerGroup = bgs.copyBusinessGroup(author, originalAccountGroup,
 					originalAccountGroup.getName(), originalAccountGroup.getDescription(),
 					originalAccountGroup.getMinParticipants(), originalAccountGroup.getMaxParticipants(), false, false,
 					true, false, false, true, false, false, Boolean.FALSE);
-			projectGroupManager.saveAccountManagerGroupKey(newAccountManagerGroup.getKey(), cpm, copyInstance);
+			projectGroupManager.saveAccountManagerGroupKey(newAccountManagerGroup.getKey(), targetCpm, copyInstance);
 			bgs.addResourceTo(newAccountManagerGroup,
-					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+					targetCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		}
 
 		if (oldProjectBrokerId != null) {
@@ -830,7 +859,7 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 			for (Project project : projects) {
 				// create projectGroup
 				BusinessGroup projectGroup = projectGroupManager.createProjectGroupFor(projectBrokerId, author,
-						project.getTitle(), project.getDescription(), course.getResourceableId());
+						project.getTitle(), project.getDescription(), targetCourse.getResourceableId());
 				Project newProject = projectBrokerManager.createAndSaveProjectFor(project.getTitle(),
 						project.getDescription(), projectBrokerId, projectGroup);
 
@@ -845,17 +874,16 @@ public class ProjectBrokerCourseNode extends AbstractAccessableCourseNode {
 
 				// attachment file
 				VFSContainer rootFolder = VFSManager.olatRootContainer(projectBrokerManager
-						.getAttamchmentRelativeRootPath(project, course.getCourseEnvironment(), this), null);
+						.getAttamchmentRelativeRootPath(project, sourceCourse.getCourseEnvironment(), sourceCourseNode), null);
 				VFSItem item = rootFolder.resolve(project.getAttachmentFileName());
 				if (item instanceof VFSLeaf) {
-					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf) item,
-							course.getCourseEnvironment(), copyInstance, author);
+					projectBrokerManager.saveAttachedFile(newProject, project.getAttachmentFileName(), (VFSLeaf)item,
+							targetCourse.getCourseEnvironment(), copyInstance, author);
 					newProject.setAttachedFileName(project.getAttachmentFileName());
 					projectBrokerManager.updateProject(newProject);
 				}
 			}
 		}
-		return copyInstance;
 	}
 
 	public static class ProjectBrokerConfig implements Serializable {

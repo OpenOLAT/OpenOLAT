@@ -41,6 +41,8 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  *
  */
 class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<AuthoringEntryRow> implements FlexiBusinessPathModel {
+	
+	private static final Cols[] COLS = Cols.values();
 
 	private final RepositoryHandlerFactory handlerFactory;
 	private Identity identity;
@@ -114,7 +116,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			return null;//don't break here
 		}
 		
-		switch(Cols.values()[col]) {
+		switch(COLS[col]) {
 			case key: return item.getKey();
 			case ac: return item;
 			case type: return item;
@@ -151,6 +153,8 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 				return (handler != null) ? Boolean.TRUE : Boolean.FALSE;
 			}
 			case tools: return item.getToolsLink();
+			case infos: return item.getInfosLink();
+			case details: return item.getDetailsLink();
 			case editionSupported: {
 				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
 				if(handler == null) {
@@ -202,7 +206,9 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		tools("table.header.actions"),
 		editionSupported("table.header.edit"),
 		lectureInfos("table.header.lecture.infos"),
-		guests("table.header.guests");
+		guests("table.header.guests"),
+		infos("table.header.infos"),
+		details("table.header.details");
 		
 		private final String i18nKey;
 		

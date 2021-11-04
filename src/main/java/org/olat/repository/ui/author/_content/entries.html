@@ -1,6 +1,8 @@
 <div class="o_sel_author_env">
 	<div class="o_header_with_buttons">
-		<h2>$r.translate("author.title")</h2>
+		#if($r.isNotEmpty($title))
+			<h2>$r.translate($title)</h2>
+		#end
 		<div class="o_button_group o_button_group_right">
 			<div class="btn-group">
 				#if($r.visible("cmd.import.ressource"))

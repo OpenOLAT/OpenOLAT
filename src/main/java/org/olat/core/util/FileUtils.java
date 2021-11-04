@@ -1060,17 +1060,21 @@ public class FileUtils {
 	 * @return The new name with the counter added
 	 */
 	public static String appendNumberAtTheEndOfFilename(String name, int number) {
+		return appendNumberAtTheEndOfFilename(name, number, "");
+	}
+
+	public static String appendNumberAtTheEndOfFilename(String name, int number, String numberPrefix) {
 		// Try to match the file to the pattern "[name].[extension]"
 		Matcher m = fileNamePattern.matcher(name);
 		StringBuilder newName = new StringBuilder();
 		if (m.matches()) {
-			newName.append(m.group(1)).append(number);
+			newName.append(m.group(1)).append(numberPrefix).append(number);
 			if (m.group(2) != null) {
 				// is null in case it was not a file or does not contain a file ending.
 				newName.append(m.group(2));
 			}
 		} else {
-			newName.append(name).append(number);
+			newName.append(name).append(numberPrefix).append(number);
 		}
 		return newName.toString();
 	}

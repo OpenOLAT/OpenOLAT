@@ -165,12 +165,6 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(preConditionEdit, envMapper, backwardsCompatible);
-	}
-
-	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		CalEditController childTabCntrllr = new CalEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());

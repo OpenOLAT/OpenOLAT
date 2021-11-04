@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
@@ -51,6 +52,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
@@ -73,10 +75,12 @@ import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -427,14 +431,6 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 	}
 
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(preConditionReader, envMapper, backwardsCompatible);
-		postExportCondition(preConditionPoster, envMapper, backwardsCompatible);
-		postExportCondition(preConditionModerator, envMapper, backwardsCompatible);
-	}
-
-	@Override
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		if (hasCustomPreConditions()) {
 			boolean reader = (getPreConditionReader().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionReader()));
@@ -522,6 +518,45 @@ public abstract class AbstractFeedCourseNode extends AbstractAccessableCourseNod
 			setReference(getModuleConfiguration(), re);
 		} else {
 			removeReference(getModuleConfiguration());
+		}
+	}
+	
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		if(settings.getCopyType() == CopyType.ignore) {
+			removeReference(getModuleConfiguration());
+		} else if(settings.getCopyType() == CopyType.createNew) {
+			importCopyResource(envMapper.getAuthor());
+		}
+	}
+	
+	protected void importCopyResource(Identity executingIdentity) {
+		// Create a new empty feed resource with the same name
+		RepositoryEntry entry = getReferencedRepositoryEntry();
+		if (entry != null) {
+			RepositoryHandlerFactory handlerFactory = RepositoryHandlerFactory.getInstance();
+			
+			Set<RepositoryEntryToOrganisation> organisations = entry.getOrganisations();
+			Organisation organisation = null;
+			if (organisations != null && organisations.size() > 1) {
+				organisation = organisations.stream()
+						.filter(RepositoryEntryToOrganisation::isMaster)
+						.map(RepositoryEntryToOrganisation::getOrganisation)
+						.findFirst().orElse(null);
+			} else if (organisations != null) {
+				organisation = organisations.stream()
+						.map(RepositoryEntryToOrganisation::getOrganisation)
+						.findFirst().orElse(null);
+			}
+			
+			RepositoryEntry newEntry = handlerFactory.getRepositoryHandler(entry)
+					.createResource(executingIdentity, entry.getDisplayname(), entry.getDescription(), null, organisation, null);
+			
+			if (newEntry != null) {
+				setReference(getModuleConfiguration(), newEntry);
+			}
 		}
 	}
 	

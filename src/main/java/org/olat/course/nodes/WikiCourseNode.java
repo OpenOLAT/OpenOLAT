@@ -63,6 +63,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
@@ -186,15 +187,27 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 		super.postImportCopyConditions(envMapper);
 		postImportCondition(preConditionEdit, envMapper);
 	}
-
+	
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(preConditionEdit, envMapper, backwardsCompatible);
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		
+		if(settings.getCopyType() == CopyType.ignore) {
+			WikiEditController.removeWikiReference(getModuleConfiguration());
+		} else if(settings.getCopyType() == CopyType.createNew) {
+			importCopyResource(envMapper.getAuthor());
+		}
 	}
 	
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodeConditions(sourceCourseNode, envMapper);
+		
+		configureOnlyGeneralAccess(((WikiCourseNode)sourceCourseNode).preConditionEdit, preConditionEdit, envMapper);
+	}
+
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		if (context != null) {
 			CopyType resourceCopyType = null;
 			
@@ -214,30 +227,11 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 					// Nothing to do here, this is the default behavior
 					break;
 				case createNew:
-					// Create a new empty wiki with the same name
-					RepositoryEntry wiki = getReferencedRepositoryEntry();
-					
-					if (wiki != null) {
-						RepositoryHandlerFactory handlerFactory = RepositoryHandlerFactory.getInstance();
-						
-						Set<RepositoryEntryToOrganisation> organisations = wiki.getOrganisations();
-						Organisation organisation = null;
-						if (organisations != null && organisations.size() > 1) {
-							organisation = organisations.stream().filter(RepositoryEntryToOrganisation::isMaster).map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
-						} else if (organisations != null) {
-							organisation = organisations.stream().map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
-						}
-						
-						RepositoryEntry newWiki = handlerFactory.getRepositoryHandler(wiki).createResource(context.getExecutingIdentity(), wiki.getDisplayname(), wiki.getDescription(), null, organisation, null);
-						
-						if (newWiki != null) {
-							AbstractFeedCourseNode.setReference(getModuleConfiguration(), newWiki);
-						}
-					}
+					importCopyResource(context.getExecutingIdentity());
 					break;
 				case ignore:
 					// Remove the config, must be configured later
-					AbstractFeedCourseNode.removeReference(getModuleConfiguration());
+					WikiEditController.removeWikiReference(getModuleConfiguration());
 					break;
 				default:
 					break;
@@ -245,7 +239,36 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 			}
 		}
 		
-		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
+	}
+	
+	/**
+	 * Create a new empty wiki with the same name
+	 * 
+	 * @param executingIdentity The author
+	 */
+	private void importCopyResource(Identity executingIdentity) {
+		RepositoryEntry wiki = getReferencedRepositoryEntry();
+		
+		if (wiki != null) {
+			RepositoryHandlerFactory handlerFactory = RepositoryHandlerFactory.getInstance();
+			
+			Set<RepositoryEntryToOrganisation> organisations = wiki.getOrganisations();
+			Organisation organisation = null;
+			if (organisations != null && organisations.size() > 1) {
+				organisation = organisations.stream().filter(RepositoryEntryToOrganisation::isMaster).map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
+			} else if (organisations != null) {
+				organisation = organisations.stream().map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
+			}
+			
+			RepositoryEntry newWiki = handlerFactory.getRepositoryHandler(wiki)
+					.createResource(executingIdentity, wiki.getDisplayname(), wiki.getDescription(), null, organisation, null);
+			
+			if (newWiki != null) {
+				
+				AbstractFeedCourseNode.setReference(getModuleConfiguration(), newWiki);
+			}
+		}
 	}
 
 	@Override

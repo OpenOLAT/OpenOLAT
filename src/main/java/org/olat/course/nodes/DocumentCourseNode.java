@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -30,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
@@ -41,6 +43,8 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
@@ -61,6 +65,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.resource.OLATResource;
 
 /**
@@ -70,6 +75,8 @@ import org.olat.resource.OLATResource;
  *
  */
 public class DocumentCourseNode extends AbstractAccessableCourseNode {
+	
+	private static final Logger log = Tracing.createLoggerFor(DocumentCourseNode.class);
 
 	private static final long serialVersionUID = 6299893052294231498L;
 	
@@ -305,6 +312,36 @@ public class DocumentCourseNode extends AbstractAccessableCourseNode {
 		return new DocumentSource(vfsLeaf, entry);
 	}
 	
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings,
+			CourseEnvironmentMapper envMapper) {
+		ModuleConfiguration config = getModuleConfiguration();
+		if (config.has(DocumentCourseNode.CONFIG_DOC_COURSE_REL_PATH) && settings.getCopyType() == CopyType.copy) { 
+			VFSContainer sourceCourseFolderCont = sourceCourse.getCourseEnvironment()
+					.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+			String relPath = config.getStringValue(DocumentCourseNode.CONFIG_DOC_COURSE_REL_PATH);
+			VFSItem vfsItem = sourceCourseFolderCont.resolve(relPath);
+			if (vfsItem instanceof VFSLeaf) {
+				VFSLeaf sourceLeaf = (VFSLeaf)vfsItem;
+				
+				VFSContainer targetCourseFolderCont = course.getCourseEnvironment()
+						.getCourseFolderContainer(CourseContainerOptions.withoutElements());
+				
+				String targetRelPath = envMapper.getRenamedPathOrSource(relPath);
+				VFSItem targetItem = targetCourseFolderCont.resolve(targetRelPath);
+				if(targetItem == null && sourceLeaf.exists()) {
+					// document is copied by the process before this step
+					log.warn("Document's file not copied: {}", targetRelPath);
+				}
+				setDocumentFromCourseFolder(targetRelPath);
+			}
+		} else if (config.has(DocumentCourseNode.CONFIG_DOC_REPO_SOFT_KEY) && settings.getCopyType() == CopyType.ignore) {
+			getModuleConfiguration().remove(CONFIG_DOC_REPO_SOFT_KEY);
+		}
+		
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+	}
+
 	@Override
 	public List<NodeRightType> getNodeRightTypes() {
 		return NODE_RIGHT_TYPES;

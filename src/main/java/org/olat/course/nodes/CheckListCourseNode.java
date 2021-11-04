@@ -66,6 +66,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -482,24 +483,34 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		CheckListCourseNode cNode = (CheckListCourseNode)super.createInstanceForCopy(isNewTitle, course, author);
+		copy(this, cNode, course, course);
+		return cNode;
+	}
+
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
+		copy((CheckListCourseNode)sourceCourseNode, this, sourceCourse, course);
+	}
+
+	private static void copy(CheckListCourseNode sourceCourseNode, CheckListCourseNode targetCourseNode, ICourse sourceCourse, ICourse targetCourse) {
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
-		CheckboxList list = (CheckboxList)cNode.getModuleConfiguration().get(CONFIG_KEY_CHECKBOX);
-		if (list!=null) {
+		CheckboxList list = (CheckboxList)targetCourseNode.getModuleConfiguration().get(CONFIG_KEY_CHECKBOX);
+		if (list != null) {
 			for(Checkbox checkbox:list.getList()) {
 				checkbox.setCheckboxId(UUID.randomUUID().toString());
 			}
 		}
+		
 		// the ident of the course node is the same
-		File sourceDir = checkboxManager.getFileDirectory(course.getCourseEnvironment(), this);
+		File sourceDir = checkboxManager.getFileDirectory(sourceCourse.getCourseEnvironment(), sourceCourseNode);
 		if(sourceDir.exists()) {
-			File targetDir = checkboxManager.getFileDirectory(course.getCourseEnvironment(), cNode);
+			File targetDir = checkboxManager.getFileDirectory(targetCourse.getCourseEnvironment(), targetCourseNode);
 			if(!targetDir.exists()) {
 				targetDir.mkdirs();
 				FileUtils.copyDirContentsToDir(sourceDir, targetDir, false, "copy files of checkbox");
 			}
 		}
-		
-		return cNode;
 	}
 
 	@Override

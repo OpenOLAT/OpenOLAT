@@ -1,12 +1,12 @@
 <div>
-	<h4><i class="o_icon $cssClass o_icon-lg"></i> $r.escapeHtml($displayName)</h4>
+	<h4><i class="o_icon $cssClass o_icon-lg"> </i> $r.escapeHtml($displayName)</h4>
 	#if($closed)
 		<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
 	#end
 	<table class="table"><tbody>
 		#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
 		<tr>
-			<th>$r.translateInAttribute("cif.dates")</th>
+			<th scope="rows">$r.translateInAttribute("cif.dates")</th>
 			<td><i class="o_icon o_icon_lifecycle_date"> </i> 
 				#if(!$v.lifecycle.privateCycle)
 					#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $r.escapeHtml($v.lifecycle.softKey)
@@ -20,16 +20,16 @@
 		#end
 		#if($v.mainLanguage)
 		<tr>
-			<th>$r.translateInAttribute("cif.mainLanguage")</th>
+			<th scope="rows">$r.translateInAttribute("cif.mainLanguage")</th>
 			<td><i class="o_icon o_icon_language"> </i> $r.escapeHtml($v.mainLanguage)</td>
 		</tr>
 		#end
 		<tr>
-			<th>$r.translate("cif.initialAuthor")</th>
+			<th scope="rows">$r.translate("cif.initialAuthor")</th>
 			<td>$r.escapeHtml($v.getInitialAuthor())</td>
 		</tr>
 		<tr>
-			<th>$r.translate("cif.owners")</th>
+			<th scope="rows">$r.translate("cif.owners")</th>
 			<td><ul class="list-unstyled">
 			#foreach($authorname in $authornames)
 				<li>$r.escapeHtml($authorname)</li>
@@ -38,7 +38,7 @@
 		</tr>
 		#if($referenceDetails && !$referenceDetails.isEmpty())
 		<tr>
-			<th>$r.translate("details.referenceinfoheader")</th>
+			<th scope="rows">$r.translate("details.referenceinfoheader")</th>
 			<td><ul class="list-unstyled">
 			#foreach($reference in $referenceDetails)
 				<li>$reference</li>
@@ -46,9 +46,16 @@
 			</ul></td>
 		</tr>
 		#end
+		#if($r.visible("subDetails"))
+		<tr>
+			<th scope="rows">$r.translate("details.sub.details")</th>
+			<td>$r.render("subDetails")</td>
+		</tr>
+		#end
+		
 		#if($description && $description.length() > 0)
 		<tr>
-			<td colspan="2"><label>$r.translate("cif.description"):</label></br>$r.xssScan($description)</td>
+			<td colspan="2"><label>$r.translate("cif.description"):</label><br>$r.xssScan($description)</td>
 		</tr>
 		#end
 	</tbody></table>

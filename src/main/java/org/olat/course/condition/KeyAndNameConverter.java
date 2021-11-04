@@ -41,6 +41,11 @@ public class KeyAndNameConverter {
 	
 	private static final String[] groupMethods = { "inLearningGroup", "inRightGroup", "isLearningGroupFull" };
 	private static final String areaMethod = "inLearningArea";
+	
+	private KeyAndNameConverter() {
+		//
+	}
+	
 	/**
 	 * isLearningGroupFull, inLearningGroup, inRightGroup, inLearningArea, isLearningGroupFull
 	 */
@@ -133,6 +138,19 @@ public class KeyAndNameConverter {
 		}
 		
 		return expression;
+	}
+	
+	public static String replaceIdsInCondition(String condition, CourseEnvironmentMapper courseEnvMapper) {
+		if (condition != null) {
+			condition = KeyAndNameConverter.convertExpressionKeyToKey(condition, courseEnvMapper);
+
+			for (String nodeSourceId : courseEnvMapper.getNodeSourceIds()) {
+				condition = condition.replaceAll(
+						"\"" + nodeSourceId + "\"",
+						"\"" + courseEnvMapper.getNodeTargetIdent(nodeSourceId) + "\"");
+			}
+		}
+		return condition;
 	}
 
 }

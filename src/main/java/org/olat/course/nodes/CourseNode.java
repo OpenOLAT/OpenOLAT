@@ -48,6 +48,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRightType;
@@ -348,10 +349,10 @@ public interface CourseNode extends INode, ShortName {
 	
 	/**
 	 * Remap the node to the context of the course after import and apply changes from the copy wizard
-	 * @param sourceCrourse
+	 * @param sourceCourse
 	 * @param sourceCourse 
 	 */
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing type, ICourse course, ICourse sourceCrourse, CopyCourseContext context);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing type, ICourse course, ICourse sourceCourse, CopyCourseContext context);
 	
 	/**
 	 * Remap the node to the context of the course after import.
@@ -360,8 +361,12 @@ public interface CourseNode extends INode, ShortName {
 	
 	/**
 	 * 
+	 * @param course The target course
+	 * @param sourceCourseNode The source course node to copy informations from
+	 * @param sourceCourse The source course
+	 * @param envMapper Some mapping data between source and target courses
 	 */
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible);
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper);
 
 	
 	/**
@@ -452,7 +457,7 @@ public interface CourseNode extends INode, ShortName {
 	
 	/**
 	 * Determines whether the course node contains any dates. 
-	 * This includes node specific dates, high score specific dates and date dependant user rights.
+	 * This includes node specific dates, high score specific dates and date dependent user rights.
 	 * 
 	 * @return
 	 */
@@ -464,6 +469,16 @@ public interface CourseNode extends INode, ShortName {
 	 * @return
 	 */
 	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel();
+	
+	/**
+	 * @return true if the course node uses some business groups
+	 */
+	public boolean hasBusinessGroups();
+	
+	/**
+	 * @return true if the course node uses some areas
+	 */
+	public boolean hasBusinessGroupAreas();
 	
 	public List<NodeRightType> getNodeRightTypes();
 	

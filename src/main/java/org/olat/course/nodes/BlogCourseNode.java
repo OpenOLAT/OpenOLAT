@@ -20,9 +20,7 @@
 package org.olat.course.nodes;
 
 import java.util.Locale;
-import java.util.Set;
 
-import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -31,9 +29,6 @@ import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryToOrganisation;
-import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
@@ -90,7 +85,7 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 	}
 	
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		if (context != null) {
 			CopyType resourceCopyType = null;
 			
@@ -111,29 +106,11 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 					break;
 				case createNew:
 					// Create a new empty blog with the same name
-					RepositoryEntry blog = getReferencedRepositoryEntry();
-					
-					if (blog != null) {
-						RepositoryHandlerFactory handlerFactory = RepositoryHandlerFactory.getInstance();
-						
-						Set<RepositoryEntryToOrganisation> organisations = blog.getOrganisations();
-						Organisation organisation = null;
-						if (organisations != null && organisations.size() > 1) {
-							organisation = organisations.stream().filter(RepositoryEntryToOrganisation::isMaster).map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
-						} else if (organisations != null) {
-							organisation = organisations.stream().map(RepositoryEntryToOrganisation::getOrganisation).findFirst().orElse(null);
-						}
-						
-						RepositoryEntry newBlog = handlerFactory.getRepositoryHandler(blog).createResource(context.getExecutingIdentity(), blog.getDisplayname(), blog.getDescription(), null, organisation, null);
-						
-						if (newBlog != null) {
-							AbstractFeedCourseNode.setReference(getModuleConfiguration(), newBlog);
-						}
-					}
+					importCopyResource(context.getExecutingIdentity());
 					break;
 				case ignore:
 					// Remove the config, must be configured later
-					AbstractFeedCourseNode.removeReference(getModuleConfiguration());
+					removeReference(getModuleConfiguration());
 					break;
 				default:
 					break;
@@ -141,7 +118,7 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 			}
 		}
 		
-		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
 	}
 
 }

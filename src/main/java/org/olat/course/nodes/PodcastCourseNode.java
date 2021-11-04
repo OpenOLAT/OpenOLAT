@@ -78,5 +78,4 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 	protected String getEditHelpUrl() {
 		return "Knowledge Transfer#_podcast";
 	}
-
 }

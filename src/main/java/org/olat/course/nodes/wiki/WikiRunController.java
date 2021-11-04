@@ -136,7 +136,7 @@ public class WikiRunController extends BasicController implements Activateable2 
 	
 	private boolean hasEditRights(WikiCourseNode courseNode, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (courseNode.hasCustomPreConditions()) {
-			return ne.isCapabilityAccessible(WikiCourseNode.EDIT_CONDITION);
+			return ne != null && ne.isCapabilityAccessible(WikiCourseNode.EDIT_CONDITION);
 		}
 		return nodeRightsService.isGranted(courseNode.getModuleConfiguration(), userCourseEnv, WikiCourseNode.EDIT);
 	}

@@ -389,7 +389,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	 */
 	@Override
 	public CourseEnvironmentMapper getBusinessGroupEnvironment() {
-		CourseEnvironmentMapper env = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper env = new CourseEnvironmentMapper(getCourseEntry(), getCourseEntry());
 		List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, getCourseEntry(), 0, -1);
 		for(BusinessGroup group:groups) {
 			env.getGroups().add(new BusinessGroupReference(group));
@@ -403,7 +403,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 
 	@Override
 	public CourseEnvironmentMapper importCourseBusinessGroups(File fImportDirectory) {
-		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper();
+		CourseEnvironmentMapper envMapper = new CourseEnvironmentMapper(getCourseEntry(), getCourseEntry());
 		OLATResource resource = getCourseResource();
 		RepositoryEntry courseRe = repositoryManager.lookupRepositoryEntry(resource, true);
 		File fGroupXML1 = new File(fImportDirectory, LEARNINGGROUPEXPORT_XML);

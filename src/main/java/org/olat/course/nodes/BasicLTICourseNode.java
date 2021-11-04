@@ -52,6 +52,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
@@ -323,14 +324,20 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse, CopyCourseContext context) {
-		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCourse, context);
 		removeLTI13DeploymentReference();
 	}
 
 	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		super.postImport(importDirectory, course, envMapper, processType);
+		removeLTI13DeploymentReference();
+	}
+	
+	@Override
+	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
 		removeLTI13DeploymentReference();
 	}
 	

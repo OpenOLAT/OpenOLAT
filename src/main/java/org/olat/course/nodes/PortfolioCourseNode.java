@@ -120,9 +120,9 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public void postExport(CourseEnvironmentMapper envMapper, boolean backwardsCompatible) {
-		super.postExport(envMapper, backwardsCompatible);
-		postExportCondition(preConditionEdit, envMapper, backwardsCompatible);
+	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
+		super.postImportCourseNodeConditions(sourceCourseNode, envMapper);
+		configureOnlyGeneralAccess(((PortfolioCourseNode)sourceCourseNode).preConditionEdit, preConditionEdit, envMapper);
 	}
 
 	@Override
