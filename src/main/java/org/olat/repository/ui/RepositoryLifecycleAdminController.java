@@ -25,7 +25,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -71,8 +70,8 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 	@Autowired
 	private RepositoryModule repositoryModule;
 	
-	public RepositoryLifecycleAdminController(UserRequest ureq, WindowControl wControl, Form rootForm) {
-		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
+	public RepositoryLifecycleAdminController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		initForm(ureq);
 	}

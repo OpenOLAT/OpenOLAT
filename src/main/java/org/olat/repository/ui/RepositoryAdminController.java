@@ -56,10 +56,11 @@ public class RepositoryAdminController extends FormBasicController {
 	};
 	
 	private SingleSelection leaveEl;
-	private MultipleSelectionElement myCourseSearchEl, commentEl, ratingEl;
+	private MultipleSelectionElement ratingEl;
+	private MultipleSelectionElement commentEl;
+	private MultipleSelectionElement myCourseSearchEl;
 	private SingleSelection taxonomyTreeEl;
 	
-	private RepositoryLifecycleAdminController lifecycleAdminCtrl;
 	
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -143,23 +144,14 @@ public class RepositoryAdminController extends FormBasicController {
 			leaveEl.select(RepositoryEntryAllowToLeaveOptions.atAnyTime.name(), true);
 		}
 		
-		lifecycleAdminCtrl = new RepositoryLifecycleAdminController(ureq, getWindowControl(), mainForm);
-		listenTo(lifecycleAdminCtrl);
-		formLayout.add(lifecycleAdminCtrl.getInitialFormItem());
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
-	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-		
-		allOk &= lifecycleAdminCtrl.validateFormLogic(ureq);
-		
-		return allOk;
 	}
 
 	@Override
@@ -188,11 +180,10 @@ public class RepositoryAdminController extends FormBasicController {
 			repositoryModule.setAllowToLeaveDefaultOption(option);
 			getWindowControl().setInfo("saved");
 		}
-		lifecycleAdminCtrl.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		lifecycleAdminCtrl.formOK(ureq);
+		//lifecycleAdminCtrl.formOK(ureq);
 	}
 }
