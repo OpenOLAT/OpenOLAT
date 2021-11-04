@@ -230,21 +230,25 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 	}
 	
 	private void forgeSPRow(ConfigurationCourseNodeRow row, ImportCourseNode importNode, SPCourseNode courseNode) {
-		String filePath = courseNode.getModuleConfiguration().getStringValue(SPEditController.CONFIG_KEY_FILE);
 		importNode.setImportSetting(CopyType.ignore);
-		VFSItem item = sourceCourseFolderCont.resolve(filePath);
-		if(item != null) {
-			importNode.addCourseFolderSubPath(filePath);
-			importNode.setImportSetting(CopyType.copy);
-			VFSContainer parentContainer = item.getParentContainer();
-			if(!"coursefolder".equals(parentContainer.getName())) {
-				// try to copy the whole parent folder
-				importNode.setCourseFolderSubPathWithParent(true);
-			}
-		} else if(filePath.contains("_sharedfolder")) {
-			if(!isSameSharedFolder()) {
-				importNode.setExcludeFromImport(true);
-				ImportHelper.errorMessage(row, "error.different.shared.folder", null, getTranslator());
+		String filePath = courseNode.getModuleConfiguration().getStringValue(SPEditController.CONFIG_KEY_FILE);
+		if(StringHelper.containsNonWhitespace(filePath)) {
+			VFSItem item = sourceCourseFolderCont.resolve(filePath);
+			if(item != null) {
+				importNode.addCourseFolderSubPath(filePath);
+				importNode.setImportSetting(CopyType.copy);
+				VFSContainer parentContainer = item.getParentContainer();
+				if(!"coursefolder".equals(parentContainer.getName())) {
+					// try to copy the whole parent folder
+					importNode.setCourseFolderSubPathWithParent(true);
+				}
+			} else if(filePath.contains("_sharedfolder")) {
+				if(!isSameSharedFolder()) {
+					importNode.setExcludeFromImport(true);
+					ImportHelper.errorMessage(row, "error.different.shared.folder", null, getTranslator());
+				}
+			} else {
+				ImportHelper.errorMessage(row, "error.file.not.exists", null, getTranslator());
 			}
 		} else {
 			ImportHelper.errorMessage(row, "error.file.not.exists", null, getTranslator());
