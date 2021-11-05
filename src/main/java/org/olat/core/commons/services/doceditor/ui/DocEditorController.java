@@ -38,7 +38,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +56,6 @@ public class DocEditorController extends BasicController implements Activateable
 	private VelocityContainer mainVC;
 	private Controller editorCtrl;
 
-	private final VFSLeaf vfsLeaf;
 	private DocEditorConfigs configs;
 	private Access access;
 
@@ -70,7 +68,6 @@ public class DocEditorController extends BasicController implements Activateable
 	public DocEditorController(UserRequest ureq, WindowControl wControl, Access access, DocEditorConfigs configs) {
 		super(ureq, wControl);
 		this.configs = configs;
-		this.vfsLeaf = configs.getVfsLeaf();
 		this.access = access;
 		
 		mainVC = createVelocityContainer("editor_main");
@@ -128,8 +125,7 @@ public class DocEditorController extends BasicController implements Activateable
 
 	private boolean isDataTransferConfirmed(DocEditor editor) {
 		if (editor.isDataTransferConfirmationEnabled()) {
-			Property property = propertyManager.findUserProperty(getIdentity(), PROPERTY_CATEGOTY,
-					getDataTransferPropertyName(editor));
+			Property property = findUserProperty(editor);
 			if (property == null || isNotConfirmedYet(property)) {
 				return false;
 			}
@@ -142,9 +138,29 @@ public class DocEditorController extends BasicController implements Activateable
 	}
 
 	private void doDataTransferConfirmed(DocEditor editor) {
-		Property property = propertyManager.createUserPropertyInstance(getIdentity(), PROPERTY_CATEGOTY,
-				getDataTransferPropertyName(editor), null, null, Boolean.TRUE.toString(), null);
-		propertyManager.saveProperty(property);
+		Property property = findUserProperty(editor);
+		if (property == null) {
+			property = propertyManager.createUserPropertyInstance(getIdentity(), PROPERTY_CATEGOTY,
+					getDataTransferPropertyName(editor), null, null, Boolean.TRUE.toString(), null);
+			propertyManager.saveProperty(property);
+		}
+	}
+
+	private Property findUserProperty(DocEditor editor) {
+		List<Property> properties = propertyManager.findProperties(getIdentity(), null, null, PROPERTY_CATEGOTY, getDataTransferPropertyName(editor));
+		if (properties.isEmpty()) {
+			return null;
+		}
+		
+		// Clean up if property was accidently stored more than once.
+		if (properties.size() > 1) {
+			for (int i = 1; i < properties.size(); i++) {
+				Property property = properties.get(i);
+				propertyManager.deleteProperty(property);
+			}
+		}
+		
+		return properties.get(0);
 	}
 
 	private String getDataTransferPropertyName(DocEditor editor) {
