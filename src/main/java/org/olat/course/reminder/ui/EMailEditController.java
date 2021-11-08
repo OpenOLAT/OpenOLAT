@@ -85,6 +85,8 @@ public class EMailEditController extends StepFormBasicController {
 			emailContent = translate("reminder.def.body");
 		}
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("email.content", "email.content", emailContent, 10, 60, formLayout, getWindowControl());
+		emailEl.getEditorConfiguration().setRelativeUrls(false);
+		emailEl.getEditorConfiguration().setRemoveScriptHost(false);
 		emailEl.setMandatory(true);
 		MailHelper.setVariableNamesAsHelp(emailEl, CourseReminderTemplate.variableNames(), getLocale());
 		
