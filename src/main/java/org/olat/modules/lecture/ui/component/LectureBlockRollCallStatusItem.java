@@ -68,6 +68,14 @@ public class LectureBlockRollCallStatusItem extends FormItemImpl {
 		component.setWithNumOfLectures(withNumOfLectures);
 	}
 
+	public boolean isWithExplanation() {
+		return component.isWithExplanation();
+	}
+
+	public void setWithExplanation(boolean withExplanation) {
+		component.setWithExplanation(withExplanation);
+	}
+
 	@Override
 	protected LectureBlockRollCallStatusComponent getFormItemComponent() {
 		return component;

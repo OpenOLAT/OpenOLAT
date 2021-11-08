@@ -2,15 +2,12 @@
 	$r.render("back")
 #end
 <div class="o_lectures_rollcall">
-<fieldset>
-	<legend>
-		$off_title "$lectureBlockTitle"
+	<h3><i class="o_icon o_icon-fw o_icon_lecture"> </i> $lectureBlockTitle
 		#if($r.isNotEmpty(lectureBlockExternalId))
 		<small class="text-muted">
 			$lectureBlockExternalId
 		</small>
-		#end
-	</legend>
+		#end</h3>
 	
 	#if($r.available("attendance.list"))
 	<div class=" pull-right">
@@ -18,42 +15,50 @@
 	</div>
 	#end
 	<div class="o_lectures_rollcall_meta o_block_bottom">
-		<div class="o_teachers text-muted">
-			<i class="o_icon o_icon-fw o_icon_graduate"> </i>
-			$teachers
+		<div class="o_teachers text-muted">$teachers</div>
+		<div class="o_date text-muted">
+			<i class="o_icon o_icon-fw o_icon_calendar"> </i> $dateAndTime
 		</div>
 		<div class="o_date text-muted">
-			<i class="o_icon o_icon-fw o_icon_calendar"> </i>
-			$dateAndTime
+			<i class="o_icon o_icon-fw o_icon_lecture"> </i> $numOfLectures
 		</div>
-		#if($lectureBlockLocation && $lectureBlockLocation != "")
+		#if($r.isNotEmpty($lectureBlockLocation))
 		<div class="o_date text-muted">
-			<i class="o_icon o_icon-fw o_icon_home"> </i>
-			$lectureBlockLocation
+			<i class="o_icon o_icon-fw o_icon_location"> </i> $lectureBlockLocation
 		</div>
 		#end
 		#if($lectureBlockOptional)
 		<div class="o_optional text-warning">
-			<i class="o_icon o_icon-fw o_icon_warn"> </i>		
-			$r.translate("info.lecture.block.optional")
+			<i class="o_icon o_icon-fw o_icon_warn"> </i> $r.translate("info.lecture.block.optional")
 		</div>
 		#end
 	</div>
 	
-	<div class="o_desc o_lectures_rollcall_coach_hint">$lecturesInfos</div>
+	#if($r.isNotEmpty($lectureBlockDescription) || $r.isNotEmpty($lectureBlockPreparation)) 
+	<div class="">
+		#if($r.isNotEmpty($lectureBlockDescription)) 
+		<div class="#if($r.isFalse($expandedDescription)) hidden #else show #end">
+			<h5>$r.translate("lecture.descr")</h5>
+			$lectureBlockDescription
+		</div>
+		#end
+		#if($r.isNotEmpty($lectureBlockPreparation))
+		<div class="#if($r.isFalse($expandedDescription)) hidden #else show #end">
+			<h5>$r.translate("lecture.preparation")</h5>
+			$lectureBlockPreparation
+		</div>
+		#end
+		<div class="o_expand o_button_group">
+			$r.render("expandButton")
+		</div>
+	</div>
+	#end
 	
-	#if($r.isNotEmpty($lectureBlockDescription)) 
-	<div class="o_desc o_info">
-		<h5>$r.translate("lecture.descr")</h5>
-		$lectureBlockDescription
-	</div>
-	#end
-	#if($r.isNotEmpty($lectureBlockPreparation))
-	<div class="o_preparation o_note">
-		<h5>$r.translate("lecture.preparation")</h5>
-		$lectureBlockPreparation
-	</div>
-	#end
+<fieldset>
+	<legend>$r.translate("rollcall.do")</legend>
+	
+	<div class="o_note o_lectures_rollcall_coach_hint">$lecturesInfos</div>
+
 	<div class="o_rollcall_table o_block_top">
 		$r.render("table")
 	</div>

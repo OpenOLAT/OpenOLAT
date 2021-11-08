@@ -2,7 +2,12 @@
 	<div class="o_user_portrait">$r.render("portrait")</div>
 	<div class="o_user_infos_inner">$r.render("userDescr")</div>
 </div>
-<h3>$r.translate("multi.rollcall.callee.title") <small>$msg</small></h3>
+<h3>$r.translate("rollcall.do")</h3>
+<div class="o_lectures_rollcall_meta o_block_bottom">
+	<div class="o_date text-muted">
+		<i class="o_icon o_icon-fw o_icon_calendar"> </i> $date
+	</div>
+</div>
 $r.render("table")
 <div class="o_button_group">
 	$r.render("cancel")

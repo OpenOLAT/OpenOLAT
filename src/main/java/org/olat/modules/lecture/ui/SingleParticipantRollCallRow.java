@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.id.Identity;
@@ -50,6 +51,7 @@ public class SingleParticipantRollCallRow implements RollCallRow, RollCallItem {
 	private FormLink noticeLink;
 	private FormLink reasonLink;
 	private TextElement commentEl;
+	private StaticTextElement numOfAbsencesEl;
 	private MultipleSelectionElement[] checks;
 	private MultipleSelectionElement authorizedAbsence;
 	private FormLayoutContainer authorizedAbsenceCont;
@@ -103,6 +105,11 @@ public class SingleParticipantRollCallRow implements RollCallRow, RollCallItem {
 
 	@Override
 	public int getLecturesAttendedNumber() {
+		return getChecks().length - getLecturesAbsentNumber();
+	}
+
+	@Override
+	public int getLecturesAbsentNumber() {
 		int numOfChecks = getChecks().length;
 		int absence = 0;
 		for(int j=0; j<numOfChecks; j++) {
@@ -110,7 +117,7 @@ public class SingleParticipantRollCallRow implements RollCallRow, RollCallItem {
 				absence++;
 			}
 		}
-		return numOfChecks - absence;
+		return absence;
 	}
 
 	@Override
@@ -197,6 +204,16 @@ public class SingleParticipantRollCallRow implements RollCallRow, RollCallItem {
 	public void setRollCallStatusEl(LectureBlockRollCallStatusItem rollCallStatusEl) {
 		this.rollCallStatusEl = rollCallStatusEl;
 	}
+
+	public StaticTextElement getNumOfAbsencesEl() {
+		return numOfAbsencesEl;
+	}
+
+	public void setNumOfAbsencesEl(StaticTextElement numOfAbsencesEl) {
+		this.numOfAbsencesEl = numOfAbsencesEl;
+	}
+	
+	
 	
 	
 }

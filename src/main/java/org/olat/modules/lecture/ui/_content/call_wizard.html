@@ -4,56 +4,60 @@
 <div class="clearfix">
 	$r.render("userDescr")
 </div>
-<div class="clearfix">
-	<table class="table">
-		<thead>
-			<tr>
-				#foreach($check in $checks)
-					<th scope="col">$foreach.count</th>
-				#end
-				<th scope="col"> </th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				#foreach($check in $checks)
-					<td>$r.render("check_${foreach.index}")</td>
-				#end
-				<td>$r.render("all")</td>
-			</tr>
-		</tbody>
-	</table>
-</div>
-#if($r.available("authorized.absence"))
-<div class="o_block">
-	$r.render("authorized.absence_LABEL", "authorized.absence")
-	$r.render("authorized.absence")
-	
-	#if($r.visible("absence.category"))
-		$r.render("absence.category_LABEL", "absence.category")
-		$r.render("absence.category")
-		#if($f.hasError("absence.category"))
-			$r.render("absence.category_ERROR")
+
+<fieldset>
+	<legend>$r.translate("rollcall.do")</legend>
+	<div class="clearfix">
+		<table class="table">
+			<thead>
+				<tr>
+					#foreach($check in $checks)
+						<th scope="col">$r.translate("table.header.lecture.number", $foreach.count)</th>
+					#end
+					<th scope="col"> </th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					#foreach($check in $checks)
+						<td>$r.render("check_${foreach.index}")</td>
+					#end
+					<td>$r.render("all")</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	#if($r.available("authorized.absence"))
+	<div class="">
+		$r.render("authorized.absence_LABEL", "authorized.absence")
+		$r.render("authorized.absence")
+		
+		#if($r.visible("absence.category"))
+			$r.render("absence.category_LABEL", "absence.category")
+			$r.render("absence.category")
+			#if($f.hasError("absence.category"))
+				$r.render("absence.category_ERROR")
+			#end
 		#end
-	#end
-	
-	#if($r.visible("authorized.absence"))
-		$r.render("absence.reason_LABEL", "absence.reason")
-		$r.render("absence.reason")
-		#if($f.hasError("absence.reason"))
-			$r.render("absence.reason_ERROR")
+		
+		#if($r.visible("authorized.absence"))
+			$r.render("absence.reason_LABEL", "absence.reason")
+			$r.render("absence.reason")
+			#if($f.hasError("absence.reason"))
+				$r.render("absence.reason_ERROR")
+			#end
 		#end
+	</div>
 	#end
-</div>
-#end
-<div class="o_block">
-	$r.render("comment_LABEL", "comment")
-	$r.render("comment")
-</div>
-<div class="o_button_group">
-	$r.render("cancel")
-	$r.render("save")
-	#if($r.available("close"))
-		$r.render("close")
-	#end
-</div>
+	<div class="o_block">
+		$r.render("comment_LABEL", "comment")
+		$r.render("comment")
+	</div>
+	<div class="o_button_group">
+		$r.render("cancel")
+		$r.render("save")
+		#if($r.available("close"))
+			$r.render("close")
+		#end
+	</div>
+</fieldset>

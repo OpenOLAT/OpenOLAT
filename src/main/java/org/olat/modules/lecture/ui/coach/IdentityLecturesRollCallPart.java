@@ -76,6 +76,15 @@ public class IdentityLecturesRollCallPart implements RollCallItem {
 		return attended;
 	}
 
+	@Override
+	public int getLecturesAbsentNumber() {
+		int absences = rollCall == null ? 0 : rollCall.getLecturesAbsentNumber();
+		if(absences < 0) {
+			absences = 0;
+		}
+		return absences;
+	}
+
 	public LectureBlockRollCallStatusItem getStatusItem() {
 		return statusItem;
 	}

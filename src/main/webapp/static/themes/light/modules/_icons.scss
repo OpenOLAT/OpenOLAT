@@ -196,6 +196,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_list_num:before { content: $fa-var-list-ol; }
 .o_icon_lifecycle:before { content: $fa-var-power-off;}
 .o_icon_lifecycle_date:before { content: $fa-var-calendar;}
+.o_icon_location:before { content: $fa-var-map-marker; }
 .o_icon_locked:before { content: $fa-var-lock;}
 .o_icon_log:before { content: $fa-var-file-text;}
 .o_icon_login:before { content: $fa-var-sign-in;}

@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.text.DateFormatSymbols;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -347,6 +348,16 @@ public class Formatter {
 			return shortTimeFormat.format(d);
 		}
 	}
+	
+	public String dayOfWeekName(Date date) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		int day = c.get(Calendar.DAY_OF_WEEK);
+
+		DateFormatSymbols symbols = new DateFormatSymbols(locale);
+		String[] dayNames = symbols.getWeekdays();
+		return dayNames[day];
+	}
 
 	/**
 	 * Formats a duration in millis to "XXh YYm ZZs"
@@ -630,13 +641,19 @@ public class Formatter {
 					sb.append("    ");
 					break;
 				case '\n':
-					sb.append("<br />");
+					sb.append("<br>");
+					if(cs.length > i + 1 && cs[i + 1] == '\r') {
+						i++;
+					}
 					break;
 				case '\r':
-					sb.append("<br />");
+					sb.append("<br>");
+					if(cs.length > i + 1 && cs[i + 1] == '\n') {
+						i++;
+					}
 					break;
 				case '\u2028': // unicode linebreak
-					sb.append("<br />");
+					sb.append("<br>");
 					break;
 				default:
 					sb.append(c);

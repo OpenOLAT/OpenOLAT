@@ -45,7 +45,7 @@ public class LectureBlockRollCallStatusComponentRenderer extends DefaultComponen
 		String iconCssClass;
 		String title;
 		int numOfLectures = cmp.getPlannedLecturesNumber();
-		if(cmp.getRollCall().getAbsenceNotice() != null) {
+		if(cmp.getRollCall() != null && cmp.getRollCall().getAbsenceNotice() != null) {
 			iconCssClass = "o_lectures_rollcall_notice";
 			switch(cmp.getRollCall().getAbsenceNotice().getNoticeType()) {
 				case notified: title = cmp.getTranslator().translate("rollcall.absence.notice"); break;
@@ -57,7 +57,7 @@ public class LectureBlockRollCallStatusComponentRenderer extends DefaultComponen
 			iconCssClass = "o_lectures_rollcall_ok";
 			title = cmp.getTranslator().translate("rollcall.tooltip.ok");
 		} else if(cmp.getRollCall() == null || cmp.getRollCall().getRollCall() == null) {
-			iconCssClass = "o_lectures_rollcall_pending";
+			iconCssClass = "o_lectures_rollcall_ok";
 			title = cmp.getTranslator().translate("rollcall.tooltip.pending");
 		} else if(cmp.isAuthorizedAbsenceEnabled()) {
 			if(cmp.isAbsenceDefaultAuthorized()) {
@@ -84,9 +84,12 @@ public class LectureBlockRollCallStatusComponentRenderer extends DefaultComponen
 			.append(title).append("'><i class='o_icon o_icon-lg ")
 			.append(iconCssClass).append("'> </i>");
 		if(cmp.isWithNumOfLectures()) {
-			sb.append(" ").append(cmp.getLecturesAttendedNumber())
+			sb.append(" ").append(cmp.getLecturesAbsentNumber())
 			  .append(" / ")
 			  .append(numOfLectures);
+		}
+		if(cmp.isWithExplanation()) {
+			sb.append(" ").append(title);
 		}
 		sb.append("</span>");
 	}

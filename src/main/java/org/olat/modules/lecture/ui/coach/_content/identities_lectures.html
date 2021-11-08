@@ -1,7 +1,16 @@
 #if($r.available("back"))
 	$r.render("back")
 #end
-<h3>$r.translate("multi.rollcall.title") <small>$msg</small></h3>
+<h3>$r.translate("multi.rollcall.title")</h3>
+<div class="o_lectures_rollcall_meta o_block_bottom">
+	<div class="o_date text-muted">
+		<i class="o_icon o_icon-fw o_icon_calendar"> </i> $date
+	</div>
+	<div class="o_date text-muted">
+		<i class="o_icon o_icon-fw o_icon_lecture"> </i> $numOfLectureBlocks
+	</div>
+</div>
+
 $r.render("table")
 #if($r.visible("close"))
 <div class="o_button_group">

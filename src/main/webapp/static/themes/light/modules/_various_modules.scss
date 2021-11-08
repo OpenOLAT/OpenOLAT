@@ -797,6 +797,26 @@ div.o_reminder_custom_email {
 	}
 }
 
+.o_expand.o_button_group {
+	margin: 10px 0 0 0;
+	border-top: 1px solid $o-table-filter-collapse-color;
+	
+	.o_button_details {
+		margin: -2px auto 0 auto;
+		position: relative;
+		top: -10px;
+		
+		padding: 0px 8px;
+		border: $o-cn-style-border;
+		border-top-left-radius: $border-radius-base;
+		border-top-right-radius: $border-radius-base;
+	
+		>span {
+			display: none;
+		}
+	}
+}
+
 /* the old toolbox */
 .o_toolboxes {
 	ul {

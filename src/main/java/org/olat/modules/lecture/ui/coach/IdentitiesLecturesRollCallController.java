@@ -187,16 +187,10 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
 		if(formLayout instanceof FormLayoutContainer) {
-			Date currentDate = null;
-			if(!lectureBlocks.isEmpty()) {
-				currentDate = lectureBlocks.get(0).getStartDate();
-			}
-			
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			String msg = translate("multi.rollcall.title.for", new String[] {
-					Formatter.getInstance(getLocale()).formatDate(currentDate), Integer.toString(lectureBlocks.size())
-			});
-			layoutCont.contextPut("msg", msg);
+			layoutCont.contextPut("date", getDate());
+			String numOfLectureBlocksI18n = lectureBlocks.size() > 1 ? "rollcall.lecture.blocks" : "rollcall.lecture.block";
+			layoutCont.contextPut("numOfLectureBlocks", translate(numOfLectureBlocksI18n, new String[] { Integer.toString(lectureBlocks.size()) }));
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -214,6 +208,8 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 			colIndex++;
 		}
 		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentitiesLecturesCols.numOfAbsences));
+		
 		colIndex = LECTURES_OFFSET;
 		for(int i=0; i<lectureBlocks.size(); i++) {
 			DefaultFlexiColumnModel col = new DefaultFlexiColumnModel("", colIndex++);
@@ -221,13 +217,33 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(col);
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentitiesLecturesCols.tools));
+		DefaultFlexiColumnModel rollCallCol = new DefaultFlexiColumnModel("rollcall.do", translate("table.header.details"), "rollcall");
+		rollCallCol.setIconHeader("o_icon o_icon_lecture o_icon-lg");
+		rollCallCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(rollCallCol);
+		
+		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(IdentitiesLecturesCols.tools);
+		toolsCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(toolsCol);
 
 		tableModel = new IdentitiesLecturesRollCallTableModel(columnsModel, userPropertyHandlers, getLocale());
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 26, false, getTranslator(), formLayout);
 
 		initCloseButton(formLayout);
+	}
+	
+	private String getDate() {
+		Date startDate = lectureBlocks.get(0).getStartDate();
+		Formatter formatter = Formatter.getInstance(getLocale());
+		String date = formatter.formatDate(startDate);
+		String startDayOfWeek = formatter.dayOfWeek(startDate);
+		
+		String[] args = new String[] {
+				date,						// 0
+				startDayOfWeek				// 1
+		};
+		return translate("lecture.block.date", args);
 	}
 	
 	private void initCloseButton(FormItemContainer formLayout) {

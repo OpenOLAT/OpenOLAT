@@ -88,7 +88,7 @@ public class RollCallInterceptorController extends FormBasicController implement
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("start", formLayout);
+		uifactory.addFormSubmitButton("show.lectures", formLayout);
 		startWizardButton = uifactory.addFormLink("start.wizard", formLayout, Link.BUTTON);
 		startWizardButton.setElementCssClass("o_sel_lecture_start_wizard");
 	}

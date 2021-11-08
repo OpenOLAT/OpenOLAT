@@ -54,6 +54,7 @@ public class SingleParticipantRollCallsDataModel extends DefaultFlexiTableDataMo
 				case authorizedAbsence: return call.getAuthorizedAbsenceCont();
 				case comment: return call.getCommentEl();
 				case all: return call.getAllLink();
+				case numOfAbsences: return call.getNumOfAbsencesEl();
 				default: return "ERROR";
 			}
 		}
@@ -85,7 +86,8 @@ public class SingleParticipantRollCallsDataModel extends DefaultFlexiTableDataMo
 		status("table.header.status"),
 		authorizedAbsence("table.header.authorized.absence"),
 		comment("table.header.comment"),
-		all("all");
+		all("all"),
+		numOfAbsences("table.header.absences");
 		
 		private final String i18nKey;
 		

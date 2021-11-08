@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.id.Identity;
@@ -53,6 +54,7 @@ public class TeacherRollCallRow extends UserPropertiesRow implements RollCallRow
 	private FormLink reasonLink;
 	private FormLink noticeLink;
 	private TextElement commentEl;
+	private StaticTextElement numOfAbsencesEl;
 	private MultipleSelectionElement[] checks;
 	private MultipleSelectionElement authorizedAbsence;
 	private LectureBlockRollCallStatusItem rollCallStatusEl;
@@ -97,13 +99,19 @@ public class TeacherRollCallRow extends UserPropertiesRow implements RollCallRow
 	@Override
 	public int getLecturesAttendedNumber() {
 		int numOfChecks = getChecks().length;
+		return numOfChecks - getLecturesAbsentNumber();
+	}
+
+	@Override
+	public int getLecturesAbsentNumber() {
+		int numOfChecks = getChecks().length;
 		int absence = 0;
 		for(int j=0; j<numOfChecks; j++) {
 			if(getCheck(j).isAtLeastSelected(1)) {
 				absence++;
 			}
 		}
-		return numOfChecks - absence;
+		return absence;
 	}
 
 	@Override
@@ -141,6 +149,14 @@ public class TeacherRollCallRow extends UserPropertiesRow implements RollCallRow
 
 	public void setAuthorizedAbsence(MultipleSelectionElement authorizedAbsence) {
 		this.authorizedAbsence = authorizedAbsence;
+	}
+
+	public StaticTextElement getNumOfAbsencesEl() {
+		return numOfAbsencesEl;
+	}
+
+	public void setNumOfAbsencesEl(StaticTextElement numOfAbsencesEl) {
+		this.numOfAbsencesEl = numOfAbsencesEl;
 	}
 
 	public FormLink getAllLink() {

@@ -70,6 +70,7 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 				case comment: return row.getCommentEl();
 				case all: return row.getAllLink();
 				case immunoStatus: return row.getImmunoStatus();
+				case numOfAbsences: return row.getNumOfAbsencesEl();
 				default: return null;
 			}
 		} else if(col < TeacherRollCallController.CHECKBOX_OFFSET) {
@@ -91,7 +92,8 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 		authorizedAbsence("table.header.authorized.absence"),
 		comment("table.header.comment"),
 		all("all"),
-		immunoStatus("table.header.immuno.status");
+		immunoStatus("table.header.immuno.status"),
+		numOfAbsences("table.header.absences");
 		
 		private final String i18nKey;
 		

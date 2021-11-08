@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.id.User;
+import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -71,6 +72,7 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 			switch(COLS[col]) {
 				case tools: return row.getTools();
 				case immunoStatus: return row.getImmunoStatus();
+				case numOfAbsences: return getNumberOfAbsences(row); 
 				default: return "ERROR";
 			}
 		}
@@ -86,14 +88,24 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 			int partPos = col - IdentitiesLecturesRollCallController.LECTURES_OFFSET;
 			IdentityLecturesRollCallPart part = row.getPart(partPos);
 			if(part.isParticipate()) {
-				if(part.getRollCall() == null) {
-					return "?";
-				}
 				return part.getStatusItem();
 			}
 			return "-";
 		}
 		return null;
+	}
+	
+	public Integer getNumberOfAbsences(IdentityLecturesRollCallsRow row) {
+		int numOfAbsences = 0;
+		
+		List<LectureBlockRollCall> calls = row.getRollCalls();
+		if(calls != null) {
+			for(LectureBlockRollCall call:calls) {
+				numOfAbsences += call.getLecturesAbsentNumber();
+			}
+		}
+		
+		return Integer.valueOf(numOfAbsences);
 	}
 
 	@Override
@@ -104,7 +116,8 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 	public enum IdentitiesLecturesCols implements FlexiSortableColumnDef {
 		status("table.header.status"),
 		tools("table.header.tools"),
-		immunoStatus("table.header.immuno.status");
+		immunoStatus("table.header.immuno.status"),
+		numOfAbsences("table.header.absences");
 		
 		private final String i18nKey;
 		

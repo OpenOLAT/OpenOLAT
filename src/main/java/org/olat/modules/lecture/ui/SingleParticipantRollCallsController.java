@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -154,15 +156,8 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// identity screen and title
 		if(formLayout instanceof FormLayoutContainer) {
-			Date currentDate = null;
-			if(!lectureBlocks.isEmpty()) {
-				currentDate = lectureBlocks.get(0).getStartDate();
-			}
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			String msg = translate("multi.rollcall.callee.title.for", new String[] {
-				Formatter.getInstance(getLocale()).formatDate(currentDate)
-			});
-			layoutCont.contextPut("msg", msg);
+			layoutCont.contextPut("date", getDate());
 			
 			DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), calledIdentity, true, false);
 			listenTo(portraitCtr);
@@ -189,6 +184,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		
 		if(hasCompulsory) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.status));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.numOfAbsences));
 			
 			for(int i=0; i<maxNumOfLectures; i++) {
 				DefaultFlexiColumnModel col = new DefaultFlexiColumnModel("table.header.lecture." + (i+1), i + CHECKBOX_OFFSET, true, "lecture." + (i+1));
@@ -215,6 +211,19 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", formLayout);
+	}
+	
+	private String getDate() {
+		Date startDate = lectureBlocks.get(0).getStartDate();
+		Formatter formatter = Formatter.getInstance(getLocale());
+		String date = formatter.formatDate(startDate);
+		String startDayOfWeek = formatter.dayOfWeek(startDate);
+		
+		String[] args = new String[] {
+				date,						// 0
+				startDayOfWeek				// 1
+		};
+		return translate("lecture.block.date", args);
 	}
 	
 	private Rows getImmunoRow(UserRequest ureq) {
@@ -279,6 +288,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		int numOfChecks = lectureBlock.isCompulsory() ? numOfLectures : 0;
 		MultipleSelectionElement[] checks = new MultipleSelectionElement[numOfChecks];
 		List<Integer> absences = rollCall == null ? Collections.emptyList() : rollCall.getLecturesAbsentList();
+		int numOfAbsences = 0;
 		
 		for(int i=0; i<numOfChecks; i++) {
 			String checkId = "check_".concat(Integer.toString(++counter));
@@ -290,6 +300,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			check.setAjaxOnly(true);
 			if(absences.contains(i) || notice != null) {
 				check.select(onKeys[0], true);
+				numOfAbsences++;
 			}
 			checks[i] = check;
 			flc.add(check);
@@ -299,6 +310,10 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		LectureBlockRollCallStatusItem statusEl = new LectureBlockRollCallStatusItem("status_".concat(Integer.toString(++counter)),
 				row, authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator());
 		row.setRollCallStatusEl(statusEl);
+		
+		StaticTextElement numOfAbsencesEl = uifactory.addStaticTextElement("num_of_ab_".concat(Integer.toString(++counter)), null, Integer.toString(numOfAbsences), flc);
+		numOfAbsencesEl.setDomWrapperElement(DomWrapperElement.span);
+		row.setNumOfAbsencesEl(numOfAbsencesEl);
 		
 		if(secCallback.canEditAuthorizedAbsences() || secCallback.canViewAuthorizedAbsences()) {
 			String page = velocity_root + "/authorized_absence_cell.html";
@@ -438,6 +453,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 				}
 			} else {
 				doCheckRow(row, check);
+				recalculateNumOfAbsences(row);
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -447,8 +463,10 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 					SingleParticipantRollCallRow row = (SingleParticipantRollCallRow)link.getUserObject();
 					doCalloutReasonAbsence(ureq, link.getFormDispatchId(), row);
 				} else if(cmd.startsWith("all_")) {
-					doCheckAllRow((SingleParticipantRollCallRow)link.getUserObject());
-				}else if(cmd.startsWith("notice_")) {
+					SingleParticipantRollCallRow row = (SingleParticipantRollCallRow)link.getUserObject();
+					doCheckAllRow(row);
+					recalculateNumOfAbsences(row);
+				} else if(cmd.startsWith("notice_")) {
 					doCalloutAbsenceNotice(ureq, link.getFormDispatchId(), (SingleParticipantRollCallRow)link.getUserObject());
 				}
 			}
@@ -465,6 +483,21 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void recalculateNumOfAbsences(SingleParticipantRollCallRow row) {
+		if(row.getNumOfAbsencesEl() == null) return;
+		
+		MultipleSelectionElement[] checks = row.getChecks();
+		int numOfAbsences = 0;
+		if(checks != null) {
+			for(MultipleSelectionElement check:checks) {
+				if(check.isAtLeastSelected(1)) {
+					numOfAbsences++;
+				}
+			}
+		}
+		row.getNumOfAbsencesEl().setValue(Integer.toString(numOfAbsences));
 	}
 	
 	private void doCalloutAbsenceNotice(UserRequest ureq, String elementId, SingleParticipantRollCallRow row) {

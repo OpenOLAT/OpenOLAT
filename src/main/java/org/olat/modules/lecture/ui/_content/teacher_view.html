@@ -16,7 +16,6 @@
 			$r.render("currentLectures")
 			#if($r.visible("start.mobile") || $r.visible("start.desktop"))
 			<div class="o_button_group">
-				<span class="o_lecture_start">$r.translate("start.label")</span>
 				#if($r.visible("start.desktop"))
 					$r.render("start.desktop")
 				#end

@@ -40,6 +40,7 @@ public class LectureBlockRollCallStatusComponent extends FormBaseComponentImpl {
 	private boolean absenceDefaultAuthorized;
 	
 	private boolean withNumOfLectures = false;
+	private boolean withExplanation = false;
 	
 	public LectureBlockRollCallStatusComponent(String id, LectureBlockRollCallStatusItem element, Translator translator) {
 		super(id, element.getName());
@@ -61,6 +62,19 @@ public class LectureBlockRollCallStatusComponent extends FormBaseComponentImpl {
 
 	public void setWithNumOfLectures(boolean withNumOfLectures) {
 		this.withNumOfLectures = withNumOfLectures;
+	}
+	
+	public boolean isWithExplanation() {
+		return withExplanation;
+	}
+
+	/**
+	 * Write the status as string after the symbol.
+	 * 
+	 * @param withExplanation
+	 */
+	public void setWithExplanation(boolean withExplanation) {
+		this.withExplanation = withExplanation;
 	}
 
 	public int getPlannedLecturesNumber() {
@@ -90,6 +104,10 @@ public class LectureBlockRollCallStatusComponent extends FormBaseComponentImpl {
 	
 	public int getLecturesAttendedNumber() {
 		return rollCall.getLecturesAttendedNumber();
+	}
+	
+	public int getLecturesAbsentNumber() {
+		return rollCall.getLecturesAbsentNumber();
 	}
 
 	public LectureBlockRollCallStatusItem getLectureBlockRollCallStatusItem() {

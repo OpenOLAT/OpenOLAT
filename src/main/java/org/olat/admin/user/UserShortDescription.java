@@ -151,6 +151,14 @@ public class UserShortDescription extends BasicController {
 	public void setUsernameAtBottom() {
 		mainVC.contextPut("usernamePosition", "bottom");
 	}
+	
+	public void setAdditionalRows(Rows additionalRows) {
+		if (additionalRows != null) {
+			mainVC.contextPut("additionalRows", additionalRows);
+		} else {
+			mainVC.contextRemove("additionalRows");
+		}	
+	}
 
 	@Override
 	protected void doDispose() {

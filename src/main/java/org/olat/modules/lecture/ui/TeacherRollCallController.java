@@ -35,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
@@ -103,6 +105,7 @@ public class TeacherRollCallController extends FormBasicController {
 	private FormSubmit quickSaveButton;
 	private FormLink backLink;
 	private FormLink reopenButton;
+	private FormLink expandButton;
 	private FormLink cancelLectureBlockButton;
 	private FormLink closeLectureBlocksButton;
 	
@@ -175,21 +178,24 @@ public class TeacherRollCallController extends FormBasicController {
 			StringBuilder sb = new StringBuilder();
 			List<Identity> teachers = lectureService.getTeachers(lectureBlock);
 			for(Identity teacher:teachers) {
-				if(sb.length() > 0) sb.append(", ");
-				sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(teacher)));
+				sb.append("<span><i class='o_icon o_icon-fw o_icon_user'> </i> ")
+				  .append(StringHelper.escapeHtml(userManager.getUserDisplayName(teacher)))
+				  .append("</span> ");
 			}
 			
 			Formatter formatter = Formatter.getInstance(getLocale());
 			String date = formatter.formatDate(lectureBlock.getStartDate());
 			String startTime = formatter.formatTimeShort(lectureBlock.getStartDate());
 			String endTime = formatter.formatTimeShort(lectureBlock.getEndDate());
+			String startDayOfWeek = formatter.dayOfWeek(lectureBlock.getStartDate());
 			
 			String[] args = new String[] {
 					lectureBlock.getTitle(),	// 0	
 					sb.toString(),				// 1
 					date,						// 2
 					startTime,					// 3
-					endTime						// 4
+					endTime,					// 4
+					startDayOfWeek				// 5
 			};
 		
 			layoutCont.contextPut("date", date);
@@ -197,6 +203,9 @@ public class TeacherRollCallController extends FormBasicController {
 			layoutCont.contextPut("endTime", endTime);
 			layoutCont.contextPut("dateAndTime", translate("lecture.block.dateAndTime", args));
 			layoutCont.contextPut("teachers", sb.toString());
+			String numOfLecturesI18n = lectureBlock.getPlannedLecturesNumber() > 1 ? "rollcall.lectures" : "rollcall.lecture";
+			layoutCont.contextPut("numOfLectures", translate(numOfLecturesI18n,
+					new String[] { Integer.toString(lectureBlock.getPlannedLecturesNumber()) }));
 			layoutCont.contextPut("lectureBlockTitle", StringHelper.escapeHtml(lectureBlock.getTitle()));
 			layoutCont.contextPut("lectureBlockExternalId", StringHelper.escapeHtml(lectureBlock.getExternalId()));
 			StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(lectureBlock.getDescription(), true));
@@ -211,6 +220,11 @@ public class TeacherRollCallController extends FormBasicController {
 			String i18nInfos = lectureBlock.getPlannedLecturesNumber() == 1 ? "rollcall.coach.hint" : "rollcall.coach.hints";
 			layoutCont.contextPut("lecturesInfos", translate(i18nInfos, new String[] { Integer.toString(lectureBlock.getPlannedLecturesNumber())}));
 		}
+		
+		expandButton = uifactory.addFormLink("expandButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		expandButton.setIconLeftCSS("o_icon o_icon_lg o_icon_details_collaps");
+		expandButton.setElementCssClass("o_button_details");
+		expandButton.setUserObject(Boolean.TRUE);
 		
 		if(withBack) {
 			backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
@@ -243,6 +257,7 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		if(lectureBlock.isCompulsory()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.status));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.numOfAbsences));
 			
 			for(int i=0; i<numOfLectures; i++) {
 				String lecture = Integer.toString(i + 1);
@@ -363,6 +378,7 @@ public class TeacherRollCallController extends FormBasicController {
 		MultipleSelectionElement[] checks = new MultipleSelectionElement[numOfChecks];
 		List<Integer> absences = rollCall == null ? Collections.emptyList() : rollCall.getLecturesAbsentList();
 		
+		int numOfAbsences = 0;
 		for(int i=0; i<numOfChecks; i++) {
 			String checkId = "check_".concat(Integer.toString(++counter));
 			MultipleSelectionElement check = uifactory.addCheckboxesHorizontal(checkId, null, flc, onKeys, onValues);
@@ -373,11 +389,16 @@ public class TeacherRollCallController extends FormBasicController {
 			check.setAjaxOnly(true);
 			if(absences.contains(i) || notice != null) {
 				check.select(onKeys[0], true);
+				numOfAbsences++;
 			}
 			checks[i] = check;
 			flc.add(check);
 		}
 		row.setChecks(checks);
+		
+		StaticTextElement numOfAbsencesEl = uifactory.addStaticTextElement("num_of_ab_" + (++counter), null, Integer.toString(numOfAbsences), flc);
+		numOfAbsencesEl.setDomWrapperElement(DomWrapperElement.span);
+		row.setNumOfAbsencesEl(numOfAbsencesEl);
 		
 		LectureBlockRollCallStatusItem statusEl = new LectureBlockRollCallStatusItem("status_".concat(Integer.toString(++counter)),
 				row, authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator());
@@ -547,6 +568,8 @@ public class TeacherRollCallController extends FormBasicController {
 			} else {
 				doCheckRow(row, check);
 			}
+		} else if(expandButton == source) {
+			doToggleExpand();
 		} else if(backLink == source) {
 			fireEvent(ureq, Event.BACK_EVENT);
 		} else if(reopenButton == source) {
@@ -579,6 +602,21 @@ public class TeacherRollCallController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		saveLectureBlocks();
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void recalculateNumOfAbsences(TeacherRollCallRow row) {
+		if(row.getNumOfAbsencesEl() == null) return;
+		
+		MultipleSelectionElement[] checks = row.getChecks();
+		int numOfAbsences = 0;
+		if(checks != null) {
+			for(MultipleSelectionElement check:checks) {
+				if(check.isAtLeastSelected(1)) {
+					numOfAbsences++;
+				}
+			}
+		}
+		row.getNumOfAbsencesEl().setValue(Integer.toString(numOfAbsences));
 	}
 	
 	private void saveLectureBlocks() {
@@ -621,6 +659,15 @@ public class TeacherRollCallController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
+	private void doToggleExpand() {
+		Boolean expanded = (Boolean)expandButton.getUserObject();
+		boolean nextState = !expanded.booleanValue();
+		String nextCssState = nextState ? "o_icon_details_collaps" : "o_icon_details_expand";
+		expandButton.setIconLeftCSS("o_icon o_icon_lg ".concat(nextCssState));
+		expandButton.setUserObject(Boolean.valueOf(nextState));
+		flc.contextPut("expandedDescription", Boolean.valueOf(nextState));
+	}
+	
 	private void doCheckAllRow(TeacherRollCallRow row) {
 		List<Integer> allAbsences = new ArrayList<>(numOfLectures);
 		for(int i=0; i<numOfLectures; i++) {
@@ -640,6 +687,7 @@ public class TeacherRollCallController extends FormBasicController {
 			row.getAuthorizedAbsenceCont().setDirty(true);
 		}
 		row.getRollCallStatusEl().getComponent().setDirty(true);
+		recalculateNumOfAbsences(row);
 		tableEl.reloadData();
 		flc.setDirty(true);
 	}
@@ -669,6 +717,7 @@ public class TeacherRollCallController extends FormBasicController {
 			row.getAuthorizedAbsenceCont().setDirty(true);
 		}
 		row.getRollCallStatusEl().getComponent().setDirty(true);
+		recalculateNumOfAbsences(row);
 	}
 	
 	private void doAuthorizedAbsence(TeacherRollCallRow row, MultipleSelectionElement check) {

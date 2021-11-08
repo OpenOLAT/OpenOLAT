@@ -34,6 +34,8 @@ public interface RollCallItem {
 
 	public int getLecturesAttendedNumber();
 	
+	public int getLecturesAbsentNumber();
+	
 	public AbsenceNotice getAbsenceNotice();
 	
 	public LectureBlockRollCall getRollCall();
