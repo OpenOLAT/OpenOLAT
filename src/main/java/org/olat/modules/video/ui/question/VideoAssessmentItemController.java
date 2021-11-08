@@ -139,6 +139,10 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		mainVC.put("question", assessmentItemCtrl.getInitialComponent());
 		return true;
 	}
+	
+	public AssessmentTestSession getCandidateSession() {
+		return assessmentItemCtrl == null ? null : assessmentItemCtrl.getCandidateSession();
+	}
 
 	@Override
 	protected void doDispose() {

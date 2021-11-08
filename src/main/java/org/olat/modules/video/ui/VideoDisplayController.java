@@ -60,6 +60,7 @@ import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.nodes.VideoCourseNode;
 import org.olat.fileresource.types.VideoFileResource;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
@@ -238,7 +239,11 @@ public class VideoDisplayController extends BasicController {
 	
 	public void setUserPreferredResolution(Integer resolution) {
 		userPreferredResolution = resolution;
-	}	
+	}
+	
+	public AssessmentTestSession getCandidateSession() {
+		return questionCtrl == null ? null : questionCtrl.getCandidateSession();
+	}
 	
 	private void initMediaElementJs() {
 		// load mediaelementjs player, speed and sourcechooser plugins
