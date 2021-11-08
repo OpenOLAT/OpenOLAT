@@ -43,7 +43,7 @@
 	#foreach($row in $additionalRows.getRows())
 		#if($r.isFalse($row.before))
 		<tr class="o_prop">
-			<th scope="row">$row.before $row.getColumn1()</th>
+			<th scope="row">$row.getColumn1()</th>
 			<td>$row.getColumn2()</td>
 		</tr>
 		#end
