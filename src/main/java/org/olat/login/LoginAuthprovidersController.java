@@ -125,7 +125,8 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 			// make sure the OLAT authentication controller is activated as only this one can handle registration requests
 			AuthenticationProvider olatProvider = loginModule.getAuthenticationProvider(BaseSecurityModule.getDefaultAuthProviderIdentifier());
 			if (olatProvider.isEnabled()) {
-				initLoginContent(ureq, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+				content = initLoginContent(ureq, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+				dmzPanel.pushContent(content);
 				if(authController instanceof Activateable2) {
 					((Activateable2)authController).activate(ureq, entries, state);
 				}
