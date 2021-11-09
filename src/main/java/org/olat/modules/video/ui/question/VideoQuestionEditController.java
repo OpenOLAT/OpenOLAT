@@ -52,6 +52,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -376,9 +377,10 @@ public class VideoQuestionEditController extends BasicController {
 			}
 			
 			loadModel(true);
-			reloadMarkers();
 			if(firstQuestion != null) {
 				doEditQuestion(ureq, firstQuestion);
+			} else {
+				reloadMarkers();
 			}
 		}
 		
@@ -447,7 +449,6 @@ public class VideoQuestionEditController extends BasicController {
 			questions.getQuestions().add(newQuestion);
 			videoManager.saveQuestions(questions, entry.getOlatResource());
 			loadModel(true);
-			reloadMarkers();
 			doEditQuestion(ureq, newQuestion);
 		}
 		
@@ -473,9 +474,13 @@ public class VideoQuestionEditController extends BasicController {
 			questions.getQuestions().add(question);
 			videoManager.saveQuestions(questions, entry.getOlatResource());
 			loadModel(false, questions.getQuestions());
-			reloadMarkers();
-			selectTime(question.getBegin());
-			loadMarker(ureq, question);
+			
+			AssessmentTestSession candidateSession = videoDisplayCtrl.getCandidateSession();
+			if(candidateSession != null) {
+				qtiService.deleteAuthorAssessmentTestSession(entry, candidateSession);
+			}
+			
+			loadMarkersAndQuestion(ureq, question);
 		}
 		
 		private void doEditQuestion(UserRequest ureq, VideoQuestion question) {
@@ -494,6 +499,14 @@ public class VideoQuestionEditController extends BasicController {
 			itemEditorCtrl.getTabbedPane().addTab(0, translate("video.question.configuration"), questionConfigCtrl);
 			itemEditorCtrl.getTabbedPane().setSelectedPane(ureq, 0);
 			editorWrapper.setContent(itemEditorCtrl.getInitialComponent());
+			
+			loadMarkersAndQuestion(ureq, question);
+		}
+		
+		private void loadMarkersAndQuestion(UserRequest ureq, VideoQuestion question) {
+			reloadMarkers();
+			selectTime(question.getBegin());
+			loadMarker(ureq, question);
 		}
 		
 		private void doDeleteQuestion(VideoQuestion question) {
