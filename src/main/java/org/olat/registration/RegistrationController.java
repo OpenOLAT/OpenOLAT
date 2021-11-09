@@ -400,7 +400,8 @@ public class RegistrationController extends BasicController implements Activatea
 			List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(email));
 			for (Identity identity: identities) {
 				String subject = translate("login.subject");
-				String body = translate("login.body", identity.getName()) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
+				String username = StringHelper.containsNonWhitespace(identity.getUser().getNickName()) ? identity.getUser().getNickName() : identity.getName();
+				String body = translate("login.body", username) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
 				sendMessage(email, subject, body);
 			}
 			showError("email.notsent");
