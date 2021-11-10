@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.services.license.License;
-import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
-import org.olat.core.commons.services.vfs.model.VFSRevisionStatistics;
-import org.olat.core.commons.services.vfs.model.VFSThumbnailStatistics;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -293,11 +290,7 @@ public interface VFSRepositoryService {
 	
 	public License getOrCreateLicense(VFSMetadata meta, Identity itentity);
 	
-	public VFSFileStatistics getFileStats(); 
-	
-	public VFSRevisionStatistics getRevisionStats(); 
-	
-	public VFSThumbnailStatistics getThumbnailStats(); 
+	public VFSStatistics getStatistics(boolean recalculateSizes);
 	
 	/**
 	 * Returns the largest files from the VFS

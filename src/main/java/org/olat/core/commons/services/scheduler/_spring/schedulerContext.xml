@@ -63,6 +63,7 @@ How to add a new job:
             <ref bean="immunityProofTrigger"/>
             <ref bean="recordingSyncTrigger"/>
             <ref bean="documentAccessDeletionTrigger"/>
+            <ref bean="vfsStatisticsTrigger" />
         </list>
     </property>
 </bean>

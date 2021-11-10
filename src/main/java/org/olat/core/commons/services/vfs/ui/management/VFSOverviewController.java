@@ -26,9 +26,7 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
-import org.olat.core.commons.services.vfs.model.VFSRevisionStatistics;
-import org.olat.core.commons.services.vfs.model.VFSThumbnailStatistics;
+import org.olat.core.commons.services.vfs.VFSStatistics;
 import org.olat.core.commons.services.vfs.ui.management.VFSOverviewTableModel.VFSOverviewColumns;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -38,11 +36,11 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -66,6 +64,7 @@ public class VFSOverviewController extends FormBasicController {
 	private FormLink trashLink;
 	private FormLink versionsLink;
 	private FormLink thumbnailLink;
+	private FormLink recalculateLink;
 
 	public static final Event OPEN_TRASH_EVENT			= new Event("vfs.openTrash");
 	public static final Event OPEN_LARGE_FILES_EVENT	= new Event("vfs.openLargeFiles");
@@ -82,20 +81,18 @@ public class VFSOverviewController extends FormBasicController {
 		super(ureq, wControl, "vfs_overview");
 
 		initForm(ureq);
-		updateModel();
+		updateModel(false);
 	}
 
-	public void updateModel() {
+	private void updateModel(boolean recalculate) {
 		List<VFSOverviewTableContentRow> rows = new ArrayList<>();
 		
-		VFSFileStatistics fileStats = vfsRepositoryService.getFileStats();
-		VFSRevisionStatistics revisionStats = vfsRepositoryService.getRevisionStats();
-		VFSThumbnailStatistics thumbnailStats = vfsRepositoryService.getThumbnailStats();
+		VFSStatistics stats = vfsRepositoryService.getStatistics(recalculate);
 
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.files", fileStats.getFilesAmount(), fileStats.getFilesSize(), largeFilesLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.versions", revisionStats.getRevisionsAmount(), revisionStats.getRevisionsSize(), versionsLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.trash", fileStats.getTrashAmount(), fileStats.getTrashSize(), trashLink));
-		rows.add(new VFSOverviewTableContentRow("vfs.overview.thumbnails", thumbnailStats.getThumbnailsAmount(), thumbnailStats.getThumbnailsSize(), thumbnailLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.files", stats.getFilesAmount(), stats.getFilesSize(), largeFilesLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.versions", stats.getRevisionsAmount(), stats.getRevisionsSize(), versionsLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.trash", stats.getTrashAmount(), stats.getTrashSize(), trashLink));
+		rows.add(new VFSOverviewTableContentRow("vfs.overview.thumbnails", stats.getThumbnailsAmount(), stats.getThumbnailsSize(), thumbnailLink));
 
 		vfsOverviewTableElement.setFooter(true);
 		vfsOverviewTableModel.setObjects(rows);
@@ -114,10 +111,6 @@ public class VFSOverviewController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer overviewLayout = FormLayoutContainer.createVerticalFormLayout("vfs.overview", getTranslator());
-		formLayout.add(overviewLayout);
-		
-		overviewLayout.setFormTitle(translate("vfs.overview.title"));
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		DefaultFlexiColumnModel nameColumn;
 		DefaultFlexiColumnModel amountColumn;
@@ -147,7 +140,7 @@ public class VFSOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(actionColumn);		
 
 		vfsOverviewTableModel = new VFSOverviewTableModel(columnsModel, getLocale());
-		vfsOverviewTableElement = uifactory.addTableElement(getWindowControl(), "vfs.overview.table", vfsOverviewTableModel, getTranslator(), overviewLayout);
+		vfsOverviewTableElement = uifactory.addTableElement(getWindowControl(), "vfs.overview.table", vfsOverviewTableModel, getTranslator(), formLayout);
 		vfsOverviewTableElement.setSearchEnabled(false);
 		vfsOverviewTableElement.setCustomizeColumns(false);
 		vfsOverviewTableElement.setNumOfRowsEnabled(false);
@@ -155,15 +148,13 @@ public class VFSOverviewController extends FormBasicController {
 		largeFilesLink = uifactory.addFormLink("vfs.overview.fileslink", formLayout);
 		trashLink = uifactory.addFormLink("vfs.overview.trashlink", formLayout);
 		versionsLink = uifactory.addFormLink("vfs.overview.versionslink", formLayout);
-		thumbnailLink = uifactory.addFormLink("vfs.overview.thumbnaillink", formLayout); 
-		
-		uifactory.addStaticTextElement("vfs.overview.files.note", null, translate("vfs.overview.files.note"), overviewLayout);
-		
+		thumbnailLink = uifactory.addFormLink("vfs.overview.thumbnaillink", formLayout);
+		recalculateLink = uifactory.addFormLink("vfs.overview.recalculate", formLayout, Link.BUTTON);
 	}
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
 
 	@Override
@@ -188,6 +179,8 @@ public class VFSOverviewController extends FormBasicController {
 			String text = translate("vfs.overview.thumbnails.reset.confirm");
 			String title = translate("vfs.overview.thumbnails.reset.title");
 			confirmResetThumbnails = activateYesNoDialog(ureq, title, text, confirmResetThumbnails);
+		} else if (source == recalculateLink) {
+			updateModel(true);
 		}
 	}
 

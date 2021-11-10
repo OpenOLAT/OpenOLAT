@@ -21,6 +21,8 @@ package org.olat.core.commons.services.vfs.manager;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSStatistics;
 import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
 import org.olat.core.commons.services.vfs.model.VFSRevisionStatistics;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailStatistics;
@@ -35,6 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VFSStatsDAOTest extends OlatTestCase {
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private VFSStatsDAO vfsStatsDAO;
 	
@@ -62,5 +66,23 @@ public class VFSStatsDAOTest extends OlatTestCase {
 		
 		Assert.assertTrue(thumbnailStatistics.getThumbnailsAmount() >= 0);
 		Assert.assertTrue(thumbnailStatistics.getThumbnailsSize() >= 0);
+	}
+	
+	@Test
+	public void createStatistics() {
+		VFSStatistics statistics = vfsStatsDAO.createStatistics();
+		dbInstance.commit();
+		
+		Assert.assertTrue(statistics.getFilesAmount() >= 0);
+		Assert.assertTrue(statistics.getFilesSize() >= 0);
+		Assert.assertTrue(statistics.getTrashAmount() >= 0);
+		Assert.assertTrue(statistics.getTrashSize() >= 0);
+		Assert.assertTrue(statistics.getThumbnailsAmount() >= 0);
+		Assert.assertTrue(statistics.getThumbnailsSize() >= 0);
+		Assert.assertTrue(statistics.getRevisionsAmount() >= 0);
+		Assert.assertTrue(statistics.getRevisionsSize() >= 0);
+		
+		VFSStatistics lastStatistics = vfsStatsDAO.getLastStatistics();
+		Assert.assertNotNull(lastStatistics);
 	}
 }
