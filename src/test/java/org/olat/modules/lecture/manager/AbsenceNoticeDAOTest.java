@@ -150,11 +150,8 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
 				start, end, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
-		linkNoticeToRollCall(rollCall, notice);
 		
-		rollCall.setAbsenceNotice(notice);
-		rollCall.setAbsenceNoticeLectures("0,1");
-		lectureBlockRollCallDao.update(rollCall);
+		lectureBlockRollCallDao.updateLectureBlockRollCallAbsenceNotice(rollCall, notice);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadedRollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
@@ -567,9 +564,7 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	}
 	
 	private void linkNoticeToRollCall(LectureBlockRollCall rollCall, AbsenceNotice notice) {
-		rollCall.setAbsenceNotice(notice);
-		rollCall.setAbsenceNoticeLectures("0,1");
-		lectureBlockRollCallDao.update(rollCall);
+		lectureBlockRollCallDao.updateLectureBlockRollCallAbsenceNotice(rollCall, notice);
 		dbInstance.commitAndCloseSession();
 	}
 	

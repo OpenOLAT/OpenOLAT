@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.GroupRoles;
@@ -61,6 +62,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -74,12 +76,14 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.run.InfoCourse;
 import org.olat.course.run.RunMainController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -116,6 +120,9 @@ import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 
  * Initial date: 25.03.2014<br>
@@ -123,6 +130,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RepositoryEntryDetailsController extends FormBasicController {
+
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryDetailsController.class);
+	
+	private final ObjectMapper objectMapper = new ObjectMapper();
 	
 	protected FormLink markLink, commentsLink, startLink, leaveLink;
 	private RatingWithAverageFormItem ratingEl;
@@ -180,6 +191,8 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	private CurriculumModule curriculumModule;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private CourseModule courseModule;
 
 	
 	private String baseUrl;
@@ -526,6 +539,19 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				layoutCont.contextPut("licenseText", LicenseUIFactory.getFormattedLicenseText(license));
 			} else {
 				layoutCont.contextPut("licSwitch", Boolean.FALSE);
+			}
+			
+			if (courseModule.isInfoDetailsEnabled()) {
+				String oInfoCourse = null;
+				try {
+					InfoCourse infoCourse = InfoCourse.of(entry);
+					if (infoCourse != null) {
+						oInfoCourse = objectMapper.writeValueAsString(infoCourse);
+					}
+				} catch (JsonProcessingException e) {
+					log.error("", e);
+				}
+				layoutCont.contextPut("oInfoCourse", oInfoCourse);
 			}
 		}
 	}

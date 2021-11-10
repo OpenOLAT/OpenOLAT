@@ -640,7 +640,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		List<LectureBlockRollCall> rollCalls = absenceNoticeDao.getRollCalls(notice);
 		if(rollCalls != null && !rollCalls.isEmpty()) {
 			for(LectureBlockRollCall rollCall:rollCalls) {
-				rollCall.setAbsenceNotice(null);
+				lectureBlockRollCallDao.removeLectureBlockRollCallAbsenceNotice(rollCall);
 			}
 		}
 		// delete
@@ -759,14 +759,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			if(currentRollCallSet.contains(rollCall)) {
 				currentRollCallSet.remove(rollCall);
 			} else {
-				rollCall.setAbsenceNotice(notice);
-				lectureBlockRollCallDao.update(rollCall);
+				lectureBlockRollCallDao.updateLectureBlockRollCallAbsenceNotice(rollCall, notice);
 			}
 		}
 		
 		for(LectureBlockRollCall toUnlink: currentRollCallSet) {
-			toUnlink.setAbsenceNotice(null);
-			lectureBlockRollCallDao.update(toUnlink);
+			lectureBlockRollCallDao.removeLectureBlockRollCallAbsenceNotice(toUnlink);
 		}
 		
 		if(after != null) {
