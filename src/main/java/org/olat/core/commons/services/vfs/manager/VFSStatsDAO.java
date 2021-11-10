@@ -19,11 +19,14 @@
  */
 package org.olat.core.commons.services.vfs.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.vfs.VFSStatistics;
 import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
 import org.olat.core.commons.services.vfs.model.VFSRevisionStatistics;
+import org.olat.core.commons.services.vfs.model.VFSStatisticsImpl;
 import org.olat.core.commons.services.vfs.model.VFSThumbnailStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,38 @@ public class VFSStatsDAO {
 
 	@Autowired
 	private DB dbInstance;
+	
+	public VFSStatistics createStatistics() {
+		VFSFileStatistics fileStats = getFileStats();
+		VFSRevisionStatistics revStats = getRevisionStats();
+		VFSThumbnailStatistics thumbnailStats = getThumbnailStats();
+		
+		VFSStatisticsImpl stats = new VFSStatisticsImpl();
+		stats.setCreationDate(new Date());
+		stats.setFilesAmount(fileStats.getFilesAmount());
+		stats.setFilesSize(fileStats.getFilesSize());
+		stats.setTrashAmount(fileStats.getTrashAmount());
+		stats.setTrashSize(fileStats.getTrashSize());
+		stats.setRevisionsAmount(revStats.getRevisionsAmount());
+		stats.setRevisionsSize(revStats.getRevisionsSize());
+		stats.setThumbnailsAmount(thumbnailStats.getThumbnailsAmount());
+		stats.setThumbnailsSize(thumbnailStats.getThumbnailsSize());
+		
+		dbInstance.getCurrentEntityManager().persist(stats);
+		return stats;
+	}
+
+	public VFSStatistics getLastStatistics() {
+		String q = "select stats from vfsstatistics stats order by stats.creationDate desc";
+		
+		List<VFSStatistics> stats = dbInstance.getCurrentEntityManager()
+				.createQuery(q, VFSStatistics.class)
+				.setMaxResults(1)
+				.setFirstResult(0)
+				.getResultList();
+		return stats == null || stats.isEmpty() ? null : stats.get(0);
+	}
+	
 	
 	public VFSFileStatistics getFileStats() {
 		StringBuilder sb = new StringBuilder(256);

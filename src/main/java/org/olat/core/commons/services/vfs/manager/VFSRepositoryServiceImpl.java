@@ -76,16 +76,14 @@ import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSRevisionRef;
+import org.olat.core.commons.services.vfs.VFSStatistics;
 import org.olat.core.commons.services.vfs.VFSThumbnailMetadata;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.impl.VFSContextInfoUnknown;
 import org.olat.core.commons.services.vfs.impl.VFSContextInfoUnknownPathResolver;
 import org.olat.core.commons.services.vfs.manager.MetaInfoReader.Thumbnail;
-import org.olat.core.commons.services.vfs.model.VFSFileStatistics;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
-import org.olat.core.commons.services.vfs.model.VFSRevisionStatistics;
-import org.olat.core.commons.services.vfs.model.VFSThumbnailStatistics;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -1677,21 +1675,21 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 	
 	@Override 
-	public VFSFileStatistics getFileStats() {
-		return statsDao.getFileStats();
+	public VFSStatistics getStatistics(boolean recalculate) {
+		VFSStatistics stats;
+		if(recalculate) {
+			stats = statsDao.createStatistics();
+			dbInstance.commitAndCloseSession();
+		} else {
+			stats = statsDao.getLastStatistics();
+			if(stats == null) {
+				stats = statsDao.createStatistics();
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		return stats;
 	}
-	
-	@Override 
-	public VFSRevisionStatistics getRevisionStats() {
-		return statsDao.getRevisionStats();
-	}
-	
-	@Override 
-	public VFSThumbnailStatistics getThumbnailStats() {
-		return statsDao.getThumbnailStats();
-	}
-	
-	
+
 	/**
 	 * Set list of context info resolver. Used to autowire resolvers from various implementers
 	 * @param vfsContextInfoResolver

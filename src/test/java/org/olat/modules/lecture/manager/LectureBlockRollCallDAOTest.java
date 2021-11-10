@@ -28,6 +28,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.lecture.AbsenceNotice;
+import org.olat.modules.lecture.AbsenceNoticeTarget;
+import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
@@ -50,6 +53,8 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
+	@Autowired
+	private AbsenceNoticeDAO absenceNoticeDao;
 	@Autowired
 	private LectureBlockRollCallDAO lectureBlockRollCallDao;
 	
@@ -436,6 +441,35 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 			Assert.assertFalse(rollCalls.contains(rollCall3));
 			Assert.assertTrue(rollCalls.contains(rollCall4));
 		}
+	}
+	
+	@Test
+	public void updateWithAbsenceNotice() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-10");
+		Identity authorizer = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-11");
+		LectureBlock lectureBlock = createMinimalLectureBlock(3);
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
+				lectureBlock.getStartDate(), lectureBlock.getEndDate(), null, "A very good reason", Boolean.TRUE, authorizer, authorizer);
+		dbInstance.commitAndCloseSession();
+		
+		List<Integer> absences = Arrays.asList(1, 2);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity,
+				null, null, null, null, null, absences);
+		dbInstance.commit();
+		
+		int rows = lectureBlockRollCallDao.updateLectureBlockRollCallAbsenceNotice(rollCall, notice);
+		Assert.assertEquals(1, rows);
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlockRollCall reloadedRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
+		Assert.assertEquals(notice, reloadedRollCall.getAbsenceNotice());
+		
+		int removeRows = lectureBlockRollCallDao.removeLectureBlockRollCallAbsenceNotice(reloadedRollCall);
+		Assert.assertEquals(1, removeRows);
+		dbInstance.commitAndCloseSession();
+		
+		reloadedRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
+		Assert.assertNull(reloadedRollCall.getAbsenceNotice());
 	}
 
 	private LectureBlock createMinimalLectureBlock(int numOfLectures) {

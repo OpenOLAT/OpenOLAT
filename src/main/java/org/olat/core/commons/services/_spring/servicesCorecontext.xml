@@ -143,5 +143,21 @@
 			<property name="cronExpression" value="0 0 4 * * ?"/><!-- 2am, daily -->
 			<property name="startDelay" value="45000" />
 	</bean>
+	
+	<!-- Statistics for VFS -->
+	<bean id="vfsStatisticsTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="vfsStatisticsJob.${cluster.singleton.services}" />
+		<property name="cronExpression" value="32 32 2 * * ?" />
+		<property name="startDelay" value="60000" />
+	</bean>
+
+	<bean id="vfsStatisticsJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.vfs.manager.VFSStatisticsJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="vfsStatisticsJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
 
 </beans>

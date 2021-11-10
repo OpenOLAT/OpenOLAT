@@ -241,6 +241,21 @@ public class LectureBlockRollCallDAO {
 		return dbInstance.getCurrentEntityManager().merge(rollCall);
 	}
 	
+	public int updateLectureBlockRollCallAbsenceNotice(LectureBlockRollCall rollCall, AbsenceNotice absenceNotice) {
+		String q = "update lectureblockrollcall rollcall set rollcall.absenceNotice.key=:absenceNoticeKey where rollcall.key=:rollCallKey";
+		return dbInstance.getCurrentEntityManager().createQuery(q)
+				.setParameter("rollCallKey", rollCall.getKey())
+				.setParameter("absenceNoticeKey", absenceNotice.getKey())
+				.executeUpdate();
+	}
+	
+	public int removeLectureBlockRollCallAbsenceNotice(LectureBlockRollCall rollCall) {
+		String q = "update lectureblockrollcall rollcall set rollcall.absenceNotice.key = null where rollcall.key=:rollCallKey";
+		return dbInstance.getCurrentEntityManager().createQuery(q)
+				.setParameter("rollCallKey", rollCall.getKey())
+				.executeUpdate();
+	}
+	
 	public int deleteRollCalls(Identity identity) {
 		String del = "delete from lectureblockrollcall rollcall where rollcall.identity.key=:identityKey";
 		return dbInstance.getCurrentEntityManager()
