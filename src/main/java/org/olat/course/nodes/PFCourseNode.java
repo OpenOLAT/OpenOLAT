@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
@@ -47,6 +48,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -345,23 +347,11 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
-		List<Map.Entry<String, Date>> datesMap = new ArrayList<>();
-		
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		Date uploadStart = config.getDateValue(CONFIG_KEY_DATESTART);
-		Date uploadEnd = config.getDateValue(CONFIG_KEY_DATEEND);
-		
-		if (uploadStart != null) {
-			datesMap.add(Map.entry("participant.folder.upload.start", uploadStart));
-		}
-			
-		if (uploadEnd != null) {
-			datesMap.add(Map.entry("participant.folder.upload.end", uploadEnd));
-		}
-		
-		return datesMap;
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel() {
+		return List.of(
+				Map.entry("participant.folder.upload.start", DueDateConfig.absolute(getModuleConfiguration().getDateValue(CONFIG_KEY_DATESTART))),
+				Map.entry("participant.folder.upload.end", DueDateConfig.absolute(getModuleConfiguration().getDateValue(CONFIG_KEY_DATEEND)))
+			);
 	}
 
 }

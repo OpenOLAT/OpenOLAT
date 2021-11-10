@@ -18,11 +18,8 @@
  * <p>
  */
 package org.olat.course.highscore.ui;
-/**
- * Initial Date:  10.08.2016 <br>
- * @author fkiefer
- */
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -33,16 +30,24 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
+import org.olat.course.ICourse;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
+import org.olat.course.duedate.ui.DueDateConfigFormItem;
+import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class HighScoreEditController extends FormBasicController {
 	
+	private static final String[] ON_KEYS = new String[]{ "on" };
 	private static final String[] yesOrNoKeys = new String[] { "highscore.all", "highscore.bestonly" };
 	
 	/** configuration: boolean has a podium */
@@ -64,8 +69,13 @@ public class HighScoreEditController extends FormBasicController {
 	/** configuration: boolean runtime */
 	public static final String CONFIG_KEY_RUNTIME = "runTime";
 	/** configuration: Date Start */
+	private static final String CONFIG_KEY_RELATIVE_DATES = "highscore.rel.date";
 	public static final String CONFIG_KEY_DATESTART = "dateStarting";
+	private static final String CONFIG_KEY_DATESTART_RELATIVE = "dateStartingRel";
+	private static final String CONFIG_KEY_DATESTART_RELATIVE_TO = "dateStartingRelTo";
 	
+	private MultipleSelectionElement relativeDatesEl;
+	private DueDateConfigFormItem dateStart;
 	private SingleSelection bestOnlyEl;
 	
 	private MultipleSelectionElement allowHighScore;
@@ -77,12 +87,30 @@ public class HighScoreEditController extends FormBasicController {
 
 	private IntegerElement numTableRows;
 	private ModuleConfiguration config;
-	private JSDateChooser dateStart;
+	private final List<String> relativeToDates;
 	
-	public HighScoreEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
+	@Autowired
+	private DueDateService dueDateService;
+	
+	public HighScoreEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, ICourse course) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
+		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.config = config;
+		this.relativeToDates = dueDateService.getCourseRelativeToDateTypes(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		initForm(ureq);
+	}
+	
+	public static DueDateConfig getStartDateConfig(ModuleConfiguration moduleConfig) {
+		return moduleConfig.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HIGHSCORE)
+				? DueDateConfig.ofModuleConfiguration(moduleConfig, CONFIG_KEY_RELATIVE_DATES, CONFIG_KEY_DATESTART,
+						CONFIG_KEY_DATESTART_RELATIVE, CONFIG_KEY_DATESTART_RELATIVE_TO)
+				: DueDateConfig.noDueDateConfig();
+	}
+	
+	public static void setStartDateConfig(ModuleConfiguration moduleConfig, DueDateConfig startDateConfig) {
+		moduleConfig.setIntValue(CONFIG_KEY_DATESTART_RELATIVE, startDateConfig.getNumOfDays());
+		moduleConfig.setStringValue(CONFIG_KEY_DATESTART_RELATIVE_TO, startDateConfig.getRelativeToType());
+		moduleConfig.setDateValue(CONFIG_KEY_DATESTART, startDateConfig.getAbsoluteDate());
 	}
 	
 	public void setFormInfoMessage(String i18nKey, Translator infoMessageTranslator) {
@@ -105,14 +133,17 @@ public class HighScoreEditController extends FormBasicController {
 			allowHighScore.select("xx", allowhighscore);		
 		}
 		
-		dateStart = new JSDateChooser("startDate", getLocale());
+		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", formLayout, ON_KEYS, new String[]{ "" });
+		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
+		boolean useRelativeDates = config.getBooleanSafe(CONFIG_KEY_RELATIVE_DATES);
+		relativeDatesEl.select(ON_KEYS[0], useRelativeDates);
+		
+		SelectionValues relativeToDatesKV = new SelectionValues();
+		DueDateConfigFormatter.create(getLocale()).addCourseRelativeToDateTypes(relativeToDatesKV, relativeToDates);
+		dateStart = DueDateConfigFormItem.create("edit.participation.deadline", relativeToDatesKV,
+				useRelativeDates, getStartDateConfig(config));
 		dateStart.setLabel("highscore.datestart", null);
-		dateStart.setExampleKey("example.date", null);
-		dateStart.setDateChooserTimeEnabled(true);
-		dateStart.setValidDateCheck("valid.date");
 		formLayout.add(dateStart);
-		Date start = config.getDateValue(CONFIG_KEY_DATESTART);
-		dateStart.setDate(start);
 
 		displayAnonymous = uifactory.addCheckboxesHorizontal("highscore.anonymize", formLayout, new String[] { "xx" },
 				new String[] { null });
@@ -189,6 +220,11 @@ public class HighScoreEditController extends FormBasicController {
 		activateForm(true);
 	}
 	
+	private void updateStartUI() {
+		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
+		dateStart.setRelative(useRelativeDate);
+	}
+	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == allowHighScore){
@@ -197,6 +233,8 @@ public class HighScoreEditController extends FormBasicController {
 			activateListing();
 		} else if (source == bestOnlyEl){
 			activateTopUsers();
+		} else if(relativeDatesEl == source) {
+			updateStartUI();
 		}
 		
 		if (allowHighScore.isSelected(0) && (!showPosition.isSelected(0) && !showPodium.isSelected(0)
@@ -224,7 +262,6 @@ public class HighScoreEditController extends FormBasicController {
 			bestOnlyEl.setVisible(formactive);
 			bestOnlyEl.select(yesOrNoKeys[1], true);
 			numTableRows.setVisible(formactive);
-			dateStart.setDate(null);
 		}
 	}
 
@@ -247,15 +284,17 @@ public class HighScoreEditController extends FormBasicController {
 		if (allowHighScore.isSelected(0)) {
 			allOK &= showHistogram.isSelected(0) || showListing.isSelected(0) 
 					|| showPodium.isSelected(0) || showPosition.isSelected(0);
-		} 
-		if (dateStart.getDate() != null && new Date().after(dateStart.getDate())) {
-			dateStart.setErrorKey("datestart.toearly", null);
+		}
+		
+		dateStart.clearError();
+		List<ValidationStatus> dateStartValidation = new ArrayList<>(1);
+		dateStart.validate(dateStartValidation);
+		if (!dateStartValidation.isEmpty()) {
 			allOK &= false;
-		}		
+		}
+		
 		return allOK;
 	}
-
-	
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -264,8 +303,9 @@ public class HighScoreEditController extends FormBasicController {
 		config.set(CONFIG_KEY_PODIUM, showPodium.isSelected(0));
 		config.set(CONFIG_KEY_HISTOGRAM, showHistogram.isSelected(0));
 		config.set(CONFIG_KEY_LISTING, showListing.isSelected(0));
-		config.set(CONFIG_KEY_DATESTART, dateStart.getDate());
 		config.set(CONFIG_KEY_ANONYMIZE, displayAnonymous.isSelected(0));
+		config.setBooleanEntry(CONFIG_KEY_RELATIVE_DATES, relativeDatesEl.isAtLeastSelected(1));
+		setStartDateConfig(config, dateStart.getDueDateConfig());
 		if (showListing.isSelected(0)) {
 			int bestOnly = bestOnlyEl.getSelected();
 			config.set(CONFIG_KEY_BESTONLY, bestOnly);

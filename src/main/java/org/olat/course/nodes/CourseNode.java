@@ -26,10 +26,9 @@
 package org.olat.course.nodes;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.gui.ShortName;
@@ -45,6 +44,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
@@ -464,11 +464,14 @@ public interface CourseNode extends INode, ShortName {
 	public boolean hasDates();
 	
 	/**
-	 * Returns a map with an i18nKeys and dates
+	 * Returns a list of entries with an i18nKeys and dates.
+	 * (It's a list instead of a map to preserve the order of the entries.)
 	 * 
 	 * @return
 	 */
-	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel();
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel();
+	
+	public DueDateConfig getDueDateConfig(String key);
 	
 	/**
 	 * @return true if the course node uses some business groups

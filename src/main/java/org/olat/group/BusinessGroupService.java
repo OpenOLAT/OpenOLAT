@@ -21,6 +21,7 @@ package org.olat.group;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.Group;
@@ -235,7 +236,7 @@ public interface BusinessGroupService {
 	 * @param membersMod
 	 * @param groups
 	 */
-	public void updateMembership(Identity identity, MembershipModification modifications,
+	public void updateMembership(Identity identity, MembershipModification modificationsole,
 			List<BusinessGroup> groups, MailPackage mailing);
 	
 	/**
@@ -618,6 +619,15 @@ public interface BusinessGroupService {
 	 * @return
 	 */
 	public List<Identity> getIdentitiesWithRole(String role);
+	
+	/**
+	 * Get the enrollment date of the first member in the group with the role.
+	 * 
+	 * @param businessGroup
+	 * @param role
+	 * @return
+	 */
+	public Date getFirstEnrollmentDate(BusinessGroupRef businessGroup, String role);
 
 	
 	//export - import

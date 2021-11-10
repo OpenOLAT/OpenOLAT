@@ -154,7 +154,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(isTestQTI21()) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
 			RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
-			if(testCourseNode != null && testCourseNode.hasQTI21TimeLimit(qtiTestEntry)) {
+			if(testCourseNode != null && testCourseNode.hasQTI21TimeLimit(qtiTestEntry, courseEntry, getIdentity())) {
 				return"qti21-assessment-tool-identity-list-extra-v3";
 			}
 			return"qti21-assessment-tool-identity-list-v3";
@@ -174,7 +174,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 		
 		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
-		if(testCourseNode != null && testCourseNode.hasQTI21TimeLimit(qtiTestEntry)) {
+		if(testCourseNode != null && testCourseNode.hasQTI21TimeLimit(qtiTestEntry, courseEntry, getIdentity())) {
 			int timeLimitInSeconds = testCourseNode.getQTI21TimeLimitMaxInSeconds(qtiTestEntry);
 			boolean suspendEnabled = isSuspendEnable();
 			if(!suspendEnabled) {
@@ -210,7 +210,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		super.initBulkStatusTools(ureq, formLayout);
 		
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
-		if(((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry)) {
+		if(((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry, courseEntry, getIdentity())) {
 			extraTimeButton = uifactory.addFormLink("extra.time", formLayout, Link.BUTTON);
 			extraTimeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
 			tableEl.addBatchButton(extraTimeButton);
@@ -281,7 +281,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		super.reload(ureq);
 
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
-		boolean timeLimit = ((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry);
+		boolean timeLimit = ((IQTESTCourseNode)courseNode).hasQTI21TimeLimit(testEntry, courseEntry, getIdentity());
 		Map<Long,ExtraInfos> extraInfos = getExtraInfos();
 		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
 		for(AssessedIdentityElementRow row:rows) {

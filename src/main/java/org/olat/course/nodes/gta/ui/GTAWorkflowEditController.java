@@ -20,41 +20,43 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
+import org.olat.course.duedate.ui.DueDateConfigFormItem;
+import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
-import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
@@ -90,13 +92,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private FormLink chooseGroupButton;
 	private FormLink chooseAreaButton;
 	private StaticTextElement groupListEl, areaListEl;
-	private DateChooser assignmentDeadlineEl, submissionDeadlineEl, solutionVisibleAfterEl;
-	private MultipleSelectionElement relativeDatesEl, taskAssignmentEl, submissionEl, reviewEl, revisionEl, sampleEl, gradingEl;
-	private FormLayoutContainer stepsCont, assignmentRelDeadlineCont, submissionRelDeadlineCont, solutionVisibleRelCont;
-	private TextElement assignementDeadlineDaysEl, submissionDeadlineDaysEl, solutionVisibleRelDaysEl;
-	private SingleSelection assignementDeadlineRelToEl;
-	private SingleSelection submissionDeadlineRelToEl;
-	private SingleSelection solutionVisibleRelToEl;
+	private DueDateConfigFormItem assignmentDeadlineEl;
+	private DueDateConfigFormItem submissionDeadlineEl;
+	private DueDateConfigFormItem solutionVisibleAfterEl;
+	private MultipleSelectionElement relativeDatesEl, taskAssignmentEl, reviewEl, revisionEl, sampleEl, gradingEl;
+	private MultipleSelectionElement submissionEl;
+	private FormLayoutContainer stepsCont;
 	private SingleSelection solutionVisibleToAllEl;
 	private FormLayoutContainer documentsCont;
 	private MultipleSelectionElement coachAllowedUploadEl;
@@ -120,9 +121,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private DueDateService dueDateService;
 	
 	public GTAWorkflowEditController(UserRequest ureq, WindowControl wControl, GTACourseNode gtaNode, CourseEditorEnv courseEditorEnv) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.gtaNode = gtaNode;
 		this.config = gtaNode.getModuleConfiguration();
 		this.courseEditorEnv = courseEditorEnv;
@@ -257,42 +261,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean assignement = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
 		taskAssignmentEl.select(onKeys[0], assignement);
 		
-		Date assignmentDeadline = config.getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
-		assignmentDeadlineEl = uifactory.addDateChooser("assignementdeadline", "assignment.deadline", assignmentDeadline, stepsCont);
-		assignmentDeadlineEl.setDateChooserTimeEnabled(true);
-		assignmentDeadlineEl.setVisible(assignement && !useRelativeDates);
-		
-		String relativeDatePage = velocity_root + "/assignment_relative_date.html";
-		assignmentRelDeadlineCont = FormLayoutContainer.createCustomFormLayout("assignmentRelativeDeadline", getTranslator(), relativeDatePage);
-		assignmentRelDeadlineCont.setRootForm(mainForm);
-		assignmentRelDeadlineCont.setLabel("assignment.deadline", null);
-		assignmentRelDeadlineCont.setVisible(assignement && useRelativeDates);
-		stepsCont.add(assignmentRelDeadlineCont);
-		
-		int numOfDays = config.getIntegerSafe(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, -1);
-		String assignmentNumOfDays = numOfDays >= 0 ? Integer.toString(numOfDays) : "";
-		String assignmentRelativeTo = config.getStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO);
-		assignementDeadlineDaysEl = uifactory.addTextElement("assignment.numOfDays", null, 4, assignmentNumOfDays, assignmentRelDeadlineCont);
-		assignementDeadlineDaysEl.setDisplaySize(4);
-		assignementDeadlineDaysEl.setDomReplacementWrapperRequired(false);
-		RelativeDateKeysAndValues assignmentKeysAndValues = getRelativesDatesOption(true);
-		assignementDeadlineRelToEl = uifactory
-				.addDropdownSingleselect("assignmentrelativeto", "assignment.relative.to", null, assignmentRelDeadlineCont,
-						assignmentKeysAndValues.getKeys(), assignmentKeysAndValues.getValues(), null);
-		assignementDeadlineRelToEl.setDomReplacementWrapperRequired(false);
-		
-		boolean found = false;
-		if(StringHelper.containsNonWhitespace(assignmentRelativeTo)) {
-			for(String relativeDatesKey:assignmentKeysAndValues.getKeys()) {
-				if(relativeDatesKey.equals(assignmentRelativeTo)) {
-					assignementDeadlineRelToEl.select(relativeDatesKey, true);
-					found = true;
-				}
-			}
-		}
-		if(!found) {
-			assignementDeadlineRelToEl.select(assignmentKeysAndValues.getKeys()[0], true);
-		}
+		assignmentDeadlineEl = DueDateConfigFormItem.create("assignment.deadline", getRelativeToDates(true),
+				useRelativeDates, gtaNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE));
+		assignmentDeadlineEl.setLabel("assignment.deadline", null);
+		stepsCont.add(assignmentDeadlineEl);
 		
 		uifactory.addSpacerElement("s2", stepsCont, true);
 
@@ -303,42 +275,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
 		submissionEl.select(onKeys[0], submit);
 		
-		Date submissionDeadline = config.getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
-		submissionDeadlineEl = uifactory.addDateChooser("submitdeadline", "submit.deadline", submissionDeadline, stepsCont);
-		submissionDeadlineEl.setDateChooserTimeEnabled(true);
-		submissionDeadlineEl.setVisible(submit && !useRelativeDates);
-
-		//relative deadline
-		String submitPage = velocity_root + "/submit_relative_date.html";
-		submissionRelDeadlineCont = FormLayoutContainer.createCustomFormLayout("submitRelativeDeadline", getTranslator(), submitPage);
-		submissionRelDeadlineCont.setRootForm(mainForm);
-		submissionRelDeadlineCont.setLabel("submit.deadline", null);
-		submissionRelDeadlineCont.setVisible(submit && useRelativeDates);
-		stepsCont.add(submissionRelDeadlineCont);
-		
-		numOfDays = config.getIntegerSafe(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, -1);
-		String submitRelDays = numOfDays >= 0 ? Integer.toString(numOfDays) : "";
-		String submitRelTo = config.getStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO);
-		submissionDeadlineDaysEl = uifactory.addTextElement("submit.numOfDays", null, 4, submitRelDays, submissionRelDeadlineCont);
-		submissionDeadlineDaysEl.setDomReplacementWrapperRequired(false);
-		submissionDeadlineDaysEl.setDisplaySize(4);
-		RelativeDateKeysAndValues submissionKeysAndValues = getRelativesDatesOption(false);
-		submissionDeadlineRelToEl = uifactory
-				.addDropdownSingleselect("submitrelativeto", "submit.relative.to", null, submissionRelDeadlineCont,
-						submissionKeysAndValues.getKeys(), submissionKeysAndValues.getValues(), null);
-		submissionDeadlineRelToEl.setDomReplacementWrapperRequired(false);
-		found = false;
-		if(StringHelper.containsNonWhitespace(submitRelTo)) {
-			for(String relativeDatesKey:submissionKeysAndValues.getKeys()) {
-				if(relativeDatesKey.equals(submitRelTo)) {
-					submissionDeadlineRelToEl.select(relativeDatesKey, true);
-					found = true;
-				}
-			}
-		}
-		if(!found) {
-			submissionDeadlineRelToEl.select(submissionKeysAndValues.getKeys()[0], true);
-		}
+		submissionDeadlineEl = DueDateConfigFormItem.create("submit.deadline", getRelativeToDates(false), useRelativeDates,
+				gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE));
+		submissionDeadlineEl.setLabel("submit.deadline", null);
+		stepsCont.add(submissionDeadlineEl);
 		
 		uifactory.addSpacerElement("s3", stepsCont, true);
 
@@ -366,54 +306,21 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean sample = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION);
 		sampleEl.select(onKeys[0], sample);
 		
-		Date solutionVisibleAfter = config.getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-		solutionVisibleAfterEl = uifactory.addDateChooser("visibleafter", "sample.solution.visible.after", solutionVisibleAfter, stepsCont);
-		solutionVisibleAfterEl.setDateChooserTimeEnabled(true);
-		solutionVisibleAfterEl.setVisible(sample && !useRelativeDates);
-		solutionVisibleAfterEl.addActionListener(FormEvent.ONCHANGE);
-
-		//relative deadline
-		String solutionPage = velocity_root + "/solution_relative_date.html";
-		solutionVisibleRelCont = FormLayoutContainer.createCustomFormLayout("solutionRelativeDeadline", getTranslator(), solutionPage);
-		solutionVisibleRelCont.setRootForm(mainForm);
-		solutionVisibleRelCont.setLabel("sample.solution.visible.after", null);
-		solutionVisibleRelCont.setVisible(sample && useRelativeDates);
-		stepsCont.add(solutionVisibleRelCont);
-		
-		numOfDays = config.getIntegerSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, -1);
-		String solutionRelDays = numOfDays >= 0 ? Integer.toString(numOfDays) : "";
-		String solutionRelTo = config.getStringValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO);
-		solutionVisibleRelDaysEl = uifactory.addTextElement("solution.numOfDays", null, 4, solutionRelDays, solutionVisibleRelCont);
-		solutionVisibleRelDaysEl.setDisplaySize(4);
-		solutionVisibleRelDaysEl.setDomReplacementWrapperRequired(false);
-		RelativeDateKeysAndValues solutionKeysAndValues = getRelativesDatesOption(false);
-		solutionVisibleRelToEl = uifactory
-				.addDropdownSingleselect("solutionrelativeto", "solution.relative.to", null, solutionVisibleRelCont,
-						solutionKeysAndValues.getKeys(), solutionKeysAndValues.getValues(), null);
-		solutionVisibleRelToEl.setDomReplacementWrapperRequired(false);
-		found = false;
-		if(StringHelper.containsNonWhitespace(solutionRelTo)) {
-			for(String relativeDatesKey:solutionKeysAndValues.getKeys()) {
-				if(relativeDatesKey.equals(solutionRelTo)) {
-					solutionVisibleRelToEl.select(relativeDatesKey, true);
-					found = true;
-				}
-			}
-		}
-		if(!found) {
-			solutionVisibleRelToEl.select(solutionKeysAndValues.getKeys()[0], true);
-		}
+		DueDateConfig solutionVisibleAfterConfig = gtaNode.getDueDateConfig(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+		solutionVisibleAfterEl = DueDateConfigFormItem.create("sample.solution.visible.after", getRelativeToDates(false),
+				useRelativeDates, solutionVisibleAfterConfig);
+		solutionVisibleAfterEl.setLabel("sample.solution.visible.after", null);
+		stepsCont.add(solutionVisibleAfterEl);
 		
 		boolean solutionVisibleRelToAll = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
 		String[] solutionVisibleToAllValues = getSolutionVisibleToAllValues();
 		solutionVisibleToAllEl = uifactory.addRadiosVertical("visibleall", "sample.solution.visible.for", stepsCont, solutionVisibleToAllKeys, solutionVisibleToAllValues);
-		solutionVisibleToAllEl.setVisible(sample && ((!useRelativeDates && solutionVisibleAfter != null) || optional));
+		solutionVisibleToAllEl.setVisible(sample && (DueDateConfig.isAbsolute(solutionVisibleAfterConfig) || optional));
 		if(solutionVisibleRelToAll) {
 			solutionVisibleToAllEl.select(solutionVisibleToAllKeys[0], true);
 		} else {
 			solutionVisibleToAllEl.select(solutionVisibleToAllKeys[1], true);
 		}
-		
 		uifactory.addSpacerElement("s5", stepsCont, true);
 
 		//grading
@@ -423,7 +330,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean grading = config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
 		gradingEl.select(onKeys[0], grading);
 	}
-	
+
 	private String[] getSolutionVisibleToAllValues() {
 		return new String[] {
 			optional ? translate("sample.solution.visible.all.optional") : translate("sample.solution.visible.all"),
@@ -476,20 +383,25 @@ public class GTAWorkflowEditController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
-		assignementDeadlineDaysEl.clearError();
-		if(relativeDates && taskAssignmentEl.isAtLeastSelected(1)) {
-			allOk &= validateIntegerOrEmpty(assignementDeadlineDaysEl);
+		assignmentDeadlineEl.clearError();
+		List<ValidationStatus> assignmentDeadlineValidation = new ArrayList<>(1);
+		assignmentDeadlineEl.validate(assignmentDeadlineValidation);
+		if (!assignmentDeadlineValidation.isEmpty()) {
+			allOk &= false;
 		}
 		
-		submissionDeadlineDaysEl.clearError();
-		if(relativeDates && submissionEl.isAtLeastSelected(1)) {
-			allOk &= validateIntegerOrEmpty(submissionDeadlineDaysEl);
+		submissionDeadlineEl.clearError();
+		List<ValidationStatus> submissionDeadlineValidation = new ArrayList<>(1);
+		submissionDeadlineEl.validate(submissionDeadlineValidation);
+		if (!submissionDeadlineValidation.isEmpty()) {
+			allOk &= false;
 		}
 		
-		solutionVisibleRelDaysEl.clearError();
-		if(relativeDates && sampleEl.isAtLeastSelected(1)) {
-			allOk &= validateIntegerOrEmpty(solutionVisibleRelDaysEl);
+		solutionVisibleAfterEl.clearError();
+		List<ValidationStatus> solutionVisibleAftereValidation = new ArrayList<>(1);
+		solutionVisibleAfterEl.validate(solutionVisibleAftereValidation);
+		if (!solutionVisibleAftereValidation.isEmpty()) {
+			allOk &= false;
 		}
 		
 		solutionVisibleToAllEl.clearError();
@@ -507,17 +419,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 			allOk &= false;
 		}
 
-		return allOk;
-	}
-	
-	private boolean validateIntegerOrEmpty(TextElement textEl) {
-		boolean allOk = true;
-		textEl.clearError();
-		String val = textEl.getValue();
-		if(StringHelper.containsNonWhitespace(val) && !StringHelper.isLong(val)) {
-			textEl.setErrorKey("integer.element.int.error", null);
-			allOk &= false;
-		}
 		return allOk;
 	}
 
@@ -564,29 +465,17 @@ public class GTAWorkflowEditController extends FormBasicController {
 		
 		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_ASSIGNMENT, assignment);
-		if(assignment) {
-			if(relativeDates) {
-				setRelativeDates(assignementDeadlineDaysEl, GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE,
-						assignementDeadlineRelToEl, GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO);
-			} else {
-				config.setDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE, assignmentDeadlineEl.getDate());
-			}	
-		} else {
-			config.remove(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
-		}
+		DueDateConfig dueDateConfig = assignment? assignmentDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		config.setIntValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, dueDateConfig.getNumOfDays());
+		config.setStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO, dueDateConfig.getRelativeToType());
+		config.setDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE, dueDateConfig.getAbsoluteDate());
 		
 		boolean turningIn = submissionEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMIT, turningIn);
-		if(turningIn) {
-			if(relativeDates) {
-				setRelativeDates(submissionDeadlineDaysEl, GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE,
-						submissionDeadlineRelToEl, GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO);
-			} else {
-				config.setDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE, submissionDeadlineEl.getDate());
-			}
-		} else {
-			config.remove(GTACourseNode.GTASK_SUBMIT_DEADLINE);
-		}
+		dueDateConfig = turningIn? submissionDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		config.setIntValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, dueDateConfig.getNumOfDays());
+		config.setStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO, dueDateConfig.getRelativeToType());
+		config.setDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE, dueDateConfig.getAbsoluteDate());
 
 		boolean review = reviewEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, review);
@@ -598,38 +487,17 @@ public class GTAWorkflowEditController extends FormBasicController {
 		
 		boolean sample = sampleEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION, sample);
-		if(sample) {
-			config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, solutionVisibleToAllEl.isSelected(0));
-			if(relativeDates) {
-				setRelativeDates(solutionVisibleRelDaysEl, GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE,
-						solutionVisibleRelToEl, GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO);
-			} else {
-				config.setDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, solutionVisibleAfterEl.getDate());
-			}
-		} else {
-			config.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-			config.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL);
-		}
+		dueDateConfig = turningIn? solutionVisibleAfterEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		config.setIntValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, dueDateConfig.getNumOfDays());
+		config.setStringValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO, dueDateConfig.getRelativeToType());
+		config.setDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, dueDateConfig.getAbsoluteDate());
+		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, solutionVisibleToAllEl.isSelected(0));
 
 		config.setBooleanEntry(GTACourseNode.GTASK_GRADING, gradingEl.isAtLeastSelected(1));
 		
 		if (documentsCont.isVisible()) {
 			boolean coachUploadAllowed = coachAllowedUploadEl.isAtLeastSelected(1);
 			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, coachUploadAllowed);
-		}
-	}
-	
-	private void setRelativeDates(TextElement daysEl, String daysKey, SingleSelection relativeToEl, String relativeToKey) {
-		String val = daysEl.getValue();
-		if(StringHelper.isLong(val)) {
-			try {
-				config.setIntValue(daysKey,  Integer.parseInt(val));
-			} catch (NumberFormatException e) {
-				logWarn("", e);
-			}
-			
-			String relativeTo = relativeToEl.getSelectedKey();
-			config.setStringValue(relativeToKey, relativeTo);
 		}
 	}
 
@@ -669,84 +537,54 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private void updateAssignmentDeadline() {
 		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
 		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
-		assignmentDeadlineEl.setVisible(assignment && !useRelativeDate);
-		assignmentRelDeadlineCont.setVisible(assignment && useRelativeDate);
-		updateDeadline(assignementDeadlineRelToEl, true);
+		
+		assignmentDeadlineEl.setRelativeToDates(getRelativeToDates(true));
+		assignmentDeadlineEl.setVisible(assignment);
+		assignmentDeadlineEl.setRelative(useRelativeDate);
 	}
 	
 	private void updateSubmissionDeadline() {
 		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
 		boolean submit = submissionEl.isAtLeastSelected(1);
-		submissionDeadlineEl.setVisible(submit && !useRelativeDate);
-		submissionRelDeadlineCont.setVisible(submit && useRelativeDate);
-		updateDeadline(submissionDeadlineRelToEl, false);
+		
+		submissionDeadlineEl.setRelativeToDates(getRelativeToDates(false));
+		submissionDeadlineEl.setVisible(submit);
+		submissionDeadlineEl.setRelative(useRelativeDate);
 	}
 	
 	private void updateSolutionDeadline() {
 		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
 		boolean solution = sampleEl.isAtLeastSelected(1);
+		
+		solutionVisibleAfterEl.setRelativeToDates(getRelativeToDates(false));
+		solutionVisibleAfterEl.setVisible(solution);
+		solutionVisibleAfterEl.setRelative(useRelativeDate);
+		
 		if (optionalEl.isVisible()) {
 			optional = optionalEl.isSelected(1);
 		}
-		solutionVisibleAfterEl.setVisible(solution && !useRelativeDate);
-		solutionVisibleRelCont.setVisible(solution && useRelativeDate);
-		updateDeadline(solutionVisibleRelToEl, false);
 		solutionVisibleToAllEl.setVisible(solution &&
-				((!useRelativeDate && solutionVisibleAfterEl.getDate() != null) || optional));
+				(DueDateConfig.isAbsolute(solutionVisibleAfterEl.getDueDateConfig()) || optional));
 		solutionVisibleToAllEl.setKeysAndValues(solutionVisibleToAllKeys, getSolutionVisibleToAllValues(), null);
 		if(!solutionVisibleToAllEl.isOneSelected()) {
 			solutionVisibleToAllEl.select(solutionVisibleToAllKeys[1], true);
 		}
 	}
 	
-	private void updateDeadline(SingleSelection selectionEl, boolean excludeAssignment) {
-		String selectedKey = null;
-		if(selectionEl.isOneSelected()) {
-			selectedKey = selectionEl.getSelectedKey();
-		}
-		RelativeDateKeysAndValues keysAndValues = getRelativesDatesOption(excludeAssignment);
-		selectionEl.setKeysAndValues(keysAndValues.getKeys(), keysAndValues.getValues(), null);
-		
-		boolean found = false;
-		for(String key:keysAndValues.getKeys()) {
-			if(key.equals(selectedKey)) {
-				selectionEl.select(key, true);
-				found = true;
-			}	
-		}
-		
-		if(!found) {
-			selectionEl.select(keysAndValues.getKeys()[0], true);
-		}
-	}
-	
-	private RelativeDateKeysAndValues getRelativesDatesOption(boolean excludeAssignment) {
-		List<String> optionKeys = new ArrayList<>(4);
-		List<String> optionValues = new ArrayList<>(4);
-		
-		if(courseRe.getLifecycle() != null && courseRe.getLifecycle().getValidFrom() != null) {
-			Date validFrom = courseRe.getLifecycle().getValidFrom();
-			String from = Formatter.getInstance(getLocale()).formatDate(validFrom);
-			optionKeys.add(GTARelativeToDates.courseStart.name());
-			optionValues.add(translate("relative.to.course.start", new String[]{ from }));
-		}
-		
-		optionKeys.add(GTARelativeToDates.courseLaunch.name());
-		optionValues.add(translate("relative.to.course.launch"));
-		optionKeys.add(GTARelativeToDates.enrollment.name());
-		optionValues.add(translate("relative.to.enrollment"));
+	private SelectionValues getRelativeToDates(boolean excludeAssignment) {
+		SelectionValues relativeToDates = new SelectionValues();
+		List<String> courseRelativeToDateTypes = dueDateService.getCourseRelativeToDateTypes(courseRe);
+		DueDateConfigFormatter.create(getLocale()).addCourseRelativeToDateTypes(relativeToDates, courseRelativeToDateTypes);
 		
 		if(!excludeAssignment) {
 			boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
-			if(assignment) {
-				optionKeys.add(GTARelativeToDates.assignment.name());
-				optionValues.add(translate("relative.to.assignment"));
+			if (assignment) {
+				relativeToDates.add(SelectionValues.entry(GTACourseNode.TYPE_RELATIVE_TO_ASSIGNMENT,
+						getTranslator().translate("relative.to.assignment")));
 			}
 		}
 		
-		String[] keys = optionKeys.toArray(new String[optionKeys.size()]);
-		String[] values = optionValues.toArray(new String[optionValues.size()]);
-		return new RelativeDateKeysAndValues(keys, values);
+		return relativeToDates;
 	}
 	
 	private void updateRevisions() {
@@ -862,23 +700,4 @@ public class GTAWorkflowEditController extends FormBasicController {
 		return sb.toString();
 	}
 	
-	private class RelativeDateKeysAndValues {
-		
-		private final String[] keys;
-		private final String[] values;
-		
-		public RelativeDateKeysAndValues(String[] keys, String[] values) {
-			this.keys = keys;
-			this.values = values;
-		}
-
-		public String[] getKeys() {
-			return keys;
-		}
-
-		public String[] getValues() {
-			return values;
-		}
-	}
-
 }

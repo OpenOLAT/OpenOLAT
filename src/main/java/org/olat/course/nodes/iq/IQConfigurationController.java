@@ -222,8 +222,8 @@ public class IQConfigurationController extends BasicController {
 				}
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration,
-					NodeAccessType.of(course), deliveryOptions, needManualCorrection, courseNode instanceof IQSELFCourseNode);
+			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+					courseNode, NodeAccessType.of(course), deliveryOptions, needManualCorrection, courseNode instanceof IQSELFCourseNode);
 			mod21ConfigForm.update(re);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());

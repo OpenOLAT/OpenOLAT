@@ -239,8 +239,8 @@ public class CopyCourseWizardController extends BasicController {
 			row.setDuration(learningPathConfigs.getDuration());
 			row.setDuration(learningPathConfigs.getDuration());
 			row.setTranslatedObligation(getTranslatedObligation(learningPathConfigs));
-			row.setStart(learningPathConfigs.getStartDate());
-			row.setEnd(learningPathConfigs.getEndDate());
+			row.setStart(learningPathConfigs.getStartDateConfig());
+			row.setEnd(learningPathConfigs.getEndDateConfig());
 			row.setTranslatedTrigger(getTranslatedTrigger(courseNode, learningPathConfigs));
 			row.setLearningPathConfigs(learningPathConfigs);
 		}
@@ -329,7 +329,7 @@ public class CopyCourseWizardController extends BasicController {
 		} 
 		
 		for (CopyCourseOverviewRow row : rows) {
-			if (row.getLearningPathConfigs().getStartDate() != null || row.getLearningPathConfigs().getEndDate() != null) {
+			if (row.getLearningPathConfigs().getStartDateConfig() != null || row.getLearningPathConfigs().getEndDateConfig() != null) {
 				return true;
 			}
 		}

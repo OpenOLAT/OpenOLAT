@@ -53,6 +53,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.duedate.ui.DueDateConfigCellRenderer;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.SelectEvent;
@@ -152,8 +153,8 @@ public class OverviewListController extends FormBasicController implements Flexi
 		
 		if (learningPath) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.duration));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.start));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.end));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.start, new DueDateConfigCellRenderer(getLocale())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.end, new DueDateConfigCellRenderer(getLocale())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.obligation));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.trigger));
 		}
@@ -237,8 +238,8 @@ public class OverviewListController extends FormBasicController implements Flexi
 			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 			row.setDuration(learningPathConfigs.getDuration());
 			row.setTranslatedObligation(getTranslatedObligation(learningPathConfigs));
-			row.setStart(learningPathConfigs.getStartDate());
-			row.setEnd(learningPathConfigs.getEndDate());
+			row.setStart(learningPathConfigs.getStartDateConfig());
+			row.setEnd(learningPathConfigs.getEndDateConfig());
 			row.setTranslatedTrigger(getTranslatedTrigger(courseNode, learningPathConfigs));
 		}
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);

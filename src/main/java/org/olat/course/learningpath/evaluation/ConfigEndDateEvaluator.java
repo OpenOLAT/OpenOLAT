@@ -20,9 +20,11 @@
 package org.olat.course.learningpath.evaluation;
 
 import java.util.Date;
-import java.util.function.Function;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -30,6 +32,7 @@ import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.EndDateEvaluator;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -39,25 +42,16 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class ConfigEndDateEvaluator implements EndDateEvaluator {
 
-	/* Service is wrapped with a function to 
-	 * - use the class as a static member (Service can not be autowired)
-	 * - mock the service in tests
-	 */
-	private final Function<CourseNode, Date> configDateFunction;
-	
-	public ConfigEndDateEvaluator() {
-		this.configDateFunction = new LearningPathServiceSupplier();
-	}
-	
-	ConfigEndDateEvaluator(Function<CourseNode, Date> configDateFunction) {
-		this.configDateFunction = configDateFunction;
-	}
+	private LearningPathService learningPathService;
+	private DueDateService dueDateService;
 
 	@Override
-	public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
+	public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			RepositoryEntry courseEntry, Identity identity, Blocker blocker) {
 		Overridable<Date> endDate = currentEvaluation.getEndDate().clone();
 		if (AssessmentObligation.mandatory == currentEvaluation.getObligation().getCurrent()) {
-			Date configEndDate = configDateFunction.apply(courseNode);
+			DueDateConfig endDateConfig = getLearningPathService().getConfigs(courseNode).getEndDateConfig();
+			Date configEndDate = getDueDateService().getDueDate(endDateConfig, courseEntry, identity);
 			if (configEndDate == null) {
 				// If end date is deleted in config, it can not be overridden.
 				endDate.reset();
@@ -81,21 +75,36 @@ public class ConfigEndDateEvaluator implements EndDateEvaluator {
 		return fullyAssessed == null || !fullyAssessed.booleanValue();
 	}
 	
-	private static final class LearningPathServiceSupplier implements Function<CourseNode, Date> {
-		
-		private LearningPathService learningPathService;
-
-		@Override
-		public Date apply(CourseNode courseNode) {
-			if (learningPathService == null) {
-				learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
-			}
-			return learningPathService.getConfigs(courseNode).getEndDate();
+	private LearningPathService getLearningPathService() {
+		if (learningPathService == null) {
+			learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
 		}
-
-	
-
+		return learningPathService;
 	}
-
+	
+	/**
+	 * For Testing only!
+	 *
+	 * @param learningPathService
+	 */
+	protected void setLearningPathService(LearningPathService learningPathService) {
+		this.learningPathService = learningPathService;
+	}
+	
+	private DueDateService getDueDateService() {
+		if (dueDateService == null) {
+			dueDateService = CoreSpringFactory.getImpl(DueDateService.class);
+		}
+		return dueDateService;
+	}
+	
+	/**
+	 * For Testing only!
+	 *
+	 * @param dueDateService
+	 */
+	protected void setDueDateService(DueDateService dueDateService) {
+		this.dueDateService = dueDateService;
+	}
 
 }

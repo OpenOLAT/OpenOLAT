@@ -20,14 +20,14 @@
 package org.olat.course.nodes.form.ui;
 
 import java.io.File;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -35,12 +35,18 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.ui.DueDateConfigFormItem;
+import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.SurveyCourseNode;
@@ -70,16 +76,20 @@ public class FormConfigController extends FormBasicController {
 	private FormLink chooseLink;
 	private FormLink replaceLink;
 	private FormLink editLink;
-	private DateChooser participationDeadlineEl;
+	private MultipleSelectionElement relativeDatesEl;
+	private DueDateConfigFormItem participationDeadlineEl;
 	private MultipleSelectionElement confirmationEl;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
 	private LayoutMain3ColsPreviewController previewCtr;
 	
+	private final FormCourseNode formCourseNode;
 	private final ModuleConfiguration config;
+	private final List<String> relativeToDates;
 	private final EvaluationFormSurveyIdentifier surveyIdent;
 	private EvaluationFormSurvey survey;
+	private RepositoryEntry formEntry;
 	
 	@Autowired
 	private FormManager formManager;
@@ -87,10 +97,18 @@ public class FormConfigController extends FormBasicController {
 	public FormConfigController(UserRequest ureq, WindowControl wControl, FormCourseNode formCourseNode,
 			RepositoryEntry courseEntry) {
 		super(ureq, wControl);
+		this.formCourseNode = formCourseNode;
+		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.config = formCourseNode.getModuleConfiguration();
+		this.relativeToDates = formManager.getRelativeToDateTypes(courseEntry);
 		this.surveyIdent = formManager.getSurveyIdentifier(formCourseNode, courseEntry);
 		this.survey = formManager.loadSurvey(surveyIdent);
+		if (this.survey != null) {
+			this.formEntry = survey.getFormEntry();
+		}
+		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -103,32 +121,40 @@ public class FormConfigController extends FormBasicController {
 				Link.NONTRANSLATED);
 		evaluationFormLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("eva.buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		chooseLink = uifactory.addFormLink("edit.choose", buttonsCont, "btn btn-default o_xsmall");
 		replaceLink = uifactory.addFormLink("edit.replace", buttonsCont, "btn btn-default o_xsmall");
 		editLink = uifactory.addFormLink("edit.edit", buttonsCont, "btn btn-default o_xsmall");
 		
-		Date participationDeadline = config.getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
-		participationDeadlineEl = uifactory.addDateChooser("edit.participation.deadline", participationDeadline, formLayout);
-		participationDeadlineEl.setDateChooserTimeEnabled(true);
-		participationDeadlineEl.addActionListener(FormEvent.ONCHANGE);
+		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", formLayout, ON_KEYS, new String[]{ "" });
+		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
+		boolean useRelativeDates = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_RELATIVE_DATES);
+		relativeDatesEl.select(ON_KEYS[0], useRelativeDates);
+		
+		SelectionValues relativeToDatesKV = new SelectionValues();
+		DueDateConfigFormatter.create(getLocale()).addCourseRelativeToDateTypes(relativeToDatesKV, relativeToDates);
+		participationDeadlineEl = DueDateConfigFormItem.create("edit.participation.deadline", relativeToDatesKV,
+				useRelativeDates, formCourseNode.getDueDateConfig(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE));
+		participationDeadlineEl.setLabel("edit.participation.deadline", null);
+		formLayout.add(participationDeadlineEl);
 		
 		confirmationEl = uifactory.addCheckboxesVertical("edit.confirmation.enabled", formLayout, ON_KEYS,
 				TranslatorHelper.translateAll(getTranslator(), ON_KEYS), 1);
 		confirmationEl.setHelpTextKey("edit.confirmation.help", null);
-		confirmationEl.addActionListener(FormEvent.ONCHANGE);
 		boolean confirmationEnabled = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED);
 		confirmationEl.select(confirmationEl.getKey(0), confirmationEnabled);
 		
-		updateUI();
+		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonCont.setRootForm(mainForm);
+		formLayout.add(buttonCont);
+		uifactory.addFormSubmitButton("save", "save", buttonCont);
 	}
 	
 	private void updateUI() {
 		boolean replacePossible = formManager.isFormUpdateable(survey);
 		boolean hasRepoConfig = survey != null;
-		RepositoryEntry formEntry = survey != null? survey.getFormEntry(): null;
 		
 		if (hasRepoConfig && formEntry == null) {
 			hasRepoConfig = false;
@@ -146,6 +172,11 @@ public class FormConfigController extends FormBasicController {
 		replaceLink.setVisible(hasRepoConfig && replacePossible);
 		editLink.setVisible(hasRepoConfig);
 	}
+	
+	private void updateParticipationDeadlineUI() {
+		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
+		participationDeadlineEl.setRelative(useRelativeDate);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -155,10 +186,8 @@ public class FormConfigController extends FormBasicController {
 			doEditevaluationForm(ureq);
 		} else if (source == evaluationFormLink) {
 			doPreviewEvaluationForm(ureq);
-		} else if (source == participationDeadlineEl) {
-			setParticipationDeadline(ureq);
-		} else if (source == confirmationEl) {
-			setConfirmation(ureq);
+		} else if(relativeDatesEl == source) {
+			updateParticipationDeadlineUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -167,7 +196,7 @@ public class FormConfigController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (searchCtrl == source) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
-				doReplaceEvaluationForm(ureq);
+				doReplaceEvaluationForm();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -197,24 +226,11 @@ public class FormConfigController extends FormBasicController {
 		cmc.activate();
 	}
 
-	private void doReplaceEvaluationForm(UserRequest ureq) {
-		RepositoryEntry formEntry = searchCtrl.getSelectedEntry();
-		if (formEntry != null) {
-			if (survey == null) {
-				survey = formManager.createSurvey(surveyIdent, formEntry);
-			} else {
-				boolean isFormUpdateable = formManager.isFormUpdateable(survey);
-				if (isFormUpdateable) {
-					survey = formManager.updateSurveyForm(survey, formEntry);
-				} else {
-					showError("error.repo.entry.not.replaceable");
-				}
-			}
+	private void doReplaceEvaluationForm() {
+		RepositoryEntry selectedFormEntry = searchCtrl.getSelectedEntry();
+		if (selectedFormEntry != null) {
+			this.formEntry = selectedFormEntry;
 			updateUI();
-			
-			SurveyCourseNode.setEvaluationFormReference(formEntry, config);
-			// fire event so the updated config is saved
-			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 	}
 
@@ -240,20 +256,52 @@ public class FormConfigController extends FormBasicController {
 		previewCtr.activate();
 		listenTo(previewCtr);
 	}
-	
-	private void setParticipationDeadline(UserRequest ureq) {
-		config.setDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE, participationDeadlineEl.getDate());
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-	}
-	
-	private void setConfirmation(UserRequest ureq) {
-		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED, confirmationEl.isAtLeastSelected(1));
-		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		evaluationFormLink.clearError();
+		if (survey != null && formEntry != null) {
+			boolean isFormUpdateable = formManager.isFormUpdateable(survey);
+			if (!isFormUpdateable && !formEntry.getKey().equals(survey.getFormEntry().getKey())) {
+				evaluationFormLink.setErrorKey("error.repo.entry.not.replaceable", null);
+				allOk &= false;
+			}
+		}
+		
+		participationDeadlineEl.clearError();
+		List<ValidationStatus> assignmentDeadlineValidation = new ArrayList<>(1);
+		participationDeadlineEl.validate(assignmentDeadlineValidation);
+		if (!assignmentDeadlineValidation.isEmpty()) {
+			allOk &= false;
+		}
+
+		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		if (formEntry != null) {
+			if (survey == null) {
+				survey = formManager.createSurvey(surveyIdent, formEntry);
+			} else {
+				survey = formManager.updateSurveyForm(survey, formEntry);
+			}
+			SurveyCourseNode.setEvaluationFormReference(formEntry, config);
+		}
+		
+		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_RELATIVE_DATES, relativeDates);
+		
+		DueDateConfig dueDateConfig = participationDeadlineEl.getDueDateConfig();
+		config.setIntValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE, dueDateConfig.getNumOfDays());
+		config.setStringValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE_TO, dueDateConfig.getRelativeToType());
+		config.setDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE, dueDateConfig.getAbsoluteDate());
+
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED, confirmationEl.isAtLeastSelected(1));
+		
+		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
 	@Override

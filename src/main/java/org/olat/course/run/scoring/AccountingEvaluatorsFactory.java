@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.core.id.Identity;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluator;
 import org.olat.course.nodes.CourseNode;
@@ -134,7 +135,8 @@ public class AccountingEvaluatorsFactory {
 	private static class NoBlockingStartDateEvaluator implements StartDateEvaluator {
 		
 		@Override
-		public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
+		public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, RepositoryEntry courseEntry,
+				Identity identity, Blocker blocker) {
 			return null;
 		}
 		
@@ -143,7 +145,8 @@ public class AccountingEvaluatorsFactory {
 	private static class NoBlockingEndDateEvaluator implements EndDateEvaluator {
 
 		@Override
-		public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
+		public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+				RepositoryEntry courseEntry, Identity identity, Blocker blocker) {
 			return Overridable.empty();
 		}
 		

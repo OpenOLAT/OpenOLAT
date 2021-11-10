@@ -382,18 +382,6 @@ public interface GTAManager {
 	public DueDate getSolutionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
-	/**
-	 * Calculated a reference date relative to the specified parameters
-	 * 
-	 * @param numOfDays
-	 * @param relativeTo
-	 * @param assignedTask
-	 * @param entry
-	 * @return
-	 */
-	public DueDate getReferenceDate(int numOfDays, String relativeTo, TaskRef assignedTask,
-			IdentityRef assessedIdentity, BusinessGroup assessedGroup, RepositoryEntry entry);
-	
 	public TaskProcess firstStep(GTACourseNode cNode);
 
 	public TaskProcess previousStep(TaskProcess currentStep, GTACourseNode cNode);

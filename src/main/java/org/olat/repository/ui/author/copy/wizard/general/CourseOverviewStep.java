@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -58,6 +59,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodes.BCCourseNode;
@@ -126,12 +129,15 @@ public class CourseOverviewStep extends BasicStep {
 		
 		private CourseNodeDatesListController courseNodeDatesListController;
 		
+		private final DueDateConfigFormatter dueDateConfigFormatter;
+		
 		public CourseOverviewStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 			
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
+			this.dueDateConfigFormatter = DueDateConfigFormatter.create(getLocale());
 			
 			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
 			courseNodeDatesListController = new CourseNodeDatesListController(ureq, wControl, context);
@@ -162,12 +168,14 @@ public class CourseOverviewStep extends BasicStep {
 					row.setResourceCopyType(CopyType.valueOf(row.getResourceChooser().getSelectedKey()));
 				}
 				
-				if (row.getNewStartDateChooser() != null) {
-					row.setNewStartDate(row.getNewStartDateChooser().getDate());
+				FormItem newStartDateChooser = row.getNewStartDateChooser();
+				if (newStartDateChooser instanceof DateChooser) {
+					row.setNewStartDate(((DateChooser)newStartDateChooser).getDate());
 				}
 				
-				if (row.getNewEndDateChooser() != null ) {
-					row.setNewEndDate(row.getNewEndDateChooser().getDate());
+				FormItem newEndDateChooser = row.getNewEndDateChooser();
+				if (newEndDateChooser instanceof DateChooser) {
+					row.setNewEndDate(((DateChooser)newEndDateChooser).getDate());
 				}
 			}
 			
@@ -296,31 +304,51 @@ public class CourseOverviewStep extends BasicStep {
 						row.setObligationChooser(obligationChooser);
 					}
 						
-					// Start date chooser
-					Date startDate = calculateDate(row.getStart(), context.getDateDifference());
-					DateChooser startDateChooser = uifactory.addDateChooser("start_" + row.getCourseNode().getIdent(), startDate, tableItems);
-					startDateChooser.setUserObject(row);
-					startDateChooser.addActionListener(FormEvent.ONCHANGE);
-					startDateChooser.setInitialDate(startDate);
-					//startDateChooser.setDateChooserTimeEnabled(true);
-					startDateChooser.setKeepTime(true);
-					row.setNewStartDateChooser(startDateChooser);
-					if (row.getNewStartDate() != null) {
-						startDateChooser.setDate(row.getNewStartDate());
+					// Start date
+					DueDateConfig startDateConfig = row.getStart();
+					if (startDateConfig != null) {
+						if (DueDateConfig.isRelative(startDateConfig)) {
+							StaticTextElement staticElement = uifactory.addStaticTextElement("start_" + row.getCourseNode().getIdent(), null, dueDateConfigFormatter.formatRelativDateConfig(startDateConfig), tableItems);
+							row.setNewStartDateChooser(staticElement);
+						} else if (row.getLearningPathConfigs().isRelativeDates()) {
+							// not possible to change
+						} else {
+							Date startDate = calculateDate(startDateConfig.getAbsoluteDate(), context.getDateDifference());
+							DateChooser startDateChooser = uifactory.addDateChooser("start_" + row.getCourseNode().getIdent(), startDate, tableItems);
+							startDateChooser.setUserObject(row);
+							startDateChooser.addActionListener(FormEvent.ONCHANGE);
+							startDateChooser.setInitialDate(startDate);
+							//startDateChooser.setDateChooserTimeEnabled(true);
+							startDateChooser.setKeepTime(true);
+							row.setNewStartDateChooser(startDateChooser);
+							if (row.getNewStartDate() != null) {
+								startDateChooser.setDate(row.getNewStartDate());
+							}
+						}
 					}
 					
-					// End date chooser
-					Date endDate = calculateDate(row.getEnd(), context.getDateDifference());
-					DateChooser endDateChooser = uifactory.addDateChooser("end_" + row.getCourseNode().getIdent(), endDate, tableItems);
-					endDateChooser.setUserObject(row);
-					endDateChooser.addActionListener(FormEvent.ONCHANGE);
-					endDateChooser.setInitialDate(endDate);
-					//endDateChooser.setDateChooserTimeEnabled(true);
-					endDateChooser.setKeepTime(true);
-					endDateChooser.setVisible(row.getObligationChooser() != null && row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name()));
-					row.setNewEndDateChooser(endDateChooser);
-					if (row.getNewEndDate() != null) {
-						endDateChooser.setDate(row.getNewEndDate());
+					// End date
+					DueDateConfig endDateConfig = row.getEnd();
+					if (endDateConfig != null) {
+						if (DueDateConfig.isRelative(endDateConfig)) {
+							StaticTextElement staticElement = uifactory.addStaticTextElement("end_" + row.getCourseNode().getIdent(), null, dueDateConfigFormatter.formatRelativDateConfig(endDateConfig), tableItems);
+							row.setNewStartDateChooser(staticElement);
+						} else if (row.getLearningPathConfigs().isRelativeDates()) {
+							// not possible to change
+						} else {
+							Date endDate = calculateDate(row.getEnd().getAbsoluteDate(), context.getDateDifference());
+							DateChooser endDateChooser = uifactory.addDateChooser("end_" + row.getCourseNode().getIdent(), endDate, tableItems);
+							endDateChooser.setUserObject(row);
+							endDateChooser.addActionListener(FormEvent.ONCHANGE);
+							endDateChooser.setInitialDate(endDate);
+							//endDateChooser.setDateChooserTimeEnabled(true);
+							endDateChooser.setKeepTime(true);
+							endDateChooser.setVisible(row.getObligationChooser() != null && row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name()));
+							row.setNewEndDateChooser(endDateChooser);
+							if (row.getNewEndDate() != null) {
+								endDateChooser.setDate(row.getNewEndDate());
+							}
+						}
 					}
 				}
 				
@@ -495,8 +523,8 @@ public class CourseOverviewStep extends BasicStep {
 			long difference = dateChooser.getDate().getTime() - dateChooser.getInitialDate().getTime();
 			
 			for (CopyCourseOverviewRow row : model.getObjects()) {
-				DateChooser start = row.getNewStartDateChooser();
-				DateChooser end = row.getNewEndDateChooser();
+				DateChooser start = row.getNewStartDateChooser() instanceof DateChooser? (DateChooser)row.getNewStartDateChooser(): null;
+				DateChooser end = row.getNewEndDateChooser() instanceof DateChooser? (DateChooser)row.getNewEndDateChooser(): null;
 				
 				if (start != null && !start.equals(dateChooser) && start.getDate() != null) {
 					if ((moveDatesEvent.isMoveAllAfterCurrentDate() && !start.getInitialDate().before(dateChooser.getInitialDate())) || !moveDatesEvent.isMoveAllAfterCurrentDate()) {

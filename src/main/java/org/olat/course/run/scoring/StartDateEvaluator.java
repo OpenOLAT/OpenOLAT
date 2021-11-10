@@ -21,7 +21,9 @@ package org.olat.course.run.scoring;
 
 import java.util.Date;
 
+import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -37,10 +39,12 @@ public interface StartDateEvaluator {
 	 * as well.
 	 * @param currentEvaluation 
 	 * @param courseNode
+	 * @param courseEntry 
+	 * @param identity
 	 * @param blocker
-	 * 
 	 * @return
 	 */
-	public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker);
+	public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, RepositoryEntry courseEntry,
+			Identity identity, Blocker blocker);
 
 }

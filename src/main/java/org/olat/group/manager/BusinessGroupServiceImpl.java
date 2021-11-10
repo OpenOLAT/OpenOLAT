@@ -1717,6 +1717,11 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	public List<Identity> getIdentitiesWithRole(String role) {
 		return businessGroupRelationDAO.getIdentitiesWithRole(role);
 	}
+	
+	@Override
+	public Date getFirstEnrollmentDate(BusinessGroupRef businessGroup, String role) {
+		return businessGroupRelationDAO.getFirstEnrollmentDate(businessGroup, role);
+	}
 
 	@Override
 	public void exportGroups(List<BusinessGroup> groups, List<BGArea> areas, File fExportFile) {

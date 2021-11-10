@@ -555,8 +555,8 @@ public class NodeLayoutController extends FormBasicController {
 				CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
 				LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 				overviewBuilder.withDuration(learningPathConfigs.getDuration());
-				overviewBuilder.withStartDate(learningPathConfigs.getStartDate());
-				overviewBuilder.withEndDate(learningPathConfigs.getEndDate());
+				overviewBuilder.withStartDateConfig(learningPathConfigs.getStartDateConfig());
+				overviewBuilder.withEndDateConfig(learningPathConfigs.getEndDateConfig());
 			}
 			overview = overviewBuilder.build();
 		}

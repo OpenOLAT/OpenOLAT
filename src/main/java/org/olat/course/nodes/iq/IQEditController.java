@@ -147,20 +147,37 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 	public static final String CORRECTION_MANUAL = "manual";
 	public static final String CORRECTION_GRADING = "grading";
 
+	public static final String CONFIG_KEY_RELATIVE_DATES ="relative.dates";
 	public static final String CONFIG_KEY_DATE_DEPENDENT_RESULTS = "dateDependentResults";
 	public static final String CONFIG_KEY_RESULTS_START_DATE = "resultsStartDate";
+	public static final String CONFIG_KEY_RESULTS_START_DATE_REL = "resultsStartDateRel";
+	public static final String CONFIG_KEY_RESULTS_START_DATE_REL_TO = "resultsStartDateRelTo";
 	public static final String CONFIG_KEY_RESULTS_END_DATE = "resultsEndDate";
+	public static final String CONFIG_KEY_RESULTS_END_DATE_REL = "resultsEndDateRel";
+	public static final String CONFIG_KEY_RESULTS_END_DATE_REL_TO = "resultsEndDateRelTo";
 	public static final String CONFIG_KEY_RESULTS_FAILED_START_DATE = "failedResultsStartDate";
+	public static final String CONFIG_KEY_RESULTS_FAILED_START_DATE_REL = "failedResultsStartDateRel";
+	public static final String CONFIG_KEY_RESULTS_FAILED_START_DATE_REL_TO = "failedResultsStartDateRelTo";
 	public static final String CONFIG_KEY_RESULTS_FAILED_END_DATE = "failedResultsEndDate";
+	public static final String CONFIG_KEY_RESULTS_FAILED_END_DATE_REL = "failedResultsEndDateRel";
+	public static final String CONFIG_KEY_RESULTS_FAILED_END_DATE_REL_TO = "failedResultsEndDateRelTo";
 	public static final String CONFIG_KEY_RESULTS_PASSED_START_DATE = "passedResultsStartDate";
+	public static final String CONFIG_KEY_RESULTS_PASSED_START_DATE_REL = "passedResultsStartDateRel";
+	public static final String CONFIG_KEY_RESULTS_PASSED_START_DATE_REL_TO = "passedResultsStartDateRelTo";
 	public static final String CONFIG_KEY_RESULTS_PASSED_END_DATE = "passedResultsEndDate";
+	public static final String CONFIG_KEY_RESULTS_PASSED_END_DATE_REL = "passedResultsEndDateRel";
+	public static final String CONFIG_KEY_RESULTS_PASSED_END_DATE_REL_TO = "passedResultsEndDateRelTo";
 	public static final String CONFIG_KEY_RESULT_ON_FINISH = "showResultsOnFinish";
 	public static final String CONFIG_KEY_RESULT_ON_HOME_PAGE = "showResultsOnHomePage";
 
 	public static final String CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT = MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT;
 	public static final String CONFIG_KEY_DATE_DEPENDENT_TEST = "dateDependentTest";
 	public static final String CONFIG_KEY_START_TEST_DATE = "resultsStartTestDate";
+	public static final String CONFIG_KEY_START_TEST_DATE_REL = "resultsStartTestDateRel";
+	public static final String CONFIG_KEY_START_TEST_DATE_REL_TO = "resultsStartTestDateRelTo";
 	public static final String CONFIG_KEY_END_TEST_DATE = "resultsEndTestDate";
+	public static final String CONFIG_KEY_END_TEST_DATE_REL = "resultsEndTestDateRel";
+	public static final String CONFIG_KEY_END_TEST_DATE_REL_TO = "resultsEndTestDateRelTo";
 
 	public static final String CONFIG_KEY_TEMPLATE = "templateid";
 	public static final String CONFIG_KEY_TYPE_QTI = "qtitype";
@@ -298,7 +315,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 		layoutConfigurationCtrl = new IQLayoutConfigurationController(ureq, getWindowControl(), course, courseNode, type);
 		listenTo(layoutConfigurationCtrl);	
 		if (QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
-			highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), moduleConfiguration);
+			highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), moduleConfiguration, course);
 			listenTo(highScoreNodeConfigController);
 		}
 		RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();

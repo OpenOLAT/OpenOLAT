@@ -49,6 +49,7 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -551,22 +552,22 @@ public class CopyServiceImpl implements CopyService {
 					
 					// Start date
 					if (overviewRow.getNewStartDate() != null) {
-						targetConfigs.setStartDate(overviewRow.getNewStartDate());
+						targetConfigs.setStartDateConfig(DueDateConfig.absolute(overviewRow.getNewStartDate()));
 					}
 				
 					// Due date
 					if (overviewRow.getNewEndDate() != null) {
-						targetConfigs.setEndDate(overviewRow.getNewEndDate());
+						targetConfigs.setEndDateConfig(DueDateConfig.absolute(overviewRow.getNewEndDate()));
 					}
 				} else if (context.getDateDifference() != 0) {
-					if (targetConfigs.getStartDate() != null) {
-						Date startDate = new Date(targetConfigs.getStartDate().getTime() + context.getDateDifference());
-						targetConfigs.setStartDate(startDate);
+					if (DueDateConfig.isAbsolute(targetConfigs.getStartDateConfig())) {
+						Date startDate = new Date(targetConfigs.getStartDateConfig().getAbsoluteDate().getTime() + context.getDateDifference());
+						targetConfigs.setStartDateConfig(DueDateConfig.absolute(startDate));
 					}
 					
-					if (targetConfigs.getEndDate() != null) {
-						Date endDate = new Date(targetConfigs.getEndDate().getTime() + context.getDateDifference());
-						targetConfigs.setEndDate(endDate);
+					if (DueDateConfig.isAbsolute(targetConfigs.getEndDateConfig())) {
+						Date endDate = new Date(targetConfigs.getEndDateConfig().getAbsoluteDate().getTime() + context.getDateDifference());
+						targetConfigs.setEndDateConfig(DueDateConfig.absolute(endDate));
 					}
 				}
 			}

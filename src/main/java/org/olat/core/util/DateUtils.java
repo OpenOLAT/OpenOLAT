@@ -128,6 +128,8 @@ public class DateUtils {
 	}
 	
 	public static Date addDays(Date date, int days) {
+		if (date == null) return null;
+		
 		Calendar c = Calendar.getInstance();
 		c.setTime(date);
 		c.add(Calendar.DATE, days);

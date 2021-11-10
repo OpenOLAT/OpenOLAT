@@ -38,6 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.CourseNodeFragment;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -178,12 +179,12 @@ public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment impleme
 	}
 
 	private void addNodeWithDeadline(List<CourseNode> nodes, CourseNode courseNode) {
-		if(isNodeWithDeadline(courseNode) && !nodes.contains(courseNode)) {
+		if(DueDateConfig.isDueDate(getDueDateConfig(courseNode)) && !nodes.contains(courseNode)) {
 			nodes.add(courseNode);
 		}
 	}
 
-	public abstract boolean isNodeWithDeadline(CourseNode courseNode);
+	protected abstract DueDateConfig getDueDateConfig(CourseNode courseNode);
 
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {

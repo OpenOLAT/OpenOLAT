@@ -19,9 +19,8 @@
  */
 package org.olat.course.nodes.st;
 
-import java.util.Date;
-
 import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.style.TeaserImageStyle;
 
@@ -44,8 +43,8 @@ public class Overview {
 	private final String colorCategoryCss;
 	private final String noAccessMessage;
 	private final LearningPathStatus learningPathStatus;
-	private final Date startDate;
-	private final Date endDate;
+	private final DueDateConfig startDateConfig;
+	private final DueDateConfig endDateConfig;
 	private final Integer duration;
 
 	private Overview(Builder builder) {
@@ -60,8 +59,8 @@ public class Overview {
 		this.colorCategoryCss = builder.colorCategoryCss;
 		this.noAccessMessage = builder.noAccessMessage;
 		this.learningPathStatus = builder.learningPathStatus;
-		this.startDate = builder.startDate;
-		this.endDate = builder.endDate;
+		this.startDateConfig = builder.startDateConfig;
+		this.endDateConfig = builder.endDateConfig;
 		this.duration = builder.duration;
 	}
 	
@@ -109,12 +108,12 @@ public class Overview {
 		return learningPathStatus;
 	}
 
-	public Date getStartDate() {
-		return startDate;
+	public DueDateConfig getStartDateConfig() {
+		return startDateConfig;
 	}
 
-	public Date getEndDate() {
-		return endDate;
+	public DueDateConfig getEndDateConfig() {
+		return endDateConfig;
 	}
 
 	public Integer getDuration() {
@@ -137,8 +136,8 @@ public class Overview {
 		private String colorCategoryCss;
 		private String noAccessMessage;
 		private LearningPathStatus learningPathStatus;
-		private Date startDate;
-		private Date endDate;
+		private DueDateConfig startDateConfig;
+		private DueDateConfig endDateConfig;
 		private Integer duration;
 
 		private Builder() {
@@ -195,13 +194,13 @@ public class Overview {
 			return this;
 		}
 
-		public Builder withStartDate(Date startDate) {
-			this.startDate = startDate;
+		public Builder withStartDateConfig(DueDateConfig startDateConfig) {
+			this.startDateConfig = startDateConfig;
 			return this;
 		}
 
-		public Builder withEndDate(Date endDate) {
-			this.endDate = endDate;
+		public Builder withEndDateConfig(DueDateConfig endDateConfig) {
+			this.endDateConfig = endDateConfig;
 			return this;
 		}
 

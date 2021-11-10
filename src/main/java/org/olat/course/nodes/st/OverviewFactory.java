@@ -30,6 +30,7 @@ import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.LearningPathStatus;
@@ -125,19 +126,19 @@ public class OverviewFactory {
 				
 				Date startDate = evaluation.getStartDate();
 				if (startDate != null && startDate.after(now)) {
-					builder.withStartDate(startDate);
+					builder.withStartDateConfig(DueDateConfig.absolute(startDate));
 				} else {
 					Date currentEndDate = evaluation.getEndDate().getCurrent();
 					if (currentEndDate != null && currentEndDate.after(now)) {
-						builder.withEndDate(currentEndDate);
+						builder.withStartDateConfig(DueDateConfig.absolute(currentEndDate));
 					}
 				}
 			}
 		} else if (learningPathService != null) {
 			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
 			builder.withDuration(learningPathConfigs.getDuration());
-			builder.withStartDate(learningPathConfigs.getStartDate());
-			builder.withEndDate(learningPathConfigs.getEndDate());
+			builder.withStartDateConfig(learningPathConfigs.getStartDateConfig());
+			builder.withEndDateConfig(learningPathConfigs.getEndDateConfig());
 		}
 		
 		Controller peekViewCtrl = null;

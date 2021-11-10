@@ -30,6 +30,7 @@ import org.olat.core.util.DateUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
@@ -594,7 +595,8 @@ public class AssessmentAccountingTest extends OlatTestCase {
 
 	private void setStartInFuture(CourseNode courseNode) {
 		Date future = DateUtils.addDays(new Date(), 1);
-		learningPathService.getConfigs(courseNode).setStartDate(future);
+		DueDateConfig dueDateConfig = DueDateConfig.absolute(future);
+		learningPathService.getConfigs(courseNode).setStartDateConfig(dueDateConfig);
 	}
 
 }

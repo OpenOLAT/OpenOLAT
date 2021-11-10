@@ -30,9 +30,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.learningpath.ui.LearningPathListController;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.assessment.ui.AssessmentForm;
@@ -47,12 +47,14 @@ public class OverviewController extends BasicController {
 
 	private final Link nodeLink;
 	private final Controller peekViewCtrl;
+	private final DueDateConfigFormatter dueDateConfigFormatter;
 
 	public OverviewController(UserRequest ureq, WindowControl wControl, Overview overview, Controller peekViewCtrl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathListController.class, getLocale(), getTranslator()));
 		this.peekViewCtrl = peekViewCtrl;
+		this.dueDateConfigFormatter = DueDateConfigFormatter.create(getLocale());
 		
 		VelocityContainer mainVC = createVelocityContainer("overview");
 		
@@ -86,18 +88,19 @@ public class OverviewController extends BasicController {
 	}
 
 	private String getAssessmentInfos(Overview overview) {
-		Formatter formatter = Formatter.getInstance(getLocale());
 		boolean separator = false;
 		StringBuilder sb = new StringBuilder();
-		if (overview.getStartDate() != null) {
-			sb.append(translate("table.header.start")).append(": ").append(formatter.formatDateAndTime(overview.getStartDate()));
+		String formattedStartDate = dueDateConfigFormatter.formatDueDateConfig(overview.getStartDateConfig());
+		if (StringHelper.containsNonWhitespace(formattedStartDate)) {
+			sb.append(translate("table.header.start")).append(": ").append(formattedStartDate);
 			separator = true;
 		}
-		if (overview.getEndDate() != null) {
+		String formattedEndDate = dueDateConfigFormatter.formatDueDateConfig(overview.getEndDateConfig());
+		if (StringHelper.containsNonWhitespace(formattedEndDate)) {
 			if (separator) {
 				sb.append(" | ");
 			}
-			sb.append(translate("table.header.end")).append(": ").append(formatter.formatDateAndTime(overview.getEndDate()));
+			sb.append(translate("table.header.end")).append(": ").append(formattedEndDate);
 			separator = true;
 		}
 		if (overview.getDuration() != null) {

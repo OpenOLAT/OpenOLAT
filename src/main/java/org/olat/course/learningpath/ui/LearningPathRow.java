@@ -38,7 +38,6 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
 	private final LearningPathTreeNode learningPathNode;
-	private Date startDate;
 	private FormLink endDateFormItem;
 	private String translatedObligation;
 	private FormLink obligationFormItem;
@@ -90,11 +89,7 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	}
 	
 	public Date getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
+		return learningPathNode.getStartDate();
 	}
 
 	public FormLink getEndDateFormItem() {

@@ -26,11 +26,11 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_DONE;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_IN_REVIEW;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.core.util.StringHelper;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.obligation.ExceptionalObligation;
@@ -50,12 +50,17 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 			AssessmentObligation.optional, AssessmentObligation.excluded);
 
 	static final String CONFIG_VERSION = "lp.configversion";
-	static final int VERSION_CURRENT = 1;
+	static final int VERSION_CURRENT = 2;
 	static final String CONFIG_KEY_DURATION = "duration";
 	static final String CONFIG_KEY_OBLIGATION = "obligation";
 	static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
+	static final String CONFIG_KEY_RELATIVE_DATES = "lp.rel.dates";
 	static final String CONFIG_KEY_START = "start.date";
+	static final String CONFIG_KEY_START_RELATIVE = "start.date.relative";
+	static final String CONFIG_KEY_START_RELATIVE_TO = "start.date.relative.to";
 	static final String CONFIG_KEY_END = "end.date";
+	static final String CONFIG_KEY_END_RELATIVE = "end.date.relative";
+	static final String CONFIG_KEY_END_RELATIVE_TO = "end.date.relative.to";
 	static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
 	static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
 	
@@ -68,6 +73,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	public void updateDefaults(boolean newNode, FullyAssessedTrigger trigger) {
+		int version = moduleConfiguration.getIntegerSafe(CONFIG_VERSION, 1);
 		if (newNode) {
 			setFullyAssessedTrigger(trigger);
 			if (isInitObligation()) {
@@ -81,6 +87,10 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 			if (isInitObligation()) {
 				setObligation(LearningPathConfigs.OBLIGATION_DEFAULT);
 			}
+		}
+		
+		if (version < 2) {
+			moduleConfiguration.setBooleanEntry(CONFIG_KEY_RELATIVE_DATES, false);
 		}
 		
 		moduleConfiguration.setIntValue(CONFIG_VERSION, VERSION_CURRENT);
@@ -154,23 +164,45 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public Date getStartDate() {
-		return moduleConfiguration.getDateValue(CONFIG_KEY_START);
+	public boolean isRelativeDates() {
+		return moduleConfiguration.getBooleanSafe(CONFIG_KEY_RELATIVE_DATES);
 	}
 
 	@Override
-	public void setStartDate(Date start) {
-		moduleConfiguration.setDateValue(CONFIG_KEY_START, start);
+	public void setRelativeDates(boolean relativeDates) {
+		moduleConfiguration.setBooleanEntry(CONFIG_KEY_RELATIVE_DATES, relativeDates);
 	}
 
 	@Override
-	public Date getEndDate() {
-		return moduleConfiguration.getDateValue(CONFIG_KEY_END);
+	public DueDateConfig getStartDateConfig() {
+		return DueDateConfig.ofModuleConfiguration(moduleConfiguration, CONFIG_KEY_RELATIVE_DATES, CONFIG_KEY_START,
+				CONFIG_KEY_START_RELATIVE, CONFIG_KEY_START_RELATIVE_TO);
 	}
 
 	@Override
-	public void setEndDate(Date end) {
-		moduleConfiguration.setDateValue(CONFIG_KEY_END, end);
+	public void setStartDateConfig(DueDateConfig start) {
+		moduleConfiguration.remove(CONFIG_KEY_START);
+		moduleConfiguration.remove(CONFIG_KEY_START_RELATIVE);
+		moduleConfiguration.remove(CONFIG_KEY_START_RELATIVE_TO);
+		moduleConfiguration.setDateValue(CONFIG_KEY_START, start.getAbsoluteDate());
+		moduleConfiguration.setIntValue(CONFIG_KEY_START_RELATIVE, start.getNumOfDays());
+		moduleConfiguration.setStringValue(CONFIG_KEY_START_RELATIVE_TO, start.getRelativeToType());
+	}
+
+	@Override
+	public DueDateConfig getEndDateConfig() {
+		return DueDateConfig.ofModuleConfiguration(moduleConfiguration, CONFIG_KEY_RELATIVE_DATES, CONFIG_KEY_END,
+				CONFIG_KEY_END_RELATIVE, CONFIG_KEY_END_RELATIVE_TO);
+	}
+
+	@Override
+	public void setEndDateConfig(DueDateConfig end) {
+		moduleConfiguration.remove(CONFIG_KEY_END);
+		moduleConfiguration.remove(CONFIG_KEY_END_RELATIVE);
+		moduleConfiguration.remove(CONFIG_KEY_END_RELATIVE_TO);
+		moduleConfiguration.setDateValue(CONFIG_KEY_END, end.getAbsoluteDate());
+		moduleConfiguration.setIntValue(CONFIG_KEY_END_RELATIVE, end.getNumOfDays());
+		moduleConfiguration.setStringValue(CONFIG_KEY_END_RELATIVE_TO, end.getRelativeToType());
 	}
 	
 	@Override

@@ -19,15 +19,12 @@
  */
 package org.olat.course.nodes.gta.ui;
 
-import java.util.Date;
-
-import org.olat.core.util.StringHelper;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.rule.AssignTaskRuleSPI;
 import org.olat.course.nodes.gta.rule.SubmissionTaskRuleSPI;
 import org.olat.course.reminder.ui.BeforeDueDateRuleEditor;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.repository.RepositoryEntry;
 
@@ -44,38 +41,17 @@ public class BeforeDateTaskRuleEditor extends BeforeDueDateRuleEditor {
 	}
 
 	@Override
-	public boolean isNodeWithDeadline(CourseNode courseNode) {
+	protected DueDateConfig getDueDateConfig(CourseNode courseNode) {
 		if (courseNode instanceof GTACourseNode) {
-			GTACourseNode assessableCourseNode = (GTACourseNode) courseNode;
-			ModuleConfiguration config = assessableCourseNode.getModuleConfiguration();
+			GTACourseNode gtaCourseNode = (GTACourseNode) courseNode;
 			
-			if(AssignTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
-				boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
-				if(assignment) {
-					Date dueDate = config.getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
-					int numOfDays = config.getIntegerSafe(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, -1);
-					String relativeTo = config.getStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO);
-					if(dueDate != null) {
-						return true;
-					} else if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
-						return true;
-					}
-				}
-			} else if(SubmissionTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
-				boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
-				if(submit) {
-					Date dueDate = config.getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
-					int numOfDays = config.getIntegerSafe(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, -1);
-					String relativeTo = config.getStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO);
-					if(dueDate != null) {
-						return true;
-					} else if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
-						return true;
-					}
-				}
+			if (AssignTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
+				return gtaCourseNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
+			} else if (SubmissionTaskRuleSPI.class.getSimpleName().equals(ruleType)) {
+				return gtaCourseNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
 			}
 		}
-		return false;
+		return DueDateConfig.noDueDateConfig();
 	}
 
 }

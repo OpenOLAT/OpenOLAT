@@ -19,30 +19,17 @@
  */
 package org.olat.course.nodes.gta.rule;
 
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.manager.UserCourseInformationsManager;
-import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
-import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
-import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
@@ -51,15 +38,11 @@ import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentService;
-import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,152 +56,22 @@ public abstract class AbstractDueDateTaskRuleSPI extends AbstractDueDateRuleSPI 
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
-	private AssessmentService assessmentService;
-	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
-
+	
 	@Override
-	public List<Identity> evaluate(RepositoryEntry entry, ReminderRule rule) {
-		List<Identity> identities = null;
-		if(rule instanceof ReminderRuleImpl) {
-			ReminderRuleImpl r = (ReminderRuleImpl)rule;
-			String nodeIdent = r.getLeftOperand();
-	
-			ICourse course = CourseFactory.loadCourse(entry);
-			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
-			if(courseNode instanceof GTACourseNode) {
-				identities = evaluateRule(entry, (GTACourseNode)courseNode, r);
-				
-				if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
-					List<Long> excludedIdentityKeys = assessmentService.getIdentityKeys(entry, courseNode.getIdent(), AssessmentObligation.EXCLUDED);
-					if (!excludedIdentityKeys.isEmpty()) {
-						identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
-					}
-				}
+	protected List<Identity> getPeopleToRemind(RepositoryEntry entry, CourseNode courseNode) {
+		if (courseNode instanceof GTACourseNode) {
+			GTACourseNode gtaCourseNode = (GTACourseNode)courseNode;
+			ModuleConfiguration config = courseNode.getModuleConfiguration();
+			TaskList taskList = gtaManager.getTaskList(entry, gtaCourseNode);
+			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+				return getGroupsToRemind(taskList, gtaCourseNode);
 			}
+			return getIndividualsToRemind(taskList, entry, gtaCourseNode);
 		}
-		return identities == null ? Collections.<Identity>emptyList() : identities;
-	}
-	
-	protected List<Identity> evaluateRule(RepositoryEntry entry, GTACourseNode gtaNode, ReminderRuleImpl rule) {
-		List<Identity> identities = null;
-		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
-			identities = evaluateRelativeDateRule(entry, gtaNode, rule);
-		} else {
-			Date dueDate = getDueDate(gtaNode);
-			if(dueDate != null && isNear(dueDate, now(), rule)) {
-				identities = getPeopleToRemind(entry, gtaNode);
-			}
-		}
-		return identities == null ? Collections.<Identity>emptyList() : identities;
-	}
-	
-	protected abstract List<Identity> evaluateRelativeDateRule(RepositoryEntry entry, GTACourseNode gtaNode, ReminderRuleImpl r);
-	
-	protected abstract Date getDueDate(GTACourseNode gtaNode);
-	
-	protected List<Identity> getPeopleToRemind(RepositoryEntry entry, GTACourseNode gtaNode) {
-		ModuleConfiguration config = gtaNode.getModuleConfiguration();
-		TaskList taskList = gtaManager.getTaskList(entry, gtaNode);
-		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			return getGroupsToRemind(taskList, gtaNode);
-		} else {
-			return getIndividualsToRemind(taskList, entry, gtaNode);
-		}
-	}
-	
-	protected List<Identity> getPeopleToRemindRelativeTo(RepositoryEntry entry, GTACourseNode gtaNode,
-			int numOfDays, String relativeTo, ReminderRuleImpl rule) {
-		List<Identity> identities = null;
-		if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
-			GTARelativeToDates rel = GTARelativeToDates.valueOf(relativeTo);
-			switch(rel) {
-				case courseStart: {
-					RepositoryEntryLifecycle lifecycle = entry.getLifecycle();
-					if(lifecycle != null && lifecycle.getValidFrom() != null) {
-						Date referenceDate = getDate(lifecycle.getValidFrom(),  numOfDays);
-						if(isNear(referenceDate, now(), rule)) {
-							identities = getPeopleToRemind(entry, gtaNode);
-						}
-					}
-					break;
-				}
-	
-				case courseLaunch: {
-					UserCourseInformationsManager userCourseInformationsManager = CoreSpringFactory.getImpl(UserCourseInformationsManager.class);
-					Map<Long,Date> initialLaunchDates = userCourseInformationsManager.getInitialLaunchDates(entry.getOlatResource().getResourceableId());
-					Map<Long,Date> dueDates = getDueDates(initialLaunchDates, numOfDays);
-					identities = getPeopleToRemindRelativeTo(entry, gtaNode, dueDates, rule);
-					break;
-				}
-				case enrollment: {
-					RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-					Map<Long,Date> enrollmentDates = repositoryService.getEnrollmentDates(entry);
-					Map<Long,Date> dueDates = getDueDates(enrollmentDates, numOfDays);
-					identities = getPeopleToRemindRelativeTo(entry, gtaNode, dueDates, rule);
-					break;
-				}
-				default: {
-					//
-				}
-			}	
-		}
-		return identities;
-	}
-	
-	protected List<Identity> getPeopleToRemindRelativeTo(RepositoryEntry entry, GTACourseNode gtaNode,
-			Map<Long,Date> dates, ReminderRuleImpl rule) {
-		
-		Date now = now();
-		Set<Long> potentialidentityKeys = new HashSet<>();
-		for(Map.Entry<Long, Date> entryDate:dates.entrySet()) {
-			Long identityKey = entryDate.getKey();
-			Date date = entryDate.getValue();
-			if(isNear(date, now, rule)) {
-				potentialidentityKeys.add(identityKey);
-			}	
-		}
-
-		List<Identity> identities = null;
-		if(potentialidentityKeys.size() > 0) {
-			List<Identity> allIdentities = getPeopleToRemind(entry, gtaNode);
-			identities = new ArrayList<>();
-			for(Identity identity:allIdentities) {
-				if(potentialidentityKeys.contains(identity.getKey())) {
-					identities.add(identity);
-				}
-			}
-		}
-		return identities;
-	}
-	
-	private Map<Long,Date> getDueDates(Map<Long,Date> referenceDates, int numOfDays) {
-		Map<Long, Date> dueDates = new HashMap<>();
-		if(referenceDates != null && referenceDates.size() > 0) {
-			Calendar cal = Calendar.getInstance();
-			for(Map.Entry<Long, Date> referenceEntry:referenceDates.entrySet()) {
-				Long identityKey = referenceEntry.getKey();
-				cal.setTime(referenceEntry.getValue());
-				cal.add(Calendar.DATE, numOfDays);
-				dueDates.put(identityKey, cal.getTime());
-			}
-		}
-		return dueDates;
-	}
-	
-	private Date getDate(Date referenceDate, int numOfDays) {
-		Date date = null;
-		if(referenceDate != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(referenceDate);
-			cal.add(Calendar.DATE, numOfDays);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			date = cal.getTime();
-		}
-		return date;
+		return Collections.emptyList();
 	}
 	
 	protected List<Identity> getGroupsToRemind(TaskList taskList, GTACourseNode gtaNode) {

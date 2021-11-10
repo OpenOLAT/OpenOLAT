@@ -19,11 +19,10 @@
  */
 package org.olat.course.editor.overview;
 
-import java.util.Date;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 
@@ -42,8 +41,8 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 	private String translatedDisplayOption;
 	private Integer duration;
 	private String translatedObligation;
-	private Date start;
-	private Date end;
+	private DueDateConfig start;
+	private DueDateConfig end;
 	private String translatedTrigger;
 	private AssessmentConfig assessmentConfig;
 	
@@ -125,19 +124,19 @@ public class OverviewRow implements FlexiTreeTableNode, IndentedCourseNode {
 		this.translatedObligation = translatedObligation;
 	}
 
-	public Date getStart() {
+	public DueDateConfig getStart() {
 		return start;
 	}
 
-	public void setStart(Date start) {
+	public void setStart(DueDateConfig start) {
 		this.start = start;
 	}
 
-	public Date getEnd() {
+	public DueDateConfig getEnd() {
 		return end;
 	}
 
-	public void setEnd(Date end) {
+	public void setEnd(DueDateConfig end) {
 		this.end = end;
 	}
 

@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.form.ui;
 
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.reminder.ui.BeforeDueDateRuleEditor;
@@ -38,12 +39,12 @@ public class FormBeforeDueDateRuleEditor extends BeforeDueDateRuleEditor {
 	}
 
 	@Override
-	public boolean isNodeWithDeadline(CourseNode courseNode) {
+	protected DueDateConfig getDueDateConfig(CourseNode courseNode) {
 		if (courseNode instanceof FormCourseNode) {
-			FormCourseNode fromCourseNode = (FormCourseNode) courseNode;
-			return fromCourseNode.getModuleConfiguration().getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE) != null;
+			FormCourseNode formCourseNode = (FormCourseNode)courseNode;
+			return formCourseNode.getDueDateConfig(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
 		}
-		return false;
+		return DueDateConfig.noDueDateConfig();
 	}
 
 }

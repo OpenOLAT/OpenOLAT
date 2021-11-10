@@ -20,6 +20,7 @@
 package org.olat.course.nodes.form;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -96,5 +97,9 @@ public interface FormManager {
 	public void deleteAllData(EvaluationFormSurvey survey, CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns);
+
+	public List<String> getRelativeToDateTypes(RepositoryEntry courseEntry);
+
+	public Date getParticipationDeadline(FormCourseNode courseNode, RepositoryEntry courseEntry, Identity identity);
 
 }

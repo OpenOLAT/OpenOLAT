@@ -85,7 +85,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		configContent.put("textForm", textForm.getInitialComponent());
 		
 		//highscore
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config, course);
 		listenTo(highScoreNodeConfigController);
 		
 	// if there is already user data available, make for read only

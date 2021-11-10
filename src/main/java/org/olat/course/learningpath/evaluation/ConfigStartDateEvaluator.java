@@ -22,13 +22,17 @@ package org.olat.course.learningpath.evaluation;
 import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.StartDateEvaluator;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -39,10 +43,13 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class ConfigStartDateEvaluator implements StartDateEvaluator {
 	
 	private LearningPathService learningPathService;
+	private DueDateService dueDateService;
 
 	@Override
-	public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker) {
-		Date configStartDate = getLearningPathService().getConfigs(courseNode).getStartDate();
+	public Date evaluate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, RepositoryEntry courseEntry,
+			Identity identity, Blocker blocker) {
+		DueDateConfig startDateConfig = getLearningPathService().getConfigs(courseNode).getStartDateConfig();
+		Date configStartDate = getDueDateService().getDueDate(startDateConfig, courseEntry, identity);
 		AssessmentObligation obligation = currentEvaluation.getObligation().getCurrent();
 		return evaluateDate(configStartDate, obligation, blocker);
 	}
@@ -66,6 +73,13 @@ public class ConfigStartDateEvaluator implements StartDateEvaluator {
 			learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
 		}
 		return learningPathService;
+	}
+	
+	private DueDateService getDueDateService() {
+		if (dueDateService == null) {
+			dueDateService = CoreSpringFactory.getImpl(DueDateService.class);
+		}
+		return dueDateService;
 	}
 
 }

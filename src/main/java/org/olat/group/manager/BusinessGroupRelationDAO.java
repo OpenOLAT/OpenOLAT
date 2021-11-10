@@ -524,6 +524,21 @@ public class BusinessGroupRelationDAO {
 		return repositoryEntryRelationDao.getMembers(resource, RepositoryEntryRelationType.all, roles);
 	}
 	
+	public Date getFirstEnrollmentDate(BusinessGroupRef businessGroup, String role) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select min(membership.creationDate) from businessgroup as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership on (membership.role =:groupRole)")
+		  .append(" where bgroup.key=:businessGroupKey");
+
+		List<Date> dates = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Date.class)
+				.setParameter("businessGroupKey", businessGroup.getKey())
+				.setParameter("groupRole", role)
+				.getResultList();
+		return dates.isEmpty() ? null : dates.get(0);
+	}
+	
 	public int countResources(BusinessGroup group) {
 		return repositoryEntryRelationDao.countRelations(group.getBaseGroup());
 	}

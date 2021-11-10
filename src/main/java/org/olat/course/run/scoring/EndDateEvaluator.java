@@ -21,8 +21,10 @@ package org.olat.course.run.scoring;
 
 import java.util.Date;
 
+import org.olat.core.id.Identity;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.Overridable;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -32,6 +34,7 @@ import org.olat.modules.assessment.Overridable;
  */
 public interface EndDateEvaluator {
 
-	public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode, Blocker blocker);
+	public Overridable<Date> getEndDate(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			RepositoryEntry courseEntry, Identity identity, Blocker blocker);
 
 }

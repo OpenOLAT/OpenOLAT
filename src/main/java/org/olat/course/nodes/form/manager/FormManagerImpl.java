@@ -42,6 +42,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
@@ -101,6 +103,8 @@ public class FormManagerImpl implements FormManager {
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private DueDateService dueDateService;
 
 	@Override
 	public EvaluationFormSurveyIdentifier getSurveyIdentifier(CourseNode courseNode, ICourse course) {
@@ -410,6 +414,17 @@ public class FormManagerImpl implements FormManager {
 		Form form = loadForm(survey);
 		String surveyName = courseNode.getShortName();
 		return new EvaluationFormExcelExport(form, filter, null, userColumns, surveyName);
+	}
+
+	@Override
+	public List<String> getRelativeToDateTypes(RepositoryEntry courseEntry) {
+		return dueDateService.getCourseRelativeToDateTypes(courseEntry);
+	}
+
+	@Override
+	public Date getParticipationDeadline(FormCourseNode courseNode, RepositoryEntry courseEntry, Identity identity) {
+		DueDateConfig dueDateConfig = courseNode.getDueDateConfig(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
+		return dueDateService.getDueDate(dueDateConfig, courseEntry, identity);
 	}
 
 }

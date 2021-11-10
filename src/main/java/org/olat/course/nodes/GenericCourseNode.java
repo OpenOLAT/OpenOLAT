@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
@@ -57,6 +58,7 @@ import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
 import org.olat.course.condition.interpreter.ConditionErrorMessage;
 import org.olat.course.condition.interpreter.ConditionExpression;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeConfigController;
 import org.olat.course.editor.PublishEvents;
@@ -462,57 +464,53 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
 		
-		if (context != null) {
-			// Load config
-			ModuleConfiguration config = getModuleConfiguration();
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		// Move potential high score dates
+		DueDateConfig highScoreStartDateConfig = getDueDateConfig(HighScoreEditController.CONFIG_KEY_DATESTART);
+		if (DueDateConfig.isAbsolute(highScoreStartDateConfig)) {
+			Date highScorePublicationDate = new Date(highScoreStartDateConfig.getAbsoluteDate().getTime() + context.getDateDifference(getIdent()));
+			HighScoreEditController.setStartDateConfig(config, DueDateConfig.absolute(highScorePublicationDate));
+		}
+		
+		// Move potential user right dates
+		Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
+		
+		if (!potentialNodeRights.isEmpty()) {
 			
-			// Move potential high score dates
-			Date highScorePublicationDate = config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART);
+			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
 			
-			if (highScorePublicationDate != null) {
-				highScorePublicationDate.setTime(highScorePublicationDate.getTime() + context.getDateDifference(getIdent()));
-				config.setDateValue(HighScoreEditController.CONFIG_KEY_DATESTART, highScorePublicationDate);
-			}
-			
-			// Move potential user right dates
-			Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
-			
-			if (!potentialNodeRights.isEmpty()) {
-				
-				NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
-				
-				for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
-					if (!(entry.getValue() instanceof NodeRight)) {
-						continue;
-					}
-					
-					NodeRightImpl nodeRight = (NodeRightImpl) entry.getValue();
-					List<NodeRightGrant> nodeRightGrants = new ArrayList<>();
-					
-					if (nodeRight.getGrants() != null) {
-						for (NodeRightGrant grant : nodeRight.getGrants()) {
-							// Remove any rights associated with an identity or group
-							if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
-								continue;
-							}
-							
-							// Move potential dates
-							if (grant.getStart() != null) {
-								grant.setStart(new Date(grant.getStart().getTime() + context.getDateDifference(getIdent())));
-							}
-							
-							if (grant.getEnd() != null) {
-								grant.setEnd(new Date(grant.getEnd().getTime() + context.getDateDifference(getIdent())));
-							}
-							
-							// Only grants for roles are kept
-							nodeRightGrants.add(grant);
-						}
-					}
-					
-					nodeRight.setGrants(nodeRightGrants);
-					nodeRightService.setRight(getModuleConfiguration(), nodeRight);
+			for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
+				if (!(entry.getValue() instanceof NodeRight)) {
+					continue;
 				}
+				
+				NodeRightImpl nodeRight = (NodeRightImpl) entry.getValue();
+				List<NodeRightGrant> nodeRightGrants = new ArrayList<>();
+				
+				if (nodeRight.getGrants() != null) {
+					for (NodeRightGrant grant : nodeRight.getGrants()) {
+						// Remove any rights associated with an identity or group
+						if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
+							continue;
+						}
+						
+						// Move potential dates
+						if (grant.getStart() != null) {
+							grant.setStart(new Date(grant.getStart().getTime() + context.getDateDifference(getIdent())));
+						}
+						
+						if (grant.getEnd() != null) {
+							grant.setEnd(new Date(grant.getEnd().getTime() + context.getDateDifference(getIdent())));
+						}
+						
+						// Only grants for roles are kept
+						nodeRightGrants.add(grant);
+					}
+				}
+				
+				nodeRight.setGrants(nodeRightGrants);
+				nodeRightService.setRight(getModuleConfiguration(), nodeRight);
 			}
 		}
 	}
@@ -764,14 +762,14 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public boolean hasDates() {
 		// Check for node specific dates
-		if (!getNodeSpecificDatesWithLabel().isEmpty()) {
+		if (getNodeSpecificDatesWithLabel().stream().map(Entry::getValue).anyMatch(DueDateConfig::isDueDate)) {
 			return true;
 		}
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		
 		// Check for high score dates
-		if (config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART) != null) {
+		if (DueDateConfig.isDueDate(getDueDateConfig(HighScoreEditController.CONFIG_KEY_DATESTART))) {
 			return true;
 		}
 		
@@ -822,13 +820,21 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 	
 	@Override
-	public List<Map.Entry<String, Date>>  getNodeSpecificDatesWithLabel() {
-		return new ArrayList<>();
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel() {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public DueDateConfig getDueDateConfig(String key) {
+		if (HighScoreEditController.CONFIG_KEY_DATESTART.equals(key)) {
+			return HighScoreEditController.getStartDateConfig(moduleConfiguration);
+		}
+		return null;
 	}
 	
 	@Override
 	public List<NodeRightType> getNodeRightTypes() {
-		return new ArrayList<>();
+		return Collections.emptyList();
 	}
 
 }

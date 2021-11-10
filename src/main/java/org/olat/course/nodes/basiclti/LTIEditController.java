@@ -96,7 +96,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController {
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
 		previewButton.setIconLeftCSS("o_icon o_icon_preview");
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config, course);
 		listenTo(highScoreNodeConfigController);
 		
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

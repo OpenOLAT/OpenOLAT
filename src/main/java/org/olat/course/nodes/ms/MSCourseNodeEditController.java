@@ -90,7 +90,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		listenTo(configController);
 		configurationVC.put("mseditform", configController.getInitialComponent());
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, msNode.getModuleConfiguration());
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, msNode.getModuleConfiguration(), course);
 		listenTo(highScoreNodeConfigController);
 		
 		// if there is already user data available, make for read only

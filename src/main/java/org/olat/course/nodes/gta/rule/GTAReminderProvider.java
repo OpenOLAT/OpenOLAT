@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAAssessmentConfig;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
-import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -36,26 +36,24 @@ import org.olat.modules.ModuleConfiguration;
  *
  */
 public class GTAReminderProvider implements CourseNodeReminderProvider {
-		
-	private final String nodeIdent;
-	private final ModuleConfiguration config;
+	
+	private final GTACourseNode gtaNode;
 	private AssessmentReminderProvider assessmentReminderProvider;
 	private List<String> mainTypes;
 	
 	public GTAReminderProvider(GTACourseNode gtaNode) {
-		this.nodeIdent = gtaNode.getIdent();
-		this.config = gtaNode.getModuleConfiguration();
-		this.assessmentReminderProvider = new AssessmentReminderProvider(nodeIdent, new GTAAssessmentConfig(config));
+		this.gtaNode = gtaNode;
+		this.assessmentReminderProvider = new AssessmentReminderProvider(gtaNode.getIdent(), new GTAAssessmentConfig(gtaNode.getModuleConfiguration()));
 	}
 
 	@Override
 	public String getCourseNodeIdent() {
-		return nodeIdent;
+		return gtaNode.getIdent();
 	}
 
 	@Override
 	public boolean filter(Collection<String> ruleNodeIdents) {
-		return ruleNodeIdents.contains(nodeIdent);
+		return ruleNodeIdents.contains(gtaNode.getIdent());
 	}
 
 	@Override
@@ -64,13 +62,11 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 			mainTypes = new ArrayList<>(6);
 			mainTypes.addAll(assessmentReminderProvider.getMainRuleSPITypes());
 			
-			boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
-			if(assignment && config.has(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE)) {
+			if (DueDateConfig.isDueDate(gtaNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE))) {
 				mainTypes.add(AssignTaskRuleSPI.class.getSimpleName());
 			}
 			
-			boolean submit = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
-			if(submit && config.has(GTACourseNode.GTASK_SUBMIT_DEADLINE)) {
+			if (DueDateConfig.isDueDate(gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE))) {
 				mainTypes.add(SubmissionTaskRuleSPI.class.getSimpleName());
 			}
 		}
@@ -90,7 +86,7 @@ public class GTAReminderProvider implements CourseNodeReminderProvider {
 	
 	@Override
 	public void refresh() {
-		assessmentReminderProvider = new AssessmentReminderProvider(nodeIdent, new GTAAssessmentConfig(config));
+		assessmentReminderProvider = new AssessmentReminderProvider(gtaNode.getIdent(), new GTAAssessmentConfig(gtaNode.getModuleConfiguration()));
 		mainTypes = null;
 	}
 	

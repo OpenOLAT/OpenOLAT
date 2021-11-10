@@ -21,11 +21,11 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -44,14 +44,17 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.FormSecurityCallback;
 import org.olat.course.nodes.form.FormSecurityCallbackFactory;
@@ -100,8 +103,12 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			.withIconCss(FormCourseNode.ICON_CSS)
 			.build();
 
+	private static final int CURRENT_VERSION = 2;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
+	public static final String CONFIG_KEY_RELATIVE_DATES = "rel.dates";
 	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE = "participation.deadline";
+	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE = "participation.deadline.relative";
+	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE_TO = "participation.deadline.relative.to";
 	public static final String CONFIG_KEY_CONFIRMATION_ENABLED = "confirmation.enabled";
 
 	public FormCourseNode() {
@@ -311,17 +318,32 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
-		List<Map.Entry<String, Date>> datesMap = new ArrayList<>();
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel() {
+		return List.of(Map.entry("form.participation.until", getDueDateConfig(CONFIG_KEY_PARTICIPATION_DEADLINE)));
+	}
+
+	@Override
+	public DueDateConfig getDueDateConfig(String key) {
+		if (CONFIG_KEY_PARTICIPATION_DEADLINE.equals(key)) {
+			return DueDateConfig.ofCourseNode(this, CONFIG_KEY_RELATIVE_DATES, CONFIG_KEY_PARTICIPATION_DEADLINE,
+					CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE, CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE_TO);
+		}
+		return super.getDueDateConfig(key);
+	}
+	
+	@Override
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+		
 		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
 		
-		Date completionDeadline = config.getDateValue(CONFIG_KEY_PARTICIPATION_DEADLINE);
-		
-		if (completionDeadline != null) {
-			datesMap.add(Map.entry("form.participation.until", completionDeadline));
+		if (version < 2) {
+			config.setBooleanEntry(CONFIG_KEY_RELATIVE_DATES, false);
 		}
 		
-		return datesMap;
+		config.setConfigurationVersion(CURRENT_VERSION);
 	}
+	
 }
 

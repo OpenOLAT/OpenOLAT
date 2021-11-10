@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -65,6 +66,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -148,6 +150,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	
 	public static final String GTASK_OBLIGATION = "grouptask.obligation";
 	public static final String GTASK_RELATIVE_DATES = "grouptask.rel.dates";
+	public static final String TYPE_RELATIVE_TO_ASSIGNMENT = "assignment";
 	
 	public static final String GTASK_ASSIGNEMENT_TYPE = "grouptask.assignement.type";
 	public static final String GTASK_ASSIGNEMENT_TYPE_AUTO = "auto";
@@ -961,28 +964,34 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
-		List<Map.Entry<String, Date>> nodeSpecificDates = new ArrayList<>();
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		if (config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
-			Date assignmentDeadline = config.getDateValue(GTASK_ASSIGNMENT_DEADLINE);
-			if (assignmentDeadline != null) {
-				nodeSpecificDates.add(Map.entry("gtask.assignment.deadline", assignmentDeadline));
-			}
-			
-			Date submissionDeadline = config.getDateValue(GTASK_SUBMIT_DEADLINE);
-			if (submissionDeadline != null) {
-				nodeSpecificDates.add(Map.entry("gtask.submission.deadline", submissionDeadline));
-			}
-			
-			Date visibleAfter = config.getDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-			if (visibleAfter != null) {
-				nodeSpecificDates.add(Map.entry("gtask.submission.visibility", visibleAfter));
-			}
-		}
-		
-		return nodeSpecificDates;
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel() {
+		return List.of(
+				Map.entry("gtask.assignment.deadline", getDueDateConfig(GTASK_ASSIGNMENT_DEADLINE)),
+				Map.entry("gtask.submission.deadline", getDueDateConfig(GTASK_SUBMIT_DEADLINE)),
+				Map.entry("gtask.submission.visibility", getDueDateConfig(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER))
+			);
 	}
+	
+	@Override
+	public DueDateConfig getDueDateConfig(String key) {
+		if (GTASK_ASSIGNMENT_DEADLINE.equals(key)) {
+			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+					? DueDateConfig.ofCourseNode(this, GTASK_RELATIVE_DATES, GTASK_ASSIGNMENT_DEADLINE,
+							GTASK_ASSIGNMENT_DEADLINE_RELATIVE, GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO)
+					: DueDateConfig.noDueDateConfig();
+		} else if (GTASK_SUBMIT_DEADLINE.equals(key)) {
+			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
+					? DueDateConfig.ofCourseNode(this, GTASK_RELATIVE_DATES, GTASK_SUBMIT_DEADLINE,
+							GTASK_SUBMIT_DEADLINE_RELATIVE, GTASK_SUBMIT_DEADLINE_RELATIVE_TO)
+					: DueDateConfig.noDueDateConfig();
+		} else if (GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER.equals(key)) {
+			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SOLUTIONS)
+					? DueDateConfig.ofCourseNode(this, GTASK_RELATIVE_DATES, GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER,
+								GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO)
+					: DueDateConfig.noDueDateConfig();
+		}
+		return super.getDueDateConfig(key);
+	}
+	
 
 }

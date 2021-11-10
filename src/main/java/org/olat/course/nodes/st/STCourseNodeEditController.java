@@ -194,7 +194,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		assessableChildren = AssessmentHelper.getAssessableNodes(editorModel, stNode);
 		
 		// HighScore Controller
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode.getModuleConfiguration());
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode.getModuleConfiguration(), course);
 		listenTo(highScoreNodeConfigController);
 		
 		

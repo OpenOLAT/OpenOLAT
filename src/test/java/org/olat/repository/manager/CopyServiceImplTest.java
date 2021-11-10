@@ -176,8 +176,8 @@ public class CopyServiceImplTest extends OlatTestCase {
 		if (context.isLearningPath()) {
 			LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
 			row.setDuration(learningPathConfigs.getDuration());
-			row.setStart(learningPathConfigs.getStartDate());
-			row.setEnd(learningPathConfigs.getEndDate());
+			row.setStart(learningPathConfigs.getStartDateConfig());
+			row.setEnd(learningPathConfigs.getEndDateConfig());
 			row.setLearningPathConfigs(learningPathConfigs);
 		}
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);

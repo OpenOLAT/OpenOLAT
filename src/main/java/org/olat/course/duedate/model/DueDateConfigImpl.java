@@ -17,29 +17,49 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta;
+package org.olat.course.duedate.model;
+
+import java.util.Date;
+
+import org.olat.course.duedate.DueDateConfig;
 
 /**
  * 
- * Initial date: 08.05.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 5 Nov 2021<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum GTARelativeToDates {
+public class DueDateConfigImpl implements DueDateConfig {
 	
-	courseStart("relative.to.course.start"),// relative to course start defined by a life-cycle
-	courseLaunch("relative.to.course.launch"),// relative to the course launch by a user
-	enrollment("relative.to.enrollment"),//relative to the enrollment date
-	assignment("relative.to.assignment");
+	private int numOfDays;
+	private String relativeToType;
+	private Date absoluteDate;
 	
-	private final String i18n;
-	
-	private GTARelativeToDates(String i18n) {
-		this.i18n = i18n;
+	@Override
+	public int getNumOfDays() {
+		return numOfDays;
 	}
 	
-	public String i18nKey() {
-		return i18n;
+	public void setNumOfDays(int numOfDays) {
+		this.numOfDays = numOfDays;
 	}
-
+	
+	@Override
+	public String getRelativeToType() {
+		return relativeToType;
+	}
+	
+	public void setRelativeToType(String relativeToType) {
+		this.relativeToType = relativeToType;
+	}
+	
+	@Override
+	public Date getAbsoluteDate() {
+		return absoluteDate;
+	}
+	
+	public void setAbsolutDate(Date absoluteDate) {
+		this.absoluteDate = absoluteDate;
+	}
+	
 }

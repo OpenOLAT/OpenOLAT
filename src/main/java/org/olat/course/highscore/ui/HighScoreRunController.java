@@ -51,6 +51,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
 import org.olat.course.highscore.manager.HighScoreManager;
 import org.olat.course.highscore.model.HighScoreRankingResults;
 import org.olat.course.nodes.CourseNode;
@@ -89,6 +91,8 @@ public class HighScoreRunController extends FormBasicController{
 	private HighScoreManager highScoreManager;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private DueDateService dueDateService;
 	
 	/**
 	 * Instantiates a new high score run controller. 
@@ -125,17 +129,21 @@ public class HighScoreRunController extends FormBasicController{
 		if (!viewHighscore){
 			return;			
 		}
-		Date start = config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART);
-		// display only if start time has been met		
-		if (start != null && start.after(new Date())){
-			viewHighscore = false;
-			return;		
-		}
+		
 		// guests will never see the highscore
 		if (ureq != null && ureq.getUserSession().getRoles().isGuestOnly()){
 			viewHighscore = false;
-			return;			
-		}		
+			return;
+		}
+		
+		// display only if start time has been met
+		DueDateConfig startDateConfig = courseNode.getDueDateConfig(HighScoreEditController.CONFIG_KEY_DATESTART);
+		Date start = dueDateService.getDueDate(startDateConfig,
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdentity());
+		if (start != null && start.after(new Date())){
+			viewHighscore = false;
+			return;
+		}	
 		
 		ownIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();

@@ -21,6 +21,7 @@ package org.olat.group.test;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +41,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.test.JunitTestHelper;
@@ -523,6 +525,27 @@ public class BusinessGroupRelationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(participant6);
 		Assert.assertEquals(1, participant6.size());
 		Assert.assertTrue(participant6.contains(part4));
+	}
+	
+	@Test
+	public void getFirstEnrollmentDate() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("rel-user-20");
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		dbInstance.commit();
+		
+		//no participant enrolled
+		Date noEnrollmentDate = businessGroupRelationDao.getFirstEnrollmentDate(businessGroup, GroupRole.participant.name());
+		Assert.assertNull(noEnrollmentDate);
+		
+		//add participant
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("rel-user-21");
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
+		dbInstance.commit();
+		
+		// there is a participant businessGroupRelationDao
+		Date enrollmentDate = businessGroupRelationDao.getFirstEnrollmentDate(businessGroup, GroupRole.participant.name());
+		Assert.assertNotNull(enrollmentDate);
 	}
 	
 	@Test

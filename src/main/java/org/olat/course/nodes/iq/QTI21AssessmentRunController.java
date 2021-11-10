@@ -66,6 +66,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.duedate.DueDateService;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
@@ -152,6 +153,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private QTI21Service qtiService;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private DueDateService dueDateService;
 	@Autowired
 	private GradingService gradingService;
 	@Autowired
@@ -342,7 +345,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? Integer.valueOf(0) : attempts);
-				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(config));
+				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible());
 				mainVC.contextPut("showChangeLog", showChangelog);
 				
 				if(deliveryOptions.isDigitalSignature()) {
@@ -406,13 +409,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		boolean dependOnDate = config.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false);
 		boolean blocked = false;
 		if(dependOnDate) {
-			Date startTestDate = config.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
+			Date startTestDate = getDueDate(IQEditController.CONFIG_KEY_START_TEST_DATE);
 			if(startTestDate != null) {
 				Formatter formatter = Formatter.getInstance(getLocale());
 				String start = formatter.formatDateAndTime(startTestDate);
 				mainVC.contextPut("startTestDate", start);
 				
-				Date endTestDate = config.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+				Date endTestDate = getDueDate(IQEditController.CONFIG_KEY_END_TEST_DATE);
 				String end = null;
 				if(endTestDate != null) {
 					end = formatter.formatDateAndTime(endTestDate);
@@ -470,7 +473,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		QTI21AssessmentResultsOptions showSummary = deliveryOptions.getAssessmentResultsOptions();
 		if(resultsAvailable && !showSummary.none()) {
 			mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(showResultsOnHomePage));			
-			boolean dateRelatedVisibility = isResultVisible(config);		
+			boolean dateRelatedVisibility = isResultVisible();		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
 				mainVC.contextPut("showResultsVisible",Boolean.TRUE);
 				showResultsButton = LinkFactory.createLink("command.showResults", "command.showResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
@@ -516,8 +519,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
 				if (passed) {
-					startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
-					endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+					startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+					endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
 
 					if(startDate != null && currentDate.before(startDate)) {
 						Formatter formatter = Formatter.getInstance(getLocale());
@@ -535,8 +538,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						break;
 					}
 				} else {
-					startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-					endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+					startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
 
 					if(startDate != null && currentDate.before(startDate)) {
 						Formatter formatter = Formatter.getInstance(getLocale());
@@ -558,8 +561,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
 				if (!passed) {
-					startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-					endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+					startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
 
 					if(startDate != null && currentDate.before(startDate)) {
 						Formatter formatter = Formatter.getInstance(getLocale());
@@ -584,8 +587,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
 				if (passed) {
-					startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-					endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+					startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
 
 					if(startDate != null && currentDate.before(startDate)) {
 						Formatter formatter = Formatter.getInstance(getLocale());
@@ -609,8 +612,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
 				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
-				startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-				endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+				startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+				endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
 
 				if(startDate != null && currentDate.before(startDate)) {
 					Formatter formatter = Formatter.getInstance(getLocale());
@@ -643,9 +646,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	 * 
 	 * @return true if is visible.
 	 */
-	private boolean isResultVisible(ModuleConfiguration modConfig) {
+	private boolean isResultVisible() {
 		boolean isVisible = false;
-		String showResultsActive = modConfig.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS);
+		String showResultsActive = config.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS);
 		Date startDate, endDate;
 		Date passedStartDate, passedEndDate;
 		Date failedStartDate, failedEndDate;
@@ -656,28 +659,28 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			isVisible = true;
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
-			passedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
-			passedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
-			failedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			failedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			passedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+			passedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+			failedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			failedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
 			
 			isVisible = isResultVisible(scoreEval, passedStartDate, passedEndDate, failedStartDate, failedEndDate);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
-			failedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			failedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			failedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			failedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
 			
 			isVisible = isResultVisibleFailedOnly(scoreEval, failedStartDate, failedEndDate);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
-			passedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			passedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+			passedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+			passedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
 			
 			isVisible = isResultVisiblePassedOnly(scoreEval, passedStartDate, passedEndDate);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
-			startDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			endDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+			endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
 			isVisible = isResultVisible(startDate, endDate);
 			break;
 		default:
@@ -742,6 +745,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 		
 		return isVisible;
+	}
+	
+	private Date getDueDate(String configKey) {
+		return dueDateService.getDueDate(
+				courseNode.getDueDateConfig(configKey),
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				getIdentity());
 	}
 	
 	@Override
@@ -1013,9 +1023,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		Date endTestDate = null;
 		boolean dependOnDate = config.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false);
 		if(dependOnDate) {
-			startTestDate = config.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
+			startTestDate = getDueDate(IQEditController.CONFIG_KEY_START_TEST_DATE);
 			if(startTestDate != null) {
-				endTestDate = config.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
+				endTestDate = getDueDate(IQEditController.CONFIG_KEY_END_TEST_DATE);
 			}
 		}
 		

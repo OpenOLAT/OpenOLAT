@@ -152,7 +152,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 
 		addSeparator();
 		
-		boolean hasTimeLimit = testCourseNode.hasQTI21TimeLimit(testEntry);
+		boolean hasTimeLimit = testCourseNode.hasQTI21TimeLimit(testEntry, courseEntry, getIdentity());
 		boolean lastSessionActive = (lastSession != null && lastSession.getFinishTime() == null);
 		
 		if(lastSessionActive && hasTimeLimit) {

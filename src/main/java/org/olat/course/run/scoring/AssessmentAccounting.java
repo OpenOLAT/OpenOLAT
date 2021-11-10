@@ -180,11 +180,15 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setObligation(obligation);
 		
 		StartDateEvaluator startDateEvaluator = evaluators.getStartDateEvaluator();
-		Date startDate = startDateEvaluator.evaluate(result, courseNode, blocker);
+		Date startDate = startDateEvaluator.evaluate(result, courseNode, 
+				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), 
+				userCourseEnvironment.getIdentityEnvironment().getIdentity(), blocker);
 		result.setStartDate(startDate);
 		
 		EndDateEvaluator endDateEvaluator = evaluators.getEndDateEvaluator();
-		Overridable<Date> endDate = endDateEvaluator.getEndDate(result, courseNode, blocker);
+		Overridable<Date> endDate = endDateEvaluator.getEndDate(result, courseNode, 
+				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), 
+				userCourseEnvironment.getIdentityEnvironment().getIdentity(), blocker);
 		result.setEndDate(endDate);
 		
 		DurationEvaluator durationEvaluator = evaluators.getDurationEvaluator();

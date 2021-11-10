@@ -19,31 +19,20 @@
  */
 package org.olat.course.nodes.form.rule;
 
-import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.Util;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
-import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.ui.FormBeforeDueDateRuleEditor;
 import org.olat.course.reminder.CourseNodeRuleSPI;
 import org.olat.course.reminder.rule.AbstractDueDateRuleSPI;
-import org.olat.modules.assessment.AssessmentService;
-import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -51,8 +40,6 @@ import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
-import org.olat.modules.reminder.rule.LaunchUnit;
-import org.olat.modules.reminder.ui.ReminderAdminController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -71,8 +58,6 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements 
 	@Autowired
 	private FormManager formManager;
 	@Autowired
-	private AssessmentService assessmentService;
-	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	@Override
@@ -84,41 +69,10 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements 
 	public String getLabelI18nKey() {
 		return "rule.form.participation";
 	}
-	
+
 	@Override
-	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
-		if (rule instanceof ReminderRuleImpl) {
-			ReminderRuleImpl r = (ReminderRuleImpl)rule;
-			Translator translator = Util.createPackageTranslator(ReminderAdminController.class, locale);
-			translator = Util.createPackageTranslator(FormBeforeDueDateRuleEditor.class, locale, translator);
-			String currentUnit = r.getRightUnit();
-			String currentValue = r.getRightOperand();
-			String nodeIdent = r.getLeftOperand();
-			
-			try {
-				LaunchUnit.valueOf(currentUnit);
-			} catch (Exception e) {
-				return null;
-			}
-			
-			ICourse course = CourseFactory.loadCourse(entry);
-			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
-			if (courseNode == null) {
-				courseNode = course.getEditorTreeModel().getCourseNode(nodeIdent);
-				if (courseNode == null) {
-					return null;
-				}
-			}
-			
-			Date dueDate = courseNode.getModuleConfiguration().getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
-			
-			String deadline = dueDate != null
-					? Formatter.getInstance(locale).formatDateAndTime(dueDate)
-					: translator.translate("missing.value");
-			String[] args = new String[] { courseNode.getShortTitle(), courseNode.getIdent(), currentValue, deadline };
-			return translator.translate("rule.participation." + currentUnit, args);
-		}
-		return null;
+	protected String getStaticTextPrefix() {
+		return "rule.participation.";
 	}
 
 	@Override
@@ -132,42 +86,18 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements 
 	}
 	
 	@Override
-	public List<Identity> evaluate(RepositoryEntry entry, ReminderRule rule) {
-		List<Identity> identities = null;
-		if(rule instanceof ReminderRuleImpl) {
-			ReminderRuleImpl r = (ReminderRuleImpl)rule;
-			String nodeIdent = r.getLeftOperand();
-	
-			ICourse course = CourseFactory.loadCourse(entry);
-			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
-			if(courseNode instanceof FormCourseNode) {
-				FormCourseNode formCourseNode = (FormCourseNode)courseNode;
-				Date dueDate = courseNode.getModuleConfiguration().getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
-				if(dueDate != null && isNear(dueDate, now(), r)) {
-					identities = getIndividualsToRemind(entry, formCourseNode);
-				}
-			}
-		}
-		return identities == null ? Collections.<Identity>emptyList() : identities;
-	}
-	
-	protected List<Identity> getIndividualsToRemind(RepositoryEntry courseEntry, FormCourseNode formCourseNode) {
-		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(formCourseNode, courseEntry);
+	protected List<Identity> getPeopleToRemind(RepositoryEntry courseEntry, CourseNode courseNode) {
+		EvaluationFormSurveyIdentifier surveyIdent = formManager.getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdent);
 		List<Identity> participants = formManager.getParticipations(survey, EvaluationFormParticipationStatus.done, true).stream()
 				.map(EvaluationFormParticipation::getExecutor)
 				.collect(Collectors.toList());
 		
-		ICourse course = CourseFactory.loadCourse(courseEntry);
-		List<Long> excludedIdentityKeys = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())
-			? assessmentService.getIdentityKeys(courseEntry, formCourseNode.getIdent(), AssessmentObligation.EXCLUDED)
-			: Collections.emptyList();
-		
 		List<Identity> identities = repositoryEntryRelationDao.getMembers(courseEntry, RepositoryEntryRelationType.all,
 				GroupRoles.participant.name());
 		for(Iterator<Identity> identityIt=identities.iterator(); identityIt.hasNext(); ) {
 			Identity identity = identityIt.next();
-			if(participants.contains(identity) || excludedIdentityKeys.contains(identity.getKey())) {
+			if(participants.contains(identity)) {
 				identityIt.remove();
 			}
 		}
@@ -182,6 +112,15 @@ public class FormParticipationRuleSPI extends AbstractDueDateRuleSPI implements 
 			return r.getLeftOperand();
 		}
 		return null;
+	}
+
+	@Override
+	protected DueDateConfig getDueDateConfig(CourseNode courseNode) {
+		if (courseNode instanceof FormCourseNode) {
+			FormCourseNode formCourseNode = (FormCourseNode)courseNode;
+			return formCourseNode.getDueDateConfig(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
+		}
+		return DueDateConfig.noDueDateConfig();
 	}
 
 }

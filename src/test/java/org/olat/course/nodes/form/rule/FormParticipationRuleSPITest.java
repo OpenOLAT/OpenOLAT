@@ -62,7 +62,7 @@ public class FormParticipationRuleSPITest extends OlatTestCase {
 	private FormParticipationRuleSPI sut;
 	
 	@Test
-	public void shoudGetIndividualsToRemind() {
+	public void shoudGetPeopleToRemind() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
 		RepositoryEntry courseEntryOther = JunitTestHelper.deployBasicCourse(author);
@@ -99,7 +99,7 @@ public class FormParticipationRuleSPITest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		
-		List<Identity> individualsToRemind = sut.getIndividualsToRemind(courseEntry, courseNode);
+		List<Identity> individualsToRemind = sut.getPeopleToRemind(courseEntry, courseNode);
 		
 		assertThat(individualsToRemind).containsExactlyInAnyOrder(
 					participantInProgress,

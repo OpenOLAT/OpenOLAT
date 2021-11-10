@@ -316,7 +316,7 @@ public class UserDisadvantageCompensationEditController extends FormBasicControl
 			if(node instanceof IQTESTCourseNode) {
 				IQTESTCourseNode testNode = (IQTESTCourseNode)node;
 				RepositoryEntry testEntry = testNode.getCachedReferencedRepositoryEntry();
-				if(testNode.hasQTI21TimeLimit(testEntry)) {
+				if(testNode.hasQTI21TimeLimit(testEntry, selectedEntry, getIdentity())) {
 					StringBuilder sb = new StringBuilder(32);
 					sb.append(testNode.getShortTitle())
 					  .append(" (").append(testNode.getIdent()).append(")");

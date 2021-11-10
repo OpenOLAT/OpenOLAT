@@ -20,6 +20,8 @@
 package org.olat.course.learningpath.evaluation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.olat.modules.assessment.model.AssessmentObligation.mandatory;
 import static org.olat.modules.assessment.model.AssessmentObligation.optional;
 
@@ -29,6 +31,10 @@ import java.util.GregorianCalendar;
 
 import org.junit.Test;
 import org.olat.core.util.DateUtils;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.manager.RelativeDateServiceImpl;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.st.assessment.SequentialBlocker;
@@ -48,27 +54,39 @@ public class ConfigEndDateEvaluatorTest {
 	
 	@Test
 	public void shouldGetConfigDate() {
+		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
+		LearningPathService learningPathService = mock(LearningPathService.class);
+		sut.setLearningPathService(learningPathService);
+		sut.setDueDateService(new RelativeDateServiceImpl());
+		
 		Date configDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
 		CourseNode courseNode = new SPCourseNode();
+		LearningPathConfigs lpConfigs = lpConfigs(configDate);
+		when(learningPathService.getConfigs(courseNode)).thenReturn(lpConfigs);
 		AssessmentEvaluation currentEvaluation = createEvaluation(mandatory);
 
-		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator(cn -> configDate);
-		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new SequentialBlocker(AssessmentObligation.mandatory));
+		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, null, null, new SequentialBlocker(AssessmentObligation.mandatory));
 		
 		assertThat(endDate.getCurrent()).isEqualTo(configDate);
 	}
 	
 	@Test
 	public void shouldGetOverridenDate() {
+		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
+		LearningPathService learningPathService = mock(LearningPathService.class);
+		sut.setLearningPathService(learningPathService);
+		sut.setDueDateService(new RelativeDateServiceImpl());
+		
 		Date configDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
 		Date overriddenDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
 		CourseNode courseNode = new SPCourseNode();
+		LearningPathConfigs lpConfigs = lpConfigs(configDate);
+		when(learningPathService.getConfigs(courseNode)).thenReturn(lpConfigs);
 		AssessmentEvaluation currentEvaluation = createEvaluation(mandatory);
 		currentEvaluation.getEndDate().setCurrent(configDate);
 		currentEvaluation.getEndDate().override(overriddenDate, null, null);
 
-		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator(cn -> configDate);
-		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new SequentialBlocker(AssessmentObligation.mandatory));
+		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, null, null, new SequentialBlocker(AssessmentObligation.mandatory));
 		
 		assertThat(endDate.getCurrent()).isEqualTo(overriddenDate);
 		assertThat(endDate.getOriginal()).isEqualTo(configDate);
@@ -76,15 +94,21 @@ public class ConfigEndDateEvaluatorTest {
 	
 	@Test
 	public void shouldGetNoDateIfOptional() {
+		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
+		LearningPathService learningPathService = mock(LearningPathService.class);
+		sut.setLearningPathService(learningPathService);
+		sut.setDueDateService(new RelativeDateServiceImpl());
+		
 		Date configDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
 		Date overriddenDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
 		CourseNode courseNode = new SPCourseNode();
+		LearningPathConfigs lpConfigs = lpConfigs(configDate);
+		when(learningPathService.getConfigs(courseNode)).thenReturn(lpConfigs);
 		AssessmentEvaluation currentEvaluation = createEvaluation(optional);
 		currentEvaluation.getEndDate().setCurrent(configDate);
 		currentEvaluation.getEndDate().override(overriddenDate, null, null);
 		
-		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator(cn -> configDate);
-		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, new SequentialBlocker(AssessmentObligation.mandatory));
+		Overridable<Date> endDate = sut.getEndDate(currentEvaluation, courseNode, null, null, new SequentialBlocker(AssessmentObligation.mandatory));
 		
 		assertThat(endDate.getCurrent()).isNull();
 		assertThat(endDate.getOriginal()).isNull();
@@ -154,6 +178,13 @@ public class ConfigEndDateEvaluatorTest {
 		sut.evaluateBlocker(null, configDateOver, blocker);
 		
 		assertThat(blocker.isBlocked()).isTrue();
+	}
+	
+	private LearningPathConfigs lpConfigs(Date endDate) {
+		DueDateConfig dueDateConfig = DueDateConfig.absolute(endDate);
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.getEndDateConfig()).thenReturn(dueDateConfig);
+		return configs;
 	}
 	
 	private AssessmentEvaluation createEvaluation(AssessmentObligation obligation) {

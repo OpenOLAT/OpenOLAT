@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.reminder.model.ReminderRow;
 import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.model.BusinessGroupReference;
@@ -744,10 +745,10 @@ public class CopyCourseContext {
 		if (getCourseNodesMap() != null) {
 			CopyCourseOverviewRow overviewRow = getCourseNodesMap().get(courseNodeIdent);
 			
-			if (overviewRow.getNewStartDate() != null && overviewRow.getStart() != null) {
-				dateDifference = overviewRow.getNewStartDate().getTime() - overviewRow.getStart().getTime();
-			} else if (overviewRow.getNewEndDate() != null && overviewRow.getEnd() != null) {
-				dateDifference = overviewRow.getNewEndDate().getTime() - overviewRow.getEnd().getTime();
+			if (overviewRow.getNewStartDate() != null && DueDateConfig.isAbsolute(overviewRow.getStart())) {
+				dateDifference = overviewRow.getNewStartDate().getTime() - overviewRow.getStart().getAbsoluteDate().getTime();
+			} else if (overviewRow.getNewEndDate() != null && DueDateConfig.isAbsolute(overviewRow.getEnd())) {
+				dateDifference = overviewRow.getNewEndDate().getTime() - overviewRow.getEnd().getAbsoluteDate().getTime();
 			}
 		} 
 		

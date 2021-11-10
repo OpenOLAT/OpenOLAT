@@ -19,10 +19,10 @@
  */
 package org.olat.course.learningpath;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -57,13 +57,17 @@ public interface LearningPathConfigs {
 	
 	public void setExceptionalObligations(List<ExceptionalObligation> exeptionalObligations);
 	
-	public Date getStartDate();
+	public boolean isRelativeDates();
 	
-	public void setStartDate(Date start);
+	public void setRelativeDates(boolean relativeDates);
 	
-	public Date getEndDate();
+	public DueDateConfig getStartDateConfig();
 	
-	public void setEndDate(Date end);
+	public void setStartDateConfig(DueDateConfig start);
+	
+	public DueDateConfig getEndDateConfig();
+	
+	public void setEndDateConfig(DueDateConfig end);
 	
 	public FullyAssessedTrigger getFullyAssessedTrigger();
 	

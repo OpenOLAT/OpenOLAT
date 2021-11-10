@@ -68,6 +68,7 @@ public class IQTESTNodeController extends StepFormBasicController {
 		if (moduleConfig == null) {
 			CourseNode courseNode = CourseNodeFactory.getInstance().getCourseNodeConfiguration(IQTESTCourseNode.TYPE).getInstance();
 			courseNode.updateModuleConfigDefaults(true, course.getRunStructure().getRootNode(), nodeAccessType);
+			context.setCourseNode(courseNode);
 			moduleConfig = courseNode.getModuleConfiguration();
 			moduleConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, true);
 			context.setModuleConfig(moduleConfig);
@@ -80,7 +81,7 @@ public class IQTESTNodeController extends StepFormBasicController {
 			IQEditController.setIQReference(testEntry, moduleConfig);
 			needManualCorrection = CoreSpringFactory.getImpl(QTI21Service.class).needManualCorrection(testEntry);
 		}
-		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, context, nodeAccessType, needManualCorrection, false);
+		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, entry, context, nodeAccessType, needManualCorrection, false);
 		listenTo(qti21EditForm);
 		
 		initForm(ureq);

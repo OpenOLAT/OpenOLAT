@@ -21,6 +21,7 @@ package org.olat.course.wizard;
 
 import java.util.Date;
 
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
@@ -37,6 +38,7 @@ public class IQTESTCourseNodeContext implements IQTESTCourseNodeDefaults, Assess
 	private String shortTitle;
 	private String description;
 	private RepositoryEntry referencedEntry;
+	private CourseNode courseNode;
 	private ModuleConfiguration moduleConfig;
 	private boolean enabled = true;
 	private Date begin;
@@ -83,6 +85,14 @@ public class IQTESTCourseNodeContext implements IQTESTCourseNodeDefaults, Assess
 	@Override
 	public void setReferencedEntry(RepositoryEntry referencedEntry) {
 		this.referencedEntry = referencedEntry;
+	}
+
+	public CourseNode getCourseNode() {
+		return courseNode;
+	}
+
+	public void setCourseNode(CourseNode courseNode) {
+		this.courseNode = courseNode;
 	}
 
 	@Override

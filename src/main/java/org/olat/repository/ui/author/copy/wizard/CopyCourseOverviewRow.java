@@ -21,7 +21,7 @@ package org.olat.repository.ui.author.copy.wizard;
 
 import java.util.Date;
 
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.course.editor.overview.OverviewRow;
 import org.olat.course.learningpath.LearningPathConfigs;
@@ -39,8 +39,8 @@ public class CopyCourseOverviewRow extends OverviewRow {
 	private LearningPathConfigs learningPathConfigs;
 	private Date newStartDate;
 	private Date newEndDate;
-	private DateChooser newStartDateChooser;
-	private DateChooser newEndDateChooser;
+	private FormItem newStartDateChooser;
+	private FormItem newEndDateChooser;
 	private AssessmentObligation assesssmentObligation;
 	private SingleSelection assessmentObligationChooser;
 	private CopyType resourceCopyType;
@@ -90,19 +90,18 @@ public class CopyCourseOverviewRow extends OverviewRow {
 		this.resourceCopyTypeChooser = resourceChooser;
 	}
 	
-	public DateChooser getNewEndDateChooser() {
+	public FormItem getNewEndDateChooser() {
 		return newEndDateChooser;
 	}
 	
-	public void setNewEndDateChooser(DateChooser newEndDateChooser) {
+	public void setNewEndDateChooser(FormItem newEndDateChooser) {
 		this.newEndDateChooser = newEndDateChooser;
 	}
-	
-	public DateChooser getNewStartDateChooser() {
+	public FormItem getNewStartDateChooser() {
 		return newStartDateChooser;
 	}
 	
-	public void setNewStartDateChooser(DateChooser newStartDateChooser) {
+	public void setNewStartDateChooser(FormItem newStartDateChooser) {
 		this.newStartDateChooser = newStartDateChooser;
 	}
 	

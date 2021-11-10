@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -54,12 +55,16 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.iq.IQDueDateConfig;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQTESTAssessmentConfig;
@@ -104,6 +109,7 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -188,15 +194,17 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	
 	/**
 	 * @param testEntry The test repository entry
+	 * @param courseEntry Thie course entry
+	 * @param identity 
 	 * @return true if the course node or the test has a time limit set.
 	 */
-	public boolean hasQTI21TimeLimit(RepositoryEntry testEntry) {
+	public boolean hasQTI21TimeLimit(RepositoryEntry testEntry, RepositoryEntry courseEntry, Identity identity) {
 		boolean timeLimit = false;
 		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
 			ModuleConfiguration config = getModuleConfiguration();
 			boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
 			if((!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0)
-					|| (config.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, false) && config.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE) != null)) {
+					|| (CoreSpringFactory.getImpl(DueDateService.class).getDueDate(getDueDateConfig(IQEditController.CONFIG_KEY_END_TEST_DATE), courseEntry, identity) != null)) {
 				timeLimit = true;
 			} else {
 				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
@@ -624,5 +632,26 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	public CourseNodeReminderProvider getReminderProvider(boolean rootNode) {
 		return new AssessmentReminderProvider(getIdent(), new IQTESTAssessmentConfig(this));
 	}
+	
+	@Override
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel() {
+		return IQDueDateConfig.getNodeSpecificDatesWithLabel(getModuleConfiguration());
+	}
 
+	@Override
+	public DueDateConfig getDueDateConfig(String key) {
+		DueDateConfig dueDateConfig = IQDueDateConfig.getDueDateConfig(getModuleConfiguration(), key);
+		if (dueDateConfig != null) {
+			return dueDateConfig;
+		}
+		return super.getDueDateConfig(key);
+	}
+
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course,
+			ICourse sourceCrourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+		IQDueDateConfig.postCopy(getIdent(), getModuleConfiguration(), context);
+	}
+	
 }

@@ -23,7 +23,6 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,9 +32,9 @@ import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -54,9 +53,15 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CompletionType;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
+import org.olat.course.duedate.ui.DueDateConfigFormItem;
+import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathEditConfigs;
@@ -80,6 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LearningPathNodeConfigController extends FormBasicController {	
 
+	private static final String[] ON_KEYS = new String[]{ "on" };
 	private static final String CMD_ADD_EXEPTIONAL_OBLIGATION = "add.exeptional.obligation";
 	
 	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = FullyAssessedTrigger.nodeVisited.name();
@@ -102,8 +108,9 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private FormLink showExceptionalObligationLink;
 	private FormLink hideExceptionalObligationLink;
-	private DateChooser startDateEl;
-	private DateChooser endDateEl;
+	private MultipleSelectionElement relativeDatesEl;
+	private DueDateConfigFormItem startDateEl;
+	private DueDateConfigFormItem endDateEl;
 	private TextElement durationEl;
 	private SingleSelection triggerEl;
 	private TextElement scoreCutEl;
@@ -116,21 +123,26 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	private final CourseNode courseNode;
 	private final LearningPathConfigs learningPathConfigs;
 	private final LearningPathEditConfigs editConfigs;
+	private final List<String> relativeToDates;
 	private AssessmentObligation selectedObligation;
 	private List<ExceptionalObligationRow> allRows;
 	
 	@Autowired
 	private LearningPathService learningPathService;
+	@Autowired
+	private DueDateService dueDateService;
 
 	public LearningPathNodeConfigController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			CourseNode courseNode, LearningPathEditConfigs editConfigs) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.courseEntry = courseEntry;
 		this.course = CourseFactory.loadCourse(courseEntry);
 		this.courseNode = courseNode;
 		CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
 		this.learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
 		this.editConfigs = editConfigs;
+		this.relativeToDates = dueDateService.getCourseRelativeToDateTypes(courseEntry);
 		this.selectedObligation = learningPathConfigs.getObligation() != null
 				? learningPathConfigs.getObligation()
 				: LearningPathConfigs.OBLIGATION_DEFAULT;
@@ -193,15 +205,25 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		hideExceptionalObligationLink.setCustomEnabledLinkCSS("o_button_toggle o_on");
 		hideExceptionalObligationLink.setIconRightCSS("o_icon o_icon_toggle");
 		
-		Date startDate = learningPathConfigs.getStartDate();
-		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);
-		startDateEl.setDateChooserTimeEnabled(true);
-		startDateEl.setHelpTextKey("config.start.date.help", null);
+		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", formLayout, ON_KEYS, new String[]{ "" });
+		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
+		relativeDatesEl.select(ON_KEYS[0], learningPathConfigs.isRelativeDates());
 		
-		Date endDate = learningPathConfigs.getEndDate();
-		endDateEl = uifactory.addDateChooser("config.end.date", endDate, formLayout);
-		endDateEl.setDateChooserTimeEnabled(true);
+		SelectionValues relativeToDatesKV = new SelectionValues();
+		DueDateConfigFormatter.create(getLocale()).addCourseRelativeToDateTypes(relativeToDatesKV, relativeToDates);
+		startDateEl = DueDateConfigFormItem.create("edit.participation.start", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), learningPathConfigs.getStartDateConfig());
+		startDateEl.setLabel("config.start.date", null);
+		startDateEl.setHelpTextKey("config.start.date.help", null);
+		formLayout.add(startDateEl);
+		
+		relativeToDatesKV = new SelectionValues();
+		DueDateConfigFormatter.create(getLocale()).addCourseRelativeToDateTypes(relativeToDatesKV, relativeToDates);
+		endDateEl = DueDateConfigFormItem.create("edit.participation.deadline", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), learningPathConfigs.getEndDateConfig());
+		endDateEl.setLabel("config.end.date", null);
 		endDateEl.setHelpTextKey("config.end.date.help", null);
+		formLayout.add(endDateEl);
 		
 		String duration = learningPathConfigs.getDuration() != null? learningPathConfigs.getDuration().toString(): null;
 		durationEl = uifactory.addTextElement("config.duration", 128, duration , formLayout);
@@ -276,6 +298,12 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		boolean triggerScore = triggerEl.isOneSelected() && triggerEl.getSelectedKey().equals(CONFIG_VALUE_TRIGGER_SCORE);
 		scoreCutEl.setVisible(triggerScore);
+	}
+	
+	private void updateDatesUI() {
+		boolean useRelativeDate = relativeDatesEl.isAtLeastSelected(1);
+		startDateEl.setRelative(useRelativeDate);
+		endDateEl.setRelative(useRelativeDate);
 	}
 	
 	private void updateExceptionalObligationsUI(boolean showExceptional) {
@@ -412,6 +440,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			updateExceptionalObligationsUI(true);
 		} else if (source == hideExceptionalObligationLink) {
 			updateExceptionalObligationsUI(false);
+		} else if(relativeDatesEl == source) {
+			updateDatesUI();
 		} else if (source == triggerEl) {
 			updateUI();
 			markDirty();
@@ -473,12 +503,30 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		allOk &= validateInteger(durationEl, 1, 10000, isDurationMandatory(), "error.positiv.int");
 		allOk &= validateInteger(scoreCutEl, 0, 10000, true, "error.positiv.int");
 		
-		if (startDateEl.getDate() != null && endDateEl.getDate() != null) {
-			Date start = startDateEl.getDate();
-			Date end = endDateEl.getDate();
-			if(end.before(start)) {
-				endDateEl.setErrorKey("error.start.after.end", null);
+		startDateEl.clearError();
+		List<ValidationStatus> startDateValidation = new ArrayList<>(1);
+		startDateEl.validate(startDateValidation);
+		if (!startDateValidation.isEmpty()) {
+			allOk &= false;
+		}
+		
+		endDateEl.clearError();
+		if (endDateEl.isVisible()) {
+			List<ValidationStatus> endDateValidation = new ArrayList<>(1);
+			endDateEl.validate(endDateValidation);
+			if (!endDateValidation.isEmpty()) {
 				allOk &= false;
+			}
+			
+			if (startDateValidation.isEmpty() && endDateValidation.isEmpty()) {
+				DueDateConfig startDateConfig = startDateEl.getDueDateConfig();
+				DueDateConfig endDateConfig = endDateEl.getDueDateConfig();
+				if (startDateConfig.getAbsoluteDate() != null && endDateConfig.getAbsoluteDate() != null) {
+					if(endDateConfig.getAbsoluteDate().before(startDateConfig.getAbsoluteDate())) {
+						endDateEl.setErrorKey("error.start.after.end", null);
+						allOk &= false;
+					}
+				}
 			}
 		}
 		
@@ -531,14 +579,14 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		loadExceptionalObligations();
 		updateExceptionalObligationsUI((Boolean)obligationCont.contextGet("exceptional"));
 		
-		Date startDate = startDateEl.getDate();
-		learningPathConfigs.setStartDate(startDate);
+		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
+		learningPathConfigs.setRelativeDates(relativeDates);
 		
-		if (!endDateEl.isVisible()) {
-			endDateEl.setValue(null);
-		}
-		Date endDate = endDateEl.getDate();
-		learningPathConfigs.setEndDate(endDate);
+		DueDateConfig startDateConfig = startDateEl.getDueDateConfig();
+		learningPathConfigs.setStartDateConfig(startDateConfig);
+		
+		DueDateConfig endDateConfig = endDateEl.isVisible()? endDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		learningPathConfigs.setEndDateConfig(endDateConfig);
 		
 		Integer duration = StringHelper.containsNonWhitespace(durationEl.getValue())
 				? Integer.valueOf(durationEl.getValue())

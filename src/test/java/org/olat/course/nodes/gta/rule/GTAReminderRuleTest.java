@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
@@ -36,17 +37,16 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
+import org.olat.course.duedate.DueDateService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
-import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.manager.GTAManagerImpl;
@@ -252,9 +252,10 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		// create a fake node
 		GTACourseNode node = new GTACourseNode();
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_ASSIGNMENT, true);
 		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_RELATIVE_DATES, true);
 		node.getModuleConfiguration().setIntValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, 15);
-		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO, GTARelativeToDates.enrollment.name());
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO, DueDateService.TYPE_ENROLLMENT);
 		
 		// need the task list
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
@@ -345,9 +346,10 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		// create a fake node
 		GTACourseNode node = new GTACourseNode();
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_ASSIGNMENT, true);
 		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_RELATIVE_DATES, true);
 		node.getModuleConfiguration().setIntValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, 40);
-		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO, GTARelativeToDates.courseLaunch.name());
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO, DueDateService.TYPE_COURSE_LAUNCH);
 		
 		// need the task list
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
@@ -524,9 +526,10 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		//create a fake node with a relative submit deadline 15 days after the start of the course
 		GTACourseNode node = new GTACourseNode();
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_SUBMIT, true);
 		node.getModuleConfiguration().setBooleanEntry(GTACourseNode.GTASK_RELATIVE_DATES, true);
 		node.getModuleConfiguration().setIntValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, 15);
-		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO, GTARelativeToDates.courseStart.name());
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO, DueDateService.TYPE_COURSE_START);
 
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		Assert.assertNotNull(tasks);

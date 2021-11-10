@@ -154,7 +154,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 		changeCPButton = LinkFactory.createButtonSmall("command.changecp", cpConfigurationVc, this);
 		changeCPButton.setElementCssClass("o_sel_scorm_change_repofile");
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config, course);
 		listenTo(highScoreNodeConfigController);
 		
 		DeliveryOptions parentConfig = null;

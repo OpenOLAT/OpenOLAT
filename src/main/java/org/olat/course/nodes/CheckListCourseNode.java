@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -61,6 +62,7 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -684,22 +686,11 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public List<Map.Entry<String, Date>> getNodeSpecificDatesWithLabel() {
-		ModuleConfiguration config = getModuleConfiguration();
-		List<Map.Entry<String, Date>> datesWithLabel = new ArrayList<>();
-		
-		Date dueDate = config.getDateValue(CONFIG_KEY_DUE_DATE);
-		Date closeAfterDueDate = config.getDateValue(CONFIG_KEY_CLOSE_AFTER_DUE_DATE);
-		
-		if (dueDate != null) {
-			datesWithLabel.add(Map.entry("checklist.duedate", dueDate));
-		}
-		
-		if (closeAfterDueDate != null) {
-			datesWithLabel.add(Map.entry("checklist.close.after.duedate", closeAfterDueDate));
-		}
-		
-		return datesWithLabel;
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel() {
+		return List.of(
+				Map.entry("checklist.duedate", DueDateConfig.absolute(getModuleConfiguration().getDateValue(CONFIG_KEY_DUE_DATE))),
+				Map.entry("checklist.close.after.duedate", DueDateConfig.absolute(getModuleConfiguration().getDateValue(CONFIG_KEY_CLOSE_AFTER_DUE_DATE)))
+			);
 	}
 	
 }

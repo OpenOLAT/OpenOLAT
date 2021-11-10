@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,16 +37,16 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.noderight.NodeRight;
 import org.olat.course.noderight.NodeRightGrant;
-import org.olat.course.noderight.NodeRightService;
 import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.manager.NodeRightServiceImpl;
 import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 23.07.2021<br>
@@ -54,36 +55,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseNodeDatesListController extends FormBasicController {
 
+	private final DueDateConfigFormatter dueDateConfigFormatter;
+	
+	private final CopyCourseContext context;
 	private CourseNode courseNode;
-	private CopyCourseContext context;
-	
-	private List<DateChooser> innerDatesList;
-	private List<DateChooser> highscoreDatesList;
-	private List<DateChooser> userRightsDatesList;
-	
-	@Autowired
-	NodeRightService nodeRightService;
 	
 	public CourseNodeDatesListController(UserRequest ureq, WindowControl wControl, CopyCourseContext context) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(NodeRightsController.class, getLocale(), getTranslator()));
-		
 		this.context = context;
-		
-		innerDatesList = new ArrayList<>();
-		highscoreDatesList = new ArrayList<>();
-		userRightsDatesList = new ArrayList<>();
+		this.dueDateConfigFormatter = DueDateConfigFormatter.create(getLocale());
 	}	
 	
 	public void updateCourseNode(CourseNode courseNode, UserRequest ureq) {
 		this.courseNode = courseNode;
-		
-		this.innerDatesList.clear();
-		this.highscoreDatesList.clear();
-		this.userRightsDatesList.clear();
-		
 		this.flc.removeAll();
 		
 		initForm(ureq);
@@ -110,24 +96,23 @@ public class CourseNodeDatesListController extends FormBasicController {
 		long dateDifference = context.getDateDifference(courseNode.getIdent());
 		
 		// Load course node dependant dates
-		if (!courseNode.getNodeSpecificDatesWithLabel().isEmpty()) {
+		if (courseNode.getNodeSpecificDatesWithLabel().stream().map(Entry::getValue).anyMatch(DueDateConfig::isDueDate)) {
 			FormLayoutContainer courseNodeDatesLayout = FormLayoutContainer.createDefaultFormLayout("courseNodeDatesLayout", getTranslator());
 			courseNodeDatesLayout.setRootForm(mainForm);
 			courseNodeDatesLayout.setFormTitle(translate("course.node.dates"));
 			formLayout.add(courseNodeDatesLayout);
 			
-			for (Map.Entry<String, Date> innerDate : courseNode.getNodeSpecificDatesWithLabel()) {
-				Date date = innerDate.getValue();
+			for (Entry<String, DueDateConfig> innerDate : courseNode.getNodeSpecificDatesWithLabel()) {
+				DueDateConfig dueDateConfig = innerDate.getValue();
 				
-				if (date != null) {
-					date.setTime(date.getTime() + dateDifference);
+				if (DueDateConfig.isRelative(dueDateConfig)) {
+					uifactory.addStaticTextElement(innerDate.getKey(), dueDateConfigFormatter.formatRelativDateConfig(dueDateConfig), courseNodeDatesLayout);
+				} else if(DueDateConfig.isAbsolute(dueDateConfig)) {
+					Date movedDate = new Date(dueDateConfig.getAbsoluteDate().getTime() + dateDifference);
+					DateChooser dateChooser = uifactory.addDateChooser(innerDate.getKey(), movedDate, courseNodeDatesLayout);
+					dateChooser.setDateChooserTimeEnabled(true);
+					dateChooser.setEnabled(false);
 				}
-				
-				DateChooser dateChooser = uifactory.addDateChooser(innerDate.getKey(), date, courseNodeDatesLayout);
-				dateChooser.setDateChooserTimeEnabled(true);
-				dateChooser.setEnabled(false);
-				
-				innerDatesList.add(dateChooser);
 			}
 		}
 		
@@ -135,21 +120,20 @@ public class CourseNodeDatesListController extends FormBasicController {
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		
 		// Load potential highscore data
-		Date highScorePublicationDate = config.getDateValue(HighScoreEditController.CONFIG_KEY_DATESTART);
-		
-		if (highScorePublicationDate != null) {
+		DueDateConfig startDateConfig = courseNode.getDueDateConfig(HighScoreEditController.CONFIG_KEY_DATESTART);
+		if (DueDateConfig.isDueDate(startDateConfig)) {
 			FormLayoutContainer highScoreDatesLayout = FormLayoutContainer.createDefaultFormLayout("highScoreDatesLayout", getTranslator());
 			highScoreDatesLayout.setRootForm(mainForm);
 			highScoreDatesLayout.setFormTitle(translate("course.node.highscore.dates"));
 			formLayout.add(highScoreDatesLayout);
-			
-			highScorePublicationDate.setTime(highScorePublicationDate.getTime() + dateDifference);
-			
-			DateChooser highScoreChooser = uifactory.addDateChooser("highscore.date.start", highScorePublicationDate, highScoreDatesLayout);
-			highScoreChooser.setDateChooserTimeEnabled(true);
-			highScoreChooser.setEnabled(false);
-			
-			highscoreDatesList.add(highScoreChooser);
+			if (DueDateConfig.isRelative(startDateConfig)) {
+				uifactory.addStaticTextElement("highscore.date.start", dueDateConfigFormatter.formatRelativDateConfig(startDateConfig), highScoreDatesLayout);
+			} else if (DueDateConfig.isAbsolute(startDateConfig)) {
+				Date highScorePublicationDate = new Date(startDateConfig.getAbsoluteDate().getTime() + dateDifference);
+				DateChooser highScoreChooser = uifactory.addDateChooser("highscore.date.start", highScorePublicationDate, highScoreDatesLayout);
+				highScoreChooser.setDateChooserTimeEnabled(true);
+				highScoreChooser.setEnabled(false);
+			}
 		}
 				
 		// Load potential user rights
@@ -163,7 +147,7 @@ public class CourseNodeDatesListController extends FormBasicController {
 		}
 		
 		// Create map for easier handling
-		Map<String, NodeRightType> nodeRightTypesMap = nodeRightTypes.stream().collect(Collectors.toMap(type -> type.getIdentifier(), Function.identity()));
+		Map<String, NodeRightType> nodeRightTypesMap = nodeRightTypes.stream().collect(Collectors.toMap(NodeRightType::getIdentifier, Function.identity()));
 		Map<NodeRightType, List<NodeRightGrant>> nodeRightGrants = new HashMap<>();
 		
 		for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
@@ -243,8 +227,6 @@ public class CourseNodeDatesListController extends FormBasicController {
 				
 				userRightDate.setDate(start);
 				userRightDate.setSecondDate(end);
-				
-				userRightsDatesList.add(userRightDate);
 			}
 		}
 	}

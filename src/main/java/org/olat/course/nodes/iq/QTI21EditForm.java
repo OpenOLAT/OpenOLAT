@@ -22,12 +22,13 @@ package org.olat.course.nodes.iq;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -42,9 +43,16 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
+import org.olat.course.duedate.ui.DueDateConfigFormItem;
+import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.wizard.AssessmentModeDefaults;
 import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.fileresource.FileResourceManager;
@@ -94,20 +102,16 @@ public class QTI21EditForm extends FormBasicController {
 	private final String ASSESSMENT_MODE_AUTO = "auto";
 	private final String ASSESSMENT_MODE_MANUAL = "manual";
 	private final String ASSESSMENT_MODE_NONE = "none";
-
+	private SelectionValues relativeToDatesKV;
+	
 	private SingleSelection correctionModeEl;
 	private SingleSelection scoreVisibilityAfterCorrectionEl;
 	private SingleSelection showResultsDateDependentEl;
 	private MultipleSelectionElement scoreInfo;
-	private DateChooser generalEndDateElement;
-	private DateChooser generalStartDateElement;
-	private DateChooser failedEndDateElement;
-	private DateChooser failedStartDateElement;
-	private DateChooser passedEndDateElement;
-	private DateChooser passedStartDateElement;
+	private MultipleSelectionElement relativeDatesEl;
 	private MultipleSelectionElement testDateDependentEl;
-	private DateChooser startTestDateElement;
-	private DateChooser endTestDateElement;
+	private DueDateConfigFormItem testStartDateEl;
+	private DueDateConfigFormItem testEndDateEl;
 	private SingleSelection assessmentModeEl;
 	private IntegerElement leadTimeEl;
 	private IntegerElement followupTimeEl;
@@ -117,11 +121,18 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement assessmentResultsOnFinishEl;
+	private DueDateConfigFormItem resultStartDateEl;
+	private DueDateConfigFormItem resultEndDateEl;
+	private DueDateConfigFormItem resultFailedStartDateEl;
+	private DueDateConfigFormItem resultFailedEndDateEl;
+	private DueDateConfigFormItem resultPassedStartDateEl;
+	private DueDateConfigFormItem resultPassedEndDateEl;
 	private FormLayoutContainer reportLayout;
 	private FormLayoutContainer testLayout;
 	
 	private final boolean selfAssessment;
 	private final boolean needManualCorrection;
+	private final CourseNode courseNode;
 	private final ModuleConfiguration modConfig;
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private final QTI21DeliveryOptions deliveryOptions;
@@ -135,13 +146,17 @@ public class QTI21EditForm extends FormBasicController {
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
+	private DueDateService dueDateService;
+	@Autowired
 	private NodeAccessService nodeAccessService;
 	
-	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,
-			NodeAccessType nodeAccessType, QTI21DeliveryOptions deliveryOptions,
-			boolean needManualCorrection, boolean selfAssessment) {
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			CourseNode courseNode, NodeAccessType nodeAccessType,
+			QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection, boolean selfAssessment) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.modConfig = modConfig;
+		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
+		this.courseNode = courseNode;
+		this.modConfig = courseNode.getModuleConfiguration();
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
 		this.needManualCorrection = needManualCorrection;
@@ -149,12 +164,15 @@ public class QTI21EditForm extends FormBasicController {
 		this.wizard = false;
 		this.assessmentModeDefaults = null;
 		initDateValues();
+		initRelativeToDateKV(courseEntry);
 		initForm(ureq);
 	}
 
-	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, IQTESTCourseNodeContext context,
-			NodeAccessType nodeAccessType, boolean needManualCorrection, boolean selfAssessment) {
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, RepositoryEntry courseEntry,
+			IQTESTCourseNodeContext context, NodeAccessType nodeAccessType, boolean needManualCorrection, boolean selfAssessment) {
 		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
+		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
+		this.courseNode = context.getCourseNode();
 		this.modConfig = context.getModuleConfig();
 		this.assessmentModeDefaults = context;
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
@@ -163,6 +181,7 @@ public class QTI21EditForm extends FormBasicController {
 		this.selfAssessment = selfAssessment;
 		this.wizard = true;
 		initDateValues();
+		initRelativeToDateKV(courseEntry);
 		initForm(ureq);
 	}
 
@@ -170,6 +189,12 @@ public class QTI21EditForm extends FormBasicController {
 		for (int i = 0; i < dateKeys.length; i++) {
 			dateValues[i] = translate(dateBase + dateKeys[i]);
 		}
+	}
+	
+	private void initRelativeToDateKV(RepositoryEntry courseEntry) {
+		relativeToDatesKV = new SelectionValues();
+		List<String> relativeToDates = dueDateService.getCourseRelativeToDateTypes(courseEntry);
+		DueDateConfigFormatter.create(getLocale()).addCourseRelativeToDateTypes(relativeToDatesKV, relativeToDates);
 	}
 
 	@Override
@@ -218,26 +243,32 @@ public class QTI21EditForm extends FormBasicController {
 		ignoreInCourseAssessmentEl.select(ignoreInCourseAssessmentEl.getKey(0), ignoreInCourseAssessment);
 		ignoreInCourseAssessmentEl.setVisible(!wizard && ignoreInCourseAssessmentAvailable);
 		
+		relativeDatesEl = uifactory.addCheckboxesHorizontal("relative.dates", "relative.dates", formLayout, onKeys, onValues);
+		relativeDatesEl.addActionListener(FormEvent.ONCHANGE);
+		boolean useRelativeDates = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_RELATIVE_DATES);
+		relativeDatesEl.select(onKeys[0], useRelativeDates);
+		
 		boolean testDateDependent = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST);
 		testDateDependentEl = uifactory.addCheckboxesHorizontal("qti_datetest", "qti.form.test.date", formLayout, new String[]{"xx"}, new String[]{null});
 		testDateDependentEl.setElementCssClass("o_qti_21_datetest");
 		testDateDependentEl.select("xx", testDateDependent);
 		testDateDependentEl.setHelpTextKey("qti.form.test.date.help", null);
 		testDateDependentEl.addActionListener(FormEvent.ONCLICK);
-	
-		Date startTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE);
-		startTestDateElement = uifactory.addDateChooser("qti_form_start_test_date", "qti.form.date.start", startTestDate, formLayout);
-		startTestDateElement.setElementCssClass("o_qti_21_datetest_start");
-		startTestDateElement.setDateChooserTimeEnabled(true);
-		startTestDateElement.setMandatory(true);
-		startTestDateElement.addActionListener(FormEvent.ONCHANGE);
 		
-		Date endTestDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE);
-		endTestDateElement = uifactory.addDateChooser("qti_form_end_test_date", "qti.form.date.end", endTestDate, formLayout);
-		endTestDateElement.setElementCssClass("o_qti_21_datetest_end");
-		endTestDateElement.setDateChooserTimeEnabled(true);
-		endTestDateElement.setMandatory(wizard);
-		endTestDateElement.setDefaultValue(startTestDateElement);
+		testStartDateEl = DueDateConfigFormItem.create("qti.form.date.start", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_START_TEST_DATE));
+		testStartDateEl.setLabel("qti.form.date.start", null);
+		testStartDateEl.setElementCssClass("o_qti_21_datetest_start");
+		testStartDateEl.addActionListener(FormEvent.ONCHANGE);
+		testStartDateEl.setMandatory(true);
+		formLayout.add(testStartDateEl);
+	
+		testEndDateEl = DueDateConfigFormItem.create("qti.form.date.end", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_END_TEST_DATE));
+		testEndDateEl.setLabel("qti.form.date.end", null);
+		testEndDateEl.setElementCssClass("o_qti_21_datetest_end");
+		testEndDateEl.setMandatory(wizard);
+		formLayout.add(testEndDateEl);
 		
 		if (wizard) {
 			SelectionValues assessmentModeKV = new SelectionValues();
@@ -326,39 +357,39 @@ public class QTI21EditForm extends FormBasicController {
 		showResultsDateDependentEl.select(showResultOnHomePage ? showResultsDateDependent : "no", true);
 		showResultsDateDependentEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsDateDependentEl.setElementCssClass("o_sel_results_on_homepage");
+		
+		resultStartDateEl = DueDateConfigFormItem.create("qti.form.date.general.start", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
+		resultStartDateEl.setLabel("qti.form.date.start", null);
+		resultStartDateEl.setMandatory(true);
+		formLayout.add(resultStartDateEl);
 	
-		Date generalStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-		generalStartDateElement = uifactory.addDateChooser("qti_form__general_start_date", "qti.form.date.start", null, formLayout);
-		generalStartDateElement.setDateChooserTimeEnabled(true);
-		generalStartDateElement.setDate(generalStartDate);
-		generalStartDateElement.setMandatory(true);
+		resultEndDateEl = DueDateConfigFormItem.create("qti.form.date.general.end", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_END_DATE));
+		resultEndDateEl.setLabel("qti.form.date.end", null);
+		formLayout.add(resultEndDateEl);
 		
-		Date generalEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-		generalEndDateElement = uifactory.addDateChooser("qti_form_general_end_date", "qti.form.date.end", null, formLayout);
-		generalEndDateElement.setDateChooserTimeEnabled(true);
-		generalEndDateElement.setDate(generalEndDate);
+		resultFailedStartDateEl = DueDateConfigFormItem.create("qti.form.date.failed.start", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
+		resultFailedStartDateEl.setLabel("qti.form.date.failed.start", null);
+		resultFailedStartDateEl.setMandatory(true);
+		formLayout.add(resultFailedStartDateEl);
 		
-		Date failedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-		failedStartDateElement = uifactory.addDateChooser("qti_form_failed_start_date", "qti.form.date.failed.start", null, formLayout);
-		failedStartDateElement.setDateChooserTimeEnabled(true);
-		failedStartDateElement.setDate(failedStartDate);
-		failedStartDateElement.setMandatory(true);
+		resultFailedEndDateEl = DueDateConfigFormItem.create("qti.form.date.failed.end", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
+		resultFailedEndDateEl.setLabel("qti.form.date.end", null);
+		formLayout.add(resultFailedEndDateEl);
 		
-		Date failedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-		failedEndDateElement = uifactory.addDateChooser("qti_form_failed_end_date", "qti.form.date.end", null, formLayout);
-		failedEndDateElement.setDateChooserTimeEnabled(true);
-		failedEndDateElement.setDate(failedEndDate);
+		resultPassedStartDateEl = DueDateConfigFormItem.create("qti.form.date.passed.start", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
+		resultPassedStartDateEl.setLabel("qti.form.date.passed.start", null);
+		resultPassedStartDateEl.setMandatory(true);
+		formLayout.add(resultPassedStartDateEl);
 		
-		Date passedStartDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-		passedStartDateElement = uifactory.addDateChooser("qti_form_passed_start_date", "qti.form.date.passed.start", null, formLayout);
-		passedStartDateElement.setDateChooserTimeEnabled(true);
-		passedStartDateElement.setDate(passedStartDate);
-		passedStartDateElement.setMandatory(true);
-		
-		Date passedEndDate = modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-		passedEndDateElement = uifactory.addDateChooser("qti_form_passed_end_date", "qti.form.date.end", null, formLayout);
-		passedEndDateElement.setDateChooserTimeEnabled(true);
-		passedEndDateElement.setDate(passedEndDate);
+		resultPassedEndDateEl = DueDateConfigFormItem.create("qti.form.date.passed.end", relativeToDatesKV,
+				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
+		resultPassedEndDateEl.setLabel("qti.form.date.end", null);
+		formLayout.add(resultPassedEndDateEl);
 		
 		QTI21AssessmentResultsOptions resultsOptions = deliveryOptions.getAssessmentResultsOptions();
 		if(!QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT.equals(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
@@ -421,86 +452,55 @@ public class QTI21EditForm extends FormBasicController {
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		startTestDateElement.clearError();
-		if(testDateDependentEl.isSelected(0)) {
-			if(startTestDateElement.getDate() == null) {
-				startTestDateElement.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			} else if(endTestDateElement.getDate() != null && startTestDateElement.getDate().after(endTestDateElement.getDate())) {
-				startTestDateElement.setErrorKey("error.begin.after.end", null);
+		validateDueDateConfig(testStartDateEl, testEndDateEl);
+		validateDueDateConfig(resultStartDateEl, resultEndDateEl);
+		validateDueDateConfig(resultFailedStartDateEl, resultFailedEndDateEl);
+		validateDueDateConfig(resultPassedStartDateEl, resultPassedEndDateEl);
+		
+		return allOk;
+	}
+	
+	private boolean validateDueDateConfig(DueDateConfigFormItem startEl, DueDateConfigFormItem endEl) {
+		boolean allOk = true;
+		
+		List<ValidationStatus> validation = new ArrayList<>(1);
+		startEl.clearError();
+		endEl.clearError();
+		if(startEl.isVisible()) {
+			startEl.validate(validation);
+			if (!validation.isEmpty()) {
 				allOk &= false;
 			}
-		}
-		endTestDateElement.clearError();
-		if (wizard && testDateDependentEl.isSelected(0) && endTestDateElement.getDate() == null) {
-			endTestDateElement.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-
-		generalStartDateElement.clearError();
-		
-		switch (showResultsDateDependentEl.getSelectedKey()) {			
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
-			if(passedStartDateElement.getDate() == null) {
-				passedStartDateElement.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			} else if(passedEndDateElement.getDate() != null && passedStartDateElement.getDate().after(passedEndDateElement.getDate())) {
-				passedStartDateElement.setErrorKey("error.begin.after.end", null);
-				allOk &= false;
-			} else if (passedStartDateElement.getDate() != null && passedEndDateElement.getDate() != null && passedStartDateElement.getDate().equals(passedEndDateElement.getDate())) {
-				passedEndDateElement.setErrorKey("error.begin.end.same", null);
+			if (startEl.isMandatory() && !startEl.hasError() && !DueDateConfig.isDueDate(startEl.getDueDateConfig())) {
+				startEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
 			
-			if(failedStartDateElement.getDate() == null) {
-				failedStartDateElement.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			} else if(failedEndDateElement.getDate() != null && failedStartDateElement.getDate().after(failedEndDateElement.getDate())) {
-				failedStartDateElement.setErrorKey("error.begin.after.end", null);
-				allOk &= false;
-			} else if (failedStartDateElement.getDate() != null && failedEndDateElement.getDate() != null && failedStartDateElement.getDate().equals(failedEndDateElement.getDate())) {
-				failedEndDateElement.setErrorKey("error.begin.end.same", null);
+			
+			validation = new ArrayList<>(1);
+			endEl.validate(validation);
+			if (!validation.isEmpty()) {
 				allOk &= false;
 			}
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
-			if(failedStartDateElement.getDate() == null) {
-				failedStartDateElement.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			} else if(failedEndDateElement.getDate() != null && failedStartDateElement.getDate().after(failedEndDateElement.getDate())) {
-				failedStartDateElement.setErrorKey("error.begin.after.end", null);
-				allOk &= false;
-			} else if (failedStartDateElement.getDate() != null && failedEndDateElement.getDate() != null && failedStartDateElement.getDate().equals(failedEndDateElement.getDate())) {
-				failedEndDateElement.setErrorKey("error.begin.end.same", null);
+			
+			if (endEl.isMandatory() && !endEl.hasError() && !DueDateConfig.isDueDate(endEl.getDueDateConfig())) {
+				endEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
-			if(passedStartDateElement.getDate() == null) {
-				passedStartDateElement.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			} else if(passedEndDateElement.getDate() != null && passedStartDateElement.getDate().after(passedEndDateElement.getDate())) {
-				passedStartDateElement.setErrorKey("error.begin.after.end", null);
-				allOk &= false;
-			} else if (passedStartDateElement.getDate() != null && passedEndDateElement.getDate() != null && passedStartDateElement.getDate().equals(passedEndDateElement.getDate())) {
-				passedEndDateElement.setErrorKey("error.begin.end.same", null);
-				allOk &= false;
+			
+			if (!startEl.hasError() && !endEl.hasError()) {
+				DueDateConfig startDateConfig = startEl.getDueDateConfig();
+				DueDateConfig endDateConfig = endEl.getDueDateConfig();
+				if (startDateConfig.getAbsoluteDate() != null && endDateConfig.getAbsoluteDate() != null) {
+					if (endDateConfig.getAbsoluteDate().before(startDateConfig.getAbsoluteDate())) {
+						endEl.setErrorKey("error.begin.after.end", null);
+						allOk &= false;
+					} else if (endDateConfig.getAbsoluteDate().equals(startDateConfig.getAbsoluteDate())) {
+						endEl.setErrorKey("error.begin.end.same", null);
+						allOk &= false;
+					}
+				}
 			}
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
-			if(generalStartDateElement.getDate() == null) {
-				generalStartDateElement.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			} else if(generalEndDateElement.getDate() != null && generalStartDateElement.getDate().after(generalEndDateElement.getDate())) {
-				generalStartDateElement.setErrorKey("error.begin.after.end", null);
-				allOk &= false;
-			} else if (generalEndDateElement.getDate() != null && generalStartDateElement.getDate() != null && generalStartDateElement.getDate().equals(generalEndDateElement.getDate())) {
-				generalEndDateElement.setErrorKey("error.begin.end.same", null);
-				allOk &= false;
-			}
-			break;
-		default:
-			break;
 		}
 		
 		return allOk;
@@ -508,7 +508,7 @@ public class QTI21EditForm extends FormBasicController {
 
 	@Override
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source) {
+		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
 			update();
 		} else if(testDateDependentEl == source) {
 			if(testDateDependentEl.isAtLeastSelected(1)) {
@@ -517,8 +517,6 @@ public class QTI21EditForm extends FormBasicController {
 				update();
 				updateAssessmentModeVisibility();
 			}
-		} else if(startTestDateElement == source) {
-			updateEndTestDate();
  		} else if(correctionModeEl == source) {
 			updateScoreVisibility();
 		} else if (assessmentModeEl == source) {
@@ -549,103 +547,85 @@ public class QTI21EditForm extends FormBasicController {
 			}
 		}
 	}
-	
-	private void updateEndTestDate() {
-		if (endTestDateElement.isVisible() && endTestDateElement.getDate() == null) {
-			endTestDateElement.setDate(startTestDateElement.getDate());
-		}
-	}
 
 	private void update() {
+		boolean testDateDependend = testDateDependentEl.isVisible() && testDateDependentEl.isSelected(0);
+		testStartDateEl.setVisible(testDateDependend);
+		testEndDateEl.setVisible(testDateDependend);
+		
 		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isSelected(0) || !showResultsDateDependentEl.isSelected(0));
-		
-		resetDateChooser(generalStartDateElement);
-		resetDateChooser(generalEndDateElement);
-		resetDateChooser(failedStartDateElement);
-		resetDateChooser(failedEndDateElement);
-		resetDateChooser(passedStartDateElement);
-		resetDateChooser(passedEndDateElement);
-		
-		resetDateChooser(startTestDateElement, testDateDependentEl);
-		resetDateChooser(endTestDateElement, testDateDependentEl);
-
 		switch (showResultsDateDependentEl.getSelectedKey()) {
 		case "no":
-			generalStartDateElement.setVisible(false);
-			generalEndDateElement.setVisible(false);
-			failedStartDateElement.setVisible(false);
-			failedEndDateElement.setVisible(false);
-			passedStartDateElement.setVisible(false);
-			passedEndDateElement.setVisible(false);
+			resultStartDateEl.setVisible(false);
+			resultEndDateEl.setVisible(false);
+			resultFailedStartDateEl.setVisible(false);
+			resultFailedEndDateEl.setVisible(false);
+			resultPassedStartDateEl.setVisible(false);
+			resultPassedEndDateEl.setVisible(false);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
-			generalStartDateElement.setVisible(false);
-			generalEndDateElement.setVisible(false);
-			failedStartDateElement.setVisible(true);
-			failedStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
-			failedEndDateElement.setVisible(true);
-			failedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
-			passedStartDateElement.setVisible(true);
-			passedStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
-			passedEndDateElement.setVisible(true);
-			passedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
+			resultStartDateEl.setVisible(false);
+			resultEndDateEl.setVisible(false);
+			resultFailedStartDateEl.setVisible(true);
+			resultFailedEndDateEl.setVisible(true);
+			resultPassedStartDateEl.setVisible(true);
+			resultPassedEndDateEl.setVisible(true);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
-			generalStartDateElement.setVisible(false);
-			generalEndDateElement.setVisible(false);
-			failedStartDateElement.setVisible(true);
-			failedStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE));
-			failedEndDateElement.setVisible(true);
-			failedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE));
-			passedStartDateElement.setVisible(false);
-			passedEndDateElement.setVisible(false);
+			resultStartDateEl.setVisible(false);
+			resultEndDateEl.setVisible(false);
+			resultFailedStartDateEl.setVisible(true);
+			resultFailedEndDateEl.setVisible(true);
+			resultPassedStartDateEl.setVisible(false);
+			resultPassedEndDateEl.setVisible(false);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
-			generalStartDateElement.setVisible(false);
-			generalEndDateElement.setVisible(false);
-			failedStartDateElement.setVisible(false);
-			failedEndDateElement.setVisible(false);
-			passedStartDateElement.setVisible(true);
-			passedStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE));
-			passedEndDateElement.setVisible(true);
-			passedEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE));
+			resultStartDateEl.setVisible(false);
+			resultEndDateEl.setVisible(false);
+			resultFailedStartDateEl.setVisible(false);
+			resultFailedEndDateEl.setVisible(false);
+			resultPassedStartDateEl.setVisible(true);
+			resultPassedEndDateEl.setVisible(true);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
-			generalStartDateElement.setVisible(false);
-			generalEndDateElement.setVisible(false);
-			failedStartDateElement.setVisible(false);
-			failedEndDateElement.setVisible(false);
-			passedStartDateElement.setVisible(false);
-			passedEndDateElement.setVisible(false);
+			resultStartDateEl.setVisible(false);
+			resultEndDateEl.setVisible(false);
+			resultFailedStartDateEl.setVisible(false);
+			resultFailedEndDateEl.setVisible(false);
+			resultPassedStartDateEl.setVisible(false);
+			resultPassedEndDateEl.setVisible(false);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
-			generalStartDateElement.setVisible(true);
-			generalStartDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE));
-			generalEndDateElement.setVisible(true);
-			generalEndDateElement.setDate(modConfig.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE));
-			failedStartDateElement.setVisible(false);
-			failedEndDateElement.setVisible(false);
-			passedStartDateElement.setVisible(false);
-			passedEndDateElement.setVisible(false);
+			resultStartDateEl.setVisible(true);
+			resultEndDateEl.setVisible(true);
+			resultFailedStartDateEl.setVisible(false);
+			resultFailedEndDateEl.setVisible(false);
+			resultPassedStartDateEl.setVisible(false);
+			resultPassedEndDateEl.setVisible(false);
 			break;
 		default:
 			break;
 		}
-	}
-	
-	private void resetDateChooser(DateChooser dateElement, MultipleSelectionElement parentEl) {
-		dateElement.clearError();
-		if (!dateElement.isVisible()){
-			dateElement.setValue("");
-		}
-		dateElement.setVisible(parentEl.isVisible() && parentEl.isSelected(0));
-	}  
-	
-	private void resetDateChooser(DateChooser dateElement) {
-		dateElement.clearError();
-		if (!dateElement.isVisible()){
-			dateElement.setValue("");
-		}
+		
+		boolean hasDate = testStartDateEl.isVisible()
+				|| testEndDateEl.isVisible()
+				|| resultStartDateEl.isVisible()
+				|| resultEndDateEl.isVisible()
+				|| resultFailedStartDateEl.isVisible()
+				|| resultFailedEndDateEl.isVisible()
+				|| resultPassedStartDateEl.isVisible()
+				|| resultPassedEndDateEl.isVisible();
+		relativeDatesEl.setVisible(hasDate);
+		
+		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
+		testStartDateEl.setRelative(relativeDates);
+		testEndDateEl.setRelative(relativeDates);
+		resultStartDateEl.setRelative(relativeDates);
+		resultEndDateEl.setRelative(relativeDates);
+		resultFailedStartDateEl.setRelative(relativeDates);
+		resultPassedStartDateEl.setRelative(relativeDates);
+		testStartDateEl.setRelative(relativeDates);
+		resultPassedEndDateEl.setRelative(relativeDates);
 	}
 	
 	private void updateAssessmentResultsOnFinish(QTI21AssessmentResultsOptions resultsOptions) {
@@ -734,8 +714,17 @@ public class QTI21EditForm extends FormBasicController {
 		
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_DATE_DEPENDENT_TEST, testDateDependentEl.isSelected(0));
 		
-		modConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, startTestDateElement.getDate());
-		modConfig.setDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE, endTestDateElement.getDate());
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RELATIVE_DATES, relativeDatesEl.isAtLeastSelected(1));
+
+		DueDateConfig startTestConfig = testStartDateEl.isVisible()? testStartDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_START_TEST_DATE, startTestConfig.getAbsoluteDate());
+		modConfig.setIntValue(IQEditController.CONFIG_KEY_START_TEST_DATE_REL, startTestConfig.getNumOfDays());
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_START_TEST_DATE_REL_TO, startTestConfig.getRelativeToType());
+
+		DueDateConfig endTestConfig = testEndDateEl.isVisible()? testEndDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_END_TEST_DATE, endTestConfig.getAbsoluteDate());
+		modConfig.setIntValue(IQEditController.CONFIG_KEY_END_TEST_DATE_REL, endTestConfig.getNumOfDays());
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_END_TEST_DATE_REL_TO, endTestConfig.getRelativeToType());
 		
 		if(correctionModeEl.isOneSelected() && !selfAssessment) {
 			modConfig.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionModeEl.getSelectedKey());
@@ -749,56 +738,36 @@ public class QTI21EditForm extends FormBasicController {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESCOREINFO, scoreInfo.isSelected(0));
 		modConfig.setStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, showResultsDateDependentEl.getSelectedKey());
 		
-		switch (showResultsDateDependentEl.getSelectedKey()) {
-		case "no":
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, failedStartDateElement.getDate());
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, failedEndDateElement.getDate());
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, passedStartDateElement.getDate());
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, passedEndDateElement.getDate());
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
-			
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, failedStartDateElement.getDate());
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, failedEndDateElement.getDate());
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, passedStartDateElement.getDate());
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, passedEndDateElement.getDate());
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			modConfig.remove(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE, generalStartDateElement.getDate());
-			modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE, generalEndDateElement.getDate());
-			break;
-		default:
-			break;
-		}
+		DueDateConfig generalStartConfig = resultStartDateEl.isVisible()? resultStartDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE, generalStartConfig.getAbsoluteDate());
+		modConfig.setIntValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE_REL, generalStartConfig.getNumOfDays());
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE_REL_TO, generalStartConfig.getRelativeToType());
 		
+		DueDateConfig generalEndConfig = resultEndDateEl.isVisible()? resultEndDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE, generalEndConfig.getAbsoluteDate());
+		modConfig.setIntValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE_REL, generalEndConfig.getNumOfDays());
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE_REL_TO, generalEndConfig.getRelativeToType());
+		
+		DueDateConfig failedStartConfig = resultFailedStartDateEl.isVisible()? resultFailedStartDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE, failedStartConfig.getAbsoluteDate());
+		modConfig.setIntValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE_REL, failedStartConfig.getNumOfDays());
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE_REL_TO, failedStartConfig.getRelativeToType());
+		
+		DueDateConfig failedEndConfig = resultFailedEndDateEl.isVisible()? resultFailedEndDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE, failedEndConfig.getAbsoluteDate());
+		modConfig.setIntValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE_REL, failedEndConfig.getNumOfDays());
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE_REL_TO, failedEndConfig.getRelativeToType());
+		
+		DueDateConfig passedStartConfig = resultPassedStartDateEl.isVisible()? resultPassedStartDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE, passedStartConfig.getAbsoluteDate());
+		modConfig.setIntValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE_REL, passedStartConfig.getNumOfDays());
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE_REL_TO, passedStartConfig.getRelativeToType());
+		
+		DueDateConfig passedEndConfig = resultPassedEndDateEl.isVisible()? resultPassedEndDateEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		modConfig.setDateValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE, passedEndConfig.getAbsoluteDate());
+		modConfig.setIntValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE_REL, passedEndConfig.getNumOfDays());
+		modConfig.setStringValue(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE_REL_TO, passedEndConfig.getRelativeToType());
+
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE, !showResultsDateDependentEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH, showResultsOnFinishEl.isSelected(0));
 		

@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -46,11 +47,14 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.iq.IQDueDateConfig;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -71,6 +75,7 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
 
 /**
@@ -312,6 +317,27 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
+	}
+	
+	@Override
+	public List<Entry<String, DueDateConfig>> getNodeSpecificDatesWithLabel() {
+		return IQDueDateConfig.getNodeSpecificDatesWithLabel(getModuleConfiguration());
+	}
+
+	@Override
+	public DueDateConfig getDueDateConfig(String key) {
+		DueDateConfig dueDateConfig = IQDueDateConfig.getDueDateConfig(getModuleConfiguration(), key);
+		if (dueDateConfig != null) {
+			return dueDateConfig;
+		}
+		return super.getDueDateConfig(key);
+	}
+
+	@Override
+	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course,
+			ICourse sourceCrourse, CopyCourseContext context) {
+		super.postCopy(envMapper, processType, course, sourceCrourse, context);
+		IQDueDateConfig.postCopy(getIdent(), getModuleConfiguration(), context);
 	}
 
 }

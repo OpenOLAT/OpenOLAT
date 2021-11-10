@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.nodes.FormCourseNode;
 import org.olat.course.reminder.CourseNodeReminderProvider;
-import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -36,12 +36,12 @@ import org.olat.modules.ModuleConfiguration;
 public class FormReminderProvider implements CourseNodeReminderProvider {
 	
 	private final String nodeIdent;
-	private final ModuleConfiguration config;
+	private final DueDateConfig participationDueDateConfig;
 	private List<String> mainTypes;
 	
 	public FormReminderProvider(FormCourseNode formNode) {
 		this.nodeIdent = formNode.getIdent();
-		this.config = formNode.getModuleConfiguration();
+		this.participationDueDateConfig = formNode.getDueDateConfig(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE);
 	}
 
 	@Override
@@ -58,7 +58,8 @@ public class FormReminderProvider implements CourseNodeReminderProvider {
 	public Collection<String> getMainRuleSPITypes() {
 		if (mainTypes == null) {
 			mainTypes = new ArrayList<>(1);
-			if(config.getDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE) != null) {
+			
+			if (DueDateConfig.isDueDate(participationDueDateConfig)) {
 				mainTypes.add(FormParticipationRuleSPI.class.getSimpleName());
 			}
 		}

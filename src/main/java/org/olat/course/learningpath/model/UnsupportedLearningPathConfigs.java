@@ -20,10 +20,10 @@
 package org.olat.course.learningpath.model;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.obligation.ExceptionalObligation;
@@ -79,22 +79,32 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public Date getStartDate() {
-		return null;
+	public boolean isRelativeDates() {
+		return false;
 	}
 
 	@Override
-	public void setStartDate(Date start) {
+	public void setRelativeDates(boolean relativeDates) {
 		//
 	}
 
 	@Override
-	public Date getEndDate() {
+	public DueDateConfig getStartDateConfig() {
 		return null;
 	}
 
 	@Override
-	public void setEndDate(Date end) {
+	public void setStartDateConfig(DueDateConfig start) {
+		//
+	}
+
+	@Override
+	public DueDateConfig getEndDateConfig() {
+		return null;
+	}
+
+	@Override
+	public void setEndDateConfig(DueDateConfig end) {
 		//
 	}
 
