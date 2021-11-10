@@ -115,7 +115,7 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	private AbsenceCategory absenceCategory;
 	
 	@ManyToOne(targetEntity=AbsenceNoticeImpl.class,fetch=FetchType.LAZY,optional=true)
-	@JoinColumn(name="fk_absence_notice", nullable=true, insertable=true, updatable=true)
+	@JoinColumn(name="fk_absence_notice", nullable=true, insertable=true, updatable=false)
 	private AbsenceNotice absenceNotice;
 	
 	@Override
@@ -343,12 +343,10 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 		this.absenceCategory = absenceCategory;
 	}
 
-	@Override
 	public String getAbsenceNoticeLectures() {
 		return absenceNoticeLectures;
 	}
 
-	@Override
 	public void setAbsenceNoticeLectures(String absenceNoticeLectures) {
 		this.absenceNoticeLectures = absenceNoticeLectures;
 	}
@@ -358,7 +356,13 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 		return absenceNotice;
 	}
 
-	@Override
+	/**
+	 * This property is insert only. Update happens through a specialized method
+	 * to prevent overwriting the field by concurrently saving the roll call (concurrent
+	 * absence management and roll call).
+	 * 
+	 * @param absenceNotice The absence notice
+	 */
 	public void setAbsenceNotice(AbsenceNotice absenceNotice) {
 		this.absenceNotice = absenceNotice;
 	}
