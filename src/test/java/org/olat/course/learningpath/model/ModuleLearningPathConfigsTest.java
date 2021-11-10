@@ -45,7 +45,7 @@ public class ModuleLearningPathConfigsTest {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(moduleConfig.getIntegerSafe(ModuleLearningPathConfigs.CONFIG_VERSION, 0))
 				.as("Version is initialized")
-				.isEqualTo(1);
+				.isEqualTo(ModuleLearningPathConfigs.VERSION_CURRENT);
 		softly.assertThat(moduleConfig.getStringValue(ModuleLearningPathConfigs.CONFIG_KEY_OBLIGATION))
 				.as("Obligation is initialized")
 				.isEqualTo(ModuleLearningPathConfigs.OBLIGATION_DEFAULT.name());
@@ -65,7 +65,7 @@ public class ModuleLearningPathConfigsTest {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(moduleConfig.getIntegerSafe(ModuleLearningPathConfigs.CONFIG_VERSION, 0))
 				.as("Version is initialized")
-				.isEqualTo(1);
+				.isEqualTo(ModuleLearningPathConfigs.VERSION_CURRENT);
 		softly.assertThat(moduleConfig.getStringValue(ModuleLearningPathConfigs.CONFIG_KEY_OBLIGATION))
 				.as("Obligation is initialized")
 				.isEqualTo(ModuleLearningPathConfigs.OBLIGATION_DEFAULT.name());
@@ -88,7 +88,7 @@ public class ModuleLearningPathConfigsTest {
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(moduleConfig.getIntegerSafe(ModuleLearningPathConfigs.CONFIG_VERSION, 0))
 				.as("Version is initialized")
-				.isEqualTo(1);
+				.isEqualTo(ModuleLearningPathConfigs.VERSION_CURRENT);
 		softly.assertThat(moduleConfig.getStringValue(ModuleLearningPathConfigs.CONFIG_KEY_OBLIGATION))
 				.as("Obligation is initialized")
 				.isEqualTo(AssessmentObligation.optional.name());
