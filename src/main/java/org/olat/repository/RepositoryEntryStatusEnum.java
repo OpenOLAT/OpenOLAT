@@ -19,6 +19,8 @@
  */
 package org.olat.repository;
 
+import org.olat.core.logging.activity.ILoggingAction;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -120,5 +122,18 @@ public enum RepositoryEntryStatusEnum {
 			}
 		}
 		return allOk;
-	}	
+	}
+	
+	public static ILoggingAction loggingAction(RepositoryEntryStatusEnum status) {
+		switch(status) {
+			case preparation: return LearningResourceLoggingAction.LEARNING_RESOURCE_STATUS_PREPARATION;
+			case review: return LearningResourceLoggingAction.LEARNING_RESOURCE_STATUS_REVIEW;
+			case coachpublished: return LearningResourceLoggingAction.LEARNING_RESOURCE_STATUS_COACHPUBLISH;
+			case published: return LearningResourceLoggingAction.LEARNING_RESOURCE_STATUS_PUBLISH;
+			case closed: return LearningResourceLoggingAction.LEARNING_RESOURCE_STATUS_CLOSE;
+			case trash: return LearningResourceLoggingAction.LEARNING_RESOURCE_STATUS_TRASH;
+			case deleted: return LearningResourceLoggingAction.LEARNING_RESOURCE_DELETE;
+			default: return null;
+		}
+	}
 }

@@ -74,6 +74,7 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 		new LearningResourceLoggingAction(ActionType.statistic, CrudAction.exit, ActionVerb.close, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction LEARNING_RESOURCE_CREATE = 
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.create, ActionVerb.add, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	
 	public static final ILoggingAction LEARNING_RESOURCE_TRASH = 
 			new LearningResourceLoggingAction(ActionType.admin, CrudAction.delete, ActionVerb.trash, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction LEARNING_RESOURCE_DEACTIVATE = 
@@ -84,7 +85,19 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.delete, ActionVerb.remove, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction LEARNING_RESOURCE_UPDATE = 
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
-	
+	public static final ILoggingAction LEARNING_RESOURCE_STATUS_PREPARATION = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.preparation, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction LEARNING_RESOURCE_STATUS_REVIEW = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.review, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction LEARNING_RESOURCE_STATUS_COACHPUBLISH = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.coachpublish, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction LEARNING_RESOURCE_STATUS_PUBLISH = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.publish, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction LEARNING_RESOURCE_STATUS_CLOSE = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.close, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	public static final ILoggingAction LEARNING_RESOURCE_STATUS_TRASH = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.delete, ActionVerb.trash, ActionObject.resource).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES = 
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.course).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_IM_ENABLED = 
@@ -223,5 +236,6 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 	LearningResourceLoggingAction(ActionType resourceActionType, CrudAction action, ActionVerb actionVerb, ActionObject actionObject) {
 		super(resourceActionType, action, actionVerb, actionObject.name());
 	}
+	
 	
 }

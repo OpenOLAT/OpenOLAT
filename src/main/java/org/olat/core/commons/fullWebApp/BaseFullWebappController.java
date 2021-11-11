@@ -600,7 +600,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	 */
 	private String initializeDefaultSite(UserRequest ureq) {
 		String businessPath = null;
-		if (sites != null && sites.size() > 0
+		if (sites != null && !sites.isEmpty()
 				&& curSite == null && curDTab == null
 				&& contentCtrl == null && lockResource == null) {
 			SiteInstance s = sites.get(0);
@@ -818,7 +818,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	 */
 	private void activateSite(SiteInstance s, UserRequest ureq,
 			List<ContextEntry> entries, boolean forceReload) {
-		if(lockResource != null) return;
+		if(lockResource != null) {
+			return;
+		}
 		
 		BornSiteInstance bs = siteToBornSite.get(s);
 		GuiStack gs;

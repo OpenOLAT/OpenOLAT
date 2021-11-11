@@ -59,6 +59,10 @@ public enum ActionVerb {
 	trash,
 	restore,
 	cancel,
-	reset
+	reset,
+	preparation,
+	review,
+	coachpublish,
+	publish,
 
 }
