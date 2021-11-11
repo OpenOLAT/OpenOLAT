@@ -285,11 +285,14 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			target.append("'");
 		}
 		target.append(">");
-				
-		if(ftE.getSelectionMode() != SelectionMode.disabled) {
-			String selectionType = "checkbox";
-			if(ftE.getSelectionMode() == SelectionMode.single) {
+			
+		SelectionMode selectionMode = ftE.getSelectionMode();
+		if(selectionMode != null && selectionMode != SelectionMode.disabled) {
+			final String selectionType;
+			if(selectionMode == SelectionMode.single) {
 				selectionType = "radio";
+			} else {
+				selectionType = "checkbox";
 			}
 			target.append("<td class='o_multiselect o_col_sticky_left'>")
 			      .append("<input type='").append(selectionType).append("' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")

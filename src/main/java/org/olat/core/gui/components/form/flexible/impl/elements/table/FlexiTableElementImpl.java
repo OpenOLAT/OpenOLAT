@@ -107,7 +107,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	ControllerEventListener, ComponentEventListener, Disposable {
 	
 	//settings
-	private SelectionMode multiSelect;
+	private SelectionMode multiSelect = SelectionMode.disabled;
 	private FlexiTableRendererType rendererType = FlexiTableRendererType.classic;
 	private FlexiTableRendererType[] availableRendererType = new FlexiTableRendererType[] {
 		FlexiTableRendererType.classic
