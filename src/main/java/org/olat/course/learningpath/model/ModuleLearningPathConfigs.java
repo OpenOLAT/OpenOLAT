@@ -53,7 +53,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	static final int VERSION_CURRENT = 2;
 	static final String CONFIG_KEY_DURATION = "duration";
 	static final String CONFIG_KEY_OBLIGATION = "obligation";
-	static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
+	public static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
 	static final String CONFIG_KEY_RELATIVE_DATES = "lp.rel.dates";
 	static final String CONFIG_KEY_START = "start.date";
 	static final String CONFIG_KEY_START_RELATIVE = "start.date.relative";

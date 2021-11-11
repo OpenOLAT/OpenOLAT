@@ -28,6 +28,7 @@ package org.olat.course.tree;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -53,9 +54,6 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 	private boolean deleted;
 	private boolean newnode;
 
-	/**
-	 * @param cn
-	 */
 	public CourseEditorTreeNode(CourseNode cn) {
 		this.cn = cn;
 		setIdent(cn.getIdent());
@@ -65,9 +63,6 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		newnode = false;
 	}
 
-	/**
-	 * @param cetn
-	 */
 	public CourseEditorTreeNode(CourseEditorTreeNode cetn) {
 		cn = cetn.cn;
 		setIdent(cetn.getIdent());
@@ -77,37 +72,27 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		newnode = cetn.newnode;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getTitle()
-	 */
+	@Override
 	public String getTitle() {
 		return cn.getShortTitle();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.GenericTreeNode#setTitle(java.lang.String)
-	 */
+	@Override
 	public void setTitle(String title) {
 		throw new UnsupportedOperationException("title is given by associated coursenode's shorttitle");
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getAltText()
-	 */
+	@Override
 	public String getAltText() {
 		return cn.getLongTitle() + " (id:" + getIdent() + ")";
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.GenericTreeNode#setAltText(java.lang.String)
-	 */
+	@Override
 	public void setAltText(String altText) {
 		throw new UnsupportedOperationException("alttext is given by associated coursenode's longtitle");
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getCssClass()
-	 */
+	@Override
 	public String getCssClass() {
 		if (deleted) {
 			return "o_deleted";
@@ -115,9 +100,6 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconCssClass()
-	 */
 	@Override
 	public String getIconCssClass() {
 		if (getParent() == null) {
@@ -163,6 +145,9 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 			cssClass = null;
 		} else if(cn.getConditionExpressions().size() > 0) {
 			cssClass = "o_midlock";
+		} else if ((cn.getModuleConfiguration().has(ModuleLearningPathConfigs.CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS))) {
+			// Checking the key in the module configuration is a cheat of checking the LerningPathConfig.getExceptionalObligation()
+			cssClass = "o_midlpexob";
 		}
 		return cssClass;
 	}
@@ -182,9 +167,6 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		return cn;
 	}
 
-	/**
-	 * 
-	 */
 	public void moveUpInChildlist() {
 		CourseEditorTreeNode parentNode = (CourseEditorTreeNode) getParent();
 		if (parentNode == null) return;
@@ -195,9 +177,6 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		setDirty(true);
 	}
 
-	/**
-	 * 
-	 */
 	public void moveDownInChildlist() {
 		CourseEditorTreeNode parentNode = (CourseEditorTreeNode) getParent();
 		if (parentNode == null) return;
@@ -210,51 +189,31 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		setDirty(true);
 	}
 
-	/**
-	 * @return true if dirty
-	 */
 	public boolean isDirty() {
 		return dirty;
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setDirty(boolean b) {
 		dirty = b;
 	}
 
-	/**
-	 * @return true if deleted
-	 */
 	public boolean isDeleted() {
 		return deleted;
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setDeleted(boolean b) {
 		deleted = b;
 	}
 
-	/**
-	 * @return true if new
-	 */
 	public boolean isNewnode() {
 		return newnode;
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setNewnode(boolean b) {
 		newnode = b;
 	}
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
 	public String toString() {
 		return "editorId: " + getIdent() + ", " + cn.toString();
 	}

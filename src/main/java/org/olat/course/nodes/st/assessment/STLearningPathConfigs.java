@@ -28,6 +28,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.FullyAssessedTrigger;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.learningpath.obligation.ExceptionalObligation;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.ModuleConfiguration;
@@ -52,7 +53,7 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	public static final String CONFIG_LP_SEQUENCE_VALUE_WITHOUT = "learning.path.sequence.without";
 	public static final String CONFIG_LP_SEQUENCE_DEFAULT = CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL;
 	public static final String CONFIG_KEY_OBLIGATION = "lp.obligation";
-	public static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = "lp.exeptional.obligations";
+	public static final String CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS = ModuleLearningPathConfigs.CONFIG_KEY_EXCEPTIONAL_OBLIGATIONS;
 	
 	private final ModuleConfiguration moduleConfigs;
 	private final boolean isRoot;

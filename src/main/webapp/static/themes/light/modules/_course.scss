@@ -256,6 +256,7 @@
 	&.o_midpub            { background-color: $o-course-node-published; }
 	&.o_midwarn           { background-color: $o-course-node-warning; }
 	&.o_midlock           { background-color: $o-course-node-locked;}
+	&.o_midlpexob         { background-color: $o-course-node-locked;}
 	&.o_miderr            { background-color: $o-course-node-error;}
 	&.o_middel            { background-color: $o-course-node-deleted;}
 	&:before {
