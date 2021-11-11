@@ -79,7 +79,11 @@ public class DocEditorStandaloneController extends BasicController implements Ac
 	
 	@Override
 	protected void doDispose() {
-		//
+		try {
+			ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+			cc.removeBodyCssClass("o_doceditor_body");
+		} catch(Exception e) {
+			logError("", e);
+		}
 	}
-
 }

@@ -211,20 +211,14 @@ public class OresHelper {
 	 * @return true if equal
 	 */
 	public static boolean equals(OLATResourceable a, OLATResourceable b) {
-		if (a == null || b == null) return false;
+		if (a == null || b == null) return true;
 		
 		Long aKey = a.getResourceableId();
 		String aType = a.getResourceableTypeName();
 		Long bKey = b.getResourceableId();
 		String bType = b.getResourceableTypeName();
-		
-		boolean same = ( bType.equals(aType) &&
-						( 
-							(aKey != null && aKey.equals(bKey)) 
-							|| (aKey == null && bKey == null)
-						)
-					);
-		return same;
+		return bType != null && bType.equals(aType)
+				&& ((aKey != null && aKey.equals(bKey)) || (aKey == null && bKey == null));
 	}
 
 	public static OLATResourceable createOLATResourceableTypeWithoutCheck(String type) {

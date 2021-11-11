@@ -58,7 +58,7 @@ public interface DTabs {
 	 * 
 	 * @return the tab or null if the headerbar is full. if null, the implementation of the DTabs should issue a warning to the current windowcontrol
 	 */
-	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, Controller rootController, String title);
+	public DTab createDTab(UserRequest ureq, OLATResourceable ores, OLATResourceable repoOres, Controller rootController, String title);
 
 	/**
 	 * @param ureq

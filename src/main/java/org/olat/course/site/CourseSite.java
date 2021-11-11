@@ -104,7 +104,7 @@ public class CourseSite extends AbstractSiteInstance {
 			// either check with securityCallback or use access-settings from course-nodes
 			if (siteSecCallback != null) {
 				hasAccess = siteSecCallback.isAllowedToLaunchSite(ureq);
-			} else if(usess.isInAssessmentModeProcess() && !usess.matchLockResource(course)){
+			} else if(usess.isInAssessmentModeProcess() && !usess.matchPrimaryLockResource(course)){
 				hasAccess = false;
 			} else {
 				// check within course: accessibility of course root node
