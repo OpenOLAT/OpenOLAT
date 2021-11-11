@@ -43,6 +43,8 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
@@ -59,6 +61,7 @@ import org.olat.repository.ui.settings.CatalogSettingsController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.repository.ui.settings.RepositoryEntryInfoController;
 import org.olat.repository.ui.settings.RepositoryEntryMetadataController;
+import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -336,6 +339,10 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		
 		EntryChangedEvent e = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "runtime");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+		
+		getLogger().info("Change status of {} to {}", entry, updatedStatus);
+		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(updatedStatus), getClass(),
+				LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 	}
 	
 	private void doConfirmCloseResource(UserRequest ureq) {

@@ -52,6 +52,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATSecurityException;
+import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -898,6 +899,10 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 		EntryChangedEvent e = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.modifiedAccess, "runtime");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+		
+		getLogger().info("Change status of {} to {}", reloadedEntry, updatedStatus);
+		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(updatedStatus), getClass(),
+				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 	}
 
 	protected void doSwitchRole(UserRequest ureq, Role role) {
