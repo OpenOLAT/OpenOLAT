@@ -66,9 +66,9 @@ import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13Tool.PublicKeyType;
-import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.LTI13ToolType;
+import org.olat.ims.lti13.manager.LTI13IDGenerator;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -115,6 +115,11 @@ public class LTIConfigForm extends FormBasicController {
 	private TextElement publicKeyUrlEl;
 	private TextElement initiateLoginUrlEl;
 	private TextElement redirectUrlEl;
+	
+	private StaticTextElement platformIssEl;
+	private StaticTextElement loginUriEl;
+	private StaticTextElement tokenUriEl;
+	private StaticTextElement jwkSetUriEl;
 	
 	private MultipleSelectionElement skipLaunchPageEl;
 	private MultipleSelectionElement skipAcceptLaunchPageEl;
@@ -388,6 +393,15 @@ public class LTIConfigForm extends FormBasicController {
 		String redirectUrl = tool == null ? null : tool.getRedirectUrl();
 		redirectUrlEl = uifactory.addTextAreaElement("config.redirect.url", "config.redirect.url", -1, 4, 60, false, false, true, redirectUrl, formLayout);
 		redirectUrlEl.setHelpTextKey("config.redirect.url.hint", null);
+		
+		String issuer = lti13Module.getPlatformIss();
+		platformIssEl = uifactory.addStaticTextElement("lti13.platform.iss", issuer, formLayout);
+		String loginUri = lti13Module.getPlatformAuthorizationUri();
+		loginUriEl = uifactory.addStaticTextElement("lti13.platform.login.uri", loginUri, formLayout);
+		String tokenUri = lti13Module.getPlatformTokenUri();
+		tokenUriEl = uifactory.addStaticTextElement("lti13.platform.token.uri", tokenUri, formLayout);
+		String jwkSetUri = lti13Module.getPlatformJwkSetUri();
+		jwkSetUriEl = uifactory.addStaticTextElement("lti13.platform.jwkset.uri", jwkSetUri, formLayout);
 	}
 	
 	private void updateLtiVersion() {
@@ -473,7 +487,11 @@ public class LTIConfigForm extends FormBasicController {
 		initiateLoginUrlEl.setVisible(lti13);
 		initiateLoginUrlEl.setEnabled(!sharedTool);
 		redirectUrlEl.setVisible(lti13);
-		redirectUrlEl.setEnabled(!sharedTool);		
+		redirectUrlEl.setEnabled(!sharedTool);
+		platformIssEl.setVisible(lti13);
+		loginUriEl.setVisible(lti13);
+		tokenUriEl.setVisible(lti13);
+		jwkSetUriEl.setVisible(lti13);
 		
 		// LTI 1.1
 		tkey.setVisible(!lti13);
