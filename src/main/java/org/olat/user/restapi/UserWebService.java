@@ -658,6 +658,91 @@ public class UserWebService {
 		return Response.ok(userVO).build();
 	}
 	
+	@GET
+	@Path("{identityKey}/lifecycle")
+	@Operation(summary = "Get lifecycle information of user", description = "Get lifecycle information of user")
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = UserLifecycleVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserLifecycleVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
+	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response getUserLifecycle(@PathParam("identityKey") Long identityKey,
+			@Context HttpServletRequest httpRequest) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey, false);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!isUserManagerOf(identityKey, httpRequest)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		UserLifecycleVO lifecycleVO = UserLifecycleVO.valueOf(identity);
+		return Response.ok(lifecycleVO).build();
+	}
+	
+	/**
+	 * Update a user expiration date and only the expiration date.
+	 * 
+	 * @param identityKey The user key identifier
+	 * @param lifecycle The user life-cycle data
+	 * @param request The HTTP request
+	 * @return <code>User</code> object. The operation status (success or fail)
+	 */
+	@POST
+	@Path("{identityKey}/lifecycle")
+	@Operation(summary = "Update a user's expiration date", description = "Update a user expiration date and only the expiration date.")
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = UserLifecycleVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserLifecycleVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response postLifecycle(@PathParam("identityKey") Long identityKey, UserLifecycleVO lifecycle, @Context HttpServletRequest request) {
+		return update(identityKey, lifecycle, request);
+	}
+	
+	/**
+	 * Update a user expiration date and only the expiration date.
+	 * 
+	 * @param identityKey The user key identifier
+	 * @param lifecycle The user life-cycle data
+	 * @param request The HTTP request
+	 * @return <code>User</code> object. The operation status (success or fail)
+	 */
+	@PUT
+	@Path("{identityKey}/lifecycle")
+	@Operation(summary = "Update a user's expiration date", description = "Update a user expiration date and only the expiration date.")
+	@ApiResponse(responseCode = "200", description = "The user", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = UserLifecycleVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserLifecycleVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The identity not found")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putLifecycle(@PathParam("identityKey") Long identityKey, UserLifecycleVO lifecycle, @Context HttpServletRequest request) {
+		return update(identityKey, lifecycle, request);
+	}
+	
+	private Response update(Long identityKey, UserLifecycleVO lifecycle, HttpServletRequest request) {
+		if(lifecycle == null) {
+			return Response.serverError().status(Status.NO_CONTENT).build();
+		}
+		if(!isUserManagerOf(identityKey, request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+
+		Identity retrievedIdentity = securityManager.loadIdentityByKey(identityKey, false);
+		if(retrievedIdentity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		Identity updatedIdentity = securityManager.saveIdentityExpirationDate(retrievedIdentity, lifecycle.getExpirationDate(), getIdentity(request));
+		UserLifecycleVO lifecycleVo = UserLifecycleVO.valueOf(updatedIdentity);
+		return Response.ok(lifecycleVo).build();
+	}
+	
+	
 	@Path("{identityKey}/folders")
 	@Operation(summary = "Retrieve folders", description = "Retrieves folders from a user given its unique key identifier")
 	@ApiResponse(responseCode = "200", description = "The folders")
