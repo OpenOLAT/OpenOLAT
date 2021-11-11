@@ -312,7 +312,7 @@ public class STLearningPathConfigController extends FormBasicController {
 		} else if (source == hideExceptionalObligationLink) {
 			updateExceptionalObligationsUI(false);
 		} else if (source instanceof SingleSelection) {
-			if (event.getCommand().startsWith("eo_")) {
+			if (source.getName().startsWith("eo_")) {
 				ExceptionalObligationRow row = (ExceptionalObligationRow)source.getUserObject();
 				doUpdatedExceptionalObligation(row, source);
 			}
