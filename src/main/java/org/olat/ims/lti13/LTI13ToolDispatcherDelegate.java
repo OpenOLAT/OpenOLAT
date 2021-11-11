@@ -109,12 +109,14 @@ public class LTI13ToolDispatcherDelegate {
 			
 			LTI13Platform platform = lti13Service.getPlatform(iss, clientId);
 			if(platform == null) {
+				log.warn("Platform not found: {} for client: {}", iss, clientId);
 				DispatcherModule.sendBadRequest(Errors.INVALID_REQUEST, response);
 				return;
 			}
 			
 			LTI13SharedToolDeployment sharedToolDeployment = lti13Service.getSharedToolDeployment(ltiDeploymentId, platform);
 			if(sharedToolDeployment == null) {
+				log.warn("Deployment not found: {} for client: {}", ltiDeploymentId, clientId);
 				DispatcherModule.sendBadRequest(Errors.INVALID_REQUEST, response);
 				return;
 			}
