@@ -641,12 +641,11 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("repositoryEntry[id=").append(key == null ? "null" : key.toString()).append(";")
 		  .append("displayname=").append(displayname == null ? "null" : displayname).append(";")
 		  .append("externalId=").append(externalId == null ? "null" : externalId).append(";")
-		  .append("externalRef=").append(externalRef == null ? "null" : externalRef).append("]")
-		  .append(super.toString());
+		  .append("externalRef=").append(externalRef == null ? "null" : externalRef).append("]");
 		return sb.toString();
 	}
 }

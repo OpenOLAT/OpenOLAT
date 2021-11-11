@@ -600,7 +600,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	 */
 	private String initializeDefaultSite(UserRequest ureq) {
 		String businessPath = null;
-		if (sites != null && sites.size() > 0
+		if (sites != null && !sites.isEmpty()
 				&& curSite == null && curDTab == null
 				&& contentCtrl == null && lockResource == null) {
 			SiteInstance s = sites.get(0);
@@ -818,7 +818,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	 */
 	private void activateSite(SiteInstance s, UserRequest ureq,
 			List<ContextEntry> entries, boolean forceReload) {
-		if(lockResource != null) return;
+		if(lockResource != null) {
+			return;
+		}
 		
 		BornSiteInstance bs = siteToBornSite.get(s);
 		GuiStack gs;
@@ -1205,19 +1207,22 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	}
 
 	@Override
-	public DTab createDTab(OLATResourceable ores, OLATResourceable repoOres, Controller rootController, String title) {
+	public DTab createDTab(UserRequest ureq, OLATResourceable ores, OLATResourceable repoOres, Controller rootController, String title) {
 		final DTabImpl dt;
 		if (dtabs.size() >= maxTabs) {
 			getWindowControl().setError(translate("warn.tabsfull"));
 			dt = null;
-		} else if(lockResource != null && (
-				!lockResource.getResourceableId().equals(ores.getResourceableId()) 
-				|| !lockResource.getResourceableTypeName().equals(ores.getResourceableTypeName()))) {
+		} else if(lockResource != null && !matchLockedResource(ureq, ores)) {
 			dt = null;
 		} else {
 			dt = new DTabImpl(ores, repoOres, title, rootController, getWindowControl());
 		}
 		return dt;
+	}
+	
+	private boolean matchLockedResource(UserRequest ureq, OLATResourceable ores) {
+		UserSession usess = ureq.getUserSession();
+		return lockResource != null && (OresHelper.equals(lockResource, ores) || usess.matchSecondaryResource(ores));
 	}
 
 	@Override
@@ -1292,7 +1297,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	public void activate(UserRequest ureq, DTab dTab, List<ContextEntry> entries) {
 		UserSession usess = ureq.getUserSession();
 		if((lockStatus != null || usess.isInAssessmentModeProcess())
-				&& !usess.matchLockResource(dTab.getOLATResourceable())) {
+				&& (!usess.matchLockResource(dTab.getOLATResourceable()))) {
 			return;
 		}
 		

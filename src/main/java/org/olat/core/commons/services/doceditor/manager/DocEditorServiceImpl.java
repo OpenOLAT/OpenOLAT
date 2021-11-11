@@ -50,6 +50,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.properties.Property;
@@ -342,6 +343,9 @@ public class DocEditorServiceImpl implements DocEditorService, UserDataDeletable
 		Access access = createAccess(userSession.getIdentity(), userSession.getRoles(), configs);
 		String configKey = getConfigKey(access);
 		userSession.putEntryInNonClearedStore(configKey, configs);
+		if(userSession.getLockResource() != null) {
+			userSession.addSecondaryLockResource(OresHelper.createOLATResourceableInstance("Document", access.getKey()));
+		}
 		return getDocumentUrl(access);
 	}
 	

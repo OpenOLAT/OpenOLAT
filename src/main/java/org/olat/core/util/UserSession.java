@@ -84,6 +84,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	private OLATResourceable lockResource;
 	private TransientAssessmentMode lockMode;
 	private List<TransientAssessmentMode> assessmentModes;
+	private final List<OLATResourceable> secondaryLockResources = new ArrayList<>();
 	
 	private transient WindowedResourceableList resourceList = new WindowedResourceableList();
 	
@@ -333,14 +334,50 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	public void unlockResource() {
 		lockMode = null;
 		lockResource = null;
+		secondaryLockResources.clear();
 	}
 	
+	/**
+	 * @param ores The OLAT resource to compare
+	 * @return true if the specified resource matches the primary or one
+	 * 		of the secondary resources.
+	 */
 	public boolean matchLockResource(OLATResourceable ores) {
-		return lockResource != null
-				&& lockResource.getResourceableId() != null
-				&& lockResource.getResourceableId().equals(ores.getResourceableId())
-				&& lockResource.getResourceableTypeName() != null
-				&& lockResource.getResourceableTypeName().equals(ores.getResourceableTypeName());
+		return matchPrimaryLockResource(ores) || matchSecondaryResource(ores);
+	}
+	
+	/**
+	 * 
+	 * @param ores The OLAT resource to compare
+	 * @return true if a locked resource is present and match the specified one
+	 */
+	public boolean matchPrimaryLockResource(OLATResourceable ores) {
+		return (lockResource != null && OresHelper.equals(lockResource, ores));
+	}
+	
+	/**
+	 * @param ores The OLAT resource to compare
+	 * @return true if the specified resource matches one of the secondary resources
+	 */
+	public boolean matchSecondaryResource(OLATResourceable ores) {
+		for(OLATResourceable secondaryLockResource:secondaryLockResources) {
+			if(OresHelper.equals(secondaryLockResource, ores)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Can add a secondary resources. The primary is the course,
+	 * secondary ones are document edited within the course.
+	 * 
+	 * @param ores Additional resources
+	 */
+	public void addSecondaryLockResource(OLATResourceable ores) {
+		if(ores != null) {
+			secondaryLockResources.add(OresHelper.clone(ores));
+		}
 	}
 
 	public List<TransientAssessmentMode> getAssessmentModes() {
