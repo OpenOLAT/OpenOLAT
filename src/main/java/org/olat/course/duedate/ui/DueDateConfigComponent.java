@@ -19,8 +19,10 @@
  */
 package org.olat.course.duedate.ui;
 
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.render.ValidationResult;
 
 /**
  * 
@@ -46,6 +48,14 @@ public class DueDateConfigComponent extends FormBaseComponentImpl {
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+	
+	@Override
+	public void validate(UserRequest ureq, ValidationResult vr) {
+		super.validate(ureq, vr);
+		if (formItem.getAbsoluteDateEl() != null) {
+			formItem.getAbsoluteDateEl().getComponent().validate(ureq, vr);
+		}
 	}
 
 }
