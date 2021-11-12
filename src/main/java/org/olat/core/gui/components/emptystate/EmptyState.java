@@ -47,7 +47,9 @@ public class EmptyState extends AbstractComponent implements ComponentCollection
 	private String iconCss;
 	private String indicatorIconCss;
 	private String messageI18nKey;
+	private String[] messageI18nArgs;
 	private String hintI18nKey;
+	private String[] hintI18nArgs;
 	private String buttonI18nKey;
 	private Link button;
 
@@ -86,6 +88,14 @@ public class EmptyState extends AbstractComponent implements ComponentCollection
 		setDirty(true);
 	}
 
+	public String[] getMessageI18nArgs() {
+		return messageI18nArgs;
+	}
+
+	public void setMessageI18nArgs(String[] messageI18nArgs) {
+		this.messageI18nArgs = messageI18nArgs;
+	}
+
 	public String getHintI18nKey() {
 		return hintI18nKey;
 	}
@@ -93,6 +103,14 @@ public class EmptyState extends AbstractComponent implements ComponentCollection
 	public void setHintI18nKey(String hintI18nKey) {
 		this.hintI18nKey = hintI18nKey;
 		setDirty(true);
+	}
+
+	public String[] getHintI18nArgs() {
+		return hintI18nArgs;
+	}
+
+	public void setHintI18nArgs(String[] hintI18nArgs) {
+		this.hintI18nArgs = hintI18nArgs;
 	}
 
 	public String getButtonI18nKey() {

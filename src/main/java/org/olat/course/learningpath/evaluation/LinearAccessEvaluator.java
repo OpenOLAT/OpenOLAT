@@ -56,7 +56,7 @@ public class LinearAccessEvaluator implements AccessEvaluator {
 		return hasAccess;
 	}
 
-	private boolean hasAccess(AssessmentEntryStatus status) {
+	public static boolean hasAccess(AssessmentEntryStatus status) {
 		for (AssessmentEntryStatus accessibleStatus : accessibleStati) {
 			if (accessibleStatus.equals(status)) {
 				return true;

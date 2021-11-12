@@ -35,7 +35,9 @@ public class EmptyStateFactory {
 		emptyState.setIconCss(config.getIconCss());
 		emptyState.setIndicatorIconCss(config.getIndicatorIconCss());
 		emptyState.setMessageI18nKey(config.getMessageI18nKey());
+		emptyState.setMessageI18nArgs(config.getMessageI18nArgs());
 		emptyState.setHintI18nKey(config.getHintI18nKey());
+		emptyState.setHintI18nArgs(config.getHintI18nArgs());
 		emptyState.setButtonI18nKey(config.getButtonI18nKey());
 		return emptyState;
 	}

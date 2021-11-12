@@ -53,11 +53,11 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
 		sb.append("</div>");
 		String message = StringHelper.containsNonWhitespace(emptyState.getMessageI18nKey())
-				? translator.translate(emptyState.getMessageI18nKey())
+				? translator.translate(emptyState.getMessageI18nKey(), emptyState.getMessageI18nArgs())
 				: Util.createPackageTranslator(EmptyState.class, translator.getLocale()).translate("default.message");
 		sb.append("<h3 class='o_empty_msg'>").append(message).append("</h3>");
 		if (StringHelper.containsNonWhitespace(emptyState.getHintI18nKey())) {
-			sb.append("<div class='o_empty_hint'>").append(translator.translate(emptyState.getHintI18nKey())).append("</div>");
+			sb.append("<div class='o_empty_hint'>").append(translator.translate(emptyState.getHintI18nKey(), emptyState.getHintI18nArgs())).append("</div>");
 		}
 		if (StringHelper.containsNonWhitespace(emptyState.getButtonI18nKey())) {
 			String customDisplayText = translator.translate(emptyState.getButtonI18nKey());

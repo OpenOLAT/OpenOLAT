@@ -56,6 +56,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	public CoursePaginationController getCoursePaginationController(UserRequest ureq, WindowControl wControl);
 
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
+	
+	public NoAccessResolver getNoAccessResolver(UserCourseEnvironment userCourseEnv);
 
 	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 

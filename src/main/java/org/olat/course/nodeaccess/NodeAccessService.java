@@ -110,6 +110,8 @@ public interface NodeAccessService {
 	 */
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
 	
+	public NoAccessResolver getNoAccessResolver(UserCourseEnvironment userCourseEnv);
+	
 	/**
 	 * Returns if a user can confirm the execution of an assessment.
 	 *

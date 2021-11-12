@@ -20,6 +20,7 @@
 package org.olat.course.style;
 
 import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.course.duedate.DueDateConfig;
 
 /**
  * 
@@ -38,6 +39,9 @@ public class Header {
 	private final Mapper teaserImageMapper;
 	private final TeaserImageStyle teaserImageStyle;
 	private final String colorCategoryCss;
+	private final DueDateConfig startDateConfig;
+	private final DueDateConfig endDateConfig;
+	private final Integer duration;
 
 	private Header(Builder builder) {
 		this.title = builder.title;
@@ -49,6 +53,9 @@ public class Header {
 		this.teaserImageMapper = builder.teaserImageMapper;
 		this.teaserImageStyle = builder.teaserImageStyle;
 		this.colorCategoryCss = builder.colorCategoryCss;
+		this.startDateConfig = builder.startDateConfig;
+		this.endDateConfig = builder.endDateConfig;
+		this.duration = builder.duration;
 	}
 	
 	public String getTitle() {
@@ -86,6 +93,18 @@ public class Header {
 	public String getColorCategoryCss() {
 		return colorCategoryCss;
 	}
+
+	public DueDateConfig getStartDateConfig() {
+		return startDateConfig;
+	}
+
+	public DueDateConfig getEndDateConfig() {
+		return endDateConfig;
+	}
+
+	public Integer getDuration() {
+		return duration;
+	}
 	
 	public static Builder builder() {
 		return new Builder();
@@ -101,6 +120,9 @@ public class Header {
 		private Mapper teaserImageMapper;
 		private TeaserImageStyle teaserImageStyle;
 		private String colorCategoryCss;
+		private DueDateConfig startDateConfig;
+		private DueDateConfig endDateConfig;
+		private Integer duration;
 
 		private Builder() {
 		}
@@ -143,6 +165,21 @@ public class Header {
 
 		public Builder withColorCategoryCss(String colorCategoryCss) {
 			this.colorCategoryCss = colorCategoryCss;
+			return this;
+		}
+
+		public Builder withStartDateConfig(DueDateConfig startDateConfig) {
+			this.startDateConfig = startDateConfig;
+			return this;
+		}
+
+		public Builder withEndDateConfig(DueDateConfig endDateConfig) {
+			this.endDateConfig = endDateConfig;
+			return this;
+		}
+
+		public Builder withDuration(Integer duration) {
+			this.duration = duration;
 			return this;
 		}
 

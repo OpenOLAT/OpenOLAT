@@ -28,6 +28,9 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.spacesaver.ExpandableController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.learningpath.ui.LearningPathListController;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.Header;
 import org.olat.course.style.TeaserImageStyle;
@@ -45,15 +48,18 @@ public class HeaderController extends BasicController implements ExpandableContr
 
 	public HeaderController(UserRequest ureq, WindowControl wControl, Header header) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(LearningPathListController.class, getLocale(), getTranslator()));
 		this.header = header;
 		mainVC = isStyled()? createVelocityContainer("header"): createVelocityContainer("header_plain");
 		
 		mainVC.contextPut("item", header);
+		mainVC.contextPut("handlingRange", getHandlingRange());
 		
 		if (header.getTeaserImageMapper() != null) {
 			String teaserImageUrl = registerCacheableMapper(ureq, "teaserimage-" + CodeHelper.getRAMUniqueID(), header.getTeaserImageMapper());
 			mainVC.contextPut("teaserImageUrl", teaserImageUrl);
 			mainVC.contextPut("cover", TeaserImageStyle.cover == header.getTeaserImageStyle());
+			mainVC.contextPut("gradient", TeaserImageStyle.gradient == header.getTeaserImageStyle());
 			mainVC.contextPut("gradient", TeaserImageStyle.gradient == header.getTeaserImageStyle());
 		}
 		
@@ -62,9 +68,17 @@ public class HeaderController extends BasicController implements ExpandableContr
 	
 	private boolean isStyled() {
 		return isExpandable()
+				|| DueDateConfig.isDueDate(header.getStartDateConfig())
+				|| DueDateConfig.isDueDate(header.getEndDateConfig())
+				|| header.getDuration() != null
 				|| header.getTeaserImageMapper() != null
 				|| !ColorCategory.CSS_NO_COLOR.equals(header.getColorCategoryCss());
 		
+	}
+
+	private String getHandlingRange() {
+		return CourseStyleUIFactory.formatHandlingRangeDate(getTranslator(), header.getStartDateConfig(),
+				header.getEndDateConfig(), header.getDuration());
 	}
 
 	@Override

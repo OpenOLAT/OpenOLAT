@@ -32,9 +32,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.learningpath.ui.LearningPathListController;
+import org.olat.course.nodeaccess.NoAccessResolver;
+import org.olat.course.nodeaccess.ui.NodeAccessSettingsController;
 import org.olat.course.style.TeaserImageStyle;
+import org.olat.course.style.ui.CourseStyleUIFactory;
 import org.olat.modules.assessment.ui.AssessmentForm;
 
 /**
@@ -47,14 +49,13 @@ public class OverviewController extends BasicController {
 
 	private final Link nodeLink;
 	private final Controller peekViewCtrl;
-	private final DueDateConfigFormatter dueDateConfigFormatter;
 
 	public OverviewController(UserRequest ureq, WindowControl wControl, Overview overview, Controller peekViewCtrl) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathListController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(NodeAccessSettingsController.class, getLocale(), getTranslator()));
 		this.peekViewCtrl = peekViewCtrl;
-		this.dueDateConfigFormatter = DueDateConfigFormatter.create(getLocale());
 		
 		VelocityContainer mainVC = createVelocityContainer("overview");
 		
@@ -77,7 +78,8 @@ public class OverviewController extends BasicController {
 		nodeLink.setElementCssClass("o_gotoNode");
 		nodeLink.setEnabled(overview.getNoAccessMessage() == null);
 		
-		mainVC.contextPut("assessmentInfos", getAssessmentInfos(overview));
+		mainVC.contextPut("handlingRange", getHandlingRange(overview));
+		mainVC.contextPut("noAccessMessage", NoAccessResolver.translate(getTranslator(), overview.getNoAccessMessage(), true));
 		
 		if (peekViewCtrl != null) {
 			mainVC.put("peekView", this.peekViewCtrl.getInitialComponent());
@@ -87,31 +89,9 @@ public class OverviewController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	private String getAssessmentInfos(Overview overview) {
-		boolean separator = false;
-		StringBuilder sb = new StringBuilder();
-		String formattedStartDate = dueDateConfigFormatter.formatDueDateConfig(overview.getStartDateConfig());
-		if (StringHelper.containsNonWhitespace(formattedStartDate)) {
-			sb.append(translate("table.header.start")).append(": ").append(formattedStartDate);
-			separator = true;
-		}
-		String formattedEndDate = dueDateConfigFormatter.formatDueDateConfig(overview.getEndDateConfig());
-		if (StringHelper.containsNonWhitespace(formattedEndDate)) {
-			if (separator) {
-				sb.append(" | ");
-			}
-			sb.append(translate("table.header.end")).append(": ").append(formattedEndDate);
-			separator = true;
-		}
-		if (overview.getDuration() != null) {
-			if (separator) {
-				sb.append(" | ");
-			}
-			sb.append(translate("table.header.duration")).append(": ").append(translate("minutes", new String[] {overview.getDuration().toString()}));
-			separator = true;
-		}
-		
-		return sb.toString();
+	private String getHandlingRange(Overview overview) {
+		return CourseStyleUIFactory.formatHandlingRangeDate(getTranslator(), overview.getStartDateConfig(),
+				overview.getEndDateConfig(), overview.getDuration());
 	}
 
 	@Override

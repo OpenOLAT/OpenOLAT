@@ -17,32 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.emptystate;
+package org.olat.course.condition;
+
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.course.nodeaccess.NoAccessResolver;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
- * Initial date: 22 Apr 2021<br>
+ * Initial date: 12 Nov 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EmptyStateConfig {
+public class ConditionNoAccessResolver implements NoAccessResolver {
 	
-	static EmptyStateConfigBuilder builder() {
-		return new EmptyStateConfigBuilder();
+	public static final ConditionNoAccessResolver INSTANCE = new ConditionNoAccessResolver();
+	
+	private ConditionNoAccessResolver() {
+		//
 	}
 
-	public String getIconCss();
-
-	public String getIndicatorIconCss();
-	
-	public String getMessageI18nKey();
-
-	public String[] getMessageI18nArgs();
-
-	public String getHintI18nKey();
-
-	public String[] getHintI18nArgs();
-
-	public String getButtonI18nKey();
+	@Override
+	public NoAccess getNoAccessMessage(CourseNode courseNode) {
+		String explanation = courseNode.getNoAccessExplanation();
+		explanation = StringHelper.containsNonWhitespace(explanation)? Formatter.formatLatexFormulas(explanation): "";
+		return NoAccessResolver.condition(explanation);
+	}
 
 }

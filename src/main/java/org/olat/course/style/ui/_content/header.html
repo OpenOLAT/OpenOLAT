@@ -3,13 +3,22 @@
 		<div class="o_text">
 			#if($r.isNotEmpty($item.title))
 				<div class="o_text_block">
-					<div>
-						<h2>
-							#if($item.iconCss) 
-								<i class="o_icon $item.iconCss"></i>
-							#end
-							<span>$item.title</span>
-						</h2>
+					<div class="#if($r.isNotEmpty($handlingRange) && $r.isNotEmpty($teaserImageUrl)) o_title_block #end">
+						<div>
+							<h2>
+								#if($item.iconCss) 
+									<i class="o_icon $item.iconCss"></i>
+								#end
+								<span>$item.title</span>
+							</h2>
+						</div>
+						#if($r.isNotEmpty($handlingRange))
+							<div class="o_assessment">
+								<div>
+									<span><i class="o_icon o_icon-fw o_icon_time"> </i> $handlingRange</span>
+								</div>
+							</div>
+						#end
 					</div>
 					<div></div>
 				</div>

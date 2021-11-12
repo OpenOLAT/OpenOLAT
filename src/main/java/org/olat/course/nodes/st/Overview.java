@@ -22,6 +22,7 @@ package org.olat.course.nodes.st;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.LearningPathStatus;
+import org.olat.course.nodeaccess.NoAccessResolver.NoAccess;
 import org.olat.course.style.TeaserImageStyle;
 
 /**
@@ -41,7 +42,7 @@ public class Overview {
 	private final Mapper teaserImageMapper;
 	private final TeaserImageStyle teaserImageStyle;
 	private final String colorCategoryCss;
-	private final String noAccessMessage;
+	private final NoAccess noAccessMessage;
 	private final LearningPathStatus learningPathStatus;
 	private final DueDateConfig startDateConfig;
 	private final DueDateConfig endDateConfig;
@@ -100,7 +101,7 @@ public class Overview {
 		return colorCategoryCss;
 	}
 	
-	public String getNoAccessMessage() {
+	public NoAccess getNoAccessMessage() {
 		return noAccessMessage;
 	}
 
@@ -134,7 +135,7 @@ public class Overview {
 		private Mapper teaserImageMapper;
 		private TeaserImageStyle teaserImageStyle;
 		private String colorCategoryCss;
-		private String noAccessMessage;
+		private NoAccess noAccessMessage;
 		private LearningPathStatus learningPathStatus;
 		private DueDateConfig startDateConfig;
 		private DueDateConfig endDateConfig;
@@ -184,7 +185,7 @@ public class Overview {
 			return this;
 		}
 
-		public Builder withNoAccessMessage(String noAccessMessage) {
+		public Builder withNoAccessMessage(NoAccess noAccessMessage) {
 			this.noAccessMessage = noAccessMessage;
 			return this;
 		}

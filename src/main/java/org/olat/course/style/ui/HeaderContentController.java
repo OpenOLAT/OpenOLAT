@@ -39,7 +39,11 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.style.ColorCategoryResolver;
 import org.olat.course.style.CourseStyleService;
@@ -69,7 +73,8 @@ public class HeaderContentController extends BasicController
 	
 	@Autowired
 	private CourseStyleService courseStyleService;
-
+	@Autowired
+	private LearningPathService learningPathService;
 
 	public HeaderContentController(UserRequest ureq, WindowControl wControl, Controller contentCtrl,
 			UserCourseEnvironment userCourseEnv, CourseNode courseNode, String iconCssClass) {
@@ -152,6 +157,20 @@ public class HeaderContentController extends BasicController
 		ColorCategoryResolver colorCategoryResolver = courseStyleService.getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());
 		builder.withColorCategoryCss(colorCategoryResolver.getColorCategoryCss(courseNode));
 		builder.withIconCss(iconCssClass);
+		
+		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
+			if (userCourseEnv.isParticipant()) {
+				AssessmentEvaluation evaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
+				if (evaluation != null) {
+					CourseStyleUIFactory.addHandlingRangeData(builder, evaluation);
+				}
+			} else {
+				LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(courseNode);
+				builder.withDuration(learningPathConfigs.getDuration());
+				builder.withStartDateConfig(learningPathConfigs.getStartDateConfig());
+				builder.withEndDateConfig(learningPathConfigs.getEndDateConfig());
+			}
+		}
 		
 		return builder.build();
 	}

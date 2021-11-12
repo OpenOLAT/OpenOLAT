@@ -31,8 +31,10 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathConfigs.FullyAssessedResult;
+import org.olat.course.learningpath.ui.LearningPathNoAccessResolver;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodeaccess.NoAccessResolver;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CoursePaginationController;
@@ -129,6 +131,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	@Override
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		return new LearningPathCourseTreeModelBuilder(userCourseEnv);
+	}
+
+	@Override
+	public NoAccessResolver getNoAccessResolver(UserCourseEnvironment userCourseEnv) {
+		return new LearningPathNoAccessResolver(userCourseEnv);
 	}
 
 	@Override

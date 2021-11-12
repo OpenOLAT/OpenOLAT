@@ -35,6 +35,9 @@ import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NoAccessResolver;
+import org.olat.course.nodeaccess.NoAccessResolver.NoAccess;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.CourseNodeHelper;
@@ -62,10 +65,10 @@ public class OverviewFactory {
 	private final ICourse course;
 	private final boolean smallPeekview;
 	private final ColorCategoryResolver colorCategoryResolver;
+	private final NoAccessResolver noAccessResolver;
 	private final String mapperPrefix;
 	private final Date now;
 	private ScoreAccounting scoreAccounting;
-	
 	private final CourseStyleService courseStyleService;
 	private LearningPathService learningPathService;
 	
@@ -79,6 +82,7 @@ public class OverviewFactory {
 		courseStyleService = CoreSpringFactory.getImpl(CourseStyleService.class);
 		courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		colorCategoryResolver = courseStyleService.getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());
+		noAccessResolver = CoreSpringFactory.getImpl(NodeAccessService.class).getNoAccessResolver(userCourseEnv);
 		mapperPrefix = CodeHelper.getUniqueID();
 		
 		now = new Date();
@@ -127,11 +131,10 @@ public class OverviewFactory {
 				Date startDate = evaluation.getStartDate();
 				if (startDate != null && startDate.after(now)) {
 					builder.withStartDateConfig(DueDateConfig.absolute(startDate));
-				} else {
-					Date currentEndDate = evaluation.getEndDate().getCurrent();
-					if (currentEndDate != null && currentEndDate.after(now)) {
-						builder.withStartDateConfig(DueDateConfig.absolute(currentEndDate));
-					}
+				}
+				Date currentEndDate = evaluation.getEndDate().getCurrent();
+				if (currentEndDate != null) {
+					builder.withEndDateConfig(DueDateConfig.absolute(currentEndDate));
 				}
 			}
 		} else if (learningPathService != null) {
@@ -149,7 +152,8 @@ public class OverviewFactory {
 				peekViewCtrl = courseNode.createPeekViewRunController(ureq, wControl, userCourseEnv, courseTreeNode, smallPeekview);
 			}
 		} else {
-			builder.withNoAccessMessage(courseNode.getNoAccessExplanation());
+			NoAccess noAccessMessage = noAccessResolver.getNoAccessMessage(courseNode);
+			builder.withNoAccessMessage(noAccessMessage);
 		}
 		
 		return new OverviewController(ureq, wControl, builder.build(), peekViewCtrl);

@@ -6,14 +6,23 @@
 					<div class="o_title">
 						<h4>$r.render("nodeLink")#if($r.isNotEmpty($item.subTitle)) <small>$r.escapeHtml($item.subTitle)</small>#end</h4>
 					</div>
-					#if($r.isNotEmpty($item.learningPathStatus) || $r.isNotEmpty($assessmentInfos))
+					#if($r.isNotEmpty($item.learningPathStatus) || $r.isNotEmpty($noAccessMessage) || $r.isNotEmpty($handlingRange))
 						<div class="o_assessment">
 							#if($r.isNotEmpty($item.learningPathStatus))
+								<div>
 									<span class='o_labeled $item.learningPathStatus.cssClass'><i class='o_icon $item.learningPathStatus.cssClass'> </i> $r.translate("$item.learningPathStatus.i18nKey")</span>
+								</div>
+							#end
+								#if($r.isNotEmpty($noAccessMessage))
+								<div>
+									<span><i class="o_icon o_icon-fw o_icon_warning"> </i> $noAccessMessage</span>
+								</div>
 								#end
-								#if($r.isNotEmpty($assessmentInfos))
-									<span>$assessmentInfos</span>
-								#end
+							#if($r.isNotEmpty($handlingRange))
+								<div>
+									<span><i class="o_icon o_icon-fw o_icon_time"> </i> $handlingRange</span>
+								</div>
+							#end
 						</div>
 					#end
 				</div>
@@ -29,17 +38,6 @@
 			<div class="o_text_block">
 				<div>
 					<div>$r.formatLatexFormulas($item.description)</div>
-				</div>
-				<div></div>
-			</div>
-		</div>
-	#end
-	#if($r.isNotEmpty($item.noAccessMessage))
-		<div class="o_expanded o_text">
-			<div class="o_text_block o_no_access">
-				<div>
-					<h5>$r.translate("info.header")</h5>
-					<div>$item.noAccessMessage</div>
 				</div>
 				<div></div>
 			</div>

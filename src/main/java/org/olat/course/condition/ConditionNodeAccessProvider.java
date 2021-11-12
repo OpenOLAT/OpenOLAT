@@ -28,6 +28,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.editor.ConditionAccessEditConfig;
+import org.olat.course.nodeaccess.NoAccessResolver;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -120,6 +121,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	@Override
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		return new ConditionCourseTreeModelBuilder(userCourseEnv);
+	}
+	
+	@Override
+	public NoAccessResolver getNoAccessResolver(UserCourseEnvironment userCourseEnv) {
+		return ConditionNoAccessResolver.INSTANCE;
 	}
 
 	@Override
