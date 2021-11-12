@@ -34,7 +34,7 @@ import org.olat.core.id.Identity;
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "userVO")
+@XmlRootElement(name = "userLifecycleVO")
 public class UserLifecycleVO {
 	
 	private Long key;
