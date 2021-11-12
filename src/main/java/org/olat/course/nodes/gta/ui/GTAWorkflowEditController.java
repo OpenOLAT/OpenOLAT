@@ -79,7 +79,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] executionKeys = new String[]{ GTAType.group.name(), GTAType.individual.name() };
 	
-	private static final String[] optionalKeys = new String[] { "mandatory", "optional" };
+	private static final String[] optionalKeys = new String[] { AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name() };
 	private static final String[] solutionVisibleToAllKeys = new String[] { "all", "restricted" };
 	
 	private CloseableModalController cmc;
@@ -452,12 +452,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 			config.setList(GTACourseNode.GTASK_GROUPS, groupKeys);
 		} else {
 			config.setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
-			config.setList(GTACourseNode.GTASK_AREAS, new ArrayList<Long>(0));
-			config.setList(GTACourseNode.GTASK_GROUPS, new ArrayList<Long>(0));
+			config.setList(GTACourseNode.GTASK_AREAS, new ArrayList<>(0));
+			config.setList(GTACourseNode.GTASK_GROUPS, new ArrayList<>(0));
 		}
 		
 		if (optionalEl.isVisible()) {
-			config.setStringValue(GTACourseNode.GTASK_OBLIGATION, AssessmentObligation.optional.name());
+			config.setStringValue(GTACourseNode.GTASK_OBLIGATION, AssessmentObligation.valueOf(optionalEl.getSelectedKey()).name());
 		}
 		
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
