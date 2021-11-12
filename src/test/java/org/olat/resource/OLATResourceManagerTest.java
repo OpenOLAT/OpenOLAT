@@ -76,7 +76,7 @@ public class OLATResourceManagerTest extends OlatTestCase {
 		Assert.assertNotNull(res);
 		rm.saveOLATResource(res);
 		
-		Assert.assertEquals(new Long(8213649l), res.getResourceableId());
+		Assert.assertEquals(Long.valueOf(8213649l), res.getResourceableId());
 		Assert.assertEquals(resName, res.getResourceableTypeName());
 		Assert.assertNotNull(res.getCreationDate());
 		Assert.assertNotNull(res.getKey());
@@ -271,7 +271,7 @@ public class OLATResourceManagerTest extends OlatTestCase {
 
 		@Override
 		public Long getResourceableId() {
-			return new Long(0);
+			return Long.valueOf(0);
 		}
 
 		@Override

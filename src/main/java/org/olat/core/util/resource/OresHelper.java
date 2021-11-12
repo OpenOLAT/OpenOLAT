@@ -211,7 +211,7 @@ public class OresHelper {
 	 * @return true if equal
 	 */
 	public static boolean equals(OLATResourceable a, OLATResourceable b) {
-		if (a == null || b == null) return true;
+		if (a == null || b == null) return false;
 		
 		Long aKey = a.getResourceableId();
 		String aType = a.getResourceableTypeName();
