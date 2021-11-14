@@ -228,9 +228,4 @@ public class CopyToRepositoryController extends FormBasicController {
 		
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

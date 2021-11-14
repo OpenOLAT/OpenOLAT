@@ -70,11 +70,6 @@ public class CmdDeletedFiles extends BasicController implements FolderCommand {
 		putInitialPanel(deletedFileListCtr.getInitialComponent());
 		return deletedFileListCtr;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//auto-disposed by basic controller
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

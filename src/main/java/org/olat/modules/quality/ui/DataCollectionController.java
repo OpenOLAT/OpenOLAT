@@ -381,6 +381,7 @@ public class DataCollectionController extends BasicController implements TooledC
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 	
 	protected void cleanUp() {

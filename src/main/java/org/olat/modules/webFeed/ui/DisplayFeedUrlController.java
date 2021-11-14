@@ -62,19 +62,7 @@ public class DisplayFeedUrlController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
-	protected void doDispose() {
-	// nothing to do
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == feedUrl && event.wasTriggerdBy(FormEvent.ONCLICK)) {
 			if (feed.isInternal() && !userHasBeenNotifiedOfConfidentialityOfUrl) {
@@ -84,18 +72,11 @@ public class DisplayFeedUrlController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 	// this is actually not a proper form. don't do anything.
 	}
 
-	/**
-	 * @see org.olat.modules.webFeed.ui.podcast.FeedFormController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		feedUrl = uifactory.addTextElement("feedUrl", "feed.url.label", 5000, helper.getFeedUrl(), this.flc);

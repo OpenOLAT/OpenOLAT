@@ -80,11 +80,6 @@ public class PropertiesSegmentController extends BasicController {
 		}
 	}
 
-	@Override
-	public void doDispose() {
-		//
-	}
-
 	private void showSetUpProperties(UserRequest ureq) {
 		if (setupPropertiesController == null) {
 			setupPropertiesController = new SetupPropertiesController(ureq, getWindowControl());

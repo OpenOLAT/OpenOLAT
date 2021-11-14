@@ -106,6 +106,7 @@ public class BGEmailCompositionStepController extends StepFormBasicController   
 	@Override
 	protected void doDispose() {
 		contactForm.dispose();
+        super.doDispose();
 	}
 
 	@Override

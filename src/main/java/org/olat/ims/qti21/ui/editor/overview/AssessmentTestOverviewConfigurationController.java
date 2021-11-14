@@ -252,6 +252,7 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 	@Override
 	protected void doDispose() {
 		toolbar.setCssClass("");
+        super.doDispose();
 	}
 	
 	private void loadModel() {

@@ -71,11 +71,6 @@ public class CurriculumElementSelectionController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		entrySelector = uifactory.addCheckboxesVertical("entries",  null, formLayout, curriculumElementKeys, curriculumElementNames, 1);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());

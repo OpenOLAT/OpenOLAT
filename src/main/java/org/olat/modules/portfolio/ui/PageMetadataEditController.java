@@ -242,6 +242,7 @@ public class PageMetadataEditController extends FormBasicController {
 		if(tempFolder != null) {
 			FileUtils.deleteDirsAndFiles(tempFolder, true, true);
 		}
+        super.doDispose();
 	}
 	
 	private void initDelegate() {

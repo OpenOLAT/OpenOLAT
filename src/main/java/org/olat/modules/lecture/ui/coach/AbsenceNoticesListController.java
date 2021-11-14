@@ -357,11 +357,6 @@ public class AbsenceNoticesListController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editNoticeCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
@@ -655,11 +650,6 @@ public class AbsenceNoticesListController extends FormBasicController {
 			}
 	
 			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 		
 		private void addLink(String name, String cmd, String iconCSS, VelocityContainer mainVC) {

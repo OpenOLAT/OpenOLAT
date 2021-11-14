@@ -260,12 +260,4 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

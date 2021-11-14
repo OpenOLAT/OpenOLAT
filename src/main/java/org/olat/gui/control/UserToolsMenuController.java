@@ -173,5 +173,6 @@ public class UserToolsMenuController extends BasicController implements Lockable
 		for(Disposable disposableTool:disposableTools) {
 			disposableTool.dispose();
 		}
+        super.doDispose();
 	}
 }

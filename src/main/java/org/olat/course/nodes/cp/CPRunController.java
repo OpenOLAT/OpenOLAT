@@ -252,6 +252,7 @@ public class CPRunController extends BasicController implements ControllerEventL
 			cpDispC.dispose();
 			cpDispC = null;
 		}
+        super.doDispose();
 	}
 
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, String selectedNodeId) {

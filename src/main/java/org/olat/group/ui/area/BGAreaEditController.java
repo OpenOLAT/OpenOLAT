@@ -239,8 +239,4 @@ public class BGAreaEditController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// don't dispose anything
-	}
 }

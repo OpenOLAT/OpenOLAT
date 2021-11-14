@@ -218,6 +218,7 @@ public class SharedBindersController extends FormBasicController implements Acti
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 	
 	@Override

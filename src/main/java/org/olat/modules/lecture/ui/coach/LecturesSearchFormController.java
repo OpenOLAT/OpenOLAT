@@ -221,11 +221,6 @@ public class LecturesSearchFormController extends FormBasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public List<UserPropertyHandler> getUserPropertyHandlers() {
 		return userPropertyHandlers;

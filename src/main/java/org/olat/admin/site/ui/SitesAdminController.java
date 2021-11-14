@@ -85,11 +85,6 @@ public class SitesAdminController  extends BasicController  {
 		
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//auto-disposed
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

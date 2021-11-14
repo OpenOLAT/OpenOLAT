@@ -154,10 +154,4 @@ public class IdentityPassedController extends BasicController {
 		updateUI(passedOverridable);
 		fireEvent(ureq, FormEvent.CHANGED_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

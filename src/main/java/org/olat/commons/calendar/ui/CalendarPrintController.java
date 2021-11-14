@@ -71,11 +71,6 @@ public class CalendarPrintController extends FormBasicController {
 		toEl = uifactory.addDateChooser("cal.to", end, formLayout);
 		printButton = uifactory.addFormLink("print", formLayout, Link.BUTTON);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

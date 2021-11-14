@@ -151,11 +151,6 @@ public class AssessmentCourseOverviewController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(toReviewCtrl == source) {
 			if(event instanceof UserSelectionEvent) {

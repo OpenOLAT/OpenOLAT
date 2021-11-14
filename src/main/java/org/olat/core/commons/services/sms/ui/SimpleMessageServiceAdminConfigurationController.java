@@ -169,11 +169,6 @@ public class SimpleMessageServiceAdminConfigurationController extends FormBasicC
 			}
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

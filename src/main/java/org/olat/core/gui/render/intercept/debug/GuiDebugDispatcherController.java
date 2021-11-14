@@ -128,11 +128,6 @@ public class GuiDebugDispatcherController extends BasicController implements Int
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public ComponentRenderer createInterceptComponentRenderer(final ComponentRenderer originalRenderer) {
 		return new ComponentRenderer() {
 

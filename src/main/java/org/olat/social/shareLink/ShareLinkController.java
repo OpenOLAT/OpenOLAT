@@ -102,9 +102,4 @@ public class ShareLinkController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
 }

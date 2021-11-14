@@ -86,11 +86,6 @@ public class GroupMembersDisplayController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-	// Nothing to do here.
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// events handled in child controller
 	}

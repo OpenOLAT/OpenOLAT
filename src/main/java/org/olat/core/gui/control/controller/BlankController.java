@@ -42,9 +42,4 @@ public class BlankController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

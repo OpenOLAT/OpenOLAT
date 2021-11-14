@@ -69,9 +69,4 @@ public class OverviewController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

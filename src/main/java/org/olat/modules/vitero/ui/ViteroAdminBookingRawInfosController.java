@@ -92,11 +92,6 @@ public class ViteroAdminBookingRawInfosController extends FormBasicController {
 		}
 		autoSignIn.setEnabled(false);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

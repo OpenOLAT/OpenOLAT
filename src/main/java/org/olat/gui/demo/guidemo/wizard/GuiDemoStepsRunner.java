@@ -71,11 +71,6 @@ public class GuiDemoStepsRunner extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-	//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == smrc) {
 			if (event == Event.CANCELLED_EVENT) {
@@ -188,11 +183,6 @@ public class GuiDemoStepsRunner extends BasicController {
 			// inform surrounding Step runner to proceed
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
-
-		@Override
-		protected void doDispose() {
-		//
-		}
 	}
 
 	private final class StepTwo extends BasicStep {
@@ -229,11 +219,6 @@ public class GuiDemoStepsRunner extends BasicController {
 			setBasePackage(GuiDemoFlexiForm.class);
 			flc.setTranslator(getTranslator());
 			initForm(ureq);
-		}
-
-		@Override
-		protected void doDispose() {
-		//
 		}
 
 		@Override

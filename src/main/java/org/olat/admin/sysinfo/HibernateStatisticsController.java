@@ -62,11 +62,6 @@ public class HibernateStatisticsController extends BasicController {
 		DatabaseConnectionVO connectionInfos = databaseStatsManager.getConnectionInfos();
 		mainVC.contextPut("connectionInfos", connectionInfos);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

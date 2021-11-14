@@ -522,11 +522,6 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
@@ -792,11 +787,6 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 			cancel.setElementCssClass("btn-xs");
 			FormSubmit submit = uifactory.addFormSubmitButton("override.score", buttonsCont);
 			submit.setElementCssClass("btn-xs");
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

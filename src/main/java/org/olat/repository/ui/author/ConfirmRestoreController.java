@@ -90,12 +90,6 @@ public class ConfirmRestoreController extends FormBasicController {
 			restoreButton = uifactory.addFormLink("tools.restore", buttonsCont, Link.BUTTON);
 		}
 	}
-	
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

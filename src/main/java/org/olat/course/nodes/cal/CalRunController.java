@@ -94,5 +94,6 @@ public class CalRunController extends BasicController implements Activateable2 {
 		if(calCtr != null){
 			calCtr.dispose();
 		}
+        super.doDispose();
 	}
 }

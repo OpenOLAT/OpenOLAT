@@ -129,10 +129,4 @@ public class GroupNamesForm extends FormBasicController {
 		bgMax.setDisplaySize(3);
 		uifactory.addFormSubmitButton("finish", formLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

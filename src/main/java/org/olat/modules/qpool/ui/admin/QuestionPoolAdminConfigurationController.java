@@ -316,11 +316,6 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		qpoolModule.setPoolAdminAllowedToConfigEducationalContext(poolAdminAllowedToConfigEducationalContext);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void doConfirmEnabled(UserRequest ureq, boolean enable) {
 		if (!enable) return;
 		

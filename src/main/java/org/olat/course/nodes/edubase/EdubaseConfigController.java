@@ -77,10 +77,4 @@ public class EdubaseConfigController extends FormBasicController {
 				descriptionEnabledEl.isAtLeastSelected(1)? Boolean.toString(true): Boolean.toString(false));
 		return config;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }

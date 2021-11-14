@@ -75,10 +75,4 @@ public class CreateTestTargetController extends BasicController {
 		}
 		return null;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

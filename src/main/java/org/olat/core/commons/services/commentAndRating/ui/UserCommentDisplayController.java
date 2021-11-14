@@ -172,6 +172,7 @@ public class UserCommentDisplayController extends BasicController {
 	protected void doDispose() {
 		// Child controllers disposed by basic controller
 		replyControllers = null;
+        super.doDispose();
 	}
 
 	@Override

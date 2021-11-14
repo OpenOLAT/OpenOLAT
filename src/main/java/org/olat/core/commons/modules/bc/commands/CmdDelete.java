@@ -164,9 +164,4 @@ public class CmdDelete extends BasicController implements FolderCommand {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
 	}
-
-	@Override
-	protected void doDispose() {
-		// autodisposed by basic controller
-	}
 }

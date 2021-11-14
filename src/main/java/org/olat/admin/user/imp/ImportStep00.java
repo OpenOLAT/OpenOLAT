@@ -144,11 +144,6 @@ class ImportStep00 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			//
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			String inp = textAreaElement.getValue();
 			addToRunContext("inp", inp);

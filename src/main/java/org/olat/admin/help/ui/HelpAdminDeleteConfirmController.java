@@ -83,11 +83,6 @@ public class HelpAdminDeleteConfirmController extends FormBasicController {
 			deleteButton = uifactory.addFormLink("delete", buttonsCont, Link.BUTTON);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

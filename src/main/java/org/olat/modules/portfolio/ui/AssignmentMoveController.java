@@ -92,11 +92,6 @@ public class AssignmentMoveController extends FormBasicController {
 		uifactory.addFormSubmitButton("move", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private Long getSelectedSectionKey() {
 		Long selectSection = null;

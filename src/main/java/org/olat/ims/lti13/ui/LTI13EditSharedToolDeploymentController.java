@@ -144,11 +144,6 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		}
 		return sb.toString();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

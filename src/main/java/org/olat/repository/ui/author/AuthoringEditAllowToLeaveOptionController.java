@@ -104,11 +104,6 @@ public class AuthoringEditAllowToLeaveOptionController extends FormBasicControll
 		}
 		return setting;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

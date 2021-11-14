@@ -123,11 +123,6 @@ public class UserListController extends FormBasicController implements Activatea
 			tableEl.setSearchEnabled(new StudentListProvider(model, userManager), usess);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public int size() {
 		return model.getRowCount();

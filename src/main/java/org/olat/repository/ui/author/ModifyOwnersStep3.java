@@ -85,11 +85,6 @@ public class ModifyOwnersStep3 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}

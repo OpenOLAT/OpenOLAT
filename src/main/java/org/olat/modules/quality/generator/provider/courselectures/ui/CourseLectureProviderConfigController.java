@@ -345,9 +345,4 @@ public class CourseLectureProviderConfigController extends ProviderConfigControl
 		configs.setValue(CourseLecturesFollowUpProvider.CONFIG_KEY_EDUCATIONAL_TYPE_EXCLUSION, educationalTypeKeys);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -86,9 +86,4 @@ public class MemberSearchController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add("search", searchController.getInitialFormItem());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

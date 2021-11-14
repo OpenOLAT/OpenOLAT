@@ -87,11 +87,6 @@ public class LTI13AdminExternalToolsController extends FormBasicController {
 		tableEl.setEmptyTableMessageKey("tools.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "lti13-tools-admin");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<LTI13Tool> tools = lti13Service.getTools(LTI13ToolType.EXT_TEMPLATE);

@@ -186,11 +186,6 @@ public class VideoAdminListController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void launch(UserRequest ureq, VideoTranscoding videoTranscoding) {
 		RepositoryEntry videoRe = repositoryService.loadByResourceKey(videoTranscoding.getVideoResource().getKey());

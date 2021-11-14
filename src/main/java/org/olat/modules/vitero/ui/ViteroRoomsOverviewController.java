@@ -86,11 +86,6 @@ public class ViteroRoomsOverviewController extends BasicController {
 		
 		putInitialPanel(tableCtr.getInitialComponent());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

@@ -90,11 +90,6 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == shibLink) {
 			DispatcherModule.redirectTo(ureq.getHttpResp(), WebappHelper.getServletContextPath() + "/shib/");

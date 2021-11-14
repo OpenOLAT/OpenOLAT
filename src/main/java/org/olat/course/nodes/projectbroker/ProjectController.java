@@ -112,9 +112,4 @@ public class ProjectController extends BasicController {
 		fireEvent(urequest, event);
 	}
 
-	@Override
-	protected void doDispose() {
-		
-	}
-
 }

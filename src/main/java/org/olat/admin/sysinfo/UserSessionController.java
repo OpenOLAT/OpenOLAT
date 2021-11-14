@@ -124,18 +124,12 @@ public class UserSessionController extends BasicController implements Breadcrumb
 		tableCtr.setTableDataModel(usessTableModel);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
@@ -159,10 +153,4 @@ public class UserSessionController extends BasicController implements Breadcrumb
 			}
 		}
 	}
-
-	protected void doDispose() {
-		// DialogBoxController and TableController get disposed by BasicController
-	}
-	
-	
 }

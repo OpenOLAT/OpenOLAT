@@ -134,11 +134,6 @@ public class CourseListWrapperController extends BasicController implements Acti
     	//
     }
 
-    @Override
-    protected void doDispose() {
-    	//
-    }
-
     public Activateable2 showCurriculumStructure(UserRequest ureq) {
         showCurriculum = true;
 

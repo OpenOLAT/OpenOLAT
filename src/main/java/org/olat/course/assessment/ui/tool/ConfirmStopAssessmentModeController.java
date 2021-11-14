@@ -135,11 +135,6 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		}
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private Set<Long> getIdentitiesWithDisadvantageCompensations(final Set<Long> assessedIdentityKeys, final List<String> nodeList) {
 		final List<IdentityRef> disadvantagedIdentities = disadvantageCompensationService
 				.getActiveDisadvantagedUsers(mode.getRepositoryEntry(), nodeList);

@@ -81,11 +81,6 @@ public class ShareItemSourceOptionController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

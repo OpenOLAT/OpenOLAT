@@ -98,11 +98,6 @@ public class LifecycleAdminController extends FormBasicController {
 		
 		createLifeCycle = uifactory.addFormLink("create.lifecycle", formLayout, Link.BUTTON);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

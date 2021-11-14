@@ -107,6 +107,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 
 	@Override

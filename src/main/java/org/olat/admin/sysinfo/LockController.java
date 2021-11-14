@@ -130,5 +130,6 @@ public class LockController extends BasicController {
 	protected void doDispose() {
 		// DialogBoxController and TableController get disposed by BasicController
 		locksTableModel = null;
+        super.doDispose();
 	}
 }

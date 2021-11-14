@@ -144,11 +144,6 @@ public class OAuthRegistrationController extends FormBasicController {
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

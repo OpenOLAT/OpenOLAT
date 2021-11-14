@@ -239,11 +239,6 @@ public class RightsMetadataEditController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == groupController) {
 			if(event instanceof IdentitiesAddEvent ) { 

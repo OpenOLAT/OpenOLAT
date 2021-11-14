@@ -191,6 +191,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 	@Override
 	protected void doDispose() {
 		recordDisposedTime();
+        super.doDispose();
 	}
 	
 	private void recordDisposedTime() {

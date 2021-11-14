@@ -211,6 +211,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			frc.dispose();
 			frc = null;
 		}
+        super.doDispose();
 	}
 	
 	public void activatePath(UserRequest ureq, String path) {

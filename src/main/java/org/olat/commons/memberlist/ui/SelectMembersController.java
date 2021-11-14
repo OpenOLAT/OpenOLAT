@@ -109,11 +109,6 @@ public class SelectMembersController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formOK(UserRequest ureq) {
 		selectedMembers.clear();
 		selectMembers(ownerEl, ownerList);

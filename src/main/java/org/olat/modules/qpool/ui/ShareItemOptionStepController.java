@@ -61,11 +61,6 @@ public class ShareItemOptionStepController extends StepFormBasicController {
 		editableEl = uifactory.addRadiosVertical("share.editable", "share.editable", mailCont, keys, values);
 		editableEl.select("no", true);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

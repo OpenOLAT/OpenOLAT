@@ -83,6 +83,7 @@ public class TunnelController extends DefaultController {
 	protected void doDispose() {
 		IOUtils.closeQuietly(httpClientInstance);
 		tuc = null;
+        super.doDispose();
 	}
 
 }

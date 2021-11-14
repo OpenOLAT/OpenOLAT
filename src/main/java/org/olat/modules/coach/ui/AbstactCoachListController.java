@@ -147,6 +147,7 @@ public abstract class AbstactCoachListController extends FormBasicController imp
     @Override
     protected void doDispose() {
         stackPanel.removeListener(this);
+        super.doDispose();
     }
 
     @Override

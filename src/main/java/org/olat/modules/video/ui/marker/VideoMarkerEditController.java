@@ -166,11 +166,6 @@ public class VideoMarkerEditController extends BasicController {
 		getWindowControl().getWindowBackOffice().sendCommandTo(reloadMarkers);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public class VideoMarkersController extends FormBasicController {
 		
 		private FormLink addMarkerEl;
@@ -209,11 +204,6 @@ public class VideoMarkerEditController extends BasicController {
 			FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add(buttonGroupLayout);
 			addMarkerEl = uifactory.addFormLink("video.marker.add", buttonGroupLayout, Link.BUTTON);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

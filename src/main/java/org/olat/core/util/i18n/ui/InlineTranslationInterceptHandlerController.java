@@ -245,15 +245,14 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+	@Override
 	protected void doDispose() {
 		// controllers autodisposed by basic controller
 		inlineTranslationURLBuilder = null;
 		delegatingComponent = null;
 		i18nItemEditCtr = null;
 		cmc = null;
+        super.doDispose();
 	}
 
 	/**

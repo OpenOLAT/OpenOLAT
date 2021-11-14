@@ -72,11 +72,6 @@ public class StandardResultController extends FormBasicController implements Res
 		this.document = document;
 		initForm(ureq);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

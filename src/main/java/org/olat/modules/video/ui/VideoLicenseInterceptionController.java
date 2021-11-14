@@ -99,9 +99,4 @@ public class VideoLicenseInterceptionController extends FormBasicController {
 		fireEvent(ureq, new VideoLicenseAcceptEvent(VideoLicenseAcceptEvent.DENY_LICENSE, masterFile, transcoding));
 	}
 
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose
-	}
-
 }

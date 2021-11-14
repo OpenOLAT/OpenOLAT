@@ -62,11 +62,6 @@ public class SimpleMessageServiceAdminController extends BasicController {
 		doOpenConfiguration(ureq);
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

@@ -461,11 +461,6 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	/**
 	 * @param mc The module confguration
 	 * @return The configured file name

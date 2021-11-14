@@ -94,11 +94,6 @@ public class CourseTemplateSearchController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 		tableEl.setEmptyTableMessageKey("no.binders.template.available");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel(UserRequest ureq) {
 		IdentityEnvironment identityEnv = ureq.getUserSession().getIdentityEnvironment();

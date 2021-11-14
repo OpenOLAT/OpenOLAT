@@ -56,19 +56,7 @@ public class SimpleMessageController extends BasicController {
 		simplemsg.contextPut("text", msg);
 		putInitialPanel(simplemsg);
 	}
-	
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		// one of most simple controllers, really nothing to be disposed here.
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// This is only simple text in this controller, there should no events come

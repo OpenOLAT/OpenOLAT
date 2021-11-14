@@ -559,15 +559,6 @@ public class RepositorySearchController extends BasicController implements Activ
 		calloutCtrl.activate();
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private static class TypeFilter implements ShortName {
 		
 		private final String type;

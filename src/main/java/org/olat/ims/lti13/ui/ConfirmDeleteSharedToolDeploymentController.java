@@ -62,11 +62,6 @@ public class ConfirmDeleteSharedToolDeploymentController extends FormBasicContro
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		lti13Service.deleteSharedToolDeployment(deployment);
 		fireEvent(ureq, Event.DONE_EVENT);

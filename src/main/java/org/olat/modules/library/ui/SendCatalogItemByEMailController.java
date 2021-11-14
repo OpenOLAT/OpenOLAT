@@ -62,11 +62,6 @@ public class SendCatalogItemByEMailController extends SendDocumentsByEMailContro
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void appendBusinessPath(VFSContainer rootContainer, VFSLeaf file, StringBuilder sb) {
 		String uri = catalogItem.getAbsolutePathUUID();
 		appendMetadata("mf.url", uri, sb);

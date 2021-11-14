@@ -422,6 +422,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
 		}
 		lock = null;
+        super.doDispose();
 	}
 
 	private void finishQuestionEdition() {

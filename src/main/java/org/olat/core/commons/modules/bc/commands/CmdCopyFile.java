@@ -71,11 +71,6 @@ public class CmdCopyFile extends BasicController implements FolderCommand {
 		VFSContainer cContainer = folderComponent.getExternContainerForCopy();
 		return new FileCopyController(ureq, wControl, cContainer, folderComponent);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//	
-	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {

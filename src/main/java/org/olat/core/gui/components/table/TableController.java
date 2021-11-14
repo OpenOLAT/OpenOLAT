@@ -732,11 +732,4 @@ public class TableController extends BasicController {
 	public boolean getTableSortAsc() {
 		return table.getSortAscending();
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		//
-	}
 }

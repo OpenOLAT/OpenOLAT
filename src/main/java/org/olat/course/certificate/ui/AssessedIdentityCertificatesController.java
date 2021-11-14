@@ -101,6 +101,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+        super.doDispose();
 	}
 
 	@Override

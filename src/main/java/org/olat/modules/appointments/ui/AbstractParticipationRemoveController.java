@@ -312,10 +312,4 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

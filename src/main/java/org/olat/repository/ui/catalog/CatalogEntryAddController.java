@@ -100,6 +100,7 @@ public class CatalogEntryAddController extends BasicController {
 	protected void doDispose() {
 		mainVC = null;
 		selectionTree = null;
+        super.doDispose();
 	}
 
 	@Override

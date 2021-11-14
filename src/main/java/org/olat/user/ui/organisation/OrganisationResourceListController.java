@@ -157,11 +157,6 @@ public class OrganisationResourceListController extends FormBasicController impl
 		tableModel.setObjects(entries);
 		tableEl.reset(true, true, true);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

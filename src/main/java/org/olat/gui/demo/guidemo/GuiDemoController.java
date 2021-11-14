@@ -48,9 +48,4 @@ public class GuiDemoController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		//no events to catch
 	}
-
-	protected void doDispose() {
-		//no resources to dispose
-	}
-
 }

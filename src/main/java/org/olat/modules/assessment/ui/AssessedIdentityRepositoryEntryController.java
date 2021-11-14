@@ -93,11 +93,6 @@ public class AssessedIdentityRepositoryEntryController extends BasicController i
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}

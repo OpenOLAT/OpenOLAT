@@ -726,6 +726,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	protected void doDispose() {
 		this.toolbarPanel.removeListener(this);	
 		releaseLock();
+        super.doDispose();
 	}
 	
 	@Override

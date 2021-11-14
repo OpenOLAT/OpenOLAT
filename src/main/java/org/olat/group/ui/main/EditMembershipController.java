@@ -604,11 +604,6 @@ public class EditMembershipController extends FormBasicController {
 			uifactory.addFormSubmitButton("ok", buttonLayout);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public Identity getMember() {
 		return member;

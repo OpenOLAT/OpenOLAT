@@ -145,11 +145,6 @@ public class BigBlueButtonDateListController extends StepFormBasicController imp
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(addMeetingController == source) {
 			if(event == Event.DONE_EVENT) {

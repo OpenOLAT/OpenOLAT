@@ -70,11 +70,6 @@ public class CatalogManagerController extends BasicController implements Activat
 			catalogCtrl.initToolbar();
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

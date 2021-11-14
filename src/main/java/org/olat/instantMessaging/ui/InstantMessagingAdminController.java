@@ -170,11 +170,6 @@ public class InstantMessagingAdminController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == imEnabledEl) {
 			imModule.setEnabled(imEnabledEl.isSelected(0));

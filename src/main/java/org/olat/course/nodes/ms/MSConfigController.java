@@ -626,9 +626,4 @@ public class MSConfigController extends FormBasicController {
 		listenTo(previewCtr);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

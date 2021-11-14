@@ -175,10 +175,4 @@ public class DocumentRunController extends BasicController {
 		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

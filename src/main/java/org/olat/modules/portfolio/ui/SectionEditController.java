@@ -145,11 +145,6 @@ public class SectionEditController extends FormBasicController {
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

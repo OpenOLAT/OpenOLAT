@@ -266,13 +266,12 @@ public class DevelopmentController extends BasicController {
 		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// floatCtr auto disposed by basic controller
 		if (spacesaverController != null) spacesaverController.dispose();
 		if (bandwithController != null) bandwithController.dispose();
+        super.doDispose();
 	}
 
 	/**

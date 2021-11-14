@@ -83,11 +83,6 @@ public class SchedulerController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(250);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		

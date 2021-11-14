@@ -87,11 +87,6 @@ public class ConfirmResetTaskController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		task = gtaManager.resetTask(task, gtaNode, courseEnv, getIdentity());
 		gtaManager.log("Reset task", "reset task", task, getIdentity(), getIdentity(), null, courseEnv, gtaNode, Role.coach);

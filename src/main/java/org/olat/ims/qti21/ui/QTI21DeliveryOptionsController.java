@@ -286,11 +286,6 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			element.uncheckAll();
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

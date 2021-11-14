@@ -54,6 +54,7 @@ public class LicenseAdminController extends BasicController {
 	protected void doDispose() {
 		removeAsListenerAndDispose(licenseAdminConfigCtrl);
 		licenseAdminConfigCtrl = null;
+        super.doDispose();
 	}	
 
 }

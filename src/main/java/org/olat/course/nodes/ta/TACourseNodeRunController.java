@@ -151,6 +151,7 @@ public class TACourseNodeRunController extends BasicController {
 			solutionController.dispose();
 			solutionController = null;
 		}
+        super.doDispose();
 	}
 
 }

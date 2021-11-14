@@ -212,11 +212,6 @@ public class VideoListingController extends FormBasicController implements Activ
 		}
 	}
 	
-	@Override
-	protected void doDispose() {
-		// controllers auto-disposed by basic controller
-	}
-	
 	public class VideoMapper implements Mapper {
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {

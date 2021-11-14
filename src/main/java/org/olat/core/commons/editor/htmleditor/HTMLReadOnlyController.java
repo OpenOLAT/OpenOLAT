@@ -64,9 +64,4 @@ public class HTMLReadOnlyController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

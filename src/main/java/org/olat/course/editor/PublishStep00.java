@@ -157,11 +157,6 @@ class PublishStep00 extends BasicStep {
 			this.publishManager2 = publishManager2;
 			initForm(ureq);
 		}
-
-		@Override
-		protected void doDispose() {
-			// nothing to dispose
-		}
 		
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {

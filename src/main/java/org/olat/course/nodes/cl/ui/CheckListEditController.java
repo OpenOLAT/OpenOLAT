@@ -82,11 +82,6 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

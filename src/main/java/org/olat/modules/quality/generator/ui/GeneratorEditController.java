@@ -117,9 +117,4 @@ public class GeneratorEditController extends FormBasicController {
 		// Save is implemented in the sub forms.
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

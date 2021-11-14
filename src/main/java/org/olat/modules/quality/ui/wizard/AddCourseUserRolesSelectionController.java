@@ -122,10 +122,4 @@ public class AddCourseUserRolesSelectionController extends StepFormBasicControll
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

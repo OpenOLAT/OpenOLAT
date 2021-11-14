@@ -137,14 +137,6 @@ public class FOPeekviewController extends BasicController implements Controller 
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-	
 	public static class MessageView {
 		
 		private final Long key;

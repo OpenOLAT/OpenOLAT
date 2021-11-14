@@ -110,11 +110,6 @@ public class GoToMeetingController extends BasicController {
 		putInitialPanel(mainVC);
 		updateButtons();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void updateButtons() {
 		if(readOnly) {

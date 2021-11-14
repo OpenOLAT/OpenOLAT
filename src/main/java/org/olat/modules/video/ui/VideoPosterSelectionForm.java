@@ -121,6 +121,7 @@ public class VideoPosterSelectionForm extends BasicController {
 		if(tmpFile != null && tmpFile.exists()) {
 			tmpFile.deleteSilently();
 		}
+        super.doDispose();
 	}
 	
 	public boolean hasProposals() {

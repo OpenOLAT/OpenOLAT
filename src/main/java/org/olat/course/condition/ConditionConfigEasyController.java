@@ -427,6 +427,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	@Override
 	protected void doDispose() {
 		singleUserEventCenter.deregisterFor(this, groupConfigChangeEventOres);
+        super.doDispose();
 	}
 
 	@Override

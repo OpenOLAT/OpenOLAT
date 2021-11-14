@@ -259,13 +259,6 @@ public class SinglePageController extends BasicController implements Activateabl
 	private void setCurURI(String uri) {
 		this.g_curURI = uri;
 	}
-	
-	@Override
-	protected void doDispose() {
-		// NOTE: do not deregister this mapper here: the url pointing to this mapper is opened in a new browser window
-		// and the user will expect to be able to browse beyond the lifetime of this originating controller here.
-		//if (mapper != null) {mr.deregister(mapper);}
-	}
 
 	/**
 	 * Set the internal link tree model that should be used in the HTML editor to

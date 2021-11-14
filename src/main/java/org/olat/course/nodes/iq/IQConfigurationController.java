@@ -525,5 +525,6 @@ public class IQConfigurationController extends BasicController {
 			previewLayoutCtr = null;
 		}
 		cleanUpQti21PreviewSession();
+        super.doDispose();
 	}
 }

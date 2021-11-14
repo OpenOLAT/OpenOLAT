@@ -80,18 +80,8 @@ public class GuiDemoFileChooserController extends BasicController {
 
 		putInitialPanel(contentVC);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		// Controllers auto disposed by basic controller
-	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == chooserCtr) {
 			// catch the events from the file chooser controller here

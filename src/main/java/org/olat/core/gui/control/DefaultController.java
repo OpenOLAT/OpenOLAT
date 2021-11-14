@@ -462,11 +462,9 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * to be implemented by the concrete controllers to dispose resources, locks, subcontrollers, and so on
 	 *
 	 */
-	protected abstract void doDispose();
-
-	/**
-	 * @see java.lang.Object#toString()
-	 */
+	protected void doDispose() {
+		// default implementation does nothing
+	}
 
 	@Override
 	public String toString() {

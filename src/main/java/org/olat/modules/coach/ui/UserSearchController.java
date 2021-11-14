@@ -74,11 +74,6 @@ public class UserSearchController extends BasicController implements Activateabl
 		listenTo(searchForm);
 		putInitialPanel(searchForm.getInitialComponent());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

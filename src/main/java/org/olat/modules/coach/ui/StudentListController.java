@@ -132,6 +132,7 @@ public class StudentListController extends FormBasicController implements Activa
 	@Override
 	protected void doDispose() {
 		stackPanel.removeListener(this);
+        super.doDispose();
 	}
 
 	@Override

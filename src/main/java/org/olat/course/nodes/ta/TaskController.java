@@ -445,11 +445,6 @@ public class TaskController extends BasicController {
 		return isDeselectable;
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	/**
 	 * deliver the selected file and show in a popup
 	 tableController* 

@@ -147,11 +147,6 @@ public class AssessmentIdentityCourseController extends BasicController
 	public Identity getAssessedIdentity() {
 		return assessedIdentity;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void initTools() {

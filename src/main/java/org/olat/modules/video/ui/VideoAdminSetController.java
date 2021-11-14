@@ -63,12 +63,6 @@ public class VideoAdminSetController extends FormBasicController  {
 		initForm(ureq);
 	}
 
-
-	@Override
-	protected void doDispose() {
-		// nothing to clean up
-	}
-
 	@Override	
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer mainCont = FormLayoutContainer.createDefaultFormLayout("mainCont", getTranslator());

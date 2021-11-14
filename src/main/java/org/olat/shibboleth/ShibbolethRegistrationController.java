@@ -381,10 +381,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttributes.toMap()));
 	}
 
-	/**
-	 *
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		if (dclController != null) {
@@ -396,6 +392,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 			languageChooserController.dispose();
 			languageChooserController = null;
 		}
+        super.doDispose();
 	}
 
 }

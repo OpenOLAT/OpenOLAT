@@ -1204,6 +1204,7 @@ public class WikiMainController extends BasicController implements Activateable2
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass());
 		doReleaseEditLock();
+        super.doDispose();
 	}
 
 	private void doReleaseEditLock() {

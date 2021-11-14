@@ -152,11 +152,6 @@ public class LiveStreamPeekviewController extends BasicController implements Con
 			fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, nodeId));
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public final static class EventWrapper {
 		

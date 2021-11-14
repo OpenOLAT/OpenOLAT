@@ -114,9 +114,7 @@ public class SharedFolderEditorController extends DefaultController implements A
 		}
 	}
 			
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		if (folderRunController != null) {
 			folderRunController.dispose();
@@ -130,5 +128,6 @@ public class SharedFolderEditorController extends DefaultController implements A
 			cmc.dispose();
 			cmc = null;
 		}
+        super.doDispose();
 	}
 }

@@ -120,15 +120,5 @@ public class TURunController extends BasicController {
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), controller, userCourseEnv, courseNode, "o_tu_icon");
 		main.setContent(ctrl.getInitialComponent());
 	}
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-    //child controller registered with listenTo gets disposed in BasicController
-	}
-
 
 }

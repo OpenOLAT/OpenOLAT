@@ -61,11 +61,6 @@ public class GlossaryRegisterSettingsController extends FormBasicController {
 		glossaryFolder = glossaryManager.getGlossaryRootFolder(olatresource);
 	
 		initForm(ureq);
-	}	
-
-	@Override
-	protected void doDispose() {
-		// nothing
 	}
 
 	@Override

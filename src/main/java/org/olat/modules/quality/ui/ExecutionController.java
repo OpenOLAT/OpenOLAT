@@ -107,6 +107,7 @@ public class ExecutionController extends BasicController {
 		removeAsListenerAndDispose(headerCtrl);
 		executionCtrl = null;
 		headerCtrl = null;
+        super.doDispose();
 	}
 
 }

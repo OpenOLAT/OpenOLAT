@@ -135,11 +135,6 @@ public class ImmunityProofCardController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		// Nothing to do here
 	}
-
-	@Override
-	protected void doDispose() {
-		
-	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(immunityProofCreateController);

@@ -228,11 +228,6 @@ public class EdubaseBookSectionListController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	protected ModuleConfiguration getUpdatedConfig() {
 		config.setList(EdubaseCourseNode.CONFIG_BOOK_SECTIONS, getBookSections(bookSectionWrappers));
 		return config;

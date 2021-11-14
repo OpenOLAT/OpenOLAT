@@ -142,10 +142,4 @@ public class TopicHeaderController extends BasicController {
 		listenTo(cmc);
 		cmc.activate();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

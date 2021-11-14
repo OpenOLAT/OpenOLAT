@@ -74,11 +74,6 @@ public class EditCurriculumOverviewController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}

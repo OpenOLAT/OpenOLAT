@@ -175,11 +175,6 @@ public class EditReasonController extends FormBasicController {
 		documentUploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "attachment.upload", formLayout);
 		documentUploadEl.addActionListener(FormEvent.ONCHANGE);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected void deleteTempStorage() {
 		if(tempUploadFolder != null) {

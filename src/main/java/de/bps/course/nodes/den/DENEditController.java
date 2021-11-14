@@ -110,6 +110,7 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 			listParticipantsModalCntrll.dispose();
 			listParticipantsModalCntrll = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

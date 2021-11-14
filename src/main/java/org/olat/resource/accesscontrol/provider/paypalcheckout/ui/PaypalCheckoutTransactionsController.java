@@ -107,11 +107,6 @@ public class PaypalCheckoutTransactionsController extends FormBasicController im
 		tableEl.setFilters("", filters, false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "paypal-checkout-transactions");	
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<PaypalCheckoutTransaction> transactions = paypalManager.searchTransactions(null);

@@ -131,8 +131,4 @@ public class BusinessGroupResourceController extends FormBasicController {
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

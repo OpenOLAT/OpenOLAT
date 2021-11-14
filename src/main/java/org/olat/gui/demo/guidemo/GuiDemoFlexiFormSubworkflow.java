@@ -79,11 +79,6 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		// nothing to do
 	}
@@ -207,12 +202,6 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 			this.entries = values;
 			this.selection = selection;
 			initForm(ureq);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
-			
 		}
 
 		@Override

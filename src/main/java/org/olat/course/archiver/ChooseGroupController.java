@@ -73,11 +73,6 @@ public class ChooseGroupController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", buttonLayout);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public BusinessGroup getSelectedGroup() {
 		if(!selectGroupEl.isOneSelected() || selectGroupEl.isSelected(0)) {
 			return null;

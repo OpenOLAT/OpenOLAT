@@ -295,11 +295,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		return managed;
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private SortKey initColumns(FlexiTableColumnModel columnsModel) {
 		SortKey defaultSortKey = null;
 		String editAction = secCallback.isReadonly() ? null : TABLE_ACTION_EDIT;
@@ -1021,11 +1016,6 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			}
 			mainVC.put(name, link);
 			links.add(name);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 		
 		@Override

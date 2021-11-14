@@ -224,11 +224,6 @@ public class CourseReminderListController extends FormBasicController
 	public boolean hasReminders() {
 		return tableModel.getRowCount() > 0;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -492,11 +487,6 @@ public class CourseReminderListController extends FormBasicController
 			}
 			mainVC.put(name, link);
 			links.add(name);
-		}
-		
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

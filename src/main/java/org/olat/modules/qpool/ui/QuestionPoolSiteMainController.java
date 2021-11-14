@@ -57,11 +57,6 @@ public class QuestionPoolSiteMainController extends MainLayoutBasicController im
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}

@@ -63,11 +63,6 @@ public class ErrorLogLevelController extends BasicController {
 		loadModel();
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void loadModel() {
 		List<Logger> loggers = Tracing.getLoggersSortedByName(); // put it in a list in case of a reload (enum can only be used once)
 		myLoglevels.contextPut("loggers", loggers);

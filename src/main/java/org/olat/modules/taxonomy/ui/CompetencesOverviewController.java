@@ -494,7 +494,8 @@ public class CompetencesOverviewController extends FormBasicController implement
 	protected void doDispose() {
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
-		}		
+		}
+        super.doDispose();	
 	}
 
 	@Override

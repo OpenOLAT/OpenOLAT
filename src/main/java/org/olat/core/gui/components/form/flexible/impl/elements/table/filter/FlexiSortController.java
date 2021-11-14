@@ -86,11 +86,6 @@ public class FlexiSortController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof FlexiTableSort) {
 			FlexiTableSort sort = (FlexiTableSort)((FormLink)source).getUserObject();

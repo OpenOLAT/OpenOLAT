@@ -116,11 +116,6 @@ public class CopyRepositoryEntryWrapperController extends BasicController {
 		EntryChangedEvent e = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.added, "runtime");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose		
-	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(copyLearningPathCourseWizardController);

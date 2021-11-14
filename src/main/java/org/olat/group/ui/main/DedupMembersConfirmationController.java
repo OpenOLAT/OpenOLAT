@@ -84,11 +84,6 @@ public class DedupMembersConfirmationController extends FormBasicController {
 	public boolean isDedupParticipants() {
 		return typEl.isSelected(1);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

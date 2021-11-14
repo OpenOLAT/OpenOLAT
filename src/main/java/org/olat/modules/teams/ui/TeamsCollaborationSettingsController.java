@@ -91,11 +91,6 @@ public class TeamsCollaborationSettingsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// Nothing to dispose.
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

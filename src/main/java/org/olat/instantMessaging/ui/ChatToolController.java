@@ -63,11 +63,6 @@ public class ChatToolController extends BasicController {
 		
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

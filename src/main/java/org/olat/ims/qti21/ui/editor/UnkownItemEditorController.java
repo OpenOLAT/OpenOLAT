@@ -169,11 +169,6 @@ public class UnkownItemEditorController extends FormBasicController {
         sessionController.performTemplateProcessing(new Date());
         return sessionController;
     }
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

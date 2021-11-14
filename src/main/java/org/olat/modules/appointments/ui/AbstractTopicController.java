@@ -254,10 +254,4 @@ public abstract class AbstractTopicController extends FormBasicController {
 				.filter(i -> selectedOrganizerKeys.contains(i.getKey().toString()))
 				.collect(Collectors.toList());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

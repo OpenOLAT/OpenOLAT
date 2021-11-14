@@ -217,11 +217,6 @@ public class OrderEditorController extends FormBasicController implements SyncAs
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void sync(UserRequest ureq, AssessmentItemBuilder builder) {
 		//
 	}

@@ -268,9 +268,4 @@ public class ExceptionWindowController extends DefaultChiefController {
 	public void event(UserRequest ureq, Component source, Event event) {
 	//
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to do here
-	}
 }

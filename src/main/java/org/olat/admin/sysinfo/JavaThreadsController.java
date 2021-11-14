@@ -75,11 +75,6 @@ public class JavaThreadsController extends BasicController {
 		ThreadsDataModel model = new ThreadsDataModel(threads);
 		tableCtr.setTableDataModel(model);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

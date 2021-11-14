@@ -95,11 +95,6 @@ public class AssessedIdentityOverviewController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public boolean isChanges() {
 		return changes;
 	}

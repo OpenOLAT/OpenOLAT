@@ -147,11 +147,6 @@ public class QTI21StatisticsToolController extends BasicController implements Ac
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void initTools() {
 		if(currentCtrl instanceof TooledController) {
 			((TooledController)currentCtrl).initTools();

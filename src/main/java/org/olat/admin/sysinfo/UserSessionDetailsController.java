@@ -128,11 +128,6 @@ public class UserSessionDetailsController extends BasicController {
 		sesDetails.put("sess.kill", sessKillButton);
 		putInitialPanel(sesDetails);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

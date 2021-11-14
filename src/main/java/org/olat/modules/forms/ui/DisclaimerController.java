@@ -118,11 +118,6 @@ public class DisclaimerController extends FormBasicController implements Evaluat
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void setReadOnly(boolean readOnly) {
 		agreementEl.setEnabled(!readOnly);
 	}

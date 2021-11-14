@@ -260,6 +260,7 @@ public class AnalysisListController extends FormBasicController implements Flexi
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 	
 	private static class AnalysisCssDelegate extends DefaultFlexiTableCssDelegate {

@@ -192,6 +192,7 @@ public class EnrollmentListController extends FormBasicController implements Act
 		stackedPanel.removeListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+        super.doDispose();
 	}
 
 	@Override

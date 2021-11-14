@@ -122,11 +122,6 @@ public class InfoMessageControllerSingleVM extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == infomsgEditButton){
 			infoMsgEdit.contextPut("infoEdit", Boolean.TRUE);

@@ -159,11 +159,6 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 		protected void formOK(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);			
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose here
-		}
 		
 		private boolean validateExcelInput(TextAreaElement inputEl) {
 			boolean allOk = validateFormItem(inputEl);

@@ -88,11 +88,6 @@ public class ChangeStatusController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("modify.status", buttonsLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public Integer getStatus() {
 		if(statusEl.isOneSelected()) {

@@ -86,11 +86,6 @@ public class LecturesSearchController extends BasicController implements Activat
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}

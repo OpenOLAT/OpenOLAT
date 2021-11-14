@@ -327,9 +327,4 @@ public class LTIRunController extends BasicController {
 			closeBasicLTI();
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

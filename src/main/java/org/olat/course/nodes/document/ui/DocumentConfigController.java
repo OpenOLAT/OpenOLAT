@@ -502,11 +502,6 @@ public class DocumentConfigController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private static final class PreviewSecurityCallback implements DocumentSecurityCallback {
 

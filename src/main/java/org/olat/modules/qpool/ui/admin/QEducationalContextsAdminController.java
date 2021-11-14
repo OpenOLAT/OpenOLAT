@@ -83,11 +83,6 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		initForm(ureq);
 		reloadModel();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

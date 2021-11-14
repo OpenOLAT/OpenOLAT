@@ -196,11 +196,6 @@ public class OrderDetailController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {

@@ -137,10 +137,4 @@ public class LiveStreamConfigController extends FormBasicController {
 		
 		return config;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }

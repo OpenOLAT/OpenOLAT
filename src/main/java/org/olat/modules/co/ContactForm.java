@@ -536,6 +536,7 @@ public class ContactForm extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		cleanUpAttachments();
+        super.doDispose();
 	}
 
 }

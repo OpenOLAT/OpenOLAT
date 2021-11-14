@@ -111,6 +111,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	protected void doDispose() {
 		// Controller autodisposed by basic controller
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, LDAPLoginManager.ldapSyncLockOres);
+        super.doDispose();
 	}
 	
 	@Override

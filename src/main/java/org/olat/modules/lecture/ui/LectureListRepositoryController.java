@@ -210,11 +210,6 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addLectureButton == source) {
 			doAddLectureBlock(ureq);
@@ -473,11 +468,6 @@ public class LectureListRepositoryController extends FormBasicController {
 			logLink = LinkFactory.createLink("log", "log", getTranslator(), mainVC, this, Link.LINK);
 			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log"); 
 			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

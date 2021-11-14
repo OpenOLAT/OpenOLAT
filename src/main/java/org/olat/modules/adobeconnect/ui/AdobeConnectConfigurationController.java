@@ -189,11 +189,6 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		checkLink = uifactory.addFormLink("check", buttonLayout, Link.BUTTON);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void updateUI() {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);

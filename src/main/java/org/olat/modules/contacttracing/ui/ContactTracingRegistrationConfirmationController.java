@@ -124,9 +124,4 @@ public class ContactTracingRegistrationConfirmationController extends FormBasicC
     protected void formOK(UserRequest ureq) {
         // Nothing to do here
     }
-
-    @Override
-    protected void doDispose() {
-        // Nothing to dispose
-    }
 }

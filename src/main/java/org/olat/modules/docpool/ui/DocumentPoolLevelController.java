@@ -94,11 +94,6 @@ public class DocumentPoolLevelController extends BasicController implements Acti
 	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

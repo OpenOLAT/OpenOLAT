@@ -125,11 +125,6 @@ public class BigBlueButtonMeetingsController extends FormBasicController {
 		pastTableEl.setAndLoadPersistedPreferences(ureq, "big-blue-button-past-meetings-list");
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public void updateModel() {
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, subIdent, businessGroup, guest);
 		

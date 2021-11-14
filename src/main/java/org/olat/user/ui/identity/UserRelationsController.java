@@ -184,11 +184,6 @@ public class UserRelationsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == importRelationsWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

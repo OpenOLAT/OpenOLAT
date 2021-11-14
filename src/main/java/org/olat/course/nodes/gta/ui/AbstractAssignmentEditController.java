@@ -207,11 +207,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 				
 		return taskDefinitions;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

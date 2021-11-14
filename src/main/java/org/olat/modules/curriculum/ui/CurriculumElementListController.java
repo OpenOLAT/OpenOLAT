@@ -494,11 +494,6 @@ public class CurriculumElementListController extends FormBasicController impleme
 		}
 		return completions;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {

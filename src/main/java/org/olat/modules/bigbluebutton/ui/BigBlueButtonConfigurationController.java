@@ -167,11 +167,6 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		formLayout.add(buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void updateUI() {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);

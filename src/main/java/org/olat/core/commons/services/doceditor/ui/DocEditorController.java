@@ -171,10 +171,4 @@ public class DocEditorController extends BasicController implements Activateable
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

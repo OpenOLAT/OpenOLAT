@@ -130,11 +130,6 @@ public class EvaluationFormEditorController extends BasicController implements T
 		toolbar.addTool(rulesLink, Align.left);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public boolean hasChanges() {
 		return changes;
 	}

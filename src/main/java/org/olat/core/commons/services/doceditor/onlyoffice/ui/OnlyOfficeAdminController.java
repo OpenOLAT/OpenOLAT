@@ -295,9 +295,4 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		onlyOfficeModule.setThumbnailsEnabled(thumbnailsEnabled);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

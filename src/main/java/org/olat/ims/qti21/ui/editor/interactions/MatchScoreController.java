@@ -283,11 +283,6 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private MatchWrapper createMatchWrapper(SimpleAssociableChoice choice) {
 		FlowFormItem summaryEl = new FlowFormItem("summary_" + count++, itemFileRef);

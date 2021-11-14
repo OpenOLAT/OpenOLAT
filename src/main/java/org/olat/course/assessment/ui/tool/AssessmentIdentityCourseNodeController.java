@@ -182,6 +182,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	@Override
 	protected void doDispose() {
 		releaseEditorLock();
+        super.doDispose();
 	}
 	
 	private void releaseEditorLock() {

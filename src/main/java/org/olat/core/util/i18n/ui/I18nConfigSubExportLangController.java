@@ -157,9 +157,4 @@ class I18nConfigSubExportLangController extends FormBasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

@@ -79,9 +79,4 @@ public class SessionInformationsStatisticController extends FormBasicController 
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

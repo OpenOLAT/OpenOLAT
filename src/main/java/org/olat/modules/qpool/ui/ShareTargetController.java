@@ -58,11 +58,6 @@ public class ShareTargetController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(shareGroup == source) {
 			fireEvent(ureq, new Event(SHARE_GROUP_CMD));

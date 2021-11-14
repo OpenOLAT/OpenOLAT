@@ -156,11 +156,6 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return accessibilityContent != null? PANE_KEYS_CUSTOM_ACCESS: PANE_KEYS;
 	}

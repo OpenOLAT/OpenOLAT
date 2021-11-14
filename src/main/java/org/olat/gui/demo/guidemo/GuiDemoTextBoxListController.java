@@ -60,11 +60,6 @@ public class GuiDemoTextBoxListController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// the first showcase
 		List<TextBoxItem> initialItems = new ArrayList<>();

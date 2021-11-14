@@ -153,10 +153,4 @@ public class SessionInformationsEditorController extends FormBasicController imp
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

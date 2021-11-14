@@ -144,9 +144,4 @@ public class NoAccessController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

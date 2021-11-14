@@ -115,14 +115,8 @@ public class AnalyticsSPIChooserFormController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		// auto-submitted on serviceEl
-		
 	}
 
 }

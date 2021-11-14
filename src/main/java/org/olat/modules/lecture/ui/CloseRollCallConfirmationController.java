@@ -183,11 +183,6 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		String before = lectureService.toAuditXml(lectureBlock);
 		commitLectureBlocks();

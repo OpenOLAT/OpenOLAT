@@ -80,6 +80,4 @@ public class GuiDemoWindowControlController extends BasicController {
 			showInfo("guidemo.window.control.pushpop", "");			
 		}
 	}
-
-	protected void doDispose() {}
 }

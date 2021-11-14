@@ -79,10 +79,4 @@ public class PaellaAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		liveStreamModule.setPaellaConfig(configEl.getValue());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

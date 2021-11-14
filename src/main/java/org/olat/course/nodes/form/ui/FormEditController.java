@@ -83,9 +83,4 @@ public class FormEditController extends ActivateableTabbableDefaultController im
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

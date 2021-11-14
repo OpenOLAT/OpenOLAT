@@ -148,11 +148,6 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 			presentersEl.select(OnlineMeetingPresenters.ROLE_IS_PRESENTER.name(), true);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {

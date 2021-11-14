@@ -122,9 +122,4 @@ public class ShibbolethRegistrationUserPropertiesFrom extends FormBasicControlle
 		String propertyValue = userPropertyHandler.getStringValue(propertyItem);
 		shibbolethAttributes.setValueForUserPropertyName(propertyName, propertyValue);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

@@ -117,9 +117,4 @@ public class UserInfoSegmentedController extends AbstractUserInfoMainController 
 			mainVC.put("segmentCmp", selectedCtrl.getInitialComponent());
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

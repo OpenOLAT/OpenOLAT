@@ -97,11 +97,6 @@ public class PrivacyAdminController extends FormBasicController {
 		tunnelEl.select("on", "enabled".equals(module.getUserInfosTunnelCourseBuildingBlock()));
 		tunnelEl.addActionListener(FormEvent.ONCHANGE);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

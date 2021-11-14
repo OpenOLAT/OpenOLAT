@@ -107,11 +107,6 @@ public class RejectController extends FormBasicController {
 		User user = identity.getUser();
 		return user.getProperty(UserConstants.LASTNAME, getLocale()) + " " + user.getProperty(UserConstants.FIRSTNAME, getLocale());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//autodisposed by BasicController
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

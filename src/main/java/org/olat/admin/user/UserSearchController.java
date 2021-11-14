@@ -279,14 +279,6 @@ public class UserSearchController extends BasicController {
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		// Child controllers auto-disposed by basic controller
-	}
-	
 	private void doSearch(UserRequest ureq) {
 		String login = searchform.login.getValue();
 		// build user fields search map

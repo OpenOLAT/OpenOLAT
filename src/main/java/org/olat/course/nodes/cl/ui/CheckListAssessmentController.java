@@ -520,11 +520,6 @@ public class CheckListAssessmentController extends FormBasicController implement
 		editCtrl = null;
 		cmc = null;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doOpenBoxAssessment(UserRequest ureq) {
 		if(guardModalController(boxAssessmentCtrl)) return;

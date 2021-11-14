@@ -116,10 +116,6 @@ public class VideoPosterEditController extends FormBasicController {
 			doDeletePoster(ureq);
 		}
 	}
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {

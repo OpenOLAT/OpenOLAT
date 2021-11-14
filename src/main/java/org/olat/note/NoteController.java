@@ -152,6 +152,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 	@Override
 	protected void doDispose() {
 		sec.deregisterFor(this, OresHelper.lookupType(Note.class));
+        super.doDispose();
 	}
 
 	@Override

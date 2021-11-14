@@ -192,11 +192,6 @@ public class AccessConfigurationController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(newMethodCtrl == source) {
 			if(event.equals(Event.DONE_EVENT)) {

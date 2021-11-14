@@ -154,9 +154,4 @@ public class BGCopyPreparationStepController extends StepFormBasicController {
 		ce.select("WaitingList", false);
 		ce.select("MembersVisibility", true);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

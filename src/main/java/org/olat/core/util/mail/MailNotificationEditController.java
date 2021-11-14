@@ -133,9 +133,4 @@ public class MailNotificationEditController extends BasicController {
 					|| !cpFrom.equals(mailTemplate.getCpfrom());
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

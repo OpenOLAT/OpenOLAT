@@ -73,6 +73,7 @@ public class PageController extends BasicController {
 	@Override
 	protected void doDispose() {
 		fragmentsCmp.dispose();
+        super.doDispose();
 	}
 	
 	public boolean validateElements(UserRequest ureq, List<ValidationMessage> messages) {

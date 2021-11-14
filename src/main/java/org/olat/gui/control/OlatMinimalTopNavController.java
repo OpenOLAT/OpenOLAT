@@ -58,11 +58,6 @@ public class OlatMinimalTopNavController extends BasicController implements Lock
 		closeLink = LinkFactory.createLink("topnav.close", vc, this);
 		putInitialPanel(vc);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void lock() {

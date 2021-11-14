@@ -158,11 +158,6 @@ public class FileUploadController extends FormBasicController implements Evaluat
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == fileEl) {
 			if (event instanceof FileElementEvent) {

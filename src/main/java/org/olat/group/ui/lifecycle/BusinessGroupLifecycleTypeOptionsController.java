@@ -82,11 +82,6 @@ public class BusinessGroupLifecycleTypeOptionsController extends FormBasicContro
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> types = typeEl.getSelectedKeys();
 		businessGroupModule.setGroupLifecycleTypes(types);

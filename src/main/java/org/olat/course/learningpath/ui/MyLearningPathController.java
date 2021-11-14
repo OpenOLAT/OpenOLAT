@@ -58,9 +58,4 @@ public class MyLearningPathController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

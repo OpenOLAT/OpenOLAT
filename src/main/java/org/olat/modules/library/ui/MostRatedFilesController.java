@@ -83,11 +83,6 @@ public class MostRatedFilesController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (links.contains(source)) {
 			Link link = (Link) source;

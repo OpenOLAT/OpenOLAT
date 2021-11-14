@@ -172,11 +172,6 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void doOpenContent(UserRequest ureq) {
 		mainVC.contextRemove("cssClass");

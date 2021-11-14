@@ -101,10 +101,4 @@ public class GeneratorCreationController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

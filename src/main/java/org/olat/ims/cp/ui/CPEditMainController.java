@@ -141,6 +141,7 @@ public class CPEditMainController extends BasicController implements ToolbarAwar
 		// In any case, release the lock
 		CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
 		logAudit("finished editing cp. ores-id: " + oresId);
+        super.doDispose();
 	}
 
 	@Override

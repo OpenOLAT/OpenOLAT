@@ -117,11 +117,6 @@ public class CertificateChooserController extends UploadCertificateTemplateContr
 		uploadLink = uifactory.addFormLink("upload", buttonCont, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

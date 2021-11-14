@@ -122,11 +122,6 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		tableEl.setSelectAllEnable(true);
 		tableEl.setEmptyTableMessageKey("table.files.empty");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	/**
 	 * Close folders without at least one element selected.

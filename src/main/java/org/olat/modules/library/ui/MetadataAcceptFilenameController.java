@@ -66,11 +66,6 @@ public class MetadataAcceptFilenameController extends FormBasicController {
 			newFilename.setErrorKey("mf.newFilename.error", null);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//nothing to do
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

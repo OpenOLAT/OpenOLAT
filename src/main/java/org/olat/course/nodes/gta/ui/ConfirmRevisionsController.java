@@ -107,11 +107,6 @@ public class ConfirmRevisionsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		// here special cases if optional with only feedback enabled
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();

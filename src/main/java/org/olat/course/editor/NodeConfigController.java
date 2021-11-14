@@ -213,10 +213,4 @@ public class NodeConfigController extends FormBasicController {
 
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

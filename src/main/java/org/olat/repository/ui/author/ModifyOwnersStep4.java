@@ -84,11 +84,6 @@ public class ModifyOwnersStep4 extends BasicStep {
 			sendMailEl = uifactory.addCheckboxesVertical("sendMail", "modify.owners.send.mail", formLayout, keys, values, 1);
 			sendMailEl.select(keys[0], true);
 		}
-		
-		@Override
-		protected void doDispose() {
-			//
-		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {

@@ -116,11 +116,6 @@ public class PaypalCheckoutAccessController extends FormBasicController implemen
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		if(acService.reserveAccessToResource(getIdentity(), link)) {
 			CheckoutRequest response = paypalManager.request(getIdentity(), link, mapperUri, ureq.getHttpReq().getSession().getId());

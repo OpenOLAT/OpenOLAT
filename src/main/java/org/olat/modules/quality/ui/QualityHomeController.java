@@ -282,6 +282,7 @@ public class QualityHomeController extends BasicController implements Activateab
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 	
 	public static class PanelWrapper {

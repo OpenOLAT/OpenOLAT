@@ -163,9 +163,4 @@ public class SystemImageEditController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

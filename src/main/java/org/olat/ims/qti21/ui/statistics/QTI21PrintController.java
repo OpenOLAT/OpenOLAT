@@ -97,11 +97,6 @@ public class QTI21PrintController extends BasicController {
 			appendNodes(ureq, (TreeNode)node.getChildAt(i), resourceResult, pageNames);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

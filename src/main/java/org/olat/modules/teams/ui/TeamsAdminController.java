@@ -73,11 +73,6 @@ public class TeamsAdminController extends BasicController implements Activateabl
 		
 		putInitialPanel(mainVC);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

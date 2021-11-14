@@ -51,11 +51,6 @@ public class ChooseColumnsStepSkipForm extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to do		
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		// form always ok		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

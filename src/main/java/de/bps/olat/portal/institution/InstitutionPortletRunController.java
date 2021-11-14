@@ -204,5 +204,6 @@ public class InstitutionPortletRunController extends BasicController {
 		if(polyLinks != null) polyLinks = null;
 		if(mapLinks != null) mapLinks = null;
 		if(ipe != null) ipe = null;
+        super.doDispose();
 	}
 }

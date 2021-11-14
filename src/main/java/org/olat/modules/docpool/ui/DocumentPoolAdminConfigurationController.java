@@ -123,11 +123,6 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 		taxonomyTreeEl.setVisible(enabled);
 		templatesDirectoryEl.setVisible(enabled);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

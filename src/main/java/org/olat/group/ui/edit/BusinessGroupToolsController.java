@@ -52,11 +52,6 @@ public class BusinessGroupToolsController extends BasicController {
 		mainVC.put("collabTools", toolsController.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

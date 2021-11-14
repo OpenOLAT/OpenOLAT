@@ -94,11 +94,6 @@ public class GroupLeaveDialogBoxController extends FormBasicController {
 		uifactory.addFormSubmitButton("deleteButton", "ok", buttonsContainer);
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	public boolean isSendMail() {
 		return sendMail.isAtLeastSelected(1);

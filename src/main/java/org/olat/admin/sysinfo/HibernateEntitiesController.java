@@ -103,11 +103,6 @@ public class HibernateEntitiesController extends FormBasicController {
 		table.reset();
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private static class QueryInfos {
 		
 		private final String entity;

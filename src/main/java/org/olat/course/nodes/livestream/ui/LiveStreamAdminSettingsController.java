@@ -180,10 +180,4 @@ public class LiveStreamAdminSettingsController extends FormBasicController {
 			liveStreamModule.setPlayerProfile(playerProfile);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

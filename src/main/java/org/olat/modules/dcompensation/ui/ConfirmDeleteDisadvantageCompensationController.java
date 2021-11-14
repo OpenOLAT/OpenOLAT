@@ -85,11 +85,6 @@ public class ConfirmDeleteDisadvantageCompensationController extends FormBasicCo
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		for(DisadvantageCompensation compensation:compensationToDelete) {
 			if(lastSession != null) {

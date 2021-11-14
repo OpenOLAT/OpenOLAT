@@ -54,13 +54,6 @@ public class SelectCourseStepForm extends StepFormBasicController {
 		initForm(ureq);
 	}
 
-	
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-
-	}
-
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

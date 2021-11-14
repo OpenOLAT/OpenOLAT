@@ -78,6 +78,7 @@ public class AssessmentItemPreviewSolutionController extends BasicController {
 		if(displayCtrl != null && displayCtrl.getCandidateSession() instanceof Persistable) {
 			qtiService.deleteAssessmentTestSession(displayCtrl.getCandidateSession());
 		}
+        super.doDispose();
 	}
 	
 	@Override

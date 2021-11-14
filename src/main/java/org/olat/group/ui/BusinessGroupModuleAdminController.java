@@ -162,11 +162,6 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == dedupCtrl) {
 			boolean coaches = dedupCtrl.isDedupCoaches();

@@ -252,9 +252,4 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

@@ -210,11 +210,6 @@ public class MembersTableController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private List<MemberRow> getMembersFromIdentity(List<Identity> identities, Map<Long,BusinessGroupMembership> groupmemberships,
 			Map<Long,Date> recentLaunches, Map<Long,Date> initialLaunches) {

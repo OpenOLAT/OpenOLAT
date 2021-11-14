@@ -210,11 +210,6 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		putInitialPanel(mainVC);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public void disableMediaCollector() {
 		Component component = mainVC.getComponent("collectArtefactLink");
 		if(component != null) {

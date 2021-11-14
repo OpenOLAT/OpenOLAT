@@ -167,9 +167,4 @@ public class LiveStreamRunController extends BasicController {
 		mainVC.put("segmentCmp", editCtrl.getInitialComponent());
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

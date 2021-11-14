@@ -387,11 +387,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		}
 		return new Member(identity, fullname, curriculumElementInfos, userPropertyHandlers, getLocale(), hasPortrait, portraitCssClass);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

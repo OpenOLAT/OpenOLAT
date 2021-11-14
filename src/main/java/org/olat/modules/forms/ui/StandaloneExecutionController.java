@@ -112,6 +112,7 @@ public class StandaloneExecutionController extends BasicController implements Co
 		executionCtrl = null;
 		messageCtrl = null;
 		headerCtrl = null;
+        super.doDispose();
 	}
 
 	private void doShowExecution(UserRequest ureq, EvaluationFormParticipation participation) {

@@ -126,11 +126,6 @@ public class UserSessionConfigAdminController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//empty		
-	}
-	
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

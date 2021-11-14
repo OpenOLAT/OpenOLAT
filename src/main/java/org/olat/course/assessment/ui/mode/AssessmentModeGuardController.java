@@ -130,6 +130,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+        super.doDispose();
 	}
 	
 	public boolean updateAssessmentMode(UserRequest ureq) {

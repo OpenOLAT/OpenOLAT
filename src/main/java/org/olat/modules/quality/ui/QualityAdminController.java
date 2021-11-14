@@ -59,9 +59,4 @@ public class QualityAdminController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

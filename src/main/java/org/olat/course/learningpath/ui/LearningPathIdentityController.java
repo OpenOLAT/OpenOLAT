@@ -79,9 +79,4 @@ public class LearningPathIdentityController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

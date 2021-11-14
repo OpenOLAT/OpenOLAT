@@ -76,11 +76,6 @@ public class FlexiFiltersAndSettingsDialogController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == choice) {
 			if(Choice.EVNT_VALIDATION_OK.equals(event)) {

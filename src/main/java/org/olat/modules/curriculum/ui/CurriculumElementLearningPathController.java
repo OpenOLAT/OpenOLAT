@@ -86,9 +86,4 @@ public class CurriculumElementLearningPathController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

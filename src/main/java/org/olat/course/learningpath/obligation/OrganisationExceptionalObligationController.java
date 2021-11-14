@@ -108,9 +108,4 @@ public class OrganisationExceptionalObligationController extends FormBasicContro
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

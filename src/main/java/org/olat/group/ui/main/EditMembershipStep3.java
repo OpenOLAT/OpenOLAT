@@ -79,11 +79,5 @@ public class EditMembershipStep3 extends BasicStep {
 			addToRunContext("sendMail", sendMailEl.isSelected(0));
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-			
-		}
 	}
 }

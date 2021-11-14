@@ -67,11 +67,6 @@ public class ResetAttemptsConfirmationController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, courseEnv);
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper

@@ -649,6 +649,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			runtimeController.dispose();
 		}
 		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
+        super.doDispose();
 	}
 
 	@Override

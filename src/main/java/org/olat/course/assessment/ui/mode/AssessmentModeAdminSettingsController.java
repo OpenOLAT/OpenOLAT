@@ -61,11 +61,6 @@ public class AssessmentModeAdminSettingsController extends FormBasicController {
 		enableEl.select(onKeys[0], assessmentModule.isAssessmentModeEnabled());
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

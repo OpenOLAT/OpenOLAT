@@ -222,9 +222,4 @@ public class SurveyConfigController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

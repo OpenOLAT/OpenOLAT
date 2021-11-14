@@ -612,9 +612,4 @@ public class UserAdminController extends BasicController implements Activateable
 		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), identity);
 		myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

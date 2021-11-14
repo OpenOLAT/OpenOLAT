@@ -57,11 +57,6 @@ public class AccessRightsEditStepController extends StepFormBasicController {
 		listenTo(accessRightsCtrl);
 		initForm(ureq);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

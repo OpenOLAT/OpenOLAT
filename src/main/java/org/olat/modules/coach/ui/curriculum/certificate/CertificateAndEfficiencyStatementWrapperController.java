@@ -129,11 +129,6 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
     	//
     }
 
-    @Override
-    protected void doDispose() {
-    	//
-    }
-
     public Activateable2 showCurriculumStructure(UserRequest ureq) {
         showCurriculum = true;
 

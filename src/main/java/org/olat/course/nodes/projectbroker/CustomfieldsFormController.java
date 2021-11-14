@@ -226,12 +226,7 @@ public class CustomfieldsFormController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
+		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//nothing
-	}
-
 
 }

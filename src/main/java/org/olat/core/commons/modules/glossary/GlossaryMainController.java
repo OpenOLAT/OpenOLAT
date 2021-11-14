@@ -141,9 +141,6 @@ public class GlossaryMainController extends BasicController implements Activatea
 		putInitialPanel(glistVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass());
@@ -153,7 +150,8 @@ public class GlossaryMainController extends BasicController implements Activatea
 		if (lockEntry != null){
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 			lockEntry = null;
-		}	
+		}
+        super.doDispose();
 	}
 	
 

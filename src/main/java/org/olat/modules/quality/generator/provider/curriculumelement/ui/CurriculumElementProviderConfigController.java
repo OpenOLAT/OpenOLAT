@@ -243,10 +243,4 @@ public class CurriculumElementProviderConfigController extends ProviderConfigCon
 				.collect(joining(ROLES_DELIMITER));
 		configs.setValue(CONFIG_KEY_ROLES, roles);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

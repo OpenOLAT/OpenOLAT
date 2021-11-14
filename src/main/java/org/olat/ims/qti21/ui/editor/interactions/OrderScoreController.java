@@ -113,9 +113,4 @@ public class OrderScoreController extends AssessmentItemRefEditorController impl
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

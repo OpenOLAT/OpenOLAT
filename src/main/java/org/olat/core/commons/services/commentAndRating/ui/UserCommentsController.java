@@ -133,6 +133,7 @@ public class UserCommentsController extends BasicController {
 	protected void doDispose() {
 		// Child controllers autodisposed by basic controller
 		commentControllers = null;
+        super.doDispose();
 	}
 
 	@Override

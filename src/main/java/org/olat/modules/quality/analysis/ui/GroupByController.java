@@ -937,9 +937,10 @@ public abstract class GroupByController extends FormBasicController implements F
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 	
-	public final static class SliderWrapper {
+	public static final class SliderWrapper {
 		
 		private final Rubric rubric;
 		private final Slider slider;

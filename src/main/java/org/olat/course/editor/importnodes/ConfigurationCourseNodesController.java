@@ -136,11 +136,6 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 		tableEl.setSelectAllEnable(false);
 		tableEl.setEmptyTableMessageKey("table.course.node.empty");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<ImportCourseNode> selectedNodes = importCourseContext.getSelectedNodes();

@@ -367,11 +367,6 @@ public class GTAWorkflowEditController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", "save", buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

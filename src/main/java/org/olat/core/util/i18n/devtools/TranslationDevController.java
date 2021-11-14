@@ -218,11 +218,6 @@ public class TranslationDevController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == submitAdd){
 			translationDevManager.addKey(new Locale(addKeyLocale.getValue()), addKeyBundle.getValue(), addKeyKey.getValue(), addKeyValue.getValue());

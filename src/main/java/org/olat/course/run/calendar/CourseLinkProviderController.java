@@ -92,11 +92,6 @@ public class CourseLinkProviderController extends FormBasicController implements
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		List<KalendarEventLink> kalendarEventLinks = kalendarEvent.getKalendarEventLinks();
 		TreeNode rootNode = courseNodeTreeModel.getRootNode();

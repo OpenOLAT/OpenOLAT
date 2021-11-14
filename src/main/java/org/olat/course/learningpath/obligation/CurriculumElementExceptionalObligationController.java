@@ -112,10 +112,4 @@ public class CurriculumElementExceptionalObligationController extends FormBasicC
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

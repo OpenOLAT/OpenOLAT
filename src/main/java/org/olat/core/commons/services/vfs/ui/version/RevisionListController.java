@@ -151,11 +151,6 @@ public class RevisionListController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private void loadModel(VFSLeaf versionedLeaf) {
 		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(versionedLeaf);
 		List<VFSRevision> revisions = vfsRepositoryService.getRevisions(metadata);

@@ -117,11 +117,6 @@ public class AssessmentResetController extends FormBasicController {
 		Event confirmedEvent = new AssessmentResetEvent(recalculateAll, resetPassed, resetOverriden);
 		fireEvent(ureq, confirmedEvent );
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public static class AssessmentResetEvent extends Event {
 		

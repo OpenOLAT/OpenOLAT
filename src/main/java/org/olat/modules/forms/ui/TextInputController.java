@@ -108,11 +108,6 @@ public class TextInputController extends FormBasicController implements Evaluati
 		multiRowEl.setVisible(!singleRow && !isDate);
 		dateEl.setVisible(isDate);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

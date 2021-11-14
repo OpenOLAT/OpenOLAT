@@ -44,11 +44,6 @@ public class GoToMeetingEditController extends ActivateableTabbableDefaultContro
 		super(ureq, wControl);
 		// Has no configurations
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {

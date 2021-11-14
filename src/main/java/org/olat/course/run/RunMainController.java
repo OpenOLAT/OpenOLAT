@@ -1108,9 +1108,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		return currentCourseNode;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		// remove as listener from this course events:
@@ -1135,6 +1132,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// log the fact that the user is leaving the course in the log file
 		logAudit("Leaving course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
+        super.doDispose();
 	}
 
 	@Override

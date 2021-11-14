@@ -132,10 +132,4 @@ public class QualityAdminSuggestionController extends FormBasicController {
 				.map(String::trim)
 				.collect(Collectors.toList());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

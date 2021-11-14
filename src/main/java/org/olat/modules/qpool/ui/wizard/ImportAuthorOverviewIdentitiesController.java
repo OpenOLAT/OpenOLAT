@@ -194,9 +194,4 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 		addToRunContext("members", oks);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

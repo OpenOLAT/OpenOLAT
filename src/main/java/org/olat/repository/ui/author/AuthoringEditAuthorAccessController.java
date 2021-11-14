@@ -107,11 +107,6 @@ public class AuthoringEditAuthorAccessController extends FormBasicController {
 	public boolean canDownload() {
 		return canDownload.isSelected(0);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

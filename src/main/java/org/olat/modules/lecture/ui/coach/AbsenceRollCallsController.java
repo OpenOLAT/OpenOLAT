@@ -72,11 +72,6 @@ public class AbsenceRollCallsController extends BasicController {
 		putInitialPanel(mainVC);
 		reloadModels();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

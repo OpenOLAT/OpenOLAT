@@ -281,9 +281,4 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private String getOpenPanelId(String panelId) {
 		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
 	}
-
-	@Override
-	protected void doDispose() {
-		// do nothing here yet
-	}
 }

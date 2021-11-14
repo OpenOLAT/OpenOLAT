@@ -104,10 +104,4 @@ public class EdubaseViewerController extends BasicController {
 			fireEvent(ureq, Event.BACK_EVENT);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

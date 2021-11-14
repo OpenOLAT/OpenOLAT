@@ -211,12 +211,4 @@ public class SystemRegistrationAdminController extends FormBasicController {
 			registrationModule.setNotifyReleases(false);			
 		}
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

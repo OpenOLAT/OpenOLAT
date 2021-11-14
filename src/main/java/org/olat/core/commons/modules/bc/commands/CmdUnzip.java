@@ -258,12 +258,6 @@ public class CmdUnzip extends BasicController implements FolderCommand {
 		return null;
 	}
 
-
-	@Override
-	protected void doDispose() {
-		//autodisposed by BasicController
-	}
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch

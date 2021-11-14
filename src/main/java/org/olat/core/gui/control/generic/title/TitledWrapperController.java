@@ -152,6 +152,7 @@ public class TitledWrapperController extends BasicController
 		theVelocityContainer = null;
 		descriptionContainer = null;
 		contentController = null;
+        super.doDispose();
 	}
 	
 	@Override

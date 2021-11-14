@@ -342,11 +342,6 @@ public class CalendarEntryDetailsController extends BasicController {
 		}	
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	public KalendarEvent getKalendarEvent() {
 		return kalendarEvent;
 	}

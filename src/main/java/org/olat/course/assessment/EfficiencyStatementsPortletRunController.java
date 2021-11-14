@@ -229,18 +229,13 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		CourseModule.deregisterForCourseType(this);
 		super.doDispose();
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(Event event) {
 		if (event instanceof AssessmentChangedEvent) {
 			AssessmentChangedEvent ace = (AssessmentChangedEvent)event;

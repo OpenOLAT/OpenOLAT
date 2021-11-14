@@ -183,6 +183,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	@Override
 	protected void doDispose() {
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
+        super.doDispose();
 	}
 
 	@Override

@@ -146,11 +146,6 @@ public class SitesConfigurationController extends FormBasicController {
 		
 		reload();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

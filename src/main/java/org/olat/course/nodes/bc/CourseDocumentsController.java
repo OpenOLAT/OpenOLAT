@@ -85,10 +85,4 @@ public class CourseDocumentsController extends BasicController implements Activa
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -258,11 +258,6 @@ public class CourseDisclaimerController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// Nothing to dispose here
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == disclaimer1CheckBoxEl) {
 			disclaimer1Enabled = disclaimer1CheckBoxEl.getSelectedKeys().contains(onKeys[0]);

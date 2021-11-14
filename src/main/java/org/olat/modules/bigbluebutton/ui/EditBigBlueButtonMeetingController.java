@@ -529,6 +529,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		if(meeting != null && meeting.getKey() == null) {
 			bigBlueButtonManager.deleteSlides(meeting);
 		}
+        super.doDispose();
 	}
 
 	@Override

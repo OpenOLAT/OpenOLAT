@@ -378,6 +378,7 @@ public class PageRunController extends BasicController implements TooledControll
 			lockEntry = null;
 		}
 		coordinator.getCoordinator().getEventBus().deregisterFor(this, lockOres);
+        super.doDispose();
 	}
 
 	@Override
@@ -1026,11 +1027,6 @@ public class PageRunController extends BasicController implements TooledControll
 		private void doAddMedia(Media media) {
 			mediaPart = new MediaPart();
 			mediaPart.setMedia(media);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 }

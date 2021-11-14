@@ -70,44 +70,21 @@ public class NoAccessExplanationFormController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-	// Don't dispose anything
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formNOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formNOK(UserRequest ureq) {
 		fireEvent(ureq, Event.FAILED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Add the rich text element

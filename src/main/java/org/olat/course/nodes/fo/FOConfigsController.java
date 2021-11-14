@@ -85,10 +85,4 @@ public class FOConfigsController extends BasicController {
 		}
 		super.event(ureq, source, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		
-	}
-
 }

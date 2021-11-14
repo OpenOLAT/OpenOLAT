@@ -74,9 +74,4 @@ public class DocumentPeekviewController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		
-	}
-
 }

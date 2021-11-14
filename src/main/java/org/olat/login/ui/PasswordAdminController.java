@@ -124,10 +124,4 @@ public class PasswordAdminController extends BasicController implements Activate
 		}
 		mainVC.put("segmentCmp", policyCtrl.getInitialComponent());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

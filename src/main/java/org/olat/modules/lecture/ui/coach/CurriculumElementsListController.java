@@ -89,11 +89,6 @@ public class CurriculumElementsListController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent) {

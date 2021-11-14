@@ -201,10 +201,4 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

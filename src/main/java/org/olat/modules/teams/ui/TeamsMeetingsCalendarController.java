@@ -83,15 +83,8 @@ public class TeamsMeetingsCalendarController extends FormBasicController {
 		formLayout.add(calComp);
 	}
 	
-	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// nothing to do		
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-
 }

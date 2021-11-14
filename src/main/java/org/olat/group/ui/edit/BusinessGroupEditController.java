@@ -376,6 +376,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 			//release lock on dispose
 			releaseBusinessGroupEditLock();
 		}
+        super.doDispose();
 	}
 
 	private void releaseBusinessGroupEditLock() {

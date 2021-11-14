@@ -710,11 +710,6 @@ public class TopicsRunController extends FormBasicController implements Activate
 		//
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public static final class TopicWrapper {
 
 		private final Topic topic;

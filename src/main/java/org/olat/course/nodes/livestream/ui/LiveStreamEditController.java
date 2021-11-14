@@ -80,9 +80,4 @@ public class LiveStreamEditController extends ActivateableTabbableDefaultControl
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

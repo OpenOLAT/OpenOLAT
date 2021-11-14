@@ -252,10 +252,4 @@ public class DataCollectionSearchController extends FormBasicController implemen
 		
 		fireEvent(ureq, se);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -127,9 +127,4 @@ public class UsrPropContextCfgTableController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// nothing to handle
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

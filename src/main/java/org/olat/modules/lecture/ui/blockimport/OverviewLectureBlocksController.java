@@ -96,11 +96,6 @@ public class OverviewLectureBlocksController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}

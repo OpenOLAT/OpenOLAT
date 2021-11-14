@@ -125,11 +125,6 @@ public class MarkController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//auto disposed
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//do nothing
 	}

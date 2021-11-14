@@ -140,11 +140,6 @@ public class RemindersStep extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			// Nothing to dispose here			
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}

@@ -271,6 +271,7 @@ public class CloseableCalloutWindowController extends BasicController implements
 			cmc.dispose();
 			cmc = null;
 		}
+        super.doDispose();
 	}
 
 	/**

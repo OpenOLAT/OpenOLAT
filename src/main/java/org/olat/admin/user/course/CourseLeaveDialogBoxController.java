@@ -113,11 +113,6 @@ public class CourseLeaveDialogBoxController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("deleteButton", "ok", buttonsContainer);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	public boolean isSendMail() {
 		return sendMail.isAtLeastSelected(1);

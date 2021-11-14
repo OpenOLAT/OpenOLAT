@@ -108,11 +108,5 @@ public class ModifyOwnersStep2 extends BasicStep {
 			formLayout.add("search", searchController.getInitialFormItem());
 			flc.contextPut("showTable", showOverviewTable);
 		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
-		
 	}
 }

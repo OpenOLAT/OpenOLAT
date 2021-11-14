@@ -90,11 +90,6 @@ public class BigBlueButtonAdminServersController extends FormBasicController {
 		filters.add(new FlexiTableFilter(translate("filter.this.instance"), "this"));
 		serversTableEl.setFilters("", filters, false);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<BigBlueButtonServer> servers = bigBlueButtonManager.getServers();

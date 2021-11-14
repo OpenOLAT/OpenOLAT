@@ -246,11 +246,6 @@ public class ImageEditorController extends FormBasicController implements PageEl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(descriptionEnableEl == source) {
 			descriptionEl.setVisible(descriptionEnableEl.isAtLeastSelected(1));

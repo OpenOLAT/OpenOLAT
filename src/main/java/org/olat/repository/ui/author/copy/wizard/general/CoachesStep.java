@@ -135,11 +135,6 @@ public class CoachesStep extends BasicStep {
 			initForm(ureq);		
 			loadData();
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
 		
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {

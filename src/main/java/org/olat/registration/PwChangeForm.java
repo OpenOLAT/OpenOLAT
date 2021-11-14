@@ -144,9 +144,4 @@ public class PwChangeForm extends FormBasicController {
 		newpass2.setAutocomplete("new-password");
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

@@ -128,12 +128,4 @@ public class NoAccessExplEditController extends BasicController {
 		if (StringHelper.containsNonWhitespace(noAccessExplanation)) { return noAccessExplanation; }
 		return null;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-	// do nothing here yet
-	}
 }

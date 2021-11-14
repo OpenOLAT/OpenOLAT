@@ -235,11 +235,6 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// Controllers autodisposed by basic controller
-	}
-
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		

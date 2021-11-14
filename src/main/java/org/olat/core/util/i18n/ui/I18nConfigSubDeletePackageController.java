@@ -151,9 +151,4 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 			logError("", e);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

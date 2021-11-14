@@ -90,13 +90,6 @@ public class WizardInfoController extends DefaultController {
 		}
 		myContent.contextPut("cur", String.valueOf(i));
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-	// nothing to do yet
-	}
 	
 	/**
 	 * [used by velocity!!]

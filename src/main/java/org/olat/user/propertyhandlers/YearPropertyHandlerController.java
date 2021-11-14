@@ -137,10 +137,4 @@ public class YearPropertyHandlerController extends FormBasicController implement
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

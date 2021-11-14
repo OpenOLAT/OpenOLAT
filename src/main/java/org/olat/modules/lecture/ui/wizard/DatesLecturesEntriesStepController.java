@@ -57,11 +57,6 @@ public class DatesLecturesEntriesStepController extends StepFormBasicController 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

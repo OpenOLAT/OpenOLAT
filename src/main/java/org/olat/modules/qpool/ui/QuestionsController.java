@@ -65,11 +65,6 @@ public class QuestionsController extends BasicController implements Activateable
 
 		putInitialPanel(listCtrl.getInitialComponent());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

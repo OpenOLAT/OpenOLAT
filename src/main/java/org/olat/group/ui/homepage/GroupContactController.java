@@ -77,11 +77,6 @@ public class GroupContactController extends BasicController {
 		contactMessage.addEmailTo(contactList);
 		return contactMessage;
 	}
-
-	@Override
-	protected void doDispose() {
-		// Automatic dispose, so nothing to do here.
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

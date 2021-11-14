@@ -102,9 +102,4 @@ public class Card2BrainRunController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

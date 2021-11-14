@@ -617,11 +617,6 @@ public class RegistrationController extends BasicController implements Activatea
 			getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailReplyTo")));
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private static class Steps {
 		

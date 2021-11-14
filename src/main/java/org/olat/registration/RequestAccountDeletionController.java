@@ -84,11 +84,6 @@ public class RequestAccountDeletionController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(contactCtrl == source) {
 			cmc.deactivate();

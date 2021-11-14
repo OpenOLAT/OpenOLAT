@@ -92,11 +92,6 @@ class PublishStep00b extends BasicStep implements Step {
 		}
 
 		@Override
-		protected void doDispose() {
-			//nothing to do
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}

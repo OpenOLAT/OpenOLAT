@@ -62,11 +62,6 @@ public class CourseDisclaimerConsentController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// Don't dispose anything.
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		disclaimerManager.acceptDisclaimer(repositoryEntry, getIdentity(), ureq.getUserSession().getRoles(), courseConfig.isDisclaimerEnabled(1), courseConfig.isDisclaimerEnabled(2));
 

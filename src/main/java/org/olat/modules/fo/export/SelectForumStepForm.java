@@ -80,13 +80,6 @@ public class SelectForumStepForm extends StepFormBasicController {
 		}
 		initForm(ureq);
 	}
-
-	
-	@Override
-	protected void doDispose() {
-		// 
-	}
-	
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

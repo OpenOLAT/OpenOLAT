@@ -74,11 +74,6 @@ public class UsermanagerUserBulkSearchForm extends FormBasicController {
 		searchButton = uifactory.addFormLink("search", formLayout, Link.BUTTON);
 		searchButton.addActionListener(FormEvent.ONCLICK);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	/**
 	 * The method calculate the list of identities.

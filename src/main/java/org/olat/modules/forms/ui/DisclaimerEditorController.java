@@ -120,10 +120,4 @@ public class DisclaimerEditorController extends FormBasicController implements P
 		fireEvent(ureq, new ChangePartEvent(disclaimer));
 		fireEvent(ureq, new ClosePartEvent(disclaimer));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

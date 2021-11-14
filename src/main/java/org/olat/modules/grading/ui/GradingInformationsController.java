@@ -143,11 +143,6 @@ public class GradingInformationsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "graders", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void reloadRepositoryEntry(RepositoryEntry entry) {
 		this.testEntry = entry;

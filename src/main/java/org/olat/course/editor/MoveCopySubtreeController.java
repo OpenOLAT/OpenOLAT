@@ -105,11 +105,6 @@ public class MoveCopySubtreeController extends BasicController {
 		mainVC.put("selection", insertTree);
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 
 	/**
 	 * Returns node-id of a new copied node.

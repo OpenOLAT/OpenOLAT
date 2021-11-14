@@ -789,11 +789,6 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	private void setMultiGroupsSelection() {
 		changeGroupLink = LinkFactory.createLink("change.group", mainVC, this);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

@@ -183,27 +183,9 @@ class TranslationToolI18nItemListCrumbController extends CrumbFormBasicControlle
 		return translate("list.crumb.hoover");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.control.generic.breadcrumb.CrumbController#getCrumbLinkText
-	 * ()
-	 */
+	@Override
 	public String getCrumbLinkText() {
 		return translate("list.crumb.link");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose
-	 * ()
-	 */
-	@Override
-	protected void doDispose() {
-	// nothing to dispose
 	}
 
 }

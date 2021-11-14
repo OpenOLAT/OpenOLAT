@@ -132,11 +132,6 @@ public class FileChooserController extends BasicController {
 			}
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		// Controllers auto disposed by basic controller. NULL composite objects to help GC
-	}
 
 	/**
 	 * @param showTitle true: title is displayed; false: no title is shown

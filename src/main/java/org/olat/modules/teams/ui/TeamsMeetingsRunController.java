@@ -103,16 +103,9 @@ public class TeamsMeetingsRunController extends BasicController implements Activ
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
-	
-	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

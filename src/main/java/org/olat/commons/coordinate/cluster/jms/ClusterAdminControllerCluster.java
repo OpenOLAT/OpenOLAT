@@ -217,6 +217,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 	@Override
 	protected void doDispose() {
 		disposed  = true;
+        super.doDispose();
 	}
 
 	@Override

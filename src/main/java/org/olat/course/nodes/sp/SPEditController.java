@@ -209,11 +209,6 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

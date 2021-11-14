@@ -128,11 +128,6 @@ public class BigBlueButtonAdminMeetingsController extends FormBasicController {
 		filters.add(new FlexiTableFilter(translate("show.all"), "showall", true));
 		return filters;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void reloadRows() {
 		tableEl.deselectAll();

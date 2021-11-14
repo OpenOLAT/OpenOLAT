@@ -87,11 +87,6 @@ public class AppealListSearchController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		String searchString = searchEl.getValue();
 		Date startDate = dateEl.getDate();

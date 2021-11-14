@@ -59,11 +59,6 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 			uifactory.addFormSubmitButton("create", buttonGroupLayout);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public abstract OfferAccess commitChanges();
 	

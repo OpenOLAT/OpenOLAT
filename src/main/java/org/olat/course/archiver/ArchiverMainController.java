@@ -374,6 +374,7 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 		// controllers disposed by BasicController:
 		columnLayoutCtr = null;
 		resC = null;
-		contentCtr = null;		
+		contentCtr = null;
+        super.doDispose();		
 	}	
 }

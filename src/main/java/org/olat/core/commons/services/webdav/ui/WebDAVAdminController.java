@@ -122,11 +122,6 @@ public class WebDAVAdminController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == enableModuleEl) {
 			boolean enabled = enableModuleEl.isAtLeastSelected(1);

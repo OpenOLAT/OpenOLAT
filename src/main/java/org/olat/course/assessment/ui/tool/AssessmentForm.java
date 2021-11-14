@@ -637,11 +637,6 @@ public class AssessmentForm extends FormBasicController {
 		reloadAssessmentDocs();
 		updateStatus(scoreEval);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public static class DocumentWrapper {
 		

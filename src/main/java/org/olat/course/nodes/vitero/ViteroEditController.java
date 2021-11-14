@@ -81,6 +81,7 @@ public class ViteroEditController extends ActivateableTabbableDefaultController 
 			removeAsListenerAndDispose(editForm);
 			editForm = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

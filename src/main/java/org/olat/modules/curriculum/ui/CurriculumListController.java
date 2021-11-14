@@ -170,11 +170,6 @@ public class CurriculumListController extends FormBasicController implements Act
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			if(tableModel.getRowCount() == 1) {

@@ -285,11 +285,6 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		appealLink.setDomReplacementWrapperRequired(false);
 		return appealLink;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {

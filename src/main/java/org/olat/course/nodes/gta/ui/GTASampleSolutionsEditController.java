@@ -168,11 +168,6 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		solutionModel.setObjects(rows);
 		solutionTable.reset();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

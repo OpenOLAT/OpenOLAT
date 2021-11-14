@@ -83,11 +83,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
 		maxAttemptsEl.setEnabled(!restrictedEdit && !readOnly);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
+
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

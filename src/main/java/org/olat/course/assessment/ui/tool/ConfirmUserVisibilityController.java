@@ -90,11 +90,6 @@ public class ConfirmUserVisibilityController<U extends UserPropertiesRow> extend
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("change.visibility", buttonsCont);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public Boolean getVisibility() {
 		return visibilityEl.isSelected(0);

@@ -227,11 +227,6 @@ public class BinderPickerController extends FormBasicController {
 			assessmentInfosContainer.setVisible(false);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

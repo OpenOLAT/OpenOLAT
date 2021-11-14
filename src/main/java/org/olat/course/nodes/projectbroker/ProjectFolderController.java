@@ -168,8 +168,6 @@ public class ProjectFolderController extends BasicController {
 			returnboxController.dispose();
 			returnboxController = null;
 		}
-		
+        super.doDispose();
 	}
-
-
 }

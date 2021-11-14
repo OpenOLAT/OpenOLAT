@@ -337,6 +337,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 	
 	private void cleanUpReports() {

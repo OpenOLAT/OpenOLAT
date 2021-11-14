@@ -74,11 +74,6 @@ public class MailBoxOverviewController extends BasicController implements Activa
 		doOpenInbox(ureq);
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

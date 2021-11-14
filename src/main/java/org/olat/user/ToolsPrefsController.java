@@ -117,11 +117,6 @@ public class ToolsPrefsController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

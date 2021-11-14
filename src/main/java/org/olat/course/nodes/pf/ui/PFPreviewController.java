@@ -65,9 +65,4 @@ public class PFPreviewController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

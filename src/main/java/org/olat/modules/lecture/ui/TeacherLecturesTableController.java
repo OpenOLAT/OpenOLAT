@@ -245,11 +245,6 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		
 		showWarning("lecture.blocks.not.existing");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -537,11 +532,6 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 					doConfirmDeleteAssessmentMode(ureq, row);
 				}
 			}
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 }

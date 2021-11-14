@@ -280,11 +280,6 @@ public class SystemImageAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doUpdateTeaserImage() {
 		ImageSourceType type = teaserImageTypeEl.isOneSelected()

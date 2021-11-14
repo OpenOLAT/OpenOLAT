@@ -126,11 +126,6 @@ public class CurriculumSearchManagerController extends FormBasicController {
 		tableEl.setEmptyTableSettings("table.search.curriculum.empty", null, "o_icon_curriculum_element");
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-search-manage");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -333,11 +328,6 @@ public class CurriculumSearchManagerController extends FormBasicController {
 			links.add(name);
 			link.setIconLeftCSS("o_icon " + iconCss);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

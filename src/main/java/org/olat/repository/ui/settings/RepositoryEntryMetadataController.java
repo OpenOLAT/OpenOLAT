@@ -318,11 +318,6 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		RepositoyUIFactory.selectTaxonomyLevels(taxonomyLevelEl, taxonomyLevels);
 		taxonomyLevelEl.setEnabled(!readOnly);
 	}
-	
-	@Override
-	protected void doDispose() {
-		// Controllers autodisposed by basic controller
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

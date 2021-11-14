@@ -490,11 +490,6 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-
 	public MenuTree getMenuTree() {
 		return olatMenuTree;
 	}

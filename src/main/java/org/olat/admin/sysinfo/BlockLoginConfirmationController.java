@@ -62,11 +62,6 @@ public class BlockLoginConfirmationController extends FormBasicController {
 	public boolean isPersist() {
 		return persistEl.isSelected(0);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

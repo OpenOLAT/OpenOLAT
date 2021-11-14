@@ -98,10 +98,4 @@ public class IQTESTNodeController extends StepFormBasicController {
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }

@@ -74,10 +74,6 @@ public class CoreFunctionsController extends FormBasicController {
 		restEl.select("xx", restModule.isEnabled());
 	
 	}
-	
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

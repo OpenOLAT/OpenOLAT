@@ -93,9 +93,4 @@ public class BusinessGroupListWrapperController extends BasicController implemen
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose
-	}
-
 }

@@ -250,9 +250,4 @@ public class FileCreatorController extends FormBasicController {
 	public VFSLeaf getCreatedFile(){
 		return this.createdFile;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//nothing to dispose
-	}
 }

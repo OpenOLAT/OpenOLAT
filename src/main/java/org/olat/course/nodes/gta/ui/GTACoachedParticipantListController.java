@@ -434,11 +434,6 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		return false;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {

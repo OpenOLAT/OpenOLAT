@@ -161,9 +161,4 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		updateUIReopen();
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

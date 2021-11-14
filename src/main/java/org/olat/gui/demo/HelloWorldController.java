@@ -120,6 +120,7 @@ public class HelloWorldController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 	// at this time, we do not have any other controllers we'd like to listen for
 	// events to...
@@ -129,6 +130,7 @@ public class HelloWorldController extends BasicController {
 	// this method gets called and the event can be handled
 	}
 
+	@Override
 	protected void doDispose() {
 	// use this method to finish thing at the end of the lifetime of this
 	// controller

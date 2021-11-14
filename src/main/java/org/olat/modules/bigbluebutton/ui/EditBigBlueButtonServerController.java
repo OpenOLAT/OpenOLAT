@@ -112,11 +112,6 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonLayout);
 		checkLink = uifactory.addFormLink("check", buttonLayout, Link.BUTTON);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

@@ -742,6 +742,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		coordinatorManager.getCoordinator().getEventBus()
 			.deregisterFor(this, courseEntry.getOlatResource());
+        super.doDispose();
 	}
 	
 	@Override

@@ -105,11 +105,6 @@ public class InfoPeekViewController extends BasicController {
 		tableController.setTableDataModel(model);
 		listenTo(tableController);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

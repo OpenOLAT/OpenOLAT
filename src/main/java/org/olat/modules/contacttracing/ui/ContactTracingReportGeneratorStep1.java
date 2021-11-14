@@ -189,10 +189,5 @@ public class ContactTracingReportGeneratorStep1 extends BasicStep {
 
             fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
         }
-
-        @Override
-        protected void doDispose() {
-            // Nothing to dispose here
-        }
     }
 }

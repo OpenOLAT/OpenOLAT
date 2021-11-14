@@ -70,12 +70,9 @@ public class InfoMsgPortletRunController extends DefaultController {
 		setInitialComponent(this.infoVC);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// doesn't do anything
-	}
-
-	protected void doDispose() {
-		// nothing to dispose
 	}
 
 }

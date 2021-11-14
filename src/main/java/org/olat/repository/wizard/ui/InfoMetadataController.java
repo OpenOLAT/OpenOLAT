@@ -219,9 +219,4 @@ public class InfoMetadataController extends StepFormBasicController {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

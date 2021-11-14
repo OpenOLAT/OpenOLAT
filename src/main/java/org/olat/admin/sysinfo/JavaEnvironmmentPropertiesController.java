@@ -75,11 +75,6 @@ public class JavaEnvironmmentPropertiesController extends BasicController {
 		}
 		tableCtr.setTableDataModel(new PropertiesDataModel(pairs));
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

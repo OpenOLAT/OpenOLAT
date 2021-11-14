@@ -99,11 +99,6 @@ public class CollectionListController extends FormBasicController {
 		selectButton = uifactory.addFormLink("select", buttonsCont, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

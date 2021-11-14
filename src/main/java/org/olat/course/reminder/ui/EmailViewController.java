@@ -60,10 +60,4 @@ public class EmailViewController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, FormEvent.CLOSE_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

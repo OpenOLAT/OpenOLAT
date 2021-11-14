@@ -234,9 +234,4 @@ public class FindingConfirmationController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

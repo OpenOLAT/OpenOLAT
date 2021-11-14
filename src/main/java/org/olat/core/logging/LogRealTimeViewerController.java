@@ -128,6 +128,7 @@ public class LogRealTimeViewerController extends BasicController {
 	@Override
 	protected void doDispose() {
 		removeConfiguration();
+        super.doDispose();
 	}
 	
 	private void removeConfiguration() {

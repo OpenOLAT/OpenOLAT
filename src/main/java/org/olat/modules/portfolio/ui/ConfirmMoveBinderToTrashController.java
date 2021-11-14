@@ -102,11 +102,6 @@ public class ConfirmMoveBinderToTrashController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("delete", "delete.binder", formLayout);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

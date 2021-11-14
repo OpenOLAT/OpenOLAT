@@ -120,11 +120,6 @@ public class AdobeConnectMeetingsController extends FormBasicController {
 		pastTableEl.setSortSettings(pastSortOptions);
 		pastTableEl.setAndLoadPersistedPreferences(ureq, "adobe-connect-past-meetings-list");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void updateModel() {
 		List<AdobeConnectMeeting> meetings = adobeConnectManager.getMeetings(entry, subIdent, businessGroup);

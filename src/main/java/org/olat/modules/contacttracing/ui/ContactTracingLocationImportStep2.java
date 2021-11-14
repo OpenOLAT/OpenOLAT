@@ -231,11 +231,5 @@ public class ContactTracingLocationImportStep2 extends BasicStep {
 			// Fire event
             fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose here
-			
-		}
     }
 }

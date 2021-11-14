@@ -458,11 +458,6 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		
 		fireEvent(ureq, FormEvent.CHANGED_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		
-	}
 	
 	private void loadConfiguration() {
 		long count = immunityProofService.getImmunityProofCount();

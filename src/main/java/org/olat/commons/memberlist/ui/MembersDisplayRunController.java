@@ -138,11 +138,6 @@ public class MembersDisplayRunController extends BasicController {
 			doOpenListView(ureq, true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doOpenPortraitView(UserRequest ureq) {
 		if (membersAvatarController == null) {

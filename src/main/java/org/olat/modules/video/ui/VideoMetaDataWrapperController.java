@@ -64,8 +64,4 @@ public class VideoMetaDataWrapperController extends BasicController {
 		// Nothing to do here
 	}
 
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose
-	}
 }

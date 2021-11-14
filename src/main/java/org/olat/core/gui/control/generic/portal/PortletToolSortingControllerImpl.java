@@ -121,6 +121,7 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 			portletManualSortingConfigurator.dispose();
 		  portletManualSortingConfigurator = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

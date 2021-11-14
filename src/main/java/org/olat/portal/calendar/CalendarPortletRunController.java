@@ -200,11 +200,6 @@ public class CalendarPortletRunController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }
 
 class EventsModel extends DefaultTableDataModel<KalendarEvent> {

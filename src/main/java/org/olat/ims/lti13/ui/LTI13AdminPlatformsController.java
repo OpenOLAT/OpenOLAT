@@ -90,11 +90,6 @@ public class LTI13AdminPlatformsController extends FormBasicController {
 		tableEl.setEmptyTableMessageKey("platforms.empty");
 		tableEl.setAndLoadPersistedPreferences(ureq, "lti13-platforms-admin");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<LTI13PlatformWithInfos> rows = lti13Service.getPlatformWithInfos();

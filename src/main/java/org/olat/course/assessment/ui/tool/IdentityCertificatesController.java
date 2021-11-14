@@ -123,6 +123,7 @@ public class IdentityCertificatesController extends BasicController implements G
 	protected void doDispose() {
 		coordinatorManager.getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+        super.doDispose();
 	}
 
 	@Override

@@ -168,11 +168,6 @@ public class ProfileFormController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose.
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		User user = identityToModify.getUser();
 

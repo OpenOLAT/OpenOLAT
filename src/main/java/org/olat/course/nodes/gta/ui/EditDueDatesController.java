@@ -133,11 +133,6 @@ public class EditDueDatesController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// 
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		TaskDueDate dueDates = gtaManager.getDueDatesTask(task);
 		dueDates.setAssignmentDueDate(assignmentDueDateEl.getDate());	

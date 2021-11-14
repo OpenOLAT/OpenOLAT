@@ -51,11 +51,6 @@ public class EditorStatusController extends BasicController {
 		main = createVelocityContainer("status");
 		putInitialPanel(main);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

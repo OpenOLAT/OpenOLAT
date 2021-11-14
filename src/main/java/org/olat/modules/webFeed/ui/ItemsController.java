@@ -403,9 +403,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 		deleteButtons.add(deleteButton);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// make sure the lock is released
@@ -422,13 +419,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 			artefactLinks.clear();
 			artefactLinks = null;
 		}
+        super.doDispose();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// feed for this event and make sure the updated feed object is in the

@@ -150,11 +150,6 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

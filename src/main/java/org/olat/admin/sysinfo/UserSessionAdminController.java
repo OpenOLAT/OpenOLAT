@@ -82,6 +82,7 @@ public class UserSessionAdminController extends BasicController implements Bread
 	@Override
 	protected void doDispose() {
 		this.stackedController = null;
+        super.doDispose();
 	}
 
 	@Override

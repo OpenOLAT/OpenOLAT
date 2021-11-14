@@ -139,11 +139,6 @@ public class ForumUserListController extends FormBasicController {
 		}
 		dataModel.setObjects(users);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

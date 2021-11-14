@@ -124,9 +124,4 @@ public class DropboxForm extends FormBasicController {
 	
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

@@ -110,9 +110,4 @@ public class InfoMsgForm extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", "submit", buttonGroupLayout);
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

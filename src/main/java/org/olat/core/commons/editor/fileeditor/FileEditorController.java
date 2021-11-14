@@ -173,6 +173,7 @@ public class FileEditorController extends BasicController implements Activateabl
 		doUnlock();
 		removeAsListenerAndDispose(editCtrl);
 		editCtrl = null;
+        super.doDispose();
 	}
 	
 	private void doUnlock() {

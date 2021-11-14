@@ -103,6 +103,7 @@ public class ChecklistEditController extends ActivateableTabbableDefaultControll
 			cmcManage.dispose();
 			cmcManage = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

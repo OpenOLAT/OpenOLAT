@@ -94,10 +94,4 @@ public class NodeStatusController extends BasicController {
 		// forward wizard activation event to parent
 		fireEvent(ureq, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
 }

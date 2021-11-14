@@ -158,9 +158,4 @@ public class EMailCalloutCtrl extends FormBasicController {
 			}
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

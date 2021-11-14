@@ -391,9 +391,4 @@ public class OverviewListController extends FormBasicController implements Flexi
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

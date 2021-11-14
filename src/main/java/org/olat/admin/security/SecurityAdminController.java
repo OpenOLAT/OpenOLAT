@@ -113,11 +113,6 @@ public class SecurityAdminController extends BasicController implements Breadcru
 		}
 		super.event(ureq, source, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doOpenConfiguration(UserRequest ureq) {
 		if(configurationCtrl == null) {

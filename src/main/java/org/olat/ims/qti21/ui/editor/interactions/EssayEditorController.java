@@ -151,11 +151,6 @@ public class EssayEditorController extends FormBasicController {
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private String getValue(Integer integer) {
 		return integer == null ? "" : integer.toString();

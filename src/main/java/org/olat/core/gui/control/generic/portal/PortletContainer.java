@@ -152,15 +152,13 @@ public class PortletContainer extends BasicController implements PortletContaine
 		return this.portlet;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		if (portlet != null) {
 			portlet.dispose();
 			portlet = null;
 		}
+        super.doDispose();
 	}
 	
 	/**

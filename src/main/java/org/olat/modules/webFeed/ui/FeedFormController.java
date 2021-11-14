@@ -95,12 +95,6 @@ class FeedFormController extends FormBasicController {
 		setTranslator(uiFactory.getTranslator());
 		initForm(ureq);
 	}
-
-	
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 	
 	public boolean canChangeUrl() {
 		return canChangeUrl && feedUrl != null;

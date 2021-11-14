@@ -94,11 +94,6 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//nothing to dispose
-	}
-
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = true;
 		String subject = subjectTextElement.getValue();

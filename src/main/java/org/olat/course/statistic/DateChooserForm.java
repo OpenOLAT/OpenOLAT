@@ -141,9 +141,4 @@ public class DateChooserForm extends FormBasicController {
 		
 		uifactory.addFormSubmitButton( "datechooser.generate", formLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to be done here
-	}
 }

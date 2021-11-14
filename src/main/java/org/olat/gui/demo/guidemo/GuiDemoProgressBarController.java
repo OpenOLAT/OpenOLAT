@@ -127,16 +127,8 @@ public class GuiDemoProgressBarController extends BasicController {
 		return progressBar;
 	}
 	
-	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// Nothing to do
-		
-	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to do
-		
 	}
 }

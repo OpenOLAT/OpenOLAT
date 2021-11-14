@@ -385,5 +385,6 @@ public class DropboxController extends BasicController {
 			contextualSubscriptionCtr.dispose();
 			contextualSubscriptionCtr = null;
 		}
+        super.doDispose();
 	}	
 }

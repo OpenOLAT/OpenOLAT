@@ -95,11 +95,6 @@ public class ReasonController extends FormBasicController {
 			uifactory.addFormSubmitButton("save", formLayout);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public String getReason() {
 		return reasonEl.getValue();

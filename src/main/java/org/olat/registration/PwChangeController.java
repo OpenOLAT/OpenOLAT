@@ -367,5 +367,6 @@ public class PwChangeController extends BasicController {
 			wic.dispose();
 			wic = null;
 		}
+        super.doDispose();
 	}
 }

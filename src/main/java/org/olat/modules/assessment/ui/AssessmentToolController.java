@@ -82,11 +82,6 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		usersLink.setElementCssClass("o_sel_assessment_tool_users");
 		stackPanel.addTool(usersLink);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

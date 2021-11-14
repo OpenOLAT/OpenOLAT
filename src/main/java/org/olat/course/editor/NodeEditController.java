@@ -209,11 +209,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

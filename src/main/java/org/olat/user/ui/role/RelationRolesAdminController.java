@@ -123,11 +123,6 @@ public class RelationRolesAdminController extends FormBasicController {
 		tableEl.setVisible(enabled);
 		addRoleButton.setVisible(enabled);
 	}
-
-	@Override
-	protected void doDispose() {
-		// 
-	}
 	
 	private void loadModel() {
 		List<RelationRole> relationRoles = identityRelationsService.getAvailableRoles();

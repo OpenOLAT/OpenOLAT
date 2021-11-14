@@ -191,11 +191,6 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 			tableEl.addBatchButton(deleteButton);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void updateModel() {
 		List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, subIdent, businessGroup, false);
@@ -560,11 +555,6 @@ public class BigBlueButtonEditMeetingsController extends FormBasicController {
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			
 			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

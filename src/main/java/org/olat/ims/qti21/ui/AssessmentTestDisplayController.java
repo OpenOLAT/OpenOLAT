@@ -443,6 +443,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		} catch (Exception e) {
 			logError("", e);
 		}
+        super.doDispose();
 	}
 	
 	/**

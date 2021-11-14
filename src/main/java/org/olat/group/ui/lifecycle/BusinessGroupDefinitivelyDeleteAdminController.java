@@ -90,11 +90,6 @@ public class BusinessGroupDefinitivelyDeleteAdminController extends FormBasicCon
 		textEl.setElementCssClass("form-inline");
 		textEl.setTextAddOn(addOnKey);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

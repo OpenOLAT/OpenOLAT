@@ -94,9 +94,4 @@ public class CalConfigController extends FormBasicController {
 		//
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }

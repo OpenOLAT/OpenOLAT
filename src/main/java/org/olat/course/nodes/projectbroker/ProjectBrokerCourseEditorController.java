@@ -344,11 +344,6 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 	}
 
 	@Override
-	protected void doDispose() {
-    	//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

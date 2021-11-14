@@ -70,9 +70,4 @@ public class QuickViewMetadataController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

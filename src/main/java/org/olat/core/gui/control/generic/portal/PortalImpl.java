@@ -352,9 +352,7 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// cleanup all portlet containers
 		if(portletContainers != null) {
@@ -363,11 +361,10 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 			}
 			portletContainers = null;
 		}
+        super.doDispose();
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portal#setPortalColumns(java.util.List)
-	 */
+	@Override
 	public void setPortalColumns(List<List<String>> portalColumns) {
 		this.portalColumns = portalColumns;
 	}

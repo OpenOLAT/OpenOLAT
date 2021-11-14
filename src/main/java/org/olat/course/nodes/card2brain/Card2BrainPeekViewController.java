@@ -79,10 +79,4 @@ public class Card2BrainPeekViewController extends BasicController {
 			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

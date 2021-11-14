@@ -149,9 +149,4 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

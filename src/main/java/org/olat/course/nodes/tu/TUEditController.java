@@ -133,6 +133,7 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 			previewLayoutCtr.dispose();
 			previewLayoutCtr = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

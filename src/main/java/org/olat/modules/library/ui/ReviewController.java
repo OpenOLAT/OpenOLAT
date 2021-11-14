@@ -111,11 +111,6 @@ public class ReviewController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == documentListTableController && event instanceof TableEvent) {
 			TableEvent e = (TableEvent) event;

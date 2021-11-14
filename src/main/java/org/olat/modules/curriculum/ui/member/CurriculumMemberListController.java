@@ -242,11 +242,6 @@ public class CurriculumMemberListController extends FormBasicController implemen
 		toolsCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(toolsCol);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected void reloadModel() {
 		loadModel(tableEl.getQuickSearchString());
@@ -622,11 +617,6 @@ public class CurriculumMemberListController extends FormBasicController implemen
 				link.setIconLeftCSS(iconCSS);
 			}
 			mainVC.put(name, link);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 		
 		@Override

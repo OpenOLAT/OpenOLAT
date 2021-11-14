@@ -139,11 +139,6 @@ public class CertificatesReportController extends FormBasicController {
 		
 		tableEl.addBatchButton(generateReportButton);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected void loadModel(UserRequest ureq, String searchString) {
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();

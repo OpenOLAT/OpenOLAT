@@ -341,9 +341,4 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		}
 		super.event(ureq, source, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

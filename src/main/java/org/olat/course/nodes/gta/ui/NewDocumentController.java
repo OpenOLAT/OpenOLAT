@@ -103,11 +103,6 @@ public class NewDocumentController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public String getFilename() {
 		String fileName = filenameEl.getValue().toLowerCase();
 		DocTemplate docTemplate = getSelectedTemplate();

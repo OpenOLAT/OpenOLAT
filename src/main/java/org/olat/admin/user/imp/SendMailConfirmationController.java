@@ -67,11 +67,6 @@ public class SendMailConfirmationController extends StepFormBasicController {
 				|| (partGroups != null && !partGroups.isEmpty())
 				|| (newIdents != null && !newIdents.isEmpty()));
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

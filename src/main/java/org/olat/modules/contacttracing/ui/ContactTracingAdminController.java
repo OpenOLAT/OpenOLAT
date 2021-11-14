@@ -110,11 +110,6 @@ public class ContactTracingAdminController extends BasicController implements Ac
     }
 
     @Override
-    protected void doDispose() {
-
-    }
-
-    @Override
     public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 
     }

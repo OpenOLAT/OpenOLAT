@@ -117,11 +117,6 @@ public class HistoryController extends FormBasicController {
 		}
 		flc.contextPut("subscriptionItems", wrappers);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

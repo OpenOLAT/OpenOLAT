@@ -69,9 +69,4 @@ public class CourseNodeReminderRunController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

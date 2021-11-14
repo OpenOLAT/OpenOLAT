@@ -80,10 +80,4 @@ public class SurveyEditController extends ActivateableTabbableDefaultController 
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

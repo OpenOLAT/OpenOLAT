@@ -94,11 +94,6 @@ public class CourseAdminController extends BasicController implements Activateab
 		
 		putInitialPanel(mainVC);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

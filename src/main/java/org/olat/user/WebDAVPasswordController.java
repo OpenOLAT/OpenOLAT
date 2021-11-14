@@ -198,11 +198,6 @@ public class WebDAVPasswordController extends FormBasicController {
 			sb.append(authUsername);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//auto-disposed
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

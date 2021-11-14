@@ -106,11 +106,6 @@ public class LTI13SharedToolDeploymentController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(publicKeyTypeEl == source) {
 			updatePublicKeyUI();

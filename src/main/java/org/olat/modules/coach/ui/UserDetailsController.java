@@ -196,6 +196,7 @@ public class UserDetailsController extends BasicController implements Activateab
 	@Override
 	protected void doDispose() {
 		stackPanel.removeListener(this);
+        super.doDispose();
 	}
 	
 	@Override

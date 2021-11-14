@@ -127,11 +127,6 @@ public class GTAAssessmentDetailsController extends BasicController implements A
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void assessmentDone(UserRequest ureq) {
 		if(coachingCtrl != null) {
 			coachingCtrl.assessmentDone(ureq);

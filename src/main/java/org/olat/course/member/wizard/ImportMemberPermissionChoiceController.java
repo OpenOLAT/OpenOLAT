@@ -84,9 +84,4 @@ public class ImportMemberPermissionChoiceController extends StepFormBasicControl
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add(permissionCtrl.getInitialFormItem());	
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

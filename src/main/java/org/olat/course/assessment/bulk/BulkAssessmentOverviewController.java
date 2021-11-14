@@ -150,6 +150,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		if(editedTask != null) {//only for security purpose
 			taskManager.returnTaskAfterEdition(editedTask, null);
 		}
+        super.doDispose();
 	}
 
 	@Override

@@ -119,6 +119,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 			lockEntry = null;
 		}
+        super.doDispose();
 	}
 
 }

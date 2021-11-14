@@ -95,9 +95,4 @@ public class ChooseScormRunModeForm extends FormBasicController {
 		FormSubmit showButton = uifactory.addFormSubmitButton("command.showscorm", startLabel, formLayout);
 		showButton.setElementCssClass("o_sel_start_scorm");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

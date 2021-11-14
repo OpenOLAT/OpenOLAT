@@ -168,10 +168,4 @@ public class LogFileChooserForm extends FormBasicController {
 
 			uifactory.addFormSubmitButton("submit", "logfilechooserform.archive", formLayout);
 		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
-    
 }

@@ -120,10 +120,4 @@ public class LiveStreamAdminController extends BasicController {
 		listenTo(paellaCtrl);
 		mainVC.put("segmentCmp", paellaCtrl.getInitialComponent());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

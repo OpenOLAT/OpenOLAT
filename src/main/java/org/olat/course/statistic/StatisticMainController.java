@@ -58,11 +58,6 @@ public class StatisticMainController extends GenericMainController implements Ac
 	}
 
 	@Override
-	protected void doDispose() {
-		// controllers disposed by BasicController:
-	}
-
-	@Override
 	protected Controller createController(ActionExtension ae, UserRequest ureq) {
 		if(ae instanceof StatisticActionExtension){
 			StatisticActionExtension sae = (StatisticActionExtension)ae;

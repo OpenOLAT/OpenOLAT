@@ -62,11 +62,6 @@ public class ExportOptionsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		downloadOptionsEl = uifactory.addCheckboxesVertical("setting", "form.title", formLayout, optionKeys, optionVals, 1);

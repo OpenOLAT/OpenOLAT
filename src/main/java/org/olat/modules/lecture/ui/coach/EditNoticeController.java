@@ -100,6 +100,7 @@ public class EditNoticeController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		editReasonCtrl.deleteTempStorage();
+        super.doDispose();
 	}
 
 	@Override

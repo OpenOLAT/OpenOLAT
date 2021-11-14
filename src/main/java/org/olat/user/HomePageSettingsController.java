@@ -152,11 +152,6 @@ public class HomePageSettingsController extends FormBasicController {
 		previewEl = new HomePageFormItem(displayCtrl);
 		previewContainer.add(previewEl);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

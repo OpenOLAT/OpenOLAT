@@ -121,9 +121,4 @@ public class ModulesForm extends FormBasicController {
 		solution.addActionListener(FormEvent.ONCLICK);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

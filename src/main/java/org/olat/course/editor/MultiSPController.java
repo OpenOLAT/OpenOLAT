@@ -145,10 +145,6 @@ public class MultiSPController extends FormBasicController {
 		
 		return nodeSelection;
 	}
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

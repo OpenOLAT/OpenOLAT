@@ -187,10 +187,6 @@ public class PreviewSettingsForm extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	protected boolean validateFormLogic(UserRequest ureq) {
 		return sdate.getDate()!=null;
 	}

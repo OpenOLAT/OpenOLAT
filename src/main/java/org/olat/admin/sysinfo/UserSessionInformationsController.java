@@ -68,12 +68,8 @@ public class UserSessionInformationsController extends BasicController {
 		putInitialPanel(myContent);
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		//
-	}
-
-
-	protected void doDispose() {
 		//
 	}
 	

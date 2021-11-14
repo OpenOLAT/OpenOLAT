@@ -170,11 +170,6 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		usersTableModel.setObjects(rows);
 		tableEl.reset();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

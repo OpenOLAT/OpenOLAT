@@ -144,9 +144,4 @@ public class FOConfigController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

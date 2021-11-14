@@ -301,11 +301,6 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		}
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	protected void loadModel() {
 		List<AssessmentNodeData> nodesTableList;
 		if (loadNodesFromCourse) {

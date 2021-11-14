@@ -164,12 +164,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		}
 		tableEl.setAndLoadPersistedPreferences(ureq, "lti13-tools-admin");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
+
 	private void loadModel() {
 		List<LTI13SharedToolDeployment> rows;
 		if(entry != null) {

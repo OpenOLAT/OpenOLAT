@@ -241,11 +241,6 @@ public class LecturesAbsenceRollCallsController extends FormBasicController {
 		}
 		return true;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

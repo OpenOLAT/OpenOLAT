@@ -105,11 +105,6 @@ public class CorrectionIdentityAssessmentItemNavigationController extends BasicC
 		putInitialPanel(mainVC);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public AssessmentItemListEntry getAssessmentItemSession() {
 		return itemCtrl.getAssessmentItemSession();
 	}

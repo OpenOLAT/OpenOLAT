@@ -93,11 +93,6 @@ public class MetadataAcceptStepController extends BasicController implements Ste
 		mainC.add("metainfos", metaInfoFormController.getFormItem());
 		putInitialPanel(mainC.getComponent());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

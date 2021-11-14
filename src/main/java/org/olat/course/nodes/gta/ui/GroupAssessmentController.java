@@ -542,6 +542,7 @@ public class GroupAssessmentController extends FormBasicController {
 		if(assessmentDocsTmpDir != null && assessmentDocsTmpDir.exists()) {
 			FileUtils.deleteDirsAndFiles(assessmentDocsTmpDir, true, true);
 		}
+        super.doDispose();
 	}
 
 	@Override

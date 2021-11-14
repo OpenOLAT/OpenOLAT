@@ -72,11 +72,6 @@ public class OrdersSearchForm extends FormBasicController {
 		uifactory.addFormSubmitButton("search", "search", buttonCont);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public StateEntry getStateEntry() {
 		StateMapped entry = new StateMapped();
 		Long refNo = getRefNo();

@@ -185,10 +185,4 @@ public class CompetenceBrowserController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		// Nothing to save here
 	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose here
-	}
-
 }

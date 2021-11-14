@@ -146,11 +146,6 @@ public class CourseOverviewStep extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {			
 			saveDatesToContext(context, dataModel.getObjects());
 			removeFormElementsFromContext(context);

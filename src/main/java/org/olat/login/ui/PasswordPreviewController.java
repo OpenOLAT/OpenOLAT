@@ -99,9 +99,4 @@ public class PasswordPreviewController extends FormBasicController {
 		// Nothing to do. It is only important to validate the password.
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -124,10 +124,4 @@ public class BigBlueButtonMeetingsCalendarController extends FormBasicController
 	protected void formOK(UserRequest ureq) {
 		// nothing to do		
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-
 }

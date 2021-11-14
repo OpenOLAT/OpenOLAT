@@ -75,11 +75,6 @@ public class VideoDownloadSettingsController extends FormBasicController {
 		videoMeta.setDownloadEnabled(allowDownloadEl.isKeySelected(DownloadOptions.allowed.name()));
 		videoManager.updateVideoMetadata(videoMeta);
 	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose
-	}
 	
 	private enum DownloadOptions {
 		allowed

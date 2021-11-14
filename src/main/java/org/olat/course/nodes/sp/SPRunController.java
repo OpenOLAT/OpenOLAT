@@ -215,15 +215,4 @@ public class SPRunController extends BasicController implements Activateable2 {
 		// delegate to single page controller
 		spCtr.activate(ureq, entries, state);
 	}
-
-	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		//child controller registered with listenTo gets disposed in BasicController
-	}
-
 }

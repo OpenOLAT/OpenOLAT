@@ -64,11 +64,6 @@ public class AthenaPdfSettingsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		athenaPdfSpi.setServiceUrl(urlEl.getValue());
 		athenaPdfSpi.setServiceKey(keyEl.getValue());

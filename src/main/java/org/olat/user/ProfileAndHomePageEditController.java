@@ -115,11 +115,6 @@ public class ProfileAndHomePageEditController extends BasicController implements
 		
 		doOpenProfile(ureq);
 	}
-
-	@Override
-	protected void doDispose() {
-		// controllers disposed by basic controller
-	}
 	
 	@Override
 	public boolean isUserInteractionRequired(UserRequest ureq) {

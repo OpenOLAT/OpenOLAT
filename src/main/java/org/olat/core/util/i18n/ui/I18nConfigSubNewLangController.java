@@ -225,9 +225,4 @@ class I18nConfigSubNewLangController extends FormBasicController {
 			newCountry.setErrorKey("configuration.management.create.variant.error.noCountry", null);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

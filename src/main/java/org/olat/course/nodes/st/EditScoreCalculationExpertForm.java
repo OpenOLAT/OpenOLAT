@@ -247,10 +247,4 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }

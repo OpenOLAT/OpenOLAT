@@ -132,11 +132,6 @@ public class TeamsMeetingsController extends FormBasicController {
 		pastTableEl.reset(true, true, true);
 		pastTableEl.setVisible(!pastMeetings.isEmpty());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {

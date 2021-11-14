@@ -92,9 +92,4 @@ public class AddIdentities_1_SearchController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

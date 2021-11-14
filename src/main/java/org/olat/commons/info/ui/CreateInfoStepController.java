@@ -69,11 +69,6 @@ public class CreateInfoStepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == editForm) {
 			if(event == Event.CHANGED_EVENT) {

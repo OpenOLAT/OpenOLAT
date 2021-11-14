@@ -146,13 +146,12 @@ public class CourseLogsArchiveController extends BasicController implements Gene
 
 		putInitialPanel(myPanel);
 	}
-	
-
 
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, logOres);
+        super.doDispose();
 	}
 
 	@Override

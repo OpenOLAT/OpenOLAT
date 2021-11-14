@@ -180,11 +180,6 @@ public class PFCoachController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == uploadLink) {
 			doOpenUploadController(ureq, false);

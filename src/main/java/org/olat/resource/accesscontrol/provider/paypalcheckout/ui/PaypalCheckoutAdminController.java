@@ -72,11 +72,6 @@ public class PaypalCheckoutAdminController extends BasicController implements Ac
 		
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

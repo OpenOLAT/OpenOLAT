@@ -233,11 +233,6 @@ public class CatalogNodeController extends BasicController implements Activateab
 		}
 		return childNodeController;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

@@ -104,11 +104,6 @@ public class ResumeController extends FormBasicController {
 			fireEvent (ureq, new Event("landing"));
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

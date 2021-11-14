@@ -141,11 +141,6 @@ public class MSCoachRunController extends BasicController implements Activateabl
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private Activateable2 doOpenParticipants(UserRequest ureq) {
 		participantsCtrl.reload(ureq);

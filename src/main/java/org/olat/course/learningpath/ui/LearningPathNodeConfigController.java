@@ -603,11 +603,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private boolean isDurationMandatory() {
 		return CompletionType.duration.equals(course.getCourseConfig().getCompletionType())

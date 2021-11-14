@@ -386,15 +386,6 @@ public class ProjectListController extends BasicController implements GenericEve
 		mainPanel.pushContent(projectController.getInitialComponent());
 	}
 
-	/**
-	 *
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private TableController createTableController(final UserRequest ureq, WindowControl wControl) {
 		numberOfCustomFieldInTable = 0;
 		numberOfEventInTable = 0;

@@ -305,10 +305,4 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

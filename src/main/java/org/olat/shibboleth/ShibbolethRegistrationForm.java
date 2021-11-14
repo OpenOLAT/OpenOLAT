@@ -121,9 +121,4 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 		usernameEl.setExampleKey("srf.login.example", null);
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}	
 }

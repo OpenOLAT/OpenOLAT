@@ -377,11 +377,6 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		flc.add(commentEl);
 		return row;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void propagateDirtinessToContainer(FormItem source, FormEvent event) {

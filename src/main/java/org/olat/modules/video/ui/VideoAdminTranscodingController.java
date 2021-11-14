@@ -204,7 +204,6 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		}
 	}
 	
-	
 	//go through all and delete selection
 	private void queueDeleteTranscoding(TranscodingRow source) {
 		List<VideoTranscoding> allVideoTranscodings = videoManager.getOneVideoResolution(source.getResolution());
@@ -214,16 +213,9 @@ public class VideoAdminTranscodingController extends FormBasicController {
 			}
 		}
 	}
-	
-
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// nothing to do
-	}
-
-	@Override
-	protected void doDispose() {
-		// no controllers to clean up
 	}
 }

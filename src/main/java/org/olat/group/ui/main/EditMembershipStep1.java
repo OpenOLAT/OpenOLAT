@@ -102,11 +102,5 @@ public class EditMembershipStep1 extends BasicStep {
 			
 			return super.validateFormLogic(ureq);
 		}
-		
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		};
 	}
-
 }

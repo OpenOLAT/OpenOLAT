@@ -58,9 +58,4 @@ public class FallbackProviderController extends ProviderConfigController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

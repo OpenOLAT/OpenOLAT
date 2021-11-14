@@ -673,6 +673,7 @@ public class LTIConfigForm extends FormBasicController {
 		if (confirmDialogCtr != null) {
 			removeAsListenerAndDispose(confirmDialogCtr);
 		}
+        super.doDispose();
 	}
 	
 	private void updateNameValuePair(String custom) {

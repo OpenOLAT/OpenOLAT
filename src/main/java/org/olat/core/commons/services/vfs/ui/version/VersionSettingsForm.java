@@ -108,11 +108,6 @@ public class VersionSettingsForm extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		String num = numOfVersions.getSelectedKey();
 		if(num == null || num.length() == 0) return;

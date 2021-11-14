@@ -77,6 +77,7 @@ public class LibraryMediaChooserController extends CustomMediaChooserController 
 	@Override
 	protected void doDispose() {
 		fileChooserController.dispose();
+        super.doDispose();
 	}
 
 	@Override

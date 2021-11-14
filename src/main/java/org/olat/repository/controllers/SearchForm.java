@@ -241,12 +241,6 @@ public class SearchForm extends FormBasicController {
 		
 		update();
 	}
-
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private String[] getTranslatedResources(List<String> resources) {
 		List<String> l = new ArrayList<>();

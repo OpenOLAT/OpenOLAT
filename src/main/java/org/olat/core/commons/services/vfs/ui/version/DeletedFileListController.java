@@ -217,11 +217,6 @@ public class DeletedFileListController extends FormBasicController {
 		tableEl.reset(true, true, true);
 	}
 
-	@Override
-	protected void doDispose() {
-	//
-	}
-
 	private void doConfirmDelete(UserRequest ureq) {
 		List<DeletedFileRow> versionsToDelete = getSelectedRows();
 		if (!versionsToDelete.isEmpty()) {

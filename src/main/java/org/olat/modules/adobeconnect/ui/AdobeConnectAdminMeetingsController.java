@@ -129,11 +129,6 @@ public class AdobeConnectAdminMeetingsController extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void updateModel() {
 		List<AdobeConnectMeeting> meetings = adobeConnectManager.getAllMeetings();

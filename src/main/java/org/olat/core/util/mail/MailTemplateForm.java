@@ -193,10 +193,4 @@ public class MailTemplateForm extends FormBasicController {
 		this.sendMail.select("xx", true);
 		update();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }

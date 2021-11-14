@@ -156,10 +156,4 @@ public class EdubaseAdminController extends FormBasicController {
 
 		return allOk;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

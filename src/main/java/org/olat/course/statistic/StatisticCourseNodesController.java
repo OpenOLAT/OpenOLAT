@@ -170,11 +170,6 @@ public class StatisticCourseNodesController extends BasicController implements A
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == courseTree) {
 			if(event instanceof TreeEvent) {

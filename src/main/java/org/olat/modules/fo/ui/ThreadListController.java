@@ -159,11 +159,6 @@ public class ThreadListController extends FormBasicController {
 		sortOptions.setDefaultOrderBy(new SortKey(ThreadListCols.lastModified.name(), false));
 		threadTable.setSortSettings(sortOptions);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void loadModel() {
 		Identity identity = guestOnly ? null : getIdentity();

@@ -89,11 +89,6 @@ public class CertificatesListAdminController extends FormBasicController {
 		tableModel.setObjects(templates);
 		tableEl.reset();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

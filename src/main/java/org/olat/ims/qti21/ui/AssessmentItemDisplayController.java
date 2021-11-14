@@ -256,6 +256,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		if(submissionDirToDispose != null) {
 			FileUtils.deleteDirsAndFiles(submissionDirToDispose, true, true);
 		}
+        super.doDispose();
 	}
 	
 	public boolean isExploded() {

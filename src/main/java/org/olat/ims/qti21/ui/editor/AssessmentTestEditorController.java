@@ -89,11 +89,6 @@ public class AssessmentTestEditorController extends BasicController implements A
 		putInitialPanel(tabbedPane);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void initTestEditor(UserRequest ureq) {
 		if(testPart != null) {//combined test and single part editor
 			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), testEntry,

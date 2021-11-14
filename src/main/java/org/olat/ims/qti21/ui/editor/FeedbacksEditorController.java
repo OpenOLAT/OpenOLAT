@@ -303,12 +303,6 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		
 		return allOk;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	
 	public class SimpleFeedbackForm {
 		

@@ -135,11 +135,6 @@ public class UserInfoMainController extends AbstractUserInfoMainController imple
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {

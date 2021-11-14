@@ -141,11 +141,6 @@ public class ConfirmDeactivationGraderController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Identity replacement = null;
 		if(replacementEl.isVisible() && replacementEl.isOneSelected() && !"-".equals(replacementEl.getSelectedKey())) {

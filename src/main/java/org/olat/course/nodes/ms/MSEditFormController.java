@@ -122,11 +122,6 @@ public class MSEditFormController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-	// Don't dispose anything
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

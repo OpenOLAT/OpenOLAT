@@ -171,6 +171,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator()
 			.getEventBus().deregisterFor(this, taskListEventResource);
+        super.doDispose();
 	}
 
 	@Override

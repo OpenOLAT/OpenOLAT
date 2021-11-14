@@ -202,9 +202,4 @@ public class HomePageDisplayController extends BasicController {
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		// child controller disposed by basic controller
-	}
 }

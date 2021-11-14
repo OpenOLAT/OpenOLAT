@@ -226,11 +226,6 @@ public class GlossaryTermAndSynonymController extends FormBasicController {
 		
 		formUIf.addFormSubmitButton("form.submit", tmpLayout);
 	}
-	
-	@Override
-	protected void doDispose() {
-	// nothing to do
-	}
 
 	private static void removeDuplicate(List<String> arlList) {
 		Set<String> h = new HashSet<>(arlList);

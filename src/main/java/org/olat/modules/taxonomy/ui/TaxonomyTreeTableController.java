@@ -230,6 +230,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 
 	@Override
@@ -680,11 +681,6 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			links.add(name);
 			link.setIconLeftCSS("o_icon " + iconCss);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

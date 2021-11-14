@@ -42,11 +42,6 @@ public class ConfirmSaveTestsController extends FormBasicController {
 		this.notCorrectedQuestions = notCorrectedQuestions;
 		initForm(ureq);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

@@ -113,11 +113,6 @@ public class CourseAreasController extends MainLayoutBasicController {
 		mainPanel = putInitialPanel(mainVC);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void loadModel() {
 		List<BGArea> areas = areaManager.findBGAreasInContext(resource);
 		areaDataModel.setObjects(areas);

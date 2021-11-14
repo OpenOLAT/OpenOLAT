@@ -334,11 +334,6 @@ public class CollaborationToolsSettingsController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }
 
 class ChoiceOfToolsForm extends FormBasicController {
@@ -406,10 +401,5 @@ class ChoiceOfToolsForm extends FormBasicController {
 	
 	protected Collection<String> getSelected() {
 		return ms.getSelectedKeys();
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 }

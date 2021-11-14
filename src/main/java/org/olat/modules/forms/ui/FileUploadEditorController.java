@@ -186,9 +186,4 @@ public class FileUploadEditorController extends FormBasicController implements P
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

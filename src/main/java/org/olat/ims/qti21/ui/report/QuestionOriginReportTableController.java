@@ -95,11 +95,6 @@ public class QuestionOriginReportTableController extends FormBasicController {
 		
 		generateReportButton = uifactory.addFormLink("report.question.to.course", "report.question.to.course", null, formLayout, Link.BUTTON);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected void loadModel(UserRequest ureq, String searchString, String author) {
 		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();

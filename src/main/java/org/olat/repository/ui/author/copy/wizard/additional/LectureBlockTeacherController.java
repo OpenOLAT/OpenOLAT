@@ -87,11 +87,6 @@ public class LectureBlockTeacherController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		// Nothing to do here
 	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to do here		
-	}
 	
 	public void saveToContext() {
 		if (teachersEl != null) {

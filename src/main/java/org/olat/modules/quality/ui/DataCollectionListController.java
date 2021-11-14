@@ -336,6 +336,7 @@ public class DataCollectionListController extends FormBasicController implements
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 
 }

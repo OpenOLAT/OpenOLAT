@@ -96,11 +96,6 @@ class ImportStep01 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			//
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			Boolean updateUsers = Boolean.FALSE;
 			if(updateEl != null && updateEl.isOneSelected() && updateEl.isSelected(1)) {

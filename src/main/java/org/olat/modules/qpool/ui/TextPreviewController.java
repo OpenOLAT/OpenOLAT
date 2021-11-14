@@ -74,11 +74,6 @@ public class TextPreviewController extends BasicController implements QPoolItemE
 	public boolean isValid() {
 		return true;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected String readSummary(VFSLeaf leaf) {
 		StringWriter out = new StringWriter();

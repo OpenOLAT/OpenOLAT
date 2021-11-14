@@ -139,11 +139,6 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 	}
@@ -319,11 +314,6 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		private void close() {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 }

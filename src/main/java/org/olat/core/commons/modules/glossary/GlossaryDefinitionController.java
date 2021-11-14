@@ -56,14 +56,12 @@ public class GlossaryDefinitionController extends BasicController {
 		listenTo(wCtrl);
 		putInitialPanel(wCtrl.getInitialComponent());
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+
 	@Override
 	protected void doDispose() {
 		//nothing to do	
 		wCtrl.dispose();
+        super.doDispose();
 	}
 
 	@Override

@@ -82,10 +82,5 @@ public class GuiDemoSoaController extends BasicController {
 			
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-	// nothing to do yet
-	}
 }
 

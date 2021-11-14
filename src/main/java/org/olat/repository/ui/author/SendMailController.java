@@ -152,6 +152,7 @@ public class SendMailController extends FormBasicController {
 		if(attachementTempDir != null && attachementTempDir.exists()) {
 			FileUtils.deleteDirsAndFiles(attachementTempDir, true, true);
 		}
+        super.doDispose();
 	}
 	
 	@Override

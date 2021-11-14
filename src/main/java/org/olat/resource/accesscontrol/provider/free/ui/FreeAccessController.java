@@ -88,12 +88,7 @@ public class FreeAccessController extends FormBasicController implements FormCon
 			
 		uifactory.addFormSubmitButton("access.button", buttonGroupLayout);
 	}
-		
-	@Override
-	protected void doDispose() {
-			//
-	}
-
+	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		return true;

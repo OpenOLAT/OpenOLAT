@@ -296,12 +296,4 @@ public class FileLinkChooserController extends BasicController {
 	private String getSuffix(String filename) {
 		return filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		// controllers autodisposed by basic controller
-	}
 }

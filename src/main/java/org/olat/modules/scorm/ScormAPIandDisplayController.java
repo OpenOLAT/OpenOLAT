@@ -531,6 +531,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	@Override
 	protected void doDispose() {
 		cleanUpCollectedScoData();
+        super.doDispose();
 	}
 
 	/**

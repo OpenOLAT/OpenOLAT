@@ -370,6 +370,7 @@ public class BCCourseNodeConfigController extends FormBasicController {
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 
 	private boolean isSharedfolderNotPresent() {

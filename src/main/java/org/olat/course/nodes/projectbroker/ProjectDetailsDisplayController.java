@@ -273,6 +273,7 @@ public class ProjectDetailsDisplayController extends BasicController {
 		if (lock != null) {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
 		}
+        super.doDispose();
 	}
 	
 	private void doFileDelivery(UserRequest ureq, final Project project, final CourseEnvironment courseEnv, final CourseNode cNode) {

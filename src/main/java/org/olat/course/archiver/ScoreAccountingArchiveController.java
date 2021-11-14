@@ -117,9 +117,4 @@ public class ScoreAccountingArchiveController extends BasicController {
 		downloadButton.setUserObject(downloadFile);
 		myPanel.setContent(vcFeedback);
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

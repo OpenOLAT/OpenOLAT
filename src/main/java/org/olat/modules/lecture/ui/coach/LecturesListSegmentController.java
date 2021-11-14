@@ -115,11 +115,6 @@ public class LecturesListSegmentController extends BasicController {
 			doExportStatistics(ureq);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void reloadModel(List<LectureBlockIdentityStatistics> statistics) {
 		if(aggregatedListCtrl != null) {

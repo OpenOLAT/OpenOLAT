@@ -203,11 +203,6 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 	}
 
 	@Override
-	protected void doDispose() {
-		// metaInfoCtr should be auto-disposed
-	}
-
-	@Override
 	public boolean runsModal() {
 		return false;
 	}

@@ -68,12 +68,7 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 		super(ureq, wControl);
 		initForm (ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.certificates.options.title");

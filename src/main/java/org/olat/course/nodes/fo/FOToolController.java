@@ -83,11 +83,6 @@ public class FOToolController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private static class ToolSecurityCallback implements ForumCallback {
 		

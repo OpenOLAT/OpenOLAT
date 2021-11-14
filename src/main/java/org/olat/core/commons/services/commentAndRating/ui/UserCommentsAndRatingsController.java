@@ -245,6 +245,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	protected void doDispose() {
 		// Remove event listener
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, userAndCommentsRatingsChannel);
+        super.doDispose();
 	}
 
 	@Override

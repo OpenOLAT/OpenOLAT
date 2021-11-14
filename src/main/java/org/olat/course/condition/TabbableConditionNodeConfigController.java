@@ -106,9 +106,4 @@ public class TabbableConditionNodeConfigController extends ActivateableTabbableD
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

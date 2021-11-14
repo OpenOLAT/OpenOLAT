@@ -153,9 +153,4 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		}
 		return staticContent;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

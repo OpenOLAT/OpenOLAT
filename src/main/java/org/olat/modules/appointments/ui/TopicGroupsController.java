@@ -381,10 +381,4 @@ public class TopicGroupsController extends FormBasicController {
 		doUpdateGroups();
 		loadUsersModel();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -259,6 +259,7 @@ public class SurveyRunController extends BasicController {
 	protected void doDispose() {
 		removeAsListenerAndDispose(executionCtrl);
 		executionCtrl = null;
+        super.doDispose();
 	}
 
 }

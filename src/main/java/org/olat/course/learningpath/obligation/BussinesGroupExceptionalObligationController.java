@@ -99,9 +99,4 @@ public class BussinesGroupExceptionalObligationController extends FormBasicContr
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

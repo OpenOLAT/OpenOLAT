@@ -133,11 +133,6 @@ public class QuestionConfigurationController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

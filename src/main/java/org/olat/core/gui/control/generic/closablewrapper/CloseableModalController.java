@@ -231,5 +231,6 @@ public class CloseableModalController extends DefaultController implements Modal
 		} else {
 			getWindowControl().removeModalDialog(myContent);
 		}
+        super.doDispose();
 	}
 }

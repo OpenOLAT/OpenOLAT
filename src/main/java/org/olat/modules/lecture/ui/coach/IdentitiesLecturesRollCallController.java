@@ -337,11 +337,6 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(toolsCalloutCtrl == source) {
 			cleanUp();
@@ -551,11 +546,6 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 					doAddNotice(ureq, row, AbsenceNoticeType.notified);
 				}
 			}
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 	

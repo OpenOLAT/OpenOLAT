@@ -107,12 +107,5 @@ public class DisclaimerStep extends BasicStep {
 			
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
-		
 	}
-
 }

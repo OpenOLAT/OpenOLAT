@@ -165,9 +165,4 @@ public class ImmunityProofCreateWrapperController extends BasicController {
 		manualController = null;
 	}
 
-	@Override
-	protected void doDispose() {
-		
-	}
-
 }

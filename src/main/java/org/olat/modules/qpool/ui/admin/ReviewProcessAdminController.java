@@ -206,11 +206,4 @@ public class ReviewProcessAdminController extends FormBasicController {
 			qpoolModule.setFinalVisibleTeach(false);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
-
 }

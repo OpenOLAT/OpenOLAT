@@ -274,11 +274,6 @@ public class HelpAdminEditController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-
-	}
-
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOK = super.validateFormLogic(ureq);
 

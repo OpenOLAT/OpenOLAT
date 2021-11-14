@@ -81,9 +81,4 @@ public class DocumentEditController extends ActivateableTabbableDefaultControlle
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

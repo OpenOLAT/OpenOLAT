@@ -99,11 +99,6 @@ public class CSPLogListController extends FormBasicController implements Breadcr
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == logEntryCtrl) {
 			if(event == Event.CANCELLED_EVENT) {

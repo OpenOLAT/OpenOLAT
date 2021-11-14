@@ -95,12 +95,6 @@ public class LLRunController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose here
-
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do here
 	}

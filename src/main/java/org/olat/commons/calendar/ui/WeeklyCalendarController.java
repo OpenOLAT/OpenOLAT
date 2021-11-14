@@ -843,6 +843,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(CalendarManager.class));
+        super.doDispose();
 	}
 	
 	@Override

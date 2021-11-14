@@ -224,11 +224,6 @@ public class EdusharingAdminController extends FormBasicController {
 		edusharingModule.setRepoPublicKeyString(repoPublicKey);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void doConfirmEnable(UserRequest ureq) {
 		String title = translate("admin.enable.confirm.title");
 		String message = translate("admin.enable.confirm.message");

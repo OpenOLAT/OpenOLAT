@@ -110,11 +110,6 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		
 		return this;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {

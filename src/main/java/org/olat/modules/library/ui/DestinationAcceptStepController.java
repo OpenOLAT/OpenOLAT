@@ -82,11 +82,6 @@ public class DestinationAcceptStepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> selection = treeMultipleSelectionElement.getSelectedKeys();
 		if (selection.isEmpty()) {

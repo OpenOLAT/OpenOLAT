@@ -239,11 +239,6 @@ public class ImpressumAdminController extends FormBasicController {
 		}
 		return langName;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

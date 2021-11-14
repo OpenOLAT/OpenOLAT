@@ -169,14 +169,4 @@ public class TranslationToolLauncherController extends BasicController {
 		startTranslationToolLink.setEnabled(!isEnabled);
 
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-	// nothing to dispose
-	}
 }

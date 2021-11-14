@@ -110,9 +110,4 @@ public class QuickstartPortletRunController extends DefaultController {
 			//
 		}
 	}
-
-	protected void doDispose() {
-	// nothing to dispose
-	}
-
 }

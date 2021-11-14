@@ -312,11 +312,6 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public final class HotspotChoiceWrapper {
 		

@@ -242,11 +242,6 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		repoTableModel.addObjects(repoEntries);
 		resourcesCtr.modelChanged();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private static class ManagedEntryfilter implements RepositoryEntryFilter {
 

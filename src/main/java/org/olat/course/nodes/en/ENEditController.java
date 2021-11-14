@@ -95,11 +95,6 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 		tabbedPane.addTab(translate(PANE_TAB_ENCONFIG), myContent);
 	}
 
-	@Override
-	protected void doDispose() {
-    //	child controllers registered with listenTo() get disposed in BasicController
-	}
-
 	/**
 	 * @param moduleConfiguration
 	 * @return true if module configuration is valid

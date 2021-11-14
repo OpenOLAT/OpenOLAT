@@ -59,11 +59,6 @@ public class ImportSourcesController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(importRepository == source) {
 			fireEvent(ureq, new Event(IMPORT_REPO));

@@ -48,10 +48,4 @@ public class BCCourseNodeNoFolderForm extends BasicController {
 
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
-
 }

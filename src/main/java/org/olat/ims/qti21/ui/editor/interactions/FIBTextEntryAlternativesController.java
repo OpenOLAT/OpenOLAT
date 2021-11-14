@@ -68,11 +68,6 @@ public class FIBTextEntryAlternativesController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("add", buttonsCont);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public List<String> getAlternatives() {
 		String val = variantsEl.getValue();

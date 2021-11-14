@@ -434,11 +434,6 @@ public class HighScoreRunController extends FormBasicController{
 	protected void formOK(UserRequest ureq) {
 		// only formInnerEvent()		
 	}
-
-	@Override
-	protected void doDispose() {
-		// only formInnerEvent()		
-	}
 	
 	private class MarkedMemberCssDelegate extends DefaultFlexiTableCssDelegate {
 		private boolean mark;

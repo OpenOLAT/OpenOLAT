@@ -266,11 +266,6 @@ public class UsrPropContextEditController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		// nothing to handle
 	}

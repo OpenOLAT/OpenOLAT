@@ -258,11 +258,6 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			resetButton = uifactory.addFormLink("menu.reset.title", formLayout, Link.BUTTON);
 			resetButton.setIconLeftCSS("o_icon o_icon_delete_item"); 	
 		}
-	} 
-
-	@Override
-	protected void doDispose() {
-		//
 	}
 	
 	protected void updateModel() {
@@ -755,11 +750,6 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				revalidateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log");
 			}
 			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

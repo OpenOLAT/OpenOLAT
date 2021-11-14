@@ -127,11 +127,6 @@ public class EditMultipleDueDatesController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// 
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		for (Task task : tasks) {
 			TaskDueDate dueDates = gtaManager.getDueDatesTask(task);

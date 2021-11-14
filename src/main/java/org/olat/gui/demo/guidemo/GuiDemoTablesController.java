@@ -86,11 +86,6 @@ public class GuiDemoTablesController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	protected void doDispose() {
-		// table gets disposed by BasicController because we listenTo(table)
-	}
-
 }
 
 class ImageCellRenderer implements CustomCellRenderer {

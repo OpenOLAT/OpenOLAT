@@ -167,6 +167,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	@Override
 	protected void doDispose() {
 		eventBus.deregisterFor(this, QuestionPoolMainEditorController.QITEM_MARKED);
+        super.doDispose();
 	}
 
 	@Override

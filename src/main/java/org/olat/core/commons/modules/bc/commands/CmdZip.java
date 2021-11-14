@@ -121,11 +121,6 @@ public class CmdZip extends FormBasicController implements FolderCommand {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-
-	@Override
 	public int getStatus() {
 		return status;
 	}

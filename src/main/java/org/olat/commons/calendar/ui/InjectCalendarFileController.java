@@ -67,11 +67,6 @@ public class InjectCalendarFileController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", buttonGroupLayout);
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

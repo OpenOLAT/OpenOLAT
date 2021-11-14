@@ -208,11 +208,6 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	public String getFileName() {
 		return currentItem.getName();
 	}

@@ -153,11 +153,6 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 			tableEl.addBatchButton(batchDeleteButton);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<DisadvantageCompensation> compensations = disadvantageCompensationService.getDisadvantageCompensations(disadvantegdIdentity);
@@ -344,11 +339,6 @@ public class UserDisadvantageCompensationListController extends FormBasicControl
 			links.add(name);
 			link.setIconLeftCSS("o_icon " + iconCss);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

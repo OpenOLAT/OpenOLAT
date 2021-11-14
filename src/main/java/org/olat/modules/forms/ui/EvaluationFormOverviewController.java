@@ -171,11 +171,6 @@ public class EvaluationFormOverviewController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private static final class DurationCategory {
 
 		private final String name;

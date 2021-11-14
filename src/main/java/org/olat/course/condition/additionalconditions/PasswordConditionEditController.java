@@ -78,11 +78,6 @@ public class PasswordConditionEditController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-
-	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == overwriteDialogBox) {
 			if (event != Event.CANCELLED_EVENT && DialogBoxUIFactory.isYesEvent(event)) {

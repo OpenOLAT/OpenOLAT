@@ -293,9 +293,4 @@ public class OpencastConfigController extends FormBasicController {
 		cmc.activate();
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

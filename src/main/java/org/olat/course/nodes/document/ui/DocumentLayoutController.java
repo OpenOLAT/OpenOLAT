@@ -107,9 +107,4 @@ public class DocumentLayoutController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

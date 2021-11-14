@@ -188,11 +188,6 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		StringBuilder deletedLevels = new StringBuilder();
 		StringBuilder notDeletedLevels = new StringBuilder();

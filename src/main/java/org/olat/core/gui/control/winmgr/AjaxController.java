@@ -401,9 +401,6 @@ public class AjaxController extends DefaultController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		List<MapperKey> mappers = new ArrayList<>();
@@ -414,6 +411,7 @@ public class AjaxController extends DefaultController {
 			//the controller should be older than 40s otherwise poll may not started yet
 			if ((System.currentTimeMillis() - creationTime) > 40000) log.warn("Client did not send a single polling request though ajax is enabled!");
 		}
+        super.doDispose();
 	}
 
 	/**

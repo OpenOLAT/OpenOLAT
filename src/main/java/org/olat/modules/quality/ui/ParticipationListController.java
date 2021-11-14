@@ -333,9 +333,4 @@ public class ParticipationListController extends FormBasicController implements 
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

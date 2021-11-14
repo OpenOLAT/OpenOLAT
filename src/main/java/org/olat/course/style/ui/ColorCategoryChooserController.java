@@ -94,9 +94,4 @@ public class ColorCategoryChooserController extends BasicController {
 	public ColorCategory getColorCategory() {
 		return colorCategory;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

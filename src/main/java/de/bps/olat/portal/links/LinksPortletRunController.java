@@ -291,6 +291,7 @@ public class LinksPortletRunController extends BasicController {
 	@Override
 	protected void doDispose() {
 		if(portletVC != null) portletVC = null;
+        super.doDispose();
 	}
 
 }

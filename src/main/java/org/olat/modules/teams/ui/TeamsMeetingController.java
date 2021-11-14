@@ -92,6 +92,7 @@ public class TeamsMeetingController extends FormBasicController implements Gener
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, meetingOres);
+        super.doDispose();
 	}
 
 	@Override

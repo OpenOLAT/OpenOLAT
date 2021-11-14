@@ -57,11 +57,6 @@ public class TaxonomyAdminController extends BasicController implements Breadcru
 		mainVC.put("taxonomy", taxonomyCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {

@@ -90,11 +90,6 @@ public class CurriculumManagerController extends BasicController implements Acti
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -147,11 +142,6 @@ public class CurriculumManagerController extends BasicController implements Acti
 		public CurriculumRootWrapperController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl);
 			putInitialPanel(new Panel("root_curriculum"));
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

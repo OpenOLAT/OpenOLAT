@@ -77,11 +77,6 @@ public class ConfirmUnassignGraderController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		for(GradingAssignment assignment:assignments) {
 			gradingService.unassignGrader(assignment);

@@ -172,11 +172,6 @@ public class TeamsEditMeetingsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editMeetingCtlr == source) {
 			if(event == Event.DONE_EVENT) {

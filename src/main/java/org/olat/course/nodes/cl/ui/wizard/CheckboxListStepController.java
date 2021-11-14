@@ -113,11 +113,6 @@ public class CheckboxListStepController extends StepFormBasicController {
 		model.setObjects(rows);
 		boxTable.reset();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

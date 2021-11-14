@@ -167,6 +167,7 @@ public class ProjectDetailsPanelController extends BasicController {
 		if (lock != null) {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lock);
 		}
+        super.doDispose();
 	}
 	
 }

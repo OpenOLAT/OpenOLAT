@@ -285,11 +285,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public String[] getPresentationKeys() {
 		return Arrays.stream(Presentation.values())

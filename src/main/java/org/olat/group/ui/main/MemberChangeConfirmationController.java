@@ -94,11 +94,6 @@ public class MemberChangeConfirmationController extends FormBasicController {
 	public boolean isSendMail() {
 		return mailEl.isSelected(0);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

@@ -239,14 +239,5 @@ public class ProjectGroupController extends BasicController {
 			fireEvent(urequest, Event.CHANGED_EVENT );
 		}
 	}
-
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		// child controller disposed by basic controller
-	}
 	
 }

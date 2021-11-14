@@ -552,11 +552,6 @@ public class FolderRunController extends BasicController implements Activateable
 	}
 
 	@Override
-	protected void doDispose() {		
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		

@@ -806,11 +806,6 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries != null && !entries.isEmpty()) {
 			ContextEntry entry = entries.get(0);
@@ -1866,11 +1861,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				}
 			}
 		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
 	}
 	
 	private class ToolsController extends BasicController {
@@ -2014,11 +2004,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				}
 			}
 		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
 	}
 	
 	private class DeletedToolsController extends BasicController {
@@ -2103,11 +2088,6 @@ public class AuthorListController extends FormBasicController implements Activat
 					doDeletePermanently(ureq, Collections.singletonList(row));
 				}
 			}
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 }

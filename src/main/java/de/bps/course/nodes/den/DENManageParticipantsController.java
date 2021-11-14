@@ -124,6 +124,7 @@ public class DENManageParticipantsController extends BasicController {
 			removeAsListenerAndDispose(tableManageParticipants);
 			tableManageParticipants = null;
 		}
+        super.doDispose();
 	}
 	
 	@Override

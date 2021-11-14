@@ -102,11 +102,6 @@ public class RepositoryEntriesListController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(backLink == source) {
 			fireEvent(ureq, Event.BACK_EVENT);

@@ -144,9 +144,4 @@ public class ContextualSubscriptionController extends BasicController {
 			fireEvent(ureq, event);
 		} 
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
 }

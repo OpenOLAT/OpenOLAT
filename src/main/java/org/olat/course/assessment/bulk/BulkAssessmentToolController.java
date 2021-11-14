@@ -70,11 +70,6 @@ public class BulkAssessmentToolController extends BasicController {
 		putInitialPanel(startButton);
 		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

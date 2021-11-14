@@ -198,10 +198,4 @@ public class FileMediaController extends BasicController implements PageElementE
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

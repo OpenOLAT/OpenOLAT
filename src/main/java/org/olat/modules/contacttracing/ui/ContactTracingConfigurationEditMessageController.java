@@ -45,9 +45,4 @@ public class ContactTracingConfigurationEditMessageController extends FormBasicC
     protected void formOK(UserRequest ureq) {
 
     }
-
-    @Override
-    protected void doDispose() {
-
-    }
 }

@@ -343,11 +343,6 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 		return selected;		
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing
-	}
 	
 	private static class GroupWrapper {
 		private final Long groupKey;

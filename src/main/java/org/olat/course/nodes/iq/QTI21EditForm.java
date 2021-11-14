@@ -430,11 +430,6 @@ public class QTI21EditForm extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmTestDateCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {

@@ -83,11 +83,6 @@ public class ShibDisclaimerController extends FormBasicController implements Act
 	protected void initForm(FormItemContainer formLayout, Controller listener,	UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

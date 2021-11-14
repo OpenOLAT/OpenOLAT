@@ -270,5 +270,6 @@ public class PreviewRunController extends MainLayoutBasicController {
 		}
 		CourseNodePasswordManagerImpl.getInstance().removeAnswerContainerFromCache(uce.getIdentityEnvironment().getIdentity());
 		navHandler.dispose();
+        super.doDispose();
 	}
 }

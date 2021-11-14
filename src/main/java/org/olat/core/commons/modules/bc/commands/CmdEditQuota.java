@@ -120,5 +120,6 @@ public class CmdEditQuota extends BasicController implements FolderCommand, Cont
 			quotaEditController.dispose();
 			quotaEditController = null;
 		}
+        super.doDispose();
 	}
 }

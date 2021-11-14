@@ -330,6 +330,7 @@ public class InfoDisplayController extends FormBasicController {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 			lockEntry = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

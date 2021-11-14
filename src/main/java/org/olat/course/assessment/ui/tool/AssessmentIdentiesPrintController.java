@@ -72,9 +72,4 @@ public class AssessmentIdentiesPrintController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }

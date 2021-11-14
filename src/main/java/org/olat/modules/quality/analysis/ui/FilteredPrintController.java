@@ -209,9 +209,4 @@ public class FilteredPrintController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

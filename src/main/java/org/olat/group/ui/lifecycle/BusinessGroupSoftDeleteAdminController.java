@@ -179,11 +179,6 @@ public class BusinessGroupSoftDeleteAdminController extends FormBasicController 
 		textEl.setElementCssClass("form-inline");
 		textEl.setTextAddOn(addOnKey);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

@@ -102,17 +102,6 @@ public class NewBGController extends BasicController {
 		putInitialPanel(contentVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		// nothing to dispose.
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == groupCreateController) {

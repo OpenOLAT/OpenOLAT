@@ -101,5 +101,6 @@ public class CourseCalendarController extends DefaultController {
 	@Override
 	protected void doDispose() {
 		calendarController.dispose();
+        super.doDispose();
 	}
 }

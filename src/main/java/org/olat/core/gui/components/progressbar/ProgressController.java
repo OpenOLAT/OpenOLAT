@@ -49,11 +49,6 @@ public class ProgressController extends BasicController implements ProgressDeleg
 		putInitialPanel(mainVC);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public void setMessage(String translatedMsg) {
 		mainVC.contextPut("msg", translatedMsg);
 	}

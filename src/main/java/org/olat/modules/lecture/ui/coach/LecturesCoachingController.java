@@ -124,11 +124,6 @@ public class LecturesCoachingController extends BasicController implements Activ
 	public Date getCurrentDate() {
 		return cockpitController.getCurrentDate();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

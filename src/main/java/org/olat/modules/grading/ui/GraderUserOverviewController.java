@@ -90,11 +90,6 @@ public class GraderUserOverviewController extends BasicController implements Act
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}

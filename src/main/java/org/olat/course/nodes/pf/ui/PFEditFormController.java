@@ -254,9 +254,4 @@ public class PFEditFormController extends FormBasicController {
 				dateEnd.getDate());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

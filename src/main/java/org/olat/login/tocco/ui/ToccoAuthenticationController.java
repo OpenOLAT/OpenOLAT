@@ -95,11 +95,6 @@ public class ToccoAuthenticationController extends AuthenticationController impl
 		putInitialPanel(loginComp);
 		
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

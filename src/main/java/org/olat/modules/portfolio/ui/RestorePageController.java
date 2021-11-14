@@ -70,11 +70,6 @@ public class RestorePageController extends FormBasicController {
 	public Page getPage() {
 		return page;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

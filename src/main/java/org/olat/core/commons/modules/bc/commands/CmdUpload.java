@@ -271,9 +271,4 @@ public class CmdUpload extends BasicController implements FolderCommand {
 	public Boolean fileWasOverwritten(){
 		return overwritten;
 	}
-	
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

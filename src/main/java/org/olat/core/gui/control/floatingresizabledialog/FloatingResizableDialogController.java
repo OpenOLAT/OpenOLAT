@@ -206,14 +206,6 @@ public class FloatingResizableDialogController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		//nothing to dispose
-	}
-
 	public String getPanelName() {
 		return panelName;
 	}

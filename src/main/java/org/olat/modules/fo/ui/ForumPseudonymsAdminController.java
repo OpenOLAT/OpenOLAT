@@ -95,11 +95,6 @@ public class ForumPseudonymsAdminController extends FormBasicController {
 		tableEl.setSearchEnabled(true);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void loadModel(String searchString) {
 		List<PseudonymStatistics> stats = forumManager.getPseudonymStatistics(searchString);
 		model.setObjects(stats);

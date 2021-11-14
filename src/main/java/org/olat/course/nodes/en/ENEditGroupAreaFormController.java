@@ -203,6 +203,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	@Override
 	protected void doDispose() {
 		singleUserEventCenter.deregisterFor(this, groupConfigChangeEventOres);
+        super.doDispose();
 	}
 
 	@Override

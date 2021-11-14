@@ -158,11 +158,6 @@ public class SessionInformationsController extends FormBasicController implement
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private void doFillIn() {
 		for (SessionInformationWrapper wrapper: sessionInformationWrappers) {
 			InformationType informationType = wrapper.getInformationType();

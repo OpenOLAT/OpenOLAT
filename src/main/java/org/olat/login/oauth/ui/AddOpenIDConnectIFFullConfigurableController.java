@@ -91,11 +91,6 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonLayout);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

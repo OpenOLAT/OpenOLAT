@@ -91,11 +91,6 @@ public class DeletStep00 extends BasicStep{
 		}
 
 		@Override
-		protected void doDispose() {
-			//
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
 			List<Identity> identities = new ArrayList<>(selectedIndexes.size());

@@ -132,6 +132,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 			stackPanel.removeTool(downloadRawLink);
 			stackPanel.removeTool(printLink);
 		}
+        super.doDispose();
 	}
 	
 	@Override

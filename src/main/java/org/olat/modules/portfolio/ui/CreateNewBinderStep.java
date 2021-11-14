@@ -74,12 +74,6 @@ public class CreateNewBinderStep extends BasicStep {
 			
 			initForm(ureq);
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose here
-			
-		}
 		
 		@Override
 		public void dispose() {

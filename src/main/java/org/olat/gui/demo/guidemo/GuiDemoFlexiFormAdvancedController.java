@@ -74,17 +74,6 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		updateSubLayoutVisibility();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-	// nothing to dispose
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {		
 		showInfo("advanced_form.successfully_submitted", file.getUploadFileName());
@@ -93,10 +82,6 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// verticalRadioButtons.getSelectedKey() ...
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("guidemo_flexi_form_advanced");

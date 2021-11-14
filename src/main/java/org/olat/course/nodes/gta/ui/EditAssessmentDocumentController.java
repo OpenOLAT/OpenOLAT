@@ -156,6 +156,7 @@ public class EditAssessmentDocumentController extends FormBasicController {
 		if (assessmentDocsTmpDir != null && assessmentDocsTmpDir.exists()) {
 			FileUtils.deleteDirsAndFiles(assessmentDocsTmpDir, true, true);
 		}
+        super.doDispose();
 	}
 	
 	private void updateAssessmentDocsUI() {

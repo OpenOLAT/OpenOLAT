@@ -53,11 +53,6 @@ public class DENEditForm extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//nothing
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Boolean cancelEnrollEnabled = enableCancelEnroll.getSelectedKeys().size() == 1;
 		moduleConfig.set(DENCourseNode.CONF_CANCEL_ENROLL_ENABLED, cancelEnrollEnabled);

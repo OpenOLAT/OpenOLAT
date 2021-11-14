@@ -62,11 +62,6 @@ public class FileChooserController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

@@ -158,11 +158,6 @@ public class PendingEnrollmentController extends FormBasicController implements 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof ReservationWrapper) {
 			ReservationWrapper reservation = (ReservationWrapper)((FormLink)source).getUserObject();

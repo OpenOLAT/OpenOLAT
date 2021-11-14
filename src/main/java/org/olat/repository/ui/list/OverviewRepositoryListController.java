@@ -205,6 +205,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	@Override
 	protected void doDispose() {
 		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
+        super.doDispose();
 	}
 	
 	@Override

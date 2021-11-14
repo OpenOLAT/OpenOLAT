@@ -66,11 +66,6 @@ public class BGMergeConfirmationStepFormController extends StepFormBasicControll
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

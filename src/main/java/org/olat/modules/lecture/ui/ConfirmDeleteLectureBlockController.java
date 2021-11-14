@@ -114,11 +114,6 @@ public class ConfirmDeleteLectureBlockController extends FormBasicController {
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

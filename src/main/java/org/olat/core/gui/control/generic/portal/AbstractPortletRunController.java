@@ -258,15 +258,13 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 			}};
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+	@Override
 	protected void doDispose() {
 		if(portletToolsController!=null) {
 			portletToolsController.dispose();
 		  portletToolsController = null;
 		}
+        super.doDispose();
 	}
 		
 }

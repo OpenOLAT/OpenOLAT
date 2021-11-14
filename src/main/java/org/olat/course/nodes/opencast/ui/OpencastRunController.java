@@ -114,9 +114,4 @@ public class OpencastRunController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

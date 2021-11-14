@@ -79,11 +79,6 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 	}
 
 	@Override
-	protected void doDispose() {
-	// nothing to dispose
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}

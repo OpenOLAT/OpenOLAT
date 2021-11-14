@@ -171,11 +171,6 @@ public class GroupsAndRightsController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		doSaveChanges();
 	}

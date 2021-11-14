@@ -61,11 +61,6 @@ public class GoToRecordingController extends BasicController {
 		mainVC.contextPut("height", "768");
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

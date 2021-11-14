@@ -195,9 +195,4 @@ public class CompetencesEditController extends FormBasicController {
 	public List<TextBoxItem> getUpdatedCompetences() {
 		return competencesEl.getValueItems();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

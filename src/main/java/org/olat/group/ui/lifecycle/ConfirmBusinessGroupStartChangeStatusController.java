@@ -92,11 +92,6 @@ public class ConfirmBusinessGroupStartChangeStatusController extends FormBasicCo
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("change.status", i18nAction, formLayout);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

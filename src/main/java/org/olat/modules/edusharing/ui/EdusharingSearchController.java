@@ -73,6 +73,7 @@ public class EdusharingSearchController extends BasicController {
 	@Override
 	protected void doDispose() {
 		mapperService.cleanUp(singletonList(mapperKey));
+        super.doDispose();
 	}
 	
 	public static class SearchEvent extends Event {

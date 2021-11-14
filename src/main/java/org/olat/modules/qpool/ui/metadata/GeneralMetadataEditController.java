@@ -198,11 +198,6 @@ public class GeneralMetadataEditController extends FormBasicController {
 			setReadOnly();
 		}
 	}
-		
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

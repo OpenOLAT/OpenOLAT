@@ -190,11 +190,6 @@ public class CourseReminderSendController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, new SendEvent(reminder, false));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public static final class SendEvent extends Event {
 		

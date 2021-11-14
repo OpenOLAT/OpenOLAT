@@ -156,6 +156,7 @@ public class FeedMainController extends BasicController implements Activateable2
 		if(feed != null) {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, feed);
 		}
+        super.doDispose();
 	}
 
 	/**

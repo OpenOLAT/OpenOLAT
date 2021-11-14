@@ -240,15 +240,6 @@ public class SetupPropertiesController extends FormBasicController {
 		}
 		defProps.add(firstPos, delimiter);
 		defProps.add(lastPos + 2, delimiter);
-
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override

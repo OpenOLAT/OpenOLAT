@@ -176,11 +176,6 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		}
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void doOpenParticipants(UserRequest ureq) {
 		participantsCtrl.reload(ureq);
 		addToHistory(ureq, participantsCtrl);

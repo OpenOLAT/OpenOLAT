@@ -71,11 +71,6 @@ public class ConfirmReopenController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("reopen", formLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {

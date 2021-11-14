@@ -118,11 +118,6 @@ class UserBulkChangeStep01 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			//nothing to dispose
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			boolean validChange = userBulkChanges.isValidChange();
 			Map<OrganisationRoles, String> roleChangeMap = userBulkChanges.getRoleChangeMap();

@@ -120,19 +120,6 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 		demos.put("guidemo_flexi_form_advanced", (ureq, wControl) -> new GuiDemoFlexiFormAdvancedController(ureq, wControl));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		if (demoController != null) demoController.dispose();
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//there are only events of type link from the demos navigation

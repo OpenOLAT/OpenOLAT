@@ -133,9 +133,4 @@ public class FeedPeekviewController extends BasicController implements Controlle
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-	// nothing to dispose
-	}
-
 }

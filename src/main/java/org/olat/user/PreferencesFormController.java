@@ -285,9 +285,4 @@ public class PreferencesFormController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
 }

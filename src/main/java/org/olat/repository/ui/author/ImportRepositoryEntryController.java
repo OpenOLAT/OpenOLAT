@@ -158,11 +158,6 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public RepositoryEntry getImportedEntry() {
 		return importedEntry;
 	}

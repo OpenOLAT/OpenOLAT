@@ -293,11 +293,6 @@ public class LiveStreamViewersController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private static class DisplayWrapper {
 		
 		private final LiveStreamViewerController controller;

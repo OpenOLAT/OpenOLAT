@@ -118,11 +118,6 @@ public class ChooseNodeController extends BasicController {
 	public CourseNode getCreatedNode() {
 		return createdNode;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

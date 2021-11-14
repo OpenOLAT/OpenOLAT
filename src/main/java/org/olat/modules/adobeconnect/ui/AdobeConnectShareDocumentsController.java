@@ -117,11 +117,6 @@ public class AdobeConnectShareDocumentsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Set<Integer> selectedRows = contentTableEl.getMultiSelectedIndex();
 		List<AdobeConnectSco> sharedScos = new ArrayList<>(selectedRows.size());

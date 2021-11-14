@@ -105,11 +105,6 @@ public class ViteroBookingsEditController extends FormBasicController {
 		newButton.setVisible(!readOnly);
 		occupiedRoomsLink = uifactory.addFormLink("roomsOverview", buttonLayout, Link.BUTTON);
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 	
 	protected void reloadModel() {
 		try {

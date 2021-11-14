@@ -660,10 +660,5 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		Controller previewCtrl =  new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
 		stackPanel.pushController(translate("data.collection.form.preview.title"), previewCtrl);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 }

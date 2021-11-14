@@ -83,11 +83,6 @@ public class ImmunityProofCommissionerController extends BasicController impleme
 	}
 	
 	@Override
-	protected void doDispose() {
-		
-	}
-	
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == userSearchController) {
 			if (event instanceof SingleIdentityChosenEvent) {

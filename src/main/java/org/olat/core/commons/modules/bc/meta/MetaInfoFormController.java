@@ -146,11 +146,6 @@ public class MetaInfoFormController extends FormBasicController {
 		this.item = vfsItem;
 		initForm(ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-	// nothing so far
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

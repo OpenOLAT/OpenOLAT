@@ -126,6 +126,7 @@ public class EvaluationFormReportController extends FormBasicController {
 		for (ReportFragment fragment: fragments) {
 			fragment.dispose();
 		}
+        super.doDispose();
 	}
 	
 	public static final class ReportFragment {

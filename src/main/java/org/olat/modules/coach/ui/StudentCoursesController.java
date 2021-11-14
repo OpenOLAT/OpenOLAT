@@ -257,6 +257,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		stackPanel.removeListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+        super.doDispose();
 	}
 
 	@Override

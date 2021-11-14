@@ -188,11 +188,6 @@ public class LayoutAdminController extends FormBasicController {
 		footerCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", "submit.save", buttonsCont);
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to clean up
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

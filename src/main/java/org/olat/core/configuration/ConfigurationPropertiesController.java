@@ -93,18 +93,11 @@ public class ConfigurationPropertiesController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setExportEnabled(true);
-
-		
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		
-	}
-
-	@Override
-	protected void doDispose() {
-
+		//
 	}
 	
 	private void loadModel() {

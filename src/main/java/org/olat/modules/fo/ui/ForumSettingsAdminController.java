@@ -101,11 +101,6 @@ public class ForumSettingsAdminController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(anonymousPostingEl == source) {
 			forumModule.setAnonymousPostingWithPseudonymEnabled(anonymousPostingEl.isAtLeastSelected(1));

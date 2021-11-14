@@ -129,11 +129,6 @@ public class BGUserManagementController extends BasicController {
 		userTableModel.setMembers(owners, participants, waitingList);
 		usersCtrl.modelChanged();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

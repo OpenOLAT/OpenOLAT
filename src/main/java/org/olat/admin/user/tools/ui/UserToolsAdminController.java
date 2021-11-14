@@ -115,11 +115,6 @@ public class UserToolsAdminController extends FormBasicController {
 			}
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

@@ -145,6 +145,7 @@ public class ForumController extends BasicController implements GenericEventList
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, forum);
+        super.doDispose();
 	}
 
 	@Override

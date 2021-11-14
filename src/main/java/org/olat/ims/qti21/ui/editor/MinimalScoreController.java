@@ -99,9 +99,4 @@ public class MinimalScoreController extends AssessmentItemRefEditorController {
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

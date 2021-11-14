@@ -300,6 +300,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		for (ExecutionFragment fragment : fragments) {
 			fragment.dispose();
 		}
+        super.doDispose();
 	}
 
 	@Override

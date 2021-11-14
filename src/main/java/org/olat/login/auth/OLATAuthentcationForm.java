@@ -121,9 +121,4 @@ public class OLATAuthentcationForm extends FormBasicController {
 			flc.getRootForm().submit(ureq);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		// 
-	}
 }

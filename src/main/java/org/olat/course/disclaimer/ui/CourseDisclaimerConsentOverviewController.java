@@ -139,11 +139,6 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 	}
 
 	@Override
-	protected void doDispose() {
-		// Nothing to dispose here
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
@@ -438,11 +433,6 @@ public class CourseDisclaimerConsentOverviewController extends FormBasicControll
 			}
 			mainVC.put(name, link);
 			links.add(name);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

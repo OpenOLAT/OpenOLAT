@@ -342,9 +342,4 @@ public class ContactFormController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

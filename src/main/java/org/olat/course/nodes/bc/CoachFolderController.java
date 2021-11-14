@@ -86,9 +86,4 @@ public class CoachFolderController extends BasicController implements Activateab
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

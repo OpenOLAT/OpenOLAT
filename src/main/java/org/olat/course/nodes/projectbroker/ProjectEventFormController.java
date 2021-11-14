@@ -117,9 +117,4 @@ public class ProjectEventFormController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 	}
 
-	@Override
-	protected void doDispose() {
-		//nothing
-	}
-
 }

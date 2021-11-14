@@ -226,11 +226,6 @@ public class PortfolioTextForm extends FormBasicController {
 		}
 		return config;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

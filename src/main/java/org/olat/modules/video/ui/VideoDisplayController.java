@@ -524,11 +524,6 @@ public class VideoDisplayController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == mainVC){
 			String cmd = event.getCommand();

@@ -76,10 +76,4 @@ public class TabbableLeaningPathNodeConfigController extends ActivateableTabbabl
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

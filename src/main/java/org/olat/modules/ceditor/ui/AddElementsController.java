@@ -147,11 +147,6 @@ public class AddElementsController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public static final class CategoryWrapper {
 		

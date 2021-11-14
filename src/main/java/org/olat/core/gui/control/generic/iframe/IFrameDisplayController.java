@@ -420,13 +420,12 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		}
 	}
 
-
-
 	@Override
 	protected void doDispose() {
 		// contentMapper get's unregistered automatically with basic controller
 		// remove us as listener if not already done
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
+        super.doDispose();
 	}
 
 	/**

@@ -370,11 +370,6 @@ public class FormParticipationListController extends FormBasicController impleme
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doSelect(UserRequest ureq, FormParticipationRow row) {
 		removeAsListenerAndDispose(particpationCtrl);
@@ -475,11 +470,6 @@ public class FormParticipationListController extends FormBasicController impleme
 			}
 			
 			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

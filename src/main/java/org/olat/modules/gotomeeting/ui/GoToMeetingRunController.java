@@ -94,11 +94,6 @@ public class GoToMeetingRunController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(meetingsCtrl == source) {
 			if(event instanceof SelectGoToMeetingEvent) {

@@ -105,11 +105,6 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		putInitialPanel(mainVC);
 		setAssessmentDatas(ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

@@ -177,11 +177,6 @@ public abstract class AbstractToolsController extends BasicController {
 			links.add("-");
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

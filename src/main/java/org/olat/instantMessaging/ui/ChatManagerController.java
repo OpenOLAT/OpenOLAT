@@ -93,6 +93,7 @@ public class ChatManagerController extends BasicController {
 	@Override
 	protected void doDispose() {
 		chats.clear();
+        super.doDispose();
 	}
 	
 	/**

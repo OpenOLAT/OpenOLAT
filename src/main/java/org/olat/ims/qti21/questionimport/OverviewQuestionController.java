@@ -79,11 +79,6 @@ public class OverviewQuestionController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		if(lastStep) {
 			fireEvent(ureq, StepsEvent.INFORM_FINISHED);

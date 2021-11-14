@@ -83,11 +83,6 @@ public class EditCurriculumElementOverviewController extends BasicController imp
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		tabPane.activate(ureq, entries, state);

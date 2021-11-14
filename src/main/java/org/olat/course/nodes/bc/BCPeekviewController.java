@@ -119,11 +119,6 @@ public class BCPeekviewController extends BasicController implements Controller 
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 	
 	private void fileMetadata(List<DownloadComponent> links, VFSMetadata metadata, int itemsToDisplay) {
 		List<VFSMetadata> newestData = vfsRepositoryService.getNewest(metadata, itemsToDisplay);

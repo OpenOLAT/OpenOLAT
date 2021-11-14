@@ -142,9 +142,4 @@ public class CategoriesEditController extends FormBasicController {
 	public List<String> getUpdatedCategories() {
 		return categoriesEl.getValueList();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

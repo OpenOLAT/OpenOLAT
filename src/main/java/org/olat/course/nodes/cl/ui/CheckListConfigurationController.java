@@ -248,11 +248,6 @@ public class CheckListConfigurationController extends FormBasicController {
 		updateScoreVisibility();
 		updatePassedAndOutputVisibilty();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

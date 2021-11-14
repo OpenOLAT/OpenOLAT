@@ -216,11 +216,6 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		timelineEl = new TimelineElement("timeline");
 		timelineEl.setContainerId("o_portfolio_entries_timeline_" + timelineEl.getComponent().getDispatchID());

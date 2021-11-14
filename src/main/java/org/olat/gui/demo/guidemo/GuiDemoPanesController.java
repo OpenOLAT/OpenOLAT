@@ -79,7 +79,4 @@ public class GuiDemoPanesController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 	}
 
-	protected void doDispose() {
-	}
-
 }

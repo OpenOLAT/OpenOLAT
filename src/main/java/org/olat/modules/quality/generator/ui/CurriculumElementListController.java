@@ -281,9 +281,4 @@ public abstract class CurriculumElementListController extends FormBasicControlle
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

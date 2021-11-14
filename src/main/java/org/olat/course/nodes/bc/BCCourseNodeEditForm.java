@@ -263,11 +263,6 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private boolean isSharedfolderNotPresent() {
 		if(node.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
 			if(course.getCourseEnvironment().getCourseFolderContainer().resolve("/_sharedfolder/") == null){

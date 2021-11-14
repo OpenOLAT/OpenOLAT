@@ -72,11 +72,6 @@ public class ConfirmRemoveRelationController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		int count = 0;
 		for(IdentityRelationRow relationToRemove:relationsToRemove) {

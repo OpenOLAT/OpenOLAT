@@ -101,10 +101,4 @@ public class ReferencesController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

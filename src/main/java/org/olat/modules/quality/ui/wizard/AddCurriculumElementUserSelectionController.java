@@ -139,10 +139,4 @@ public class AddCurriculumElementUserSelectionController extends StepFormBasicCo
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

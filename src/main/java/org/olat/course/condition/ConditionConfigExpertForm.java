@@ -125,10 +125,4 @@ public class ConditionConfigExpertForm extends FormBasicController {
 		tprecond = uifactory.addTextAreaElement("precond","form.expert.condition" , 5000, 6, 45, true, false, (cond == null ? "" : cond.getConditionExpression()), formLayout);
 		uifactory.addFormSubmitButton("save", "save", formLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

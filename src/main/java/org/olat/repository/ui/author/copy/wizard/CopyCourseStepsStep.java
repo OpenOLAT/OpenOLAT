@@ -120,11 +120,6 @@ public class CopyCourseStepsStep extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			saveStepConfig(ureq);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

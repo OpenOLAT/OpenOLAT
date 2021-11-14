@@ -99,7 +99,8 @@ public class HomeCalendarController extends BasicController implements Activatea
 	protected void doDispose() {
 		// remove from event bus
 		userSession.getSingleUserEventCenter().deregisterFor(this, OresHelper.lookupType(CalendarManager.class));
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(CalendarManager.class)); 
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(CalendarManager.class));
+        super.doDispose();
 	}
 
 	@Override

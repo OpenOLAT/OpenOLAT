@@ -70,11 +70,6 @@ public class BigBlueButtonConfigForm extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> selectedKeys = accessEl.getSelectedKeys();
 		config.setBooleanEntry(BigBlueButtonEditController.MODERATOR_START_MEETING, selectedKeys.contains(accessKeys[0]));

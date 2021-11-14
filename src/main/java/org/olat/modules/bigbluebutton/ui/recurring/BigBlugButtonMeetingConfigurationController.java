@@ -252,11 +252,6 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		passwordEnableEl.setVisible(externalInkenabled);
 		passwordEl.setVisible(externalInkenabled && passwordEnableEl.isAtLeastSelected(1));
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {

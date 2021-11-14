@@ -132,6 +132,7 @@ public class LayoutMain3ColsPreviewController extends MainLayoutBasicController 
 	protected void doDispose() {
 		// child controller autodisposed
 		thebaseChief = null;
+        super.doDispose();
 	}
 	
 	public boolean isDeactivateOnBack() {

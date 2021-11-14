@@ -143,11 +143,6 @@ public class QTI21AdminController extends FormBasicController {
 		certificateEl.setVisible(digitalSignatureEl.isSelected(0));
 		certificatePasswordEl.setVisible(digitalSignatureEl.isSelected(0));
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

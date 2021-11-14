@@ -65,11 +65,6 @@ public class PortfolioInvitationController extends BasicController implements Ac
 		stackPanel.pushController(translate("portfolio.root.breadcrump"), binderCtrl);
 		stackPanel.setCssClass("o_portfolio");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

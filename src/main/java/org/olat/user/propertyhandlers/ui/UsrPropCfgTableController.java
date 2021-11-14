@@ -264,11 +264,6 @@ public class UsrPropCfgTableController extends FormBasicController {
 		usrPropCfgMng.saveUserPropertiesConfig();
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	/**
 	 * Description:<br>
 	 * Used to compare (and thus sort) userPropertyHandlers

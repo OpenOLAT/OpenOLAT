@@ -71,10 +71,4 @@ public class CompetencesPersonalToolController extends BasicController implement
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// No events
 	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose here
-	}
-
 }

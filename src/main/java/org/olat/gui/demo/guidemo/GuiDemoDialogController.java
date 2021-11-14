@@ -177,11 +177,5 @@ public class GuiDemoDialogController extends BasicController {
 		} else {
 			throw new AssertException("feedback message is NULL, workflow error!");
 		}
-
 	}
-
-	protected void doDispose() {
-	// dialog controller automatically disposed by BasicController
-	}
-
 }

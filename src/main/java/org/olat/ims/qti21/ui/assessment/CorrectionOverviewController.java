@@ -150,11 +150,6 @@ public class CorrectionOverviewController extends BasicController implements Too
 		}
 		return new ArrayList<>(identitiesSet);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

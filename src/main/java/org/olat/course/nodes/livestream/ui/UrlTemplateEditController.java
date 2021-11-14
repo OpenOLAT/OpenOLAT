@@ -133,10 +133,4 @@ public class UrlTemplateEditController extends FormBasicController {
 		
 		fireEvent(ureq, FormEvent.DONE_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

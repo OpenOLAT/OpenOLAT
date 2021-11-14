@@ -59,11 +59,6 @@ public class BGEmailSelectReceiversStepController extends StepFormBasicControlle
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		return receiversEl.isAtLeastSelected(1) && super.validateFormLogic(ureq);
 	}

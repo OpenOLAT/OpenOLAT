@@ -137,11 +137,6 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	public Task getAssignedTask() {
 		return assignedTask;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void close() {
 		if(uploadRevisionsCtrl != null) {

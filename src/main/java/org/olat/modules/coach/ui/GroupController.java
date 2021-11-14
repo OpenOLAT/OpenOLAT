@@ -203,6 +203,7 @@ public class GroupController extends FormBasicController implements Activateable
 		stackPanel.removeListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+        super.doDispose();
 	}
 
 	@Override

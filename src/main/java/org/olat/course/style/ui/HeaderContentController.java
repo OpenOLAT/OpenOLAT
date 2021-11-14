@@ -185,9 +185,4 @@ public class HeaderContentController extends BasicController
 		fireEvent(ureq, event);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -59,11 +59,6 @@ public class MembersCourseNodeEditController extends ActivateableTabbableDefault
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

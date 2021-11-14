@@ -65,11 +65,4 @@ public class GuiDemoRESTController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// nothing to catch
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-
-	}
-
 }

@@ -174,13 +174,6 @@ public class BookmarksController extends BasicController {
 		}
 		return convertedList;
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		// disposed by BasicController		
-	}
 	
 	private class BmTableDataModel extends DefaultTableDataModel<Bookmark> {
 		private Locale locale;

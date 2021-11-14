@@ -162,11 +162,6 @@ public class ScormRunSegmentController extends BasicController implements Activa
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void doOpenContent(UserRequest ureq) {
 		mainVC.contextRemove("cssClass");

@@ -241,9 +241,4 @@ public class ResultsSearchController extends SearchInputController {
 			super.event(ureq, source, event);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

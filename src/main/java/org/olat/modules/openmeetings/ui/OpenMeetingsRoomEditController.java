@@ -154,11 +154,6 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		if(room == null) {
 			room = new OpenMeetingsRoom();

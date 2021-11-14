@@ -85,17 +85,14 @@ public class OLATResourceableListeningWrapperController extends MainLayoutBasicC
 		return realController.getInitialComponent();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Controller#dispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ores);
 		realController.dispose();
+        super.doDispose();
 	}
 
-	/**
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(Event event) {
 		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
 			OLATResourceableJustBeforeDeletedEvent orj = (OLATResourceableJustBeforeDeletedEvent)event;

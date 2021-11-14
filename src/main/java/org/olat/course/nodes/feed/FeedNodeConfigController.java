@@ -199,9 +199,4 @@ public class FeedNodeConfigController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -102,6 +102,7 @@ public class DialogElementsFilesController extends BasicController {
 		if(fileUplCtr != null && fileUplCtr.getUploadContainer() != null) {
 			fileUplCtr.getUploadContainer().deleteSilently();
 		}
+        super.doDispose();
 	}
 
 	@Override

@@ -195,11 +195,6 @@ public class DialogElementListController extends FormBasicController implements 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}

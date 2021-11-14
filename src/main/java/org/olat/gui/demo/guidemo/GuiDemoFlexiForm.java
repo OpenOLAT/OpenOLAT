@@ -87,6 +87,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		if (tmpFile != null) {
 			FileUtils.deleteFile(tmpFile);
 		}
+        super.doDispose();
 	}
 
 	@Override

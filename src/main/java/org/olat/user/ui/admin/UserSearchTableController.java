@@ -305,6 +305,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 
 	@Override

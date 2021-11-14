@@ -119,11 +119,6 @@ public class UploadCertificateTemplateController extends FormBasicController {
 		}
 		return format;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

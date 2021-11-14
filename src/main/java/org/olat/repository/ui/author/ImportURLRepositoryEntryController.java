@@ -141,11 +141,6 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		uifactory.addFormSubmitButton("cmd.import.ressource", buttonContainer);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public RepositoryEntry getImportedEntry() {
 		return importedEntry;
 	}

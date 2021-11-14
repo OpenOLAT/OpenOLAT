@@ -276,16 +276,6 @@ public class MembersListDisplayRunController extends BasicController {
 		return isUserLastVisitVisible;
 	}
 	
-
-
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
-
-	
 	private void doEmail(UserRequest ureq) {
 		if(mailCtrl != null || cmc != null) return;
 		removeAsListenerAndDispose(cmc);

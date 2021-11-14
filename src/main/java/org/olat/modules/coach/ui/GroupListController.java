@@ -100,11 +100,6 @@ public class GroupListController extends BasicController implements Activateable
 		putInitialPanel(mainVC);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void loadModel() {
 		List<GroupStatEntry> groups = coachingService.getGroupsStatistics(getIdentity());
 		TableDataModel<GroupStatEntry> model = new GroupsTableDataModel(groups);

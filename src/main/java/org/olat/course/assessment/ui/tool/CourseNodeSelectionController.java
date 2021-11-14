@@ -71,11 +71,6 @@ public class CourseNodeSelectionController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public void selectedCourseNode(CourseNode courseNode) {
 		TreeNode selectedNode = TreeHelper.findNodeByUserObject(courseNode, menuTree.getTreeModel().getRootNode());
 		if(selectedNode != null) {

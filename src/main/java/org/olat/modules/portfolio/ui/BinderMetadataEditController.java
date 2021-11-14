@@ -213,11 +213,6 @@ public class BinderMetadataEditController extends FormBasicController {
 	public Binder getBinder() {
 		return binder;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

@@ -299,6 +299,7 @@ public class CorrectionIdentityListController extends FormBasicController {
 		if(lockResult != null && lockResult.isSuccess()) {
 			doUnlock();
 		}
+        super.doDispose();
 	}
 	
 	private void doUnlock() {

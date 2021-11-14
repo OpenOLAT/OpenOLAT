@@ -271,10 +271,4 @@ public class GeneratorConfigController extends FormBasicController {
 		
 		fireEvent(ureq, new GeneratorEvent(generator, GeneratorEvent.Action.CHANGED));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

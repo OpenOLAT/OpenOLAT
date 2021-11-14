@@ -159,9 +159,4 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		
 		fireEvent(ureq, AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

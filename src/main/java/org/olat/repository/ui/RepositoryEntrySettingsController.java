@@ -274,11 +274,6 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		}
 		super.event(ureq, source, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected void cleanUp() {
 		removeAsListenerAndDispose(confirmCloseCtrl);

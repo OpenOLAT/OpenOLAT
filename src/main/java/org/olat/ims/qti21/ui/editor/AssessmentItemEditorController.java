@@ -278,11 +278,6 @@ public class AssessmentItemEditorController extends BasicController implements A
 		return itemBuilder.getQuestionType();
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private QTI21QuestionType initItemEditor(UserRequest ureq) {
 		AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 		

@@ -99,11 +99,6 @@ public class SearchResourceListController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

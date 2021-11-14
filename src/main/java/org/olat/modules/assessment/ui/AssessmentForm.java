@@ -224,11 +224,6 @@ public class AssessmentForm extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(saveAndDoneLink == source) {
 			if(validateFormLogic(ureq)) {

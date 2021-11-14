@@ -69,10 +69,4 @@ public class UnsupportedCourseNodesController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, FormEvent.DONE_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

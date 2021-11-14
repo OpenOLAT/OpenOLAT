@@ -64,11 +64,6 @@ public class RoleListController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source instanceof Link) {
 			Link link = (Link)source;

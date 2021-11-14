@@ -134,10 +134,4 @@ public class BGMailNotificationEditController extends BasicController {
 					|| !orgMailBody.equals(mailTemplate.getBodyTemplate())
 					|| !cpFrom.equals(mailTemplate.getCpfrom());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

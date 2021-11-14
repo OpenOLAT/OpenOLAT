@@ -92,9 +92,4 @@ public class MatomoConfigFormController extends FormBasicController {
 		matomoModule.setSiteId(siteIdEl.getValue());
 		matomoModule.setTrackerUrl(trackerUrlEl.getValue());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

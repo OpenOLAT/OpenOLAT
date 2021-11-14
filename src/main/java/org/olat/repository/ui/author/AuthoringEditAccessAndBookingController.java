@@ -209,11 +209,6 @@ public class AuthoringEditAccessAndBookingController extends FormBasicController
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer accessCont = FormLayoutContainer.createDefaultFormLayout("access", getTranslator());
 		accessCont.setRootForm(mainForm);

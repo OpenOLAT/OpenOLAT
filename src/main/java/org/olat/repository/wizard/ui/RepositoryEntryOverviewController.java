@@ -226,11 +226,6 @@ public class RepositoryEntryOverviewController extends BasicController {
 			fireEvent(ureq, REPLACE_EVENT);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public static final class Figure {
 		

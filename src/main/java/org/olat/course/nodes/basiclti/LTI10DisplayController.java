@@ -92,11 +92,6 @@ public class LTI10DisplayController extends BasicController implements LTIDispla
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == back) {
 			fireEvent(ureq, Event.BACK_EVENT);

@@ -116,11 +116,6 @@ public class NewSolutionController extends FormBasicController {
 		formLayout.add(jsCont);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private String getFilename() {
 		String fileName = filenameEl.getValue().toLowerCase();
 		DocTemplate docTemplate = getSelectedTemplate();

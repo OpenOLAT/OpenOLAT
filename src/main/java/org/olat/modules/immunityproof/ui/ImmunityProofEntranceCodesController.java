@@ -174,10 +174,4 @@ public class ImmunityProofEntranceCodesController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		// Nothing to do here
 	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to do here
-	}
-
 }

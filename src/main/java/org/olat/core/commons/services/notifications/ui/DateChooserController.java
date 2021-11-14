@@ -181,9 +181,4 @@ public class DateChooserController extends FormBasicController {
 			typeSelection.setVisible(false);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

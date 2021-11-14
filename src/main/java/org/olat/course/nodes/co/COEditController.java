@@ -122,11 +122,6 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

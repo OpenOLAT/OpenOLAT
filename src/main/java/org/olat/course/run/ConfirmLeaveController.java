@@ -77,12 +77,6 @@ public class ConfirmLeaveController extends FormBasicController {
 		}
 	}
 
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		acknowledgeEl.clearError();

@@ -113,9 +113,4 @@ public class MoveDateConfirmController extends FormBasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		
-	}
-
 }

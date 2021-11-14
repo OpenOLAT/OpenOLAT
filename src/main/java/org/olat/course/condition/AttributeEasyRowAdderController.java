@@ -159,9 +159,6 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// help GC
@@ -171,11 +168,9 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		columnValueSelection = null;
 		columnAddRow = null;
 		columnRemoveRow = null;
+        super.doDispose();
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormDefaultController#formInnerEvent(org.olat.core.gui.components.form.flexible.FormItem, org.olat.core.gui.components.form.flexible.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(final UserRequest ureq, final FormItem source, final FormEvent event) {
 		if (isinit) {

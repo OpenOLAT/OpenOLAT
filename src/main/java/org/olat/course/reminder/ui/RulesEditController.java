@@ -358,11 +358,6 @@ public class RulesEditController extends StepFormBasicController {
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doUpdateRuleForm(UserRequest ureq, RuleElement panelToUpdate, RuleSPI ruleSpi, boolean mainRule) {
 		//remove old editor

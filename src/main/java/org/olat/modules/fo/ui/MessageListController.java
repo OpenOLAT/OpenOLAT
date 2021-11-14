@@ -230,6 +230,7 @@ public class MessageListController extends BasicController implements GenericEve
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, forum);
+        super.doDispose();
 	}
 	
 	private void initButtons() {

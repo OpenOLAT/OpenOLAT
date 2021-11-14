@@ -103,9 +103,4 @@ public class CalendarToolSettingsController extends FormBasicController {
 			submit.setVisible(enabled);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

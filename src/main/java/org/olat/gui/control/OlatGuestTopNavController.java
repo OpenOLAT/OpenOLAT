@@ -144,9 +144,4 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// controllers disposed by BasicController:
-	}
-
 }

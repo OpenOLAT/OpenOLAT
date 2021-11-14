@@ -45,11 +45,8 @@ public class CalendarURLController extends BasicController {
 		putInitialPanel(colorVC);
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-
-	protected void doDispose() {
-		// nothing to dispose
 	}
 }

@@ -147,11 +147,6 @@ public class OverviewMoveController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		List<Identity> identities = tableModel.getObjects().stream()
 				.map(OverviewIdentityRow::getIdentity)

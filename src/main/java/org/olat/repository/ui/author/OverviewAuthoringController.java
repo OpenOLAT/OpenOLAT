@@ -77,6 +77,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 	protected void doDispose() {
 		eventBus.deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, RepositoryService.REPOSITORY_EVENT_ORES);
+        super.doDispose();
 	}
 	
 	@Override

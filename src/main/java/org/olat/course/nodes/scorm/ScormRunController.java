@@ -365,11 +365,6 @@ public class ScormRunController extends BasicController implements GenericEventL
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	/**
 	 * @return the treemodel of the enclosed ScormDisplayController, or null, if
 	 *         no tree should be displayed (configured by author, see

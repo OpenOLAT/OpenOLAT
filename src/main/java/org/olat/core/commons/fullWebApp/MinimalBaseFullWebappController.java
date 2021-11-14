@@ -185,11 +185,6 @@ public class MinimalBaseFullWebappController extends BaseFullWebappController im
 			
 			putInitialPanel(new Panel("empty"));
 		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
 		
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {

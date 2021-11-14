@@ -118,11 +118,6 @@ public class ConfirmReopenAssessmentEntryController extends FormBasicController 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(readOnlyButton == source) {
 			fireEvent(ureq, Event.DONE_EVENT);

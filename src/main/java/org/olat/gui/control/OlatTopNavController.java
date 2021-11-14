@@ -190,6 +190,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 		for(Disposable disposableTool:disposableTools) {
 			disposableTool.dispose();
 		}
+        super.doDispose();
 	}
 	
 	public static class Tool {

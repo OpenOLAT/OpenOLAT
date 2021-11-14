@@ -219,9 +219,4 @@ public class NotificationNewsController extends BasicController implements Activ
 		}
 		return null;
 	}
-
-	@Override
-	protected void doDispose() {
-		// child controllers disposed by basic controller
-	}
 }

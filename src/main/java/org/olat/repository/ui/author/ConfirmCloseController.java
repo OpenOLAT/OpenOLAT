@@ -106,12 +106,6 @@ public class ConfirmCloseController extends FormBasicController {
 			readOnlyButton = uifactory.addFormLink("details.closed", buttonsCont, Link.BUTTON);
 		}
 	}
-	
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

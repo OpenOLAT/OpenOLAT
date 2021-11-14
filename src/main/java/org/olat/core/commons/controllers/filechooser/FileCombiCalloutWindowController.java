@@ -74,10 +74,4 @@ public class FileCombiCalloutWindowController extends BasicController {
 		}
 
 	}
-	
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
 }

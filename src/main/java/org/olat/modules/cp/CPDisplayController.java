@@ -512,6 +512,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		myContent = null;
 		rootContainer = null;
 		cpComponent = null;
+        super.doDispose();
 	}
 
 	/**

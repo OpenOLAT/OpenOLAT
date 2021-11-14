@@ -52,11 +52,6 @@ public class TableRunController extends BasicController implements PageRunElemen
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public Component getComponent() {
 		return getInitialComponent();
 	}

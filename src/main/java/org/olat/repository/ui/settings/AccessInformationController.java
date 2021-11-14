@@ -95,10 +95,4 @@ public class AccessInformationController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

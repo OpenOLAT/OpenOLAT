@@ -205,11 +205,6 @@ public class CopyCourseWizardController extends BasicController {
 	        }
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose		
-	}
 	
 	public RepositoryEntry getCopiedEntry() {
 		return copyEntry;

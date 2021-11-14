@@ -228,10 +228,4 @@ public class MediaSiteAdminController extends FormBasicController {
 		
 		return true;
 	}
-
-	@Override
-	protected void doDispose() {
-		// 		
-	}
-
 }

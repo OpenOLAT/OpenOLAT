@@ -173,11 +173,6 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
@@ -382,11 +377,6 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 			link.setUserObject(competence);
 			toolVC.put(name, link);
 			links.add(name);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 		
 		@Override

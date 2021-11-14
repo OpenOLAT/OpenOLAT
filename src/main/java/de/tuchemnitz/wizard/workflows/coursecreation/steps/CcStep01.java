@@ -138,11 +138,6 @@ class CcStep01 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			// nothing to do here
-		}
-
-		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
 			return true;
 		}

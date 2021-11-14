@@ -50,11 +50,6 @@ public class CustomDBMainController extends MainLayoutBasicController {
 		listenTo(columnLayoutCtr);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
-
-	@Override
-	protected void doDispose() {
-		// controllers disposed by BasicController:
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

@@ -165,11 +165,6 @@ public class IdentityProfileController extends BasicController implements Activa
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}

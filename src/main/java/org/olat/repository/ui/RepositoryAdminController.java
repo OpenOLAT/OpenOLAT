@@ -148,11 +148,6 @@ public class RepositoryAdminController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

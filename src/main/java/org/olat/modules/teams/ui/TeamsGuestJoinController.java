@@ -103,6 +103,7 @@ public class TeamsGuestJoinController extends FormBasicController implements Gen
 		if(meetingOres != null) {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, meetingOres);
 		}
+        super.doDispose();
 	}
 
 	@Override

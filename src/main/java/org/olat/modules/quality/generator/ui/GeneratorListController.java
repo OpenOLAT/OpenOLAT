@@ -305,6 +305,7 @@ public class GeneratorListController extends FormBasicController implements Tool
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 
 }

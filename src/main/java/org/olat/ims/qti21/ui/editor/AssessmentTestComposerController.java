@@ -422,6 +422,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				logWarn("Lock was already released", e);
 			}
 		}
+        super.doDispose();
 	}
 	
 	@Override

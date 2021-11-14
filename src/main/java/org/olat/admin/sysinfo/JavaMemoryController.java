@@ -59,11 +59,6 @@ public class JavaMemoryController extends BasicController {
 	private void loaddModel() {
 		mainVC.contextPut("memory", getMemoryInfos());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

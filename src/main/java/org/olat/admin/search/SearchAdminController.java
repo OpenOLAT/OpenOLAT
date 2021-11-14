@@ -98,11 +98,6 @@ public class SearchAdminController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {		
-		//
-	}
-
-	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startIndexingButton) {
 			doStartIndexer();

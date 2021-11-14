@@ -105,8 +105,4 @@ public class CalendarColorChooserController extends BasicController {
 		return row;
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

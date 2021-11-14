@@ -64,9 +64,4 @@ public class TopicIdentitySearchController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

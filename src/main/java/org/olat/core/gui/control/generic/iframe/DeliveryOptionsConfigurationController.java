@@ -351,11 +351,6 @@ public class DeliveryOptionsConfigurationController extends FormBasicController 
 			encodingJSEl.select(NodeEditController.CONFIG_JS_ENCODING_AUTO, true);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

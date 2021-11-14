@@ -98,10 +98,4 @@ public class GoogleAnalyticsConfigFormController extends FormBasicController {
 		logAudit("Google Analytics Tracking-ID changed", trackingId);										
 		fireEvent(ureq, Event.DONE_EVENT);		
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
 }

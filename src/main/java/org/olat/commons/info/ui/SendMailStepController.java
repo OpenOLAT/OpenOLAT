@@ -106,11 +106,6 @@ public class SendMailStepController extends StepFormBasicController {
 			sendCurriculaSelection = uifactory.addCheckboxesVertical("wizard.step1.send_curricula_option", formLayout, sendCurriculaOptionKeys, sendCurriculaOptionValues, 1);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

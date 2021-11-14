@@ -82,11 +82,6 @@ public class SharesMetadataController extends FormBasicController {
 		sharesTable.setEmptyTableMessageKey("sharing.shares.empty.table");
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public void setItem(QuestionItem item) {
 		List<QuestionItem2Resource> sharedResources = qpoolService.getSharedResourceInfosByItem(item);
 		sharesModel.setObjects(sharedResources);

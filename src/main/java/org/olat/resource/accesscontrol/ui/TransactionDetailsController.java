@@ -83,12 +83,6 @@ public class TransactionDetailsController extends FormBasicController {
 			detailsLayout.add("custom", controller.getInitialFormItem());
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -112,11 +106,6 @@ public class TransactionDetailsController extends FormBasicController {
 			Date date = transaction.getCreationDate();
 			String dateStr = Formatter.getInstance(getLocale()).formatDateAndTime(date);
 			uifactory.addStaticTextElement("transaction.date", dateStr, formLayout);
-		}
-		
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

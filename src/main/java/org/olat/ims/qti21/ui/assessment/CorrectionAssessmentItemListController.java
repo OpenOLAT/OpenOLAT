@@ -280,6 +280,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 	protected void doDispose() {
 		stackPanel.removeListener(this);
 		doUnlock();
+        super.doDispose();
 	}
 	
 	private void doUnlock() {
@@ -619,11 +620,6 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 				fireEvent(ureq, Event.DONE_EVENT);
 				doBulkPoints(ureq, row, Mode.SET);
 			}
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 }

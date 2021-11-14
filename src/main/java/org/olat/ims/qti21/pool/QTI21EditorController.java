@@ -97,11 +97,6 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 	public QuestionItem getItem() {
 		return questionItem;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

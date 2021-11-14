@@ -206,10 +206,6 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

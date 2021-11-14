@@ -118,11 +118,6 @@ public class CmdViewRevisions extends BasicController implements FolderCommand {
 	}
 
 	@Override
-	protected void doDispose() {
-	// auto-disposed by basic controller
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 	// nothing to do here
 	}

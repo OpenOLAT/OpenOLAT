@@ -193,9 +193,4 @@ public class AutoCompleterController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

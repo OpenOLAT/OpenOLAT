@@ -330,9 +330,4 @@ public class OpencastAdminController extends FormBasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

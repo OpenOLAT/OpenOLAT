@@ -74,11 +74,6 @@ public class PFFileUploadController extends FormBasicController {
 			fireEvent(ureq, Event.DONE_EVENT);	
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected File getUpLoadFile () {
 		return uploadFile;

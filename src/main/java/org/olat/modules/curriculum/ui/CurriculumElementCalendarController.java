@@ -166,5 +166,6 @@ public class CurriculumElementCalendarController extends BasicController {
 	@Override
 	protected void doDispose() {
 		calendarController.dispose();
+        super.doDispose();
 	}
 }

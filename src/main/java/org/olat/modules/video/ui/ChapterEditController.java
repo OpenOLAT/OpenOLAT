@@ -105,11 +105,6 @@ public class ChapterEditController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formOK(UserRequest ureq) {
 		try {
 			String chapterTitle = chapterTitleEl.getValue();

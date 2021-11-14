@@ -166,9 +166,4 @@ public class COToolController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -104,11 +104,6 @@ public class CmdCreateFolder extends FormBasicController implements FolderComman
 		uifactory.addFormSubmitButton("submit", "cf.button", formButtons);
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());		
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public int getStatus() { 

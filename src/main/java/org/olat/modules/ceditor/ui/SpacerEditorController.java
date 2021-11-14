@@ -73,9 +73,4 @@ public class SpacerEditorController extends FormBasicController implements PageE
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

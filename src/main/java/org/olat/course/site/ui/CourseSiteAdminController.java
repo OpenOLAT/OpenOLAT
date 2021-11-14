@@ -155,11 +155,6 @@ public class CourseSiteAdminController extends FormBasicController {
 		okButton.setCustomEnabledLinkCSS("btn btn-primary");
 		//uifactory.addFormSubmitButton("save", "save", formLayout);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

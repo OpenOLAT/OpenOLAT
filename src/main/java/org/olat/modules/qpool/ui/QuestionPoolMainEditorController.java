@@ -122,11 +122,6 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		doSelectControllerTreeNode(ureq, treeModel.getMyNode(), null, null);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

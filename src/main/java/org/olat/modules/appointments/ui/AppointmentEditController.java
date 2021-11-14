@@ -658,10 +658,4 @@ public class AppointmentEditController extends FormBasicController {
 		cmc.activate();
 		listenTo(cmc);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

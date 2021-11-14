@@ -589,11 +589,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public boolean isEditMode() {
 		return editMode;
 	}

@@ -85,5 +85,6 @@ public class DocEditorStandaloneController extends BasicController implements Ac
 		} catch(Exception e) {
 			logError("", e);
 		}
+        super.doDispose();
 	}
 }

@@ -985,6 +985,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		if(singleUserEventBus != null) {
 			singleUserEventBus.deregisterFor(this, assessmentEventOres);
 		}
+        super.doDispose();
 	}
 
 	@Override

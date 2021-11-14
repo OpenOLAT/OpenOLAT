@@ -78,11 +78,6 @@ public class LTIDataExchangeDisclaimerController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer acceptPage = (FormLayoutContainer)formLayout;

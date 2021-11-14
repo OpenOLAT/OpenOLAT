@@ -199,11 +199,6 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 		}
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void cleanUp() {
 		removeAsListenerAndDispose(searchController);
 		removeAsListenerAndDispose(previewCtrl);
@@ -443,10 +438,5 @@ class VideoOptionsForm extends FormBasicController{
 		if(source == description){
 			updateDescriptionField();
 		}
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 }

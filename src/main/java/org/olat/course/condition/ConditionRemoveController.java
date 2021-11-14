@@ -76,10 +76,4 @@ public class ConditionRemoveController extends BasicController {
 		String text = translate("remove.conditions.confirm.message");
 		confirmRemoveCtrl = activateYesNoDialog(ureq, title, text, confirmRemoveCtrl);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

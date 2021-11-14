@@ -266,9 +266,4 @@ public class ObligationEditController extends FormBasicController implements Con
 		fireEvent(ureq, FormEvent.CANCELLED_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

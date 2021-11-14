@@ -143,6 +143,7 @@ public class EvaluationFormReportsController extends BasicController {
 		removeAsListenerAndDispose(printSelectionCtrl);
 		segmentsController = null;
 		printSelectionCtrl = null;
+        super.doDispose();
 	}
 
 	private void cleanUp() {

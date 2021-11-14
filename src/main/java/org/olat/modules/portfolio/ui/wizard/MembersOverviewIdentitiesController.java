@@ -149,9 +149,4 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 		rightsContext.setIdentities(oks);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

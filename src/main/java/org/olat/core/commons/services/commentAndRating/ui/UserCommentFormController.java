@@ -183,11 +183,6 @@ public class UserCommentFormController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
 	/**
 	 * @return the updated or new created comment. Only package scope
 	 */

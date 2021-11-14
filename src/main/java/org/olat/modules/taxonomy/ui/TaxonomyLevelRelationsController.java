@@ -122,11 +122,6 @@ public class TaxonomyLevelRelationsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

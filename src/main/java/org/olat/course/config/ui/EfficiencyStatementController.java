@@ -184,9 +184,4 @@ public class EfficiencyStatementController extends FormBasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

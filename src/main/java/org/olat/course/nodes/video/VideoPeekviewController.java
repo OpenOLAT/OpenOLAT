@@ -75,9 +75,4 @@ public class VideoPeekviewController  extends BasicController implements Control
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
 }

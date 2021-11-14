@@ -78,10 +78,4 @@ public class BCCourseNodeConfigsController extends BasicController {
 		}
 		super.event(ureq, source, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		
-	}
-
 }

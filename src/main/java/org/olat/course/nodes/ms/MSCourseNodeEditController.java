@@ -141,11 +141,6 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

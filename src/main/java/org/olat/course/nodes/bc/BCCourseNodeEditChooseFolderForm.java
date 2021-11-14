@@ -61,11 +61,6 @@ public class BCCourseNodeEditChooseFolderForm extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == cancelLink){
 			fireEvent(ureq, Event.CANCELLED_EVENT);

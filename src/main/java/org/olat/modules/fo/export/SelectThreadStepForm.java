@@ -168,11 +168,6 @@ public class SelectThreadStepForm extends StepFormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOK = true;
 		Boolean newThread = (Boolean)getFromRunContext(SendMailStepForm.NEW_THREAD);

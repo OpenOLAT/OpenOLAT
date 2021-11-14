@@ -240,6 +240,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	protected void doDispose() {
 		allChats.remove(Integer.toString(hashCode()));
 		imService.unlistenChat(getIdentity(), getOlatResourceable(), this);
+        super.doDispose();
 	}
 
 	@Override

@@ -90,11 +90,6 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		}
 		numberEl.setValue(maxVal);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

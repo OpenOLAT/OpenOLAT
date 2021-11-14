@@ -637,8 +637,4 @@ public class CalendarEntryForm extends FormBasicController {
 		colorLink.setIconLeftCSS(colorIcon);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

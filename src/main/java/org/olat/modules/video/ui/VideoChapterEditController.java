@@ -105,11 +105,6 @@ public class VideoChapterEditController extends BasicController {
 		durationInSeconds = VideoHelper.durationInSeconds(entry, videoDisplayCtr);
 		putInitialPanel(mainVC);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -161,11 +156,6 @@ public class VideoChapterEditController extends BasicController {
 			FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			formLayout.add(buttonGroupLayout);
 			addChapterEl = uifactory.addFormLink("video.chapter.add", buttonGroupLayout, Link.BUTTON);
-		}
-		
-		@Override
-		protected void doDispose() {
-			//
 		}
 	
 		private void loadTableModel() {

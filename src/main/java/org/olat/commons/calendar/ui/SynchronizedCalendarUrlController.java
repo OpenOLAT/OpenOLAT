@@ -72,11 +72,6 @@ public class SynchronizedCalendarUrlController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", buttonGroupLayout);
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

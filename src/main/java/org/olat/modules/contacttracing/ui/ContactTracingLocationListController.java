@@ -411,11 +411,6 @@ public class ContactTracingLocationListController extends FormBasicController {
     protected void formOK(UserRequest ureq) {
 
     }
-
-    @Override
-    protected void doDispose() {
-
-    }
     
     private class FinishedCallback implements StepRunnerCallback {
         @Override

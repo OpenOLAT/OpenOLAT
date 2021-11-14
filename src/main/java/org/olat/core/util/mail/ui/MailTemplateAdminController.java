@@ -94,11 +94,6 @@ public class MailTemplateAdminController extends FormBasicController  {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == resetButton) {
 			doConfirmReset(ureq);

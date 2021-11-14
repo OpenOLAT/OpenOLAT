@@ -80,9 +80,4 @@ public class Card2BrainEditController extends ActivateableTabbableDefaultControl
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

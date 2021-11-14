@@ -63,11 +63,6 @@ public class ImportGraderBySearchController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(event instanceof SingleIdentityChosenEvent) {
 			SingleIdentityChosenEvent e = (SingleIdentityChosenEvent)event;

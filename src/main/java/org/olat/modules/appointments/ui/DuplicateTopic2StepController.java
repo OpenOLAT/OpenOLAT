@@ -339,11 +339,6 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private final class AppointmentInputDataModel extends DefaultFlexiTableDataModel<AppointmentInput> {
 		
 		private final Translator translator;

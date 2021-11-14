@@ -217,9 +217,4 @@ class GenericQuotaEditController extends BasicController {
 			showError("qf.cannot.del.default");
 		}
 	}
-		
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

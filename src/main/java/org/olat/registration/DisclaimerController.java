@@ -293,9 +293,4 @@ public class DisclaimerController extends BasicController {
 		listenTo(cmc);
 		cmc.activate();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

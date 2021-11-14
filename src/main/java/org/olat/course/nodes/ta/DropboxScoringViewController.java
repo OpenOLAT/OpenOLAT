@@ -398,15 +398,6 @@ public class DropboxScoringViewController extends BasicController {
 		namedReturnbox.setLocalSecurityCallback(secCallback);
 		return namedReturnbox;
 	}
-
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		//
-	}
 }
 
 class ReadOnlyAndDeleteCallback implements VFSSecurityCallback {

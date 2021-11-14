@@ -202,11 +202,6 @@ public class ContactTracingReportController extends FormBasicController {
         log.info(Tracing.M_AUDIT, reasonLog);
     }
 
-    @Override
-    protected void doDispose() {
-
-    }
-
     private class FinishedCallback implements StepRunnerCallback {
         @Override
         public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {

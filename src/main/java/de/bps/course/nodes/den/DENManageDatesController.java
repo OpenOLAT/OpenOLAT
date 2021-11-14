@@ -85,6 +85,7 @@ public class DENManageDatesController extends BasicController {
 			removeAsListenerAndDispose(editDENTable);
 			editDENTable = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

@@ -141,11 +141,6 @@ public class IdentityCompetencesController extends FormBasicController implement
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

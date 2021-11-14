@@ -73,11 +73,6 @@ public class LecturesAbsenceRollCallsSearchController extends FormBasicControlle
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Date startDate = dateEl.getDate();
 		Date endDate = dateEl.getSecondDate();

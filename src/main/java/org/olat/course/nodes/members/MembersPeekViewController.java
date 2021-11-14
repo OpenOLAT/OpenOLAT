@@ -168,11 +168,6 @@ public class MembersPeekViewController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// nothing
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing
-	}
 	
 	private static class Row {
 		private String col1;

@@ -76,11 +76,6 @@ public class HelpSupportController extends BasicController implements GenericEve
 	}
 
 	@Override
-	protected void doDispose() {
-		// autodispose by basic controller
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// Do nothing.
 	}

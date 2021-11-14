@@ -134,14 +134,6 @@ public class ChangePrefsController extends BasicController {
 			}
 		}
 		
-	} 
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		//
 	}
 }
 
@@ -280,12 +272,6 @@ class SpecialPrefsForm extends FormBasicController {
 		landingPageEl.setValue(landingPage);
 		landingPageEl.setVisible(landingPageVisible);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }
 
 /**
@@ -386,11 +372,6 @@ class UserPrefsResetForm extends FormBasicController {
 						new RedirectMediaResource(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + "?lang=" + lang + "&logout=true"));
 			}
 		}
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 	
 }

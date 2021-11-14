@@ -358,9 +358,4 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		configs.setValue(CourseProvider.CONFIG_KEY_DAILY_MINUTE, null);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -99,11 +99,6 @@ public class CatalogSettingsController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 		tableEl.setEmptyTableSettings("no.catalog.entries" ,"no.catalog.entries.hint", "o_icon_catalog");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

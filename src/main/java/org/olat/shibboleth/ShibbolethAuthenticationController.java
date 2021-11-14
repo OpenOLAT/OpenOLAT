@@ -137,20 +137,9 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		fallbackTranslator.setLocale(newLocale);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-	// nothing to do here.
 	}
 
 	/**

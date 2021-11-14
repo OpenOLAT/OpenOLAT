@@ -204,12 +204,7 @@ public class KPrimEditorController extends FormBasicController {
 		
 		choiceWrappers.add(new KprimWrapper(choice, choiceEl, choiceReadOnlyEl, upLink, downLink));
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
+		
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(readOnly) return;

@@ -106,11 +106,6 @@ public class FormRunController extends BasicController {
 		super.event(ureq, source, event);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private boolean checkDeadline() {
 		Date deadline = formManager.getParticipationDeadline(courseNode,
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),

@@ -140,11 +140,6 @@ public class OptionsFormController extends FormBasicController {
 		this.flc.setDirty(true);
 	}
 
-	@Override
-	protected void doDispose() {
-		//nothing
-	}
-
 	public int getNnbrOfAttendees() {
 		return nbrOfAttendees.getIntValue();
 	}

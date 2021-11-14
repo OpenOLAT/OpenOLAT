@@ -107,6 +107,7 @@ public class PortalMainController extends BasicController {
 			myPortal.dispose();
 			myPortal = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

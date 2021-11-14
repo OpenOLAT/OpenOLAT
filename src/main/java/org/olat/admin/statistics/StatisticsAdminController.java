@@ -227,13 +227,4 @@ public class StatisticsAdminController extends BasicController {
 			return null;
 		}
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-		//nothing to do
-	}
-
 }

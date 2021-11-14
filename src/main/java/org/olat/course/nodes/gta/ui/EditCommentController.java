@@ -70,11 +70,6 @@ public class EditCommentController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formOK(UserRequest ureq) {
 		String comment = commentEl.getValue();
 		row.setComment(comment);

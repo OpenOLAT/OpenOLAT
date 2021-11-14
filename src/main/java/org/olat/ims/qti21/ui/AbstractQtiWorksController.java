@@ -57,11 +57,6 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 		super(ureq, wControl, pageName);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	protected String extractComment() {
         if (mainForm.getRequestParameter("qtiworks_comment_presented") == null) {
             /* No comment box given to candidate */

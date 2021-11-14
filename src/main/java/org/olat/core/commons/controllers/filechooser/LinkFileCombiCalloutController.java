@@ -501,9 +501,4 @@ public class LinkFileCombiCalloutController extends BasicController {
 		}
 		return false;		
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

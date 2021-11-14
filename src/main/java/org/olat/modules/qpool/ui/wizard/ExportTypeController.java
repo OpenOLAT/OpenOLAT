@@ -91,11 +91,6 @@ public class ExportTypeController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		if(formatEl.isOneSelected()) {
 			ExportFormatOptions options = formatMap.get(formatEl.getSelectedKey());

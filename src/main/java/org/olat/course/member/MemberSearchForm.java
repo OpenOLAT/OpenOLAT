@@ -135,11 +135,6 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
 		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void setEnabled(boolean enable) {

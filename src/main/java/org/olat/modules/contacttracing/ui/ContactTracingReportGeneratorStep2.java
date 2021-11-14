@@ -163,10 +163,5 @@ public class ContactTracingReportGeneratorStep2 extends BasicStep {
             // Fire event
             fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
         }
-
-        @Override
-        protected void doDispose() {
-
-        }
     }
 }

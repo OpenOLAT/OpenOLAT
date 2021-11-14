@@ -80,11 +80,6 @@ public class AdobeConnectConfigForm extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> selectedKeys = accessEl.getSelectedKeys();
 		config.setBooleanEntry(AdobeConnectEditController.ACCESS_BY_DATES, selectedKeys.contains(accessKeys[0]));

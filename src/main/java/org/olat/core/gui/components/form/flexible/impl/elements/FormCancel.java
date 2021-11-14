@@ -63,10 +63,6 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 		// should bypass the form infrastructure. This inner controller is
 		// disposed by this form item.
 		dispatchLinkController = new BasicController(ureq, wControl) {
-			@Override
-			protected void doDispose() {
-				// nothing to dispose
-			}
 
 			@Override
 			protected void event(UserRequest ureq, Component source, Event event) {

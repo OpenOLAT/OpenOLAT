@@ -132,11 +132,6 @@ public class UserPropertiesController extends BasicController {
 			tableCtr.modelChanged();
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }
 /**
  *  Comment:  

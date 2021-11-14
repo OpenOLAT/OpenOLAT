@@ -491,6 +491,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	@Override
 	protected void doDispose() {
 		i18nItems = null;
+        super.doDispose();
 	}
 
 }

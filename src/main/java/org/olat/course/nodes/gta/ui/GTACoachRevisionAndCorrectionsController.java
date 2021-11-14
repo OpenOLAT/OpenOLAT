@@ -134,11 +134,6 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	public Task getAssignedTask() {
 		return assignedTask;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void initRevisionProcess(UserRequest ureq) {
 		List<Step> revisionStepNames = new ArrayList<>();

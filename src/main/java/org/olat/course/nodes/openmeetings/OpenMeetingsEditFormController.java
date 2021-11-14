@@ -158,11 +158,6 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 		editLink.setI18nKey(hasRoom ? "edit.room" : "create.room");
 		editLink.setEnabled(!serverDown);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

@@ -83,11 +83,6 @@ public class AlternativeCourseNodeController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", buttonsLayout);
 		uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public String getSelectedAlternative() {
 		return alternativesEl.isOneSelected() ? alternativesEl.getSelectedKey() : null;

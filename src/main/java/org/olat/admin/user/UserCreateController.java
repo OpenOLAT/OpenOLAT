@@ -123,11 +123,6 @@ public class UserCreateController extends BasicController  {
 				fireEvent(ureq, event);
 			}
 		}
-	}	
-
-	@Override
-	protected void doDispose() {
-		// nothing to do
 	}
 }
 /**
@@ -485,10 +480,5 @@ class NewUserForm extends FormBasicController {
 	private void doDeletePendingRegistration(String email) {
 		TemporaryKey temporaryKey = registrationManager.loadTemporaryKeyByEmail(email);
 		registrationManager.deleteTemporaryKey(temporaryKey);	
-	}
-	
-	@Override
-	protected void doDispose() {
-		//empty
 	}
 }

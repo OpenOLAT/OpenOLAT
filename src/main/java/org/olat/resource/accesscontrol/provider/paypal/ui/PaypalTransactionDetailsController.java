@@ -105,11 +105,6 @@ public class PaypalTransactionDetailsController extends FormBasicController impl
 	private String removeNull(String string) {
 		return string == null ? "" : string;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public FormItem getInitialFormItem() {

@@ -309,11 +309,6 @@ public class BusinessGroupStatusController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmChangeStatusCtlr == source || confirmStartChangeStatusCtlr == source) {
 			cmc.deactivate();

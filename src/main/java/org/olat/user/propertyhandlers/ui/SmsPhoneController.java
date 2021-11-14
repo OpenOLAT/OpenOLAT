@@ -61,11 +61,6 @@ public class SmsPhoneController extends BasicController {
 	public WindowControl getWindowControl() {
 		return super.getWindowControl();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

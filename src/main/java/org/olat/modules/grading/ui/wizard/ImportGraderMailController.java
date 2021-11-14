@@ -67,6 +67,7 @@ public class ImportGraderMailController extends StepFormBasicController {
 	@Override
 	protected void doDispose() {
 		mailCtrl.cleanUpAttachments();
+        super.doDispose();
 	}
 	
 	@Override

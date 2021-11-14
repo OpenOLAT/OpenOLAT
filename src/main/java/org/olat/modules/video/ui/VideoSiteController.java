@@ -72,10 +72,4 @@ public class VideoSiteController extends BasicController implements Activateable
 			videoListingCtr.activate(ureq, entries, state);						
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
 }

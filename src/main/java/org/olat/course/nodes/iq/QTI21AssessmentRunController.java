@@ -768,6 +768,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		resourceList.deregisterResourceable(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
 				courseNode.getIdent(), getWindow());
+        super.doDispose();
 	}
 	
 	@Override

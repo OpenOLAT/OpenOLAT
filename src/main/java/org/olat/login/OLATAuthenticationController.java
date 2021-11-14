@@ -273,9 +273,4 @@ public class OLATAuthenticationController extends AuthenticationController imple
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

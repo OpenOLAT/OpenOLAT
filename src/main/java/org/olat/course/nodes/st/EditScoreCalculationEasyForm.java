@@ -247,14 +247,6 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest, Identity)
-	 */
-	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean rv = true;
 		if (hasScore.isSelected(0)) {

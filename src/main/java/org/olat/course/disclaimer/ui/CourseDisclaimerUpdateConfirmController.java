@@ -114,11 +114,6 @@ public class CourseDisclaimerUpdateConfirmController extends FormBasicController
 			layout.setDirty(true);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

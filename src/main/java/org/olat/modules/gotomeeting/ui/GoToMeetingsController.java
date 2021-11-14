@@ -135,11 +135,6 @@ public class GoToMeetingsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(upcomingTableEl == source) {
 			if(event instanceof SelectionEvent) {

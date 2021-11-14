@@ -1051,11 +1051,6 @@ public class AppointmentCreateController extends FormBasicController {
 		listenTo(cmc);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public static final class AppointmentWrapper {
 		
 		private DateChooser startEl;

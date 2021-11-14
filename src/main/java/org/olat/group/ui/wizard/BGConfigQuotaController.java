@@ -111,9 +111,4 @@ public class BGConfigQuotaController extends FormBasicController {
 		}
 		ulLimitKB.setMandatory(true);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

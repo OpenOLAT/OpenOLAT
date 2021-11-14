@@ -69,11 +69,6 @@ public class LecturesMainController extends MainLayoutBasicController implements
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}

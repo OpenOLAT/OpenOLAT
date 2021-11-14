@@ -61,11 +61,6 @@ public class PortfolioPersonalToolController extends BasicController implements 
 		stackPanel.pushController(translate("portfolio.root.breadcrump"), overviewCtrl);
 		stackPanel.setCssClass("o_portfolio");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

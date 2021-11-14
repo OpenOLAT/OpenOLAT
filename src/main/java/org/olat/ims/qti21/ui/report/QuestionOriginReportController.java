@@ -51,11 +51,6 @@ public class QuestionOriginReportController extends BasicController {
 		mainVC.put("table", tableCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

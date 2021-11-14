@@ -192,11 +192,6 @@ public class ViteroBookingEditController extends FormBasicController {
 		return false;
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public ViteroBooking getUserObject() {
 		return booking;
 	}

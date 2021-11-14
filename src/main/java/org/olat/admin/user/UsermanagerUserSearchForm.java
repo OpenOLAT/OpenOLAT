@@ -453,9 +453,4 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 			source.getRootForm().submit(ureq);			
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

@@ -135,9 +135,4 @@ public class WikiEditArticleForm extends FormBasicController {
 
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

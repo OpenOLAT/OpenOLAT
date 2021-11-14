@@ -241,13 +241,12 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, eventBusThisIdentityOres);
 		super.doDispose();
 		portletToolsController = null;
+        super.doDispose();
 	}
 	
 	/**

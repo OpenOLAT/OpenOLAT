@@ -82,9 +82,4 @@ public class EdusharingEditController extends ActivateableTabbableDefaultControl
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

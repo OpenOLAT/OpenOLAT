@@ -69,11 +69,6 @@ public class PortletAutoSortingConfigurator extends FormBasicController{
 		initForm(ureq);
 		setSortingCriteria(sortingCriteria);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {		

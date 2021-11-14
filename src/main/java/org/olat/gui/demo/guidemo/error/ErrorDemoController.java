@@ -110,12 +110,4 @@ public class ErrorDemoController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		// nothing to do
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		// nothing to do
-	}
-
 }

@@ -154,11 +154,6 @@ public class DocumentSelectionController extends FormBasicController {
 		}
 		return null;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public static final class CreateEvent extends Event {
 		

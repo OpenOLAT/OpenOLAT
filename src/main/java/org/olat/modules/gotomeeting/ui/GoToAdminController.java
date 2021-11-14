@@ -71,11 +71,6 @@ public class GoToAdminController extends BasicController implements Activateable
 		doOpenAccountSettings(ureq);
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

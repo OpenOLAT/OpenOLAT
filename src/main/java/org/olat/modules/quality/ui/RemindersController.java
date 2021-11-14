@@ -162,10 +162,4 @@ public class RemindersController extends FormBasicController {
 		}
 		return savedReminder;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -92,11 +92,6 @@ public class RollCallInterceptorController extends FormBasicController implement
 		startWizardButton = uifactory.addFormLink("start.wizard", formLayout, Link.BUTTON);
 		startWizardButton.setElementCssClass("o_sel_lecture_start_wizard");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

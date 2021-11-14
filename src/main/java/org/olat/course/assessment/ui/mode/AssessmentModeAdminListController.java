@@ -129,11 +129,6 @@ public class AssessmentModeAdminListController extends FormBasicController {
 		model.setObjects(modes);
 		tableEl.reloadData();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

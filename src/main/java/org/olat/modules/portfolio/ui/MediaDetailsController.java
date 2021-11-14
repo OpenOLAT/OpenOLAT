@@ -200,11 +200,6 @@ public class MediaDetailsController extends FormBasicController implements Activ
 	private void reload(UserRequest ureq) {
 		initForm(flc, this, ureq);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

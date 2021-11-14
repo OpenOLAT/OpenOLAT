@@ -83,11 +83,6 @@ public class GlossaryEditSettingsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-	// nothing
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == editByUserEnabled){
 			boolean editByUserChecked = editByUserEnabled.isSelected(0);

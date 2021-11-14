@@ -74,9 +74,4 @@ public class LDAPGroupsLoginInterceptor extends FormBasicController implements S
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

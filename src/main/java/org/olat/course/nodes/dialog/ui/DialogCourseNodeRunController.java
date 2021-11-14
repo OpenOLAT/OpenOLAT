@@ -149,6 +149,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		if(fileUplCtr != null && fileUplCtr.getUploadContainer() != null) {
 			fileUplCtr.getUploadContainer().deleteSilently();
 		}
+        super.doDispose();
 	}
 	
 	@Override

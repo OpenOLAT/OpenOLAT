@@ -67,11 +67,6 @@ public class WebSMSConfigurationController extends AbstractSMSConfigurationContr
 		passwordEl = uifactory.addPasswordElement("websms.password", "websms.password", 128, creds, formLayout);
 		passwordEl.setMandatory(true);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

@@ -75,14 +75,6 @@ public class GuiDemoFlexiFormHideUnhide extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
-	@Override
 	protected void formOK(UserRequest ureq) {
 		// this method is called if the form has validated
 		// which means that all form items are filled without error

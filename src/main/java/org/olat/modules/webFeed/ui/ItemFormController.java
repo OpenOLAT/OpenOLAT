@@ -368,9 +368,4 @@ public abstract class ItemFormController extends FormBasicController {
 		heightEl.setValue(null);
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-
 }

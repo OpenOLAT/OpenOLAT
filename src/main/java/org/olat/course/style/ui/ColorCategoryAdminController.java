@@ -210,11 +210,6 @@ public class ColorCategoryAdminController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private void doAddColorCategory(UserRequest ureq) {
 		editCtrl = new ColorCategoryEditController(ureq, getWindowControl(), null);
 		listenTo(editCtrl);

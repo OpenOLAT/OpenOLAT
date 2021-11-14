@@ -56,11 +56,6 @@ public class CustomDBAddController extends FormBasicController {
 	public String getCategory() {
 		return categoryEl.getValue();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {

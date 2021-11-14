@@ -95,11 +95,6 @@ public class OpenMeetingsAdminRoomsController extends BasicController {
 		
 		putInitialPanel(tableCtr.getInitialComponent());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//auto disposed
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

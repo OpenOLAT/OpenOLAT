@@ -220,10 +220,4 @@ public class LearningPathIdentityListController extends FormBasicController impl
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

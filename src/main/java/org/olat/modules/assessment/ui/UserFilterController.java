@@ -86,11 +86,6 @@ public class UserFilterController extends FormBasicController {
 			restrictionEl.select(ANONYMOUS, true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {

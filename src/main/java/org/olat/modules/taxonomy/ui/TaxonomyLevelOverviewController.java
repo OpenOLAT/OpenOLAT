@@ -120,11 +120,6 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -270,11 +265,6 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 			toolVC.put(name, link);
 			link.setIconLeftCSS("o_icon " + iconCss);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 		
 		@Override

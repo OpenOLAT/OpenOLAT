@@ -295,9 +295,4 @@ public class EdusharingConfigController extends FormBasicController {
 		stackPanel.pushController(translate("preview"), previewCtrl);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

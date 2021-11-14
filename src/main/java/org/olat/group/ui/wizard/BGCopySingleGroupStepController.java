@@ -63,6 +63,7 @@ public class BGCopySingleGroupStepController extends StepFormBasicController   {
 	protected void doDispose() {
 		mainForm.removeSubFormListener(groupController);
 		mainForm.removeSubFormListener(this);
+        super.doDispose();
 	}
 
 	@Override

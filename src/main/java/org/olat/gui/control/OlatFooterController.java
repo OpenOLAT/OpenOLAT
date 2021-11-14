@@ -134,11 +134,6 @@ public class OlatFooterController extends BasicController implements LockableCon
 		
 		putInitialPanel(olatFootervc);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void lock() {

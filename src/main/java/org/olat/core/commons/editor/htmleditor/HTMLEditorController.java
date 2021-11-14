@@ -271,6 +271,7 @@ public class HTMLEditorController extends FormBasicController implements Activat
 	@Override
 	protected void doDispose() {
 		releaseLock();
+        super.doDispose();
 	}
 
 	@Override

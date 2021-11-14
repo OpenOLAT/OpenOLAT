@@ -164,11 +164,6 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		startDateEl.setMandatory(!permanent);
 		endDateEl.setMandatory(!permanent);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

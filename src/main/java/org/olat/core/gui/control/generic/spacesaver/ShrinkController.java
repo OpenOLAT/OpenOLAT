@@ -90,11 +90,4 @@ public class ShrinkController extends DefaultController {
 		shrinkcontent.setVisible(isLarge);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		// nothing to do yet
-	}
-
 }

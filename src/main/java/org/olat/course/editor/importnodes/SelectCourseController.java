@@ -87,11 +87,6 @@ public class SelectCourseController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof AuthoringEntryRowSelectionEvent) {
 			AuthoringEntryRow row = ((AuthoringEntryRowSelectionEvent)event).getRow();

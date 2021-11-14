@@ -123,11 +123,6 @@ public class MediaLinksController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void addNewFormLink(LinkWrapper link, FormLayoutContainer layoutContainer) {
 		// add link target
 		String id = link.getId();

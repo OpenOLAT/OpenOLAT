@@ -181,10 +181,4 @@ public class ConditionEditController extends BasicController {
 	public Condition getCondition() {
 		return condition;
 	}
-	
-	@Override
-	protected void doDispose() {
-		// child controller disposed by basic controller
-	}
-
 }

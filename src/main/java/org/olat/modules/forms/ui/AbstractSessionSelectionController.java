@@ -176,5 +176,6 @@ public abstract class AbstractSessionSelectionController extends FormBasicContro
 	protected void doDispose() {
 		removeAsListenerAndDispose(executionCtrl);
 		executionCtrl = null;
+        super.doDispose();
 	}
 }

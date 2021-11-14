@@ -203,11 +203,6 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			selectMenuItem(ureq, getDefaultMenuItem());

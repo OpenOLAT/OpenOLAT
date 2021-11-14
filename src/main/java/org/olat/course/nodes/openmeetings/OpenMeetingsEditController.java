@@ -85,11 +85,6 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
 	}

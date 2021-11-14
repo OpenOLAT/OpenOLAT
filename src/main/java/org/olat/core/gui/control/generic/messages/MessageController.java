@@ -96,11 +96,6 @@ public class MessageController extends BasicController{
 	}
 
 	@Override
-	protected void doDispose() {
-		// one of most simple controllers, really nothing to be disposed here.
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// This is only simple text in this controller, there should no events come
 		// along here.

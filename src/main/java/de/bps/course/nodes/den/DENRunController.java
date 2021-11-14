@@ -168,6 +168,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 			removeAsListenerAndDispose(listParticipantsModalCntrll);
 			listParticipantsModalCntrll = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

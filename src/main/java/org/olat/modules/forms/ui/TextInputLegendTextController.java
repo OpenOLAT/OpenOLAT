@@ -86,9 +86,4 @@ public class TextInputLegendTextController extends BasicController {
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

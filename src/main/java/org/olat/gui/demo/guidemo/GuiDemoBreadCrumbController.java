@@ -76,21 +76,16 @@ public class GuiDemoBreadCrumbController extends BasicController {
 		
 		putInitialPanel(content);
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
+	
 	@Override
 	protected void doDispose() {
 		if (breadCrumbCtr != null) {
 			breadCrumbCtr.dispose();
 			breadCrumbCtr = null;
 		}
+        super.doDispose();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
@@ -119,11 +114,6 @@ public class GuiDemoBreadCrumbController extends BasicController {
 		}
 
 		@Override
-		protected void doDispose() {
-			// child crumb controller auto disposed by deactivate method
-		}
-
-		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if (source.equals(createNewLink)) {
 				CrumbController ctr = new GuiDemoBreadCrumbContentController(ureq, getWindowControl(), this.crumbLevel + 1);
@@ -143,8 +133,5 @@ public class GuiDemoBreadCrumbController extends BasicController {
 		public String getCrumbLinkHooverText() {
 			return "click here to to go crumb " + 1;
 		}
-		
-		
 	}
-
 }

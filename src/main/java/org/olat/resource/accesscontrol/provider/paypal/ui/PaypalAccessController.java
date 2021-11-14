@@ -120,11 +120,6 @@ public class PaypalAccessController extends FormBasicController implements FormC
 			
 		uifactory.addFormSubmitButton("access.button", formLayout);
 	}
-		
-	@Override
-	protected void doDispose() {
-			//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

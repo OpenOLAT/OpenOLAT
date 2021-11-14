@@ -107,11 +107,6 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 			highScoreNodeConfigController.setFormInfoMessage("highscore.forminfo", getTranslator());			
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {

@@ -122,6 +122,7 @@ public class OnlyOfficeEditorController extends BasicController {
 	@Override
 	protected void doDispose() {
 		deleteAccess();
+        super.doDispose();
 	}
 	
 	private void deleteAccess() {

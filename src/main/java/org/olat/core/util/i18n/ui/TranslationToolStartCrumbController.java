@@ -734,29 +734,11 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		return translate("start.crumb.hoover");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.control.generic.breadcrumb.CrumbController#getCrumbLinkText
-	 * ()
-	 */
+	@Override
 	public String getCrumbLinkText() {
 		if (customizingMode) {			
 			return translate("start.crumb.link") + " " + translate("start.customize.title");
 		}
 		return translate("start.crumb.link") + " " + translate("start.title");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose
-	 * ()
-	 */
-	@Override
-	protected void doDispose() {
-	// controller autodisposed by basic controller
 	}
 }

@@ -169,11 +169,6 @@ public class LandingPagesAdminController extends FormBasicController {
 		saveButton = uifactory.addFormSubmitButton("save", buttonLayout);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private RuleWrapper initRuleWrapper(int pos, Rule rule, FormItemContainer formLayout) {
 		int i = counter.incrementAndGet();
 		
@@ -388,11 +383,6 @@ public class LandingPagesAdminController extends FormBasicController {
 				}
 			}
 			fireEvent(ureq, Event.DONE_EVENT);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 }

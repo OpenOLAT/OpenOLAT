@@ -54,11 +54,6 @@ public class WikiFileUploadController extends BasicController {
 		mainVC.put("fileUpload", fileUplCtr.getInitialComponent());
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

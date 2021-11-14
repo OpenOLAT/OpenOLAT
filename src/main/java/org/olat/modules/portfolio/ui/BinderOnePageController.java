@@ -173,11 +173,6 @@ public class BinderOnePageController extends BasicController {
 			pageVC.put("comments", commentsCtrl.getInitialComponent());
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

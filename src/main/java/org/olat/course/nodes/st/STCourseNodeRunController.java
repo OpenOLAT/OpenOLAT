@@ -235,9 +235,4 @@ public class STCourseNodeRunController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

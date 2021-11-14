@@ -106,17 +106,6 @@ public class LLEditForm extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void doDispose() {
-	// nothing to dispose
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// read data from form elements

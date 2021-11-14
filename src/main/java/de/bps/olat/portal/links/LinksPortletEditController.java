@@ -152,13 +152,4 @@ public class LinksPortletEditController extends FormBasicController {
 		LinksPortlet.updateLink(portletLink);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

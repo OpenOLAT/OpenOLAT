@@ -175,10 +175,4 @@ class I18nConfigSubImportLangController extends FormBasicController {
 			}			
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-	// nothing to dispose
-	}
-
 }

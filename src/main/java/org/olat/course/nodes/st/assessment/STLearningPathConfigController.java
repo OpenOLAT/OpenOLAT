@@ -390,11 +390,6 @@ public class STLearningPathConfigController extends FormBasicController {
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doAddExceptionalObligations(UserRequest ureq, ExceptionalObligationHandler handler) {
 		guardModalController(exceptionalObligationCreateCtrl);

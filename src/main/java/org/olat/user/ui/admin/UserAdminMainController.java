@@ -819,6 +819,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	protected void doDispose() {
 		// controllers disposed in BasicController
 		releaseDeleteUserLock();
+        super.doDispose();
 	}
 	
 	private static class Presentation {

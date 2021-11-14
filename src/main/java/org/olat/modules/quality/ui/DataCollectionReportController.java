@@ -95,5 +95,6 @@ public class DataCollectionReportController extends FormBasicController {
 		removeAsListenerAndDispose(reportsCtrl);
 		reportHeaderCtrl = null;
 		reportsCtrl = null;
+        super.doDispose();
 	}
 }

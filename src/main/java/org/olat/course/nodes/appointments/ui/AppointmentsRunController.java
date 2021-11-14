@@ -53,9 +53,4 @@ public class AppointmentsRunController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

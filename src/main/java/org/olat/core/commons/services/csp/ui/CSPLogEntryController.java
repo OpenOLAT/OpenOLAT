@@ -90,6 +90,7 @@ public class CSPLogEntryController extends FormBasicController implements Tooled
 	@Override
 	protected void doDispose() {
 		toolbarPanel.setToolbarEnabled(false);
+        super.doDispose();
 	}
 
 	@Override

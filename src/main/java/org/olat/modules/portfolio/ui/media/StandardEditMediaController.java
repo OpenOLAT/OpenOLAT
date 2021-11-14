@@ -96,12 +96,7 @@ public class StandardEditMediaController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
+		
 	@Override
 	protected void formOK(UserRequest ureq) {
 		mediaReference.setTitle(titleEl.getValue());

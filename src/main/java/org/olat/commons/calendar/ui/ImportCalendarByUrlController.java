@@ -80,11 +80,6 @@ public class ImportCalendarByUrlController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// do nothing here yet
-	}
-
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		

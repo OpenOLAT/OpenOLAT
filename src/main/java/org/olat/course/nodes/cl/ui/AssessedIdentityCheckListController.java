@@ -190,11 +190,6 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		}
 		return wrapper;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

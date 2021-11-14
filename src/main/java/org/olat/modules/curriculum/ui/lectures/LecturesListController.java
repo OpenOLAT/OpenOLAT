@@ -172,11 +172,6 @@ public class LecturesListController extends FormBasicController implements Expor
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

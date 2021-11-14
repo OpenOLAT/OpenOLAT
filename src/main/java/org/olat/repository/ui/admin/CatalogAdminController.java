@@ -113,11 +113,6 @@ public class CatalogAdminController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == enableEl) {
 			boolean enabled = enableEl.isSelected(0);

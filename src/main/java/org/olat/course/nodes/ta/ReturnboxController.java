@@ -140,9 +140,4 @@ public class ReturnboxController extends BasicController {
 			}
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

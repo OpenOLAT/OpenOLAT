@@ -102,11 +102,6 @@ public class ExamCourseStepsController extends StepFormBasicController {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public interface ExamCourseStepsListener {
 		
 		void onStepsChanged(UserRequest ureq);

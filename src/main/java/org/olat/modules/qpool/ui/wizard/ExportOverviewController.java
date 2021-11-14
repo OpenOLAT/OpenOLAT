@@ -85,11 +85,6 @@ public class ExportOverviewController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		List<QuestionItemShort> exportableItems = new ArrayList<>(itemsModel.getRowCount());
 		for(int i=0; i<itemsModel.getRowCount(); i++) {

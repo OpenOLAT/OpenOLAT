@@ -90,10 +90,4 @@ public class GroupMembersRunController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
-
 }

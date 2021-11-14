@@ -376,11 +376,6 @@ public class PageMetadataController extends BasicController {
 		}
 		return editLink;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -549,11 +544,6 @@ public class PageMetadataController extends BasicController {
 		public UserInfosStatusController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl, "page_meta_user_status");
 			initForm(ureq);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

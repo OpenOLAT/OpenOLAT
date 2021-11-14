@@ -140,11 +140,6 @@ public class CourseSendReminderListController extends FormBasicController {
 		tableModel.setObjects(rows);
 		tableEl.reset();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

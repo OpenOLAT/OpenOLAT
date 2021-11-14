@@ -116,11 +116,6 @@ public class GoToMeetingsEditController extends FormBasicController {
 		tableEl.reloadData();
 		tableEl.reset();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

@@ -245,11 +245,6 @@ public class Card2BrainConfigController extends FormBasicController {
 		return config;
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	/**
 	 * 
 	 * @return whether the private login is activated by the user.

@@ -218,11 +218,6 @@ public class UserLifecycleOverviewController extends BasicController implements 
 		params.setOrganisations(manageableOrganisations);
 		return params;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

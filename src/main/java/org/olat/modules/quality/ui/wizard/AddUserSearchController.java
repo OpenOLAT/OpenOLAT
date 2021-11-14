@@ -92,9 +92,4 @@ public class AddUserSearchController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

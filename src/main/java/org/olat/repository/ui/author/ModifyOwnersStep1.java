@@ -98,11 +98,6 @@ public class ModifyOwnersStep1 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			List<Identity> ownersToRemove = new ArrayList<>();
 			tableElement.getMultiSelectedIndex().forEach(index -> ownersToRemove.add(tableModel.getObject(index).getIdentity()));

@@ -237,11 +237,6 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableModel.setObjects(rows);
 		tableEl.reset(false, false, true);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

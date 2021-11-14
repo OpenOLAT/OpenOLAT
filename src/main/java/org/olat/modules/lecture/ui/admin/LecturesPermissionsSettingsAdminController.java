@@ -124,11 +124,6 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		boolean appealEnabled = lectureModule.isAbsenceAppealEnabled();

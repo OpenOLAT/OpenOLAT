@@ -117,11 +117,6 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 			checkLink = uifactory.addFormLink("check", buttonLayout, Link.BUTTON);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

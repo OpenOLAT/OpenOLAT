@@ -89,8 +89,4 @@ public class GuiDemoPushPopController extends BasicController {
 		}
 		return result.toString();
 	}
-	
-	protected void doDispose() {
-	}
-
 }

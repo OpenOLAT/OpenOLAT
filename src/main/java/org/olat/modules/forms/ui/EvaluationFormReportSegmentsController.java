@@ -192,6 +192,7 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 		diagramReportCtrl = null;
 		tableReportCtrl = null;
 		overviewCtrl = null;
+        super.doDispose();
 	}
 
 }

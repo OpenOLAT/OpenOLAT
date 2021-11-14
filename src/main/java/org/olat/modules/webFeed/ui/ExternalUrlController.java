@@ -133,10 +133,4 @@ public class ExternalUrlController extends FormBasicController {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

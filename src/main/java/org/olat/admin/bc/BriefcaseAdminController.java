@@ -59,11 +59,6 @@ public class BriefcaseAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		thumbnailReset = uifactory.addFormLink("thumbnails.reset", formLayout, Link.BUTTON);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

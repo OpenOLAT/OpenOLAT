@@ -294,6 +294,7 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, meetingOres);
+        super.doDispose();
 	}
 
 	@Override

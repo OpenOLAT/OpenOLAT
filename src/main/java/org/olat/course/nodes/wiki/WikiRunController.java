@@ -156,11 +156,6 @@ public class WikiRunController extends BasicController implements Activateable2 
 	public void event(UserRequest ureq, Controller source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public NodeRunConstructionResult createNodeRunConstructionResult() {
 		TreeModel wikiTreeModel = wikiCtr.getAndUseExternalTree();

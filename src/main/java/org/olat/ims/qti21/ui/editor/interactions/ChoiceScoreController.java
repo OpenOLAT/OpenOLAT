@@ -327,11 +327,6 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
 		validateScoreOfCorrectAnswer();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public final class ChoiceWrapper {
 		

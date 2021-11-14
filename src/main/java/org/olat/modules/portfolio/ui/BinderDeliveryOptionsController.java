@@ -120,11 +120,6 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
@@ -210,11 +205,6 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 			acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation", formLayout, onKeys, values);
 			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 			uifactory.addFormSubmitButton("delete", "ok", formLayout);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

@@ -78,11 +78,6 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formOK(UserRequest ureq) {
 		String displayname = displaynameEl.getValue();
 		copyEntry = repositoryService.copy(sourceEntry, getIdentity(), displayname);

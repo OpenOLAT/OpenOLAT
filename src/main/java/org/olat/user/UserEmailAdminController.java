@@ -196,9 +196,4 @@ public class UserEmailAdminController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

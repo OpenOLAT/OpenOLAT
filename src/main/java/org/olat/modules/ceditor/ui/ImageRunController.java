@@ -183,5 +183,6 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		if(imageCmp != null) {
 			imageCmp.dispose();
 		}
+        super.doDispose();
 	}
 }

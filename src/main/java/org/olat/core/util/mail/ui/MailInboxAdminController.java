@@ -127,11 +127,6 @@ public class MailInboxAdminController extends FormBasicController  {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		// module on/off
 		boolean on = !enabled.getSelectedKeys().isEmpty();

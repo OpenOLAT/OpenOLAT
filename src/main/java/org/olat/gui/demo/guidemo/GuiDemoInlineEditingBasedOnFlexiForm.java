@@ -47,11 +47,6 @@ public class GuiDemoInlineEditingBasedOnFlexiForm extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		String msg = "";
 		for (int i = 0; i < elements.length; i++) {

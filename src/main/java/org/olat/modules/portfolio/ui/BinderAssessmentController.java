@@ -245,13 +245,6 @@ public class BinderAssessmentController extends FormBasicController {
 			row.setButton(closeButton);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

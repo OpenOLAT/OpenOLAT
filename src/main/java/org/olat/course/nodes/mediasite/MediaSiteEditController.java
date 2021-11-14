@@ -80,9 +80,4 @@ public class MediaSiteEditController extends ActivateableTabbableDefaultControll
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

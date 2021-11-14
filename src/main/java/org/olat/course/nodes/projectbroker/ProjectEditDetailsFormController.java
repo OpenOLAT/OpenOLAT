@@ -315,6 +315,11 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		}
 	}
+	
+    @Override
+    protected void doDispose() {
+    	super.doDispose();
+    }
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -443,11 +448,6 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 			attachmentFileName.setInitialFile(null);
 		}
 		this.flc.setDirty(true);
-	}
-
-	@Override
-	protected void doDispose() {
-		//nothing
 	}
 
 	private void uploadFiles(FileElement attachmentFileElement) {

@@ -160,11 +160,6 @@ public class VFSTrashController extends FormBasicController implements ProgressD
 		
 		orphansDeleteButton = uifactory.addFormLink("delete", tableLayout, Link.BUTTON);
 		orphansDeleteButton.setIconLeftCSS(CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_TRASHED));
-	}		
-
-	@Override
-	protected void doDispose() {
-		//
 	}
 	
 	private void loadModel() {

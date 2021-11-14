@@ -82,11 +82,6 @@ public class PoolsMetadataController extends FormBasicController {
 		poolInfosTable.setEmptyTableMessageKey("sharing.pools.empty.table");
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public void setItem(QuestionItem item) {
 		List<QuestionItem2Pool> poolInfos = qpoolService.getPoolInfosByItem(item);
 		poolInfosModel.setObjects(poolInfos);

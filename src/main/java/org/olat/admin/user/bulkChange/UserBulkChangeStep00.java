@@ -126,11 +126,6 @@ class UserBulkChangeStep00 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			// nothing to dispose
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			// process changed attributes
 			Map<String, String> attributeChangeMap = userBulkChanges.getAttributeChangeMap();

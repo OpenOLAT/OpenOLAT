@@ -81,11 +81,6 @@ public class CPMetadataEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 	}
 	
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-	
 	/**
 	 * Gets the CPPage this Flexiform is editing
 	 * 

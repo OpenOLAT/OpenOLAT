@@ -117,6 +117,7 @@ public class LiveStreamVideoController extends BasicController {
 	@Override
 	protected void doDispose() {
 		mapperService.cleanUp(mappers);
+        super.doDispose();
 	}
 
 }

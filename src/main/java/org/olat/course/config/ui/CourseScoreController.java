@@ -399,9 +399,4 @@ public class CourseScoreController extends FormBasicController {
 		return true;
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

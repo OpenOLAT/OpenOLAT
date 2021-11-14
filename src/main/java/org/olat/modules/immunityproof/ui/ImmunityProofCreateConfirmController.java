@@ -85,9 +85,4 @@ public class ImmunityProofCreateConfirmController extends FormBasicController {
     protected void formCancelled(UserRequest ureq) {
         fireEvent(ureq, FormEvent.CANCELLED_EVENT);
     }
-
-    @Override
-    protected void doDispose() {
-
-    }
 }

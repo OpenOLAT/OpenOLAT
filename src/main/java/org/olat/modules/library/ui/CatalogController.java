@@ -140,11 +140,6 @@ public class CatalogController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-	// nothing so far
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == contentVC) {
 			String command = event.getCommand();

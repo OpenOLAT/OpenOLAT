@@ -234,11 +234,6 @@ public class GradersListController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(importGradersWizard == source) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -509,11 +504,6 @@ public class GradersListController extends FormBasicController {
 		
 		public GraderRow getGraderRow() {
 			return row;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

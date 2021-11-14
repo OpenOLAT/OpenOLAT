@@ -55,11 +55,6 @@ public class OriginFilterController extends FormBasicController {
 		originEl.select("all", true);
 		originEl.addActionListener(FormEvent.ONCHANGE);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

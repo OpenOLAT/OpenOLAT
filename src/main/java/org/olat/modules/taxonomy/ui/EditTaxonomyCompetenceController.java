@@ -82,11 +82,6 @@ public class EditTaxonomyCompetenceController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		competence.setExpiration(expirationEl.getDate());
 		competence = taxonomyService.updateTaxonomyLevelCompetence(competence);

@@ -112,11 +112,6 @@ public class PFPeekviewController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void addItems(VFSContainer container, List<VFSLeaf> allLeafs) {
 		// exclude files which are also excluded in FolderComponent

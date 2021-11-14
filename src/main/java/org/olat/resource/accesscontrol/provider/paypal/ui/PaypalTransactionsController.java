@@ -125,11 +125,6 @@ public class PaypalTransactionsController extends FormBasicController implements
 		tableEl.setFilters("", filters, false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "FPaypalTransaction");
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

@@ -470,9 +470,4 @@ public abstract class ReportAccessController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

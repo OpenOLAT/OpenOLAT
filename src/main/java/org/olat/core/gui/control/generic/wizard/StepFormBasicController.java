@@ -159,9 +159,6 @@ public abstract class StepFormBasicController extends FormBasicController implem
 			}
 		}
 	}
-	
-	@Override
-	abstract protected void doDispose();
 
 	@Override
 	abstract protected void formOK(UserRequest ureq);

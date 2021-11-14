@@ -200,11 +200,6 @@ public class MoveCurriculumElementController extends FormBasicController {
 			allowedSiblingTypes.addAll(siblingTypes);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

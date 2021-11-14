@@ -215,6 +215,7 @@ public class ChecklistDisplayController extends BasicController {
 			yesNoDialog.dispose();
 			yesNoDialog = null;
 		}
+        super.doDispose();
 	}
 
 	@Override
@@ -352,11 +353,6 @@ class ChecklistAuthorOptionsForm extends FormBasicController {
 		} else if(source == configCheckpointsBtn) {
 			fireEvent(ureq, CONFIG_CHECKPOINT);
 		}
-	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to do
 	}
 
 	@Override

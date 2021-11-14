@@ -373,6 +373,7 @@ public class AssignmentEditController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		deleteTempStorage();
+        super.doDispose();
 	}
 
 	

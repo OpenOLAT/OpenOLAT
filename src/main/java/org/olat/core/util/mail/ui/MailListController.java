@@ -418,11 +418,6 @@ public class MailListController extends BasicController implements Activateable2
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			backFromMail();

@@ -332,6 +332,7 @@ public class UserOverviewController extends BasicController implements Activatea
 		stackPanel.removeListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+        super.doDispose();
 	}
 
 	@Override

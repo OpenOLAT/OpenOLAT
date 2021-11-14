@@ -163,11 +163,6 @@ public class CustomDBController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//do nothing as default
 	}

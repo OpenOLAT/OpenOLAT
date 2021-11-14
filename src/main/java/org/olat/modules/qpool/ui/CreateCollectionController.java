@@ -63,11 +63,6 @@ public class CreateCollectionController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	@Override
-	protected void doDispose() {
-		// 
-	}
-	
 	public List<QuestionItemShort> getUserObject() {
 		return userObject;
 	}

@@ -124,10 +124,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		tableEl.setAndLoadPersistedPreferences(ureq, "grading-entries-list");
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
+
 	
 	private void loadModel(boolean reaload) {
 		List<ReferenceEntryWithStatistics> statistics = gradingService.getGradedEntriesWithStatistics(grader);
@@ -305,11 +302,6 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 			}
 			mainVC.put(name, link);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

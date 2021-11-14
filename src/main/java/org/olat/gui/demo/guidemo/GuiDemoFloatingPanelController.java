@@ -64,11 +64,6 @@ public class GuiDemoFloatingPanelController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == open) {
 			UserSearchController userSearch = new UserSearchController(ureq, getWindowControl(), true);

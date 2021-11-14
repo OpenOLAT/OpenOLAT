@@ -466,11 +466,6 @@ public abstract class MembersSelectorFormFragment extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing at the moment
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == chooseGroupCoachesLink) {
 			doChooseGroupCoaches(ureq);

@@ -116,6 +116,7 @@ public class LanguageChooserController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		langs = null;
+        super.doDispose();
 	}
 
 }

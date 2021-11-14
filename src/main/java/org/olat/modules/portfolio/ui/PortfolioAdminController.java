@@ -215,11 +215,6 @@ public class PortfolioAdminController extends FormBasicController  {
 				.map(key -> getTranslator().translate(key))
 				.toArray(String[]::new);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//auto-disposed
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

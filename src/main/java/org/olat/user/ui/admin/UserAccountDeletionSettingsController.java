@@ -116,9 +116,4 @@ public class UserAccountDeletionSettingsController extends FormBasicController {
 			userModule.setMailToRequestAccountDeletion("");
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

@@ -404,11 +404,6 @@ public class HelpAdminController extends FormBasicController {
 
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
 	private void cleanUp() {
 		if (cmc != null) {
 			cmc.deactivate();

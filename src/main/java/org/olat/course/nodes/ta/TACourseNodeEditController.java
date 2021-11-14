@@ -594,14 +594,6 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		myTabbedPane.setEnabled(solutionTabPosition, (bool != null) ? bool.booleanValue() : true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	@Override
-	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
-	}
-
 	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;

@@ -348,9 +348,4 @@ public class DENDatesForm extends FormBasicController {
 		beginDateChooser.setDate(date);
 	}
 
-	@Override
-	protected void doDispose() {
-		//nothing
-	}
-
 }

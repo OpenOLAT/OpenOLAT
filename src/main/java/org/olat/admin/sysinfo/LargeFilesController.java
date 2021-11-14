@@ -371,11 +371,6 @@ public class LargeFilesController extends FormBasicController implements Extende
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		updateModel();
 	}

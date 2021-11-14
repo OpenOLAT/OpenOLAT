@@ -124,11 +124,6 @@ public class OverviewBusinessGroupLifecycleController extends BasicController im
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries != null && !entries.isEmpty()) {
 			String name = entries.get(0).getOLATResourceable().getResourceableTypeName();

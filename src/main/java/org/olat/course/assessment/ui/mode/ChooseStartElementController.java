@@ -62,11 +62,6 @@ public class ChooseStartElementController extends FormBasicController {
 		this.elementKeys = elementKeys;
 		initForm(ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

@@ -264,11 +264,6 @@ public class EvaluationFormRulesController extends FormBasicController {
 		rule.setAction(ruleElement.getActionEditor().getAction());
 		return rule;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doAddRule(UserRequest ureq) {
 		ConditionHandler conditionHandler = ruleHandlerProvider.getConditionHandlers().stream()

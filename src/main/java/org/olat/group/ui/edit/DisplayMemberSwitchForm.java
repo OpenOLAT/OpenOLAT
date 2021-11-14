@@ -181,9 +181,4 @@ public class DisplayMemberSwitchForm extends FormBasicController {
 		downloadList.addActionListener(FormEvent.ONCLICK);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

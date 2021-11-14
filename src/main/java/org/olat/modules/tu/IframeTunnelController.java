@@ -118,6 +118,7 @@ public class IframeTunnelController extends BasicController {
 	@Override
 	protected void doDispose() {
 		IOUtils.closeQuietly(httpClientInstance);
+        super.doDispose();
 	}
 	
 }

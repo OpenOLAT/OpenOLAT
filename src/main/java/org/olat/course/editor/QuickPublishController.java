@@ -115,11 +115,6 @@ public class QuickPublishController extends BasicController {
 		autoLink.setElementCssClass("o_sel_course_quickpublish_auto");
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

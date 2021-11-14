@@ -283,9 +283,4 @@ public abstract class RepositoryEntryListController extends FormBasicController 
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

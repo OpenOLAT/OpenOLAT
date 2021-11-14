@@ -151,11 +151,6 @@ public class HotspotExtendedEditorController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		updateHotspots(ureq);
 		fireEvent(ureq, Event.DONE_EVENT);

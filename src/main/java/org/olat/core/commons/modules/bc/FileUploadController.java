@@ -758,11 +758,6 @@ public class FileUploadController extends FormBasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// 
-	}
-
 	/**
 	 * @return The uploaded file or NULL if nothing uploaded
 	 */

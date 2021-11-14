@@ -398,9 +398,4 @@ public class StatisticDisplayController extends BasicController {
 			ic.setDirty(true);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

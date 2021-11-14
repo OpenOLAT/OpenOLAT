@@ -188,9 +188,4 @@ public class IframePortletRunController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-    // editorCtr is registerd with listenTo and gets disposed in BasicController		
-	}
 }

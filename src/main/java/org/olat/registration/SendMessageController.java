@@ -67,11 +67,6 @@ public class SendMessageController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		try {
 			String msg = translate("sms.token", new String[]{ sentToken });

@@ -195,11 +195,6 @@ public class GroupSelectionController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(createEnable) {
 			// easy creation only possible if a default group context available

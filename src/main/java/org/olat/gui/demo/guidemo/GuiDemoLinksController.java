@@ -239,11 +239,6 @@ public class GuiDemoLinksController extends BasicController {
 		}
 		return null;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	/**
 	 * displays a demo-form with buttons (toggle)
@@ -271,11 +266,6 @@ public class GuiDemoLinksController extends BasicController {
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			// do nothing
-		}
-
-		@Override
-		protected void doDispose() {
 			// do nothing
 		}
 	}

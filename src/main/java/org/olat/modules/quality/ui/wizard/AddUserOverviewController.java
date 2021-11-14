@@ -97,9 +97,4 @@ public class AddUserOverviewController extends StepFormBasicController {
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

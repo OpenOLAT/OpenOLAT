@@ -97,11 +97,6 @@ public class NewAreaController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// Don't do anything.
 	}

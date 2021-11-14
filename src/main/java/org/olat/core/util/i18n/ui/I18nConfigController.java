@@ -258,14 +258,6 @@ class I18nConfigController extends FormBasicController {
 			removeAsListenerAndDispose(subCtr);
 		}
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-	// nothing to dispose, sub controller autodisposed by basic controller
-	}
 	
 	/**
 	 * Show new language sub form in an overlay window

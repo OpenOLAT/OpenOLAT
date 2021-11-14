@@ -390,6 +390,7 @@ public class ENRunController extends BasicController implements GenericEventList
 	@Override
 	protected void doDispose() {
 		deregisterGroupChangedEvents();
+        super.doDispose();
 	}
 
 	/*

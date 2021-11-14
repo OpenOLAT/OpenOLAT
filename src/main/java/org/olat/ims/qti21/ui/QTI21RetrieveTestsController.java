@@ -201,11 +201,6 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean withCompensations = withCompensationEl != null && withCompensationEl.isAtLeastSelected(1);
 		for(AssessmentTestSession session:sessions) {

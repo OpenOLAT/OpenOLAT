@@ -130,9 +130,4 @@ public class UserPropertyExceptionalObligationController extends FormBasicContro
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

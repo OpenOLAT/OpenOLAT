@@ -261,6 +261,7 @@ public class CorrectionIdentityAssessmentItemListController extends FormBasicCon
 		if(lockResult != null && lockResult.isSuccess()) {
 			doUnlock();
 		}
+        super.doDispose();
 	}
 	
 	private void doUnlock() {

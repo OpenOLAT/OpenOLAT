@@ -163,11 +163,6 @@ public class MoveOrganisationController extends FormBasicController {
 
 		return new HashSet<>(allTypes);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

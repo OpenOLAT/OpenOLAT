@@ -132,11 +132,6 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) {
 			if(taxonomyTree.getTreeModel().getRootNode().getChildCount() > 0) {

@@ -76,11 +76,6 @@ public class LoginAdminController extends FormBasicController {
 		fullTextSearchEl.select(keys[0], searchModule.isGuestEnabled());
 		fullTextSearchEl.addActionListener(FormEvent.ONCHANGE);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

@@ -128,11 +128,6 @@ public class EdubaseRunController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private void openViewer(UserRequest ureq, BookSection bookSection) {
 		removeAsListenerAndDispose(viewerController);
 		viewerController = new EdubaseViewerController(ureq, getWindowControl(), bookSection);

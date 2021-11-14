@@ -67,10 +67,5 @@ class PreviewForm extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }
 

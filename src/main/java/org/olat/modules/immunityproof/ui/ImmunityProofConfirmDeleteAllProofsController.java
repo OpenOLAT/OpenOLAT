@@ -93,9 +93,4 @@ public class ImmunityProofConfirmDeleteAllProofsController extends FormBasicCont
         fireEvent(ureq, ImmunityProofDeleteEvent.CANCELLED_EVENT);
     }
 
-    @Override
-    protected void doDispose() {
-
-    }
-
 }

@@ -158,11 +158,6 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void setReadOnly(boolean readOnly) {

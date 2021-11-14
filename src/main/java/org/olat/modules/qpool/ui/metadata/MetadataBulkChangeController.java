@@ -331,11 +331,6 @@ public class MetadataBulkChangeController extends FormBasicController {
 		}
 		licenseFreetextEl.setVisible(freetextSelected);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

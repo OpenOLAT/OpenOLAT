@@ -151,6 +151,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 	protected void doDispose() {
 		removeAsListenerAndDispose(cmc);
 		cmc = null;
+        super.doDispose();
 	}
 
 	@Override

@@ -219,6 +219,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 			lockEntry = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

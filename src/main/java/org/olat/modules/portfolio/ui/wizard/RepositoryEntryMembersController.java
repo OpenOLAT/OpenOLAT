@@ -123,11 +123,6 @@ public class RepositoryEntryMembersController extends StepFormBasicController {
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		List<Identity> members = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, role.name());

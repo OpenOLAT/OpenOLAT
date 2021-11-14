@@ -163,10 +163,4 @@ public class AdminDocEditorController extends BasicController implements Activat
 		}
 		mainVC.put("segmentCmp", documentsInUseCtrl.getInitialComponent());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

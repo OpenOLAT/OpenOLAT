@@ -80,11 +80,6 @@ public class CourseNodeDatesListController extends FormBasicController {
 		
 		initForm(ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-		// Nothing to do here
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

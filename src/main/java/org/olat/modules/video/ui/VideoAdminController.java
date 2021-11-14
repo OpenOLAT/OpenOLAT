@@ -123,9 +123,4 @@ public class VideoAdminController extends BasicController  {
 		adminTranscodingController.reloadTable();
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to dispose, controllers disposed by basic controller
-	}
-
 }

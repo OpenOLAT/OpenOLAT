@@ -50,10 +50,6 @@ public class LecturesToolController extends BasicController implements Activatea
 		
 		putInitialPanel(profileCtrl.getInitialComponent());
 	}
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

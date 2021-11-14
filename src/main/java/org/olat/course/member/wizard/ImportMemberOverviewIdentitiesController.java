@@ -161,9 +161,4 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

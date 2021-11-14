@@ -218,15 +218,8 @@ public class ImmunityProofTestScriptController extends FormBasicController {
 		certificateChecker.destroyProcess();
 	}
 
-
 	@Override
 	protected void formOK(UserRequest ureq) {
-
+		//
 	}
-
-	@Override
-	protected void doDispose() {
-
-	}
-
 }

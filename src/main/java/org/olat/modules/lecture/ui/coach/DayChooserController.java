@@ -85,11 +85,6 @@ public class DayChooserController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(previousDayButton == source) {
 			doDay(ureq, -1);

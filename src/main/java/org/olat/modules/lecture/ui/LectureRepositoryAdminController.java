@@ -114,11 +114,6 @@ public class LectureRepositoryAdminController extends BasicController implements
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void initTools() {
 		archiveLink = LinkFactory.createToolLink("archive.entry", translate("archive.entry"), this);
 		archiveLink.setIconLeftCSS("o_icon o_icon_archive_tool");

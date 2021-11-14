@@ -104,10 +104,4 @@ public class ReviewActionController extends BasicController {
 			fireEvent(ureq, new QItemReviewEvent(QItemReviewEvent.DO));
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

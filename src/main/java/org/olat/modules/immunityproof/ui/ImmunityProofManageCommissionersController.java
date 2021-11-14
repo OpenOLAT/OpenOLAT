@@ -201,11 +201,6 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
 	protected void formOK(UserRequest ureq) {
 		// Nothing to do here
 	}
-
-	@Override
-	protected void doDispose() {
-			
-	}
 	
 	private void loadData() {
 		if (immunityProofModule.getCommissionersGroupKey() != null) {

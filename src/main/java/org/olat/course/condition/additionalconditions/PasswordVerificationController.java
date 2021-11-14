@@ -52,11 +52,6 @@ public class PasswordVerificationController extends FormBasicController {
 		this.userCourseEnv = userCourseEnv;
 		initForm(ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

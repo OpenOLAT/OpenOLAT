@@ -197,11 +197,6 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void setReadOnly(boolean readOnly) {
 		multipleChoiceEl.setEnabled(!readOnly);
 		otherEl.setEnabled(!readOnly);

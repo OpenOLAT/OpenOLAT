@@ -274,11 +274,6 @@ public class CmdMoveCopy extends DefaultController implements FolderCommand {
 		fireEvent(ureq, FOLDERCOMMAND_FINISHED);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private static final class EditableFilter implements VFSItemFilter {
 		
 		@Override

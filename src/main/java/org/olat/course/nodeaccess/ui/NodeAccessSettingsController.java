@@ -309,6 +309,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		CourseFactory.closeCourseEditSession(courseEntry.getOlatResource().getResourceableId(), false);
+        super.doDispose();
 	}
 	
 	private final class MissingDurationPredicate implements Predicate<CourseNode> {

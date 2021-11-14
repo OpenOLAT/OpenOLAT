@@ -431,6 +431,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 			previewLayoutCtr.dispose();
 			previewLayoutCtr = null;
 		}
+        super.doDispose();
 	}
 	
 	@Override

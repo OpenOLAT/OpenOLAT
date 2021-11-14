@@ -137,6 +137,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 	
 	@Override

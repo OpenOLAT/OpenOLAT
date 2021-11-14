@@ -113,12 +113,7 @@ public class NotificationSubscriptionController extends BasicController {
 			subscriptionsTableCtr.modelChanged(true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		// controllers disposed by basic controller
-	}
-
+	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch

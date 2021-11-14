@@ -77,11 +77,6 @@ public class FlexiFilterTextController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(updateButton == source && validateFormLogic(ureq)) {
 			doUpdate(ureq);

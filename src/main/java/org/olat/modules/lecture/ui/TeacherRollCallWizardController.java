@@ -87,11 +87,6 @@ public class TeacherRollCallWizardController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -257,11 +252,6 @@ public class TeacherRollCallWizardController extends BasicController {
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			//
-		}
-
-		@Override
-		protected void doDispose() {
 			//
 		}
 	}

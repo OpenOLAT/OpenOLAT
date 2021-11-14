@@ -93,11 +93,6 @@ public class ExpandController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private void toggle(UserRequest ureq) {
 		expand = Boolean.valueOf(!expand.booleanValue());
 		

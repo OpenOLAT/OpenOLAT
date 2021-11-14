@@ -168,11 +168,10 @@ public class NoteListController extends BasicController implements GenericEventL
 		tableC.setTableDataModel(nLModel);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		sec.deregisterFor(this, OresHelper.lookupType(Note.class));
+        super.doDispose();
 	}
 
 	public void event(Event event) {

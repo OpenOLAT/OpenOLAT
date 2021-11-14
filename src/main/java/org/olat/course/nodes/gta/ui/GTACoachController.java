@@ -626,11 +626,6 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		confirmRevisionsCtrl = null;
 		cmc = null;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void cleanUpProcess() {
 		if(solutionsCtrl != null) {

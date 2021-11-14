@@ -220,9 +220,4 @@ public class BGMailTemplateController extends FormBasicController {
 		return defaultTemplate.isSelected(0);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 }

@@ -80,5 +80,6 @@ public class VideoMediaController extends BasicController {
 	@Override
 	protected void doDispose() {
 		videoCmp.dispose();
+        super.doDispose();
 	}
 }

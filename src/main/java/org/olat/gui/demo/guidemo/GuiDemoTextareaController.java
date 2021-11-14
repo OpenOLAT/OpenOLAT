@@ -71,9 +71,4 @@ public class GuiDemoTextareaController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

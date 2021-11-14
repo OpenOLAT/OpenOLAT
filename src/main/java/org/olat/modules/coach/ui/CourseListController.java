@@ -120,6 +120,7 @@ public class CourseListController extends FormBasicController implements Activat
 	@Override
 	protected void doDispose() {
 		stackPanel.removeListener(this);
+        super.doDispose();
 	}
 
 	@Override

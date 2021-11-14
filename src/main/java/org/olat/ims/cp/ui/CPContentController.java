@@ -245,12 +245,6 @@ public class CPContentController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-	// Nothing to implement since this controller listens to iframeCtr and
-	// dialogCtr.
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == editMetadataLink) {
 			displayMetadataEditor(ureq);

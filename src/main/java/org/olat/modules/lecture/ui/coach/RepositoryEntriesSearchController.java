@@ -83,11 +83,6 @@ public class RepositoryEntriesSearchController extends BasicController {
 		panel.pushController(translate("search.entries"), entriesSearchCtrl);
 		putInitialPanel(panel);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

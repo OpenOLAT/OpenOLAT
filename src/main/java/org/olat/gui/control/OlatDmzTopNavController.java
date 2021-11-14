@@ -144,6 +144,7 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 			languageChooserC.dispose();
 			languageChooserC = null;
 		}
+        super.doDispose();
 	}
 	
 	private void doAbout(UserRequest ureq) {

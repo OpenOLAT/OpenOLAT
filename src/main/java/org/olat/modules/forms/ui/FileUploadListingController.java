@@ -138,10 +138,6 @@ public class FileUploadListingController extends BasicController {
 		ureq.getDispatchResult().setResultingMediaResource(zipResource);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
 	public static final class FileUploadListingWrapper {
 		
 		private final String color;

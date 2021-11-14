@@ -78,11 +78,6 @@ public class PaypalAdminController extends BasicController implements Activateab
 		
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

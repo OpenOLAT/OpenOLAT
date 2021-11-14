@@ -110,6 +110,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		//deregister for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+        super.doDispose();
 	}
 
 	@Override

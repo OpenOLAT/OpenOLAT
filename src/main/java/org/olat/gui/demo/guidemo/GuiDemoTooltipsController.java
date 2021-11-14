@@ -87,11 +87,6 @@ public class GuiDemoTooltipsController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == link4) {
 			getWindowControl().setInfo("You clicked a link rendered in a tooltip!");

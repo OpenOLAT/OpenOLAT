@@ -192,11 +192,6 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

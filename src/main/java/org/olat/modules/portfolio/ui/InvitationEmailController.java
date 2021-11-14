@@ -85,11 +85,6 @@ public class InvitationEmailController extends FormBasicController {
 		uifactory.addFormSubmitButton("validate.email", buttonsCont);
 	}
 	
-	@Override
-	protected void doDispose() {
-		// 
-	}
-	
 	public Binder getBinder() {
 		return binder;
 	}

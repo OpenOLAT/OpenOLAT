@@ -115,11 +115,6 @@ public class OrganisationOverviewController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doOpenMetadadata(UserRequest ureq) {
 		if(metadataCtrl == null) {

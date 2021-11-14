@@ -223,11 +223,6 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	/**
 	 * Description: inner helper-class that bundles the language-key, a translator
 	 * and the two locales for that language (overlay and normal) <br>

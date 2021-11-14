@@ -131,11 +131,6 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		updateData(ureq);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void updateData(UserRequest ureq) {
 		StatisticsItem itemStats = initItemStatistics();
 		List<String> interactionIds = initInteractionControllers(ureq, itemStats);

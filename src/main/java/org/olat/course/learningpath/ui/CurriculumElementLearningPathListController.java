@@ -182,9 +182,4 @@ public class CurriculumElementLearningPathListController extends FormBasicContro
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

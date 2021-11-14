@@ -152,6 +152,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 
 	@Override

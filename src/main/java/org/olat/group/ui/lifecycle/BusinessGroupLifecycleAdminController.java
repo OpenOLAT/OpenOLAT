@@ -83,11 +83,4 @@ public class BusinessGroupLifecycleAdminController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	
-
 }

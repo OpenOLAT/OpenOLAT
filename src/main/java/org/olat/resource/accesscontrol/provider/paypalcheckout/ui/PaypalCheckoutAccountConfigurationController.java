@@ -81,11 +81,6 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		initForm(ureq);
 		updateUI();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

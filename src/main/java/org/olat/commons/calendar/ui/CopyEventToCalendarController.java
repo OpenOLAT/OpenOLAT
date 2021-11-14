@@ -87,11 +87,6 @@ public class CopyEventToCalendarController extends FormBasicController {
 			}
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		// nothing to do here
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

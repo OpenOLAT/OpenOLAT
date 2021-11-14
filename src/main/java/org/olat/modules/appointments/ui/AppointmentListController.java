@@ -817,11 +817,6 @@ public abstract class AppointmentListController extends FormBasicController impl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		List<Component> cmps = new ArrayList<>(1);
 		if (rowObject instanceof AppointmentRow) {

@@ -80,10 +80,4 @@ public class FeedNodeConfigsController extends BasicController {
 		}
 		super.event(ureq, source, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		
-	}
-
 }

@@ -110,9 +110,4 @@ public class StatusForm extends FormBasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

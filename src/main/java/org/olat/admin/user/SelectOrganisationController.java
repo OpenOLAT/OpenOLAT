@@ -67,11 +67,6 @@ public class SelectOrganisationController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public Organisation getSelectedOrganisation() {
 		Organisation organisation = null;

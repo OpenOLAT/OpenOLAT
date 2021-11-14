@@ -573,11 +573,6 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public Identity getMember() {
 		return member;
 	}

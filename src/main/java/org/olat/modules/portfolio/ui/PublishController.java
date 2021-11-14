@@ -183,11 +183,6 @@ public class PublishController extends BasicController implements TooledControll
 			stackPanel.addTool(accessDropdown, Align.right);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void reloadData() {
 		binderRow.getChildren().clear();

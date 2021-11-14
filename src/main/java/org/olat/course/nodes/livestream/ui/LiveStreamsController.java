@@ -90,6 +90,7 @@ public class LiveStreamsController extends BasicController {
 	@Override
 	protected void doDispose() {
 		refreshFuture.cancel(true);
+        super.doDispose();
 	}
 
 	private final class RefreshTask implements Runnable {

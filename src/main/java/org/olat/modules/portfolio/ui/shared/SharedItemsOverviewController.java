@@ -83,11 +83,6 @@ public class SharedItemsOverviewController extends BasicController implements Ac
 		
 		putInitialPanel(mainVC);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

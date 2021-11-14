@@ -1315,6 +1315,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		
 		doReleaseEditLock();
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_CLOSE, getClass());
+        super.doDispose();
 	}
 	
 	private void doReleaseEditLock() {

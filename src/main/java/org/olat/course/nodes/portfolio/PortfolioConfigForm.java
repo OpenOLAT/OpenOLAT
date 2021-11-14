@@ -150,12 +150,7 @@ public class PortfolioConfigForm extends FormBasicController {
 		}
 		return config;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
+
 	public void setDirtyFromOtherForm(boolean dirty){
 		this.isDirty = dirty;		
 	}

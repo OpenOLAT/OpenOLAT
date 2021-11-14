@@ -124,11 +124,6 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 			deleteButton = uifactory.addFormLink("details.delete", buttonsCont, Link.BUTTON);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

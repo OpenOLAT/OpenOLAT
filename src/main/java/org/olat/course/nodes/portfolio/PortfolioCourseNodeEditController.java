@@ -99,11 +99,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		configContent.contextPut("isOverwriting", new Boolean(false));
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public static boolean isModuleConfigValid(ModuleConfiguration moduleConfiguration) {
 		return (moduleConfiguration.get(PortfolioCourseNodeConfiguration.MAP_KEY) != null)
 				|| (moduleConfiguration.get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY) != null);

@@ -94,14 +94,6 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	public void doDispose() {
-		// nothing to dispose
-	}
-
 	@Override
 	protected void formOK(UserRequest ureq) {
 		checklist = checklistManager.loadChecklist(checklist);

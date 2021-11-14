@@ -122,11 +122,6 @@ public class FIBEditorController extends FormBasicController {
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

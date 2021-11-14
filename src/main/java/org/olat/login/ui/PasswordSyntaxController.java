@@ -391,9 +391,4 @@ public class PasswordSyntaxController extends FormBasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -135,25 +135,19 @@ public class SharedFolderDisplayController extends DefaultController implements 
 			((FolderRunController)controller).activatePath(ureq, path);
 		}
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass());
 		if (controller != null) {
 			controller.dispose();
 			controller = null;
 		}
+        super.doDispose();
 	}
 }

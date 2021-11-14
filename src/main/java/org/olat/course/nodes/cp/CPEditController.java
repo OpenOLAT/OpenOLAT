@@ -324,6 +324,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 			previewCtr.dispose();
 			previewCtr = null;
 		}
+        super.doDispose();
 	}
 
 	@Override
@@ -370,10 +371,5 @@ class CompMenuForm extends FormBasicController {
 		cpMenu.select("xx",compMenuConfig);
 
 		uifactory.addFormSubmitButton("submit", formLayout);
-	}
-
-	@Override
-	protected void doDispose() {
-		//
 	}
 }

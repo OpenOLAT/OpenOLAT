@@ -102,11 +102,6 @@ public class BusinessGroupEditAccessAndBookingController extends FormBasicContro
 	public boolean isPaymentMethodInUse() {
 		return configController.isPaymentMethodInUse();
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

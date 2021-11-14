@@ -86,11 +86,6 @@ public class ImportCalendarFileController extends FormBasicController {
 		uifactory.addFormSubmitButton("cal.import.form.submit", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected void doDispose() {
-		// do nothing here yet
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

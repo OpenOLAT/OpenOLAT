@@ -81,11 +81,6 @@ public class ImportController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public File getFile() {
 		return fileEl.getUploadFile();
 	}

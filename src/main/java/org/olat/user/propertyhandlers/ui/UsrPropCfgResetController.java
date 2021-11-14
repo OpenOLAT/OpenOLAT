@@ -106,9 +106,4 @@ public class UsrPropCfgResetController extends FormBasicController {
 			activateGenericDialog(ureq, "ERROR",sbError.toString(), buttonLabels, dBox);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

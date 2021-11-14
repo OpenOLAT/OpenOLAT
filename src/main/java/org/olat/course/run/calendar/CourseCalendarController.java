@@ -128,9 +128,4 @@ public class CourseCalendarController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

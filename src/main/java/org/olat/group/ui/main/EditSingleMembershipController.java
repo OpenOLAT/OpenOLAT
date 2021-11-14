@@ -97,10 +97,6 @@ public class EditSingleMembershipController extends BasicController {
 		return curriculumElement;
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

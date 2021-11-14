@@ -792,6 +792,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		//deregister for assessment mode
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+        super.doDispose();
 	}
 
 	private void setGuiStack(GuiStack guiStack) {

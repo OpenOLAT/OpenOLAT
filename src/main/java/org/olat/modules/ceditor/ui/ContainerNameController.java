@@ -57,9 +57,4 @@ public class ContainerNameController extends FormBasicController {
 		fireEvent(ureq, new ContainerNameEvent(nameEl.getValue()));
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

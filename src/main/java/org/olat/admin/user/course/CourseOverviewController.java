@@ -198,11 +198,6 @@ public class CourseOverviewController extends FormBasicController  {
 			addAsParticipant = uifactory.addFormLink("add.course.participant", formLayout, Link.BUTTON);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	private void updateModel() {
 		List<MemberView> memberships = memberQueries.getIdentityMemberships(editedIdentity);

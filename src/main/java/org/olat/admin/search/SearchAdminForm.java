@@ -145,9 +145,4 @@ public class SearchAdminForm extends FormBasicController {
 		submit = new FormSubmit("submit", "submit");
 		formLayout.add(submit);
 	}
-
-	@Override
-	protected void doDispose() {
-		// 
-	}
 }

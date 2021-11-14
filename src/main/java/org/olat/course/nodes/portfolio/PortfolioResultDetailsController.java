@@ -142,11 +142,6 @@ public class PortfolioResultDetailsController extends FormBasicController {
 			binderToElements.put(binder, mapElements);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

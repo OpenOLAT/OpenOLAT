@@ -79,11 +79,6 @@ public class FlexiFilterSingleSelectionController extends FormBasicController {
 		clearButton = uifactory.addFormLink("clear", formLayout, Link.LINK);
 		clearButton.setElementCssClass("o_filter_clear");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

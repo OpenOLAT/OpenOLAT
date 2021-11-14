@@ -84,10 +84,4 @@ public class PFEditController extends ActivateableTabbableDefaultController {
 		}
 		super.event(ureq, source, event);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

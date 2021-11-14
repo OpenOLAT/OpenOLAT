@@ -124,11 +124,6 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public void reloadModel() {
 		changeableIdentity = securityManager.loadIdentityByKey(changeableIdentity.getKey());
 		loadModel();

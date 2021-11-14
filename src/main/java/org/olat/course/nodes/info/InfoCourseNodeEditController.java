@@ -106,11 +106,6 @@ public class InfoCourseNodeEditController extends ActivateableTabbableDefaultCon
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}

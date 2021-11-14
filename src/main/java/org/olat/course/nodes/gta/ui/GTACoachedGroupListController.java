@@ -187,11 +187,6 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		tableModel.setObjects(rows);
 		tableEl.reset();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {

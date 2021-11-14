@@ -313,11 +313,6 @@ public class MediaCenterController extends FormBasicController
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
@@ -675,11 +670,6 @@ public class MediaCenterController extends FormBasicController
 				Link link = (Link)source;
 				fireEvent(ureq, new Event(link.getCommand()));
 			}
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 }

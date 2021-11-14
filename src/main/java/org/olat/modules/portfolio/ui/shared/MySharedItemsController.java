@@ -80,11 +80,6 @@ public class MySharedItemsController extends FormBasicController implements Acti
 		initForm(ureq);
 		loadModel(null);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

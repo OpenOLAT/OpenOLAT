@@ -138,9 +138,4 @@ public class WikiToolController extends BasicController implements Activateable2
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

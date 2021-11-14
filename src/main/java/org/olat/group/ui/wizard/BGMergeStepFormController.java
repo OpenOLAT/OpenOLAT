@@ -65,11 +65,6 @@ public class BGMergeStepFormController extends StepFormBasicController {
 		}
 		targetGroupEl = uifactory.addRadiosVertical("target.group", "merge.target.group", formLayout, theKeys, theValues);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

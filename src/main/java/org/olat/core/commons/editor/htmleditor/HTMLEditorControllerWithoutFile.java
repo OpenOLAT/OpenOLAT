@@ -75,17 +75,6 @@ public class HTMLEditorControllerWithoutFile extends FormBasicController {
 		vc.contextPut("lock", Boolean.FALSE);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		//nothing to dispose
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// form does not have button, form ok is triggered when user presses

@@ -223,17 +223,17 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		}	
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		super.doDispose();
 		// de-register for businessgroup type events
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, OresHelper.lookupType(BusinessGroup.class));
 		// POST: all firing event for the source just deregistered are finished
 		// (listeners lock in EventAgency)
+        super.doDispose();
 	}
 
+	@Override
 	public void event(Event event) {
 		if (event instanceof BusinessGroupModifiedEvent) {
 			BusinessGroupModifiedEvent mev = (BusinessGroupModifiedEvent) event;

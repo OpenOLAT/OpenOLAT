@@ -99,6 +99,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ASSESSMENT_MODE_ORES);
+        super.doDispose();
 	}
 	
 	private void reloadAssessmentModeMessage() {

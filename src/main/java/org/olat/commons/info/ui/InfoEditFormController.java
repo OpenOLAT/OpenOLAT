@@ -163,6 +163,7 @@ public class InfoEditFormController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		cleanUpAttachments();
+        super.doDispose();
 	}
 	
 	@Override

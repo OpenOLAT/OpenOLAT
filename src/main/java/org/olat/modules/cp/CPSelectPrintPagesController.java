@@ -99,11 +99,6 @@ public class CPSelectPrintPagesController extends FormBasicController {
 		visitor.visitAll();
 		return orderedIdentifiers;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

@@ -170,12 +170,6 @@ public class CatalogStep extends BasicStep {
 			flc.contextPut("hasContent", Boolean.valueOf(!catalogEntries.isEmpty()));
 			tableEl.reset();
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
-		
 	}
 
 }

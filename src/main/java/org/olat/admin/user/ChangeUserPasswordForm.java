@@ -128,9 +128,4 @@ public class ChangeUserPasswordForm extends FormBasicController {
 		pass2.setAutocomplete("new-password");
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

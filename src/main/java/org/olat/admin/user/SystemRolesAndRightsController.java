@@ -642,11 +642,6 @@ public class SystemRolesAndRightsController extends FormBasicController {
 		RolesByOrganisation updatedRoles = RolesByOrganisation.enhance(editedOrganisationRoles, rolesToAdd, rolesToRemove);
 		securityManager.updateRoles(getIdentity(), editedIdentity, updatedRoles);
 	}
-
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
 	
 	private class RolesElement {
 		

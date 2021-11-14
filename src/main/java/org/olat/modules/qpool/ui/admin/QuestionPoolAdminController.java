@@ -88,11 +88,6 @@ public class QuestionPoolAdminController extends BasicController implements Brea
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackPanel = stackPanel;
 		if(taxonomyCtrl != null) {

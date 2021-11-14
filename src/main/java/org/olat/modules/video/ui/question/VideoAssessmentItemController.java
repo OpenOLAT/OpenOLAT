@@ -145,11 +145,6 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -236,11 +231,6 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 				AssessmentSessionAuditLogger candidateAuditLogger) {
 			super(ureq, wControl, entry, subIdent, testEntry, assessmentEntry, authorMode, resolvedAssessmentItem, fUnzippedDirRoot, itemFile,
 					deliveryOptions, outcomesListener, candidateAuditLogger);
-		}
-		
-		@Override
-		public void doDispose() {
-			//
 		}
 		
 		public void setTimeLimit(long seconds) {

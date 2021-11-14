@@ -149,11 +149,6 @@ public class ViteroConfigurationController extends FormBasicController {
 			checkUserLink = uifactory.addFormLink("check.users", buttonLayout, Link.BUTTON);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

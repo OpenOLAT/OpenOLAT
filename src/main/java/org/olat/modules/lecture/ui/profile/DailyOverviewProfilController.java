@@ -72,11 +72,6 @@ public class DailyOverviewProfilController extends BasicController {
 		putInitialPanel(mainVC);
 		updateCurrentDate();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public Date getCurrentDate() {
 		return dayChooserCtrl.getDate();

@@ -88,11 +88,6 @@ public class UserBulkChangePasswordController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -212,6 +207,7 @@ public class UserBulkChangePasswordController extends BasicController {
 			if(userListTextArea!=null) {
 				userListTextArea.setValue("");
 			}
+	        super.doDispose();
 		}	
 		
 	}

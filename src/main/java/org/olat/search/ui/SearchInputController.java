@@ -257,11 +257,6 @@ public class SearchInputController extends FormBasicController implements Generi
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void formOK(UserRequest ureq) {
 		fireEvent(ureq, QuickSearchEvent.QUICKSEARCH_EVENT);
 		doSearch(ureq);

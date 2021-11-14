@@ -216,6 +216,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		stackPanel.removeListener(this);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
+        super.doDispose();
 	}
 
 	@Override

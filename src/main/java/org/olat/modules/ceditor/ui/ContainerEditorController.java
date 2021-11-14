@@ -113,6 +113,7 @@ public class ContainerEditorController extends FormBasicController implements Pa
 	protected void doDispose() {
 		removeAsListenerAndDispose(ruleLinkController);
 		ruleLinkController = null;
+        super.doDispose();
 	}
 
 	@Override

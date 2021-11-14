@@ -101,11 +101,6 @@ public class BlogToolController extends BasicController implements Activateable2
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}	
 	
 	private static class ToolSecurityCallback implements FeedSecurityCallback {
 		

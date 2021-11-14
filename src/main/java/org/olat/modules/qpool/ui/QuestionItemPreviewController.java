@@ -51,11 +51,6 @@ public class QuestionItemPreviewController extends BasicController {
 		previewPanel = new SimpleStackedPanel("preview.container");
 		putInitialPanel(previewPanel);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	public QuestionItem getItem() {
 		return item;

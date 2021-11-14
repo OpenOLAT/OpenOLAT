@@ -215,11 +215,6 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doOpenSelectionList(UserRequest ureq) {
 		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

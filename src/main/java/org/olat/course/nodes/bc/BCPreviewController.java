@@ -77,10 +77,4 @@ public class BCPreviewController extends DefaultController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

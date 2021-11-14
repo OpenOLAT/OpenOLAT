@@ -463,6 +463,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, meetingOres);
+        super.doDispose();
 	}
 
 	@Override
@@ -741,11 +742,6 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 
 			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

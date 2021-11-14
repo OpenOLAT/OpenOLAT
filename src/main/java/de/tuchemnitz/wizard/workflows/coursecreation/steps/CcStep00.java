@@ -157,11 +157,6 @@ public class CcStep00 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			// nothing to do here
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			finishWorkflowItem();
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

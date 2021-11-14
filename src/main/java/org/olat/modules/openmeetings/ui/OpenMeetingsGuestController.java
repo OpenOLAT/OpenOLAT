@@ -58,11 +58,6 @@ public class OpenMeetingsGuestController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public String getFirstName() {
 		return firstNameEl.getValue();
 	}

@@ -56,8 +56,4 @@ public class CalendarAggregatedURLController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

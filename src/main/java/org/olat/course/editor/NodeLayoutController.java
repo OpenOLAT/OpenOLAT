@@ -435,11 +435,6 @@ public class NodeLayoutController extends FormBasicController {
 		return displayOption;
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void updateTeaserImageUI() {
 		teaserImageNodeEl.setVisible(teaserImageTypeEl.isOneSelected() && teaserImageTypeEl.getSelectedKey().equals(TEASER_IMAGE_NODE));
 		

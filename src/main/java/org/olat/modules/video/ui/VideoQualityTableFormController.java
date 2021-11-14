@@ -237,11 +237,6 @@ public class VideoQualityTableFormController extends FormBasicController {
 		// nothing to do, events cached in formInnerEvent
 	}
 
-	@Override
-	protected void doDispose() {
-		// controller auto disposed
-	}
-	
 	private class VideoComparator implements Comparator<QualityTableRow> {
 
 		@Override

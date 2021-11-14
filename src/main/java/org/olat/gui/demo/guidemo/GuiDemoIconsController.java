@@ -41,9 +41,4 @@ public class GuiDemoIconsController extends BasicController {
 		// nothing to catch
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

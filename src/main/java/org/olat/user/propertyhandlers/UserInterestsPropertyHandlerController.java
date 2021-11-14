@@ -48,11 +48,6 @@ public class UserInterestsPropertyHandlerController extends FormBasicController 
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
-	@Override
 	public void setHandlerToConfigure(UserPropertyHandler handler) {
 		// empty, since we do not actually configure anything...
 	}

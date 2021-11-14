@@ -351,11 +351,6 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			tableEl.setSelectAllEnable(true);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void loadModel() {
 		GradingAssignmentSearchParameters searchParams = getSearchParameters();
@@ -1000,11 +995,6 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		
 		public GradingAssignmentRow getAssignmentRow() {
 			return row;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

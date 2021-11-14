@@ -59,9 +59,4 @@ public class ExecutionHeaderController extends BasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

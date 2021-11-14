@@ -226,10 +226,4 @@ public class MediaSiteConfigController extends FormBasicController {
 		return config;
 	}
 
-	@Override
-	protected void doDispose() {
-		// Nothing to do here
-		
-	}
-
 }

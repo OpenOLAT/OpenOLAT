@@ -210,10 +210,4 @@ public class CreateDocumentController extends FormBasicController {
 		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

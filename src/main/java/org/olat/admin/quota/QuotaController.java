@@ -175,9 +175,4 @@ public class QuotaController extends BasicController {
 		cmc.activate();
 		listenTo(cmc);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

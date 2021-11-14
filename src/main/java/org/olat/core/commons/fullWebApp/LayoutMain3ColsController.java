@@ -300,6 +300,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		mainCssClasses = null;
 		layoutMainVC = null;
 		thebaseChief = null;
+        super.doDispose();
 	}
 
 	@Override

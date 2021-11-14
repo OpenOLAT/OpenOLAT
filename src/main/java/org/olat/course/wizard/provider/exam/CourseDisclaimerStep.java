@@ -103,12 +103,5 @@ public class CourseDisclaimerStep extends BasicStep {
 		public void dispose() {
 			// prevent dispose because rich text
 		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
-		
 	}
-
 }

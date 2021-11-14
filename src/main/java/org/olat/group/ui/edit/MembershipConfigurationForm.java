@@ -100,9 +100,4 @@ public class MembershipConfigurationForm extends FormBasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

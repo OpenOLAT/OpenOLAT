@@ -97,11 +97,6 @@ public class DeletStep01 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			//
-		}
-
-		@Override
 		protected void formOK(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 		}

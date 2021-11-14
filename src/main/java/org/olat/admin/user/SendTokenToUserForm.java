@@ -108,11 +108,6 @@ public class SendTokenToUserForm extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//auto disposed by basic controller
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		String text = mailText.getValue();
 		sendToken(ureq, text);

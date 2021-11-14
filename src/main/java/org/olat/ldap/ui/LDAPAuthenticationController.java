@@ -314,9 +314,4 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			throw new OLATRuntimeException("Unknown login provider::" + myProvider, null);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

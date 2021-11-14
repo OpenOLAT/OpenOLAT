@@ -181,10 +181,4 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		//identity must be set before attributes OLAT-4811
 		simIdentEnv.setAttributes(psf.getAttributesMap());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

@@ -109,12 +109,6 @@ public class AboutController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// autodisposed
-	}
-	
-
 	/**
 	 * Factory method to create a link for the about menu. The reason for having
 	 * this here is so that we can simply keep the corresponding i18n keys in

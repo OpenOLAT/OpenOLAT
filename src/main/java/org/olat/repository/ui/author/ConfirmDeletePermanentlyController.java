@@ -175,11 +175,6 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 			referencesEl.select(key, deletable);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

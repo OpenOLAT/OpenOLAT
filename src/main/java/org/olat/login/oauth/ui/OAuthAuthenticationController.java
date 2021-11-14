@@ -87,11 +87,6 @@ public class OAuthAuthenticationController extends FormBasicController implement
 			button.setUserObject(spi);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

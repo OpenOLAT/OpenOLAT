@@ -182,11 +182,6 @@ public class SysinfoController extends FormBasicController {
 		uifactory.addStaticTextElement("sysinfo.basedir", "sysinfo.basedir", baseDirPath, serverCont);
 		uifactory.addStaticTextElement("sysinfo.olatdata", "sysinfo.olatdata", WebappHelper.getUserDataRoot(), serverCont);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

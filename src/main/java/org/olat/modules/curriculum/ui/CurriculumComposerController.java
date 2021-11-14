@@ -291,6 +291,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		if(!toolbarPanel.isToolbarEnabled()) {
 			toolbarPanel.setToolbarEnabled(true);
 		}
+        super.doDispose();
 	}
 	
 	private void loadModel() {
@@ -842,11 +843,6 @@ public class CurriculumComposerController extends FormBasicController implements
 			links.add(name);
 			link.setIconLeftCSS("o_icon " + iconCss);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

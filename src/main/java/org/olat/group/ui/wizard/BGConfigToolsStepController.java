@@ -126,11 +126,6 @@ public class BGConfigToolsStepController extends StepFormBasicController {
 			first = false;
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

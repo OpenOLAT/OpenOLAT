@@ -224,10 +224,5 @@ public class Card2BrainAdminController extends FormBasicController {
 			showError("admin.verifyKeySecret.invalid", verification.getMessage());
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 }

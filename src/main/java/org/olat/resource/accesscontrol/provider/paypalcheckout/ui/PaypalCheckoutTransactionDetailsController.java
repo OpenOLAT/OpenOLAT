@@ -89,12 +89,6 @@ public class PaypalCheckoutTransactionDetailsController extends FormBasicControl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

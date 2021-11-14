@@ -94,9 +94,4 @@ public class SecuritySettingsForm extends FormBasicController {
 		allowCoachEdit.select("xx", choachesAllowedToEdit);
 		allowCoachEdit.addActionListener(FormEvent.ONCLICK);
 	}
-
-	@Override
-	protected void doDispose() {
-		//	
-	}
 }

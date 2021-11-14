@@ -50,11 +50,6 @@ public class OpenMeetingsAdminRoomRawInfosController extends FormBasicController
 		uifactory.addStaticTextElement("room.size", Long.toString(room.getSize()), formLayout);
 
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

@@ -117,11 +117,6 @@ public class SelectOrCreateSectionStep extends BasicStep {
 		public void dispose() {
 			// Prevent dispose because of rich text element
 		}
-		
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {

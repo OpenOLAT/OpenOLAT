@@ -146,11 +146,4 @@ public class DidYouKnowPortletRunController extends DefaultController {
 			currentLookupPosition++;
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
-	protected void doDispose() {
-		// nothing to dispose
-	}
 }

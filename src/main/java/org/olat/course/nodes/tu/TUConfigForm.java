@@ -312,9 +312,4 @@ public class TUConfigForm extends FormBasicController {
 			tpass.setVisible(false);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

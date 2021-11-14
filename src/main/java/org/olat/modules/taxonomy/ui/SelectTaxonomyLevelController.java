@@ -79,11 +79,6 @@ public class SelectTaxonomyLevelController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", formLayout);
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void loadModel() {
 		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyTreesModel);
 	}

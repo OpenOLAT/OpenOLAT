@@ -114,9 +114,4 @@ public class CalendarToolsController extends BasicController {
 			fireEvent(ureq, new CalendarGUIEvent(CalendarGUIEvent.DELETE_IMPORTED_TO));
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

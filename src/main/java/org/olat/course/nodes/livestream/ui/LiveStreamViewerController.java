@@ -65,10 +65,4 @@ public class LiveStreamViewerController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

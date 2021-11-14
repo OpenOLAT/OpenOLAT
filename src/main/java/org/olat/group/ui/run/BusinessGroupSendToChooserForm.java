@@ -453,10 +453,5 @@ public class BusinessGroupSendToChooserForm extends FormBasicController {
 			);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 }

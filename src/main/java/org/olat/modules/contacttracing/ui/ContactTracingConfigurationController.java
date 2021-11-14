@@ -418,11 +418,6 @@ public class ContactTracingConfigurationController extends FormBasicController {
         loadData();
     }
 
-    @Override
-    protected void doDispose() {
-
-    }
-
     private void cleanUp() {
         if (cmc != null && cmc.isCloseable()) {
             cmc.deactivate();

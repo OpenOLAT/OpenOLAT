@@ -401,11 +401,6 @@ public class ReferencableEntriesSearchController extends BasicController {
 		}
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void doImportResource(UserRequest ureq) {
 		removeAsListenerAndDispose(importController);
 		importController = new ImportRepositoryEntryController(ureq, getWindowControl(), limitTypes);

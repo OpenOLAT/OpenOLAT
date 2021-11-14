@@ -138,11 +138,6 @@ public class FormRunCoachController extends BasicController implements Activatea
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private Activateable2 doOpenParticipants(UserRequest ureq) {
 		participantsCtrl.reload();

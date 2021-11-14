@@ -222,9 +222,4 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		}
 		return staticContent;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

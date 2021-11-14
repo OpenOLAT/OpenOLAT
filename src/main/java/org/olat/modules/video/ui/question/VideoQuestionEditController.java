@@ -137,11 +137,6 @@ public class VideoQuestionEditController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -254,12 +249,7 @@ public class VideoQuestionEditController extends BasicController {
 			tableModel.setObjects(rows);
 			tableEl.reset(reset, reset, true);
 		}
-
-		@Override
-		protected void doDispose() {
-			//
-		}
-
+		
 		@Override
 		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
 			//

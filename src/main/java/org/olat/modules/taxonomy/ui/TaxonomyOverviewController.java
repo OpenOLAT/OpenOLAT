@@ -97,11 +97,6 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 			taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 		}	
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

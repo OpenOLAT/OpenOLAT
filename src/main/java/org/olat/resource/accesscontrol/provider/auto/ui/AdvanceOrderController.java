@@ -141,11 +141,6 @@ public class AdvanceOrderController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private void doConfirmDelete(UserRequest ureq, AdvanceOrderRow row) {
 		AdvanceOrder advanceOrder = row.getAdvanceOrder();
 		String title = translate("confirm.delete.advanceOrder.title");

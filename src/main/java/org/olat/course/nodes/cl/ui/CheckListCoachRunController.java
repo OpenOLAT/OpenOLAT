@@ -129,11 +129,6 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void doOpenParticipants(UserRequest ureq) {
 		removeAsListenerAndDispose(participantsCtrl);
 		

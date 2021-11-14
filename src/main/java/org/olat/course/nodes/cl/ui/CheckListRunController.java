@@ -281,11 +281,6 @@ public class CheckListRunController extends FormBasicController implements Contr
 		return (closeAfterDueDate != null && closeAfterDueDate.booleanValue()
 				&& dueDate != null && dueDate.before(new Date()));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {

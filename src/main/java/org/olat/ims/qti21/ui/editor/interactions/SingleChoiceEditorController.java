@@ -238,11 +238,6 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void sync(UserRequest ureq, AssessmentItemBuilder builder) {
 		validateScoreOfCorrectAnswer();
 	}

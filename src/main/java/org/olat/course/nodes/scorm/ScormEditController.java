@@ -376,11 +376,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
@@ -643,10 +638,5 @@ class VarForm extends FormBasicController {
 	
 	public boolean getAttemptsDependOnScore() {
 		return scoreAttemptsEl.isSelected(0);
-	}
-
-	@Override
-	protected void doDispose() {
-		//
 	}
 }

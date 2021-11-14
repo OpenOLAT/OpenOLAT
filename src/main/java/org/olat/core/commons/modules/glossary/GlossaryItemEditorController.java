@@ -85,11 +85,6 @@ public class GlossaryItemEditorController extends BasicController {
 		putInitialPanel(editorVC);
 	}
 
-	@Override
-	protected void doDispose() {
-		//nothing to dispose, everything gets cleared because of earlier registering with "listenTo"		
-	}
-
 	private void enableDisableTermDependentTabs(boolean enDis){
 		glossEditTabP.setEnabled(1, enDis);
 		glossEditTabP.setDirty(true);

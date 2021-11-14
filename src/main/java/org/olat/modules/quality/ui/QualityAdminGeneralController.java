@@ -101,10 +101,5 @@ public class QualityAdminGeneralController extends FormBasicController {
 		qualityModule.setFromEmail(fromEmailEl.getValue());
 		qualityModule.setFromName(fromNameEl.getValue());
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 }

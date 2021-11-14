@@ -76,11 +76,6 @@ public class GuiDemoFlexiFormCustomlayout extends FormBasicController{
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		// this method is called if the form has validated
 		// which means that all form items are filled without error

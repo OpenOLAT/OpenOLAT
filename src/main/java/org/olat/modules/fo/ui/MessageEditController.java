@@ -373,6 +373,7 @@ public class MessageEditController extends FormBasicController {
 			confirmDeleteAttachmentCtrl.dispose();
 			confirmDeleteAttachmentCtrl = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

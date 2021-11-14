@@ -70,11 +70,6 @@ public class VideoTrackEditController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.video.trackConfig");
 		setFormContextHelp("Learning resource: Video#_video_subtitle");

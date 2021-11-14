@@ -354,10 +354,6 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			} else if("reduced".equals(newWindow)) {
 				ControllerCreator alternativeWindowControllerCreator = (lureq, lwControl) -> {
 					Controller dummyCtr = new BasicController(lureq, lwControl) {
-						@Override
-						protected void doDispose() {
-							// nothing to dispose
-						}
 						
 						@Override
 						protected void event(UserRequest llureq, Component source, Event event) {

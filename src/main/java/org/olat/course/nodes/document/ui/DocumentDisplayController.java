@@ -352,11 +352,6 @@ public class DocumentDisplayController extends BasicController {
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	public static final class DocumentWrapper {
 		
 		private String displayName;

@@ -723,11 +723,6 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
     }
 
     @Override
-    protected void doDispose() {
-        //
-    }
-
-    @Override
     protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
         //do not update the
     }

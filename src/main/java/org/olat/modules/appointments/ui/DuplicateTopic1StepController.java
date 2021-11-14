@@ -67,11 +67,6 @@ public class DuplicateTopic1StepController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		editCtrl.updatedAttributes(context.getTopic());
 		context.setOrganizers(editCtrl.getOrganizers());

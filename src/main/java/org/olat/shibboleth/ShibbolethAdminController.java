@@ -87,11 +87,6 @@ public class ShibbolethAdminController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(attributeEl == source) {
 			boolean enabled = attributeEl.isAtLeastSelected(1);

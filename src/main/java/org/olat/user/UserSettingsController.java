@@ -114,11 +114,6 @@ public class UserSettingsController extends BasicController implements Activatea
 		doOpenPreferences(ureq);
 		putInitialPanel(mainVC);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

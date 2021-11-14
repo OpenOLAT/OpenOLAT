@@ -229,11 +229,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	}
 
 	@Override
-	protected void doDispose() {
-		//auto-disposed
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		 if (source == anoLink) {
 			if (loginModule.isGuestLoginEnabled()) {				

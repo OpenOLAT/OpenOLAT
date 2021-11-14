@@ -340,11 +340,6 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(toolsCalloutCtrl == source) {
 			cleanUp();
@@ -532,11 +527,6 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 					doExportAttendanceList(ureq, block);
 				}
 			}
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 	}
 }

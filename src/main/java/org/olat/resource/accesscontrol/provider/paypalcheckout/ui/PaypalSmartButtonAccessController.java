@@ -103,11 +103,6 @@ public class PaypalSmartButtonAccessController extends FormBasicController imple
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

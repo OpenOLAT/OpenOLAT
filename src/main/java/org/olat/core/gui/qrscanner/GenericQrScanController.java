@@ -62,6 +62,7 @@ public class GenericQrScanController extends BasicController {
 	@Override
 	protected void doDispose() {
 		stopScanner();
+        super.doDispose();
 	}
 
 	public void startScanner() {

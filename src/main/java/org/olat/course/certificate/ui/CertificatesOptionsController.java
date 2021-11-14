@@ -130,11 +130,6 @@ public class CertificatesOptionsController extends FormBasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("options.certificate.title");
 		formLayout.setElementCssClass("o_sel_certificate_settings");

@@ -138,9 +138,4 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 		// nothing
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing
-	}
-
 }

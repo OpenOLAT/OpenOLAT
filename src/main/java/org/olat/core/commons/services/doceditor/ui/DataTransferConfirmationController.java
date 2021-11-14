@@ -71,10 +71,4 @@ public class DataTransferConfirmationController extends BasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		
-	}
-
 }

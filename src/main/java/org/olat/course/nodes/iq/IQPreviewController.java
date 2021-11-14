@@ -93,9 +93,4 @@ public class IQPreviewController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-	// nothing to dispose
-	}
 }

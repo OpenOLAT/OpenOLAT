@@ -196,11 +196,6 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		cutValueEl.setVisible(cutValueVisible);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	public String getTitle() {
 		return titleEl.getValue();
 	}

@@ -118,6 +118,7 @@ public class MetadatasController extends BasicController {
 		technicalEditCtrl = null;
 		poolsCtrl = null;
 		sharesController = null;
+        super.doDispose();
 	}
 	
 	public QuestionItem getItem() {

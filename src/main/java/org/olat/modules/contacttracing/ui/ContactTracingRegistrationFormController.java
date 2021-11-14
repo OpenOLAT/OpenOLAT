@@ -277,6 +277,11 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         uifactory.addFormCancelButton("contact.tracing.registration.cancel", buttonLayout, ureq, getWindowControl());
         uifactory.addFormSubmitButton("contact.tracing.registration.submit", buttonLayout);
     }
+    
+    @Override
+    protected void doDispose() {
+    	super.doDispose();
+    }
 
     private void loadData() {
         Date startDate = new Date();
@@ -528,10 +533,5 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         }
 
         return null;
-    }
-
-    @Override
-    protected void doDispose() {
-
     }
 }

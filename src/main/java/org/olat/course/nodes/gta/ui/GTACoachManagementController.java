@@ -68,12 +68,6 @@ public class GTACoachManagementController extends BasicController implements Act
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-
-	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(assignmentEditCtrl != null) {
 			assignmentEditCtrl.activate(ureq, entries, state);

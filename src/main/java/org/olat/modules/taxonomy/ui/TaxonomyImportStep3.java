@@ -69,11 +69,6 @@ public class TaxonomyImportStep3 extends BasicStep {
 			
 			initForm(ureq);
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
 		
 		@Override
 		protected void formOK(UserRequest ureq) {

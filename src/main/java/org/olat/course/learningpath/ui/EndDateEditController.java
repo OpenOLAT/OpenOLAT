@@ -151,9 +151,4 @@ public class EndDateEditController extends FormBasicController implements Contro
 		fireEvent(ureq, FormEvent.CANCELLED_EVENT);
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

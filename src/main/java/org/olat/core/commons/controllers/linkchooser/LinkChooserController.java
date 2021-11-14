@@ -120,9 +120,4 @@ public class LinkChooserController extends BasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {		
 		fireEvent(ureq, event);
 	}
-	
-	@Override
-	protected void doDispose() {
-		// controllers disposed by basic controller
-	}
 }

@@ -103,11 +103,6 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 			((FormLayoutContainer)formLayout).contextPut("noProvider", Boolean.TRUE);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

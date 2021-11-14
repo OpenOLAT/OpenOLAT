@@ -132,11 +132,6 @@ public class DispensationsController extends BasicController {
 		putInitialPanel(mainVC);
 		noticesListCtlr.loadModel(searchParams);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

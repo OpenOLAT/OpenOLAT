@@ -157,11 +157,6 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public int getStatus() {
 		return status;
 	}

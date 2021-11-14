@@ -192,11 +192,6 @@ public class IQLayoutConfigurationController extends BasicController {
 		if (repoSoftkey == null) return null;
 		return repositoryManager.lookupRepositoryEntryBySoftkey(repoSoftkey, false);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public class SecuritySettingsForm extends FormBasicController {
 
@@ -242,11 +237,6 @@ public class IQLayoutConfigurationController extends BasicController {
 				allowRelativeLinksEl.select("xx", true);
 			}
 			allowRelativeLinksEl.addActionListener(FormEvent.ONCLICK);
-		}
-
-		@Override
-		protected void doDispose() {
-			//	
 		}
 	}
 }

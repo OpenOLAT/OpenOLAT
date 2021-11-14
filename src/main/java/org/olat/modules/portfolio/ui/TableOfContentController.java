@@ -552,6 +552,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		}
 		removeAsListenerAndDispose(summaryCtrl);
 		summaryCtrl = null;
+        super.doDispose();
 	}
 	
 	@Override

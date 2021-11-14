@@ -215,9 +215,4 @@ public class ContactTracingRegistrationInternalWrapperController extends BasicCo
 		mainVC.put("confirmation", confirmationController.getInitialComponent());
 		mainVC.setDirty(true);
 	}
-
-	@Override
-	protected void doDispose() {
-		// Nothing to dispose
-	}
 }

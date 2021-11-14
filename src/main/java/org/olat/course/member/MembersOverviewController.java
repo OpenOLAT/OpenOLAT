@@ -199,11 +199,6 @@ public class MembersOverviewController extends BasicController implements Activa
 		}
 		return false;
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

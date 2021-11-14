@@ -140,6 +140,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 	
 	private void loadModel(boolean reset) {
@@ -371,11 +372,6 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 			links.add(name);
 			link.setIconLeftCSS("o_icon " + iconCss);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

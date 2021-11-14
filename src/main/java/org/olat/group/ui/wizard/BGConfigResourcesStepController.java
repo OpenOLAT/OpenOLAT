@@ -94,11 +94,6 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 		((FormLayoutContainer)formLayout).put("resources", resourcesCtr.getInitialComponent());
 		((FormLayoutContainer)formLayout).contextPut("repoTableModel", repoTableModel);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {

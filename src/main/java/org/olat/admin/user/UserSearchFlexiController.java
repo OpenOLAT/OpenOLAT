@@ -472,11 +472,6 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// Child controllers auto-disposed by basic controller
-	}
-
 	/**
 	 * Can be overwritten by subclassen to search other users or filter users.
 	 * @param login

@@ -161,11 +161,6 @@ public class ChangeEMailController extends DefaultController {
 	}
 
 	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// nothing to do
 	}

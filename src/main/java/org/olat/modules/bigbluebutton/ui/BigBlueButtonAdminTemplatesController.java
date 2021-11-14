@@ -103,11 +103,6 @@ public class BigBlueButtonAdminTemplatesController extends FormBasicController {
 		tableEl.setEmptyTableMessageKey("no.template.configured");
 		tableEl.setAndLoadPersistedPreferences(ureq, "bigbluebutton-connect-edit-templates-list");
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void updateModel() {
 		List<BigBlueButtonMeetingTemplate> templates = bigBlueButtonManager.getTemplates();

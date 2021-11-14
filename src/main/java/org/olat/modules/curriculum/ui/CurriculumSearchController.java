@@ -101,11 +101,6 @@ public class CurriculumSearchController extends FormBasicController implements E
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
 	}

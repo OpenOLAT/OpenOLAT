@@ -146,11 +146,6 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-	
-	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}

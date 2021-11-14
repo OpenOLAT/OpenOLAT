@@ -252,11 +252,6 @@ public class BinderListController extends FormBasicController
 			stackPanel.addTool(newBinderLink, Align.right);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	protected void loadModel(UserRequest ureq, boolean reset) {
 		List<BinderStatistics> binderRows = portfolioService.searchOwnedBinders(getIdentity());
@@ -915,11 +910,6 @@ public class BinderListController extends FormBasicController
 			mainVC.put(name, link);
 			links.add(name);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

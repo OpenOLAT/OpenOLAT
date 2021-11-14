@@ -224,11 +224,6 @@ public class SingleParticipantCallController extends FormBasicController {
 		
 		return rowsBuilder.build();
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public AbsenceCategory getAbsenceCategory() {
 		if(!absenceCategoriesEl.isVisible() || !absenceCategoriesEl.isOneSelected()) return null;

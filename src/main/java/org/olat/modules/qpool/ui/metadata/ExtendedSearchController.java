@@ -201,11 +201,6 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		ureq.getUserSession().getGuiPreferences().putAndSave(ExtendedFlexiTableSearchController.class, prefsKey, prefs);
 		fireEvent(ureq, new QPoolSearchEvent(searchParams));
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public class ConditionalQuery {
 		

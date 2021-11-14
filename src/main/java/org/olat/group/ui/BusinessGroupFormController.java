@@ -523,6 +523,7 @@ public class BusinessGroupFormController extends FormBasicController {
 		if(embbeded) {
 			mainForm.removeSubFormListener(this);
 		}
+        super.doDispose();
 	}
 
 	@Override

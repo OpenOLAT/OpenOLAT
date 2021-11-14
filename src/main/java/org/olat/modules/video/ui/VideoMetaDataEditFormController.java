@@ -96,9 +96,4 @@ public class VideoMetaDataEditFormController extends FormBasicController {
 		// nothing to do
 	}
 
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
-
 }

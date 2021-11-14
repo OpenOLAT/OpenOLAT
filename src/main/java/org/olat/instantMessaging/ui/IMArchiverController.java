@@ -95,9 +95,4 @@ public class IMArchiverController extends BasicController {
 	private void doDelete() {
 		imService.deleteMessages(chatResource);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

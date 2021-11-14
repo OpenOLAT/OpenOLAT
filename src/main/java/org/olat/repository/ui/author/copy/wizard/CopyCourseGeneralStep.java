@@ -118,11 +118,6 @@ public class CopyCourseGeneralStep extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
-		
-		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
 			boolean allOk = super.validateFormLogic(ureq);
 			

@@ -83,11 +83,6 @@ public class RatingMetadataController extends FormBasicController {
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 	private static class RatingInfosDataModel extends  DefaultFlexiTableDataModel<UserRating> {
 		
 		public RatingInfosDataModel(FlexiTableColumnModel columnModel) {

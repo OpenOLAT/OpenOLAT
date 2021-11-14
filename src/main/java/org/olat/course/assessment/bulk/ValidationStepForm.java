@@ -109,11 +109,6 @@ public class ValidationStepForm extends StepFormBasicController {
 		
 		flc.contextPut("settings", settings);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private void doValidate() {
 		BulkAssessmentDatas datas = (BulkAssessmentDatas)getFromRunContext("datas");

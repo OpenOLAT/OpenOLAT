@@ -94,11 +94,6 @@ public class TokenAccessController extends FormBasicController implements FormCo
 			
 		uifactory.addFormSubmitButton("access.button", formLayout);
 	}
-		
-	@Override
-	protected void doDispose() {
-			//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

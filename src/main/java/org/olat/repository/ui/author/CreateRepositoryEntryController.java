@@ -210,11 +210,6 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	protected void initAdditionalFormElements(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// 
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

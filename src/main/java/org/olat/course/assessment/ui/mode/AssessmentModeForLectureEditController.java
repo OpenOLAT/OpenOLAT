@@ -114,11 +114,6 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		lectureBlock = this.assessmentMode.getLectureBlock();
 		initForm(ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

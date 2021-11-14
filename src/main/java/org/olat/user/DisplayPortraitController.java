@@ -171,6 +171,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 	@Override
 	protected void doDispose() {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, listenerOres);
+        super.doDispose();
 	}
 	
 	private void loadPortrait() {

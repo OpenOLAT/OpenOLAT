@@ -142,6 +142,7 @@ public class CalEditController extends ActivateableTabbableDefaultController imp
 			calCtr.dispose();
 			calCtr = null;
 		}
+        super.doDispose();
 	}
 
 	@Override

@@ -83,10 +83,5 @@ public class BandWidthAdminController extends BasicController {
 		mainVc.contextPut("cur", cps==-1? "unlimited" : cps+" bits/s");
 		cpsPauser.setCPS(cps);
 	}
-	
-	@Override
-	protected void doDispose() {
-		// nothing to do
-	}
 
 }

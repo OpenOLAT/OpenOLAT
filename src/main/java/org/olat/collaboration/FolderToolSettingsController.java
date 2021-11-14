@@ -90,11 +90,6 @@ public class FolderToolSettingsController extends FormBasicController {
 			submit.setVisible(enabled);
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

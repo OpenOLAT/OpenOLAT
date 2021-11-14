@@ -84,11 +84,6 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 		uifactory.addFormSubmitButton("sms.send", buttonsCont);
 		dontActivateButton = uifactory.addFormLink("dont.activate", buttonsCont, Link.BUTTON);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public boolean isUserInteractionRequired(UserRequest ureq) {

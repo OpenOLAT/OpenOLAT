@@ -109,11 +109,6 @@ public class ConversionConfirmationController extends FormBasicController {
 		updateUI();
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
-	}
-	
 	private void updateInfos() {
 		if(formatEl.isOneSelected()) {
 			String format = formatEl.getSelectedKey();

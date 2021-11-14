@@ -85,9 +85,4 @@ public class QualityMainController extends MainLayoutBasicController implements 
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

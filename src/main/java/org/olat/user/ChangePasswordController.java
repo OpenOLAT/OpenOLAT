@@ -182,8 +182,4 @@ public class ChangePasswordController extends BasicController implements Support
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}	
 }

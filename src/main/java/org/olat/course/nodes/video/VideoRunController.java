@@ -86,11 +86,6 @@ public class VideoRunController extends BasicController {
 	}
 	
 	@Override
-	protected void doDispose() {
-		// controllers auto-disposed
-	}
-	
-	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// Update last position if user leaves controller somehow uncontrolled
 		if (this.currentProgress > 0d && this.currentProgress < 1d) {

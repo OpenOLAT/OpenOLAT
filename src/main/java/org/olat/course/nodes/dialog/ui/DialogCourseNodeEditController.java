@@ -165,11 +165,6 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		if (accessContent != null) {
 			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessContent);

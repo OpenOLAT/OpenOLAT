@@ -169,11 +169,6 @@ public class LTIRunSegmentController extends BasicController implements Activate
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void doOpenContent(UserRequest ureq) {
 		mainVC.contextRemove("cssClass");

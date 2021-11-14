@@ -127,9 +127,4 @@ public class AddIdentities_2_ConfirmController extends StepFormBasicController {
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 }

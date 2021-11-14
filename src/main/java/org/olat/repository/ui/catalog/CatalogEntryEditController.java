@@ -191,11 +191,6 @@ public class CatalogEntryEditController extends FormBasicController {
 	public CatalogEntry getEditedCatalogEntry() {
 		return catalogEntry;
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public void setElementCssClass(String cssClass) {
 		flc.setElementCssClass(cssClass);

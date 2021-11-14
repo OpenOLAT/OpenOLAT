@@ -90,11 +90,6 @@ public class PoolsAdminController extends FormBasicController {
 
 		initForm(ureq);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

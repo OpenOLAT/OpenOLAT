@@ -119,11 +119,6 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 		}
 		uifactory.addFormSubmitButton("change.status", changeKey, formLayout);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	protected boolean isSendMail() {
 		return notificationEl.isVisible() && notificationEl.isAtLeastSelected(1);

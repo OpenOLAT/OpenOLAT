@@ -218,9 +218,4 @@ public class ExecutorParticipationsListController extends FormBasicController im
 		//
 	}
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

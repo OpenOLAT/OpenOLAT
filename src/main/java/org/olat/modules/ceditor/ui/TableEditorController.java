@@ -179,11 +179,6 @@ public class TableEditorController extends FormBasicController implements PageEl
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(rowHeaderEl == source || columnHeaderEl == source || rowsEl == source || columnsEl == source) {
 			doSaveSettings(ureq, true);

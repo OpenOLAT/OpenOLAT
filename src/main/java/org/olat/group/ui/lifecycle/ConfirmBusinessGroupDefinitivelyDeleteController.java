@@ -101,11 +101,6 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean doSendMail = notificationEl.isVisible() && notificationEl.isAtLeastSelected(1);

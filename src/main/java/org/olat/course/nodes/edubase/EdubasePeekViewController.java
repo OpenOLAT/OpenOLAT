@@ -92,10 +92,4 @@ public class EdubasePeekViewController extends BasicController {
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
-
 }

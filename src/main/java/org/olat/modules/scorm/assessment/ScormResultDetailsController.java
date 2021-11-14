@@ -123,11 +123,6 @@ public class ScormResultDetailsController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == resetButton) {
 			String title = translate("reset.title");

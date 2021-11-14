@@ -179,11 +179,6 @@ public class CheckboxEditController extends FormBasicController {
 		deleteLink = uifactory.addFormLink("delete", buttonsCont, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	public boolean isNewCheckbox() {
 		return newCheckbox;

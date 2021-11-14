@@ -141,11 +141,6 @@ public class NewCatalogItemController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//autoreleased by basicController
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}

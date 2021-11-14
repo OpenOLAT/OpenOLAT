@@ -150,11 +150,6 @@ public class InfoConfigController extends FormBasicController {
 		
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

@@ -140,6 +140,7 @@ public class LayoutMain3ColsBackController extends MainLayoutBasicController imp
 	protected void doDispose() {
 		// child controller autodisposed
 		thebaseChief = null;
+        super.doDispose();
 	}
 	
 	public boolean isDeactivateOnBack() {

@@ -104,11 +104,6 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 		model.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {

@@ -109,11 +109,6 @@ public class TaxonomyImportStep1 extends BasicStep {
 		}
 
 		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
-
-		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormDescription("import.taxonomy.step.1.desc");
 			

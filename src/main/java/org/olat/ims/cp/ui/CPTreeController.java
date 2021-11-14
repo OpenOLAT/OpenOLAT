@@ -482,5 +482,6 @@ public class CPTreeController extends BasicController {
 	@Override
 	protected void doDispose() {
 		contentVC = null;
+        super.doDispose();
 	}
 }

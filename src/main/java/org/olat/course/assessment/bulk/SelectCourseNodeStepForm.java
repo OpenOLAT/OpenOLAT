@@ -86,11 +86,6 @@ public class SelectCourseNodeStepForm extends StepFormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "nodeList", tableModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

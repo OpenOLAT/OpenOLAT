@@ -133,11 +133,6 @@ public class MultiSearchesController extends BasicController implements Activate
 			}
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	private ParticipantsSearchController doOpenParticipantsSearch(UserRequest ureq) {
 		if(participantsSearchCtrl == null) {

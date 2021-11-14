@@ -161,12 +161,6 @@ public class CheckListBoxListEditController extends FormBasicController {
 		}
 		model.setObjects(boxList);
 		boxTable.reset();
-		
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override

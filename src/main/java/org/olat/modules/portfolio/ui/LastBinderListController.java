@@ -108,11 +108,6 @@ public class LastBinderListController extends FormBasicController implements Fle
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		BinderRow elRow = model.getObject(row);
 		List<Component> components = new ArrayList<>(2);

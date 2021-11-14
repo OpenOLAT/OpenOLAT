@@ -111,11 +111,6 @@ public class TypeTaxonomyLevelController extends FormBasicController {
 			uifactory.addFormSubmitButton("assign.type", formLayout);
 		}
 	}
-
-	@Override
-	protected void doDispose() {
-		//
-	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {

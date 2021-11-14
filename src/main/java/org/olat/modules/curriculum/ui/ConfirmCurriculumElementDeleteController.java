@@ -64,11 +64,6 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

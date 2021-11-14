@@ -283,11 +283,6 @@ public class UserImportController extends BasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-	// child controllers disposed by basic controller
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == startLink) {
 			doOpenImportWizard(ureq);

@@ -75,11 +75,6 @@ public class ConfirmReopenAssignmentController extends FormBasicController {
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		gradingService.reopenAssignment(assignment, null);
 		fireEvent(ureq, Event.DONE_EVENT);

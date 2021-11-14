@@ -167,11 +167,6 @@ public class ConfirmAssessmentTestSessionInvalidationController extends FormBasi
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
 		doInvalidateSession(ureq, canUpdateAssessmentEntry);
 	}

@@ -304,11 +304,6 @@ class SubmitDocumentsController extends FormBasicController {
 			flc.contextRemove("minDocsWarning");
 		}
 	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {

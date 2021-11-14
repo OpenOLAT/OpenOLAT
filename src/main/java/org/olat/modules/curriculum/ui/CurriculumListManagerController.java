@@ -230,6 +230,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		if(toolbarPanel != null) {
 			toolbarPanel.removeListener(this);
 		}
+        super.doDispose();
 	}
 
 	@Override
@@ -476,11 +477,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			links.add(name);
 			link.setIconLeftCSS("o_icon " + iconCss);
 			return link;
-		}
-
-		@Override
-		protected void doDispose() {
-			//
 		}
 
 		@Override

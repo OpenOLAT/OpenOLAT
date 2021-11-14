@@ -133,6 +133,7 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		if(meetingOres != null) {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, meetingOres);
 		}
+        super.doDispose();
 	}
 
 	@Override

@@ -139,11 +139,6 @@ public class OwnersStep extends BasicStep {
 			initForm(ureq);		
 			loadData();
 		}
-
-		@Override
-		protected void doDispose() {
-			// Nothing to dispose
-		}
 		
 		@Override
 		protected void formOK(UserRequest ureq) {

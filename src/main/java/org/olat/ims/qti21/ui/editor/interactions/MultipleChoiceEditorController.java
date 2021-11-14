@@ -238,11 +238,6 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
 	public void sync(UserRequest ureq, AssessmentItemBuilder builder) {
 		validateScoreOfCorrectAnswer();
 	}
