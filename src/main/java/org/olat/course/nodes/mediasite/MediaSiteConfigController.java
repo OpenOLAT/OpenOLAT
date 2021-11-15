@@ -136,7 +136,7 @@ public class MediaSiteConfigController extends FormBasicController {
 	}
 	
 	private void loadConfig(UserRequest ureq) {
-		if (mediaSiteModule.isGlobalLoginEnabled()) {
+		if (mediaSiteModule.isGlobalLoginEnabled() && !config.getBooleanSafe(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN, false)) {
 			localConfigurationContainer.setVisible(false);
 			serverSelection.select(globalConfig, true);
 		} else {
@@ -172,6 +172,15 @@ public class MediaSiteConfigController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if (localConfigurationCtrl != null && serverSelection.isKeySelected(localConfig)) {
 			localConfigurationCtrl.safeToModulConfiguration(ureq, config);
+		} else {
+			// Remove all local configuration, if global configuration is selected 
+			config.setBooleanEntry(MediaSiteCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN, false);
+			config.remove(MediaSiteCourseNode.CONFIG_PRIVATE_KEY);
+			config.remove(MediaSiteCourseNode.CONFIG_PRIVATE_SECRET);
+			config.remove(MediaSiteCourseNode.CONFIG_USER_NAME_KEY);
+			config.remove(MediaSiteCourseNode.CONFIG_SERVER_URL);
+			config.remove(MediaSiteCourseNode.CONFIG_SUPRESS_AGREEMENT);
+			config.remove(MediaSiteCourseNode.CONFIG_ADMINISTRATION_URL);
 		}
 		
 		config.setStringValue(MediaSiteCourseNode.CONFIG_ELEMENT_ID, mediaSiteManager.parseAlias(presentationUrlElement.getValue()));
