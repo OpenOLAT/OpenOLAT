@@ -43,7 +43,7 @@ public class TranslatorMock implements Translator {
 	}
 
 	@Override
-	public String translate(String key, String[] args) {
+	public String translate(String key, String... args) {
 		return null;
 	}
 

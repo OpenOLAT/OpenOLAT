@@ -570,21 +570,6 @@ public abstract class BasicController extends DefaultController {
 	 * 
 	 * @param key
 	 *            the key to translate
-	 * @param arg
-	 *            the argument to pass in for the translation. if you have more
-	 *            than one argument, please use getTranslator().translate(....)
-	 * @return the translated string
-	 */
-	protected String translate(String key, String arg) {
-		return getTranslator().translate(key, new String[] { arg });
-	}
-
-	/**
-	 * convenience method to translate with the built-in package translator of
-	 * the controller
-	 * 
-	 * @param key
-	 *            the key to translate
 	 * @return the translated string
 	 */
 	protected String translate(String key) {
@@ -599,7 +584,7 @@ public abstract class BasicController extends DefaultController {
 	 * @param args Optional strings to insert into the translated string
 	 * @return The translated string
 	 */
-	protected String translate(String key, String[] args) {
+	protected String translate(String key, String... args) {
 		return getTranslator().translate(key, args);
 	}
 

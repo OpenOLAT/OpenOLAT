@@ -51,7 +51,7 @@ public interface Translator {
 	 * @param args
 	 * @return
 	 */
-	public String translate(String key, String[] args);
+	public String translate(String key, String... args);
 
 	/**
 	 * Same as translate(String,String[]) but allows to specify the level with

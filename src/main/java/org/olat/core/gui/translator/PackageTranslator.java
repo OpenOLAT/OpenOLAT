@@ -47,6 +47,7 @@ import org.olat.core.util.i18n.I18nModule;
 public class PackageTranslator implements Translator {
 	
 	private static final Logger log = Tracing.createLoggerFor(PackageTranslator.class);
+	private static final String[] EMPTY_ARR = new String[0];
 	
 	private Translator fallBackTranslator;
 	private final String packageName;
@@ -110,17 +111,17 @@ public class PackageTranslator implements Translator {
 	 */
 	@Override
 	public String translate(String key) {
-		return translate(key, null);
+		return translate(key, EMPTY_ARR);
 	}
 	
 	@Override
-	public String translate(String key, String[] args) {
+	public String translate(String key, String... args) {
 		return translate(key, args, Level.WARN);
 	}
 
 	@Override
 	public String translate(String key, String[] args, Level missingTranslationLogLevel) {
-		String val = translate(key,args, 0, false);		
+		String val = translate(key, args, 0, false);		
 		// if still null -> fallback to default locale (if not in debug mode)
 		if (val == null) {
 			if (Settings.isDebuging()) {
@@ -218,7 +219,7 @@ public class PackageTranslator implements Translator {
 
 	@Override
 	public Locale getLocale() {
-		return this.locale;
+		return locale;
 	}
 
 	/**
@@ -240,6 +241,7 @@ public class PackageTranslator implements Translator {
 	 * The package of this package translator
 	 * @return
 	 */
+	@Override
 	public String getPackageName() {
 		return packageName;
 	}
@@ -273,7 +275,4 @@ public class PackageTranslator implements Translator {
 		}
 		return false;
 	}
-	
-	
-	
 }

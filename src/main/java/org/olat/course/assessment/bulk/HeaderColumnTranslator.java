@@ -41,18 +41,20 @@ import org.olat.core.gui.translator.Translator;
  * @author Alexander Schneider
  */
 public class HeaderColumnTranslator implements Translator {
+	private static final String[] EMPTY_ARR = new String[0];
 	private Translator origTranslator;
 	
 	public HeaderColumnTranslator(Translator origTranslator){
 		this.origTranslator = origTranslator;
 	}
 
+	@Override
 	public String translate(String key) {
-		return translate(key, null);
+		return translate(key, EMPTY_ARR);
 	}
 
 	@Override
-	public String translate(String key, String[] args) {
+	public String translate(String key, String... args) {
 		return translate(key, args, Level.WARN);
 	}
 	
@@ -61,7 +63,7 @@ public class HeaderColumnTranslator implements Translator {
 		String val;
 		if(key.startsWith("ccc")){
 			String t = key.substring(3);
-			val = origTranslator.translate("column", new String[]{t});
+			val = origTranslator.translate("column", t);
 		}else if (key.startsWith("hhh")){
 			val = key.substring(3);
 		}else{
