@@ -31,7 +31,6 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathConfigs.FullyAssessedResult;
-import org.olat.course.learningpath.ui.LearningPathNoAccessResolver;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NoAccessResolver;

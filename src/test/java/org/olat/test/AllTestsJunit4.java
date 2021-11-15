@@ -562,6 +562,7 @@ import org.junit.runners.Suite;
 	org.olat.course.learningpath.evaluation.DefaultLearningPathStatusEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.LinearAccessEvaluatorTest.class,
+	org.olat.course.learningpath.manager.LearningPathNoAccessResolverTest.class,
 	org.olat.course.learningpath.manager.LearningPathNodeAccessProviderTest.class,
 	org.olat.course.learningpath.model.ModuleLearningPathConfigsTest.class,
 	org.olat.course.learningpath.obligation.BusinessGroupExceptionalObligationHandlerTest.class,
