@@ -148,6 +148,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
 		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
 		dbInstance.commitAndCloseSession();
 
 		//access it
@@ -180,6 +181,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
 		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
 		dbInstance.commitAndCloseSession();
 
 		//access it
@@ -209,6 +211,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
 		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
 		dbInstance.commitAndCloseSession();
 
 		//access it
@@ -243,6 +246,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		OfferAccess offerAccess = acService.createOfferAccess(offer, freeMethods.get(0));
 		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
 		dbInstance.commitAndCloseSession();
 
 		//access it
@@ -284,6 +288,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
 		dbInstance.commitAndCloseSession();
 
 		//id1 start payment process
@@ -334,6 +339,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
 		dbInstance.commitAndCloseSession();
 
 		//admin fill the group
@@ -372,6 +378,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		Assert.assertFalse(methods.isEmpty());
 		OfferAccess offerAccess = acService.createOfferAccess(offer, methods.get(0));
 		Assert.assertNotNull(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
 		dbInstance.commitAndCloseSession();
 		
 		//id try to reserve a place before the payment process, no problem, no limit
@@ -394,7 +401,7 @@ public class ACFrontendManagerTest extends OlatTestCase {
 		offer.setAutoBooking(true);
 		OfferAccess link = acService.createOfferAccess(offer, method);
 		offer = acService.save(offer);
-		acService.saveOfferAccess(link);
+		link = acService.saveOfferAccess(link);
 		dbInstance.commit();
 
 		long start = System.nanoTime();
