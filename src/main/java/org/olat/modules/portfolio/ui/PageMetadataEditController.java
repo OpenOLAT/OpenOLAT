@@ -573,6 +573,8 @@ public class PageMetadataEditController extends FormBasicController {
 	private void updateDocumentsLayout() {
 		documents.clear();
 		List<File> tempDocuments = getTempFolderFiles();
+		
+		boolean allOk = true;
 		for(File document:tempDocuments) {
 			String docId = "delete_" + (counter++);
 
@@ -581,9 +583,17 @@ public class PageMetadataEditController extends FormBasicController {
 			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
 			deleteLink.setUserObject(document);
 			documents.add(new FileInfos(document, deleteLink));
+			
+			String mimeType = WebappHelper.getMimeType(document.getName());
+			if(mimeType == null) {
+				allOk &= false;
+			}
 		}
 		assignmentDocsContainer.setVisible(!documents.isEmpty());
 		assignmentDocsContainer.setDirty(true);
+		if(!allOk) {
+			assignmentDocsContainer.setErrorKey("warning.unkown.media", alignKeys);
+		}
 	}
 
 	@Override
@@ -726,10 +736,12 @@ public class PageMetadataEditController extends FormBasicController {
 		for(FileInfos document:documents) {
 			MediaHandler handler = null;
 			String mimeType = WebappHelper.getMimeType(document.getName());
-			for(MediaHandler availableHandler:availableHandlers) {
-				if(availableHandler.acceptMimeType(mimeType)) {
-					handler = availableHandler;
-					break;
+			if(StringHelper.containsNonWhitespace(mimeType)) {
+				for(MediaHandler availableHandler:availableHandlers) {
+					if(availableHandler.acceptMimeType(mimeType)) {
+						handler = availableHandler;
+						break;
+					}
 				}
 			}
 			
@@ -739,6 +751,8 @@ public class PageMetadataEditController extends FormBasicController {
 				MediaPart part = new MediaPart();
 				part.setMedia(media);
 				portfolioService.appendNewPagePart(thePage, part);
+			} else {
+				showWarning("warning.unkown.media");
 			}
 		}
 	}
