@@ -116,7 +116,7 @@ public class QTI21ImportProcessor {
 	public List<QuestionItem> process(File file) {
 		//export zip file
 		List<QuestionItem> items = new ArrayList<>();
-		try(FileSystem fs = FileSystems.newFileSystem(file.toPath(), null)) {
+		try(FileSystem fs = FileSystems.newFileSystem(file.toPath(), (ClassLoader)null)) {
 			Path fPath = fs.getPath("/");
 			if(fPath != null) {
 				ImsManifestVisitor visitor = new ImsManifestVisitor();
