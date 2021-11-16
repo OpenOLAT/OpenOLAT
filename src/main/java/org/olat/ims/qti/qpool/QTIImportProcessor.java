@@ -669,7 +669,7 @@ class QTIImportProcessor {
 	private List<DocInfos> traverseZip_nio(File file) throws IOException {
 		List<DocInfos> docInfos = new ArrayList<>();
 		
-		Path fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
+		Path fPath = FileSystems.newFileSystem(file.toPath(), (ClassLoader)null).getPath("/");
 		if(fPath != null) {
 			DocInfosVisitor visitor = new DocInfosVisitor();
 		    Files.walkFileTree(fPath, visitor);

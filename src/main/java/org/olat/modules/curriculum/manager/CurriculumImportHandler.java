@@ -76,7 +76,7 @@ public class CurriculumImportHandler {
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public String getCurriculumName(File archive) {
-		try (FileSystem fileSystem=FileSystems.newFileSystem(archive.toPath(), null)) {
+		try (FileSystem fileSystem=FileSystems.newFileSystem(archive.toPath(), (ClassLoader)null)) {
 			Path curriculumXml = fileSystem.getPath("/curriculum.xml");
 			Curriculum curriculum = CurriculumXStream.curriculumFromPath(curriculumXml);
 			if(curriculum != null) {
@@ -89,7 +89,7 @@ public class CurriculumImportHandler {
 	}
 
 	public boolean importCurriculum(File archive, String curriculumName, Organisation organisation, Identity author, Locale locale) {
-		try (FileSystem fileSystem=FileSystems.newFileSystem(archive.toPath(), null)) {
+		try (FileSystem fileSystem=FileSystems.newFileSystem(archive.toPath(), (ClassLoader)null)) {
 			Path curriculumXml = fileSystem.getPath("/curriculum.xml");
 			Curriculum curriculum = CurriculumXStream.curriculumFromPath(curriculumXml);
 			if(curriculum == null) {

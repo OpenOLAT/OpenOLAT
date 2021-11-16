@@ -123,7 +123,7 @@ public class FileResource implements OLATResourceable {
 			fPath = file.toPath();
 		} else if(filename != null && filename.toLowerCase().endsWith(".zip")) {
 			//perhaps find root folder and return it
-			fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
+			fPath = FileSystems.newFileSystem(file.toPath(), (ClassLoader)null).getPath("/");
 			RootSearcher rootSearcher = searchRootDirectory(fPath);
 			if(rootSearcher.foundRoot()) {
 				Path rootPath = rootSearcher.getRoot();
