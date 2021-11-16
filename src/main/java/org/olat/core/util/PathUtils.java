@@ -86,7 +86,7 @@ public class PathUtils {
 			fPath = file.toPath();
 		} else if(filename != null && filename.toLowerCase().endsWith(".zip")) {
 			try {
-				fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
+				fPath = FileSystems.newFileSystem(file.toPath(), (ClassLoader)null).getPath("/");
 			} catch (ProviderNotFoundException | ServiceConfigurationError e) {
 				throw new IOException("Unreadable file with .zip extension: " + file, e);
 			}

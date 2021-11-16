@@ -371,7 +371,7 @@ public class RepositoryEntryImportExport {
 	private void loadConfiguration() {
 		if(baseDirectory != null && baseDirectory.exists()) {
 			if(baseDirectory.getName().endsWith(".zip")) {
-				try(FileSystem fs = FileSystems.newFileSystem(baseDirectory.toPath(), null)) {
+				try(FileSystem fs = FileSystems.newFileSystem(baseDirectory.toPath(), (ClassLoader)null)) {
 					Path fPath = fs.getPath("/");
 					Path manifestPath = fPath.resolve("export").resolve(PROPERTIES_FILE);
 					repositoryProperties = (RepositoryEntryImport)XStreamHelper.readObject(xstream, manifestPath);

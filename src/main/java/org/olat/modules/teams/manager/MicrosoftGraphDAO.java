@@ -37,6 +37,7 @@ import org.olat.modules.teams.model.TeamsErrors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.microsoft.aad.msal4j.MsalException;
 import com.microsoft.graph.core.ClientException;
 import com.microsoft.graph.models.AccessLevel;
 import com.microsoft.graph.models.Application;
@@ -289,16 +290,11 @@ public class MicrosoftGraphDAO {
 	}
 	
 	public Organization getOrganisation(String id, GraphServiceClient<Request> client) {
-		try {
-			return client
-				.organization(id)
-				.buildRequest()
-				.select("id,displayName")
-				.get();
-		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
-			log.error("", e);
-			return null;
-		}
+		return client
+			.organization(id)
+			.buildRequest()
+			.select("id,displayName")
+			.get();
 	}
 	
 	public Application getApplication(String id, GraphServiceClient<Request> client, TeamsErrors errors) {
@@ -337,7 +333,11 @@ public class MicrosoftGraphDAO {
 			}
 
 			return new ConnectionInfos(organisation, producerDisplayName);
-		} catch (ClientException | NullPointerException | IllegalArgumentException e) {
+		} catch (ClientException e) {
+			errors.append(extractMsalFrom(e));
+			log.error("", e);
+			return null;
+		} catch (NullPointerException | IllegalArgumentException e) {
 			errors.append(new TeamsError(TeamsErrorCodes.httpClientError));
 			log.error("", e);
 			return null;
@@ -346,6 +346,33 @@ public class MicrosoftGraphDAO {
 			log.error("", e);
 			return null;
 		}
+	}
+	
+	/**
+	 * Not sure if we can use it everywhere, the message can perhaps hold
+	 * some sensitive informations about the configuration.
+	 * 
+	 * @param ex The exception
+	 * @return
+	 */
+	private TeamsError extractMsalFrom(ClientException ex) {
+		int count = 0;// prevent some infinite loop
+		Throwable e = ex;
+		String message = ex.getMessage();
+		
+		do {
+			if(e instanceof MsalException) {
+				message = e.getMessage();
+				if(message != null && message.indexOf('\n') >= 0) {
+					message = message.substring(0, message.indexOf('\n'));
+				}
+				break;
+			}
+			e = e.getCause();
+			count++;
+		} while (e != null && count < 10);
+		
+		return new TeamsError(message);
 	}
 	
 	public final ConnectionInfos check(TeamsErrors errors) {
