@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -85,6 +86,7 @@ import org.olat.course.config.ui.courselayout.attribs.AbstractLayoutAttribute;
 import org.olat.course.config.ui.courselayout.attribs.PreviewLA;
 import org.olat.course.config.ui.courselayout.attribs.SpecialAttributeFormItemHandler;
 import org.olat.course.config.ui.courselayout.elements.AbstractLayoutElement;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.style.ColorCategory;
@@ -127,6 +129,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 
 	private SingleSelection styleSel;
 	private SelectionElement menuEl;
+	private MultipleSelectionElement menuNodeIconsEl;
+	private MultipleSelectionElement menuPathEl;
 	private SelectionElement breadCrumbEl;
 	private FileElement logoUpl;
 	private FormLayoutContainer previewImgFlc;
@@ -151,6 +155,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private boolean elWithErrorExists = false;
 	private final boolean editable;
 	private final boolean readOnly;
+	private final boolean learningPath;
 	
 	private LockResult lockEntry;
 	private CourseConfig courseConfig;
@@ -182,6 +187,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK, getWindow());
 		this.editable = (lockEntry != null && lockEntry.isSuccess()) && editable && !readOnly;
 		this.readOnly = readOnly;
+		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType());
 		this.onValues = new String[] {translate("on")};
 		colorCategoryIdentifier = courseConfig.getColorCategoryIdentifier();
 		
@@ -325,13 +331,25 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		styleFlc.setLabel(null, null);
 		enableDisableCustom(CourseLayoutHelper.CONFIG_KEY_CUSTOM.equals(actualCSSSettings));
 		
+		FormLayoutContainer navigationCont = FormLayoutContainer.createDefaultFormLayout("course.navigation", getTranslator());
+		navigationCont.setFormTitle(translate("course.navigation"));
+		navigationCont.setRootForm(mainForm);
+		formLayout.add("course.navigation", navigationCont);
 		
-		menuEl = uifactory.addCheckboxesHorizontal("menuIsOn", "chkbx.menu.onoff", layoutCont, onKeys, onValues);
+		menuEl = uifactory.addCheckboxesHorizontal("menuIsOn", "chkbx.menu.onoff", navigationCont, onKeys, onValues);
 		menuEl.select(onKeys[0], courseConfig.isMenuEnabled());
 		menuEl.addActionListener(FormEvent.ONCHANGE);
 		menuEl.setEnabled(editable);
 		
-		breadCrumbEl = uifactory.addCheckboxesHorizontal("breadCrumbIsOn", "chkbx.breadcrumb.onoff", layoutCont, onKeys, onValues);
+		menuNodeIconsEl = uifactory.addCheckboxesHorizontal("chkbx.menu.node.icons.onoff", navigationCont, onKeys, onValues);
+		menuNodeIconsEl.select(onKeys[0], courseConfig.isMenuNodeIconsEnabled());
+		menuNodeIconsEl.setEnabled(editable);
+		
+		menuPathEl = uifactory.addCheckboxesHorizontal("chkbx.menu.path.onoff", navigationCont, onKeys, onValues);
+		menuPathEl.select(onKeys[0], courseConfig.isMenuPathEnabled());
+		menuPathEl.setEnabled(editable);
+		
+		breadCrumbEl = uifactory.addCheckboxesHorizontal("breadCrumbIsOn", "chkbx.breadcrumb.onoff", navigationCont, onKeys, onValues);
 		breadCrumbEl.select(onKeys[0], courseConfig.isBreadCrumbEnabled());
 		breadCrumbEl.addActionListener(FormEvent.ONCHANGE);
 		breadCrumbEl.setEnabled(editable);
@@ -464,6 +482,8 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			VFSItem logo = (VFSItem) logoDel.getUserObject();
 			logo.delete();
 			refreshLogoImage(ureq);
+		} else if (source == menuEl) {
+			updateMenuUI();
 		} else if (source == teaserImageTypeEl) {
 			updateTeaserImageUI();
 			updateHeaderPreviewUI(ureq, true);
@@ -648,6 +668,12 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		boolean menuEnabled = menuEl.isSelected(0);
 		courseConfig.setMenuEnabled(menuEnabled);
+		if (menuNodeIconsEl.isVisible()) {
+			courseConfig.setMenuNodeIconsEnabled(menuNodeIconsEl.isAtLeastSelected(1));
+		}
+		if (menuPathEl.isVisible()) {
+			courseConfig.setMenuPathEnabled(menuPathEl.isAtLeastSelected(1));
+		}
 		boolean breadCrumbEnabled = breadCrumbEl.isSelected(0);
 		courseConfig.setBreadCrumbEnabled(breadCrumbEnabled);
 		
@@ -686,7 +712,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		
 		// inform course-settings-dialog about changes:
 		fireEvent(ureq, Event.CHANGED_EVENT);
-		fireEvent(ureq, CourseStyleUIFactory.HEADER_CHANGED_EVENT);
+		fireEvent(ureq, RunMainController.RELOAD_COURSE_NODE);
 	}
 	
 	private Map<String, Map<String, String>> compileCustomConfigFromGuiWrapper(){
@@ -751,6 +777,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		styleFlc.contextPut("guiWrapper", guiWrapper);
 	}
 	
+	private void updateMenuUI() {
+		boolean menuEnabled = menuEl.isSelected(0);
+		menuNodeIconsEl.setVisible(learningPath && menuEnabled);
+		menuPathEl.setVisible(learningPath && menuEnabled);
+		setDirty();
+	}
+	
 	private void updateTeaserImageUI() {
 		ImageSourceType type = teaserImageTypeEl.isOneSelected()
 				? ImageSourceType.toEnum(teaserImageTypeEl.getSelectedKey())
@@ -813,9 +846,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		headerPreviewCont.put("header", headerCtrl.getInitialComponent());
 	
 		if (dirty) {
-			String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
-			getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
+			setDirty();
 		}
+	}
+
+	private void setDirty() {
+		String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
+		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
 	}
 	
 	private Header createPreviewHeader() {

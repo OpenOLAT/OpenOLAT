@@ -133,6 +133,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private static final Logger log = Tracing.createLoggerFor(RunMainController.class);
 
+	public static final Event RELOAD_COURSE_NODE = new Event("reload-course-node");
 	public static final Event COURSE_DISCLAIMER_ACCEPTED = new Event("course-disclaimer-accepted");
 	public static final String REBUILD = "rebuild";
 	public static final String ORES_TYPE_COURSE_RUN = OresHelper.calculateTypeName(RunMainController.class, CourseModule.ORES_TYPE_COURSE);
@@ -217,7 +218,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setScrollTopOnClick(true);
 		luTree.setExpandSelectedNode(false);
-		String treeCssClass = nodeAccessService.getCourseTreeCssClass(NodeAccessType.of(course));
+		String treeCssClass = nodeAccessService.getCourseTreeCssClass(course.getCourseConfig());
 		luTree.setElementCssClass("o_course_menu " + treeCssClass);
 		contentP = new Panel("building_block_content");
 
@@ -517,6 +518,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	protected CourseNode updateCurrentCourseNode(UserRequest ureq) {
+		String treeCssClass = nodeAccessService.getCourseTreeCssClass(course.getCourseConfig());
+		luTree.setElementCssClass("o_course_menu " + treeCssClass);
 		return updateTreeAndContent(ureq, getCurrentCourseNode(), "", null, null);
 	}
 	
@@ -1199,12 +1202,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	public void disableCourseClose(boolean disable) {
 		toolbarPanel.setShowCloseLink(true, !disable);
-	}
-	
-	public void reloadCourseNodeHeader(UserRequest ureq) {
-		if (currentNodeController instanceof HeaderContentController) {
-			((HeaderContentController)currentNodeController).reloadHeader(ureq);
-		}
 	}
 
 	@Override

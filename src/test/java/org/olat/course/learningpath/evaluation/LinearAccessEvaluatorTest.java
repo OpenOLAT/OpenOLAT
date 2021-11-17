@@ -75,7 +75,7 @@ public class LinearAccessEvaluatorTest {
 
 	private void assertAccessible(AssessmentEntryStatus status, boolean expected) {
 		AssessmentEvaluation ae = createAssessmentEvaluation(status);
-		LearningPathTreeNode currentNode = new LearningPathTreeNode(createCourseNode(), 0, null, ae);
+		LearningPathTreeNode currentNode = new LearningPathTreeNode(createCourseNode(), 0, null, ae, false);
 		UserCourseEnvironment userCourseEnv = mock(UserCourseEnvironment.class);
 		when(userCourseEnv.isParticipant()).thenReturn(Boolean.TRUE);
 		
@@ -87,7 +87,7 @@ public class LinearAccessEvaluatorTest {
 	@Test
 	public void shouldAlwaysBeAccessibleAsCoach() {
 		AssessmentEvaluation ae = createAssessmentEvaluation(AssessmentEntryStatus.notReady);
-		LearningPathTreeNode currentNode = new LearningPathTreeNode(createCourseNode(), 0, null, ae);
+		LearningPathTreeNode currentNode = new LearningPathTreeNode(createCourseNode(), 0, null, ae, false);
 		UserCourseEnvironment userCourseEnv = mock(UserCourseEnvironment.class);
 		when(userCourseEnv.isCoach()).thenReturn(Boolean.TRUE);
 		
@@ -99,7 +99,7 @@ public class LinearAccessEvaluatorTest {
 	@Test
 	public void shouldAlwaysBeAccessibleAsAdmin() {
 		AssessmentEvaluation ae = createAssessmentEvaluation(AssessmentEntryStatus.notReady);
-		LearningPathTreeNode currentNode = new LearningPathTreeNode(createCourseNode(), 0, null, ae);
+		LearningPathTreeNode currentNode = new LearningPathTreeNode(createCourseNode(), 0, null, ae, false);
 		UserCourseEnvironment userCourseEnv = mock(UserCourseEnvironment.class);
 		when(userCourseEnv.isAdmin()).thenReturn(Boolean.TRUE);
 		

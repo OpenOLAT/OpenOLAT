@@ -136,7 +136,6 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.statistic.StatisticCourseNodesController;
 import org.olat.course.statistic.StatisticMainController;
 import org.olat.course.statistic.StatisticType;
-import org.olat.course.style.ui.CourseStyleUIFactory;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
@@ -1320,8 +1319,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		
 		if (event instanceof AssessmentModeStatusEvent) {
 			setAssessmentModeMessage(ureq);
-		} else if (event == CourseStyleUIFactory.HEADER_CHANGED_EVENT) {
-			doReloadCourseNodeHeader(ureq);
+		} else if (event == RunMainController.RELOAD_COURSE_NODE) {
+			doReloadCurrentCourseNode(ureq);
 		} else if (event instanceof GoToEvent) {
 			doGoTo(ureq, (GoToEvent)event);
 		}
@@ -2761,11 +2760,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 		currentUserCountLink.setCustomDisplayText(translate("participants.in.course", new String[]{String.valueOf(currentUserCount)}));
 	}
-
-	private void doReloadCourseNodeHeader(UserRequest ureq) {
+	
+	private void doReloadCurrentCourseNode(UserRequest ureq) {
 		RunMainController runCtrl = getRunMainController();
 		if (runCtrl != null) {
-			runCtrl.reloadCourseNodeHeader(ureq);
+			runCtrl.updateCurrentCourseNode(ureq);
 		}
 	}
 

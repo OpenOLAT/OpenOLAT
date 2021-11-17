@@ -29,6 +29,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathConfigs.FullyAssessedResult;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
@@ -118,8 +119,8 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public String getCourseTreeCssClass() {
-		return "o_lp_tree";
+	public String getCourseTreeCssClass(CourseConfig courseConfig) {
+		return courseConfig.isMenuPathEnabled()? "o_lp_tree o_path": "o_lp_tree";
 	}
 
 	@Override

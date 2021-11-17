@@ -44,6 +44,8 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 
 	private static final AccessEvaluator accessEvaluator = new LinearAccessEvaluator();
 	
+	private final boolean menuNodeIconsEnabled;
+	private final boolean menuPathEnabled;
 	private boolean showExcluded = false;
 	
 	@Autowired
@@ -51,6 +53,8 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 	
 	public LearningPathCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
+		menuNodeIconsEnabled = userCourseEnv.getCourseEnvironment().getCourseConfig().isMenuNodeIconsEnabled();
+		menuPathEnabled = userCourseEnv.getCourseEnvironment().getCourseConfig().isMenuPathEnabled();
 		CoreSpringFactory.autowireObject(this);
 	}
 	
@@ -62,19 +66,21 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 	protected CourseTreeNode createCourseTreeNode(CourseNode courseNode, CourseTreeNode parent, int treeLevel) {
 		AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		SequenceConfig sequenceConfig = learningPathService.getSequenceConfig(courseNode);
-		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, treeLevel, sequenceConfig, assessmentEvaluation);
+		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, treeLevel, sequenceConfig, assessmentEvaluation, menuNodeIconsEnabled);
 				
 		boolean visible = showExcluded || isVisible(userCourseEnv, assessmentEvaluation);
 		learningPathTreeNode.setVisible(visible);
 		boolean accessible = accessEvaluator.isAccessible(learningPathTreeNode, userCourseEnv);
 		learningPathTreeNode.setAccessible(accessible);
-		String iconDecorator1CssClass = getIconDecorator1CssClass(sequenceConfig, assessmentEvaluation, userCourseEnv);
-		if (userCourseEnv.isParticipant()) {
-			learningPathTreeNode.setIconCssClass(iconDecorator1CssClass);
-			learningPathTreeNode.setCssClass(iconDecorator1CssClass);
-		} else {
-			learningPathTreeNode.setIconDecorator1CssClass(iconDecorator1CssClass);
+		
+		String cssClass = "";
+		if (menuPathEnabled || userCourseEnv.isParticipant()) {
+			cssClass = "o_lp_status ";
 		}
+		if (userCourseEnv.isParticipant()) {
+			cssClass += getParticipantCssClass(sequenceConfig, assessmentEvaluation, userCourseEnv);
+		}
+		learningPathTreeNode.setCssClass(cssClass);
 		
 		return learningPathTreeNode;
 	}
@@ -87,8 +93,8 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		return AssessmentObligation.excluded != assessmentEvaluation.getObligation().getCurrent();
 	}
 
-	private String getIconDecorator1CssClass(SequenceConfig sequenceConfig, AssessmentEvaluation assessmentEvaluation, UserCourseEnvironment userCourseEnv) {
-		if (assessmentEvaluation == null || userCourseEnv.isAdmin() || userCourseEnv.isCoach()) return null;
+	private String getParticipantCssClass(SequenceConfig sequenceConfig, AssessmentEvaluation assessmentEvaluation, UserCourseEnvironment userCourseEnv) {
+		if (assessmentEvaluation == null || userCourseEnv.isAdmin() || userCourseEnv.isCoach()) return "";
 		
 		String cssClasses = LearningPathStatus.of(assessmentEvaluation).getCssClass();
 		
