@@ -21,6 +21,8 @@ package org.olat.modules.forms.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -39,6 +41,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -145,9 +148,13 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		if (fileUpload.isMandatory() && fileEl.isButtonsEnabled() && !fileEl.isUploadSuccess() && fileEl.getInitialFile() == null) {
-			fileEl.setErrorKey("form.legende.mandatory", null);
-			allOk = false;
+		List<ValidationStatus> fileStatus = new ArrayList<>();
+		fileEl.validate(fileStatus);
+		if (fileStatus.isEmpty()) {
+			if (fileUpload.isMandatory() && fileEl.isButtonsEnabled() && !fileEl.isUploadSuccess() && fileEl.getInitialFile() == null) {
+				fileEl.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
+			}
 		}
 		
 		return allOk;
