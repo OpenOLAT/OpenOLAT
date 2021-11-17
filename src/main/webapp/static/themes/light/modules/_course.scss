@@ -288,50 +288,24 @@
 	.o_tree_link:last-child:focus {
 		background-color: transparent;
 	}	
-	/* Opener more right than default to make room for path */	
-	@for $i from 0 through 11 {
-		li div a.o_tree_oc_l#{$i}  { 
-			left: $o-tree-padding-opener-left-px + $o-tree-padding-horizontal_root_visible + (( $i - 1) * $o-tree-padding-steps-px) + $o-lp-step-size; 
-		}
-		li div span.o_tree_l#{$i}  {
-			padding: $o-tree-padding-vertical 2px $o-tree-padding-vertical $o-tree-padding-left-steps-px;
-			margin-left: $o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px) + $o-lp-step-size;
-			z-index:9; 
-		}
-	}
-		
-	/* No icons 	*/
-	// TOOD: should not be in the model depending on the course config
-	.o_tree_link > a > i.o_icon {
-	 	display: none;
-	}
 	
 	/* Add box and alpha transparent backgrounds to visualize menu level */
-	border: $o-lp-border;	
+	border: $o-lp-border;
 	li.children_visible {
-		background: $o-lp-bg;	
+		background: $o-lp-bg;
 	}
 	
-	/* Path is rendered for each list element. It consists of a path indicator and the step indicator.
-	 * The step indicator is an icon that represents the status of the step */
-	li {
+	li.o_lp_status {
 		position: relative;
-		/* path indicator */
-		&:before {
-			content: ' ';
-			position: absolute;
-			top: $o-lp-step-top + $o-lp-step-size;
-			left: $o-lp-left + (($o-lp-step-size - $o-lp-path-width) / 2);
-			height: (($o-tree-padding-vertical * 2 + $line-height-computed) - $o-lp-step-size + 1px);
-			width: $o-lp-path-width;
-		}	
 		/* step indicator */
 		&:after {
 			position: absolute;
 			top: ($o-lp-step-top); 
-			left: $o-lp-left;
+			right: $o-lp-right;
 			height: $o-lp-step-size;
 			width: $o-lp-step-size;
+			background-color: $o-lp-icon-bg-color;
+			border-radius: $o-lp-icon-radius;
 			@include o-make-icon(); 
 		}
 	}
@@ -343,12 +317,12 @@
 		}	
 		&:after {
 			content: $icon;
-			color: $iconcolor;		
+			color: $iconcolor;
 		}
 	}
 	
 	/* Learning path status default */
-	li {
+	li.o_lp_status {
 		@include alert-tree-path-variant($o-lp-default, $fa-var-circle-o, $o-lp-default, solid);
 	}
 	/* learning path status specific coloring */
@@ -365,18 +339,50 @@
 		@include alert-tree-path-variant($o-lp-done, $fa-var-check-circle, $o-lp-done, solid);
 	}
 	
-	/* Path stops on last element */
-	li.o_last_node:before {
-		border: none;
-	}
+	&.o_path {
+		/* Opener more right than default to make room for path */	
+		@for $i from 0 through 11 {
+			li div a.o_tree_oc_l#{$i}  { 
+				left: $o-tree-padding-opener-left-px + $o-tree-padding-horizontal_root_visible + (( $i - 1) * $o-tree-padding-steps-px) + $o-lp-step-size; 
+			}
+			li div span.o_tree_l#{$i}  {
+				padding: $o-tree-padding-vertical 2px $o-tree-padding-vertical $o-tree-padding-left-steps-px;
+				margin-left: $o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px) + $o-lp-step-size;
+				z-index:9; 
+			}
+		}
 	
-	/* Nodes that are not in a sequence have different path rendering */
-	li.o_lp_not_in_sequence:not(:last-child):not(.o_last_node):before,
-	li.o_lp_contains_no_sequence.children_visible:not(.o_last_node):before,
-	li.o_lp_contains_no_sequence.children_visible:not(.o_last_node) li.o_lp_not_in_sequence:not(.o_last_node):before {
-	 	border-left: $o-lp-path-width solid $o-lp-default; 
+		/* Path is rendered for each list element. It consists of a path indicator and the step indicator.
+		 * The step indicator is an icon that represents the status of the step */
+		li.o_lp_status {
+			/* path indicator */
+			&:before {
+				content: ' ';
+				position: absolute;
+				top: $o-lp-step-top + $o-lp-step-size;
+				left: $o-lp-left + (($o-lp-step-size - $o-lp-path-width) / 2);
+				height: (($o-tree-padding-vertical * 2 + $line-height-computed) - $o-lp-step-size + 1px);
+				width: $o-lp-path-width;
+			}
+			&:after {
+				left: $o-lp-left;
+				background-color: unset;
+				border-radius: unset;
+			}
+		}
+		
+		/* Path stops on last element */
+		li.o_last_node:before {
+			border: none;
+		}
+		
+		/* Nodes that are not in a sequence have different path rendering */
+		li.o_lp_not_in_sequence:not(:last-child):not(.o_last_node):before,
+		li.o_lp_contains_no_sequence.children_visible:not(.o_last_node):before,
+		li.o_lp_contains_no_sequence.children_visible:not(.o_last_node) li.o_lp_not_in_sequence:not(.o_last_node):before {
+			 border-left: $o-lp-path-width solid $o-lp-default; 
+		}
 	}
-	
 }
 
 .o_lp_list {

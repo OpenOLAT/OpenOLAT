@@ -22,7 +22,6 @@ package org.olat.course.style.ui;
 import java.util.Date;
 import java.util.Locale;
 
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -43,8 +42,6 @@ import org.olat.course.style.TeaserImageStyle;
  *
  */
 public class CourseStyleUIFactory {
-	
-	public static final Event HEADER_CHANGED_EVENT = new Event("header-changed");
 	
 	public static Translator getTranslator(Locale locale) {
 		return Util.createPackageTranslator(CourseStyleUIFactory.class, locale);

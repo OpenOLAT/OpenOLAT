@@ -240,7 +240,7 @@ public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletab
 		offer.setAutoBooking(true);
 		offerAccess = acService.createOfferAccess(offer, method);
 		acService.save(offer);
-		acService.saveOfferAccess(offerAccess);
+		offerAccess = acService.saveOfferAccess(offerAccess);
 		return offerAccess;
 	}
 

@@ -79,7 +79,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 21;
+	private static final transient int CURRENTVERSION = 22;
 
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -100,6 +100,8 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
 
 	public static final transient String MENU_ENABLED = "MENU_ENABLED";
+	public static final transient String MENU_NODE_ICONS_ENABLED = "MENU_NODE_ICONS_ENABLED";
+	public static final transient String MENU_PATH_ENABLED = "MENU_PATH_ENABLED";
 	public static final transient String TOOLBAR_ENABLED = "TOOLBAR_ENABLED";
 	public static final transient String BREADCRUMB_ENABLED = "BREADCRUMB_ENABLED";
 	public static final transient String NODE_TEASER_IMAGE_SOURCE = "NODE_TEASER_IMAGE_SOURCE";
@@ -148,10 +150,6 @@ public class CourseConfig implements Serializable, Cloneable {
 	private static final transient String COACH_FOLDER_PATH = "COACH_FOLDER_PATH";
 
 
-	/**
-	 * current key set
-	 */
-	private static final transient String[] KEYS = { KEY_CHAT_ENABLED, KEY_CSS_FILEREF, KEY_SHAREDFOLDER_SOFTKEY };
 	/**
 	 * config file version from file
 	 */
@@ -235,7 +233,10 @@ public class CourseConfig implements Serializable, Cloneable {
 
 		// Version 21
 		configuration.put(COACH_FOLDER_ENABLED, Boolean.FALSE);
-		
+
+		// Version 22
+		configuration.put(MENU_NODE_ICONS_ENABLED, Boolean.FALSE);
+		configuration.put(MENU_PATH_ENABLED, Boolean.TRUE);
 		
 		this.version = CURRENTVERSION;
 	}
@@ -452,6 +453,13 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(COACH_FOLDER_ENABLED)) {
 					configuration.put(COACH_FOLDER_ENABLED, Boolean.FALSE);
 				}
+				if (!configuration.containsKey(MENU_NODE_ICONS_ENABLED)) {
+					configuration.put(MENU_NODE_ICONS_ENABLED, Boolean.FALSE);
+				}
+				if (!configuration.containsKey(MENU_PATH_ENABLED)) {
+					configuration.put(MENU_PATH_ENABLED, Boolean.TRUE);
+				}
+				this.version = 22;
 			}
 
 			/*
@@ -731,6 +739,24 @@ public class CourseConfig implements Serializable, Cloneable {
 
 	public void setMenuEnabled(boolean b) {
 		configuration.put(MENU_ENABLED, Boolean.valueOf(b));
+	}
+	
+	public boolean isMenuNodeIconsEnabled() {
+		Boolean bool = (Boolean) configuration.get(MENU_NODE_ICONS_ENABLED);
+		return bool.booleanValue();
+	}
+
+	public void setMenuNodeIconsEnabled(boolean b) {
+		configuration.put(MENU_NODE_ICONS_ENABLED, Boolean.valueOf(b));
+	}
+	
+	public boolean isMenuPathEnabled() {
+		Boolean bool = (Boolean) configuration.get(MENU_PATH_ENABLED);
+		return bool.booleanValue();
+	}
+
+	public void setMenuPathEnabled(boolean b) {
+		configuration.put(MENU_PATH_ENABLED, Boolean.valueOf(b));
 	}
 
 	public boolean isCourseSearchEnabled() {
@@ -1066,6 +1092,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setRecertificationTimelapse(getRecertificationTimelapse());
 		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());
 		clone.setMenuEnabled(isMenuEnabled());
+		clone.setMenuNodeIconsEnabled(isMenuNodeIconsEnabled());
+		clone.setMenuPathEnabled(isMenuPathEnabled());
 		clone.setToolbarEnabled(isToolbarEnabled());
 		clone.setBreadCrumbEnabled(isBreadCrumbEnabled());
 		clone.setCourseSearchEnabled(isCourseSearchEnabled());

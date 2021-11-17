@@ -42,12 +42,19 @@ public class LearningPathTreeNode extends CourseTreeNode {
 	
 	private final SequenceConfig sequenceConfig;
 	private final AssessmentEvaluation assessmentEvaluation;
+	private final boolean menuNodeIconsEnabled;
 
 	public LearningPathTreeNode(CourseNode courseNode, int treeLevel, SequenceConfig sequenceConfig,
-			AssessmentEvaluation assessmentEvaluation) {
+			AssessmentEvaluation assessmentEvaluation, boolean menuNodeIconsEnabled) {
 		super(courseNode, treeLevel);
 		this.sequenceConfig = sequenceConfig;
 		this.assessmentEvaluation = assessmentEvaluation;
+		this.menuNodeIconsEnabled = menuNodeIconsEnabled;
+	}
+	
+	@Override
+	public String getIconCssClass() {
+		return menuNodeIconsEnabled? super.getIconCssClass(): null;
 	}
 
 	public SequenceConfig getSequenceConfig() {

@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CoursePaginationController;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
@@ -86,10 +87,10 @@ public interface NodeAccessService {
 	/**
 	 * CSS class to inject in the course menu tree.
 	 *
-	 * @param type
+	 * @param courseConfig
 	 * @return
 	 */
-	public String getCourseTreeCssClass(NodeAccessType type);
+	public String getCourseTreeCssClass(CourseConfig courseConfig);
 
 	/**
 	 * Controller to navigate to the next and the previous course node.

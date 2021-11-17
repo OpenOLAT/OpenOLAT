@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.teams.TeamsDispatcher;
 import org.olat.modules.teams.TeamsMeeting;
@@ -134,7 +135,9 @@ public class TeamsUIHelper {
 			} else if(error.getCode() != null) {
 				sb.append(translator.translate("error." + error.getCode().name(), error.getArguments()));
 			} else if(StringHelper.containsNonWhitespace(error.getMessage())) {
-				sb.append(error.getMessage());
+				String msg = error.getMessage().replace("\r", "");
+				msg = Formatter.stripTabsAndReturns(msg).toString();
+				sb.append(msg);
 			} else {
 				sb.append(translator.translate("error.unkown"));
 			}
@@ -150,5 +153,4 @@ public class TeamsUIHelper {
 	private static TeamsService getTeamsService() {
 		return CoreSpringFactory.getImpl(TeamsService.class);
 	}
-
 }
