@@ -161,6 +161,10 @@ public class RepositoryEntryQueries {
 			query.append(" and v.key in (:entryKeys)");
 		}
 
+		if (params.getResIds() != null && !params.getResIds().isEmpty()) {
+			query.append(" and res.resId IN (:resIds)");
+		}
+
 		if(params.getManaged() != null) {
 			if(params.getManaged().booleanValue()) {
 				query.append(" and v.managedFlagsString is not null");
@@ -209,6 +213,9 @@ public class RepositoryEntryQueries {
 		}
 		if(params.getRepositoryEntryKeys() != null && !params.getRepositoryEntryKeys().isEmpty()) {
 			dbQuery.setParameter("entryKeys", params.getRepositoryEntryKeys());
+		}
+		if (params.getResIds() != null && !params.getResIds().isEmpty()) {
+			dbQuery.setParameter("resIds", params.getResIds());
 		}
 		if(StringHelper.containsNonWhitespace(params.getExternalId())) {
 			dbQuery.setParameter("externalId", params.getExternalId());
