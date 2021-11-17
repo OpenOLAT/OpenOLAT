@@ -33,11 +33,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -130,6 +130,9 @@ import org.olat.ims.qti21.ui.editor.events.SelectEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 import org.olat.ims.qti21.ui.editor.metadata.MetadataChangedEvent;
 import org.olat.ims.qti21.ui.editor.overview.AssessmentTestOverviewConfigurationController;
+import org.olat.ims.qti21.ui.editor.testsexport.QTI21OfflineTestsPDFMediaResource;
+import org.olat.ims.qti21.ui.editor.testsexport.TestsExport1OptionsStep;
+import org.olat.ims.qti21.ui.editor.testsexport.TestsExportContext;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
@@ -175,7 +178,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			newKPrimLink, newMatchLink, newMatchDragAndDropLink, newMatchTrueFalseLink,
 			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink, newOrderLink,
 			newEssayLink, newUploadLink, newDrawingLink;
-	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
+	private Link importFromPoolLink;
+	private Link importFromTableLink;
+	private Link exportToPoolLink;
+	private Link exportToDocxLink;
+	private Link exportTestsWizardLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
 	private Link configurationOverviewLink;
 	private final TooledStackedPanel toolbar;
@@ -186,6 +193,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private SelectItemController selectQItemCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private StepsMainRunController importTableWizard;
+	private StepsMainRunController exportTestsWizard;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private AssessmentTestOverviewConfigurationController overviewConfigCtrl;
 	
@@ -204,6 +212,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private LockResult lockEntry;
 	
+	@Autowired
+	private PdfModule pdfModule;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -345,6 +355,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		exportToDocxLink.setIconLeftCSS("o_icon o_icon_download o_icon-fw");
 		exportToDocxLink.setDomReplacementWrapperRequired(false);
 		exportItemTools.addComponent(exportToDocxLink);
+		
+		if(pdfModule.isEnabled()) {
+			exportTestsWizardLink = LinkFactory.createToolLink("export.pool", translate("tools.export.tests.wizard"), this, "o_mi_tests_export");
+			exportTestsWizardLink.setIconLeftCSS("o_icon o_icon_files o_icon-fw");
+			exportTestsWizardLink.setDomReplacementWrapperRequired(false);
+			exportItemTools.addComponent(exportTestsWizardLink);
+		}
 
 		//changes
 		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
@@ -497,6 +514,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				doInsert(ureq, importPackage);
 			}
+		} else if(exportTestsWizard == source) {
+			getWindowControl().pop();
+			cleanUp();
 		} else if(confirmDeleteCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes, delete
 				doDelete(ureq, (TreeNode)confirmDeleteCtrl.getUserObject());
@@ -590,6 +610,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doExportPool();
 		} else if(exportToDocxLink == source) {
 			doExportDocx(ureq);
+		} else if(exportTestsWizardLink == source) {
+			doExportTestsWizard(ureq);
 		} else if(deleteLink == source) {
 			doConfirmDelete(ureq);
 		} else if(copyLink == source) {
@@ -794,9 +816,29 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private void doExportDocx(UserRequest ureq) {
-		CountDownLatch exportLatch = new CountDownLatch(1);
-		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, unzippedDirRoot, getLocale(), "UTF-8", exportLatch);
+		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, unzippedDirRoot, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(mr);
+	}
+	
+	private void doExportTestsWizard(UserRequest ureq) {
+		removeAsListenerAndDispose(exportTestsWizard);
+
+		final TestsExportContext exportContext = new TestsExportContext(testEntry, resolvedAssessmentTest, unzippedContRoot, unzippedDirRoot);
+		exportContext.setDescriptionValue(testEntry.getDescription());
+		exportContext.setIdentifierValue(testEntry.getExternalRef());
+		exportContext.setTitleValue(testEntry.getDisplayname());
+		
+		Step start = new TestsExport1OptionsStep(ureq, exportContext);
+		StepRunnerCallback finish = (uureq, lwControl, runContext) -> {
+			MediaResource mr = new QTI21OfflineTestsPDFMediaResource(uureq.getIdentity(), lwControl,
+					exportContext, "Tests_" + exportContext.getFilePrefix());
+			uureq.getDispatchResult().setResultingMediaResource(mr);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		exportTestsWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("tools.export.tests.wizard"), "o_mi_tests_export_wizard");
+		listenTo(exportTestsWizard);
+		getWindowControl().pushAsModalDialog(exportTestsWizard.getInitialComponent());
 	}
 	
 	private void doImportTable(UserRequest ureq) {

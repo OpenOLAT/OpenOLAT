@@ -21,6 +21,7 @@ package org.olat.core.commons.services.pdf;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.concurrent.CompletionService;
 
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -64,5 +65,11 @@ public interface PdfService {
 	 * @param out The output stream where the PDF file is written
 	 */
 	public void convert(Identity identity, ControllerCreator creator, WindowControl windowControl, OutputStream out);
+	
+	
+	public CompletionService<PdfDocument> borrowCompletionService();
+	
+	public void asyncConvert(String name, Identity identity, ControllerCreator creator, WindowControl windowControl,
+			CompletionService<PdfDocument> service);
 
 }

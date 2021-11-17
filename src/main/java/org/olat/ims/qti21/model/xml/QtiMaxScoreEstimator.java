@@ -22,6 +22,7 @@ package org.olat.ims.qti21.model.xml;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.DoubleAdder;
+import java.util.concurrent.atomic.LongAdder;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
@@ -50,7 +51,7 @@ public class QtiMaxScoreEstimator {
 			if(sectionPart instanceof AssessmentSection) {
 				MaxScoreVisitor visitor = new MaxScoreVisitor();
 				estimateMaxScore(sectionPart, resolvedAssessmentTest, visitor);
-				Double sectionScore = visitor.get();
+				Double sectionScore = visitor.getMaxScore();
 				if(sectionMaxScore == null) {
 					sectionMaxScore = sectionScore;
 				} else if(sectionScore == null || !sectionMaxScore.equals(sectionScore)) {
@@ -85,7 +86,7 @@ public class QtiMaxScoreEstimator {
 				 doAssessmentSectionEstimateMaxScore(section, resolvedAssessmentTest, visitor);
 			 } 
 		}
-		return visitor.get();
+		return visitor.getMaxScore();
 	}
 	
 	public static Double estimateMaxScore(TestPart testPart, ResolvedAssessmentTest resolvedAssessmentTest) {
@@ -93,13 +94,25 @@ public class QtiMaxScoreEstimator {
 		for(final AssessmentSection section:testPart.getAssessmentSections()) {
 			doAssessmentSectionEstimateMaxScore(section, resolvedAssessmentTest, visitor);
 		} 
-		return visitor.get();
+		return visitor.getMaxScore();
 	}
 	
 	public static Double estimateMaxScore(AssessmentSection section, ResolvedAssessmentTest resolvedAssessmentTest) {
 		MaxScoreVisitor visitor = new MaxScoreVisitor();
 		doAssessmentSectionEstimateMaxScore(section, resolvedAssessmentTest, visitor);
-		return visitor.get();
+		return visitor.getMaxScore();
+	}
+	
+	public static int estimateNumberOfQuestions(ResolvedAssessmentTest resolvedAssessmentTest) {
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		
+		MaxScoreVisitor visitor = new MaxScoreVisitor();
+		for (final TestPart testPart:assessmentTest.getTestParts()) {
+			 for (final AssessmentSection section:testPart.getAssessmentSections()) {
+				 doAssessmentSectionEstimateMaxScore(section, resolvedAssessmentTest, visitor);
+			 } 
+		}
+		return visitor.getNumberOfQuestions();
 	}
 
 	private static void estimateMaxScore(SectionPart sectionPart, ResolvedAssessmentTest resolvedAssessmentTest, MaxScoreVisitor visitor) {
@@ -211,23 +224,38 @@ public class QtiMaxScoreEstimator {
 	public static class MaxScoreVisitor implements Comparable<MaxScoreVisitor> {
 		
 		private DoubleAdder maxScoreTotal;
+		private final LongAdder numOfQuestions = new LongAdder();
 		
-		public Double get() {
+		public Double getMaxScore() {
 			return maxScoreTotal == null ? null : maxScoreTotal.doubleValue();
 		}
 		
+		public int getNumberOfQuestions() {
+			return numOfQuestions.intValue();
+		}
+		
 		public void add(Double val) {
+			numOfQuestions.increment();
+			
 			if(val == null) return;
 			
 			if(maxScoreTotal == null) {
 				maxScoreTotal = new DoubleAdder();
-			} 
+			}
 			maxScoreTotal.add(val.doubleValue());
 		}
 		
 		public void add(MaxScoreVisitor visitor) {
-			if(visitor == null || visitor.maxScoreTotal == null) return;
-			add(visitor.maxScoreTotal.doubleValue());
+			if(visitor == null) return;
+			
+			numOfQuestions.add(visitor.numOfQuestions.sum());
+			
+			if(visitor.maxScoreTotal != null) {
+				if(maxScoreTotal == null) {
+					maxScoreTotal = new DoubleAdder();
+				}
+				maxScoreTotal.add(visitor.maxScoreTotal.doubleValue());
+			}
 		}
 
 		@Override

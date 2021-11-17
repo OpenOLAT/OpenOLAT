@@ -1,0 +1,201 @@
+<div class="o_offline_test_footer">$r.escapeHtml($serialNumber)</div>
+
+#if($r.isTrue($exportContext.coverSheet))
+<div class="o_offline_test_cover_sheet container-fluid">
+	<div class="row">
+		<div class="col-xs-6">
+			<h3 class="o_offline_test_identifier">$r.escapeHtml($exportContext.identifierValue)</h3>
+		</div>
+		<div class="col-xs-6">
+			#if($r.isNotEmpty($exportContext.procedure))
+			<h3 class="o_offline_test_procedure"><small>$r.translate("field.procedure")</small>
+			<br>$r.xssScan($exportContext.procedure)</h3>
+			#end
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			<h1 class="o_offline_test_title"><small>$r.translate("field.title")</small>
+			<br>$r.xssScan($exportContext.titleValue)</h1>
+		</div>
+	</div>
+	
+	#if($r.isTrue($exportContext.placeholderNames) || $r.isTrue($exportContext.placeholderCandidateNumber) || $r.isTrue($exportContext.placeholderDate))
+	<div class="row o_offline_test_block">
+		#if($r.isTrue($exportContext.placeholderNames))
+		<div class="col-xs-3">
+			$r.translate("first.name")<br><br>
+			<hr class="o_offline_test_fill">
+		</div>
+		<div class="col-xs-3">
+			$r.translate("last.name")<br><br>
+			<hr class="o_offline_test_fill">
+		</div>
+		#end
+		
+		#if($r.isTrue($exportContext.placeholderCandidateNumber))
+		<div class="col-xs-3">
+			$r.translate("attr.serial.number")<br><br>
+			$r.escapeHtml($serialNumber)
+		</div>
+		#end
+		
+		#if($r.isTrue($exportContext.placeholderDate))
+		<div class="col-xs-3">
+			$r.translate("attr.date")<br><br>
+			<hr class="o_offline_test_fill">
+		</div>
+		#end
+	</div>
+	#end
+	
+	#if($r.isTrue($exportContext.expenditureOfTime) || $r.isTrue($exportContext.numOfQuestions) || $r.isTrue($exportContext.maxScore) || $r.isTrue($exportContext.cutValue))
+	<div class="row o_offline_test_block">
+		#if($r.isTrue($exportContext.expenditureOfTime))
+		<div class="col-xs-3">
+			$r.translate("attr.time")<br><br>
+			#if($r.isNotEmpty(${exportContext.timeValue}))
+				$r.translate("attr.time.val", ${exportContext.timeValue})
+			#else
+				<hr class="o_offline_test_fill">
+			#end
+		</div>
+		#end
+		
+		#if($r.isTrue($exportContext.numOfQuestions))
+		<div class="col-xs-3">
+			$r.translate("attr.num.questions")<br><br>
+			$r.translate("attr.num.questions.val", ${numOfQuestions})
+		</div>
+		#end
+		
+		#if($r.isTrue($exportContext.maxScore))
+		<div class="col-xs-3">
+			$r.translate("attr.max.score")<br><br>
+			#if($r.isNotEmpty(${exportContext.maxScoreValue}))
+				$r.translate("attr.cut.value.val", ${maxScore})
+			#else
+				<hr class="o_offline_test_fill">
+			#end
+		</div>
+		#end
+		
+		#if($r.isTrue($exportContext.cutValue))
+		<div class="col-xs-3">
+			$r.translate("attr.cut.value")<br><br>
+			#if($r.isNotEmpty(${exportContext.cutValueValue}))
+				$r.translate("attr.max.score.val", ${exportContext.cutValueValue})
+			#else
+				<hr class="o_offline_test_fill">
+			#end
+		</div>
+		#end
+	</div>
+	#end
+	
+	#if($r.isTrue($exportContext.description))
+	<div class="row o_offline_test_block o_offline_test_description">
+		<div class="col-xs-12">$r.xssScan($exportContext.descriptionValue)</div>
+	</div>
+	#end
+</div>
+#end
+
+#if($r.isTrue($exportContext.additionalSheet))
+<div class="o_offline_test_additional_sheet container">
+	<div class="row">
+		<div class="col-lg-12">$r.xssScan($exportContext.additionalSheetValue)</div>
+	</div>
+</div>
+#end
+
+<div id="o_assessment_test_results_$r.getCId()" class="o_offline_test o_assessment_test_results">
+## List Section titles and Items
+<div class="o_qti_sections o_block_large">
+#set($inItem = false)
+#set($inSection = false)
+#foreach($itemResult in $itemResults)
+	## Title for section or header. Close divs of last iteration. Structure: o_qti_section contains one o_qti_items container which contains several o_qti_item
+	#if(${itemResult.isSection()})
+		## Cleanup of last iteration: close items and section container
+		#if ($inItem)
+			## END last o_qti_items
+			</div>
+			#set($inItem = false)
+		#end
+		#if ($inSection)
+			## END last o_qti_section
+			</div>
+			#set($inSection = false)
+		#end
+		## Start open section container		
+		<div class="o_qti_section">
+		#set($inSection = true)
+		## Hide section title / metadata if there is only one section, redundant with test overview
+
+		<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h3>
+		#if($r.isNotEmpty($itemResult.rubrics))
+		<div class="o_info o_assessmentsection_rubrics">
+			#foreach($rubric in $itemResult.rubrics)
+				<div class='rubric clearfix'>$r.render($rubric)</div>
+			#end
+		</div>
+		#end
+	#else
+		## this is an ITEM
+		#if (!$inItem)
+			<div class="o_qti_items">		
+		#end
+		<div class="o_qti_item panel panel-default o_print_break_avoid">
+		<div class="panel-heading">
+			<h4 class="panel-title">
+				<i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
+				<small>			
+				#if ($itemResult.hasMaxScore())
+		    		#if ($itemResult.maxScore == "-1.0")
+		  				$r.translate("question.progress.noMaxScore")
+		    		#else
+		  				<span title="$r.translateInAttribute("score.max")">$itemResult.maxScore</span>
+		  				#if(${itemResult.maxScoreSingular()}) $r.translate("results.of.point") #else $r.translate("results.of.points") #end
+		  			#end
+				#end
+				</small>
+			</h4>
+		</div>
+		#set($inItem = true)
+		#if($r.isTrue($itemResult.isDeleted()))
+			<div class="o_error">$r.translate("error.assessment.item.missing")</div>
+		#end
+
+		<div class="panel-body">
+		#if($r.isNotNull($itemResult.interactionResults))
+			#if($r.isFalse($solution) && $r.isNotNull($itemResult.interactionResults.responseFormItem.name))
+				<div id="o_c$itemResult.interactionResults.responseFormItem.component.dispatchID">$r.render($itemResult.interactionResults.responseFormItem.name)</div>
+			#end
+			#if($r.isTrue($solution) && $r.isNotNull($itemResult.interactionResults.solutionFormItem.name))
+				<div id="o_c$itemResult.interactionResults.solutionFormItem.component.dispatchID" class="o_qti21_solution">
+					<div id="collapse_${itemResult.interactionResults.solutionFormItem.name}" class="">$r.render($itemResult.interactionResults.solutionFormItem.name)</div>
+				</div>
+				#if($r.isNotNull($itemResult.correctSolutionItem))
+				<div class="o_block_bottom">
+					$r.render($itemResult.correctSolutionItem.name)
+				</div>
+				#end
+			#end
+		#end
+		</div> ## END of panel-body
+	</div> ## END of o_qti_item
+	#end
+#end  ## END foreach 
+
+#if ($inItem)
+	## END o_qti_items
+	</div>
+#end
+#if ($inSection)
+	## END last o_qti_section
+	</div>
+#end
+</div> ## END of o_qti_sections
+
+</div> ## END of o_assessment_test_results

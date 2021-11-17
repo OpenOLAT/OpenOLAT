@@ -22,6 +22,7 @@ package org.olat.group.ui.lifecycle;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 
 /**
@@ -68,7 +69,13 @@ public class TranslationBundle {
 	}
 	
 	public void update(Translator translator) {
-		String val = "<strong>" + translator.translate(getSubjectI18nKey()) + "</strong> " + translator.translate(getBodyI18nKey());
-		getViewEl().setValue(val);
+		StringBuilder val = new StringBuilder(256);
+		if(StringHelper.containsNonWhitespace(getSubjectI18nKey())) {
+			val.append("<strong>").append(translator.translate(getSubjectI18nKey())).append("</strong> ");
+		}
+		if(StringHelper.containsNonWhitespace(getBodyI18nKey())) {
+			val.append(translator.translate(getBodyI18nKey()));
+		}
+		getViewEl().setValue(val.toString());
 	}
 }

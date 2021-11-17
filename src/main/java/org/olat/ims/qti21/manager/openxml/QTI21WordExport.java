@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
 import java.util.zip.ZipEntry;
@@ -132,21 +131,16 @@ public class QTI21WordExport implements MediaResource {
 	
 	private static final Logger log = Tracing.createLoggerFor(QTI21WordExport.class);
 	
-	private String encoding;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private final File mediaDir;
 	private final VFSContainer mediaContainer;
 	private final Locale locale;
-	private final CountDownLatch latch;
 	private final AssessmentHtmlBuilder htmlBuilder;
 	
 	public QTI21WordExport(ResolvedAssessmentTest resolvedAssessmentTest,
-			VFSContainer mediaContainer, File mediaDir,
-			Locale locale, String encoding, CountDownLatch latch) {
-		this.encoding = encoding;
+			VFSContainer mediaContainer, File mediaDir, Locale locale) {
 		this.locale = locale;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
-		this.latch = latch;
 		this.mediaDir = mediaDir;
 		this.mediaContainer = mediaContainer;
 		htmlBuilder = new AssessmentHtmlBuilder();
@@ -190,7 +184,7 @@ public class QTI21WordExport implements MediaResource {
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		try {
-			hres.setCharacterEncoding(encoding);
+			hres.setCharacterEncoding("UTF-8");
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -218,8 +212,6 @@ public class QTI21WordExport implements MediaResource {
 			zout.closeEntry();
 		} catch (Exception e) {
 			log.error("", e);
-		} finally {
-			latch.countDown();
 		}
 	}
 	

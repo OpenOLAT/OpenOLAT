@@ -30,9 +30,28 @@
 		</property>
 	</bean>
 	
-	<!-- Questions report panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8210" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.ims.qti21.ui.editor.testsexport.TestsExportAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="testsOffline" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.ims.qti21.ui.editor.testsexport"/>
+		<property name="parentTreeNodeIdentifier" value="eAssessmentParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Questions report panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8211" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.ims.qti21.ui.report.QuestionOriginReportController"/>
