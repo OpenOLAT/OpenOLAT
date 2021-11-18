@@ -383,7 +383,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 		} else if (source == selectUsersButton) {
 			fireEvent(ureq, new MultiIdentityChosenEvent(userTableModel.getObjects(tableEl.getMultiSelectedIndex())));
 		} else if (tableEl == source) {
-			if(event instanceof SelectionEvent) {
+			if(event instanceof SelectionEvent && "select".equals(event.getCommand())) {
 				SelectionEvent se = (SelectionEvent)event;
 				Identity chosenIdent = userTableModel.getObject(se.getIndex());
 				fireEvent(ureq, new SingleIdentityChosenEvent(chosenIdent));
