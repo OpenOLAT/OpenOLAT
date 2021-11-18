@@ -197,6 +197,10 @@ public class TinyConfig {
 		return disableFeature("media");
 	}
 	
+	public TinyConfig disableSmileys() {
+		return disableFeature("olatsmileys");
+	}
+	
 	/**
 	 * Remove media + olatmovie
 	 * @return

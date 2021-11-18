@@ -86,9 +86,12 @@ public class TestsExport3CoverFieldsStep extends BasicStep {
 			setFormInfo("fields.explanation");
 			
 			procedureEl = uifactory.addTextElement("field.procedure", 255, exportContext.getProcedure(), formLayout);
-
-			descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("field.informations", "field.informations",
-					exportContext.getDescriptionValue(), 12, 60, formLayout, getWindowControl());
+			
+			descriptionEl = uifactory.addRichTextElementForStringDataCompact("field.informations", "field.informations", exportContext.getDescriptionValue(), 12, 60,
+							null, formLayout, ureq.getUserSession(), getWindowControl());
+			descriptionEl.getEditorConfiguration().disableImageAndMovie();
+			descriptionEl.getEditorConfiguration().disableSmileys();
+			descriptionEl.getEditorConfiguration().disableMedia();
 			descriptionEl.setVisible(exportContext.isDescription());
 		}
 

@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -167,7 +168,11 @@ public class SingleKeyTranslatorController extends FormBasicController {
 						te = uifactory.addTextAreaElement(textId, null, -1, 8, 60, false, false, value, formLayout);
 						break;
 					case RICH_TEXT_ELEMENT:
-						te = uifactory.addRichTextElementForStringDataMinimalistic(textId, null, value, -1, -1, formLayout, getWindowControl());
+						RichTextElement rte = uifactory.addRichTextElementForStringDataCompact(textId, null, value, -1, -1, null, formLayout, ureq.getUserSession(), getWindowControl());
+						rte.getEditorConfiguration().disableImageAndMovie();
+						rte.getEditorConfiguration().disableSmileys();
+						rte.getEditorConfiguration().disableMedia();
+						te = rte;
 						break;
 					default:
 						te = uifactory.addTextElement(textId, textId, null, 255, value, formLayout);

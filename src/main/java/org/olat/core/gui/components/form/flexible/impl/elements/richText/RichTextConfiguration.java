@@ -601,6 +601,10 @@ public class RichTextConfiguration implements Disposable {
 	public void disableImageAndMovie() {
 		tinyConfig = tinyConfig.disableImageAndMedia();
 	}
+	
+	public void disableSmileys() {
+		tinyConfig = tinyConfig.disableSmileys();
+	}
 
 	public void disableMenuAndMenuBar() {
 		tinyConfig = tinyConfig.disableMenuAndMenuBar();

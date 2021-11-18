@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.ExternalLink;
@@ -121,9 +122,16 @@ public class TestsExport5OverviewStep extends BasicStep {
 			String language = locale.getDisplayLanguage(getLocale());
 			uifactory.addStaticTextElement("language", "overview.language", language, generalCont);
 			
+			String serialNumbers;
 			String startSerialNumber = exportContext.getSerialNumber(1);
-			String endSerialNumber = exportContext.getSerialNumber(exportContext.getNumOfTests());
-			String serialNumbers = translate("overview.serial.number.val", startSerialNumber, endSerialNumber);
+			if(exportContext.getNumOfTests() == 1) {
+				serialNumbers = startSerialNumber;
+			} else if(exportContext.getNumOfTests() > 1) {
+				String endSerialNumber = exportContext.getSerialNumber(exportContext.getNumOfTests());
+				serialNumbers = translate("overview.serial.number.val", startSerialNumber, endSerialNumber);
+			} else {
+				serialNumbers = "";
+			}
 			uifactory.addStaticTextElement("serial.number", "overview.serial.number", serialNumbers, generalCont);	
 		}
 		
@@ -131,6 +139,7 @@ public class TestsExport5OverviewStep extends BasicStep {
 			FormLayoutContainer testCont = FormLayoutContainer.createDefaultFormLayout("test", getTranslator());
 			formLayout.add(testCont);
 			testCont.setFormTitle(translate("overview.test.title"));
+			testCont.setVisible(exportContext.isExpenditureOfTime() || exportContext.isNumOfQuestions() || exportContext.isMaxScore() || exportContext.isCutValue());
 			
 			ResolvedAssessmentTest resolvedAssessmentTest = exportContext.getResolvedAssessmentTest();
 			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractAssumingSuccessful();
@@ -143,12 +152,14 @@ public class TestsExport5OverviewStep extends BasicStep {
 				exportContext.setTimeValue(timeInMinutes);
 				time = translate("attr.time.val", timeInMinutes);
 			}
-			uifactory.addStaticTextElement("attr.time", time, testCont);
+			StaticTextElement timeEl = uifactory.addStaticTextElement("attr.time", time, testCont);
+			timeEl.setVisible(exportContext.isExpenditureOfTime());
 			
 			int numOfQuestions = QtiMaxScoreEstimator.estimateNumberOfQuestions(resolvedAssessmentTest);
 			exportContext.setNumOfQuestionsValue(Integer.toString(numOfQuestions));
-			uifactory.addStaticTextElement("attr.num.questions",
+			StaticTextElement questionsEl = uifactory.addStaticTextElement("attr.num.questions",
 					translate("attr.num.questions.val", exportContext.getNumOfQuestionsValue()), testCont);
+			questionsEl.setVisible(exportContext.isNumOfQuestions());
 			
 			Double maxScore = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
 			String maxScoreStr;
@@ -159,7 +170,8 @@ public class TestsExport5OverviewStep extends BasicStep {
 			} else {
 				maxScoreStr = "";
 			}
-			uifactory.addStaticTextElement("attr.max.score", maxScoreStr, testCont);
+			StaticTextElement maxScoreEl = uifactory.addStaticTextElement("attr.max.score", maxScoreStr, testCont);
+			maxScoreEl.setVisible(exportContext.isMaxScore());
 			
 			Double cutValue = QtiNodesExtractor.extractCutValue(resolvedAssessmentTest.getRootNodeLookup().extractAssumingSuccessful());
 			String cutValueStr;
@@ -170,7 +182,8 @@ public class TestsExport5OverviewStep extends BasicStep {
 			} else {
 				cutValueStr = "";
 			}
-			uifactory.addStaticTextElement("attr.cut.value", cutValueStr, testCont);
+			StaticTextElement cutValueEl = uifactory.addStaticTextElement("attr.cut.value", cutValueStr, testCont);
+			cutValueEl.setVisible(exportContext.isCutValue());
 		}
 
 		private void initCoverSheetForm(FormItemContainer formLayout) {
