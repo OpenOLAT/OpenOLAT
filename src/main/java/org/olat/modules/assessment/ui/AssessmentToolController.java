@@ -19,6 +19,7 @@
  */
 package org.olat.modules.assessment.ui;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -103,9 +104,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			if(event == AssessmentOverviewController.SELECT_USERS_EVENT) {
 				doSelectUsersView(ureq, "Users", null);
 			} else if(event == AssessmentOverviewController.SELECT_PASSED_EVENT) {
-				doSelectUsersView(ureq, "Passed", new AssessedIdentityListState("passed", null, null, "Passed", false));
+				doSelectUsersView(ureq, "Passed", new AssessedIdentityListState(null, Collections.singletonList("passed"), null, null, null, "Passed", false));
 			} else if(event == AssessmentOverviewController.SELECT_FAILED_EVENT) {
-				doSelectUsersView(ureq, "NotPassed", new AssessedIdentityListState("failed", null, null, "Failed", false));
+				doSelectUsersView(ureq, "NotPassed", new AssessedIdentityListState(null, Collections.singletonList("failed"), null, null, null, "Failed", false));
 			} else if (event instanceof UserSelectionEvent) {
 				UserSelectionEvent use = (UserSelectionEvent)event;
 				OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());

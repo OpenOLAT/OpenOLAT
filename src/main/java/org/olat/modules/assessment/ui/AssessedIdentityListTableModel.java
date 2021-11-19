@@ -19,22 +19,17 @@
  */
 package org.olat.modules.assessment.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.certificate.CertificateLight;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -43,10 +38,9 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  *
  */
 public class AssessedIdentityListTableModel extends DefaultFlexiTableDataModel<AssessedIdentityElementRow>
-	implements SortableFlexiTableDataModel<AssessedIdentityElementRow>, FilterableFlexiTableModel {
+	implements SortableFlexiTableDataModel<AssessedIdentityElementRow> {
 
 	private final AssessableResource element;
-	private List<AssessedIdentityElementRow> backups;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
 	public AssessedIdentityListTableModel(FlexiTableColumnModel columnModel, AssessableResource element) {
@@ -56,43 +50,6 @@ public class AssessedIdentityListTableModel extends DefaultFlexiTableDataModel<A
 	
 	public void setCertificateMap(ConcurrentMap<Long, CertificateLight> certificateMap) {
 		this.certificateMap = certificateMap;
-	}
-
-	@Override
-	public void filter(String searchString, List<FlexiTableFilter> filters) {
-		FlexiTableFilter filter = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0);
-		if(filter != null && filter.isSelected()) {
-			String key = ((FlexiTableExtendedFilter)filter).getValue();
-			List<AssessedIdentityElementRow> filteredRows = new ArrayList<>();
-			if("passed".equals(key)) {
-				for(AssessedIdentityElementRow row:backups) {
-					if(row.getPassed() != null && row.getPassed().booleanValue()) {
-						filteredRows.add(row);
-					}
-				}
-			} else if("failed".equals(key)) {
-				for(AssessedIdentityElementRow row:backups) {
-					if(row.getPassed() != null && !row.getPassed().booleanValue()) {
-						filteredRows.add(row);
-					}
-				}
-			} else if(AssessmentEntryStatus.isValueOf(key)) {
-				for(AssessedIdentityElementRow row:backups) {
-					if(row.getAssessmentStatus() != null && key.equals(row.getAssessmentStatus().name())) {
-						filteredRows.add(row);
-					}
-				}
-			}
-			super.setObjects(filteredRows);
-		} else {
-			super.setObjects(backups);
-		}
-	}
-
-	@Override
-	public void setObjects(List<AssessedIdentityElementRow> objects) {
-		backups = objects;
-		super.setObjects(objects);
 	}
 
 	@Override

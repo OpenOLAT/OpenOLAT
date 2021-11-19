@@ -35,6 +35,12 @@ import org.olat.repository.RepositoryEntry;
  */
 public class SearchAssessedIdentityParams {
 	
+	public enum Passed {
+		passed,
+		failed,
+		notGraded;
+	}
+	
 	private final RepositoryEntry entry;
 	private final RepositoryEntry referenceEntry;
 	private final String subIdent;
@@ -43,9 +49,9 @@ public class SearchAssessedIdentityParams {
 	private final boolean nonMembers;
 	private final boolean coach;
 	
-	private boolean passed;
-	private boolean failed;
 	private List<AssessmentEntryStatus> assessmentStatus;
+	private List<Passed> passed;
+	private Boolean userVisibility;
 	private Collection<AssessmentObligation> assessmentObligations;
 	
 	private String searchString;
@@ -96,22 +102,6 @@ public class SearchAssessedIdentityParams {
 		this.searchString = searchString;
 	}
 
-	public boolean isPassed() {
-		return passed;
-	}
-
-	public void setPassed(boolean passed) {
-		this.passed = passed;
-	}
-
-	public boolean isFailed() {
-		return failed;
-	}
-
-	public void setFailed(boolean failed) {
-		this.failed = failed;
-	}
-
 	public List<AssessmentEntryStatus> getAssessmentStatus() {
 		return assessmentStatus;
 	}
@@ -120,6 +110,22 @@ public class SearchAssessedIdentityParams {
 		this.assessmentStatus = assessmentStatus;
 	}
 	
+	public List<Passed> getPassed() {
+		return passed;
+	}
+
+	public void setPassed(List<Passed> passed) {
+		this.passed = passed;
+	}
+	
+	public Boolean getUserVisibility() {
+		return userVisibility;
+	}
+
+	public void setUserVisibility(Boolean userVisibility) {
+		this.userVisibility = userVisibility;
+	}
+
 	public Collection<AssessmentObligation> getAssessmentObligations() {
 		return assessmentObligations;
 	}

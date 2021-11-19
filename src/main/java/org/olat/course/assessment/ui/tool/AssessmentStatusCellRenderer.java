@@ -64,7 +64,7 @@ public class AssessmentStatusCellRenderer implements FlexiCellRenderer {
 				case done: render(renderer, target, "o_icon_status_done", "assessment.status.done"); break;
 			}	
 		} else if (showNoStatus) {
-			target.append("-");
+			render(renderer, target, "o_icon_status_not_started", "assessment.status.notStart");
 		}
 	}
 	

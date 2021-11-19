@@ -20,12 +20,12 @@
 package org.olat.modules.assessment.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -65,6 +66,7 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams.Passed;
 import org.olat.course.assessment.ui.tool.AssessedIdentityListProvider;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
@@ -200,13 +202,20 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		
 		// life-cycle
 		SelectionValues statusValues = new SelectionValues();
-		statusValues.add(SelectionValues.entry("passed", translate("filter.passed")));
-		statusValues.add(SelectionValues.entry("failed", translate("filter.failed")));
+		statusValues.add(SelectionValues.entry("notStarted", translate("filter.notStarted")));
 		statusValues.add(SelectionValues.entry("inProgress", translate("filter.inProgress")));
 		statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
 		statusValues.add(SelectionValues.entry("done", translate("filter.done")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.status"),
-				"status", statusValues, true));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
+				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
+		
+		// passed
+		SelectionValues passedValues = new SelectionValues();
+		passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.passed.name(), translate("filter.passed")));
+		passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.failed.name(), translate("filter.failed")));
+		passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.notGraded.name(), translate("filter.not.graded")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.passed.label"),
+				AssessedIdentityListState.FILTER_PASSED, passedValues, true));
 		
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			List<BusinessGroup> coachedGroups;
@@ -242,20 +251,32 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	protected void updateModel(String searchString, List<FlexiTableFilter> filters) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
 		
-		List<AssessmentEntryStatus> assessmentStatus = null;
-		if(filters != null && !filters.isEmpty()) {
-			assessmentStatus = new ArrayList<>(filters.size());
-			for(FlexiTableFilter filter:filters) {
-				if("passed".equals(filter.getFilter())) {
-					params.setPassed(true);
-				} else if("failed".equals(filter.getFilter())) {
-					params.setFailed(true);
-				} else if(AssessmentEntryStatus.isValueOf(filter.getFilter())){
-					assessmentStatus.add(AssessmentEntryStatus.valueOf(filter.getFilter()));
-				}
+		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_STATUS);
+		if (statusFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)statusFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<AssessmentEntryStatus> passed = filterValues.stream()
+						.filter(AssessmentEntryStatus::isValueOf)
+						.map(AssessmentEntryStatus::valueOf)
+						.collect(Collectors.toList());
+				params.setAssessmentStatus(passed);
+			} else {
+				params.setAssessmentStatus(null);
 			}
 		}
-		params.setAssessmentStatus(assessmentStatus);
+		
+		FlexiTableFilter passedFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_PASSED);
+		if (passedFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)passedFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<SearchAssessedIdentityParams.Passed> passed = filterValues.stream()
+						.map(SearchAssessedIdentityParams.Passed::valueOf)
+						.collect(Collectors.toList());
+				params.setPassed(passed);
+			} else {
+				params.setPassed(null);
+			}
+		}
 		
 		// learn resources cannot have business groups or curriculums
 		List<Long> businessGroupKeys = null;
@@ -267,6 +288,9 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
 		assessmentEntries.stream().filter(entry -> entry.getIdentity() != null)
 			.forEach(entry -> entryMap.put(entry.getIdentity().getKey(), entry));
+		
+		// Apply filters
+		assessedIdentities = applyFilters(assessedIdentities, entryMap, params);
 
 		Map<Long,Date> initialLaunchDates = userInfosMgr.getInitialLaunchDates(testEntry.getOlatResource());
 
@@ -280,12 +304,54 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 
 		usersTableModel.setObjects(rows);
-		if(filters != null && !filters.isEmpty() && filters.get(0) != null) {
-			usersTableModel.filter(tableEl.getQuickSearchString(), Collections.singletonList(filters.get(0)));
-		}
 		tableEl.reset(true, true, true);
 		searchParams = params;
 		updateTools(assessedIdentities);
+	}
+	
+	private List<Identity> applyFilters(List<Identity> identities, Map<Long, AssessmentEntry> identityToEntry,
+			SearchAssessedIdentityParams params) {
+		if(hasFilter(params)) {
+			List<Identity> filteredIdentities = new ArrayList<>();
+			for(Identity assessedIdentity:identities) {
+				AssessmentEntry entry = identityToEntry.get(assessedIdentity.getKey());
+				if(matchesStatusFilter(params, entry) && matchesPassedFilter(params, entry)) {
+					filteredIdentities.add(assessedIdentity);
+				}
+			}
+			return filteredIdentities;
+		}
+		return identities;
+	}
+	
+	private boolean hasFilter(SearchAssessedIdentityParams params) {
+		return hasStatusFilter(params) 
+				|| hasPassedFilter(params);
+	}
+
+	private boolean hasStatusFilter(SearchAssessedIdentityParams params) {
+		return params.getAssessmentStatus() != null && !params.getAssessmentStatus().isEmpty();
+	}
+	
+	private boolean matchesStatusFilter(SearchAssessedIdentityParams params, AssessmentEntry entry) {
+		if (hasStatusFilter(params)) {
+			return (entry == null && params.getAssessmentStatus().contains(AssessmentEntryStatus.notStarted)) 
+					|| (entry != null && params.getAssessmentStatus().contains(entry.getAssessmentStatus()));
+		}
+		return true;
+	}
+
+	private boolean hasPassedFilter(SearchAssessedIdentityParams params) {
+		return params.getPassed() != null && !params.getPassed().isEmpty();
+	}
+	
+	private boolean matchesPassedFilter(SearchAssessedIdentityParams params, AssessmentEntry entry) {
+		if (hasPassedFilter(params)) {
+			return (params.getPassed().contains(Passed.passed) && entry != null && entry.getPassed() != null && entry.getPassed().booleanValue())
+					|| (params.getPassed().contains(Passed.failed) && entry != null && entry.getPassed() != null && !entry.getPassed().booleanValue())
+					|| (params.getPassed().contains(Passed.notGraded) && (entry == null || entry.getPassed() == null));
+		}
+		return true;
 	}
 	
 	protected void updateTools(@SuppressWarnings("unused") List<Identity> assessedIdentities) {

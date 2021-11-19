@@ -43,29 +43,31 @@ public class AssessedIdentityListState implements StateEntry {
 	private static final Logger log = Tracing.createLoggerFor(AssessedIdentityListState.class);
 
 	public static final String FILTER_STATUS = "status";
+	public static final String FILTER_PASSED = "passed";
+	public static final String FILTER_USER_VISIBILITY = "userVisibility";
 	public static final String FILTER_GROUPS = "groups";
 	public static final String FILTER_OBLIGATION = "obligation";
 	
 	private String tabId;
 	private boolean filtersExpanded;
-	private String status;
-	private List<String> groupKeys;
+	private List<String> status;
+	private List<String> passed;
+	private String userVisibility;
 	private List<String> obligations;
+	private List<String> groupKeys;
 	
 	public AssessedIdentityListState() {
 		//
 	}
 	
-	public AssessedIdentityListState(String status, List<String> groupKeys, List<String> obligations, String tabId, boolean filtersExpanded) {
+	public AssessedIdentityListState(List<String> status, List<String> passed, String userVisibility, List<String> obligations, List<String> groupKeys, String tabId, boolean filtersExpanded) {
 		this.tabId = tabId;
 		this.status = status;
-		this.groupKeys = groupKeys;
+		this.passed = passed;
+		this.userVisibility = userVisibility;
 		this.obligations = obligations;
 		this.filtersExpanded = filtersExpanded;
-	}
-	
-	public static AssessedIdentityListState valueOf(String statusValue) {
-		return new AssessedIdentityListState(statusValue, null, null, null, false);
+		this.groupKeys = groupKeys;
 	}
 	
 	public static AssessedIdentityListState valueOf(FlexiFiltersTab tab, List<FlexiTableFilter> filters, boolean filtersExpanded) {
@@ -74,20 +76,32 @@ public class AssessedIdentityListState implements StateEntry {
 		state.filtersExpanded = filtersExpanded;
 		for(FlexiTableFilter filter:filters) {
 			if(FILTER_STATUS.equals(filter.getFilter()) && filter.isSelected()) {
-				if(filter instanceof FlexiTableSingleSelectionFilter) {
-					state.setStatus(((FlexiTableSingleSelectionFilter)filter).getValue());
+				if(filter instanceof FlexiTableMultiSelectionFilter) {
+					state.setStatus(((FlexiTableMultiSelectionFilter)filter).getValues());
 				} else {
 					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
 				}
-			} else if(FILTER_GROUPS.equals(filter.getFilter())) {
+			} else if(FILTER_PASSED.equals(filter.getFilter())) {
 				if(filter instanceof FlexiTableMultiSelectionFilter) {
-					state.setGroupKeys(((FlexiTableMultiSelectionFilter)filter).getValues());
+					state.setPassed(((FlexiTableMultiSelectionFilter)filter).getValues());
+				} else {
+					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
+				}
+			} else if(FILTER_USER_VISIBILITY.equals(filter.getFilter()) && filter.isSelected()) {
+				if(filter instanceof FlexiTableSingleSelectionFilter) {
+					state.setUserVisibility(((FlexiTableSingleSelectionFilter)filter).getValue());
 				} else {
 					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
 				}
 			} else if(FILTER_OBLIGATION.equals(filter.getFilter())) {
 				if(filter instanceof FlexiTableMultiSelectionFilter) {
 					state.setObligations(((FlexiTableMultiSelectionFilter)filter).getValues());
+				} else {
+					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
+				}
+			} else if(FILTER_GROUPS.equals(filter.getFilter())) {
+				if(filter instanceof FlexiTableMultiSelectionFilter) {
+					state.setGroupKeys(((FlexiTableMultiSelectionFilter)filter).getValues());
 				} else {
 					log.warn("Filter cannot pass value to state in assessment tool: {}", filter.getFilter());
 				}
@@ -99,17 +113,26 @@ public class AssessedIdentityListState implements StateEntry {
 	public void setValuesToFilter(List<FlexiTableExtendedFilter> filters) {
 		for(FlexiTableExtendedFilter filter:filters) {
 			if(FILTER_STATUS.equals(filter.getFilter())
-					&& StringHelper.containsNonWhitespace(getStatus())
-					&& filter instanceof FlexiTableSingleSelectionFilter) {
-				((FlexiTableSingleSelectionFilter)filter).setValue(getStatus());
-			} else if(FILTER_GROUPS.equals(filter.getFilter())
-					&& getGroupKeys() != null
+					&& getStatus() != null
 					&& filter instanceof FlexiTableMultiSelectionFilter) {
-				((FlexiTableMultiSelectionFilter)filter).setValues(getGroupKeys());
+				((FlexiTableMultiSelectionFilter)filter).setValues(getStatus());
+			} else if(FILTER_PASSED.equals(filter.getFilter())
+					&& getPassed() != null
+					&& filter instanceof FlexiTableMultiSelectionFilter) {
+				((FlexiTableMultiSelectionFilter)filter).setValues(getPassed());
+			} else if(FILTER_USER_VISIBILITY.equals(filter.getFilter())
+					&& StringHelper.containsNonWhitespace(getUserVisibility())
+					&& filter instanceof FlexiTableSingleSelectionFilter) {
+				((FlexiTableSingleSelectionFilter)filter).setValue(getUserVisibility());
 			} else if(FILTER_OBLIGATION.equals(filter.getFilter())
 					&& getObligations() != null
 					&& filter instanceof FlexiTableMultiSelectionFilter) {
 				((FlexiTableMultiSelectionFilter)filter).setValues(getObligations());
+			} else if(FILTER_GROUPS.equals(filter.getFilter())
+					&& getGroupKeys() != null
+					&& filter instanceof FlexiTableMultiSelectionFilter) {
+				((FlexiTableMultiSelectionFilter)filter).setValues(getGroupKeys());
+				
 			}
 		}
 	}
@@ -122,20 +145,28 @@ public class AssessedIdentityListState implements StateEntry {
 		return filtersExpanded;
 	}
 
-	public String getStatus() {
+	public List<String>  getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(List<String>  status) {
 		this.status = status;
 	}
 
-	public List<String> getGroupKeys() {
-		return groupKeys;
+	public List<String> getPassed() {
+		return passed;
 	}
 
-	public void setGroupKeys(List<String> groupKeys) {
-		this.groupKeys = groupKeys;
+	public void setPassed(List<String> passed) {
+		this.passed = passed;
+	}
+
+	public String getUserVisibility() {
+		return userVisibility;
+	}
+
+	public void setUserVisibility(String userVisibility) {
+		this.userVisibility = userVisibility;
 	}
 
 	public List<String> getObligations() {
@@ -146,8 +177,16 @@ public class AssessedIdentityListState implements StateEntry {
 		this.obligations = obligations;
 	}
 
+	public List<String> getGroupKeys() {
+		return groupKeys;
+	}
+
+	public void setGroupKeys(List<String> groupKeys) {
+		this.groupKeys = groupKeys;
+	}
+
 	@Override
 	public AssessedIdentityListState clone() {
-		return new AssessedIdentityListState(status, groupKeys, obligations, tabId, filtersExpanded);
+		return new AssessedIdentityListState(status, passed, userVisibility, obligations, groupKeys, tabId, filtersExpanded);
 	}
 }
