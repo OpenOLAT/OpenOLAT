@@ -96,5 +96,9 @@ public interface TaxonomyLevelType extends TaxonomyLevelTypeRef, CreateInfo {
 	public boolean isAllowedAsCompetence();
 	
 	public void setAllowedAsCompetence(boolean allowedAsCompetence);
+	
+	public boolean isAllowedAsSubject();
+	
+	public void setAllowedAsSubject(boolean allowedAsSubject);
 
 }

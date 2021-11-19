@@ -343,3 +343,32 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	}
 	
 }
+
+.o_curriculum_filter_button {
+	display: inline-block;
+	box-sizing: border-box;
+	min-width: 80px;
+	height: 40px;
+
+	color: white;
+	font-weight: bold;
+	line-height: 40px;
+	text-align: right;
+	
+	padding: 5px;
+	margin-right: 3px;
+	margin-bottom: 6px;
+	
+	background-color: rgb(125, 124, 128);
+	border: 3px solid rgb(125, 124, 128);
+	
+	&.active {
+		background-color: rgb(91, 138, 144);
+		border: 3px solid rgb(90, 177, 185);
+	}
+	
+	&:hover {
+		text-decoration: none;
+		color: white;
+	}
+}

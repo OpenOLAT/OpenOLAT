@@ -36,6 +36,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
@@ -179,12 +180,15 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	}
 	
 	public List<TaxonomyLevel> searchLevels(TaxonomyRef taxonomy, TaxonomyLevelSearchParameters searchParams) {
-		StringBuilder sb = new StringBuilder(256);
+		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select level from ctaxonomylevel as level")
 		  .append(" left join fetch level.parent as parent")
 		  .append(" left join fetch level.type as type")
-		  .append(" inner join fetch level.taxonomy as taxonomy")
-		  .append(" where level.taxonomy.key=:taxonomyKey");
+		  .append(" inner join fetch level.taxonomy as taxonomy");
+		
+		if (taxonomy != null) {
+		  sb.where().append("level.taxonomy.key=:taxonomyKey");
+		}
 
 		//quick search
 		Long quickId = null;
@@ -192,7 +196,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		String quickText = null;
 		if(StringHelper.containsNonWhitespace(searchParams.getQuickSearch())) {
 			quickRefs = searchParams.getQuickSearch();
-			sb.append(" and (level.externalId=:quickRef or ");
+			sb.where().append("(level.externalId=:quickRef or ");
 			PersistenceHelper.appendFuzzyLike(sb, "level.identifier", "quickText", dbInstance.getDbVendor());
 			sb.append(" or ");
 			quickText = PersistenceHelper.makeFuzzyQueryString(quickRefs);
@@ -207,10 +211,16 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			}
 			sb.append(")");	
 		}
+		
+		if(searchParams.isAllowedAsSubject() != null) {
+			sb.where().append("type.allowedAsSubject=:subjectAllowed");
+		}
 
 		TypedQuery<TaxonomyLevel> query = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), TaxonomyLevel.class)
-			.setParameter("taxonomyKey", taxonomy.getKey());
+			.createQuery(sb.toString(), TaxonomyLevel.class);
+		if (taxonomy != null) {
+			query.setParameter("taxonomyKey", taxonomy.getKey());
+		}
 		if(quickId != null) {
 			query.setParameter("quickVKey", quickId);
 		}
@@ -219,6 +229,9 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		}
 		if(quickText != null) {
 			query.setParameter("quickText", quickText);
+		}
+		if (searchParams.isAllowedAsSubject() != null) {
+			query.setParameter("subjectAllowed", searchParams.isAllowedAsSubject().booleanValue());
 		}
 
 		return query.getResultList();

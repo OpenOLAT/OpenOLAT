@@ -913,6 +913,33 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(element == null || element.getKey() == null) return Collections.emptyList();
 		return curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(element);
 	}
+	
+	@Override
+	public void updateTaxonomyLevels(CurriculumElement element, Collection<TaxonomyLevel> addedLevels, Collection<TaxonomyLevel> removedLevels) {
+		if (element == null || element.getKey() == null) return;
+		
+		List<TaxonomyLevel> taxonomyLevels = curriculumElementToTaxonomyLevelDao.getTaxonomyLevels(element);
+		
+		if (addedLevels != null) {
+			for (TaxonomyLevel level : addedLevels) {
+				if (taxonomyLevels.contains(level)) {
+					continue;
+				}
+				
+				curriculumElementToTaxonomyLevelDao.createRelation(element, level);
+			}
+		}
+		
+		if (removedLevels != null) {
+			for (TaxonomyLevel level : removedLevels) {
+				if (!taxonomyLevels.contains(level)) {
+					continue;
+				}
+				
+				curriculumElementToTaxonomyLevelDao.deleteRelation(element, level);
+			}
+		}
+	}
 
 	@Override
 	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level) {

@@ -60,6 +60,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelTypeRow> {
 			case identifier: return row.getIdentifier();
 			case displayName: return row.getDisplayName();
 			case allowedAsCompetence: return row.getType().isAllowedAsCompetence();
+			case allowedAsSubject: return row.getType().isAllowedAsSubject();
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -74,6 +75,7 @@ implements SortableFlexiTableDataModel<TaxonomyLevelTypeRow> {
 		identifier("table.header.type.identifier"),
 		displayName("table.header.type.displayName"),
 		allowedAsCompetence("table.header.type.competence.allowed"),
+		allowedAsSubject("table.header.type.subject.allowed"),
 		tools("table.header.actions");
 		
 		private final String i18nHeaderKey;

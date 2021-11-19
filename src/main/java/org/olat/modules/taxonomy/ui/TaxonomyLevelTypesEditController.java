@@ -101,6 +101,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.allowedAsCompetence, new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("yes"), (String)null), new StaticFlexiCellRenderer(translate("no"), (String)null))));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.allowedAsSubject, new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("yes"), (String)null), new StaticFlexiCellRenderer(translate("no"), (String)null))));
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")));
 		editColumn.setExportable(false);

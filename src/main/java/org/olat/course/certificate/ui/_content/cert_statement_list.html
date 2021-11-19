@@ -12,5 +12,10 @@
 		#end
 	</div>
 	#end
+	#if($showCurriculumFilterButtons)
+		#foreach($filterButton in $curriculumFilterButtons)
+			$r.render($filterButton)
+		#end
+	#end
 	$r.render("certificates")
 </fieldset>

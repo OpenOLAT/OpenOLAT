@@ -21,14 +21,17 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -53,6 +56,8 @@ import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -103,6 +108,8 @@ public class EditCurriculumElementController extends FormBasicController {
 	private SingleSelection learningProgressEnabledEl;
 	private SingleSelection curriculumElementTypeEl;
 	
+	private MultipleSelectionElement subjectsEl;
+	
 	private Curriculum curriculum;
 	private CurriculumElement element;
 	private CurriculumElement parentElement;
@@ -112,6 +119,8 @@ public class EditCurriculumElementController extends FormBasicController {
 	private DB dbInstance;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
 	/**
 	 * Create a new curriculum element.
@@ -211,6 +220,35 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 		if(!typeFound) {
 			curriculumElementTypeEl.select(typeKeys[0], true);
+		}
+		
+		
+		// Subjects
+		TaxonomyLevelSearchParameters filter = new TaxonomyLevelSearchParameters();
+		filter.setAllowedAsSubject(true);
+		
+		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(null, filter);
+		List<TaxonomyLevel> selectedSubjects = curriculumService.getTaxonomy(element);
+		
+		if (!taxonomyLevels.isEmpty()) {
+			subjectsEl = uifactory.addCheckboxesDropdown("subjects", formLayout);
+			
+			String[] keys = new String[taxonomyLevels.size()];
+			String[] values = new String[taxonomyLevels.size()];
+			
+			for (int i = 0; i < taxonomyLevels.size(); i++) {
+				TaxonomyLevel subject = taxonomyLevels.get(i);
+				keys[i] = subject.getKey().toString();
+				values[i] = subject.getMaterializedPathIdentifiersWithoutSlash();
+			}
+			
+			subjectsEl.setKeysAndValues(keys, values);
+			
+			if (!selectedSubjects.isEmpty()) {
+				for (TaxonomyLevel selectedLevel : selectedSubjects) {
+					subjectsEl.select(selectedLevel.getKey().toString(), true);
+				}
+			}
 		}
 		
 		calendarsEnabledEl = uifactory.addRadiosHorizontal("type.calendars.enabled", formLayout, new String[0], new String[0]);
@@ -455,6 +493,28 @@ public class EditCurriculumElementController extends FormBasicController {
 			element.setLearningProgress(learningProgress);
 			element.setElementStatus(status);
 			element = curriculumService.updateCurriculumElement(element);
+		}
+		
+		if (subjectsEl != null) {
+			Set<Long> taxonomyLevelKeys= new HashSet<>();
+			Set<Long> addedTaxonomies= new HashSet<>();
+			Set<Long> removedTaxonomies= new HashSet<>();
+			
+			for(String key : subjectsEl.getKeys()) {
+				taxonomyLevelKeys.add(Long.valueOf(key));
+				
+				if (subjectsEl.isKeySelected(key)) {
+					addedTaxonomies.add(Long.valueOf(key));
+				} else {
+					removedTaxonomies.add(Long.valueOf(key));
+				}
+			}
+			
+			List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevelsByKeys(taxonomyLevelKeys);
+			List<TaxonomyLevel> addedLevels = taxonomyLevels.stream().filter(level -> addedTaxonomies.contains(level.getKey())).collect(Collectors.toList());
+			List<TaxonomyLevel> removedLevels = taxonomyLevels.stream().filter(level -> removedTaxonomies.contains(level.getKey())).collect(Collectors.toList());
+			
+			curriculumService.updateTaxonomyLevels(element, addedLevels, removedLevels);			
 		}
 		
 		dbInstance.commitAndCloseSession(); // need to relaod properly the tree

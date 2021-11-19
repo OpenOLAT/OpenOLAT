@@ -58,6 +58,7 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 	private MultipleSelectionElement visibleEl;
 	private MultipleSelectionElement allowedSubTypesEl;
 	private MultipleSelectionElement allowedAsCompetenceEl;
+	private MultipleSelectionElement allowedAsSubjectEl;
 	
 	private TaxonomyLevelType levelType;
 	private Taxonomy taxonomy;
@@ -102,6 +103,11 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		allowedAsCompetenceEl = uifactory.addCheckboxesHorizontal("level.allow.competence", formLayout, onKeys, new String[] {translate("level.allow.competence.explanation")});
 		if(levelType != null && levelType.isAllowedAsCompetence()) {
 			allowedAsCompetenceEl.select(onKeys[0], true);
+		}
+		
+		allowedAsSubjectEl = uifactory.addCheckboxesHorizontal("level.allow.subject", formLayout, onKeys, new String[] {translate("level.allow.subject.explanation")});
+		if(levelType != null && levelType.isAllowedAsSubject()) {
+			allowedAsSubjectEl.select(onKeys[0], true);
 		}
 		
 		String description = levelType == null ? "" : levelType.getDescription();
@@ -164,6 +170,8 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 			levelType.setDescription(descriptionEl.getValue());
 			levelType.setAllowedAsCompetence(allowedAsCompetenceEl.isAtLeastSelected(1));
 		}
+		
+		levelType.setAllowedAsSubject(allowedAsSubjectEl.isAtLeastSelected(1));
 		
 		levelType.setCssClass(cssClassEl.getValue());
 		levelType.setVisible(visibleEl.isAtLeastSelected(1));

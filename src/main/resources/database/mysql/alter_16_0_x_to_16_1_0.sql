@@ -42,3 +42,7 @@ create index idx_satrigger_bs_group_idx on o_as_score_accounting_trigger (e_busi
 create index idx_satrigger_org_idx on o_as_score_accounting_trigger (e_organisation_key);
 create index idx_satrigger_curele_idx on o_as_score_accounting_trigger (e_curriculum_element_key);
 create index idx_satrigger_userprop_idx on o_as_score_accounting_trigger (e_user_property_value, e_user_property_name);
+
+
+-- Taxonomy Types --
+alter table o_tax_taxonomy_level_type add column t_allow_as_subject boolean default false;

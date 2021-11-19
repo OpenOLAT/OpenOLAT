@@ -28,6 +28,7 @@ package org.olat.modules.taxonomy.model;
 public class TaxonomyLevelSearchParameters {
 	
 	private String quickSearch;
+	private Boolean allowedAsSubject;
 
 	public String getQuickSearch() {
 		return quickSearch;
@@ -36,4 +37,13 @@ public class TaxonomyLevelSearchParameters {
 	public void setQuickSearch(String search) {
 		quickSearch = search;
 	}
+	
+	public Boolean isAllowedAsSubject() {
+		return allowedAsSubject;
+	}
+	
+	public void setAllowedAsSubject(Boolean allowedAsSubject) {
+		this.allowedAsSubject = allowedAsSubject;
+	}
+	
 }

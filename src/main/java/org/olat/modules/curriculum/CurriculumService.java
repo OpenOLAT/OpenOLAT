@@ -505,6 +505,8 @@ public interface CurriculumService {
 	
 	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level);
 	
+	public void updateTaxonomyLevels(CurriculumElement element, Collection<TaxonomyLevel> addedLevels, Collection<TaxonomyLevel> removedLevels);
+	
 	/**
 	 * Remove from the list the curriculum elements which are not manageable with the specified roles.
 	 * @param elements A list of curriculum elements with the organization loaded

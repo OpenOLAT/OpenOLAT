@@ -24,9 +24,12 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateLight;
@@ -35,14 +38,16 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel
 /**
  * 
  * Initial date: 22.10.2014<br>
+ * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTableDataModel<CertificateAndEfficiencyStatement>
-	implements SortableFlexiTableDataModel<CertificateAndEfficiencyStatement> {
-	
+public class CertificateAndEfficiencyStatementListModel
+		extends DefaultFlexiTreeTableDataModel<CertificateAndEfficiencyStatement>
+		implements SortableFlexiTableDataModel<CertificateAndEfficiencyStatement> {
+
 	private final Locale locale;
-	
+
 	public CertificateAndEfficiencyStatementListModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
@@ -55,8 +60,9 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 
 	@Override
 	public void sort(SortKey orderBy) {
-		if(orderBy != null) {
-			List<CertificateAndEfficiencyStatement> views = new CertificateAndEfficiencyStatementListSort(orderBy, this, locale).sort();
+		if (orderBy != null) {
+			List<CertificateAndEfficiencyStatement> views = new CertificateAndEfficiencyStatementListSort(orderBy, this,
+					locale).sort();
 			super.setObjects(views);
 		}
 	}
@@ -66,49 +72,53 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		CertificateAndEfficiencyStatement statement = getObject(row);
 		return getValueAt(statement, col);
 	}
-	
+
 	@Override
 	public Object getValueAt(CertificateAndEfficiencyStatement statement, int col) {
-		switch(Cols.values()[col]) {
-			case displayName: return statement.getDisplayName();
-			case score:
-				Float score = statement.getScore();
-				return AssessmentHelper.getRoundedScore(score);
-			case passed: return statement.getPassed();
-			case completion: return statement.getCompletion();
-			case lastModified: return statement.getLastModified();
-			case lastUserUpdate: return statement.getLastUserModified();
-			case certificate: return statement.getCertificate();
-			case recertification: {
-				if(statement.getCertificate() != null) {
-					return statement.getCertificate().getNextRecertificationDate();
-				}
-				return null;
+		switch (Cols.values()[col]) {
+		case displayName:
+			return statement.getDisplayName();
+		case score:
+			Float score = statement.getScore();
+			return AssessmentHelper.getRoundedScore(score);
+		case passed:
+			return statement.getPassed();
+		case completion:
+			return statement.getCompletion();
+		case lastModified:
+			return statement.getLastModified();
+		case lastUserUpdate:
+			return statement.getLastUserModified();
+		case certificate:
+			return statement.getCertificate();
+		case recertification: {
+			if (statement.getCertificate() != null) {
+				return statement.getCertificate().getNextRecertificationDate();
 			}
-			case efficiencyStatement: return statement.getEfficiencyStatementKey();
-			case deleteEfficiencyStatement: return true;
-			case artefact: return statement.getEfficiencyStatementKey() != null;
+			return null;
+		}
+		case efficiencyStatement:
+			return statement.getEfficiencyStatementKey();
+		case deleteEfficiencyStatement:
+			return true;
+		case artefact:
+			return statement.getEfficiencyStatementKey() != null;
 		}
 		return null;
 	}
 
 	public enum Cols implements FlexiSortableColumnDef {
-		
-		displayName("table.header.course", true),
-		score("table.header.score", true),
-		passed("table.header.passed", true),
-		completion("table.header.learning.progress", false),
-		lastModified("table.header.lastScoreDate", true),
-		lastUserUpdate("table.header.lastUserModificationDate", true),
-		efficiencyStatement("table.header.certificate", true),
-		certificate("table.header.certificate", true),
-		recertification("table.header.recertification", true),
-		deleteEfficiencyStatement("table.action.delete", false),
+
+		displayName("table.header.course", true), score("table.header.score", true),
+		passed("table.header.passed", true), completion("table.header.learning.progress", false),
+		lastModified("table.header.lastScoreDate", true), lastUserUpdate("table.header.lastUserModificationDate", true),
+		efficiencyStatement("table.header.certificate", true), certificate("table.header.certificate", true),
+		recertification("table.header.recertification", true), deleteEfficiencyStatement("table.action.delete", false),
 		artefact("table.header.artefact", false);
-		
+
 		private final String i18n;
 		private final boolean sortable;
-		
+
 		private Cols(String i18n, boolean sortable) {
 			this.i18n = i18n;
 			this.sortable = sortable;
@@ -128,18 +138,17 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		public String sortKey() {
 			return name();
 		}
-		
-		
+
 	}
-	
-	public static class CertificateAndEfficiencyStatement {
-		
+
+	public static class CertificateAndEfficiencyStatement implements FlexiTreeTableNode {
+
 		private Float score;
 		private Boolean passed;
 		private Date lastModified;
 		private String displayName;
 		private Date lastUserModified;
-		
+
 		private Long resourceKey;
 		private Long efficiencyStatementKey;
 		private CertificateLight certificate;
@@ -148,7 +157,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		public String getDisplayName() {
 			return displayName;
 		}
-		
+
 		public void setDisplayName(String displayName) {
 			this.displayName = displayName;
 		}
@@ -188,7 +197,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		public CertificateLight getCertificate() {
 			return certificate;
 		}
-		
+
 		public void setCertificate(CertificateLight certificate) {
 			this.certificate = certificate;
 		}
@@ -216,6 +225,24 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		public void setCompletion(Double completion) {
 			this.completion = completion;
 		}
+
+		@Override
+		public FlexiTreeTableNode getParent() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getCrump() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+	}
+
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		// TODO Auto-generated method stub
 		
 	}
 }
