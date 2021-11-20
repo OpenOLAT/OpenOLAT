@@ -579,6 +579,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
 		Assert.assertTrue(entries.contains(reNotPublished));
+		log.info("Num. of entries: {}", entries.size());
 		
 		// check access
 		for(RepositoryEntry entry:entries) {

@@ -158,7 +158,8 @@ public class CloneElementHandlerTest {
 		element.setContent(content);
 		FileStoredData storedData = new FileStoredData();
 		element.setStoredData(storedData);
-		File elementFile = new File(JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG").toURI());
+		// Method will use a rename, make a temporary copy of this file used by other tests
+		File elementFile = JunitTestHelper.tmpCopy(JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG"));
 		String elementFilename = miniRandom() + ".jpg";
 		dataStorage.save(elementFilename, elementFile, element.getStoredData());
 		

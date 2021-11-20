@@ -412,7 +412,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	public void testCalendarRecurringEventInversed() throws URISyntaxException, IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
 		URL calendarUrl = CalendarImportTest.class.getResource("ReversedRecurringEvent.ics");
-		File calendarFile = new File(calendarUrl.toURI());
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
 		String calendarName = UUID.randomUUID().toString().replace("-", "");
 		
 		KalendarRenderWrapper importedCalendar = importCalendarManager
@@ -441,7 +441,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	public void testCalendarRecurringEventMissingEndDate() throws URISyntaxException, IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
 		URL calendarUrl = CalendarImportTest.class.getResource("RecurringEventMissingEnd.ics");
-		File calendarFile = new File(calendarUrl.toURI());
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
 		String calendarName = UUID.randomUUID().toString().replace("-", "");
 		
 		KalendarRenderWrapper importedCalendar = importCalendarManager
@@ -641,7 +641,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	public void testImportICal_recurringEvent() throws URISyntaxException, IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur1-");
 		URL calendarUrl = CalendarImportTest.class.getResource("RecurringEvent.ics");
-		File calendarFile = new File(calendarUrl.toURI());
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
 		String calendarName = UUID.randomUUID().toString().replace("-", "");
 		
 		KalendarRenderWrapper importedCalendar = importCalendarManager
@@ -658,7 +658,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur2-");
 		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("Fullday_outlook.ics");
-		File calendarFile = new File(calendarUrl.toURI());
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
 		String calendarName = UUID.randomUUID().toString().replace("-", "");
 		
 		KalendarRenderWrapper importedCalendar = importCalendarManager
@@ -674,7 +674,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 	public void testImportICal_icalFullDay() throws URISyntaxException, IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur3-");
 		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("Fullday_ical.ics");
-		File calendarFile = new File(calendarUrl.toURI());
+		File calendarFile = JunitTestHelper.tmpCopy(calendarUrl);
 		String calendarName = UUID.randomUUID().toString().replace("-", "");
 		
 		KalendarRenderWrapper importedCalendar = importCalendarManager
