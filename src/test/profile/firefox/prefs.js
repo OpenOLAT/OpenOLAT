@@ -60,7 +60,7 @@ user_pref("browser.startup.homepage", "about:blank");
 user_pref("browser.startup.homepage_override.buildID", "20210527174632");
 user_pref("browser.startup.homepage_override.mstone", "89.0");
 user_pref("browser.startup.lastColdStartupCheck", 1622815976);
-user_pref("browser.startup.upgradeDialog.version", 89);
+user_pref("browser.startup.upgradeDialog.version", 95);
 user_pref("browser.syncPromoViewsLeftMap", "{\"passwords\":0,\"bookmarks\":3,\"addons\":3}");
 user_pref("browser.tabs.warnOnClose", false);
 user_pref("browser.toolbarbuttons.introduced.pocket-button", true);
