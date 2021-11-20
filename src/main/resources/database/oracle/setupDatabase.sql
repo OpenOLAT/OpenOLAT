@@ -3065,6 +3065,7 @@ create table o_tax_taxonomy_level_type (
   t_library_have_read number default 1,
   t_library_target_read number default 1,
   t_allow_as_competence number default 1 not null,
+  t_allow_as_subject number default 0,
   fk_taxonomy number(20) not null,
   primary key (id)
 );

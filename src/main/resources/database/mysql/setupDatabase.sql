@@ -2991,6 +2991,7 @@ create table o_tax_taxonomy_level_type (
   t_library_have_read bit default 1,
   t_library_target_read bit default 1,
   t_allow_as_competence bool default true not null,
+  t_allow_as_subject boolean default false,
   fk_taxonomy bigint not null,
   primary key (id)
 );

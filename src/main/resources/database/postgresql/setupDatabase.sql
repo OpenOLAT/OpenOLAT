@@ -3013,6 +3013,7 @@ create table o_tax_taxonomy_level_type (
   t_library_have_read bool default true,
   t_library_target_read bool default true,
   t_allow_as_competence bool default true not null,
+  t_allow_as_subject bool default false,
   fk_taxonomy int8 not null,
   primary key (id)
 );
