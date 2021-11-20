@@ -888,6 +888,13 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, nextNode.getIdent());
 			doNodeClick(ureq, tev, leaningPath);
 		}
+		
+		String srollToTopJS = "try {o_scrollToElement('#o_top');}catch(e){}";
+		JSCommand jsc = new JSCommand(srollToTopJS);
+		WindowControl wControl = getWindowControl();
+		if (wControl != null && wControl.getWindowBackOffice() != null) {
+			wControl.getWindowBackOffice().sendCommandTo(jsc);
+		}
 	}
 	
 	private void doPrevious(UserRequest ureq) {

@@ -29,8 +29,11 @@
 package org.olat.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
@@ -51,6 +54,7 @@ import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -65,6 +69,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserManager;
+
 
 /**
  * Description:<br>
@@ -104,6 +109,33 @@ public class JunitTestHelper {
 	public static final String miniRandom() {
 		String r = UUID.randomUUID().toString();
 		return r.substring(0, r.indexOf('-'));
+	}
+	
+	/**
+	 * Make a copy of the file in tmp, especially useful if for import
+	 * method which use rename instead of copying the file.
+	 * 
+	 * @param file
+	 * @return
+	 */
+	public static File tmpCopy(File file) {
+		File itemFile = new File(WebappHelper.getTmpDir(), file.getName());
+		try {
+			Files.copy(file.toPath(), itemFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+		return itemFile;
+	}
+	
+
+	public static File tmpCopy(URL url) {
+		try {
+			return tmpCopy(new File(url.toURI()));
+		} catch (URISyntaxException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
 	public static final OLATResource createRandomResource() {

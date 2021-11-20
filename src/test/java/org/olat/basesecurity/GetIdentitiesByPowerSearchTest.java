@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
@@ -95,24 +96,38 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse(results.isEmpty());
 		int numberOfDeletedUsers = results.size();
 		
+		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_INACTIVE);
+		Assert.assertNotNull(results);
+		int numberOfInactiveUsers = results.size();
+		
+		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_PENDING);
+		Assert.assertNotNull(results);
+		int numberOfPendingUsers = results.size();
+		
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null,Identity.STATUS_LOGIN_DENIED);
 		Assert.assertNotNull(results);
 		int numberOfDeniedUsers = results.size();
-		assertEquals("Number of all users != activeUsers + deletedUsers + loginDeniedUsers" , numberOfAllUsers, numberOfActiveUsers + numberOfDeletedUsers + numberOfDeniedUsers);
+		
+		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null,Identity.STATUS_PERMANENT);
+		Assert.assertNotNull(results);
+		int numberOfPermanenUsers = results.size();
+
+		assertEquals("Number of all users != activeUsers + deletedUsers + loginDeniedUsers" ,
+				numberOfAllUsers, numberOfActiveUsers + numberOfPermanenUsers + numberOfDeletedUsers + numberOfDeniedUsers + numberOfInactiveUsers + numberOfPendingUsers);
 		
 		// user attributes search test
 		dbInstance.commitAndCloseSession();
 		results = baseSecurityManager.getIdentitiesByPowerSearch(ident.getName(), null, true, null, null, null, null, null, null, null);
-		assertTrue(results.size() == 1);
+		Assert.assertEquals(1, results.size());
 		assertEquals("Wrong search result (search with username)" + ident.getName() + "' ",ident.getName() , results.get(0).getName());
 		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(ident.getName(), null, true, null, null, null, null);
-		assertTrue(results.size() == 1);
-		assertEquals("Wrong search result (search with username)" + ident.getName() + "' ",ident.getName() , results.get(0).getName());
+		Assert.assertEquals(1, results.size());
+		Assert.assertEquals("Wrong search result (search with username)" + ident.getName() + "' ",ident.getName() , results.get(0).getName());
 		
 		results = baseSecurityManager.getIdentitiesByPowerSearch("an*tity-" + suffix, null, true, null, null, null, null, null, null, null);
-		assertTrue(results.size() == 1);
+		Assert.assertEquals(1, results.size());
 		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch("an*tity-" + suffix, null, true, null, null, null, null);
-		assertTrue(results.size() == 1);
+		Assert.assertEquals(1, results.size());
 
 		results = baseSecurityManager.getIdentitiesByPowerSearch("lalal", null, true, null, null, null, null, null, null, null);
 		Assert.assertTrue(results.isEmpty());
@@ -677,62 +692,69 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	public void getIdentitiesByPowerSearch_withDate() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("anIdentity-");
 		Date created = ident.getCreationDate();
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(created);
-		cal.add(Calendar.DAY_OF_MONTH, -5);
-		Date before = cal.getTime();
-		cal.add(Calendar.DAY_OF_MONTH, 10);
-		Date after = cal.getTime();
+		Date past = DateUtils.addDays(created, -5);
+		Date future = DateUtils.addDays(created, 10);
 
 		// basic query to find all system users without restrictions
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, null);
-		assertTrue(results.size()>0); 
-		int numberOfAllUsers = results.size();
+		Assert.assertFalse(results.isEmpty()); 
 
-		List<Identity> deletedIdentities = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_DELETED);
-		for(Identity deletedIdentity:deletedIdentities) {
-			Assert.assertEquals(Identity.STATUS_DELETED, deletedIdentity.getStatus());
+		// created between our past date and future
+		List<Identity> allResults = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, past, future, null, null, null);
+		for(Identity result:allResults) {
+			Assert.assertTrue(past.before(result.getCreationDate()));
+			Assert.assertTrue(future.after(result.getCreationDate()));
 		}
-		int numberOfDeletedUsers = deletedIdentities.size();
+
+		// created after past date
+		List<Identity> afterResults = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, past, null, null, null);
+		for(Identity result:afterResults) {
+			Assert.assertTrue(past.after(result.getCreationDate()));
+		}
+
+		// created after past date
+		List<Identity> beforeResults = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, future, null, null, null, null);
+		for(Identity result:beforeResults) {
+			Assert.assertTrue(future.after(result.getCreationDate()));
+		}
+
+		// created between a future and a past date (impossible)
+		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, future, past, null, null, null);
+		Assert.assertTrue(results.isEmpty());
+
+		// created after the future date (none)
+		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, future, null, null, null, null);
+		Assert.assertTrue(results.isEmpty());
+	}
+	
+	@Test
+	public void getVisibleIdentitiesByPowerSearch_withDate() {
+		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("anIdentity-");
+		Date created = ident.getCreationDate();
+		Date past = DateUtils.addDays(created, -5);
+		Date future = DateUtils.addDays(created, 10);
 		
-		List<Identity> deniedIdentities = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, null, null, null, Identity.STATUS_LOGIN_DENIED);
-		for(Identity deniedIdentity:deniedIdentities) {
-			Assert.assertEquals(Identity.STATUS_LOGIN_DENIED, deniedIdentity.getStatus());
+		List<Identity> visibleResults = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, past, future);
+		for(Identity result:visibleResults) {
+			Assert.assertTrue(past.before(result.getCreationDate()));
+			Assert.assertTrue(future.after(result.getCreationDate()));
 		}
-		int numberOfDeniedUsers = deniedIdentities.size();
+		
+		List<Identity> pastResults = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, null, past);
+		for(Identity result:pastResults) {
+			Assert.assertTrue(past.after(result.getCreationDate()));
+		}
 
-		Date createdAfter = before;
-		Date createdBefore = after;
-		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, createdAfter, createdBefore, null, null, null);
-		assertEquals("Search with date (createdAfter,createdBefore) delivers not the same number of users", numberOfAllUsers, results.size());
+		List<Identity> futureResults = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, future, null);
+		for(Identity result:futureResults) {
+			Assert.assertTrue(future.before(result.getCreationDate()));
+		}
 
-		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, before, after);
-		assertEquals("Search (visible identities) with date (createdAfter,createdBefore) delivers not the same number of users", (numberOfAllUsers - numberOfDeletedUsers - numberOfDeniedUsers) , results.size()); // One identity is deleted
+		List<Identity> results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, future, past);
+		Assert.assertTrue(results.isEmpty());
 
-		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, after, null, null, null);
-		assertEquals("Search with date (only after) delivers not the same number of users", numberOfAllUsers, results.size());
-		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, null, after);
-		assertEquals("Search (visible identities) with date (createdAfter,createdBefore) delivers not the same number of users", (numberOfAllUsers - numberOfDeletedUsers - numberOfDeniedUsers) , results.size()); // One identity is deleted
-
-		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, before, null, null, null, null);
-		assertEquals("Search with date (only before) delivers not the same number of users", numberOfAllUsers, results.size());
-		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, before, null);
-		assertEquals("Search (visible identities) with date (createdAfter,createdBefore) delivers not the same number of users", (numberOfAllUsers - numberOfDeletedUsers - numberOfDeniedUsers) , results.size()); // One identity is deleted
-
-		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, after, before, null, null, null);
-		assertTrue(results.size() == 0);
-		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, after, before);
-		assertTrue(results.size() == 0);
-
-		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, after, null, null, null, null);
-		assertTrue(results.size() == 0);
-		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, after, null);
-		assertTrue(results.size() == 0);
-
-		results = baseSecurityManager.getIdentitiesByPowerSearch(null, null, true, null, null, null, before, null, null, null);
-		assertTrue(results.size() == 0);
-		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, null, before);
-		assertTrue(results.size() == 0);
+		results = baseSecurityManager.getVisibleIdentitiesByPowerSearch(null, null, true, null, null, future, null);
+		Assert.assertTrue(results.isEmpty());
 	}
 
 	@Test
