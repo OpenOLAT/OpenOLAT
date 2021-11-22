@@ -78,18 +78,15 @@ public class AssessedIdentityListProvider implements ListProvider {
 
 		int maxEntries = MAX_ENTRIES;
 		List<IdentityShort> res = assessmentToolManager.getShortAssessedIdentities(coach, params, maxEntries);
-		List<Long> entryIdentityKey = assessmentToolManager.getIdentityKeys(coach, params, null);
 
 		boolean hasMore = false;
 		for (Iterator<IdentityShort> it_res = res.iterator(); (hasMore=it_res.hasNext()) && maxEntries > 0;) {
 			IdentityShort ident = it_res.next();
-			if (entryIdentityKey.contains(ident.getKey())) {
-				maxEntries--;
-				String key = ident.getKey().toString();
-				String displayKey = ident.getNickName();
-				String displayText = userManager.getUserDisplayName(ident);
-				receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
-			}
+			maxEntries--;
+			String key = ident.getKey().toString();
+			String displayKey = ident.getNickName();
+			String displayText = userManager.getUserDisplayName(ident);
+			receiver.addEntry(key, displayKey, displayText, CSSHelper.CSS_CLASS_USER);
 		}					
 		if(hasMore){
 			receiver.addEntry(".....",".....");

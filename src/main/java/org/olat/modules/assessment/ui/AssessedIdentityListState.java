@@ -45,6 +45,7 @@ public class AssessedIdentityListState implements StateEntry {
 	public static final String FILTER_STATUS = "status";
 	public static final String FILTER_PASSED = "passed";
 	public static final String FILTER_USER_VISIBILITY = "userVisibility";
+	public static final String FILTER_MEMBERS = "members";
 	public static final String FILTER_GROUPS = "groups";
 	public static final String FILTER_OBLIGATION = "obligation";
 	

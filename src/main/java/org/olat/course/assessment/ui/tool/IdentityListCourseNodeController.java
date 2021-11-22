@@ -400,7 +400,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
 			});
 		}
-
+		if (assessmentCallback.canAssessNonMembers() && !courseEntry.isAllUsers()) {
+			tabs.forEach(tab -> {
+				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, "membersOnly"));
+			});
+		}
+		
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
@@ -444,7 +449,17 @@ public class IdentityListCourseNodeController extends FormBasicController
 					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
 			filters.add(obligationFilter);
 		}
+		
+		// members
+		if (assessmentCallback.canAssessNonMembers()) {
+			SelectionValues memebersValues = new SelectionValues();
+			memebersValues.add(SelectionValues.entry("membersOnly", translate("filter.members")));
+			memebersValues.add(SelectionValues.entry("nonMembersOnly", translate("filter.other.users")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, memebersValues, true));
+		}
 
+		// groups
 		SelectionValues groupValues = new SelectionValues();
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			List<BusinessGroup> coachedGroups;
@@ -608,11 +623,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		
 		// Get the identities and remove identity without assessment entry.
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
-		// Filter obligation
-		List<Long> entryIdentityKeys = assessmentToolManager.getIdentityKeys(getIdentity(), params, null);
-		assessedIdentities.removeIf(identity -> !entryIdentityKeys.contains(identity.getKey()));
 
-		// Get the assessment entries and put it in a map
+		// Get the assessment entries and put it in a map.
+		// Obligation filter is applied in this query.
 		Map<Long,AssessmentEntry> entryMap = new HashMap<>();
 		assessmentToolManager.getAssessmentEntries(getIdentity(), params, null).stream()
 			.filter(entry -> entry.getIdentity() != null)
@@ -633,25 +646,24 @@ public class IdentityListCourseNodeController extends FormBasicController
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			
-			String grader = null;
-			TimeElement currentStart = new TimeElement("current-start-" + (++counter), getLocale());
-			CompletionItem currentCompletion = new CompletionItem("current-completion-" + (++counter), getLocale());
 			if(entry != null) {
+				String grader = null;
+				TimeElement currentStart = new TimeElement("current-start-" + (++counter), getLocale());
+				CompletionItem currentCompletion = new CompletionItem("current-completion-" + (++counter), getLocale());
 				currentStart.setDate(entry.getCurrentRunStartDate());
 				currentCompletion.setCompletion(entry.getCurrentRunCompletion());
 				AssessmentRunStatus status = entry.getCurrentRunStatus();
 				currentCompletion.setEnded(status != null && AssessmentRunStatus.done.equals(status));
 				grader = assessmentEntriesKeysToGraders.get(entry.getKey());
-			}
+				
+				FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
+				toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			
-			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		
-			AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader,
-					currentStart, currentCompletion, toolsLink, userPropertyHandlers, getLocale());
-			toolsLink.setUserObject(row);
-			rows.add(row);
+				AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader,
+						currentStart, currentCompletion, toolsLink, userPropertyHandlers, getLocale());
+				toolsLink.setUserObject(row);
+				rows.add(row);
+			}
 		}
 
 		usersTableModel.setObjects(rows);
@@ -729,8 +741,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 						.map(AssessmentEntryStatus::valueOf)
 						.collect(Collectors.toList());
 				params.setAssessmentStatus(passed);
-			} else {
-				params.setAssessmentStatus(null);
 			}
 		}
 		
@@ -742,8 +752,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 						.map(SearchAssessedIdentityParams.Passed::valueOf)
 						.collect(Collectors.toList());
 				params.setPassed(passed);
-			} else {
-				params.setPassed(null);
 			}
 		}
 		
@@ -754,8 +762,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 				params.setUserVisibility(Boolean.TRUE);
 			} else if("notReleased".equals(filterValue)) {
 				params.setUserVisibility(Boolean.FALSE);
-			} else {
-				params.setUserVisibility(null);
+			}
+		}
+		
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			String filterValue = ((FlexiTableExtendedFilter)membersFilter).getValue();
+			if("membersOnly".equals(filterValue)) {
+				params.setMemebersOnly(true);
+			} else if("nonMembersOnly".equals(filterValue)) {
+				params.setNonMemebersOnly(true);
 			}
 		}
 		
@@ -767,8 +783,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 						.map(AssessmentObligation::valueOf)
 						.collect(Collectors.toList());
 				params.setAssessmentObligations(assessmentObligations);
-			} else {
-				params.setAssessmentObligations(null);
 			}
 		}
 		
@@ -808,8 +822,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 			options.setNonMembers(params.isNonMembers());
 		} else {
 			List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
-			List<Long> entryIdentityKeys = assessmentToolManager.getIdentityKeys(getIdentity(), params, null);
-			assessedIdentities.removeIf(identity -> !entryIdentityKeys.contains(identity.getKey()));
 			options.setIdentities(assessedIdentities);
 			fillAlternativeToAssessableIdentityList(options, params);
 		}

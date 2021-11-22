@@ -114,9 +114,14 @@ public class AssessmentCourseOverviewController extends BasicController {
 		listenTo(statisticsCtrl);
 		mainVC.put("statistics", statisticsCtrl.getInitialComponent());
 		
-		int numOfAssessedIdentities = statisticsCtrl.getNumOfAssessedIdentities();
+		int numOfParticipants = statisticsCtrl.getMemberStatistics().getNumOfParticipants();
+		int numOfOtherUsers = statisticsCtrl.getMemberStatistics().getNumOfOtherUsers();
+		String[] args = new String[]{ Integer.toString(numOfParticipants), Integer.toString(numOfOtherUsers) };
+		String assessedIdentitiesText = numOfOtherUsers > 0
+				? translate("assessment.tool.num.assessed.participants.others", args)
+				: translate("assessment.tool.num.assessed.participants", args);
 		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-		assessedIdentitiesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedIdentities", new String[]{ Integer.toString(numOfAssessedIdentities) }));
+		assessedIdentitiesLink.setCustomDisplayText(assessedIdentitiesText);
 		assessedIdentitiesLink.setElementCssClass("o_sel_assessment_tool_assessed_users");
 		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user o_icon-fw");
 		

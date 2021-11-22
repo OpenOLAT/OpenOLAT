@@ -29,14 +29,14 @@ public class AssessmentMembersStatistics {
 	
 	private final int numOfParticipants;
 	private final int numOfOtherUsers;
-	private final int loggedIn;
+	private final int numOfOthersLoggedIn;
 	private final int numOfParticipantsLoggedIn; 
 	
-	public AssessmentMembersStatistics(int numOfParticipants, int numOfParticipantsLoggedIn, int numOfOtherUsers, int loggedIn) {
+	public AssessmentMembersStatistics(int numOfParticipants, int numOfParticipantsLoggedIn, int numOfOtherUsers, int numOfOthersLoggedIn) {
 		this.numOfParticipants = numOfParticipants;
 		this.numOfParticipantsLoggedIn = numOfParticipantsLoggedIn;
 		this.numOfOtherUsers = numOfOtherUsers;
-		this.loggedIn = loggedIn;
+		this.numOfOthersLoggedIn = numOfOthersLoggedIn;
 	}
 
 	public int getNumOfParticipants() {
@@ -47,8 +47,8 @@ public class AssessmentMembersStatistics {
 		return numOfOtherUsers;
 	}
 	
-	public int getLoggedIn() {
-		return loggedIn;
+	public int getOthersLoggedIn() {
+		return numOfOthersLoggedIn;
 	}
 
 	public int getNumOfParticipantsLoggedIn() {
