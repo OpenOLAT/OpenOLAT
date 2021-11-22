@@ -171,10 +171,11 @@ public class IdentityDAO {
 		
 		Set<String> loweredIdentityNamesSet = new HashSet<>(loweredIdentityNames);
 		Map<Identity, FindNamedIdentity> namedIdentities = new HashMap<>();
-		for (List<String> chunkOfIdentityNames : PersistenceHelper.collectionOfChunks(new ArrayList<>(loweredIdentityNames), 7)) {
-			TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
-					.createQuery(sb.toString(), Object[].class)
-					.setParameter("names", chunkOfIdentityNames);
+		Collection<List<String>> chunkedOfIdentityNames = PersistenceHelper.collectionOfChunks(new ArrayList<>(loweredIdentityNames), 7);
+		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		for (List<String> chunkOfIdentityNames : chunkedOfIdentityNames) {
+			rawQuery.setParameter("names", chunkOfIdentityNames);
 			if(organisations != null && !organisations.isEmpty()) {
 				rawQuery.setParameter("organisationKey", organisationKeys);
 			}

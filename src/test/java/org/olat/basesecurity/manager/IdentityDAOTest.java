@@ -92,7 +92,7 @@ public class IdentityDAOTest extends OlatTestCase {
 		String nickName = identity.getIdentity().getUser().getProperty(UserConstants.NICKNAME, null);
 		
 		List<String> lofOfNames = new ArrayList<>(65600);
-		for(int i=0; i<65536; i++) {
+		for(int i=0; i<2536; i++) {
 			lofOfNames.add("this_is_a_fake_" + i);
 		}
 		lofOfNames.add(nickName);
