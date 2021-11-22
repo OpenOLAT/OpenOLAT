@@ -464,53 +464,55 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
 		
-		ModuleConfiguration config = getModuleConfiguration();
-		
-		// Move potential high score dates
-		DueDateConfig highScoreStartDateConfig = getDueDateConfig(HighScoreEditController.CONFIG_KEY_DATESTART);
-		if (DueDateConfig.isAbsolute(highScoreStartDateConfig)) {
-			Date highScorePublicationDate = new Date(highScoreStartDateConfig.getAbsoluteDate().getTime() + context.getDateDifference(getIdent()));
-			HighScoreEditController.setStartDateConfig(config, DueDateConfig.absolute(highScorePublicationDate));
-		}
-		
-		// Move potential user right dates
-		Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
-		
-		if (!potentialNodeRights.isEmpty()) {
+		if (context != null) {
+			ModuleConfiguration config = getModuleConfiguration();
 			
-			NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
+			// Move potential high score dates
+			DueDateConfig highScoreStartDateConfig = getDueDateConfig(HighScoreEditController.CONFIG_KEY_DATESTART);
+			if (DueDateConfig.isAbsolute(highScoreStartDateConfig)) {
+				Date highScorePublicationDate = new Date(highScoreStartDateConfig.getAbsoluteDate().getTime() + context.getDateDifference(getIdent()));
+				HighScoreEditController.setStartDateConfig(config, DueDateConfig.absolute(highScorePublicationDate));
+			}
 			
-			for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
-				if (!(entry.getValue() instanceof NodeRight)) {
-					continue;
-				}
+			// Move potential user right dates
+			Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
+			
+			if (!potentialNodeRights.isEmpty()) {
 				
-				NodeRightImpl nodeRight = (NodeRightImpl) entry.getValue();
-				List<NodeRightGrant> nodeRightGrants = new ArrayList<>();
+				NodeRightService nodeRightService = CoreSpringFactory.getImpl(NodeRightService.class);
 				
-				if (nodeRight.getGrants() != null) {
-					for (NodeRightGrant grant : nodeRight.getGrants()) {
-						// Remove any rights associated with an identity or group
-						if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
-							continue;
-						}
-						
-						// Move potential dates
-						if (grant.getStart() != null) {
-							grant.setStart(new Date(grant.getStart().getTime() + context.getDateDifference(getIdent())));
-						}
-						
-						if (grant.getEnd() != null) {
-							grant.setEnd(new Date(grant.getEnd().getTime() + context.getDateDifference(getIdent())));
-						}
-						
-						// Only grants for roles are kept
-						nodeRightGrants.add(grant);
+				for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
+					if (!(entry.getValue() instanceof NodeRight)) {
+						continue;
 					}
+					
+					NodeRightImpl nodeRight = (NodeRightImpl) entry.getValue();
+					List<NodeRightGrant> nodeRightGrants = new ArrayList<>();
+					
+					if (nodeRight.getGrants() != null) {
+						for (NodeRightGrant grant : nodeRight.getGrants()) {
+							// Remove any rights associated with an identity or group
+							if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
+								continue;
+							}
+							
+							// Move potential dates
+							if (grant.getStart() != null) {
+								grant.setStart(new Date(grant.getStart().getTime() + context.getDateDifference(getIdent())));
+							}
+							
+							if (grant.getEnd() != null) {
+								grant.setEnd(new Date(grant.getEnd().getTime() + context.getDateDifference(getIdent())));
+							}
+							
+							// Only grants for roles are kept
+							nodeRightGrants.add(grant);
+						}
+					}
+					
+					nodeRight.setGrants(nodeRightGrants);
+					nodeRightService.setRight(getModuleConfiguration(), nodeRight);
 				}
-				
-				nodeRight.setGrants(nodeRightGrants);
-				nodeRightService.setRight(getModuleConfiguration(), nodeRight);
 			}
 		}
 	}
