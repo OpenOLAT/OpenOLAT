@@ -207,7 +207,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 			String node = ureq.getParameter("node");
 			if(StringHelper.isLong(node)) {
 				try {
-					Long categoryNodeKey = new Long(node);
+					Long categoryNodeKey = Long.valueOf(node);
 					CatalogEntry entry = catalogManager.getCatalogNodeByKey(categoryNodeKey);
 					selectCatalogEntry(ureq, entry);
 				} catch (NumberFormatException e) {

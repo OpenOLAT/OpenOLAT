@@ -140,8 +140,10 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private CatalogNodeManagerController positionMoveCtrl;
 	private CatalogEntryMoveController categoryMoveCtrl;
 	private CatalogEntryMoveController entryResourceMoveCtrl;
-	private CatalogEntryEditController addEntryCtrl, editEntryCtrl;
-	private DialogBoxController dialogDeleteLink, dialogDeleteSubtree;
+	private CatalogEntryEditController addEntryCtrl;
+	private CatalogEntryEditController editEntryCtrl;
+	private DialogBoxController dialogDeleteLink;
+	private DialogBoxController dialogDeleteSubtree;
 	
 	private FlexiTableElement entriesEl;
 	private FlexiTableElement closedEntriesEl;
@@ -162,12 +164,6 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	private boolean showCategoryUpDownColumn;
 	private boolean showEntryUpDownColumn;
 
-	private DefaultFlexiColumnModel leafUpColumnModel;
-	private DefaultFlexiColumnModel leafDownColumnModel;
-	private DefaultFlexiColumnModel leafPositionColumnModel;
-	private DefaultFlexiColumnModel nodeUpColumnModel;
-	private DefaultFlexiColumnModel nodeDownColumnModel;
-	private DefaultFlexiColumnModel nodePositionColumnModel;
 	private List<DefaultFlexiColumnModel> leafColumns;
 	
 	private static final String CMD_UP = "leaf_up";
@@ -313,7 +309,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		closedEntriesModel = new CatalogEntryRowModel(closedEntriesColumnsModel);
 		closedEntriesEl = uifactory.addTableElement(getWindowControl(), "closedEntries", closedEntriesModel, 20, false, getTranslator(), formLayout);
 		
-		FlexiTableColumnModel nodeEntriesColumnsModel = getNodeFlexiTableColumnModel("nodes-", showCategoryUpDownColumn);
+		FlexiTableColumnModel nodeEntriesColumnsModel = getNodeFlexiTableColumnModel(showCategoryUpDownColumn);
 		nodeEntriesModel = new NodeEntryRowModel(nodeEntriesColumnsModel);
 		nodeEntriesEl = uifactory.addTableElement(getWindowControl(), "nodeEntries", nodeEntriesModel, 20, false, getTranslator(), formLayout);
 	}
@@ -324,7 +320,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		DefaultFlexiColumnModel columnModel;
 		
 		if (!sortEnabled && showUpDownColumn) {
-			leafUpColumnModel = new DefaultFlexiColumnModel(true, Cols.up.i18nKey(), Cols.up.ordinal(), CMD_UP, false, null);
+			DefaultFlexiColumnModel leafUpColumnModel = new DefaultFlexiColumnModel(true, Cols.up.i18nKey(), Cols.up.ordinal(), CMD_UP, false, null);
 			leafUpColumnModel.setCellRenderer(new BooleanCellRenderer(
 					new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon-lg o_icon_move_up"),
 					null));
@@ -333,7 +329,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			leafUpColumnModel.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(leafUpColumnModel);
 			
-			leafDownColumnModel = new DefaultFlexiColumnModel(true, Cols.down.i18nKey(), Cols.down.ordinal(), CMD_DOWN, false, null);
+			DefaultFlexiColumnModel leafDownColumnModel = new DefaultFlexiColumnModel(true, Cols.down.i18nKey(), Cols.down.ordinal(), CMD_DOWN, false, null);
 			leafDownColumnModel.setCellRenderer(new BooleanCellRenderer(
 					new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon-lg o_icon_move_down"),
 					null));
@@ -342,8 +338,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			leafDownColumnModel.setAlwaysVisible(true);
 			columnsModel.addFlexiColumnModel(leafDownColumnModel);
 
-			
-			leafPositionColumnModel = new DefaultFlexiColumnModel(true, Cols.position.i18nKey(), Cols.position.ordinal(), false, null);
+			DefaultFlexiColumnModel leafPositionColumnModel = new DefaultFlexiColumnModel(true, Cols.position.i18nKey(), Cols.position.ordinal(), false, null);
 			columnsModel.addFlexiColumnModel(leafPositionColumnModel);
 		}
 		
@@ -415,8 +410,10 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		columnsModel.addFlexiColumnModel(columnModel);
 		
 		if (!isOrdering) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete.i18nKey(), translate(Cols.delete.i18nKey()), cmdPrefix + "delete"));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.move.i18nKey(), translate(Cols.move.i18nKey()), cmdPrefix + "move"));
+			if(isAdministrator || isLocalTreeAdmin) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.delete.i18nKey(), translate(Cols.delete.i18nKey()), cmdPrefix + "delete"));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.move.i18nKey(), translate(Cols.move.i18nKey()), cmdPrefix + "move"));
+			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.detailsSupported.i18nKey(), Cols.detailsSupported.ordinal(), cmdPrefix + "details",
 					new StaticFlexiCellRenderer("", cmdPrefix + "details", "o_icon o_icon-lg o_icon_details", translate("details"))));
 		}
@@ -424,12 +421,12 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		return columnsModel;
 	}
 	
-	private FlexiTableColumnModel getNodeFlexiTableColumnModel(String cmdPrefix, boolean showUpDownColumn) {
+	private FlexiTableColumnModel getNodeFlexiTableColumnModel(boolean showUpDownColumn) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
 		if (showUpDownColumn) {
-			nodeUpColumnModel = new DefaultFlexiColumnModel(true, NodeCols.up.i18nKey(), NodeCols.up.ordinal(), CMD_UP, false, null);
+			DefaultFlexiColumnModel nodeUpColumnModel = new DefaultFlexiColumnModel(true, NodeCols.up.i18nKey(), NodeCols.up.ordinal(), CMD_UP, false, null);
 			nodeUpColumnModel.setCellRenderer(new BooleanCellRenderer(
 					new StaticFlexiCellRenderer("", CMD_UP, "o_icon o_icon_fw o_icon-lg o_icon_move_up"),
 					null));
@@ -438,7 +435,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			nodeUpColumnModel.setAlwaysVisible(true);
 
 
-			nodeDownColumnModel = new DefaultFlexiColumnModel(true, NodeCols.down.i18nKey(), NodeCols.down.ordinal(), CMD_DOWN, false, null);
+			DefaultFlexiColumnModel nodeDownColumnModel = new DefaultFlexiColumnModel(true, NodeCols.down.i18nKey(), NodeCols.down.ordinal(), CMD_DOWN, false, null);
 			nodeDownColumnModel.setCellRenderer(new BooleanCellRenderer(
 					new StaticFlexiCellRenderer("", CMD_DOWN, "o_icon o_icon_fw o_icon-lg o_icon_move_down"),
 					null));
@@ -446,7 +443,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			nodeDownColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_ICON);
 			nodeDownColumnModel.setAlwaysVisible(true);
 
-			nodePositionColumnModel = new DefaultFlexiColumnModel(true, NodeCols.position.i18nKey(), NodeCols.position.ordinal(), false, null);
+			DefaultFlexiColumnModel nodePositionColumnModel = new DefaultFlexiColumnModel(true, NodeCols.position.i18nKey(), NodeCols.position.ordinal(), false, null);
 
 			columnsModel.addFlexiColumnModel(nodeUpColumnModel);
 			columnsModel.addFlexiColumnModel(nodeDownColumnModel);
