@@ -400,7 +400,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
 			});
 		}
-
+		if (assessmentCallback.canAssessNonMembers() && !courseEntry.isAllUsers()) {
+			tabs.forEach(tab -> {
+				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, "membersOnly"));
+			});
+		}
+		
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
@@ -444,7 +449,17 @@ public class IdentityListCourseNodeController extends FormBasicController
 					AssessedIdentityListState.FILTER_OBLIGATION, obligationValues, true);
 			filters.add(obligationFilter);
 		}
+		
+		// members
+		if (assessmentCallback.canAssessNonMembers()) {
+			SelectionValues memebersValues = new SelectionValues();
+			memebersValues.add(SelectionValues.entry("membersOnly", translate("filter.members")));
+			memebersValues.add(SelectionValues.entry("nonMembersOnly", translate("filter.other.users")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, memebersValues, true));
+		}
 
+		// groups
 		SelectionValues groupValues = new SelectionValues();
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			List<BusinessGroup> coachedGroups;
@@ -729,8 +744,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 						.map(AssessmentEntryStatus::valueOf)
 						.collect(Collectors.toList());
 				params.setAssessmentStatus(passed);
-			} else {
-				params.setAssessmentStatus(null);
 			}
 		}
 		
@@ -742,8 +755,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 						.map(SearchAssessedIdentityParams.Passed::valueOf)
 						.collect(Collectors.toList());
 				params.setPassed(passed);
-			} else {
-				params.setPassed(null);
 			}
 		}
 		
@@ -754,8 +765,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 				params.setUserVisibility(Boolean.TRUE);
 			} else if("notReleased".equals(filterValue)) {
 				params.setUserVisibility(Boolean.FALSE);
-			} else {
-				params.setUserVisibility(null);
+			}
+		}
+		
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			String filterValue = ((FlexiTableExtendedFilter)membersFilter).getValue();
+			if("membersOnly".equals(filterValue)) {
+				params.setMemebersOnly(true);
+			} else if("nonMembersOnly".equals(filterValue)) {
+				params.setNonMemebersOnly(true);
 			}
 		}
 		
@@ -767,8 +786,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 						.map(AssessmentObligation::valueOf)
 						.collect(Collectors.toList());
 				params.setAssessmentObligations(assessmentObligations);
-			} else {
-				params.setAssessmentObligations(null);
 			}
 		}
 		

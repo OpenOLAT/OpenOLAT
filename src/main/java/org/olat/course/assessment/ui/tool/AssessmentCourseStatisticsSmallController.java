@@ -52,7 +52,6 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 	
 	private int numOfPassed;
 	private int numOfFailed;
-	private int numOfAssessedIdentities;
 	private AssessmentMembersStatistics memberStatistics;
 	
 	@Autowired
@@ -77,10 +76,6 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		return numOfFailed;
 	}
 	
-	public int getNumOfAssessedIdentities() {
-		return numOfAssessedIdentities;
-	}
-	
 	public AssessmentMembersStatistics getMemberStatistics() {
 		return memberStatistics;
 	}
@@ -91,7 +86,7 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNodeIdent, null, assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
-		numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(getIdentity(), params);
+		int numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(getIdentity(), params);
 		mainVC.contextPut("numOfAssessedIdentities", numOfAssessedIdentities);
 		
 		memberStatistics = assessmentToolManager.getNumberOfParticipants(getIdentity(), params);
@@ -118,7 +113,7 @@ public class AssessmentCourseStatisticsSmallController extends BasicController {
 		int numOfParticipantLaunches = memberStatistics.getNumOfParticipantsLoggedIn();
 		mainVC.contextPut("numOfParticipantLaunches", numOfParticipantLaunches);
 		if(assessmentCallback.canAssessNonMembers()) {
-			int numOfOtherUserLaunches = memberStatistics.getLoggedIn();
+			int numOfOtherUserLaunches = memberStatistics.getOthersLoggedIn();
 			mainVC.contextPut("numOfOtherUserLaunches", numOfOtherUserLaunches);
 		}
 	}

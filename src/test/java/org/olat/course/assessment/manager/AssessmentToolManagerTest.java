@@ -286,6 +286,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Identity assessedExtIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-9");
 		Identity assessedExtIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-10");
 		Identity assessedExtIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-11");
+		Identity assessedExtIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-12");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9");
 
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -324,6 +325,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), assessedExtIdentity5);
 		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), assessedExtIdentity6);
 		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), assessedExtIdentity7);
+		userCourseInformationsManager.updateUserCourseInformations(entry.getOlatResource(), assessedExtIdentity8);
 		dbInstance.commitAndCloseSession();
 		
 		// statistics as admin
@@ -334,7 +336,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertNotNull(statisticsAsAdmin);
 		Assert.assertEquals(3, statisticsAsAdmin.getNumOfOtherUsers());
 		Assert.assertEquals(4, statisticsAsAdmin.getNumOfParticipants());
-		Assert.assertEquals(3, statisticsAsAdmin.getLoggedIn());
+		Assert.assertEquals(3, statisticsAsAdmin.getOthersLoggedIn());
 		Assert.assertEquals(4, statisticsAsAdmin.getNumOfParticipantsLoggedIn());
 	}
 	

@@ -52,6 +52,8 @@ public class SearchAssessedIdentityParams {
 	private List<AssessmentEntryStatus> assessmentStatus;
 	private List<Passed> passed;
 	private Boolean userVisibility;
+	private boolean memebersOnly;
+	private boolean nonMemebersOnly;
 	private Collection<AssessmentObligation> assessmentObligations;
 	
 	private String searchString;
@@ -124,6 +126,22 @@ public class SearchAssessedIdentityParams {
 
 	public void setUserVisibility(Boolean userVisibility) {
 		this.userVisibility = userVisibility;
+	}
+
+	public boolean isMemebersOnly() {
+		return memebersOnly;
+	}
+
+	public void setMemebersOnly(boolean memebersOnly) {
+		this.memebersOnly = memebersOnly;
+	}
+
+	public boolean isNonMemebersOnly() {
+		return nonMemebersOnly;
+	}
+
+	public void setNonMemebersOnly(boolean nonMemebersOnly) {
+		this.nonMemebersOnly = nonMemebersOnly;
 	}
 
 	public Collection<AssessmentObligation> getAssessmentObligations() {

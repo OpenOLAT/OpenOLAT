@@ -73,10 +73,10 @@ public class AssessmentStatisticsSmallController extends BasicController {
 		return numOfFailed;
 	}
 	
-	public int getNumOfAssessedIdentities() {
-		return numOfAssessedIdentities;
+	public AssessmentMembersStatistics getMemberStatistics() {
+		return membersStatistics;
 	}
-	
+
 	public void updateStatistics() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
 		numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(getIdentity(), params);
@@ -104,7 +104,7 @@ public class AssessmentStatisticsSmallController extends BasicController {
 		int numOfParticipantLaunches = membersStatistics.getNumOfParticipantsLoggedIn();
 		mainVC.contextPut("numOfParticipantLaunches", numOfParticipantLaunches);
 		if(assessmentCallback.canAssessNonMembers()) {
-			mainVC.contextPut("numOfOtherUserLaunches", membersStatistics.getLoggedIn());
+			mainVC.contextPut("numOfOtherUserLaunches", membersStatistics.getOthersLoggedIn());
 		}
 	}
 
