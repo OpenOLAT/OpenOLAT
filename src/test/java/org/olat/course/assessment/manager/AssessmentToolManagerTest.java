@@ -427,23 +427,5 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3);
 	}
-	
-	@Test
-	public void getIdentityKeys() {
-		// Just a small test to validate the query syntax
-		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
-		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
-		String subIdent = random();
-		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
-		dbInstance.commitAndCloseSession();
-		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
-		List<Long> keys = assessmentToolManager.getIdentityKeys(admin, params, null);
-		
-		assertThat(keys).containsExactly(assessedIdentity1.getKey());
-	}
 
 }

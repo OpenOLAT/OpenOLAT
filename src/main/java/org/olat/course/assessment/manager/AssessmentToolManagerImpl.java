@@ -567,20 +567,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		return list.getResultList();
 	}
 	
-	@Override
-	public List<Long> getIdentityKeys(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct aentry.identity.key from assessmententry aentry");
-		applySearchAssessedIdentityParams(sb, params, status);
-		
-		TypedQuery<Long> list = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Long.class);
-		
-		applySearchAssessedIdentityParams(list, coach, params, status);
-		
-		return list.getResultList();
-	}
-
 	private void applySearchAssessedIdentityParams(TypedQuery<?> list, Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
 		list.setParameter("repoEntryKey", params.getEntry().getKey());
 		if(params.getReferenceEntry() != null) {
