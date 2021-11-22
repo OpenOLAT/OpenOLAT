@@ -30,7 +30,6 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentToolManager;
@@ -149,10 +148,6 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params);
 		Assert.assertNotNull(participantStatistics);
 
-		List<IdentityShort> assessedShortIdentities = assessmentToolManager.getShortAssessedIdentities(coach, params, 120);
-		Assert.assertNotNull(assessedShortIdentities);
-		Assert.assertEquals(2, assessedShortIdentities.size());
-		
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, AssessmentEntryStatus.notStarted);
 		Assert.assertNotNull(assessmentEntries);
 		Assert.assertEquals(0, assessmentEntries.size());
@@ -169,10 +164,6 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		//number of assessed identities
 		int numOfAssessedIdentitiesAlt = assessmentToolManager.getNumberOfAssessedIdentities(coach, params);
 		Assert.assertEquals(2, numOfAssessedIdentitiesAlt);
-
-		List<IdentityShort> assessedShortIdentitiesAlt = assessmentToolManager.getShortAssessedIdentities(coach, params, 120);
-		Assert.assertNotNull(assessedShortIdentitiesAlt);
-		Assert.assertEquals(2, assessedShortIdentitiesAlt.size());
 		
 		List<AssessmentEntry> assessmentEntriesAlt = assessmentToolManager.getAssessmentEntries(coach, params, AssessmentEntryStatus.notStarted);
 		Assert.assertNotNull(assessmentEntriesAlt);
@@ -252,10 +243,6 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertNotNull(assessedIdentities);
 		Assert.assertEquals(7, assessedIdentities.size());
-		
-		List<IdentityShort> assessedShortIdentities = assessmentToolManager.getShortAssessedIdentities(admin, params, 120);
-		Assert.assertNotNull(assessedShortIdentities);
-		Assert.assertEquals(7, assessedShortIdentities.size());
 		
 		//number of assessed identities
 		int numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(admin, params);

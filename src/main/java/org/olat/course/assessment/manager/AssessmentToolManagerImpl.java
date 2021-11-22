@@ -20,7 +20,6 @@
 package org.olat.course.assessment.manager;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +29,6 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
-import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -350,90 +348,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		appendUserSearchToQuery(searchArr, query);
 		return query;
 	}
-
-	@Override
-	public List<IdentityShort> getShortAssessedIdentities(Identity coach, SearchAssessedIdentityParams params, int maxResults) {
-		List<IdentityShort> participants = getShortAssessedParticipants(coach, params, maxResults);
-		if(params.isAdmin() && params.isNonMembers() && participants.size() < maxResults) {
-			List<IdentityShort> notMembers = getShortAssessedNonMembers(params, maxResults - participants.size());
-			if(notMembers != null && !notMembers.isEmpty()) {
-				Set<IdentityShort> participantSet = new HashSet<>(participants);
-				for(IdentityShort notMember:notMembers) {
-					if(!participantSet.contains(notMember)) {
-						participants.add(notMember);
-					}
-				}
-			}
-		}
-		return participants;
-	}
-	
-	private List<IdentityShort> getShortAssessedNonMembers(SearchAssessedIdentityParams params, int maxResults) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ident")
-		  .append(" from bidentityshort as ident ")
-		  .append(" where ");
-		if(params.isAdmin() && params.isNonMembers()) {
-			sb.append(" ident.key in (select aentry.identity.key from assessmententry aentry")
-			  .append("  where aentry.repositoryEntry.key=:repoEntryKey")
-			  .append("  and not exists (select membership.identity from repoentrytogroup as rel, bgroupmember as membership")
-	          .append("    where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.role ").in(GroupRoles.participant, GroupRoles.coach, GroupRoles.owner)
-	          .append("    and membership.identity.key=aentry.identity.key)")
-	          .append(" )");
-		} else {
-			return Collections.emptyList();
-		}
-
-		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
-		String[] searchArr = appendUserSearch(sb, params.getSearchString());
-
-		TypedQuery<IdentityShort> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), IdentityShort.class)
-				.setFirstResult(0)
-				.setMaxResults(maxResults)
-				.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(identityKey != null) {
-			query.setParameter("searchIdentityKey", identityKey);
-		}
-		appendUserSearchToQuery(searchArr, query);
-		return query.getResultList();
-	}
-	
-	private List<IdentityShort> getShortAssessedParticipants(Identity coach, SearchAssessedIdentityParams params, int maxResults) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ident")
-		  .append(" from bidentityshort as ident ")
-		  .append(" where ");
-		if(params.isAdmin()) {
-			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
-	          .append("    where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key")
-	          .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
-	          .append(" )");
-		} else if(params.isCoach()) {
-			sb.append(" ident.key in (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
-	          .append("    where rel.entry.key=:repoEntryKey")
-	          .append("      and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
-	          .append("      and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("'")
-	          .append("  )");
-		}
-
-		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
-		String[] searchArr = appendUserSearch(sb, params.getSearchString());
-
-		TypedQuery<IdentityShort> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), IdentityShort.class)
-				.setFirstResult(0)
-				.setMaxResults(maxResults)
-				.setParameter("repoEntryKey", params.getEntry().getKey());
-		if(!params.isAdmin()) {
-			query.setParameter("identityKey", coach.getKey());
-		}
-		if(identityKey != null) {
-			query.setParameter("searchIdentityKey", identityKey);
-		}
-		appendUserSearchToQuery(searchArr, query);
-		return query.getResultList();
-	}
 	
 	private Long appendUserSearchByKey(QueryBuilder sb, String search) {
 		Long identityKey = null;
@@ -452,39 +366,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		return identityKey;
 
-	}
-	
-	private String[] appendUserSearch(QueryBuilder sb, String search) {
-		String[] searchArr = null;
-
-		if(StringHelper.containsNonWhitespace(search)) {
-			String dbVendor = dbInstance.getDbVendor();
-			searchArr = search.split(" ");
-			String[] attributes = new String[]{ "name", "firstName", "lastName", "email" };
-
-			sb.append(" and (");
-			boolean start = true;
-			for(int i=0; i<searchArr.length; i++) {
-				for(String attribute:attributes) {
-					if(start) {
-						start = false;
-					} else {
-						sb.append(" or ");
-					}
-					
-					if (searchArr[i].contains("_") && dbVendor.equals("oracle")) {
-						//oracle needs special ESCAPE sequence to search for escaped strings
-						sb.append(" lower(ident.").append(attribute).append(") like :search").append(i).append(" ESCAPE '\\'");
-					} else if (dbVendor.equals("mysql")) {
-						sb.append(" ident.").append(attribute).append(" like :search").append(i);
-					} else {
-						sb.append(" lower(ident.").append(attribute).append(") like :search").append(i);
-					}
-				}
-			}
-			sb.append(")");
-		}
-		return searchArr;
 	}
 	
 	private String[] appendUserSearchFull(QueryBuilder sb, String search, boolean and) {

@@ -67,7 +67,6 @@ import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams.Passed;
-import org.olat.course.assessment.ui.tool.AssessedIdentityListProvider;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.group.BusinessGroup;
@@ -192,7 +191,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		usersTableModel.setCertificateMap(new ConcurrentHashMap<>());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), testEntry, testEntry, null, assessmentCallback), ureq.getUserSession());
+		tableEl.setSearchEnabled(true);
 		
 		initFilters();
 	}
