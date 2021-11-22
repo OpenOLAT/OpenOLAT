@@ -558,15 +558,20 @@ public class RepositoryManagerTest extends OlatTestCase {
 		repositoryManager.setAccess(reNotPublished, RepositoryEntryStatusEnum.coachpublished, true, true);
 		dbInstance.commitAndCloseSession();
 
+		long start = System.nanoTime();
 		List<RepositoryEntry> entries = repositoryManager.getParticipantRepositoryEntry(id, -1, RepositoryEntryOrder.nameAsc);
 		Assert.assertNotNull(entries);
 		Assert.assertFalse(entries.contains(reNotPublished));
+		CodeHelper.printMilliSecondTime(start, "Query");
+		start = System.nanoTime();
 		
 		// check access
 		for(RepositoryEntry entry:entries) {
-			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(id, Roles.userRoles(), entry);
-			Assert.assertTrue(reSecurity.canLaunch());
+			Assert.assertTrue(entry.getEntryStatus() == RepositoryEntryStatusEnum.published || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed);
+			Assert.assertTrue(entry.isAllUsers() || entry.isBookable()
+					|| repositoryManager.isAllowed(id, Roles.userRoles(), entry).canLaunch());
 		}
+		CodeHelper.printMilliSecondTime(start, entries.size() + " check");
 	}
 	
 	@Test
@@ -583,8 +588,9 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		// check access
 		for(RepositoryEntry entry:entries) {
-			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(id, Roles.userRoles(), entry);
-			Assert.assertTrue(reSecurity.canLaunch());
+			Assert.assertTrue(entry.getEntryStatus() == RepositoryEntryStatusEnum.published || entry.getEntryStatus() == RepositoryEntryStatusEnum.closed);
+			Assert.assertTrue(entry.isAllUsers() || entry.isBookable()
+					|| repositoryManager.isAllowed(id, Roles.userRoles(), entry).canLaunch());
 		}
 	}
 	
