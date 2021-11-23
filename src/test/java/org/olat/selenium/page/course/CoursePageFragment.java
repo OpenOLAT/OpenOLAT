@@ -117,7 +117,7 @@ public class CoursePageFragment {
 		if(nodeTitle.length() > 20) {
 			nodeTitle = nodeTitle.substring(0, 20);
 		}
-		By nodeDoneBy = By.xpath("//div[contains(@class,'o_lp_tree')]//span[contains(@class,'o_tree_l')]/a[i[contains(@class,'" + statusCssClass + "')]][span[text()[contains(.,'" + nodeTitle + "')]]]");
+		By nodeDoneBy = By.xpath("//div[contains(@class,'o_lp_tree')]//li[contains(@class,'" + statusCssClass + "')]/div/span[contains(@class,'o_tree_l')]/a[span[text()[contains(.,'" + nodeTitle + "')]]]");
 		OOGraphene.waitElement(nodeDoneBy, browser);
 		return this;
 	}
