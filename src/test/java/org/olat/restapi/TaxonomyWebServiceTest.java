@@ -55,6 +55,7 @@ import org.olat.modules.taxonomy.restapi.TaxonomyCompetenceVO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelTypeVO;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.modules.taxonomy.restapi.TaxonomyVO;
+import org.olat.modules.taxonomy.restapi.TaxonomyVOes;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,24 @@ public class TaxonomyWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("Taxonomy on rest", taxonomyVO.getDisplayName());
 		Assert.assertEquals("Rest is cool", taxonomyVO.getDescription());
 		Assert.assertEquals("Ext-tax-1", taxonomyVO.getExternalId());
+	}
+	
+	@Test
+	public void getTaxonomyList()
+	throws IOException, URISyntaxException {
+		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-1b", "Taxonomy on rest", "Rest is cool", "Ext-tax-1");
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(taxonomy);
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		TaxonomyVOes taxonomyVOes = conn.parse(response, TaxonomyVOes.class);
+		Assert.assertNotNull(taxonomyVOes);
 	}
 	
 	@Test
