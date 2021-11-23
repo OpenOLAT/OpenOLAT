@@ -31,7 +31,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSMetadataRef;
 import org.olat.core.commons.services.vfs.VFSRevision;
-import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.vfs.model.VFSMetadataRefImpl;
 import org.olat.core.id.Identity;
@@ -53,8 +52,6 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 	private VFSRevisionDAO revisionDao;
 	@Autowired
 	private VFSMetadataDAO vfsMetadataDao;
-	@Autowired
-	private VFSVersionModule versionModule;
 	
 	@Test
 	public void createRevision() {
@@ -107,8 +104,6 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getMetadataWithMoreThan() {
-		Assert.assertEquals(10, versionModule.getMaxNumberOfVersions());
-		
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
