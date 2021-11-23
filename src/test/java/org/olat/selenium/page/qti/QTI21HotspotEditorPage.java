@@ -22,7 +22,6 @@ package org.olat.selenium.page.qti;
 import java.io.File;
 
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.graphene.Position;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
@@ -94,12 +93,11 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		OOGraphene.waitElement(circleBy, browser);
 		
 		WebElement circleEl = browser.findElement(circleBy);
-		Dimension dim = circleEl.getSize();
-		Position pos = Position.valueOf(10, 10, dim);
+		Dimension dim = circleEl.getSize();// 20 20
 		new Actions(browser)
-			.moveToElement(circleEl, pos.getX(), pos.getY())
+			.moveToElement(circleEl, (dim.getWidth() / 2) - 5, 0)// 0 0
 			.clickAndHold()
-			.moveByOffset(60, 60)
+			.moveByOffset(40, 0)
 			.release()
 			.build()
 			.perform();
@@ -134,11 +132,8 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		OOGraphene.waitElement(elementBy, browser);
 		OOGraphene.scrollTo(By.id("o_fiohotspot_layout_SELBOX"), browser);
 		WebElement element = browser.findElement(elementBy);
-		Dimension size = element.getSize();
-		int centerX = size.getWidth() / 2;
-		int centerY = size.getHeight() / 2;
 		new Actions(browser)
-			.moveToElement(element, centerX, centerY)
+			.moveToElement(element, 0, 0)
 			.clickAndHold()
 			.moveByOffset(xOffset, yOffset)
 			.release()

@@ -967,19 +967,19 @@ public class QTI21Page {
 	
 	public QTI21Page assertOnAssessmentResultEssay(String text) {
 		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'extendedTextInteraction')]/div[contains(text(),'" + text + "')]");
-		OOGraphene.waitElement(uploadBy, 5, browser);
+		OOGraphene.waitElement(uploadBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnDrawing() {
 		By drawingBy = By.className("drawingInteraction");
-		OOGraphene.waitElement(drawingBy, 5, browser);
+		OOGraphene.waitElement(drawingBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentTestFeedback(String feedback) {
 		By feedbackBy = By.xpath("//div[contains(@class,'o_info')]/h3[contains(text(),'" + feedback + "')]");
-		OOGraphene.waitElement(feedbackBy, 5, browser);
+		OOGraphene.waitElement(feedbackBy, browser);
 		List<WebElement> feedbackEls = browser.findElements(feedbackBy);
 		Assert.assertEquals(1, feedbackEls.size());
 		return this;
