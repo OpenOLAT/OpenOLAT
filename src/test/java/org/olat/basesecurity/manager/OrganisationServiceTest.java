@@ -172,15 +172,14 @@ public class OrganisationServiceTest extends OlatTestCase {
 	 */
 	@Test
 	public void moveOrganisation() {
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
-		Organisation organisation1 = organisationService.createOrganisation("Top 1", "Top 1", "", defOrganisation, null);
+		Organisation organisation1 = organisationService.createOrganisation("Top 1", "Top 1", "", null, null);
 		Organisation organisation1_1 = organisationService.createOrganisation("Medium 1", "Medium 1", "", organisation1, null);
 		Organisation organisation1_1_1 = organisationService.createOrganisation("Low 1", "Low 1", "", organisation1_1, null);
 		Organisation organisation1_1_2 = organisationService.createOrganisation("Low 2", "Low 2", "", organisation1_1, null);
 		Organisation organisation1_1_3 = organisationService.createOrganisation("Low 3", "Low 3", "", organisation1_1, null);
 		Organisation organisation1_1_3_1 = organisationService.createOrganisation("Underworld 1", "Underworld 1", "", organisation1_1_3, null);
 		Organisation organisation1_1_3_2 = organisationService.createOrganisation("Underworld 2", "Underworld 2", "", organisation1_1_3, null);
-		Organisation organisation2 = organisationService.createOrganisation("Top 2", "Top 2", "", defOrganisation, null);
+		Organisation organisation2 = organisationService.createOrganisation("Top 2", "Top 2", "", null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Identity userManager1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-mgr-1");

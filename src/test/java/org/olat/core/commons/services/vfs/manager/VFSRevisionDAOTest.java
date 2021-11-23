@@ -107,25 +107,21 @@ public class VFSRevisionDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("rev-1");
 		VFSMetadata metadata = vfsMetadataDao.createMetadata(UUID.randomUUID().toString(), "test/revs", "text.txt",
 				new Date(), 10l, false, "file:///text.tx", "file", null);
-		VFSRevision revision1 = revisionDao.createRevision(author, author, "._oo_vr_1_text.txt", 1, null, 25l, new Date(), "A comment", metadata);
-		VFSRevision revision2 = revisionDao.createRevision(author, author, "._oo_vr_2_text.txt", 2, null, 26l, new Date(), "A comment", metadata);
-		VFSRevision revision3 = revisionDao.createRevision(author, author, "._oo_vr_3_text.txt", 3, null, 27l, new Date(), "A comment", metadata);
-		VFSRevision revision4 = revisionDao.createRevision(author, author, "._oo_vr_4_text.txt", 4, null, 28l, new Date(), "A comment", metadata);
+		for(int i=1; i<=8; i++) {
+			VFSRevision revision = revisionDao.createRevision(author, author, "._oo_vr_" + i + "_text.txt", i, null, 25l + i, new Date(), "A comment", metadata);
+			Assert.assertNotNull(revision);
+		}
 		dbInstance.commitAndCloseSession();
-		Assert.assertNotNull(revision1);
-		Assert.assertNotNull(revision2);
-		Assert.assertNotNull(revision3);
-		Assert.assertNotNull(revision4);
 		
 		List<VFSMetadataRef> metadataRefs = new ArrayList<>();
 		metadataRefs.add(metadata);
-		List<VFSMetadataRef> metadataWithRevs = revisionDao.getMetadataWithMoreThan(3);
+		List<VFSMetadataRef> metadataWithRevs = revisionDao.getMetadataWithMoreThan(7);
 		Assert.assertNotNull(metadataWithRevs);
 		Assert.assertTrue(metadataWithRevs.contains(new VFSMetadataRefImpl(metadata.getKey())));
 		
 		for(VFSMetadataRef metadataRef:metadataWithRevs) {
 			List<VFSRevision> revisions = revisionDao.getRevisions(metadataRef);
-			Assert.assertTrue(revisions.size() > 3);
+			Assert.assertTrue(revisions.size() > 7);
 		}
 	}
 	
