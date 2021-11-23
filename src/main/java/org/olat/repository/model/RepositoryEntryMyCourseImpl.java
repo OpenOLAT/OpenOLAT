@@ -20,9 +20,12 @@
 package org.olat.repository.model;
 
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryMyView;
@@ -74,6 +77,8 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 
 	private final long offersAvailable;
 	
+	private final Set<TaxonomyLevel> taxonomyLevels;
+	
 	public RepositoryEntryMyCourseImpl(RepositoryEntry re, RepositoryEntryStatistics stats,
 			boolean marked, long offersAvailable, Integer myRating) {
 		key = re.getKey();
@@ -94,6 +99,8 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		
 		olatResource = re.getOlatResource();
 		lifecycle = re.getLifecycle();
+		
+		taxonomyLevels = re.getTaxonomyLevels().stream().map(relation -> relation.getTaxonomyLevel()).collect(Collectors.toSet());
 	
 		this.marked = marked;
 		this.myRating = myRating;
@@ -274,6 +281,11 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public boolean isValidOfferAvailable() {
 		return offersAvailable > 0;
+	}
+	
+	@Override
+	public Set<TaxonomyLevel> getTaxonomyLevels() {
+		return taxonomyLevels;
 	}
 
 	@Override

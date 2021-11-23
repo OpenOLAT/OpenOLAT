@@ -348,12 +348,13 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	display: inline-block;
 	box-sizing: border-box;
 	min-width: 80px;
-	height: 40px;
+	height: 50px;
 
 	color: white;
 	font-weight: bold;
-	line-height: 40px;
+	line-height: 50px;
 	text-align: right;
+	border-radius: $border-radius-base;
 	
 	padding: 5px;
 	margin-right: 3px;
@@ -363,8 +364,8 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	border: 3px solid rgb(125, 124, 128);
 	
 	&.active {
-		background-color: rgb(91, 138, 144);
-		border: 3px solid rgb(90, 177, 185);
+		background-color: color.scale($brand-primary, $alpha: -35%);;
+		border: 3px solid $brand-primary;
 	}
 	
 	&:hover {

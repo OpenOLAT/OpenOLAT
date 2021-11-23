@@ -419,7 +419,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public Certificate getLastCertificate(IdentityRef identity, Long resourceKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select cer from certificate cer")
-		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey)")
+		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey or cer.key=:resourceKey)")
 		  .append(" and cer.identity.key=:identityKey and cer.last=true order by cer.creationDate");
 		List<Certificate> certififcates = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Certificate.class)

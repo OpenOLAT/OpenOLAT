@@ -20,8 +20,10 @@
 package org.olat.repository;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 
@@ -105,4 +107,6 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	 * @return True if some offers are currently available
 	 */
 	public boolean isValidOfferAvailable();
+	
+	public Set<TaxonomyLevel> getTaxonomyLevels();
 }

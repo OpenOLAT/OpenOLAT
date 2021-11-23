@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -55,9 +56,11 @@ import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
+import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelDepthComparator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -225,24 +228,40 @@ public class EditCurriculumElementController extends FormBasicController {
 		
 		// Subjects
 		TaxonomyLevelSearchParameters filter = new TaxonomyLevelSearchParameters();
-		filter.setAllowedAsSubject(true);
 		
 		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(null, filter);
 		List<TaxonomyLevel> selectedSubjects = curriculumService.getTaxonomy(element);
 		
 		if (!taxonomyLevels.isEmpty()) {
 			subjectsEl = uifactory.addCheckboxesDropdown("subjects", formLayout);
+			Set<Taxonomy> taxonomies = taxonomyLevels.stream().map(level -> level.getTaxonomy()).collect(Collectors.toSet());
+			Set<String> disabledEntries = new HashSet<>();
 			
-			String[] keys = new String[taxonomyLevels.size()];
-			String[] values = new String[taxonomyLevels.size()];
+			String[] keys = new String[taxonomyLevels.size() + taxonomies.size()];
+			String[] values = new String[taxonomyLevels.size() + taxonomies.size()];
+			int index = 0;
 			
-			for (int i = 0; i < taxonomyLevels.size(); i++) {
-				TaxonomyLevel subject = taxonomyLevels.get(i);
-				keys[i] = subject.getKey().toString();
-				values[i] = subject.getMaterializedPathIdentifiersWithoutSlash();
+			for (Taxonomy taxonomy : taxonomies) {
+				keys[index] = "Taxonomy_" + taxonomy.getKey();
+				values[index] = taxonomy.getDisplayName();
+				disabledEntries.add("Taxonomy_" + taxonomy.getKey());
+				
+				index++;
+				
+				List<TaxonomyLevel> relatedLevels = taxonomyLevels.stream().filter(level -> level.getTaxonomy().equals(taxonomy)).collect(Collectors.toList());
+				
+				Collections.sort(relatedLevels, new TaxonomyLevelDepthComparator());
+				
+				for (TaxonomyLevel level : relatedLevels) {
+					keys[index] = level.getKey().toString();
+					values[index] = level.getMaterializedPathIdentifiersWithoutSlash();
+					
+					index++;
+				}
 			}
 			
 			subjectsEl.setKeysAndValues(keys, values);
+			subjectsEl.setEnabled(disabledEntries, false);
 			
 			if (!selectedSubjects.isEmpty()) {
 				for (TaxonomyLevel selectedLevel : selectedSubjects) {
@@ -501,13 +520,15 @@ public class EditCurriculumElementController extends FormBasicController {
 			Set<Long> removedTaxonomies= new HashSet<>();
 			
 			for(String key : subjectsEl.getKeys()) {
-				taxonomyLevelKeys.add(Long.valueOf(key));
-				
-				if (subjectsEl.isKeySelected(key)) {
-					addedTaxonomies.add(Long.valueOf(key));
-				} else {
-					removedTaxonomies.add(Long.valueOf(key));
-				}
+				try {
+					taxonomyLevelKeys.add(Long.valueOf(key));
+					
+					if (subjectsEl.isKeySelected(key)) {
+						addedTaxonomies.add(Long.valueOf(key));
+					} else {
+						removedTaxonomies.add(Long.valueOf(key));
+					}
+				} catch(NumberFormatException e) {}
 			}
 			
 			List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevelsByKeys(taxonomyLevelKeys);

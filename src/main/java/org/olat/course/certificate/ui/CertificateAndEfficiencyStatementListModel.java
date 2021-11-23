@@ -106,6 +106,12 @@ public class CertificateAndEfficiencyStatementListModel
 		}
 		return null;
 	}
+	
+	@Override
+	public boolean hasChildren(int row) {
+		CertificateAndEfficiencyStatement element = getObject(row);
+		return element.hasChildren();
+	}
 
 	public enum Cols implements FlexiSortableColumnDef {
 
@@ -153,6 +159,11 @@ public class CertificateAndEfficiencyStatementListModel
 		private Long efficiencyStatementKey;
 		private CertificateLight certificate;
 		private Double completion;
+		
+		private boolean hasChildren;
+		private boolean isTaxonomy;
+		
+		private CertificateAndEfficiencyStatement parent;
 
 		public String getDisplayName() {
 			return displayName;
@@ -228,13 +239,31 @@ public class CertificateAndEfficiencyStatementListModel
 
 		@Override
 		public FlexiTreeTableNode getParent() {
-			// TODO Auto-generated method stub
-			return null;
+			return parent;
+		}
+		
+		public void setParent(CertificateAndEfficiencyStatement parent) {
+			this.parent = parent;
+		}
+		
+		public boolean hasChildren() {
+			return hasChildren;
+		}
+		
+		public void setHasChildren(boolean hasChildren) {
+			this.hasChildren = hasChildren;
+		}
+		
+		public boolean isTaxonomy() {
+			return isTaxonomy;
+		}
+		
+		public void setTaxonomy(boolean isTaxonomy) {
+			this.isTaxonomy = isTaxonomy;
 		}
 
 		@Override
 		public String getCrump() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 

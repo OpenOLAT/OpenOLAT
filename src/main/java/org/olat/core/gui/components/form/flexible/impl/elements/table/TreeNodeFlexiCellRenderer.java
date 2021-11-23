@@ -40,11 +40,12 @@ import org.olat.core.util.StringHelper;
  */
 public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 
-	private FlexiCellRenderer labelDelegate = new TextFlexiCellRenderer();
+	protected FlexiCellRenderer labelDelegate = new TextFlexiCellRenderer();
 	
-	private boolean flatBySearchAndFilter;
-	private boolean flatBySort;
-	private final String action;
+	protected boolean flatBySearchAndFilter;
+	protected boolean flatBySort;
+	protected boolean flat;
+	protected final String action;
 	
 	public TreeNodeFlexiCellRenderer() {
 		action = "tt-focus";
@@ -87,6 +88,14 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	public void setFlatBySort(boolean flatBySort) {
 		this.flatBySort = flatBySort;
 	}
+	
+	public boolean isFlat() {
+		return flat;
+	}
+	
+	public void setFlat(boolean flat) {
+		this.flat = flat;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
@@ -97,32 +106,32 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			if(isFlat(ftE)) {
 				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 			} else {
-				renderIndented(renderer, target, cellValue, row, source, ubu, translator);
+				renderIndented(renderer, target, cellValue, row, source, ubu, translator, false);
 			}
 		} else {
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 		}
 	}
 	
-	private boolean isFlat(FlexiTableElementImpl ftE) {
-		return isFlatSearchAndFilter(ftE) || isFlatSort(ftE) ;
+	protected boolean isFlat(FlexiTableElementImpl ftE) {
+		return isFlat() || isFlatSearchAndFilter(ftE) || isFlatSort(ftE) ;
 	}
 
-	private boolean isFlatSearchAndFilter(FlexiTableElementImpl ftE) {
+	protected boolean isFlatSearchAndFilter(FlexiTableElementImpl ftE) {
 		return flatBySearchAndFilter
 				&& (StringHelper.containsNonWhitespace(ftE.getQuickSearchString()) || isFiltered(ftE.getFilters()));//TODO filters
 	}
 	
-	private boolean isFlatSort(FlexiTableElementImpl ftE) {
+	protected boolean isFlatSort(FlexiTableElementImpl ftE) {
 		return flatBySort && isSorted(ftE);
 	}
 
-	private boolean isSorted(FlexiTableElementImpl ftE) {
+	protected boolean isSorted(FlexiTableElementImpl ftE) {
 		SortKey[] keys = ftE.getOrderBy();
 		return keys != null && keys.length > 0 && keys[0] != null && !"natural".equals(keys[0].getKey());
 	}
 
-	private boolean isFiltered(List<FlexiTableFilter> filters) {
+	protected boolean isFiltered(List<FlexiTableFilter> filters) {
 		if(filters == null || filters.isEmpty()) return false;
 		
 		boolean filtered = true;
@@ -134,8 +143,8 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 		return filtered;
 	}
 	
-	private void renderIndented(Renderer renderer, StringOutput target, Object cellValue, int row,
-			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+	protected void renderIndented(Renderer renderer, StringOutput target, Object cellValue, int row,
+			FlexiTableComponent source, URLBuilder ubu, Translator translator, boolean bold) {
 		FlexiTableElementImpl ftE = source.getFlexiTableElement();
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
 		
@@ -157,28 +166,48 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 				pair = new NameValuePair("tt-open", Integer.toString(row));
 			}
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
+			
 			target.append("<a href=\"javascript:;\" onclick=\"").append(jsCode).append("; return false\"><i class='o_icon o_icon-fw ");
 			if(open) {
 				target.append("o_icon_close_tree");
 			} else {
 				target.append("o_icon_open_tree");
 			}
-			target.append("'> </i></a> ");
+			target.append("'> </i></a>");
 		}
 		
 		if(action == null) {
+			if (bold) {
+				target.append("<b>");
+			}
+			
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			
+			if (bold) {
+				target.append("</b>");
+			}
 		} else {
 			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
 			String href = href(source, row);
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
+			
+			if (bold) {
+				target.append("<b>");
+			}
+			
 			target.append("<a href=\"").append(href).append("\" onclick=\"").append(jsCode).append("; return false;\">");
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
-			target.append("</a></div>");
+			target.append("</a>");
+			
+			if (bold) {
+				target.append("<b>");
+			}
+			
+			target.append("</div>");
 		}
 	}
 	
-	private String href(FlexiTableComponent source, int row) {
+	protected String href(FlexiTableComponent source, int row) {
 		String href = null;
 		FlexiTableDataModel<?> model = source.getFlexiTableElement().getTableDataModel();
 		if(model instanceof FlexiBusinessPathModel) {

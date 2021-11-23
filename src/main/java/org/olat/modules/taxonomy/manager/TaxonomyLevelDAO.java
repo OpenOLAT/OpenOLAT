@@ -215,6 +215,10 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		if(searchParams.isAllowedAsSubject() != null) {
 			sb.where().append("type.allowedAsSubject=:subjectAllowed");
 		}
+		
+		if(searchParams.getTaxonomyKeys() != null) {
+			sb.where().append("taxonomy.key in :taxonomyKeys");
+		}
 
 		TypedQuery<TaxonomyLevel> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyLevel.class);
@@ -232,6 +236,9 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		}
 		if (searchParams.isAllowedAsSubject() != null) {
 			query.setParameter("subjectAllowed", searchParams.isAllowedAsSubject().booleanValue());
+		}
+		if (searchParams.getTaxonomyKeys() != null) {
+			query.setParameter("taxonomyKeys", searchParams.getTaxonomyKeys());
 		}
 
 		return query.getResultList();

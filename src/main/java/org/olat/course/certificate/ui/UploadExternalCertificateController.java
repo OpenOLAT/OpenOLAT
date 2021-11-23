@@ -96,7 +96,7 @@ public class UploadExternalCertificateController extends FormBasicController {
 		certificateEl.clearError();
 		if (certificateEl.getUploadFile() == null || !certificateEl.getUploadFileName().endsWith(".pdf")) {
 			allOk &= false;
-			certificateEl.setErrorKey("certificate.file.error", null);
+			certificateEl.setErrorKey("certificate.file.error", new String[] {String.valueOf(certificatesModule.getUploadLimit())});
 		}
 		
 		return allOk;

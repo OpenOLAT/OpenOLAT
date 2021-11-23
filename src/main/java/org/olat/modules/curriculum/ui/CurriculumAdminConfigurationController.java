@@ -35,6 +35,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,9 +52,13 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement curriculumMyCoursesEl;
 	private MultipleSelectionElement curriculumUserOverviewEl;
+	private MultipleSelectionElement linkedTaxonomiesEl;
 	
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	
 	@Autowired
 	private List<RightProvider> relationRights;
 	
@@ -103,6 +109,17 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 				curriculumUserOverviewEl.select(selectedRight, true);
 			}
 		}
+		
+		List<Taxonomy> taxonomies = taxonomyService.getTaxonomyList();
+		String[] taxonomyKeys = taxonomies.stream().map(taxonomy -> taxonomy.getKey().toString()).toArray(String[]::new);
+		String[] taxonomyNames = taxonomies.stream().map(taxonomy -> taxonomy.getDisplayName()).toArray(String[]::new);
+		
+		linkedTaxonomiesEl = uifactory.addCheckboxesVertical("taxonomy.linked.elements", formLayout, taxonomyKeys, taxonomyNames, 1);
+		if (curriculumModule.getLinkedTaxonomies() != null) {
+			curriculumModule.getLinkedTaxonomies().stream().forEach(taxonomy -> linkedTaxonomiesEl.select(taxonomy.getKey().toString(), true));
+		}
+		linkedTaxonomiesEl.addActionListener(FormEvent.ONCHANGE);
+		
 	}
 
 	@Override
@@ -121,6 +138,8 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 		} else if(curriculumUserOverviewEl == source) {
 			Collection<String> selectedKeys = curriculumUserOverviewEl.getSelectedKeys();
 			curriculumModule.setUserOverviewRightList(selectedKeys);
+		} else if (linkedTaxonomiesEl == source) {
+			curriculumModule.setLinkedTaxonomies(linkedTaxonomiesEl.getSelectedKeys());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -128,5 +147,6 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 	private void update() {
 		boolean enabled = enableEl.isAtLeastSelected(1);
 		curriculumMyCoursesEl.setVisible(enabled);
+		linkedTaxonomiesEl.setVisible(enabled);
 	}
 }

@@ -42,9 +42,10 @@ public class TaxonomyRow implements TaxonomyRef {
 	private final FormLink docPoolLink;
 	private final FormLink qPoolLink;
 	private final FormLink ePortfolioLink;
+	private final FormLink curriculumLink;
 	
 	public TaxonomyRow(TaxonomyInfos taxonomy, boolean documentPoolEnabled, boolean questionPoolEnabled,
-			FormLink openLink, FormLink repoLink, FormLink docPoolLink, FormLink qPoolLink, FormLink ePortfolioLink) {
+			FormLink openLink, FormLink repoLink, FormLink docPoolLink, FormLink qPoolLink, FormLink ePortfolioLink, FormLink curriculumLink) {
 		this.taxonomy = taxonomy;
 		this.openLink = openLink;
 		this.repoLink = repoLink;
@@ -53,6 +54,7 @@ public class TaxonomyRow implements TaxonomyRef {
 		this.ePortfolioLink = ePortfolioLink;
 		this.documentPoolEnabled = documentPoolEnabled;
 		this.questionPoolEnabled = questionPoolEnabled;
+		this.curriculumLink = curriculumLink;
 	}
 
 	@Override
@@ -98,6 +100,10 @@ public class TaxonomyRow implements TaxonomyRef {
 	
 	public FormLink getEPortfolioLink() {
 		return ePortfolioLink;
+	}
+	
+	public FormLink getCurriculumLink() {
+		return curriculumLink;
 	}
 
 	public boolean isDocumentPoolEnabled() {

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.model;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 11 déc. 2017<br>
@@ -29,6 +31,7 @@ public class TaxonomyLevelSearchParameters {
 	
 	private String quickSearch;
 	private Boolean allowedAsSubject;
+	private List<Long> taxonomyKeys;
 
 	public String getQuickSearch() {
 		return quickSearch;
@@ -44,6 +47,14 @@ public class TaxonomyLevelSearchParameters {
 	
 	public void setAllowedAsSubject(Boolean allowedAsSubject) {
 		this.allowedAsSubject = allowedAsSubject;
+	}
+	
+	public void setTaxonomyKeys(List<Long> taxonomyKeys) {
+		this.taxonomyKeys = taxonomyKeys;
+	}
+	
+	public List<Long> getTaxonomyKeys() {
+		return taxonomyKeys;
 	}
 	
 }
