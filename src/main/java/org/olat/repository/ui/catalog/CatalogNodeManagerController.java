@@ -820,9 +820,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				NodeEntryRow row = nodeEntriesModel.getObject(se.getIndex());
-				if (cmd.equals(CMD_DOWN)) {
-					doMoveCatalogEntry(row.getKey(), cmd, ureq);
-				} else if (cmd.equals(CMD_UP)) {
+				if (CMD_DOWN.equals(cmd) || CMD_UP.equals(cmd)) {
 					doMoveCatalogEntry(row.getKey(), cmd, ureq);
 				} 
 			}
@@ -1103,7 +1101,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 	}
 	
 	private void doMoveCatalogEntry(Long key, String command, UserRequest ureq) {
-		if(catalogManager.reorderCatalogEntry(catalogEntry.getKey(), key, command.equals(CMD_UP) ? true : false) != 0) {
+		if(catalogEntry == null
+				|| catalogManager.reorderCatalogEntry(catalogEntry.getKey(), key, CMD_UP.equals(command)) != 0) {
 			getWindowControl().setWarning("Catalog has been modified, please try again!");
 		}
 		
