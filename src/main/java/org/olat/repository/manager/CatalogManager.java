@@ -983,7 +983,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		List<CatalogEntry> catChildren = catParent.getChildren();
 		
 		for (CatalogEntry cat : catChildren) {
-			if (cat.getKey().equals(entryKey)) {
+			if (cat != null && cat.getKey().equals(entryKey)) {
 				int catIndex = catChildren.indexOf(cat);
 				
 				// Move down
