@@ -21,8 +21,6 @@ package org.olat.modules.forms.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -41,7 +39,8 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.ValidationStatus;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -86,6 +85,7 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		super(ureq, wControl, LAYOUT_CUSTOM, "file_upload", rootForm);
 		this.fileUpload = fileUpload;
 		initForm(ureq);
+		updateUI(ureq);
 	}
 
 	@Override
@@ -93,19 +93,13 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		String fileElId = "file_upload_" + CodeHelper.getRAMUniqueID();
 		flc.contextPut("item", fileElId);
 		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), fileElId, "", formLayout);
-		fileEl.setPreview(ureq.getUserSession(), true);
 		fileEl.setButtonsEnabled(false);
 		fileEl.setDeleteEnabled(true);
-		fileEl.setMaxUploadSizeKB(fileUpload.getMaxUploadSizeKB(), "file.upload.error.limit.exeeded", null);
-		Set<String> mimeTypes = MimeTypeSetFactory.getMimeTypes(fileUpload.getMimeTypeSetKey());
-		fileEl.limitToMimeType(mimeTypes, "file.upload.error.mime.type.wrong", null);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	
-	public void update() {
-		fileEl.setMaxUploadSizeKB(fileUpload.getMaxUploadSizeKB(), null, null);
-		Set<String> mimeTypes = MimeTypeSetFactory.getMimeTypes(fileUpload.getMimeTypeSetKey());
-		fileEl.limitToMimeType(mimeTypes, null, null);
+	public void updateUI(UserRequest ureq) {
+		fileEl.setPreview(ureq.getUserSession(), MimeTypeSetFactory.hasPreview(fileUpload.getMimeTypeSetKey()));
 	}
 	
 	public void updateReadOnlyUI(UserRequest ureq, EvaluationFormResponse response) {
@@ -147,12 +141,32 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		List<ValidationStatus> fileStatus = new ArrayList<>();
-		fileEl.validate(fileStatus);
-		if (fileStatus.isEmpty()) {
-			if (fileUpload.isMandatory() && fileEl.isButtonsEnabled() && !fileEl.isUploadSuccess() && fileEl.getInitialFile() == null) {
+		allOk = validateFile();
+		
+		return allOk;
+	}
+
+	private boolean validateFile() {
+		boolean allOk = true;
+		
+		if (fileEl.isButtonsEnabled()) {
+			File file = fileEl.isUploadSuccess() ? fileEl.getUploadFile(): fileEl.getInitialFile();
+			if (file == null || !file.exists()) {
 				fileEl.setErrorKey("form.legende.mandatory", null);
 				allOk = false;
+			} else {
+				if (fileUpload.getMaxUploadSizeKB() != null && file.length() > fileUpload.getMaxUploadSizeKB() * 1024l) {
+					fileEl.setErrorKey("file.upload.error.limit.exeeded", null);
+					allOk &= false;
+				} else if (StringHelper.containsNonWhitespace(fileUpload.getMimeTypeSetKey())) {
+					Set<String> mimeTypes = MimeTypeSetFactory.getMimeTypes(fileUpload.getMimeTypeSetKey());
+					String fileName = fileEl.isUploadSuccess()? fileEl.getUploadFileName(): file.getName();
+					String mimeType = WebappHelper.getMimeType(fileName);
+					if (!mimeTypes.contains(mimeType)){
+						fileEl.setErrorKey("file.upload.error.mime.type.wrong", null);
+						allOk &= false;
+					}
+				}
 			}
 		}
 		
