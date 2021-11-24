@@ -885,15 +885,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, nextNode.getIdent());
 			doNodeClick(ureq, tev, leaningPath);
 		}
-		
-		String srollToTopJS = "try {o_scrollToElement('#o_top');}catch(e){}";
-		JSCommand jsc = new JSCommand(srollToTopJS);
-		WindowControl wControl = getWindowControl();
-		if (wControl != null && wControl.getWindowBackOffice() != null) {
-			wControl.getWindowBackOffice().sendCommandTo(jsc);
-		}
+		doScrollTop();
 	}
-	
+
 	private void doPrevious(UserRequest ureq) {
 		List<TreeNode> flatList = new ArrayList<>();
 		TreeNode currentNode = luTree.getSelectedNode();
@@ -903,6 +897,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			TreeEvent tev = new TreeEvent(MenuTree.COMMAND_TREENODE_CLICKED, previousNonDelegatingNode.getIdent());
 			doNodeClick(ureq, tev, leaningPath);
 		}
+		doScrollTop();
 	}
 	
 	private TreeNode getPreviousNonDelegatingNode(List<TreeNode> flatList, TreeNode treeNode) {
@@ -934,6 +929,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce(), confirmed);
 		updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
 		updateAssessmentConfirmUI(getCurrentCourseNode());
+	}
+	
+	private void doScrollTop() {
+		String srollToTopJS = "try {o_scrollToElement('#o_top');}catch(e){}";
+		JSCommand jsc = new JSCommand(srollToTopJS);
+		WindowControl wControl = getWindowControl();
+		if (wControl != null && wControl.getWindowBackOffice() != null) {
+			wControl.getWindowBackOffice().sendCommandTo(jsc);
+		}
 	}
 	
 	private void doAssessmentChanged() {
