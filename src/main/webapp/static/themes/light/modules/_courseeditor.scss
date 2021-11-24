@@ -54,9 +54,31 @@
 
 /* learning path */
 .o_lp_config_edit {
+	.o_lp_obligation_config {
+		display: flex;
+		flex-direction: row-reverse;
+		justify-content: space-between;
+		
+		&.o_exceptional {
+			flex-direction: column;
+			
+			.o_toggle {
+				display: flex;
+				flex-direction: row-reverse;
+			}
+		}
+		
+		.o_toggle {
+			color: $text-muted;
+			padding-top: 11px;
+		}
+		.o_button_group {
+			margin-bottom: 0;
+		}
+	}	
+	
 	.o_lp_exobli_table {
 		.table {
-			margin-top: 2px;
 			.radio-inline {
 				padding-top: 0px;
 			}

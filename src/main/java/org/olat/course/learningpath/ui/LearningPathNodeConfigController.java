@@ -159,20 +159,21 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		setFormContextHelp("Learning path element");
 		formLayout.setElementCssClass("o_lp_config_edit");
 		
+		obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), velocity_root + "/config_obligation.html");
+		obligationCont.setLabel("config.obligation", null);
+		obligationCont.setRootForm(mainForm);
+		formLayout.add(obligationCont);
+		
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
 		obligationKV.add(entry(AssessmentObligation.optional.name(), translate("config.obligation.optional")));
 		obligationKV.add(entry(AssessmentObligation.excluded.name(), translate("config.obligation.excluded")));
-		obligationEl = uifactory.addRadiosHorizontal("config.obligation", formLayout, obligationKV.keys(), obligationKV.values());
+		obligationEl = uifactory.addRadiosHorizontal("config.obligation", obligationCont, obligationKV.keys(), obligationKV.values());
 		obligationEl.addActionListener(FormEvent.ONCHANGE);
 		String obligationKey = selectedObligation.name();
 		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
 			obligationEl.select(obligationKey, true);
 		}
-		
-		obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), velocity_root + "/config_obligation.html");
-		obligationCont.setRootForm(mainForm);
-		formLayout.add(obligationCont);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.name));
@@ -311,11 +312,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		obligationEl.setVisible(!showExceptional);
 		flc.setDirty(true);
 		
-		if (showExceptional) {
-			obligationCont.setLabel("config.obligation", null);
-		} else {
-			obligationCont.setLabel(null, null);
-		}
 		obligationCont.contextPut("exceptional", Boolean.valueOf(showExceptional));
 	}
 
