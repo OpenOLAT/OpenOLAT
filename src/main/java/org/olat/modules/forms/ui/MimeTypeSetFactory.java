@@ -89,4 +89,8 @@ final class MimeTypeSetFactory {
 		return mimeTypeSets.get(key);
 	}
 	
+	static boolean hasPreview(String key) {
+		return "file.upload.mime.type.image".equals(key) || "file.upload.mime.type.video".equals(key);
+	}
+	
 }

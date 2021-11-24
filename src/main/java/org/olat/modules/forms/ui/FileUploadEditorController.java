@@ -152,7 +152,7 @@ public class FileUploadEditorController extends FormBasicController implements P
 		} else if (source == obligationEl) {
 			doSetObligation();
 		}
-		fileUploadCtrl.update();
+		fileUploadCtrl.updateUI(ureq);
 		fireEvent(ureq, new ChangePartEvent(fileUpload));
 		super.formInnerEvent(ureq, source, event);
 	}
