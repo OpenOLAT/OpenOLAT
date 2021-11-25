@@ -720,13 +720,22 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	}
 	
 	private FormLink getFilterButton(String name) {
-		return curriculumFilterButtons.stream().filter(button -> button.getName().equals(name)).findFirst().orElse(null);
+		if(curriculumFilterButtons == null) return null;
+		return curriculumFilterButtons.stream()
+				.filter(button -> button.getName().equals(name))
+				.findFirst().orElse(null);
 	}
 	
 	private void activateFilter(String name) {
-		curriculumFilterButtons.stream().forEach(button -> button.setElementCssClass("o_curriculum_filter_button"));
+		if(curriculumFilterButtons != null) {
+			curriculumFilterButtons.stream()
+				.forEach(button -> button.setElementCssClass("o_curriculum_filter_button"));
+		}
 		
-		getFilterButton(name).setElementCssClass("o_curriculum_filter_button active");
+		FormLink filterButton = getFilterButton(name);
+		if(filterButton != null) {
+			filterButton.setElementCssClass("o_curriculum_filter_button active");
+		}
 		
 		currentFilter = name;
 	}
@@ -820,7 +829,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-
+		//
 	}
 
 	public class AsArtefactCellRenderer implements FlexiCellRenderer {

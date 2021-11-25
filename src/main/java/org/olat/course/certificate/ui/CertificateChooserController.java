@@ -137,7 +137,7 @@ public class CertificateChooserController extends UploadCertificateTemplateContr
 					selectedTemplate = null;
 				} else if(StringHelper.isLong(selectedkey)) {
 					try {
-						Long key = new Long(selectedkey);
+						Long key = Long.valueOf(selectedkey);
 						selectedTemplate = certificatesManager.getTemplateById(key);
 					} catch (NumberFormatException e) {
 						logError("", e);
