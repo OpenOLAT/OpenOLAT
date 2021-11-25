@@ -1514,8 +1514,13 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	page-break-before: always;
 }
 
+.o_offline_test .o_qti_item {
+	page-break-after: always;
+}
+
 .o_offline_test_cover_sheet,
 .o_offline_test_additional_sheet {
+	font-size: 18px;
 
 	hr {
 		border-color: black;
@@ -1526,10 +1531,15 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 		border: dotted;
 		border-width: 1px;
 	}
-	div {
-		font-size: 16px;
+	h1 {
+		font-size: 48px;
 	}
-	
+	h3 {
+		font-size: 28px;
+	}
+	div {
+		font-size: 18px;
+	}
 	div.o_offline_test_block {
 		border-top: 1px black solid;
 		margin: 1em 0;
@@ -1542,6 +1552,14 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	div.o_offline_test_description {
 		margin-top: 3em;
 		padding: 2em 0;
+	}
+
+	.o_offline_test_solution {
+		background-color: #edf1f6;
+		border: 5px solid black;
+		font-size: 36px;
+		font-weight: bold;
+		padding: 1em;
 	}
 }
 

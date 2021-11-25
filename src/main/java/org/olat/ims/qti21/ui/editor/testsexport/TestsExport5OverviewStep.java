@@ -98,12 +98,13 @@ public class TestsExport5OverviewStep extends BasicStep {
 				initAdditionalSheetForm(formLayout);
 			}
 			
-			String page = this.velocity_root + "/preview.html";
+			String page = velocity_root + "/preview.html";
 			FormLayoutContainer previewCont = FormLayoutContainer.createCustomFormLayout("preview.cont", getTranslator(), page);
 			formLayout.add(previewCont);
 			
 			ExternalLink link = new ExternalLink("preview", "preview");
-			link.setElementCssClass("btn btn-default pull-right");
+			link.setElementCssClass("btn btn-default");
+			link.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 			link.setName(translate("preview"));
 			link.setUrl(mapperUri + "/preview.pdf?test=" + CodeHelper.getForeverUniqueID());
 			link.setTarget("_blank");

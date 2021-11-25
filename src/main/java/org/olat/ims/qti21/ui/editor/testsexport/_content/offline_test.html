@@ -20,6 +20,14 @@
 		</div>
 	</div>
 	
+	#if($r.isTrue($solution))
+	<div class="row">
+		<div class="col-xs-12">
+			<h3 class="o_offline_test_solution">$r.translate("offline.solution.title")</h3>
+		</div>
+	</div>
+	#end
+	
 	#if($r.isTrue($exportContext.placeholderNames) || $r.isTrue($exportContext.placeholderCandidateNumber) || $r.isTrue($exportContext.placeholderDate))
 	<div class="row o_offline_test_block">
 		#if($r.isTrue($exportContext.placeholderNames))

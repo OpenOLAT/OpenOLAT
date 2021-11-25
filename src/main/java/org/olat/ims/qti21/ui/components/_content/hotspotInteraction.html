@@ -15,11 +15,11 @@
 	#end
 	
 	<div id="${qtiContainerId}" class="o_oo_hotcontainer" #if($r.isFalse($isResponsive)) style="width:${interaction.object.width}px; height:${interaction.object.height}px" #end>
-		<img id="${qtiContainerId}_img" #if($r.isTrue($isResponsive)) class="o_hotspot_responsive" #else width="${interaction.object.width}" height="${interaction.object.height}" #end src="${r.convertLinkFull($interaction.object.data)}" usemap="#${qtiContainerId}_map"></img>
+		<img id="${qtiContainerId}_img" alt="" #if($r.isTrue($isResponsive)) class="o_hotspot_responsive" #else width="${interaction.object.width}" height="${interaction.object.height}" #end src="${r.convertLinkFull($interaction.object.data)}" usemap="#${qtiContainerId}_map">
 		<map name="${qtiContainerId}_map">
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
             <!-- Match group, label -->
-          	<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" data-qti-id="${hotspotChoice.identifier}" shape="${r.shapeToString($hotspotChoice.shape)}" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:;" data-maphilight=''></area>
+          	<area id="ac_${responseIdentifier}_${hotspotChoice.identifier}" alt="" data-qti-id="${hotspotChoice.identifier}" shape="${r.shapeToString($hotspotChoice.shape)}" coords="$r.coordsToString($hotspotChoice.coords)" href="javascript:;" data-maphilight=''>
 			$r.appendFlexiFormDirtyForClick("ac_${responseIdentifier}_$hotspotChoice.identifier")
 		#end
 		</map>

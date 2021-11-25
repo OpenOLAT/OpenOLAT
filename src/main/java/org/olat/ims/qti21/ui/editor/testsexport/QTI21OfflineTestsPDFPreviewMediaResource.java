@@ -41,6 +41,7 @@ import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.ims.qti21.QTI21Service;
@@ -153,7 +154,7 @@ public class QTI21OfflineTestsPDFPreviewMediaResource implements MediaResource {
 		@Override
 		public Controller createController(UserRequest ureq, WindowControl wControl) {
 			UserSession usess = ureq.getUserSession();
-			MapperKey mapperBaseKey = mapperService.register(usess, "QTI21DetailsResources::", mapper, 3000);
+			MapperKey mapperBaseKey = mapperService.register(usess, "QTI21DetailsResources::" + CodeHelper.getForeverUniqueID(), mapper, 3000);
 			String mapperUriForPdf = mapperBaseKey.getUrl();
 			String serialNumber = exportContext.getSerialNumber(1);
 			TestSessionController testSessionController = exportContext.createTestSessionState();
