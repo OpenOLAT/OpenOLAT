@@ -115,6 +115,7 @@ public abstract class ItemFormController extends FormBasicController {
 
 		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", item.getDescription(), 12, -1,
 				true, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
+		description.setElementCssClass("o_sel_feed_description");
 		RichTextConfiguration descRichTextConfig = description.getEditorConfiguration();
 		// set upload dir to the media dir
 		descRichTextConfig.setFileBrowserUploadRelPath("media");
@@ -124,6 +125,7 @@ public abstract class ItemFormController extends FormBasicController {
 
 		content = uifactory.addRichTextElementForStringData("content", "feed.form.content", item.getContent(), 18, -1, true,
 				baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
+		content.setElementCssClass("o_sel_feed_content");
 		RichTextConfiguration richTextConfig = content.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");

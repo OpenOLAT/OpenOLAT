@@ -147,9 +147,9 @@ public class FeedPage {
 		By titleBy = By.cssSelector("div.o_sel_feed_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
-		OOGraphene.tinymce(summary, browser);
+		OOGraphene.tinymce(summary, "div.o_sel_feed_description", browser);
 		
-		OOGraphene.tinymce(content, browser);
+		OOGraphene.tinymce(content, "div.o_sel_feed_content", browser);
 		
 		return this;
 	}

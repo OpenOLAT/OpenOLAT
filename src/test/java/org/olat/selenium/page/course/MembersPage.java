@@ -52,7 +52,7 @@ public class MembersPage {
 		By addMemberBy = By.className("o_sel_course_add_member");
 		browser.findElement(addMemberBy).click();
 		OOGraphene.waitModalWizard(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_usersearch_searchform"), browser);
+		OOGraphene.waitElementSlowly(By.cssSelector("fieldset.o_sel_usersearch_searchform"), 5, browser);
 		return new MembersWizardPage(browser);
 	}
 	

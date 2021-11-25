@@ -279,9 +279,9 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			if(browser instanceof FirefoxDriver) {
+			//if(browser instanceof FirefoxDriver) {
 				scrollTo(buttonBy, browser);// Firefox doesn't implement moveToElement
-			}
+			//}
 			new Actions(browser)
 				.moveToElement(buttonEl)
 				.pause(movePause)
@@ -379,7 +379,7 @@ public class OOGraphene {
 	
 	public static final void waitTinymce(WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
-			.pollingEvery(polling)
+			.pollingEvery(poolingSlow)
 			.until(new TinyMCELoadedPredicate());
 	}
 	
