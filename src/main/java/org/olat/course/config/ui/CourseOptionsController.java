@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -115,11 +114,7 @@ public class CourseOptionsController extends FormBasicController {
 	private FormLink addGlossaryCommand;
 	private FormLink removeGlossaryCommand;
 	private StaticTextElement glossaryNameEl;
-	private FormLink saveButton;
-	private FormLayoutContainer saveCont;
-	private FormLayoutContainer glossaryCont;
 	private FormLayoutContainer sharedFolderCont;
-	private FormLayoutContainer coachFolderCont;
 	
 	private FormLink addFolderCommand;
 	private FormLink removeFolderCommand;
@@ -134,7 +129,6 @@ public class CourseOptionsController extends FormBasicController {
 
 	private LockResult lockEntry;
 	private final boolean editable;
-	private ICourse course;
 	private CourseConfig courseConfig;
 	private final RepositoryEntry entry;
 
@@ -151,7 +145,8 @@ public class CourseOptionsController extends FormBasicController {
 	private ReferenceManager referenceManager;
 	@Autowired
 	private RepositoryManager repositoryService;
-	
+	@Autowired
+	private NotificationsManager notificationManager;
 
 	/**
 	 * @param name
@@ -163,7 +158,6 @@ public class CourseOptionsController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RunMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(BCCourseNodeConfigController.class, getLocale(), getTranslator()));
 		this.courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
-		this.course = course;
 		this.entry = entry;
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
@@ -242,7 +236,7 @@ public class CourseOptionsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		//glossary
-		glossaryCont = FormLayoutContainer.createDefaultFormLayout("glossary", getTranslator());
+		FormLayoutContainer glossaryCont = FormLayoutContainer.createDefaultFormLayout("glossary", getTranslator());
 		glossaryCont.setRootForm(mainForm);
 		formLayout.add(glossaryCont);
 
@@ -288,7 +282,7 @@ public class CourseOptionsController extends FormBasicController {
 		
 		
 		// Coach folder
-		coachFolderCont = FormLayoutContainer.createDefaultFormLayout("coachfolder", getTranslator());
+		FormLayoutContainer coachFolderCont = FormLayoutContainer.createDefaultFormLayout("coachfolder", getTranslator());
 		coachFolderCont.setRootForm(mainForm);
 		formLayout.add(coachFolderCont);
 		
@@ -312,7 +306,7 @@ public class CourseOptionsController extends FormBasicController {
 		loadCoachFolderConfig();
 		
 		if(editable) {
-			saveCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+			FormLayoutContainer saveCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 			saveCont.setRootForm(mainForm);
 			formLayout.add(saveCont);
 
@@ -474,7 +468,6 @@ public class CourseOptionsController extends FormBasicController {
 
 	private void doSave(UserRequest ureq) {
 		doChangeConfig(ureq);
-		//saveButton.setCustomEnabledLinkCSS("btn btn-primary");
 	}
 	
 	private void doChangeConfig(UserRequest ureq) {
@@ -700,8 +693,7 @@ public class CourseOptionsController extends FormBasicController {
 	}
 
 	private boolean isLinkedFolderNotPresent(String documentPath) {
-		OLATResourceable courseOres = entry.getOlatResource();
-		ICourse course = CourseFactory.loadCourse(courseOres.getResourceableId());
+		ICourse course = CourseFactory.loadCourse(entry.getOlatResource().getResourceableId());
 		VFSContainer courseBase = course.getCourseBaseContainer();
 		
 		VFSItem folder;
@@ -714,6 +706,7 @@ public class CourseOptionsController extends FormBasicController {
 	}
 	
 	private void doSelectDocumentsFolder(UserRequest ureq) {
+		ICourse course = CourseFactory.loadCourse(entry.getOlatResource().getResourceableId());
 		VFSContainer namedContainer = course.getCourseFolderContainer(CourseContainerOptions.withoutElements());
 		
 		folderSelectCtrl = new BCCourseNodeEditChooseFolderForm(ureq, getWindowControl(), namedContainer);
@@ -725,19 +718,21 @@ public class CourseOptionsController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private void updatePublisher(String coachFolderPath){
+	private void updatePublisher(String coachFolderPath) {
+		ICourse course = CourseFactory.loadCourse(entry.getOlatResource().getResourceableId());
 		VFSContainer vfsContainer = CoachFolderFactory.getFileContainer(course.getCourseEnvironment(), coachFolderPath);
-		File realFile = VFSManager.getRealFile(vfsContainer);
-		String relPath = new File(FolderConfig.getCanonicalRoot()).toPath().relativize(realFile.toPath()).toString();
-		
-		SubscriptionContext subContext = CoachFolderFactory.getSubscriptionContext(entry);
-		NotificationsManager notifManager = CoreSpringFactory.getImpl(NotificationsManager.class);
-		Publisher publisher = notifManager.getPublisher(subContext);
-		if (publisher != null) {
-			String businessPath = getWindowControl().getBusinessControl().getAsString();
-			String data = "/" + relPath;
-			PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(FolderModule.class), data, businessPath);
-			notifManager.updatePublisherData(subContext, pdata);
+		if(vfsContainer != null) {
+			File realFile = VFSManager.getRealFile(vfsContainer);
+			String relPath = new File(FolderConfig.getCanonicalRoot()).toPath().relativize(realFile.toPath()).toString();
+			
+			SubscriptionContext subContext = CoachFolderFactory.getSubscriptionContext(entry);
+			Publisher publisher = notificationManager.getPublisher(subContext);
+			if (publisher != null) {
+				String businessPath = getWindowControl().getBusinessControl().getAsString();
+				String data = "/" + relPath;
+				PublisherData pdata = new PublisherData(OresHelper.calculateTypeName(FolderModule.class), data, businessPath);
+				notificationManager.updatePublisherData(subContext, pdata);
+			}
 		}
 	}
 
