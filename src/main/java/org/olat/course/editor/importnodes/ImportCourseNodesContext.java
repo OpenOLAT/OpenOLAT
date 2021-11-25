@@ -78,19 +78,26 @@ public class ImportCourseNodesContext {
 	/**
 	 * @return All the nodes selected by the user
 	 */
-	public List<ImportCourseNode> getSelectedNodes() {
+	public List<ImportCourseNode> getNodes() {
 		if(nodes == null) {
 			nodes = new ArrayList<>();
 		}
 		return nodes;
 	}
 	
+	public List<ImportCourseNode> getSelectedNodes() {
+		return getNodes().stream()
+				.filter(ImportCourseNode::isSelected)
+				.collect(Collectors.toList());
+	}
+	
 	/**
 	 * @return Only the nodes selected by the user which aren't exclude (by errors).
 	 */
 	public List<ImportCourseNode> getNodesToImport() {
-		return getSelectedNodes().stream()
+		return getNodes().stream()
 				.filter(node -> !node.isExcludeFromImport())
+				.filter(ImportCourseNode::isSelected)
 				.collect(Collectors.toList());
 	}
 

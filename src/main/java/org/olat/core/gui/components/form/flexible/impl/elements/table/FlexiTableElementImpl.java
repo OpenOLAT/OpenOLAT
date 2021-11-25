@@ -2195,6 +2195,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				doSelect(ureq, ROW_UNCHECKED_EVENT, row.intValue());
 			} else {
 				Object objectRow = dataModel.getObject(row.intValue());
+				if(multiSelect == SelectionMode.single) {
+					multiSelectedIndex.clear();
+				}
 				multiSelectedIndex.put(row, objectRow);
 				doSelect(ureq, ROW_CHECKED_EVENT, row.intValue());
 			}

@@ -32,8 +32,6 @@ import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -99,24 +97,17 @@ public abstract class QTIHandler extends FileHandler {
 	}
 	
 	@Override
-	public FormBasicController createAuthorSmallDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, Form mainForm) {
-		return null;
-	}
-	
-	@Override
 	public boolean readyToDelete(RepositoryEntry entry, Identity identity, Roles roles, Locale locale, ErrorList errors) {
 		ReferenceManager refM = CoreSpringFactory.getImpl(ReferenceManager.class);
 		String referencesSummary = refM.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
-			errors.setError(translator.translate("details.delete.error.references",
-					new String[] { referencesSummary, entry.getDisplayname() }));
+			errors.setError(translator.translate("details.delete.error.references", referencesSummary, entry.getDisplayname()));
 			return false;
 		}
 		if (CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(entry.getOlatResource(), null)) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
-			errors.setError(translator.translate("details.delete.error.editor",
-					new String[] { entry.getDisplayname() }));
+			errors.setError(translator.translate("details.delete.error.editor", entry.getDisplayname()));
 			return false;
 		}
 		return true;

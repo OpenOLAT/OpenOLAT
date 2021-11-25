@@ -18,25 +18,33 @@
 			</td>
 		</tr>
 		#end
-		#if($v.mainLanguage)
+		#if($r.isNotEmpty($v.mainLanguage))
 		<tr>
 			<th scope="rows">$r.translateInAttribute("cif.mainLanguage")</th>
 			<td><i class="o_icon o_icon_language"> </i> $r.escapeHtml($v.mainLanguage)</td>
 		</tr>
 		#end
+		#if($r.isNotEmpty($initialAuthor))
 		<tr>
 			<th scope="rows">$r.translate("cif.initialAuthor")</th>
-			<td>$r.escapeHtml($v.getInitialAuthor())</td>
+			<td>$r.escapeHtml($initialAuthor)</td>
 		</tr>
+		#end
+		#if($r.isNotEmpty($v.authors))
+		<tr>
+			<th scope="rows">$r.translate("cif.authors")</th>
+			<td>$r.escapeHtml($v.authors)</td>
+		</tr>
+		#end
 		<tr>
 			<th scope="rows">$r.translate("cif.owners")</th>
 			<td><ul class="list-unstyled">
-			#foreach($authorname in $authornames)
-				<li>$r.escapeHtml($authorname)</li>
+			#foreach($owner in $owners)
+				<li>$r.escapeHtml($owner)</li>
 			#end
 			</ul></td>
 		</tr>
-		#if($referenceDetails && !$referenceDetails.isEmpty())
+		#if($r.isNotEmpty($referenceDetails))
 		<tr>
 			<th scope="rows">$r.translate("details.referenceinfoheader")</th>
 			<td><ul class="list-unstyled">
@@ -46,13 +54,6 @@
 			</ul></td>
 		</tr>
 		#end
-		#if($r.visible("subDetails"))
-		<tr>
-			<th scope="rows">$r.translate("details.sub.details")</th>
-			<td>$r.render("subDetails")</td>
-		</tr>
-		#end
-		
 		#if($description && $description.length() > 0)
 		<tr>
 			<td colspan="2"><label>$r.translate("cif.description"):</label><br>$r.xssScan($description)</td>

@@ -155,20 +155,26 @@ public class SelectCourseNodesController extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
-		List<ImportCourseNode> nodes = new ArrayList<>();
 		List<ImportCourseNode> currentNodesList = importCourseContext.getSelectedNodes();
 		Map<String,ImportCourseNode> currentNodesMap = currentNodesList.stream()
 				.collect(Collectors.toMap(ImportCourseNode::getIdent, n -> n));
 		
-		Set<Integer> indexes = tableEl.getMultiSelectedIndex();
-		for(Integer index:indexes) {
-			SelectCourseNodeRow row = dataModel.getObject(index.intValue());
+		Set<SelectCourseNodeRow> selectedRows = tableEl.getMultiSelectedIndex()
+				.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.collect(Collectors.toSet());
+
+		List<SelectCourseNodeRow> rows = dataModel.getAllRows();
+		List<ImportCourseNode> nodes = new ArrayList<>(rows.size());
+		for(SelectCourseNodeRow row:rows) {
 			ImportCourseNode node = currentNodesMap.get(row.getEditorTreeNode().getIdent());
 			if(node == null) {
 				node = new ImportCourseNode(row.getEditorTreeNode());
 			}
+			node.setSelected(selectedRows.contains(row));
 			nodes.add(node);
 		}
+		
 		importCourseContext.setNodes(nodes);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}

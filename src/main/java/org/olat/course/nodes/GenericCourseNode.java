@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
@@ -66,6 +67,10 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.highscore.ui.HighScoreEditController;
+import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.obligation.ExceptionalObligation;
+import org.olat.course.learningpath.obligation.PassedExceptionalObligation;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRight;
@@ -582,6 +587,41 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionAccess, preConditionAccess, envMapper);
 			configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionVisibility, preConditionVisibility, envMapper);
 		}
+		
+		if(envMapper.isLearningPathNodeAccess() && envMapper.isSourceCourseLearningPathNodeAccess()) {
+			postImportCourseNodeLearningPathsConfigs(envMapper);
+		} else if(!envMapper.isLearningPathNodeAccess()) {
+			removeCourseNodeLearningPathsconfigs();
+		}
+	}
+	
+	protected void postImportCourseNodeLearningPathsConfigs(CourseEnvironmentMapper envMapper) {
+		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(this);
+		List<ExceptionalObligation> exceptionObligations = learningPathConfigs.getExceptionalObligations();
+		List<ExceptionalObligation> filteredExceptionalObligations = exceptionObligations.stream()
+				.filter(obl -> {
+					if(obl instanceof PassedExceptionalObligation) {
+						PassedExceptionalObligation passed = (PassedExceptionalObligation)obl;
+						String nodeIdent = passed.getCourseNodeIdent();
+						String targetNodeIdent = envMapper.getNodeTargetIdent(nodeIdent);
+						if(targetNodeIdent == null) {
+							return false;
+						}
+						passed.setCourseNodeIdent(targetNodeIdent);
+						return true;
+					}
+					return false;
+				}).collect(Collectors.toList());
+		
+		learningPathConfigs.setExceptionalObligations(filteredExceptionalObligations);
+	}
+	
+	protected void removeCourseNodeLearningPathsconfigs() {
+		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(this);
+		learningPathConfigs.setExceptionalObligations(null);
+		learningPathConfigs.setObligation(null);
 	}
 
 	protected final void removeCourseNodeCondition(Condition condition) {

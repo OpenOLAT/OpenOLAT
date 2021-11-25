@@ -61,6 +61,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	private Collection<Long> licenseTypeKeys;
 	private List<OrganisationRef> entryOrganisations;
 	private List<TaxonomyLevelRef> taxonomyLevels;
+	private List<Long> excludeEntryKeys;
 	
 	public SearchAuthorRepositoryEntryViewParams(IdentityRef identity, Roles roles) {
 		this.identity = identity;
@@ -254,6 +255,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 		this.taxonomyLevels = taxonomyLevels;
 	}
 	
+	public List<Long> getExcludeEntryKeys() {
+		return excludeEntryKeys;
+	}
+
+	public void setExcludeEntryKeys(List<Long> excludeEntryKeys) {
+		this.excludeEntryKeys = excludeEntryKeys;
+	}
+
 	public boolean hasStatus() {
 		return status != null && status.length > 0;
 	}

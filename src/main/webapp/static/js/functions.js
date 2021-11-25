@@ -2165,11 +2165,24 @@ function showMessageBox(type, title, message, buttonCallback) {
 }
 
 /*
+ * For flexi tables 
+ */
+ function o_ffTableToggleRowCheck(rowId, cssClass) {
+ 	var rowEl = jQuery('#' + rowId);
+ 	if(jQuery('#' + rowId + " .o_singleselect").length > 0) {
+ 		rowEl.closest("table.table").find("tr." + cssClass).each(function(index, el) {
+ 			jQuery(el).removeClass(cssClass);
+ 		});
+ 	}
+ 	rowEl.toggleClass(cssClass);
+ }
+
+/*
  * For standard tables
  */
 function o_table_toggleCheck(ref, checked) {
 	var tb_checkboxes = document.forms[ref].elements["tb_ms"];
-	len = tb_checkboxes.length;
+	var len = tb_checkboxes.length;
 	if (typeof(len) == 'undefined') {
 		tb_checkboxes.checked = checked;
 	}

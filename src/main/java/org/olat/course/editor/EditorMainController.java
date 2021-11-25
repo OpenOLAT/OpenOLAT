@@ -427,7 +427,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doImportCourseNodes(ureq);
 			}
 		} catch (RuntimeException e) {
-			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in event(UserRequest,Component,Event)]", e);			
+			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION + "[in event(UserRequest,Component,Event)]", e);			
 			dispose();
 			throw e;
 		}
@@ -698,10 +698,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		} else if (source == importNodesCtrl) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
-				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-					doPostImport(ureq, course, importNodesCtrl.getRunContext());
-				}
+				StepsRunContext importContext = importNodesCtrl.getRunContext();
 				cleanUp();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					doPostImport(ureq, course, importContext);
+				}
 			}
 		} else if (source == cmc) {
 			cleanUp();

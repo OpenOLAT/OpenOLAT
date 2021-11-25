@@ -434,10 +434,12 @@ public class AuthorListController extends FormBasicController implements Activat
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
-		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(true, Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
+		DefaultFlexiColumnModel markColumn = new DefaultFlexiColumnModel(configuration.isDefaultBookmark(),
+				Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name());
 		markColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(markColumn);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(configuration.isDefaultIconType(),
+				Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
 				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
 		DefaultFlexiColumnModel technicalTypeColumnModel = new DefaultFlexiColumnModel(false, Cols.technicalType.i18nKey(), Cols.technicalType.ordinal(),
 				true, OrderBy.technicalType.name());
@@ -1060,25 +1062,22 @@ public class AuthorListController extends FormBasicController implements Activat
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
-			if("mark".equals(cmd)) {
+			if("mark".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
 				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
 				boolean marked = doMark(ureq, row);
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
-			} else if("tools".equals(cmd)) {
+			} else if("tools".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
 				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
 				doOpenTools(ureq, row, link);
-			} else if("infos".equals(cmd)) {
+			} else if(("infos".equals(cmd) || "details".equals(cmd)) && link.getUserObject() instanceof AuthoringEntryRow) {
 				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
 				doOpenInfos(ureq, row, link);
-			} else if("references".equals(cmd)) {
+			} else if("references".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
 				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
 				doOpenReferences(ureq, row, link);
-			} else if("details".equals(cmd)) {
-				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
-				doOpenInfos(ureq, row, link);
 			} else if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof RepositoryHandler) {
 				RepositoryHandler handler = (RepositoryHandler)((FormLink)source).getUserObject();
 				if(handler != null) {

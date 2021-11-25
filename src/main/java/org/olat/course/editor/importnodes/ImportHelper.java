@@ -51,7 +51,9 @@ public class ImportHelper {
 	
 	protected static final String concatMessage(String message, String newMessage) {
 		if(StringHelper.containsNonWhitespace(message)) {
-			message = message.concat(newMessage);
+			if(!message.contains(newMessage)) {
+				message = message.concat(newMessage);
+			}
 		} else {
 			message = newMessage;
 		}

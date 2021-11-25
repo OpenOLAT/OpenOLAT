@@ -26,8 +26,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -216,11 +214,6 @@ public class PodcastHandler implements RepositoryHandler {
 	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {
 		return null;
 	}
-	
-	@Override
-	public FormBasicController createAuthorSmallDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, Form mainForm) {
-		return null;
-	}
 
 	@Override
 	public String getSupportedType() {
@@ -233,8 +226,7 @@ public class PodcastHandler implements RepositoryHandler {
 		String referencesSummary = refM.getReferencesToSummary(entry.getOlatResource(), locale);
 		if (referencesSummary != null) {
 			Translator translator = Util.createPackageTranslator(RepositoryManager.class, locale);
-			errors.setError(translator.translate("details.delete.error.references",
-					new String[] { referencesSummary, entry.getDisplayname() }));
+			errors.setError(translator.translate("details.delete.error.references", referencesSummary, entry.getDisplayname()));
 			return false;
 		}
 		return true;

@@ -22,14 +22,18 @@ package org.olat.repository.ui.author;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.RepositoyUIFactory;
@@ -75,31 +79,29 @@ public class RepositoryEntrySmallDetailsController extends FormBasicController {
 			layoutCont.contextPut("displayName", entry.getDisplayname());
 			layoutCont.contextPut("description", entry.getDescription());
 			
-			List<Long> authorKeys = repositoryService.getAuthors(entry);
-			List<String> authorNames = new ArrayList<>(authorKeys.size());
+			List<Identity> owners = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+			List<String> ownerNames = new ArrayList<>(owners.size());
 			int count = 0;
-			for(Long authorKey:authorKeys) {
-				String authorName = userManager.getUserDisplayName(authorKey);
-	    		authorNames.add(authorName);
+			for(Identity owner:owners) {
+				String ownerName = userManager.getUserDisplayName(owner);
+	    		ownerNames.add(ownerName);
 	    		if(++count > 10) {
-	    			authorNames.add("...");
+	    			ownerNames.add("...");
 	    			break;
 	    		}
 			}
-			layoutCont.contextPut("authornames", authorNames);
+			layoutCont.contextPut("owners", ownerNames);
+
+			if(StringHelper.containsNonWhitespace(entry.getInitialAuthor())) {
+				String initialAuthor = userManager.getUserDisplayName(entry.getInitialAuthor());
+				layoutCont.contextPut("initialAuthor", initialAuthor);
+			}
 			
 			List<String> referenceDetails = referenceManager.getReferencesToSummary(entry.getOlatResource());
 	        if (referenceDetails != null) {
 	        	layoutCont.contextPut("referenceDetails", referenceDetails);
 	        }	
 		}
-		
-		FormBasicController subDetailsCtrl = repositoryHandlerFactory.getRepositoryHandler(entry)
-	        	.createAuthorSmallDetailsController(entry, ureq, getWindowControl(), mainForm);
-        if(subDetailsCtrl != null) {
-        	listenTo(subDetailsCtrl);
-        	formLayout.add("subDetails", subDetailsCtrl.getInitialFormItem());
-        }
 	}
 
 	@Override

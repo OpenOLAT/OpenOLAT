@@ -19,7 +19,7 @@
  */
 package org.olat.course.editor.importnodes;
 
-import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -35,7 +35,7 @@ public class ConfigurationCourseNodeRow extends AbstractConfigurationRow impleme
 	private final ImportCourseNode node;
 	
 	private int numOfReminders;
-	private FormItem configurationItem;
+	private SingleSelection configurationItem;
 	
 	public ConfigurationCourseNodeRow(ImportCourseNode node, ConfigurationCourseNodeRow parent) {
 		super(parent);
@@ -76,11 +76,11 @@ public class ConfigurationCourseNodeRow extends AbstractConfigurationRow impleme
 		return null;
 	}
 
-	public FormItem getConfigurationItem() {
+	public SingleSelection getConfigurationItem() {
 		return configurationItem;
 	}
 
-	public void setConfigurationItem(FormItem configurationItem) {
+	public void setConfigurationItem(SingleSelection configurationItem) {
 		this.configurationItem = configurationItem;
 	}
 

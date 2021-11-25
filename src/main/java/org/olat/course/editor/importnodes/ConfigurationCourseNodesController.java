@@ -28,11 +28,9 @@ import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -138,29 +136,31 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 	}
 	
 	private void loadModel() {
-		List<ImportCourseNode> selectedNodes = importCourseContext.getSelectedNodes();
-		Map<String,ImportCourseNode> selectedNodesMap = selectedNodes.stream()
+		List<ImportCourseNode> selectedNodes = importCourseContext.getNodes();
+		Map<String,ImportCourseNode> nodesMap = selectedNodes.stream()
 				.collect(Collectors.toMap(ImportCourseNode::getIdent, n -> n));
 
 		RepositoryEntry entry = importCourseContext.getEntry();
 		ICourse course = CourseFactory.loadCourse(entry);
 		TreeNode rootNode = course.getEditorTreeModel().getRootNode();
 		List<ConfigurationCourseNodeRow> rows = new ArrayList<>();
-		recursive(rows, rootNode, selectedNodesMap, null);
+		recursive(rows, rootNode, nodesMap, null);
 		calculateNumberOfReminders(rows);
 	
 		dataModel.setObjects(rows);
 		tableEl.reset(true, false, true);
 	}
 	
-	private void recursive(List<ConfigurationCourseNodeRow> rows, INode node, Map<String,ImportCourseNode> selectedNodesMap, ConfigurationCourseNodeRow parent) {
-		if(selectedNodesMap.containsKey(node.getIdent())) {
-			ImportCourseNode importNode = selectedNodesMap.get(node.getIdent());
-			ConfigurationCourseNodeRow row = forgeRow(importNode, parent);
-			if(parent != null) {
-				importNode.setParent(parent.getImportCourseNode());
-				parent.getImportCourseNode().getChildren().add(importNode);
-			}
+	private void recursive(List<ConfigurationCourseNodeRow> rows, INode node,
+			Map<String,ImportCourseNode> nodesMap, ConfigurationCourseNodeRow parent) {
+
+		ImportCourseNode importNode = nodesMap.get(node.getIdent());
+		ConfigurationCourseNodeRow row = forgeRow(importNode, parent);
+		if(parent != null) {
+			importNode.setParent(parent.getImportCourseNode());
+			parent.getImportCourseNode().getChildren().add(importNode);
+		}
+		if(importNode.isSelected()) {
 			rows.add(row);
 			parent = row;
 		}
@@ -171,8 +171,7 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 			int childCount = editorNode.getChildCount();
 			for (int i = 0; i < childCount; i++) {
 				INode child = editorNode.getChildAt(i);
-				recursive(rows, child, selectedNodesMap, parent);
-				
+				recursive(rows, child, nodesMap, parent);
 			}
 		}
 	}
@@ -209,10 +208,8 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 			if(isSameSharedFolder()) {
 				// OK -> no options	
 			} else {
-				StaticTextElement msgEl = uifactory.addStaticTextElement("", null, translate("error.different.shared.folder"), flc);
-				row.setConfigurationItem(msgEl);
 				importNode.setExcludeFromImport(true);
-				ImportHelper.errorMessage(row, "error.cannot.import", null, getTranslator());
+				ImportHelper.errorMessage(row, "error.different.shared.folder", null, getTranslator());
 			}	
 		} else if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNode.CONFIG_AUTO_FOLDER)) {
 			// auto is a self contained folder, all files are copied
@@ -247,10 +244,6 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 			}
 		} else {
 			ImportHelper.errorMessage(row, "error.file.not.exists", null, getTranslator());
-		}
-
-		if(courseNode.getModuleConfiguration().getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS, false)) {
-			ImportHelper.infoMessage(row, "infos.relative.links", null, getTranslator());
 		}
 	}
 	
@@ -365,9 +358,8 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 		int numOfRows = dataModel.getRowCount();
 		for(int i=0; i<numOfRows; i++) {
 			ConfigurationCourseNodeRow row = dataModel.getObject(i);
-			FormItem configurationItem = row.getConfigurationItem();
-			if(configurationItem instanceof SingleSelection) {
-				SingleSelection copySelection = (SingleSelection)configurationItem;
+			SingleSelection copySelection = row.getConfigurationItem();
+			if(copySelection != null) {
 				if(copySelection.isOneSelected()) {
 					row.getImportCourseNode().setImportSetting(CopyType.valueOf(copySelection.getSelectedKey()));
 				} else {

@@ -46,8 +46,6 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -80,7 +78,6 @@ import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.editor.CourseSmallDetailsController;
 import org.olat.course.editor.NodeConfigController;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.export.CourseExportMediaResource;
@@ -652,12 +649,6 @@ public class CourseHandler implements RepositoryHandler {
 	@Override
 	public Controller createAssessmentDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, Identity assessedIdentity) {
 		return null;
-	}
-	
-	@Override
-	public FormBasicController createAuthorSmallDetailsController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, Form mainForm) {
-		CourseSmallDetailsController detailsCtrl = new CourseSmallDetailsController(ureq, wControl, mainForm, re);
-		return detailsCtrl.hasDetails() ? detailsCtrl : null;
 	}
 
 	@Override

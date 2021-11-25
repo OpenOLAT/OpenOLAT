@@ -85,9 +85,9 @@ public class ConfigurationFilesTableModel extends DefaultFlexiTreeTableDataModel
 		
 		int numOfChildren = node.getNumOfChildren();
 		if(numOfChildren > 1) {
-			return translator.translate("num.of.elements", new String[] { Integer.toString(node.getNumOfChildren()) });
+			return translator.translate("num.of.elements", Integer.toString(node.getNumOfChildren()));
 		}
-		return translator.translate("num.of.element", new String[] { Integer.toString(node.getNumOfChildren()) });
+		return translator.translate("num.of.element", Integer.toString(node.getNumOfChildren()));
 	}
 	
 	@Override

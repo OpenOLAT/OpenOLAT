@@ -44,7 +44,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	protected U focusedNode;
 	private boolean hasOpenCloseAll = true;
 
-	public DefaultFlexiTreeTableDataModel(FlexiTableColumnModel columnModel) {
+	protected DefaultFlexiTreeTableDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 

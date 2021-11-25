@@ -40,6 +40,7 @@ public class ImportCourseNode {
 	private CopyType importSetting;
 	private final CourseEditorTreeNode editorTreeNode;
 	
+	private boolean selected = false;
 	private boolean excludeFromImport = false;
 	private ImportCourseNode parent;
 	private final List<ImportCourseNode> children = new ArrayList<>();
@@ -69,6 +70,14 @@ public class ImportCourseNode {
 
 	public void setExcludeFromImport(boolean excludeFromImport) {
 		this.excludeFromImport = excludeFromImport;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
 	}
 
 	public ImportCourseNode getParent() {

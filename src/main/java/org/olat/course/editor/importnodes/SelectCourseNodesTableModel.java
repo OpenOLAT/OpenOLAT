@@ -19,6 +19,7 @@
  */
 package org.olat.course.editor.importnodes;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -80,6 +81,10 @@ public class SelectCourseNodesTableModel extends DefaultFlexiTreeTableDataModel<
 		return CourseNodeFactory.getInstance()
 				.getCourseNodeConfigurationEvenForDisabledBB(type)
 				.getLinkText(locale);
+	}
+	
+	public List<SelectCourseNodeRow> getAllRows() {
+		return new ArrayList<>(backupRows);
 	}
 
 	@Override

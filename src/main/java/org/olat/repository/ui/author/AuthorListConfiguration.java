@@ -45,6 +45,8 @@ public class AuthorListConfiguration {
 	private boolean defaultTaxonomyPath = true;
 	private boolean defaultGuest = true;
 	private boolean defaultExternalRef = false;
+	private boolean defaultBookmark = true;
+	private boolean defaultIconType = true;
 	
 	private AuthorListConfiguration(String tableId) {
 		this.tableId = tableId;
@@ -69,6 +71,8 @@ public class AuthorListConfiguration {
 		config.setDefaultGuest(false);
 		config.setDefaultTaxonomyPath(false);
 		config.setDefaultExternalRef(true);
+		config.setDefaultIconType(false);
+		config.setDefaultBookmark(false);
 		return config;
 	}
 	
@@ -184,5 +188,21 @@ public class AuthorListConfiguration {
 
 	public void setDefaultExternalRef(boolean defaultExternalRef) {
 		this.defaultExternalRef = defaultExternalRef;
+	}
+
+	public boolean isDefaultBookmark() {
+		return defaultBookmark;
+	}
+
+	public void setDefaultBookmark(boolean defaultBookmark) {
+		this.defaultBookmark = defaultBookmark;
+	}
+
+	public boolean isDefaultIconType() {
+		return defaultIconType;
+	}
+
+	public void setDefaultIconType(boolean defaultIconType) {
+		this.defaultIconType = defaultIconType;
 	}
 }

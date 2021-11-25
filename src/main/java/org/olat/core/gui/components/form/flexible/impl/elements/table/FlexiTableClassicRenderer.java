@@ -272,19 +272,17 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		
 		// use alternating css class
 		int numOfColumns = 0;
-		target.append("<tr id='").append(rowIdPrefix).append(row).append("'");
+		target.append("<tr id='").append(rowIdPrefix).append(row).append("' class='");
 		if(ftE.getCssDelegate() != null) {
 			String cssClass = ftE.getCssDelegate().getRowCssClass(FlexiTableRendererType.classic, row);
-			target.append(" class='");
 			if(StringHelper.containsNonWhitespace(cssClass)) {
 				target.append(cssClass);
 			}
-			if(ftE.isMultiSelectedIndex(row)) {
-				target.append(" o_row_selected");				
-			}
-			target.append("'");
 		}
-		target.append(">");
+		if(ftE.isMultiSelectedIndex(row)) {
+			target.append(" o_row_selected");				
+		}
+		target.append("'>");
 			
 		SelectionMode selectionMode = ftE.getSelectionMode();
 		if(selectionMode != null && selectionMode != SelectionMode.disabled) {
@@ -294,10 +292,9 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			} else {
 				selectionType = "checkbox";
 			}
-			target.append("<td class='o_multiselect o_col_sticky_left'>")
+			target.append("<td class='").append("o_singleselect", "o_multiselect", selectionMode == SelectionMode.single).append(" o_col_sticky_left'>")
 			      .append("<input type='").append(selectionType).append("' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
-			      .append(" onclick=\"javascript:")
-			      .append("jQuery('#").append(rowIdPrefix).append(row).append("').toggleClass('o_row_selected');")
+			      .append(" onclick=\"javascript:o_ffTableToggleRowCheck('").append(rowIdPrefix).append(row).append("','o_row_selected');")
 			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
 			    		  new NameValuePair("chkbox", Integer.toString(row))))
 				  .append(";\"");	 

@@ -233,6 +233,9 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" and exists (select reToTax.key from repositoryentrytotaxonomylevel as reToTax")
 			  .append("  where reToTax.entry.key=v.key and reToTax.taxonomyLevel.key in (:taxonomyLevelKeys))");
 		}
+		if (params.getExcludeEntryKeys() != null && !params.getExcludeEntryKeys().isEmpty()) {
+			sb.append(" and v.key not in (:excludeEntryKeys)");
+		}
 		
 		String author = null;
 		if (StringHelper.containsNonWhitespace(params.getAuthor())) { // fuzzy author search
@@ -387,6 +390,9 @@ public class RepositoryEntryAuthorQueries {
 			List<Long> taxonomyLevelKeys = params.getTaxonomyLevels().stream()
 					.map(TaxonomyLevelRef::getKey).collect(Collectors.toList());
 			dbQuery.setParameter("taxonomyLevelKeys", taxonomyLevelKeys);
+		}
+		if (params.getExcludeEntryKeys() != null && !params.getExcludeEntryKeys().isEmpty()) {
+			dbQuery.setParameter("excludeEntryKeys", params.getExcludeEntryKeys());
 		}
 		return dbQuery;
 	}

@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -42,9 +43,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -69,12 +74,16 @@ import org.olat.course.nodes.sp.SPEditController;
  */
 public class ConfigurationFilesController extends StepFormBasicController {
 	
+	private static final String CMD_TOOLS = "file_tools";
+	
 	private int counter = 0;
 	private FlexiTableElement tableEl;
 	private ConfigurationFilesTableModel dataModel;
 	
 	private RenameController renameCtrl;
 	private CloseableModalController cmc;
+	private ToolsController toolsCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private final ImportCourseNodesContext importCourseContext;
 
@@ -113,6 +122,7 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		columnsModel.addFlexiColumnModel(messageCol);
 		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(FilesCols.tools);
 		toolsCol.setHeaderLabel("");
+		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		dataModel = new ConfigurationFilesTableModel(columnsModel, getTranslator());
@@ -154,16 +164,14 @@ public class ConfigurationFilesController extends StepFormBasicController {
 	
 	private void loadModel() {
 		// used items
-		List<ImportCourseNode> nodes = importCourseContext.getNodesToImport();
 		List<ImportCourseNode> nodeWithItems = new ArrayList<>();
+		List<ImportCourseNode> nodes = importCourseContext.getNodes();
 		for(ImportCourseNode node:nodes) {
-			if(!node.isExcludeFromImport()) {
 			for(String courseFolderSubPath:node.getCourseFolderSubPathList()) {
 				VFSItem item = sourceCourseFolderCont.resolve(courseFolderSubPath);
 				if(item != null) {
 					nodeWithItems.add(node);
 				}
-			}
 			}
 		}
 		
@@ -191,7 +199,7 @@ public class ConfigurationFilesController extends StepFormBasicController {
 			
 			List<ImportCourseNode> childInheritedSelections = new ArrayList<>(inheritedSelections);
 			for(ImportCourseNode nodeItem:childInheritedSelections) {
-				row.setSelected(true);
+				row.setSelected(row.isSelected() || (nodeItem.isSelected() && !nodeItem.isExcludeFromImport()));
 				row.addUsedByList(nodeItem);
 			}
 			
@@ -201,8 +209,11 @@ public class ConfigurationFilesController extends StepFormBasicController {
 					String subPath = VFSManager.trimSlash(courseFolderSubPath);
 					if(relPath.equals(subPath)) {
 						row.addUsedByList(nodeItem);
-						row.setSelected(true);
-						addMessage(row, nodeItem);
+						boolean itemSelected = (nodeItem.isSelected() && !nodeItem.isExcludeFromImport());
+						if(itemSelected) {
+							addMessage(row, nodeItem);
+						}
+						row.setSelected(row.isSelected() || itemSelected);
 						if(nodeItem.getCourseNode() instanceof BCCourseNode) {
 							childInheritedSelections.add(nodeItem);
 						}
@@ -212,17 +223,19 @@ public class ConfigurationFilesController extends StepFormBasicController {
 			
 			boolean renamedProposed = parentRenameProposed;
 			VFSItem targetItem = targetCourseFolder.resolve(relPath);
-			if(targetItem != null) {
-				if(!renamedProposed) {
-					String alternativeName = VFSManager.similarButNonExistingName(targetItem.getParentContainer(), item.getName(), "_import");
-					row.setRenamedFilename(alternativeName);
-					renamedProposed = true;
+			
+			FormLink toolsLink = forgeTools();
+			row.setToolLink(toolsLink);
+			toolsLink.setUserObject(row);
+			
+			if(targetItem != null && !renamedProposed) {
+				toolsLink.setEnabled(true);
+				String alternativeName = VFSManager.similarButNonExistingName(targetItem.getParentContainer(), item.getName(), "_import");
+				row.setRenamedFilename(alternativeName);
+				renamedProposed = true;
 
-					ImportHelper.warningMessage(row, "error.filename.conflict", new String[] { targetItem.getName() },  getTranslator());
-					FormLink renameLink = forgeRenameTool();
-					row.setToolLink(renameLink);
-					renameLink.setUserObject(row);
-				}
+				String i18n = targetItem instanceof VFSContainer ? "error.foldername.conflict" : "error.filename.conflict";
+				ImportHelper.warningMessage(row, i18n, new String[] { targetItem.getName() },  getTranslator());
 			}
 
 			rows.add(row);
@@ -243,10 +256,11 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		}
 	}
 	
-	private FormLink forgeRenameTool() {
-		FormLink renameLink = uifactory.addFormLink("rename_" + (++counter), "rename", "", null, flc, Link.LINK | Link.NONTRANSLATED);
-		renameLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
-		return renameLink;
+	private FormLink forgeTools() {
+		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), CMD_TOOLS, "", null, flc, Link.LINK | Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsLink.setEnabled(false);
+		return toolsLink;
 	}
 
 	@Override
@@ -254,16 +268,23 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		if(renameCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
-		} else if(cmc == source) {
+		} else if(toolsCtrl == source) {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(cmc == source || toolsCalloutCtrl == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(renameCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		toolsCalloutCtrl = null;
 		renameCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
@@ -271,8 +292,8 @@ public class ConfigurationFilesController extends StepFormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
-			if("rename".equals(link.getCmd()) && link.getUserObject() instanceof ConfigurationFileRow) {
-				doRename(ureq, (ConfigurationFileRow)link.getUserObject());
+			if(CMD_TOOLS.equals(link.getCmd()) && link.getUserObject() instanceof ConfigurationFileRow) {
+				doOpenTools(ureq, link, (ConfigurationFileRow)link.getUserObject());
 			}
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
@@ -367,6 +388,19 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 	
+	private void doOpenTools(UserRequest ureq, FormLink link, ConfigurationFileRow fileRow) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), fileRow);
+		listenTo(toolsCtrl);
+	
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
 	private void doRename(UserRequest ureq, ConfigurationFileRow fileRow) {
 		renameCtrl = new RenameController(ureq, getWindowControl(), fileRow, sourceCourseFolderCont, targetCourseFolderCont);
 		listenTo(renameCtrl);
@@ -375,5 +409,31 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), renameCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final Link renameLink;
+		
+		private final ConfigurationFileRow fileRow;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, ConfigurationFileRow fileRow) {
+			super(ureq, wControl);
+			this.fileRow = fileRow;
+
+			VelocityContainer mainVC = createVelocityContainer("tools_files");
+			renameLink = LinkFactory.createLink("rename", "rename", getTranslator(), mainVC, this, Link.LINK);
+			renameLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(renameLink == source) {
+				doRename(ureq, fileRow);
+			}
+		}
 	}
 }

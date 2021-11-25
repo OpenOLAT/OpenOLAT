@@ -75,7 +75,9 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -629,6 +631,16 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		if(settings.getCopyType() == CopyType.copy) {
 			copyFiles((GTACourseNode)sourceCourseNode, sourceCourse, this, course);
 		}
+	}
+	
+	/**
+	 * Obligation is not removed, used by the old course too.s
+	 */
+	@Override
+	protected void removeCourseNodeLearningPathsconfigs() {
+		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(this);
+		learningPathConfigs.setExceptionalObligations(null);
 	}
 
 	@Override
