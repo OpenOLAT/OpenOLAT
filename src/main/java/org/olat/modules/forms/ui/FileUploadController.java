@@ -160,11 +160,13 @@ public class FileUploadController extends FormBasicController implements Evaluat
 					allOk &= false;
 				} else if (StringHelper.containsNonWhitespace(fileUpload.getMimeTypeSetKey())) {
 					Set<String> mimeTypes = MimeTypeSetFactory.getMimeTypes(fileUpload.getMimeTypeSetKey());
-					String fileName = fileEl.isUploadSuccess()? fileEl.getUploadFileName(): file.getName();
-					String mimeType = WebappHelper.getMimeType(fileName);
-					if (!mimeTypes.contains(mimeType)){
-						fileEl.setErrorKey("file.upload.error.mime.type.wrong", null);
-						allOk &= false;
+					if (mimeTypes != null) {
+						String fileName = fileEl.isUploadSuccess()? fileEl.getUploadFileName(): file.getName();
+						String mimeType = WebappHelper.getMimeType(fileName);
+						if (!mimeTypes.contains(mimeType)){
+							fileEl.setErrorKey("file.upload.error.mime.type.wrong", null);
+							allOk &= false;
+						}
 					}
 				}
 			}

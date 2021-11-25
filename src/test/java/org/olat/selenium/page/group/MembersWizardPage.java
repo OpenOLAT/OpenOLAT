@@ -86,8 +86,14 @@ public class MembersWizardPage {
 		searchMemberForm(user, admin);
 
 		// select all
-		By selectAll = By.xpath("//div[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
-		OOGraphene.waitElement(selectAll, browser);
+		By selectAll = null;
+		try {
+			selectAll = By.xpath("//div[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_off')]]");
+			OOGraphene.waitElement(selectAll, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Search member selectall", browser);
+			throw e;
+		}
 		browser.findElement(selectAll).click();
 		OOGraphene.waitBusy(browser);
 		By selectedAll = By.xpath("//div[contains(@class,'modal')]//th[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
