@@ -113,7 +113,7 @@ public class SharesMetadataController extends FormBasicController {
 		public Object getValueAt(int row, int col) {
 			QuestionItem2Resource share = getObject(row);
 			if(col == 0) {
-				return new Boolean(share.isEditable());
+				return Boolean.valueOf(share.isEditable());
 			}
 			return share.getName();
 		}

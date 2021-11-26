@@ -351,7 +351,7 @@ public class QuestionListController extends AbstractItemListController implement
 				if(!items.isEmpty()) {
 					doConfirmDelete(ureq, items);
 				} else {
-					showWarning("error.select.one.delete");
+					noItemsToDeleteWarning();
 				}
 			} else if(link == authorItem) {
 				List<QuestionItemShort> items = getAuthorsEditableItems();
@@ -1141,6 +1141,19 @@ public class QuestionListController extends AbstractItemListController implement
 				deleteConfirmationCtrl.getInitialComponent(), true, translate("confirm.delete.title"), true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void noItemsToDeleteWarning() {
+		if(getItemsTable().getMultiSelectedIndex().isEmpty()) {
+			showWarning("error.select.one.delete");
+		} else if(qpoolModule.isReviewProcessEnabled() && getItemsTable().getMultiSelectedIndex().stream()
+				.map(index -> getModel().getObject(index.intValue()))
+				.filter(itemRow -> itemRow != null && !itemRow.getSecurityCallback().isDeletableQuestionStatus())
+				.count() > 0) {
+			showWarning("error.select.one.delete.review");
+		} else {
+			showWarning("error.select.one.delete.owner");
+		}
 	}
 	
 	private void doDelete(List<QuestionItemShort> items) {

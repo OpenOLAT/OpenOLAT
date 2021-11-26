@@ -194,4 +194,8 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 		return admin || poolAdmin;
 	}
 
+	@Override
+	public boolean isDeletableQuestionStatus() {
+		return true;
+	}
 }
