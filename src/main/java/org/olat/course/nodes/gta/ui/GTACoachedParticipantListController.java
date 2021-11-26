@@ -75,7 +75,6 @@ import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
-import org.olat.course.assessment.ui.tool.ConfirmUserVisibilityController;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -128,6 +127,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private FormLink bulkEmailButton;
 	private FormLink bulkExtendButton;
 	private FormLink bulkVisibleButton;
+	private FormLink bulkHiddenButton;
 	private FormLink bulkDownloadButton;
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
@@ -143,7 +143,6 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private ContactFormController contactCtrl;
 	private EditDueDatesController editDueDatesCtrl;
 	private EditMultipleDueDatesController editMultipleDueDatesCtrl;
-	private ConfirmUserVisibilityController<CoachedIdentityRow> changeUserVisibilityCtrl;
 	
 	@Autowired
 	private DB dbInstance;
@@ -239,7 +238,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus, new TaskStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate, new SubmissionDateCellRenderer(getTranslator())));
 		
-		DefaultFlexiColumnModel userVisibilityCol = new DefaultFlexiColumnModel(CGCols.userVisibility, new UserVisibilityCellRenderer(getTranslator()));
+		DefaultFlexiColumnModel userVisibilityCol = new DefaultFlexiColumnModel(CGCols.userVisibility, new UserVisibilityCellRenderer());
 		userVisibilityCol.setIconHeader("o_icon o_icon-fw o_icon_results_hidden");
 
 		columnsModel.addFlexiColumnModel(userVisibilityCol);
@@ -277,6 +276,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
 			bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkVisibleButton);
+			
+			bulkHiddenButton = uifactory.addFormLink("bulk.hidden", formLayout, Link.BUTTON);
+			bulkHiddenButton.setElementCssClass("o_sel_assessment_bulk_hidden");
+			bulkHiddenButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_hidden");
+			bulkHiddenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+			tableEl.addBatchButton(bulkHiddenButton);
 		}
 		
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
@@ -437,8 +442,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(editDueDatesCtrl == source || editMultipleDueDatesCtrl == source
-				|| changeUserVisibilityCtrl == source) {
+		if(editDueDatesCtrl == source || editMultipleDueDatesCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel(ureq);
 			}
@@ -485,7 +489,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		} else if(bulkDoneButton == source) {
 			doSetDone(ureq);
 		} else if(bulkVisibleButton == source) {
-			doConfirmVisible(ureq);
+			doSetUserVisibility(ureq, true);
+		} else if(bulkHiddenButton == source) {
+			doSetUserVisibility(ureq, false);
 		} else if(bulkEmailButton == source) {
 			doEmail(ureq);
 		} else if(bulkDownloadButton == source) {
@@ -623,19 +629,34 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				getIdentity(), false, Role.coach);
 	}
 	
-	private void doConfirmVisible(UserRequest ureq) {
-		List<CoachedIdentityRow> rows = getSelectedRows(row -> true);
+	private void doSetUserVisibility(UserRequest ureq, boolean visible) {
+		List<Identity> rows = getSelectedIdentities(row -> true);
 		if(rows.isEmpty()) {
-			showWarning("warning.bulk.done");
+			showWarning("warning.bulk.empty");
 		} else {
-			changeUserVisibilityCtrl = new ConfirmUserVisibilityController<>(ureq, getWindowControl(), rows, coachCourseEnv, gtaNode);
-			listenTo(changeUserVisibilityCtrl);
-			
-			String title = translate("change.visibility.title");
-			cmc = new CloseableModalController(getWindowControl(), "close", changeUserVisibilityCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
+			RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			Boolean visibility = Boolean.valueOf(visible);
+			rows.forEach(identity -> doSetUserVisibility(course, identity, visibility));
+			updateModel(ureq);
 		}
+	}
+	
+	private void doSetUserVisibility(ICourse course, Identity assessedIdentity, Boolean userVisibility) {
+		Roles roles = securityManager.getRoles(assessedIdentity);
+		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+				coachCourseEnv.getCourseReadOnlyDetails());
+		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
+
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(gtaNode, assessedUserCourseEnv);
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), userVisibility,
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		courseAssessmentService.updateScoreEvaluation(gtaNode, doneEval, assessedUserCourseEnv, getIdentity(),
+				false, Role.coach);
+		dbInstance.commitAndCloseSession();
 	}
 	
 	private void doBulkDownload(UserRequest ureq) {

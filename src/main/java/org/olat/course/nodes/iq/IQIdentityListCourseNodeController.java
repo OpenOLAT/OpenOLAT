@@ -249,7 +249,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					correctionButton.setElementCssClass("o_sel_correction");
 					correctionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 					
-					bulkCorrectionButton = uifactory.addFormLink("bulk.test.title", "correction.test.title", null, formLayout, Link.BUTTON);
+					bulkCorrectionButton = uifactory.addFormLink("bulk.test.title", "correction.test.start", null, formLayout, Link.BUTTON);
 					bulkCorrectionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_correction");
 					tableEl.addBatchButton(bulkCorrectionButton);
 				}

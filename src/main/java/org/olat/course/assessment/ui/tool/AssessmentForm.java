@@ -45,8 +45,9 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -80,7 +81,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentForm extends FormBasicController {
 	
-	private static final String[] userVisibilityKeys = new String[]{ "visible", "hidden" };
+	private static final String KEY_VISIBLE = "visible";
+	private static final String KEY_HIDDEN = "hidden";
 	
 	private TextElement score;
 	private IntegerElement attempts;
@@ -91,9 +93,9 @@ public class AssessmentForm extends FormBasicController {
 	private TextElement coachComment;
 	private FormLayoutContainer docsLayoutCont;
 	private FileElement uploadDocsEl;
-	private FormSubmit submitButton;
 	private FormLink reopenLink;
-	private FormLink saveAndDoneLink;
+	private FormLink intermediateSaveLink;
+	private FormLink saveAndDoneButton;
 	private List<DocumentWrapper> assessmentDocuments;
 	
 	private DialogBoxController confirmDeleteDocCtrl;
@@ -236,7 +238,12 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(saveAndDoneLink == source) {
+		if(intermediateSaveLink == source) {
+			if(validateFormLogic(ureq)) {
+				doUpdateAssessmentData(false);
+				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, true));
+			}
+		} else if(saveAndDoneButton == source) {
 			if(validateFormLogic(ureq)) {
 				doUpdateAssessmentData(true);
 				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_DONE, true));
@@ -265,8 +272,7 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doUpdateAssessmentData(false);
-		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, true));
+		//
 	}
 
 	@Override
@@ -389,8 +395,8 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
-		boolean visibility = userVisibility.isSelected(0);
-		// Update score,passed properties in db
+		boolean visibility = userVisibility.isKeySelected(KEY_VISIBLE)
+;		// Update score,passed properties in db
 		ScoreEvaluation scoreEval;
 		if(setAsDone) {
 			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, AssessmentEntryStatus.done, visibility, null, null, null, null);
@@ -446,9 +452,9 @@ public class AssessmentForm extends FormBasicController {
 		}
 		
 		if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
-			userVisibility.select(userVisibilityKeys[0], true);
+			userVisibility.select(KEY_VISIBLE, true);
 		} else {
-			userVisibility.select(userVisibilityKeys[1], true);
+			userVisibility.select(KEY_HIDDEN, true);
 		}
 		
 		reloadAssessmentDocs();
@@ -508,15 +514,14 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
-		submitButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-		saveAndDoneLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		saveAndDoneButton.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		intermediateSaveLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
 		reopenLink.setVisible(closed && !coachCourseEnv.isCourseReadOnly());
 		flc.setDirty(true);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("form.title", null);
 		formLayout.setElementCssClass("o_sel_assessment_form");
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
@@ -609,24 +614,28 @@ public class AssessmentForm extends FormBasicController {
 		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, false, coachCommentValue, formLayout);
 		coachComment.setNotLongerThanCheck(2500, "input.toolong");
 		
-		String[] userVisibilityValues = new String[]{ translate("user.visibility.visible"), translate("user.visibility.hidden") };
-		userVisibility = uifactory.addRadiosHorizontal("user.visibility", "user.visibility", formLayout, userVisibilityKeys, userVisibilityValues);
+		SelectionValues visibilitySV = new SelectionValues();
+		visibilitySV.add(new SelectionValue(KEY_HIDDEN, translate("user.visibility.hidden"), translate("user.visibility.hidden.desc"), "o_icon o_icon_results_hidden", null, true));
+		visibilitySV.add(new SelectionValue(KEY_VISIBLE, translate("user.visibility.visible"), translate("user.visibility.visible.desc"), "o_icon o_icon_results_visible", null, true));
+		userVisibility = uifactory.addCardSingleSelectHorizontal("user.visibility.release", formLayout, visibilitySV.keys(),
+				visibilitySV.values(), visibilitySV.descriptions(), visibilitySV.icons());
 		userVisibility.setElementCssClass("o_sel_assessment_form_visibility");
 		if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
-			userVisibility.select(userVisibilityKeys[0], true);
+			userVisibility.select(KEY_VISIBLE, true);
 		} else {
-			userVisibility.select(userVisibilityKeys[1], true);
+			userVisibility.select(KEY_HIDDEN, true);
 		}
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		
-		submitButton = uifactory.addFormSubmitButton("save", buttonGroupLayout);
-		submitButton.setElementCssClass("o_sel_assessment_form_save_and_close");
-
-		saveAndDoneLink = uifactory.addFormLink("save.done", buttonGroupLayout, Link.BUTTON);
-		saveAndDoneLink.setElementCssClass("o_sel_assessment_form_save_and_done");
-		saveAndDoneLink.setIconLeftCSS("o_icon o_icon_status_done o_icon-fw");
+		intermediateSaveLink = uifactory.addFormLink("save.intermediate", buttonGroupLayout, Link.BUTTON);
+		intermediateSaveLink.setElementCssClass("o_sel_assessment_form_save_and_close");
+		
+		saveAndDoneButton = uifactory.addFormLink("assessment.set.status.done", buttonGroupLayout, Link.BUTTON);
+		saveAndDoneButton.setElementCssClass("o_sel_assessment_form_save_and_done");
+		saveAndDoneButton.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
+		saveAndDoneButton.setPrimary(true);
 		
 		reopenLink = uifactory.addFormLink("reopen", buttonGroupLayout, Link.BUTTON);
 		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");

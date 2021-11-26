@@ -37,7 +37,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -66,8 +65,9 @@ public class AssessmentForm extends FormBasicController {
 	private IntegerElement attempts;
 	private SingleSelection passed;
 	private TextElement userComment, coachComment;
-	private FormSubmit submitButton;
-	private FormLink saveAndDoneLink, reopenLink;
+	private FormLink reopenLink;
+	private FormLink intermediateSaveLink;
+	private FormLink saveAndDoneButton;
 
 	private Double min, max, cut;
 	private Identity assessedIdentity;
@@ -186,10 +186,11 @@ public class AssessmentForm extends FormBasicController {
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		
-		submitButton = uifactory.addFormSubmitButton("save", buttonGroupLayout);
-
-		saveAndDoneLink = uifactory.addFormLink("save.done", buttonGroupLayout, Link.BUTTON);
-		saveAndDoneLink.setElementCssClass("o_sel_assessment_form_save_and_close");
+		intermediateSaveLink = uifactory.addFormLink("save.intermediate", buttonGroupLayout, Link.BUTTON);
+		
+		saveAndDoneButton = uifactory.addFormLink("assessment.set.status.done", buttonGroupLayout, Link.BUTTON);
+		saveAndDoneButton.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
+		saveAndDoneButton.setPrimary(true);
 		
 		reopenLink = uifactory.addFormLink("reopen", buttonGroupLayout, Link.BUTTON);
 		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
@@ -218,14 +219,19 @@ public class AssessmentForm extends FormBasicController {
 			attempts.setEnabled(!closed);
 		}
 		
-		submitButton.setVisible(!closed);
-		saveAndDoneLink.setVisible(!closed);
+		intermediateSaveLink.setVisible(!closed);
+		saveAndDoneButton.setVisible(!closed);
 		reopenLink.setVisible(closed);
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(saveAndDoneLink == source) {
+		if(intermediateSaveLink == source) {
+			if(validateFormLogic(ureq)) {
+				doUpdateAssessmentData(false);
+				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, true));
+			}
+		} else if(saveAndDoneButton == source) {
 			if(validateFormLogic(ureq)) {
 				doUpdateAssessmentData(true);
 				fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_DONE, true));
@@ -239,8 +245,7 @@ public class AssessmentForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doUpdateAssessmentData(false);
-		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, true));
+		//
 	}
 
 	@Override

@@ -19,11 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.components.table.LabelCellRenderer;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -32,32 +28,50 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserVisibilityCellRenderer implements FlexiCellRenderer {
-	
-	private final Translator translator;
-	
-	public UserVisibilityCellRenderer(Translator translator) {
-		this.translator = translator;
+public class UserVisibilityCellRenderer extends LabelCellRenderer {
+
+	@Override
+	protected String getCellValue(Object val, Translator translator) {
+		return null;
 	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue,
-			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
-		if(cellValue instanceof Boolean) {
-			if(renderer == null) {
-				String val = ((Boolean)cellValue).booleanValue() ? translator.translate("yes") : translator.translate("no");
-				target.append(val);
-			} else {
-				target.append("<i class='o_icon o_icon-fw ");
-				if(((Boolean)cellValue).booleanValue()) {
-					String title = translator.translate("user.visibility.visible.tooltip");
-					target.append("o_icon_results_visible' title=\"").append(title).append("\"");
-				} else {
-					String title = translator.translate("user.visibility.hidden.tooltip");
-					target.append("o_icon_results_hidden' title=\"").append(title).append("\"");
-				}
-				target.append("> </i>");
-			}
+	protected String getIconCssClass(Object val) {
+		if (val instanceof Boolean) {
+			Boolean userVisibility = (Boolean) val;
+			return userVisibility.booleanValue()? "o_icon_results_visible": "o_icon_results_hidden";
 		}
+		return null;
+	}
+
+	@Override
+	protected String getElementCssClass(Object val) {
+		if (val instanceof Boolean) {
+			Boolean userVisibility = (Boolean) val;
+			return userVisibility.booleanValue()? "o_results_visible": "o_results_hidden";
+		}
+		return null;
+	}
+	
+	@Override
+	protected String getTitle(Object val, Translator translator) {
+		if (val instanceof Boolean) {
+			Boolean userVisibility = (Boolean) val;
+			return userVisibility.booleanValue()
+					? translator.translate("user.visibility.visible.tooltip")
+					: translator.translate("user.visibility.hidden.tooltip");
+		}
+		return null;
+	}
+
+	@Override
+	protected String getExportValue(Object val, Translator translator) {
+		if (val instanceof Boolean) {
+			Boolean userVisibility = (Boolean) val;
+			return userVisibility.booleanValue()
+					? translator.translate("yes")
+					: translator.translate("no");
+		}
+		return null;
 	}
 }

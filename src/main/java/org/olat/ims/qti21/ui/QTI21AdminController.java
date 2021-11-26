@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -58,7 +60,8 @@ public class QTI21AdminController extends FormBasicController {
 
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
-	private static final String[] visibilityKeys = new String[] { "visible", "not-visible" };
+	private static final String KEY_VISIBLE = "visible";
+	private static final String KEY_HIDDEN = "hidden";
 	
 	private FormLink validationButton;
 	private MultipleSelectionElement mathExtensionEl;
@@ -115,15 +118,15 @@ public class QTI21AdminController extends FormBasicController {
 			anonymCorrectionWorkflowEl.select(onKeys[0], true);
 		}
 		
-		String[] visibilityValues = new String[] {
-				translate("results.visibility.correction.visible"), translate("results.visibility.correction.not.visible")
-		};
-		resultsVisibilityAfterCorrectionEl = uifactory.addRadiosVertical("results.visibility.correction", "results.visibility.correction", formLayout,
-				visibilityKeys, visibilityValues);
+		SelectionValues visibilitySV = new SelectionValues();
+		visibilitySV.add(new SelectionValue(KEY_HIDDEN, translate("results.user.visibility.hidden"), translate("results.user.visibility.hidden.desc"), "o_icon o_icon_results_hidden", null, true));
+		visibilitySV.add(new SelectionValue(KEY_VISIBLE, translate("results.user.visibility.visible"), translate("results.user.visibility.visible.desc"), "o_icon o_icon_results_visible", null, true));
+		resultsVisibilityAfterCorrectionEl = uifactory.addCardSingleSelectHorizontal("results.user.visibility",
+				formLayout, visibilitySV.keys(), visibilitySV.values(), visibilitySV.descriptions(), visibilitySV.icons());
 		if(qti21Module.isResultsVisibleAfterCorrectionWorkflow()) {
-			resultsVisibilityAfterCorrectionEl.select(visibilityKeys[0], true);
+			resultsVisibilityAfterCorrectionEl.select(KEY_VISIBLE, true);
 		} else {
-			resultsVisibilityAfterCorrectionEl.select(visibilityKeys[1], true);
+			resultsVisibilityAfterCorrectionEl.select(KEY_HIDDEN, true);
 		}
 		
 		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", formLayout,
@@ -230,7 +233,7 @@ public class QTI21AdminController extends FormBasicController {
 		CorrectionWorkflow correctionWf = anonymCorrectionWorkflowEl.isAtLeastSelected(1)
 				? CorrectionWorkflow.anonymous : CorrectionWorkflow.named;
 		qti21Module.setCorrectionWorkflow(correctionWf);
-		qti21Module.setResultsVisibleAfterCorrectionWorkflow(resultsVisibilityAfterCorrectionEl.isSelected(0));
+		qti21Module.setResultsVisibleAfterCorrectionWorkflow(resultsVisibilityAfterCorrectionEl.isKeySelected(KEY_VISIBLE));
 		qti21Module.setMathAssessExtensionEnabled(mathExtensionEl.isSelected(0));
 		qti21Module.setDigitalSignatureEnabled(digitalSignatureEl.isSelected(0));
 		if(digitalSignatureEl.isSelected(0)) {

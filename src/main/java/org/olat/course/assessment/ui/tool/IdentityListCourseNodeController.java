@@ -177,6 +177,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private FormLink bulkDoneButton;
 	private FormLink bulkEmailButton;
 	private FormLink bulkVisibleButton;
+	private FormLink bulkHiddenButton;
 	protected final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	protected IdentityListCourseNodeTableModel usersTableModel;
@@ -186,7 +187,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private List<Controller> bulkToolsList;
 	private AssessedIdentityController currentIdentityCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
-	private ConfirmUserVisibilityController<AssessedIdentityElementRow> changeUserVisibilityCtrl;
 	private ContactFormController contactCtrl;
 	
 	@Autowired
@@ -520,8 +520,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
 			}
 			if(Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility,
-						new UserVisibilityCellRenderer(getTranslator())));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility, new UserVisibilityCellRenderer()));
 			}
 			if(Mode.none != assessmentConfig.getScoreMode()) {
 				if(Mode.setByNode == assessmentConfig.getScoreMode()) {
@@ -604,6 +603,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
 			bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkVisibleButton);
+			
+			bulkHiddenButton = uifactory.addFormLink("bulk.hidden", formLayout, Link.BUTTON);
+			bulkHiddenButton.setElementCssClass("o_sel_assessment_bulk_hidden");
+			bulkHiddenButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_hidden");
+			bulkHiddenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+			tableEl.addBatchButton(bulkHiddenButton);
 		}
 	}
 	
@@ -942,12 +947,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if(event == Event.CHANGED_EVENT) {
 				reload(ureq);
 			}
-		} else if(changeUserVisibilityCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				reload(ureq);
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (source == contactCtrl) {
 			if(cmc != null) {
 				cmc.deactivate();
@@ -978,12 +977,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void cleanUp() {
-		removeAsListenerAndDispose(changeUserVisibilityCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(cmc);
-		changeUserVisibilityCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		contactCtrl = null;
@@ -1006,7 +1003,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		} else if(bulkDoneButton == source) {
 			doSetDone(ureq);
 		} else if(bulkVisibleButton == source) {
-			doConfirmVisible(ureq);
+			doSetUserVisibility(ureq, true);
+		} else if(bulkHiddenButton == source) {
+			doSetUserVisibility(ureq, false);
 		} else if(bulkEmailButton == source) {
 			doEmail(ureq);
 		} else if(source instanceof FormLink) {
@@ -1145,27 +1144,37 @@ public class IdentityListCourseNodeController extends FormBasicController
 		return currentIdentityCtrl;
 	}
 	
-	private void doConfirmVisible(UserRequest ureq) {
+	private void doSetUserVisibility(UserRequest ureq, boolean visible) {
+		RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		Boolean visibility = Boolean.valueOf(visible);
+		
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
-		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
 		for(Integer i:selections) {
 			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
 			if(row != null) {
-				rows.add(row);
+				doSetUserVisibility(course, row.getIdentityKey(), visibility);
 			}
 		}
-		
-		if(rows.isEmpty()) {
-			showWarning("warning.bulk.done");
-		} else {
-			changeUserVisibilityCtrl = new ConfirmUserVisibilityController<>(ureq, getWindowControl(), rows, coachCourseEnv, courseNode);
-			listenTo(changeUserVisibilityCtrl);
-			
-			String title = translate("change.visibility.title");
-			cmc = new CloseableModalController(getWindowControl(), "close", changeUserVisibilityCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		}
+		reload(ureq);
+	}
+	
+	private void doSetUserVisibility(ICourse course, Long identityKey, Boolean userVisibility) {
+		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
+		Roles roles = securityManager.getRoles(assessedIdentity);
+		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+				coachCourseEnv.getCourseReadOnlyDetails());
+		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
+
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), userVisibility,
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
+				false, Role.coach);
+		dbInstance.commitAndCloseSession();
 	}
 	
 	private void doEmail(UserRequest ureq) {

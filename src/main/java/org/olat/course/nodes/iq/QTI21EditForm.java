@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -327,16 +328,19 @@ public class QTI21EditForm extends FormBasicController {
 			}
 		}
 		
-		SelectionValues visibilityKeyValues = new SelectionValues();
-		visibilityKeyValues.add(SelectionValues.entry(IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.visible")));
-		visibilityKeyValues.add(SelectionValues.entry(IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION, translate("results.visibility.after.correction.not.visible")));
-		scoreVisibilityAfterCorrectionEl = uifactory.addRadiosVertical("results.visibility.after.correction", "results.visibility.after.correction", formLayout,
-				visibilityKeyValues.keys(), visibilityKeyValues.values());
-		scoreVisibilityAfterCorrectionEl.setVisible(!selfAssessment);
+		SelectionValues visibilitySV = new SelectionValues();
+		visibilitySV.add(new SelectionValue(IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION,
+				translate("results.user.visibility.hidden"), translate("results.user.visibility.hidden.desc"),
+				"o_icon o_icon_results_hidden", null, true));
+		visibilitySV.add(new SelectionValue(IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION,
+				translate("results.user.visibility.visible"), translate("results.user.visibility.visible.desc"),
+				"o_icon o_icon_results_visible", null, true));
+		scoreVisibilityAfterCorrectionEl = uifactory.addCardSingleSelectHorizontal("results.user.visibility",
+				formLayout, visibilitySV.keys(), visibilitySV.values(), visibilitySV.descriptions(), visibilitySV.icons());
 		String defVisibility = qtiModule.isResultsVisibleAfterCorrectionWorkflow()
 				? IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION : IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION;
 		String visibility = modConfig.getStringValue(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION, defVisibility);
-		if(visibilityKeyValues.containsKey(visibility)) {
+		if(scoreVisibilityAfterCorrectionEl.containsKey(visibility)) {
 			scoreVisibilityAfterCorrectionEl.select(visibility, true);
 		}
 		updateScoreVisibility();

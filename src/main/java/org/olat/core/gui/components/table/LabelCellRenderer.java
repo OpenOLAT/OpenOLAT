@@ -40,12 +40,20 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 	protected abstract String getIconCssClass(Object val);
 
 	protected abstract String getElementCssClass(Object val);
+	
+	@SuppressWarnings("unused")
+	protected String getTitle(Object val, Translator translator) {
+		return null;
+	}
+	
+	protected String getExportValue(Object val, Translator translator) {
+		return getCellValue(val, translator);
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (renderer == null) {
-			// render for export
-			String value = getCellValue(cellValue, null);
+			String value = getExportValue(cellValue, translator);
 			target.append(value);
 		} else {
 			target.append("<div>");
@@ -54,7 +62,12 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 			if (StringHelper.containsNonWhitespace(elementCssClass)) {
 				target.append(" ").append(elementCssClass);
 			}
-			target.append("'>");
+			target.append("'");
+			String title = getTitle(cellValue, translator);
+			if (StringHelper.containsNonWhitespace(title)) {
+				target.append(" title='").append(title).append("'");
+			}
+			target.append(">");
 			
 			String iconCssClass = getIconCssClass(cellValue);
 			if (StringHelper.containsNonWhitespace(iconCssClass)) {

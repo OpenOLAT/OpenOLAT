@@ -71,7 +71,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
 	
-	private AssessmentForm assessmentForm;
+	private AssessmentEditController assessmentEditCtrl;
 	private Controller identityInfosCtrl;
 	private Controller subDetailsController;
 	private Controller detailsEditController;
@@ -132,9 +132,9 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
 			}
 			
-			assessmentForm = new AssessmentForm(ureq, wControl, courseNode, coachCourseEnv, assessedUserCourseEnvironment);
-			listenTo(assessmentForm);
-			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
+			assessmentEditCtrl = new AssessmentEditController(ureq, wControl, courseNode, coachCourseEnv, assessedUserCourseEnvironment);
+			listenTo(assessmentEditCtrl);
+			identityAssessmentVC.put("assessmentForm", assessmentEditCtrl.getInitialComponent());
 			
 			String nodeLog = courseAssessmentService.getAuditLog(courseNode, assessedUserCourseEnvironment);
 			if(StringHelper.containsNonWhitespace(nodeLog)) {
@@ -203,7 +203,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		if (source == detailsEditController) {
 			// reset SCORM test
 			if(event == Event.CHANGED_EVENT) {
-				assessmentForm.reloadData();
+				assessmentEditCtrl.reloadData();
 				fireEvent(ureq, event);
 			} else if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.DONE_EVENT);
@@ -215,7 +215,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				listenTo(subDetailsController);
 				stackPanel.pushController(translate("sub.details"), subDetailsController);
 			}
-		} else if(assessmentForm == source) {
+		} else if(assessmentEditCtrl == source) {
 			if(detailsEditController instanceof AssessmentFormCallback) {
 				if(AssessmentFormEvent.ASSESSMENT_DONE.equals(event.getCommand())) {
 					((AssessmentFormCallback)detailsEditController).assessmentDone(ureq);

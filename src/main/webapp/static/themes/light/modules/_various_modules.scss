@@ -1079,6 +1079,11 @@ a.o_labeled_light {
 	font-weight: bold;
 	background-color: 	$o-labeled-light-bg-color;
  }
+ .o_table_flexi {
+ 	.o_labeled_light {
+ 		margin-top: -2px;
+ 	}
+ }
  
  /* Multiselect dropdown element */
  .o_ms_button {

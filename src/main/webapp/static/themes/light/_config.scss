@@ -258,6 +258,7 @@ $o-radio-card-label-color-hover		: $btn-default-color !default;
 
 $o-radio-card-image-border-radius	: $border-radius-small !default;
 $o-radio-card-image-border-color	: $input-border !default;
+$o-radio-card-icon-font-size		: 28px !default;
 
 /* Left side menu tree */
 $o-tree-bg						: none !default;
@@ -392,6 +393,10 @@ $o-course-show-icon-editor-menu : true !default;	// show icons in menu - looks p
 $o-course-state-passed-color	: $state-success-text !default;
 $o-course-state-failed-color	: $state-danger-text !default;
 $o-course-state-unknown-color	: $state-warning-text !default;
+$o-course-results-visible-color		: #3c763d !default;
+$o-course-results-visible-bg-color	: #e4f1e7 !default;
+$o-course-results-hidden-color		: #8A6D40 !default;
+$o-course-results-hidden-bg-color	: #f3efeb !default;
 $o-course-node-published		: $state-success-text !default;
 $o-course-node-warning			: $state-warning-text !default;
 $o-course-node-locked			: $state-info-text !default;

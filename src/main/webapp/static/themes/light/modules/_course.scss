@@ -520,6 +520,21 @@
 	color: $text-muted;
 }		
 
+.o_labeled_light {
+	&.o_results_visible {
+		border-color: 		$o-course-results-visible-color;
+		color: 				$o-course-results-visible-color;
+		background-color: 	$o-course-results-visible-bg-color;
+		font-size:			100%;
+	}
+	&.o_results_hidden {
+		border-color: 		$o-course-results-hidden-color;
+		color: 				$o-course-results-hidden-color;
+		background-color: 	$o-course-results-hidden-bg-color;
+		font-size:			100%;
+	}
+}
+
 /* general course run classes */
 .o_course_run {
 	.o_toc {
