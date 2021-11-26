@@ -299,6 +299,7 @@ public class QTI21OfflineTestsPDFController extends FormBasicController {
 		String solutionId = "solutionItem" + count++;
 		ItemBodyResultFormItem solutionFormItem = new ItemBodyResultFormItem(solutionId, resolvedAssessmentItem);
 		solutionFormItem.setShowSolution(true);
+		solutionFormItem.setScorePerAnswers(solution);
 		solutionFormItem.setReport(true);
 		initInteractionResultFormItem(solutionFormItem, sessionState);
 		layoutCont.add(solutionId, solutionFormItem);

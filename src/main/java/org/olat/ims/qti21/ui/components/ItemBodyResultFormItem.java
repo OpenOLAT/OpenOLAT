@@ -74,6 +74,14 @@ public class ItemBodyResultFormItem extends AssessmentObjectFormItem {
 		component.setShowSolution(showSolution);
 	}
 	
+	public boolean isScorePerAnswers() {
+		return component.isScorePerAnswers();
+	}
+
+	public void setScorePerAnswers(boolean scorePerAnswers) {
+		component.setScorePerAnswers(scorePerAnswers);
+	}
+	
 	public boolean isReport() {
 		return component.isReport();
 	}

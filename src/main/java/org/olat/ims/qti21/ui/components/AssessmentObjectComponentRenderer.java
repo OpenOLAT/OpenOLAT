@@ -1173,10 +1173,15 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			}
 			sb.append(" />");
 			sb.append("<label for='").append(guid).append("'>");
-			hottext.getInlineStatics().forEach((inline)
+			hottext.getInlineStatics().forEach(inline
 					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
 			FormJSHelper.appendFlexiFormDirtyOn(sb, component.getQtiItem().getRootForm(), "change click", guid);
 			sb.append("</label></span>");
+			
+			if(component.isScorePerAnswers()) {
+				String score = AssessmentObjectVelocityRenderDecorator.renderScorePerChoice(assessmentItem, interaction, hottext, translator);
+				sb.append(score);
+			}
 		}
 	}
 	

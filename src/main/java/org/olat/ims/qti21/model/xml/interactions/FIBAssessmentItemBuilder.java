@@ -1335,6 +1335,20 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		public List<TextEntryAlternative> getAlternatives() {
 			return alternatives;
 		}
+		
+		public Double getAlternativeScore(String text) {
+			Double altScore = null;
+			if(alternatives != null) {
+				for(TextEntryAlternative alternative:alternatives) {
+					if(text != null && text.equals(alternative.getAlternative())) {
+						altScore = Double.valueOf(alternative.getScore());
+						break;
+					}
+				}
+			}
+			
+			return altScore;
+		}
 
 		public void setAlternatives(List<TextEntryAlternative> alternatives) {
 			this.alternatives = alternatives;

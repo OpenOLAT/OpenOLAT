@@ -151,7 +151,7 @@ public class QTI21OfflineTestsPDFMediaResource implements MediaResource {
 				OfflineContentCreator test = new OfflineContentCreator(mapper, fUnzippedDirRoot, testSessionController, serialNumber, false);
 				pdfService.asyncConvert(testName, identity, test, windowControl, completion);
 				
-				String solutionName = "solutions/" + serialNumber + ".pdf";
+				String solutionName = "solutions/" + serialNumber + "_solutions.pdf";
 				OfflineContentCreator solution = new OfflineContentCreator(mapper, fUnzippedDirRoot, testSessionController, serialNumber, true);
 				pdfService.asyncConvert(solutionName, identity, solution, windowControl, completion);
 			} catch(Exception e) {

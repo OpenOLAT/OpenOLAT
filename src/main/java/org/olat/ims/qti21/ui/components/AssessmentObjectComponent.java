@@ -63,6 +63,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	private boolean correctionHelp = false;
 	private boolean correctionSolution = false;
 	private boolean maxScoreAssessmentItem = false;
+	private boolean scorePerAnswers = false;
 	
 	private String mapperUri;
 	private String submissionMapperUri;
@@ -120,6 +121,14 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 
 	public void setMaxScoreAssessmentItem(boolean maxScoreAssessmentItem) {
 		this.maxScoreAssessmentItem = maxScoreAssessmentItem;
+	}
+
+	public boolean isScorePerAnswers() {
+		return scorePerAnswers;
+	}
+
+	public void setScorePerAnswers(boolean scorePerAnswers) {
+		this.scorePerAnswers = scorePerAnswers;
 	}
 
 	public boolean isCorrectionHelp() {

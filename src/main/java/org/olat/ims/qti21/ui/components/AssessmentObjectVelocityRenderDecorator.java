@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.DoubleAdder;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -49,9 +51,15 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent;
 
@@ -104,6 +112,7 @@ import uk.ac.ed.ph.jqtiplus.types.ResponseData;
 import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
+import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FileValue;
 import uk.ac.ed.ph.jqtiplus.value.ListValue;
 import uk.ac.ed.ph.jqtiplus.value.NullValue;
@@ -151,6 +160,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 
 	public boolean isSolutionMode() {
 		return renderer.isSolutionMode();
+	}
+	
+	public boolean isScorePerAnswers() {
+		return avc.isScorePerAnswers();
 	}
 	
 	public boolean isItemSessionOpen() {
@@ -359,31 +372,31 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public List<SimpleAssociableChoice> getVisibleAssociableChoices(AssociateInteraction interaction) {
 		return interaction.getSimpleAssociableChoices().stream()
-			.filter((choice) -> isVisible(choice, itemSessionState))
+			.filter(choice -> isVisible(choice, itemSessionState))
 			.collect(Collectors.toList());
 	}
 	
 	public List<HotspotChoice> getVisibleHotspotChoices(GraphicOrderInteraction interaction) {
 		return interaction.getHotspotChoices().stream()
-				.filter((hotspot) -> isVisible(hotspot, itemSessionState))
+				.filter(hotspot -> isVisible(hotspot, itemSessionState))
 				.collect(Collectors.toList());
 	}
 	
 	public List<AssociableHotspot> getVisibleAssociableHotspots(GraphicGapMatchInteraction interaction) {
 		return interaction.getAssociableHotspots().stream()
-				.filter((hotspot) -> isVisible(hotspot, itemSessionState))
+				.filter(hotspot -> isVisible(hotspot, itemSessionState))
 				.collect(Collectors.toList());
 	}
 	
 	public List<AssociableHotspot> getVisibleAssociableHotspots(GraphicAssociateInteraction interaction) {
 		return interaction.getAssociableHotspots().stream()
-				.filter((hotspot) -> isVisible(hotspot, itemSessionState))
+				.filter(hotspot -> isVisible(hotspot, itemSessionState))
 				.collect(Collectors.toList());
 	}
 	
 	public List<GapImg> getVisibleGapImgs(GraphicGapMatchInteraction interaction) {
 		return interaction.getGapImgs().stream()
-				.filter((gapImg) -> isVisible(gapImg, itemSessionState))
+				.filter(gapImg -> isVisible(gapImg, itemSessionState))
 				.collect(Collectors.toList());
 	}
 	
@@ -411,7 +424,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			}
 			
 			return choices.stream()
-					.filter((choice) -> isVisible(choice, itemSessionState))
+					.filter(choice -> isVisible(choice, itemSessionState))
 					.collect(Collectors.toList());
 		} catch (Exception e) {
 			log.error("", e);
@@ -436,10 +449,9 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			choices = interaction.getSimpleChoices();
 		}
 		
-		List<SimpleChoice> visibleChoices = choices.stream()
-			.filter((choice) -> isVisible(choice, itemSessionState))
+		return choices.stream()
+			.filter(choice -> isVisible(choice, itemSessionState))
 			.collect(Collectors.toList());
-		return visibleChoices;
 	}
 	
 	public List<SimpleChoice> getVisibleOrderedSimpleChoices(OrderInteraction interaction) {
@@ -461,7 +473,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			choices = interaction.getSimpleChoices();
 		}
 		return choices.stream()
-				.filter((choice) -> isVisible(choice, itemSessionState))
+				.filter(choice -> isVisible(choice, itemSessionState))
 				.collect(Collectors.toList());
 	}
 	/*
@@ -501,7 +513,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		}
 		
 		return choices.stream()
-				.filter((choice) -> isVisible(choice, itemSessionState))
+				.filter(choice -> isVisible(choice, itemSessionState))
 				.collect(Collectors.toList());
 	}
 	
@@ -523,7 +535,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		}
 		
 		return choices.stream()
-				.filter((choice) -> isVisible(choice, itemSessionState))
+				.filter(choice -> isVisible(choice, itemSessionState))
 				.collect(Collectors.toList());
 	}
 	
@@ -535,7 +547,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		if(gaps == null) return new ArrayList<>(0);
 		
 		return gaps.stream()
-				.filter((gap) -> isVisible(gap, itemSessionState))
+				.filter(gap -> isVisible(gap, itemSessionState))
 				.collect(Collectors.toList());
 	}
 	
@@ -694,6 +706,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String renderTextEntryAlternatives(TextEntryInteraction textEntry) {
+
+		TextEntry entryForScore = null;
 		LinkedHashSet<String> alternatives = new LinkedHashSet<>();
 		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(textEntry.getResponseIdentifier());
 		if(responseDeclaration != null &&responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
@@ -723,6 +737,10 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 				alternatives.remove(alternatives.iterator().next());
 			}
 			
+			if(avc.isScorePerAnswers()) {
+				entryForScore = new TextEntry(textEntry);
+				FIBAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(entryForScore, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+			}
 		}
 		
 		String separator = ", ";
@@ -735,6 +753,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		for(String alternative:alternatives) {
 			if(sb.length() > 0) sb.append(separator);
 			sb.append(alternative);
+			
+			if(entryForScore != null) {
+				String val = renderScorePerAnswer(entryForScore.getAlternativeScore(alternative), translator);
+				sb.append(" ").append(val);
+			}
 		}
 		return sb.toString();
 	}
@@ -752,7 +775,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public String renderPrompt(Prompt prompt) {
 		if(prompt != null) {
-			prompt.getInlineStatics().forEach((inline)
+			prompt.getInlineStatics().forEach(inline
 					->	avc.getHTMLRendererSingleton().renderInline(renderer, target, avc, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
 		}
 		return "";
@@ -766,16 +789,16 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String renderBlockStatics(List<BlockStatic> blockStaticList) {
-		if(blockStaticList != null && blockStaticList.size() > 0) {
-			blockStaticList.forEach((block)
+		if(blockStaticList != null && !blockStaticList.isEmpty()) {
+			blockStaticList.forEach(block
 					-> avc.getHTMLRendererSingleton().renderBlock(renderer, target, avc, resolvedAssessmentItem, itemSessionState, block, ubu, translator));
 		}
 		return "";
 	}
 	
 	public String renderFlowStatics(List<FlowStatic> flowStaticList) {
-		if(flowStaticList != null && flowStaticList.size() > 0) {
-			flowStaticList.forEach((flow)
+		if(flowStaticList != null && !flowStaticList.isEmpty()) {
+			flowStaticList.forEach(flow
 					-> avc.getHTMLRendererSingleton().renderFlow(renderer, target, avc, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 		}
 		return "";
@@ -783,8 +806,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	
 	public String renderKprimSpecialFlowStatics(List<FlowStatic> flowStaticList) {
 		try(StringOutput sb = new StringOutput()) {
-			if(flowStaticList != null && flowStaticList.size() > 0) {
-				flowStaticList.forEach((flow)
+			if(flowStaticList != null && !flowStaticList.isEmpty()) {
+				flowStaticList.forEach(flow
 						-> avc.getHTMLRendererSingleton().renderFlow(renderer, sb, avc, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
 			}
 			String specialKprim = sb.toString();
@@ -809,8 +832,8 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String renderTextOrVariables(List<TextOrVariable> textOrVariables) {
-		if(textOrVariables != null && textOrVariables.size() > 0) {
-			textOrVariables.forEach((textOrVariable)
+		if(textOrVariables != null && !textOrVariables.isEmpty()) {
+			textOrVariables.forEach(textOrVariable
 					-> avc.getHTMLRendererSingleton().renderTextOrVariable(renderer, target, avc, resolvedAssessmentItem, itemSessionState, textOrVariable));
 		}
 		return "";
@@ -827,6 +850,93 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		avc.getHTMLRendererSingleton()
 			.renderExtendedTextBox(renderer, target, avc, assessmentItem, itemSessionState, interaction, translator);
 		return "";
+	}
+	
+	/**
+	 * The method returns the score of specific interaction.
+	 * 
+	 * @param interaction the score
+	 * @return A formatted <span> tag
+	 */
+	public String renderScorePerInteraction(Interaction interaction) {
+		if(interaction == null || interaction.getResponseIdentifier() == null || !avc.isScorePerAnswers()) return "";
+		
+		Double score = null;
+		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
+		if(interaction instanceof TextEntryInteraction && responseDeclaration != null) {
+			if(responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+				TextEntry textEntry = new TextEntry((TextEntryInteraction)interaction);
+				FIBAssessmentItemBuilder.extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+				score = textEntry.getScore();
+			} else if(responseDeclaration.hasBaseType(BaseType.FLOAT) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+				NumericalEntry numericalEntry = new NumericalEntry((TextEntryInteraction)interaction);
+				FIBAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
+				score = numericalEntry.getScore();
+			} 
+		}
+		return renderScorePerAnswer(score, translator);
+	}
+	
+	public String renderScorePerChoice(Interaction interaction, Choice choice) {
+		if(interaction == null || interaction.getResponseIdentifier() == null || !avc.isScorePerAnswers()) return "";
+		return renderScorePerChoice(assessmentItem, interaction, choice, translator);
+	}
+	
+	protected static String renderScorePerChoice(AssessmentItem item, Interaction interaction, Choice choice, Translator translator) {
+		if(interaction == null) return "";
+		
+		Double score = null;
+		if(interaction instanceof ChoiceInteraction) {
+			Map<Identifier,Double> mapping = SimpleChoiceAssessmentItemBuilder.getMapping(item, (ChoiceInteraction)interaction);
+			if(mapping != null) {
+				score = mapping.get(choice.getIdentifier());
+			}
+		} else if(interaction instanceof HottextInteraction) {
+			Map<Identifier,Double> mapping = HottextAssessmentItemBuilder.getMapping(item, (HottextInteraction)interaction);
+			if(mapping != null) {
+				score = mapping.get(choice.getIdentifier());
+			}
+		}
+		return renderScorePerAnswer(score, translator);
+	}
+	
+	public String renderScorePerMatch(Interaction interaction, Choice choice1, Choice choice2) {
+		if(interaction == null || !avc.isScorePerAnswers()) return "";
+		
+		Double score = null;
+		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
+		if(interaction instanceof MatchInteraction && responseDeclaration != null
+				&& responseDeclaration.getMapping() != null
+				&& responseDeclaration.getMapping().getMapEntries() != null) {
+			List<MapEntry> entries = responseDeclaration.getMapping().getMapEntries();
+			for(MapEntry entry:entries) {
+				SingleValue key = entry.getMapKey();
+				if(key instanceof DirectedPairValue) {
+					DirectedPairValue pairKey = (DirectedPairValue)key;
+					Identifier sourceIdentifier = pairKey.sourceValue();
+					Identifier destIdentifier = pairKey.destValue();
+					if(sourceIdentifier.equals(choice1.getIdentifier()) && destIdentifier.equals(choice2.getIdentifier())) {
+						score = entry.getMappedValue();
+						break;
+					}
+				}
+			}
+		}
+		
+		return renderScorePerAnswer(score, translator);
+	}
+	
+	public static String renderScorePerAnswer(Double value, Translator translator) {
+		if(value == null) {
+			return "";
+		}
+		String stringVal;
+		if(value.doubleValue() < 1.99d) {
+			stringVal = translator.translate("point.answer.singular", AssessmentHelper.getRoundedScore(value));
+		} else {
+			stringVal = translator.translate("point.answer.plural", AssessmentHelper.getRoundedScore(value));
+		}
+		return "<span class='o_qti_score_infos'>" + stringVal + "</span>";
 	}
 	
 	public String placeholder(Interaction interaction) {

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.render.StringOutput;
 import org.apache.logging.log4j.Logger;
@@ -76,27 +77,30 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	}
 	
 	private void extractScoreEvaluationMode() {
-		boolean hasMapping = false;
-		if(choiceInteraction != null) {
-			ResponseDeclaration responseDeclaration = assessmentItem
-					.getResponseDeclaration(choiceInteraction.getResponseIdentifier());
+		scoreMapping = getMapping(assessmentItem, choiceInteraction);
+		boolean hasMapping = scoreMapping != null && !scoreMapping.isEmpty();
+		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+	}
+	
+	public static Map<Identifier, Double> getMapping(AssessmentItem item, ChoiceInteraction interaction) {
+		Map<Identifier,Double> scoreMap = null;
+		if(interaction != null) {
+			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
 			if(responseDeclaration != null) {
 				Mapping mapping = responseDeclaration.getMapping();
-				
-				hasMapping = (mapping != null && mapping.getMapEntries() != null && mapping.getMapEntries().size() > 0);
-				if(hasMapping) {
-					scoreMapping = new HashMap<>();
+				if(mapping != null && mapping.getMapEntries() != null && !mapping.getMapEntries().isEmpty() ) {
+					scoreMap = new HashMap<>();
 					for(MapEntry entry:mapping.getMapEntries()) {
 						SingleValue sValue = entry.getMapKey();
 						if(sValue instanceof IdentifierValue) {
 							Identifier identifier = ((IdentifierValue)sValue).identifierValue();
-							scoreMapping.put(identifier, entry.getMappedValue());
+							scoreMap.put(identifier, entry.getMappedValue());
 						}
 					}
 				}
 			}
 		}
-		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+		return scoreMap;
 	}
 	
 	private void extractChoiceInteraction() {

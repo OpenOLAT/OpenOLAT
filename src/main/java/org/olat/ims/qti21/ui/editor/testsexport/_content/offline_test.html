@@ -5,12 +5,18 @@
 	<div class="row">
 		<div class="col-xs-6">
 			<h3 class="o_offline_test_identifier">$r.escapeHtml($exportContext.identifierValue)</h3>
+			<h4>$r.escapeHtml($serialNumber)</h4>
 		</div>
 		<div class="col-xs-6">
 			#if($r.isNotEmpty($exportContext.procedure))
 			<h3 class="o_offline_test_procedure"><small>$r.translate("field.procedure")</small>
 			<br>$r.xssScan($exportContext.procedure)</h3>
 			#end
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			<h2 class="o_offline_over_test_title">$r.translate("field.over.title")</h2>
 		</div>
 	</div>
 	<div class="row">
@@ -43,8 +49,8 @@
 		
 		#if($r.isTrue($exportContext.placeholderCandidateNumber))
 		<div class="col-xs-3">
-			$r.translate("attr.serial.number")<br><br>
-			$r.escapeHtml($serialNumber)
+			$r.translate("attr.candidate.number")<br><br>
+			<hr class="o_offline_test_fill">
 		</div>
 		#end
 		
@@ -81,7 +87,7 @@
 		<div class="col-xs-3">
 			$r.translate("attr.max.score")<br><br>
 			#if($r.isNotEmpty(${exportContext.maxScoreValue}))
-				$r.translate("attr.cut.value.val", ${maxScore})
+				$r.translate("attr.max.score.val", ${maxScore})
 			#else
 				<hr class="o_offline_test_fill">
 			#end
@@ -92,7 +98,7 @@
 		<div class="col-xs-3">
 			$r.translate("attr.cut.value")<br><br>
 			#if($r.isNotEmpty(${exportContext.cutValueValue}))
-				$r.translate("attr.max.score.val", ${exportContext.cutValueValue})
+				$r.translate("attr.cut.value.val", ${exportContext.cutValueValue})
 			#else
 				<hr class="o_offline_test_fill">
 			#end

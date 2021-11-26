@@ -1509,13 +1509,17 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 }
 
 /* Offline tests */
+.o_qti_score_infos {
+	font-style: italic;
+}
+
 .o_offline_test_additional_sheet,
 .o_offline_test.o_assessment_test_results {
 	page-break-before: always;
-}
-
-.o_offline_test .o_qti_item {
-	page-break-after: always;
+	
+	h2.o_offline_over_test_title {
+		font-weight: normal;
+	}
 }
 
 .o_offline_test_cover_sheet,
@@ -1560,6 +1564,20 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 		font-size: 36px;
 		font-weight: bold;
 		padding: 1em;
+	}
+}
+
+.o_offline_test {
+	&.o_assessment_test_results {
+		font-size: 150%;
+		
+		h3, h4 {
+			font-size: 150%;
+		}
+	}
+
+	.o_qti_item {
+		page-break-after: always;
 	}
 }
 

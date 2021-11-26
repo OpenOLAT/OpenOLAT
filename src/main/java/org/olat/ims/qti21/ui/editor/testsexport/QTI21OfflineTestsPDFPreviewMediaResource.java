@@ -160,7 +160,7 @@ public class QTI21OfflineTestsPDFPreviewMediaResource implements MediaResource {
 			TestSessionController testSessionController = exportContext.createTestSessionState();
 			ureq = new SyntheticUserRequest(ureq.getIdentity(), exportContext.getLocale(), ureq.getUserSession());
 			return new QTI21OfflineTestsPDFController(ureq, wControl,
-					fUnzippedDirRoot, mapperUriForPdf, exportContext, testSessionController, serialNumber, false);
+					fUnzippedDirRoot, mapperUriForPdf, exportContext, testSessionController, serialNumber, true);
 		}
 	}
 }

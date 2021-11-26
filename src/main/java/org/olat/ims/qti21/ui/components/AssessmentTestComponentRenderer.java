@@ -449,14 +449,14 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	protected void renderMaxScoreItem(StringOutput sb, AssessmentTestComponent component, ItemSessionState itemSessionState, Translator translator) {
 		if(component.isMaxScoreAssessmentItem()) {
 			Value val = itemSessionState.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
-			if(val != null && val instanceof FloatValue) {
+			if(val instanceof FloatValue) {
 				double dVal = ((FloatValue)val).doubleValue();
 				if(dVal > 0.0d ) {
 					String sVal;
 					if(dVal < 2.0) {
-						sVal = translator.translate("assessment.item.point", new String[] { AssessmentHelper.getRoundedScore(dVal) });
+						sVal = translator.translate("assessment.item.point", AssessmentHelper.getRoundedScore(dVal));
 					} else {
-						sVal = translator.translate("assessment.item.points", new String[] { AssessmentHelper.getRoundedScore(dVal) });
+						sVal = translator.translate("assessment.item.points", AssessmentHelper.getRoundedScore(dVal));
 					}
 					sb.append("<span class='o_qti_item_max_score'>").append(sVal).append("</span>");
 				}

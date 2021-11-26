@@ -65,6 +65,7 @@
 				<td class="control">
 					<input id="oo_$r.toString($simpleChoice.identifier)" name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)" #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked #end /><i> </i>
 					$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
+					$r.renderScorePerChoice($interaction, $simpleChoice)
 				</td>
 				#if(!$r.classContains($interaction,"choiceright"))
 					<td class="choiceInteraction"><label for="oo_$r.toString($simpleChoice.identifier)">$r.renderFlowStatics($simpleChoice.getFlowStatics())</label></td>

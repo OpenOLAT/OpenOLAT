@@ -247,7 +247,7 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 			if(responseDeclaration != null) {
 				Mapping mapping = responseDeclaration.getMapping();
 				
-				hasMapping = (mapping != null && mapping.getMapEntries() != null && mapping.getMapEntries().size() > 0);
+				hasMapping = (mapping != null && mapping.getMapEntries() != null && !mapping.getMapEntries().isEmpty());
 				if(hasMapping) {
 					scoreMapping = new HashMap<>();
 					for(MapEntry entry:mapping.getMapEntries()) {

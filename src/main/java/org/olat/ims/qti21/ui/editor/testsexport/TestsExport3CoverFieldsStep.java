@@ -70,8 +70,8 @@ public class TestsExport3CoverFieldsStep extends BasicStep {
 	
 	class CoverFieldsController extends StepFormBasicController {
 		
+		private TextElement titleEl;
 		private TextElement procedureEl;
-
 		private RichTextElement descriptionEl;
 		
 		public CoverFieldsController(UserRequest ureq, WindowControl wControl, Form rootForm,
@@ -84,7 +84,8 @@ public class TestsExport3CoverFieldsStep extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormInfo("fields.explanation");
-			
+
+			titleEl = uifactory.addTextElement("field.title", 255, exportContext.getTitleValue(), formLayout);
 			procedureEl = uifactory.addTextElement("field.procedure", 255, exportContext.getProcedure(), formLayout);
 			
 			descriptionEl = uifactory.addRichTextElementForStringDataCompact("field.informations", "field.informations", exportContext.getDescriptionValue(), 12, 60,
@@ -97,6 +98,7 @@ public class TestsExport3CoverFieldsStep extends BasicStep {
 
 		@Override
 		protected void formNext(UserRequest ureq) {
+			exportContext.setTitleValue(titleEl.getValue());
 			exportContext.setProcedure(procedureEl.getValue());
 			exportContext.setDescriptionValue(descriptionEl.getValue());
 			

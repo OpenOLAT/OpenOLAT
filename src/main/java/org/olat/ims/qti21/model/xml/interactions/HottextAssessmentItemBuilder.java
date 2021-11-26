@@ -32,11 +32,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.olat.core.gui.render.StringOutput;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.QTI21Constants;
@@ -163,27 +164,31 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder im
 	}
 	
 	private void extractScoreEvaluationMode() {
-		boolean hasMapping = false;
-		if(hottextInteraction != null) {
-			ResponseDeclaration responseDeclaration = assessmentItem
-					.getResponseDeclaration(hottextInteraction.getResponseIdentifier());
+		scoreMapping = getMapping(assessmentItem, hottextInteraction);
+		boolean hasMapping = scoreMapping != null && !scoreMapping.isEmpty();
+		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+	}
+	
+	public static Map<Identifier,Double> getMapping(AssessmentItem item, HottextInteraction interaction) {
+		Map<Identifier,Double> scoreMap = null;
+		if(interaction != null) {
+			ResponseDeclaration responseDeclaration = item
+					.getResponseDeclaration(interaction.getResponseIdentifier());
 			if(responseDeclaration != null) {
 				Mapping mapping = responseDeclaration.getMapping();
-				
-				hasMapping = (mapping != null && mapping.getMapEntries() != null && mapping.getMapEntries().size() > 0);
-				if(hasMapping) {
-					scoreMapping = new HashMap<>();
+				if(mapping != null && mapping.getMapEntries() != null && !mapping.getMapEntries().isEmpty()) {
+					scoreMap = new HashMap<>();
 					for(MapEntry entry:mapping.getMapEntries()) {
 						SingleValue sValue = entry.getMapKey();
 						if(sValue instanceof IdentifierValue) {
 							Identifier identifier = ((IdentifierValue)sValue).identifierValue();
-							scoreMapping.put(identifier, entry.getMappedValue());
+							scoreMap.put(identifier, entry.getMappedValue());
 						}
 					}
 				}
 			}
 		}
-		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+		return scoreMap;	
 	}
 	
 	private void extractCorrectAnswers() {

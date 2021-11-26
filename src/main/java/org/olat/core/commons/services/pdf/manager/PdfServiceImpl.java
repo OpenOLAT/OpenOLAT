@@ -58,7 +58,7 @@ public class PdfServiceImpl implements PdfService {
 	@Autowired
 	private PdfModule pdfModule;
 	
-	private static final ExecutorService executor = Executors.newFixedThreadPool(5);
+	private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 	
 	@PreDestroy
 	public void shutdown() {

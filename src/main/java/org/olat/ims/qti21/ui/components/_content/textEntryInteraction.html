@@ -24,6 +24,7 @@
 	#if($isInvalidResponse)
 	<span class="badResponse">$r.translate("error.required.format")</span>
 	#end
+	$r.renderScorePerInteraction($interaction)
 	#if($r.isTrue($isCorrectionSolution) || $r.isTrue($isSolutionMode))
 		#set($alternativesString = $r.renderTextEntryAlternatives($interaction))
 		#if($r.isNotEmpty($alternativesString))
