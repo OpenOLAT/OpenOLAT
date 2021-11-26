@@ -415,17 +415,28 @@ public class ProjectListController extends BasicController implements GenericEve
 
 		CustomRenderColumnDescriptor projectManagerDescriptor = new CustomRenderColumnDescriptor("projectlist.tableheader.account.manager", dataColumn++, TABLE_ACTION_ACCOUNT_MANAGER, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectManagerColumnRenderer()){
 
-			/**
-			 * @see org.olat.core.gui.components.table.DefaultColumnDescriptor#compareTo(int, int)
-			 */
 			@Override
+			@SuppressWarnings("unchecked")
 			public int compareTo(int rowa, int rowb) {
-				return super.compareTo(rowa, rowb);
+				List<Identity> man1 = (List<Identity>)table.getTableDataModel().getValueAt(rowa, dataColumn);
+				List<Identity> man2 = (List<Identity>)table.getTableDataModel().getValueAt(rowb, dataColumn);
+				
+				int c = 0;
+				if(man1 != null && man2 != null) {
+					for(int i=0; i<man1.size() && i<man2.size() && c == 0; i++) {
+						Identity id1 = man1.get(i);
+						Identity id2 = man2.get(i);
+						c = super.compareString(id1.getUser().getLastName(), id2.getUser().getLastName());
+						if(c == 0) {
+							c = super.compareString(id1.getUser().getFirstName(), id2.getUser().getFirstName());	
+						}
+					}
+				} else {
+					c = super.compareNullObjects(man1, man2);
+				}
+				return c;
 			}
 
-			/**
-			 * @see org.olat.core.gui.components.table.CustomRenderColumnDescriptor#renderValue(org.olat.core.gui.render.StringOutput, int, org.olat.core.gui.render.Renderer)
-			 */
 			@Override
 			public void renderValue(StringOutput sb, int row, Renderer renderer) {
 					Object val = getModelData(row);
@@ -466,8 +477,8 @@ public class ProjectListController extends BasicController implements GenericEve
 					return (a == null) ? (bb ? 0: -1) : (bb ? 1: 0);
 				}
 				try {
-					Long la = new Long((String)a);
-					Long lb = new Long((String)b);
+					Long la = Long.valueOf((String)a);
+					Long lb = Long.valueOf((String)b);
 					return la.compareTo(lb);
 				} catch (NumberFormatException e) {
 					return super.compareTo(rowa, rowb);
