@@ -237,7 +237,7 @@ public class PoolsController extends FormBasicController {
 			Pool item = getObject(row);
 			switch(Cols.values()[col]) {
 				case id: return item.getKey();
-				case publicPool: return new Boolean(item.isPublicPool());
+				case publicPool: return Boolean.valueOf(item.isPublicPool());
 				case name: return item.getName();
 				default: return "";
 			}

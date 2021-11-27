@@ -194,6 +194,11 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 		return EDITABLE_STATES.contains(status);
 	}
 	
+	@Override
+	public boolean isDeletableQuestionStatus() {
+		return isDeletableQuestionStatus(itemView.getQuestionStatus());
+	}
+	
 	private boolean isDeletableQuestionStatus(QuestionStatus status) {
 		return DELETABLE_STATES.contains(status);
 	}

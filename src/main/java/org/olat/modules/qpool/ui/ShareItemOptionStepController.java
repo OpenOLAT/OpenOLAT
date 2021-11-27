@@ -64,7 +64,7 @@ public class ShareItemOptionStepController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		addToRunContext("editable", new Boolean(editableEl.isSelected(0)));
+		addToRunContext("editable", Boolean.valueOf(editableEl.isSelected(0)));
 		fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 	}
 }
