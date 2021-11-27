@@ -1179,6 +1179,7 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(gtaNodeTitle);
 		ryomouTask
 			.assertPassed()
+			.openSolutions()
 			.assertSolution("solution_1.txt");
 	}
 	

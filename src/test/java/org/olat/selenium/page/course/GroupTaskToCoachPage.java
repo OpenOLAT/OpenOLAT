@@ -172,11 +172,11 @@ public class GroupTaskToCoachPage {
 		}
 		
 		if(score != null) {
-			By scoreBy = By.cssSelector(".o_sel_assessment_form_score input[type='text']");
+			By scoreBy = By.xpath("//input[contains(@class,'o_sel_assessment_form_score')][@type='text']");
 			browser.findElement(scoreBy).sendKeys(Float.toString(score));
 		}
 		
-		By saveAndCloseBy = By.cssSelector(".o_sel_assessment_form button.o_sel_assessment_form_save_and_close");
+		By saveAndCloseBy = By.cssSelector(".o_sel_assessment_form a.btn.o_sel_assessment_form_save_and_done");
 		OOGraphene.click(saveAndCloseBy, browser);
 		OOGraphene.waitBusy(browser);
 		return this;

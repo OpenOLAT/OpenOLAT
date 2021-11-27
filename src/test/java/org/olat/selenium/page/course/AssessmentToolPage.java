@@ -139,9 +139,8 @@ public class AssessmentToolPage {
 	 * @return
 	 */
 	public AssessmentToolPage setAssessmentScore(float score) {
-		By scoreBy = By.cssSelector(".o_sel_assessment_form_score input[type='text']");
+		By scoreBy = By.xpath("//input[contains(@class,'o_sel_assessment_form_score')][@type='text']");
 		browser.findElement(scoreBy).sendKeys(Float.toString(score));
-		
 		return closeAssessment();
 	}
 	
@@ -160,7 +159,7 @@ public class AssessmentToolPage {
 	}
 	
 	public AssessmentToolPage closeAssessment() {
-		By saveBy = By.cssSelector("button.btn.o_sel_assessment_form_save_and_close");
+		By saveBy = By.cssSelector("a.btn.o_sel_assessment_form_save_and_done");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -240,15 +239,10 @@ public class AssessmentToolPage {
 		By bulkBy = By.cssSelector("a.btn.o_sel_assessment_bulk_visible");
 		OOGraphene.waitElement(bulkBy, browser);
 		browser.findElement(bulkBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		By visibleBy = By.xpath("//div[contains(@class,'modal-body')]//input[@name='user.visibility'][@value='visible']");
-		browser.findElement(visibleBy).click();
-		
-		By saveBy = By.cssSelector("div.modal-body button.btn-primary");
-		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		
+		By visibleBy = By.xpath("//table//span[i[contains(@class,'o_icon_results_visible')]]");
+		OOGraphene.waitElement(visibleBy, browser);
 		return this;
 	}
 	
