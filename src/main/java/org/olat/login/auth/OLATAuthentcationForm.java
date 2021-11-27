@@ -98,11 +98,13 @@ public class OLATAuthentcationForm extends FormBasicController {
 		formLayout.add(loginWrapper);
 		login = uifactory.addTextElement(mainForm.getFormId() + "_name", "lf_login", "lf.login", 128, "", loginWrapper);
 		login.setPlaceholderKey("lf.login", null);
+		login.setAutocomplete("username");
 		login.setFocus(true);
 		
 		FormLayoutContainer passWrapper = FormLayoutContainer.createInputGroupLayout("passWrapper", getTranslator(), "<i class='o_icon o_icon-fw o_icon_password'> </i>", null);
 		formLayout.add(passWrapper);
 		pass  = uifactory.addPasswordElement(mainForm.getFormId() + "_pass", "lf_pass",  "lf.pass", 128, "", passWrapper);
+		pass.setAutocomplete("current-password");
 		pass.setPlaceholderKey("lf.pass", null);
 
 		login.setDisplaySize(20);

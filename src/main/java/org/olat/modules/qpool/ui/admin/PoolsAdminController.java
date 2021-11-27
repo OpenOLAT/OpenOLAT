@@ -294,7 +294,7 @@ public class PoolsAdminController extends FormBasicController {
 		public Object getValueAt(Pool pool, int col) {
 			switch(Cols.values()[col]) {
 				case id: return pool.getKey();
-				case publicPool: return new Boolean(pool.isPublicPool());
+				case publicPool: return Boolean.valueOf(pool.isPublicPool());
 				case name: return pool.getName();
 				default: return "";
 			}

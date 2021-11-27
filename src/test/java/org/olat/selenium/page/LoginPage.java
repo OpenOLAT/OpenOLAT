@@ -23,7 +23,6 @@ package org.olat.selenium.page;
 import java.net.URL;
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
@@ -54,22 +53,17 @@ public class LoginPage {
 	
 	public static final By maintenanceMessageBy = By.cssSelector("#o_msg_sticky p");
 	
-	@Drone
-	private WebDriver browser;
+	private final WebDriver browser;
+	
+	public LoginPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
 	public static LoginPage load(WebDriver browser, URL deploymentUrl) {
 		LoginPage page = new LoginPage(browser);
 		browser.navigate().to(deploymentUrl);
 		OOGraphene.waitElement(loginFormBy, browser);
 		return page;
-	}
-	
-	public LoginPage() {
-		//
-	}
-	
-	public LoginPage(WebDriver browser) {
-		this.browser = browser;
 	}
 
 	public LoginPage assertOnLoginPage() {
@@ -150,15 +144,18 @@ public class LoginPage {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
 		OOGraphene.waitElement(usernameId, browser);//wait the login page
-		WebElement usernameInput = browser.findElement(usernameId);
-		usernameInput.sendKeys(username);
+		browser.findElement(usernameId).sendKeys(username);
 		By passwordId = By.id("o_fiooolat_login_pass");
-		WebElement passwordInput = browser.findElement(passwordId);
-		passwordInput.sendKeys(password);
+		browser.findElement(passwordId).sendKeys(password);
 		
-		By loginBy = By.id("o_fiooolat_login_button");
-		browser.findElement(loginBy).click();
-		OOGraphene.waitElement(authOrDisclaimerXPath, browser);
+		try {
+			By loginBy = By.id("o_fiooolat_login_button");
+			browser.findElement(loginBy).click();
+			OOGraphene.waitElement(authOrDisclaimerXPath, browser);
+		} catch (Exception e1) {
+			OOGraphene.takeScreenshot("Login button", browser);
+			throw e1;
+		}
 		
 		//wipe out disclaimer
 		List<WebElement> disclaimer = browser.findElements(disclaimerXPath);

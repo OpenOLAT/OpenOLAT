@@ -36,6 +36,8 @@ public interface QuestionItemSecurityCallback extends MetadataSecurityCallback {
 	public void setAdmin(boolean admin);
 	
 	public void setPoolAdmin(boolean poolAdmin);
+
+	public boolean isDeletableQuestionStatus();
 	
 	public boolean canEditQuestion();
 	

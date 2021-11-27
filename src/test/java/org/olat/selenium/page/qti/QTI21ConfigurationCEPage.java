@@ -50,6 +50,9 @@ public class QTI21ConfigurationCEPage {
 	
 	public QTI21ConfigurationCEPage showScoreOnHomepage(boolean showResults) {
 		By scoreBy = By.cssSelector(".o_sel_results_on_homepage select#o_fioqti_showresult_SELBOX");
+		OOGraphene.waitElementPresence(scoreBy, 5, browser);
+		OOGraphene.scrollTo(scoreBy, browser);
+		OOGraphene.waitElement(scoreBy, browser);
 		WebElement scoreEl = browser.findElement(scoreBy);
 		String val = showResults ? "false" : "no";
 		new Select(scoreEl).selectByValue(val);

@@ -60,7 +60,6 @@ public class OOGraphene {
 
 	private static final Duration waitTinyDuration = Duration.ofSeconds(50);//seconds
 	private static final long driverTimeout = 60;//seconds
-	private static final long movePause = 400;//milliseconds
 	private static final long moveToPause = 100;//milliseconds
 	
 	private static final Duration polling = Duration.ofMillis(100);
@@ -132,7 +131,7 @@ public class OOGraphene {
 		waitBusyAndScrollTop(browser);
 		By modalBy = By.cssSelector("div.o_ltop_modal_panel div.modal-dialog div.modal-body");
 		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(timeout).pollingEvery(poolingSlow)
+			.withTimeout(timeout).pollingEvery(poolingSlower)
 			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
 	}
 	
@@ -279,14 +278,9 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			//if(browser instanceof FirefoxDriver) {
-				scrollTo(buttonBy, browser);// Firefox doesn't implement moveToElement
-			//}
-			new Actions(browser)
-				.moveToElement(buttonEl)
-				.pause(movePause)
-				.click(buttonEl)
-				.perform();
+			scrollTo(buttonBy, browser);// Firefox doesn't implement moveToElement
+			waitElement(buttonBy, browser);
+			browser.findElement(buttonBy).click();
 			OOGraphene.waitBusyAndScrollTop(browser);
 		} else {
 			browser.findElement(buttonBy).click();
@@ -307,14 +301,8 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			if(browser instanceof FirefoxDriver) {
-				scrollTo(buttonBy, browser);// Firefox doesn't implement moveToElement
-			}
-			new Actions(browser)
-				.moveToElement(buttonEl)
-				.pause(movePause)
-				.click(buttonEl)
-				.perform();
+			scrollTo(buttonBy, browser);
+			browser.findElement(buttonBy).click();
 		} else {
 			browser.findElement(buttonBy).click();
 		}
@@ -328,7 +316,7 @@ public class OOGraphene {
 	 */
 	public static void scrollTo(By by, WebDriver browser) {
 		WebElement element = browser.findElement(by);
-		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"instant\", block: \"end\"});", element);
+		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"auto\", block: \"end\"});", element);
 		OOGraphene.waitingALittleLonger();
 	}
 
@@ -366,11 +354,10 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void moveTop(WebDriver browser) {
-		By topBy = By.id("o_top");
 		if(browser instanceof FirefoxDriver) {
-			scrollTo(topBy, browser);// Firefox doesn't implement moveToElement
+			scrollTop(browser);// Firefox doesn't implement moveToElement
 		}
-		WebElement el = browser.findElement(topBy);
+		WebElement el = browser.findElement(By.id("o_top"));
 		new Actions(browser)
 			.moveToElement(el)
 			.pause(moveToPause)
