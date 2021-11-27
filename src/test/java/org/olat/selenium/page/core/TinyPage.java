@@ -52,7 +52,7 @@ public class TinyPage {
 		OOGraphene.waitElement(tinyImageButtonBy, browser);
 		browser.findElement(tinyImageButtonBy).click();
 		
-		By tinyUploadButtonBy = By.xpath("//div[contains(@class,'mce-window')]//button[i[contains(@class,'mce-i-browse')]]");
+		By tinyUploadButtonBy = By.xpath("//div[contains(@class,'mce-window')]//button/i[contains(@class,'mce-i-browse')]");
 		OOGraphene.waitElement(tinyUploadButtonBy, browser);
 		browser.findElement(tinyUploadButtonBy).click();
 		OOGraphene.waitTopModalDialog(browser);
