@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
@@ -134,6 +135,8 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
+		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.js" });
+		formLayout.add(js);
 		
 		for(HotspotChoice choice:itemBuilder.getHotspotChoices()) {
 			HotspotChoiceWrapper wrapper = createHotspotChoiceWrapper(choice);

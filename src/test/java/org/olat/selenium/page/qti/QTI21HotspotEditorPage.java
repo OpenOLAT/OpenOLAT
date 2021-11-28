@@ -144,14 +144,18 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 
 	public QTI21HotspotEditorPage save() {
 		By saveBy = By.cssSelector("div.o_sel_hotspots_save button.btn.btn-primary");
-		OOGraphene.clickAndWait(saveBy, browser);
+		OOGraphene.moveAndClick(saveBy, browser);
 		OOGraphene.waitBusy(browser);
+		// waits are needed for chrome on our test server
+		OOGraphene.waitTinymce(browser);
+		OOGraphene.scrollTop(browser);
+		OOGraphene.waitingTooLong();
 		return this;
 	}
 	
 	public QTI21HotspotScoreEditorPage selectScores() {
 		try {
-			selectTab(By.className("o_sel_assessment_item_options"));
+			selectTabSlowly(By.className("o_sel_assessment_item_options"));
 			return new QTI21HotspotScoreEditorPage(browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Select scores", browser);

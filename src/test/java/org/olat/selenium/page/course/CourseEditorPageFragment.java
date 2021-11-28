@@ -349,7 +349,7 @@ public class CourseEditorPageFragment {
 				}
 			}
 			return false;
-		}, browser);
+		}, false, browser);
 		return this;
 	}
 	
