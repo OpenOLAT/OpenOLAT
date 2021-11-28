@@ -43,4 +43,9 @@ public abstract class QTI21AssessmentItemEditorPage {
 		OOGraphene.selectTab("o_sel_assessment_item_config", tabBy, browser);
 		return this;
 	}
+	
+	protected QTI21AssessmentItemEditorPage selectTabSlowly(By tabBy) {
+		OOGraphene.selectTabSlowly("o_sel_assessment_item_config", tabBy, browser);
+		return this;
+	}
 }

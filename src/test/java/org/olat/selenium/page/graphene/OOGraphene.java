@@ -297,15 +297,14 @@ public class OOGraphene {
 	 * @param browser The driver
 	 */
 	public static void moveAndClick(By buttonBy, WebDriver browser) {
-		waitElement(buttonBy, browser);
+		waitElementPresence(buttonBy, 5, browser);
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
 			scrollTo(buttonBy, browser);
-			browser.findElement(buttonBy).click();
-		} else {
-			browser.findElement(buttonBy).click();
+			waitElement(buttonBy, browser);
 		}
+		browser.findElement(buttonBy).click();
 	}
 	
 	/**
@@ -423,7 +422,14 @@ public class OOGraphene {
 		selectTab(ulClass, (b) -> {
 			List<WebElement> chooseRepoEntry = browser.findElements(formBy);
 			return !chooseRepoEntry.isEmpty();
-		}, browser);
+		}, false, browser);
+	}
+	
+	public static final void selectTabSlowly(String ulClass, By formBy, WebDriver browser) {
+		selectTab(ulClass, (b) -> {
+			List<WebElement> chooseRepoEntry = browser.findElements(formBy);
+			return !chooseRepoEntry.isEmpty();
+		}, false, browser);
 	}
 	
 	/**
@@ -432,7 +438,7 @@ public class OOGraphene {
 	 * @param selectTab A predicate to select the right tab
 	 * @param browser The driver
 	 */
-	public static final void selectTab(String ulClass, Predicate<WebDriver> selectTab, WebDriver browser) {
+	public static final void selectTab(String ulClass, Predicate<WebDriver> selectTab, boolean slowly, WebDriver browser) {
 		List<WebElement> tabLinks = browser.findElements(By.cssSelector("ul." + ulClass + ">li>a"));
 		int count = tabLinks.size();
 		boolean found = false;
@@ -443,9 +449,14 @@ public class OOGraphene {
 			String tabClass = tabEl.getAttribute("onclick");
 			if(StringHelper.containsNonWhitespace(tabClass)) {
 				tabEl.click();
-				waitBusy(browser);
 				By activatedTabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "][@class='active']/a");
-				waitElement(activatedTabLinkBy, browser);
+				if(slowly) {
+					waitElementSlowly(activatedTabLinkBy, 10, browser);
+				} else {
+					waitBusy(browser);
+					waitElement(activatedTabLinkBy, browser);
+				}
+				
 				if(selectTab.test(browser)) {
 					found = true;
 					break a_a;
@@ -620,7 +631,7 @@ public class OOGraphene {
 				.withTimeout(timeout)
 				.until(new BusyScrollToPredicate());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 	}
 	

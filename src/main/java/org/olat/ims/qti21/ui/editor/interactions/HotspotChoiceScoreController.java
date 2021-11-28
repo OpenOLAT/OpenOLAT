@@ -136,6 +136,8 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		scoreCont = FormLayoutContainer.createCustomFormLayout("scores", getTranslator(), scorePage);
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
+		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.js" });
+		formLayout.add(js);
 		
 		for(HotspotChoice choice:itemBuilder.getHotspotChoices()) {
 			HotspotChoiceWrapper wrapper = createHotspotChoiceWrapper(choice);
