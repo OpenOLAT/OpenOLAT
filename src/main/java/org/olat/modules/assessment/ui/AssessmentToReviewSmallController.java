@@ -116,6 +116,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setEmptyTableSettings("review.open.emtpy", null, "o_icon_status_in_review");
 	}
 	
 	private void loadModel() {
@@ -136,6 +137,12 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 				identityKeyToRow.put(assessedIdentity.getKey(), row);
 			}
 		}
+		
+		int numReviews = rows.stream().mapToInt(row -> row.getSubIndents().size()).sum();
+		String title = numReviews > 0
+				? translate("review.open.number", Integer.toString(numReviews))
+				: translate("review.open");
+		flc.contextPut("title", title);
 		
 		usersTableModel.setObjects(rows);
 		tableEl.reset();
@@ -161,7 +168,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		//
 	}
 	
-	public static class UserToReviewRow extends UserPropertiesRow implements ToReviewRow {
+	public static class UserToReviewRow extends UserPropertiesRow {
 		
 		private List<String> nodeIndents = new ArrayList<>(3);
 		
@@ -169,7 +176,6 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 			super(identity, userPropertyHandlers, locale);
 		}
 
-		@Override
 		public List<String> getSubIndents() {
 			return nodeIndents;
 		}

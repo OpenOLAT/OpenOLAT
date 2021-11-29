@@ -41,6 +41,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -50,6 +51,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
+import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
 import org.olat.course.config.ui.AssessmentResetController;
 import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -58,7 +60,6 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -191,18 +192,20 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				doSelectUsersView(ureq, new AssessedIdentityListState(null, Collections.singletonList("passed"), null, null, null, "Passed", false));
 			} else if(event == AssessmentCourseOverviewController.SELECT_FAILED_EVENT) {
 				doSelectUsersView(ureq, new AssessedIdentityListState(null, Collections.singletonList("failed"), null, null, null, "Failed", false));
-			} else if (event instanceof UserSelectionEvent) {
-				UserSelectionEvent use = (UserSelectionEvent)event;
-				if(use.getCourseNodeIdents() == null || use.getCourseNodeIdents().isEmpty() || use.getCourseNodeIdents().size() > 1) {
-					OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
-					List<ContextEntry> entries = BusinessControlFactory.getInstance()
-							.createCEListFromResourceable(resource, new AssessedIdentityListState(Collections.singletonList("inReview"), null, null, null, null, null, true));
-					doSelectUsersView(ureq, null).activate(ureq, entries, null);
-				} else {
-					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(use.getCourseNodeIdents().get(0)));
-					OLATResourceable idRes = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
-					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(nodeRes, idRes);
-					doSelectUsersView(ureq, null).activate(ureq, entries, null);
+			} else if (event instanceof CourseNodeIdentityEvent) {
+				CourseNodeIdentityEvent cnie = (CourseNodeIdentityEvent)event;
+				if (StringHelper.isLong(cnie.getCourseNodeIdent())) {
+					if(cnie.getAssessedIdentity() == null) {
+						OLATResourceable resource = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(cnie.getCourseNodeIdent()));
+						List<ContextEntry> entries = BusinessControlFactory.getInstance()
+								.createCEListFromResourceable(resource, cnie.getFilter().get());
+						doSelectNodeView(ureq, cnie.getCourseNodeIdent()).activate(ureq, entries, null);
+					} else {
+						OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(cnie.getCourseNodeIdent()));
+						OLATResourceable idRes = OresHelper.createOLATResourceableInstance("Identity", cnie.getAssessedIdentity().getKey());
+						List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(nodeRes, idRes);
+						doSelectNodeView(ureq, cnie.getCourseNodeIdent()).activate(ureq, entries, null);
+					}
 				}
 			} else if(event instanceof CourseNodeEvent) {
 				CourseNodeEvent cne = (CourseNodeEvent)event;

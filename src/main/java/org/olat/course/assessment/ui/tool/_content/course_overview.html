@@ -32,6 +32,9 @@ $r.contextHelpWithWrapper("Using Course Tools#_bewertungswerkzeug")
 		#if($r.available("toReview"))
 			$r.render("toReview")
 		#end
+		#if($r.available("toRelease"))
+			$r.render("toRelease")
+		#end
 	</div>
 	<div class="col-sm-6">
 		#if($r.available("statistics"))

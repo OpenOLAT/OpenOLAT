@@ -32,6 +32,6 @@ public class AssessmentToolConstants {
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final String usageIdentifyer = AssessedIdentitiesTableDataModel.class.getCanonicalName();
 	
-	public static final String reducedUsageIdentifyer = AssessmentToReviewSmallController.class.getCanonicalName();
+	public static final String reducedUsageIdentifyer ="org.olat.course.assessment.ui.tool.AssessmentToReviewSmallController";
 	
 }

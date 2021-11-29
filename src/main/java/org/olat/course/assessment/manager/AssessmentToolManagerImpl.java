@@ -462,6 +462,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(status != null) {
 			list.setParameter("assessmentStatus", status.name());
 		}
+		if(params.getUserVisibility() != null) {
+			list.setParameter("userVisibility", params.getUserVisibility());
+		}
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			list.setParameter("assessmentObligations", params.getAssessmentObligations());
 		}
@@ -477,6 +480,13 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		if(status != null) {
 			sb.append(" and aentry.status=:assessmentStatus");
+		}
+		if(params.getUserVisibility() != null) {
+			sb.append(" and (");
+			if (params.getUserVisibility().booleanValue()) {
+				sb.append("aentry.userVisibility is null or ");
+			}
+			sb.append(" aentry.userVisibility = :userVisibility)");
 		}
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			sb.append(" and (");

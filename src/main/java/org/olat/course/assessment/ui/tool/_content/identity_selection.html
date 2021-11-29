@@ -1,0 +1,8 @@
+<ul<ul class="list-unstyled">
+	#foreach($link in $links)
+		<li>$r.render($link.getComponentName())</li>
+	#end
+	#if($r.available("o_more"))
+		<li>$r.render("o_more")</li>
+	#end
+</ul>

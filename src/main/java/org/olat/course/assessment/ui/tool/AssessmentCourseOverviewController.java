@@ -39,9 +39,9 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
+import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,7 +59,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 	protected static final Event SELECT_FAILED_EVENT = new Event("assessment-tool-select-failed");
 	
 	private final VelocityContainer mainVC;
-	private final AssessmentToReviewSmallController toReviewCtrl;
+	private final CourseNodeToReviewSmallController toReviewCtrl;
+	private final CourseNodeToReleaseSmallController toReleaseCtrl;
 	private final AssessmentModeOverviewListController assessmentModeListCtrl;
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
@@ -106,9 +107,13 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 		
 		
-		toReviewCtrl = new AssessmentToReviewSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
+		toReviewCtrl = new CourseNodeToReviewSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(toReviewCtrl);
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
+		
+		toReleaseCtrl = new CourseNodeToReleaseSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
+		listenTo(toReleaseCtrl);
+		mainVC.put("toRelease", toReleaseCtrl.getInitialComponent());
 		
 		statisticsCtrl = new AssessmentCourseStatisticsSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(statisticsCtrl);
@@ -158,9 +163,14 @@ public class AssessmentCourseOverviewController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(toReviewCtrl == source) {
-			if(event instanceof UserSelectionEvent) {
+			if(event instanceof CourseNodeIdentityEvent) {
 				fireEvent(ureq, event);
 			}
+		} else if(toReleaseCtrl == source) {
+			if(event instanceof CourseNodeIdentityEvent) {
+				fireEvent(ureq, event);
+			}
+		
 		} else if(assessmentModeListCtrl == source) {
 			if(event instanceof CourseNodeEvent || event instanceof AssessmentModeStatusEvent) {
 				fireEvent(ureq, event);
