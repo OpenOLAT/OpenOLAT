@@ -130,7 +130,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		}
 			
 		Boolean passedManually = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
-		if (passedManually) {
+		if (passedManually || coachCourseEnv.isAdmin()) {
 			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv);
 			identityAssessmentVC.put("passed", passedCtrl.getInitialComponent());
 			listenTo(passedCtrl);
@@ -343,10 +343,8 @@ public class AssessmentIdentityCourseController extends BasicController
 	}
 	
 	private void doExportPdf(UserRequest ureq) {
-		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
-			return new AssessmentIdentityCourseController(lureq, lwControl, stackPanel,
-			courseEntry, coachCourseEnv, assessedIdentity, false);
-		};
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> new AssessmentIdentityCourseController(lureq, lwControl, stackPanel,
+		courseEntry, coachCourseEnv, assessedIdentity, false);
 		String title = getPdfTitle();
 		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
 		ureq.getDispatchResult().setResultingMediaResource(resource);

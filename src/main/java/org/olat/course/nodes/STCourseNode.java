@@ -121,6 +121,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PASSED_NUMBER_CUT = "passed.number.cut";
 	public static final String CONFIG_PASSED_POINTS = "passed.points";
 	public static final String CONFIG_PASSED_POINTS_CUT = "passed.points.cut";
+	// Defines whether the COACH can override the passed.
 	public static final String CONFIG_PASSED_MANUALLY = "passed.manually";
 
 	// Score calculation with conditions.
