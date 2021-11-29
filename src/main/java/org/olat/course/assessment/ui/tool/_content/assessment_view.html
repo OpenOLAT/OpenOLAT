@@ -1,0 +1,80 @@
+<div class="panel panel-default o_assessment_panel">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("assessment.view.title")</h4>
+		<div>
+			$r.render("reopen")
+			$r.render("user.visibility")
+		</div>
+	</div>
+	<table class="table">
+	<tbody>
+		<tr>
+			<th></th>
+			<td></td>
+		</tr>
+		<tr class="o_table_part">
+			<th>$r.translate("personal.title")</th>
+			<td></td>
+		</tr>
+		#if ($hasScoreField)
+			<tr class="o_score_config_min">
+				<th>$r.translate("score.min")</th>
+				<td>$scoreMin</td>
+			</tr>
+			<tr class="o_score_config_max">
+				<th>$r.translate("score.max")</th>
+				<td>$scoreMax</td>
+			</tr>
+			<tr class="o_score">
+				<th>$r.translate("score.yourscore")</th>
+				<td>$score</td>
+			</tr>
+		#end 
+		
+		#if ($hasPassedField)
+			#if ($passedCutValue)
+				<tr class="o_cutval">
+					<th>$r.translate("passed.cut")</th>
+					<td>$passedCutValue</td>
+				</tr>
+			#end
+			<tr class="o_state #if($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+				<th>$r.translate("passed.yourpassed")</th>
+				<td>
+					#if($hasPassedValue && $passed)
+						<i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")
+					#elseif($hasPassedValue && !$passed)
+						<i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")
+					#else
+						<div class="o_noinfo">$r.translate("passed.nopassed")</div>
+					#end
+				</td>
+			</tr>
+		#end
+		
+		#if ($hasCommentField)
+			<tr>
+				<th>$r.translate("comment.title")</th>
+				<td>
+					#if ($r.isNotEmpty($comment))
+						$comment
+					#end
+				</td>
+			</tr>
+		#end
+		
+		#if ($hasDocumentField)
+			<tr>
+				<th>$r.translate("assessment.documents.title")</th>
+				<td>
+					<ul class="list-unstyled">
+						#foreach($doc in $docs)
+							<li><a href="$docsMapperUri/$r.encodeUrl($doc.name)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
+						#end
+					</ul>
+				</td>
+			</tr>
+		#end
+	</tbody>
+	</table>
+</div>

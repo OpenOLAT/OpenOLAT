@@ -54,6 +54,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.repository.RepositoryEntry;
@@ -72,6 +73,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	private final VelocityContainer identityAssessmentVC;
 	
 	private AssessmentEditController assessmentEditCtrl;
+	private AssessmentViewController assessmentViewCtrl;
 	private Controller identityInfosCtrl;
 	private Controller subDetailsController;
 	private Controller detailsEditController;
@@ -132,9 +134,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
 			}
 			
-			assessmentEditCtrl = new AssessmentEditController(ureq, wControl, courseNode, coachCourseEnv, assessedUserCourseEnvironment);
-			listenTo(assessmentEditCtrl);
-			identityAssessmentVC.put("assessmentForm", assessmentEditCtrl.getInitialComponent());
+			doOpenAssessment(ureq);
 			
 			String nodeLog = courseAssessmentService.getAuditLog(courseNode, assessedUserCourseEnvironment);
 			if(StringHelper.containsNonWhitespace(nodeLog)) {
@@ -215,13 +215,14 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				listenTo(subDetailsController);
 				stackPanel.pushController(translate("sub.details"), subDetailsController);
 			}
+		} else if(assessmentViewCtrl == source) {
+			if(AssessmentFormEvent.ASSESSMENT_REOPEN.equals(event.getCommand())) {
+				doOpenAssessment(ureq);
+			}
+			fireEvent(ureq, event);
 		} else if(assessmentEditCtrl == source) {
-			if(detailsEditController instanceof AssessmentFormCallback) {
-				if(AssessmentFormEvent.ASSESSMENT_DONE.equals(event.getCommand())) {
-					((AssessmentFormCallback)detailsEditController).assessmentDone(ureq);
-				} else if(AssessmentFormEvent.ASSESSMENT_REOPEN.equals(event.getCommand())) {
-					((AssessmentFormCallback)detailsEditController).assessmentReopen(ureq);	
-				}
+			if(AssessmentFormEvent.ASSESSMENT_DONE.equals(event.getCommand())) {
+				doOpenAssessment(ureq);
 			}
 			fireEvent(ureq, event);
 		}
@@ -231,5 +232,22 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	private void doOpenAssessment(UserRequest ureq) {
+		removeAsListenerAndDispose(assessmentViewCtrl);
+		removeAsListenerAndDispose(assessmentEditCtrl);
+		assessmentViewCtrl = null;
+		assessmentEditCtrl = null;
+		
+		if (AssessmentEntryStatus.done == assessedUserCourseEnvironment.getScoreAccounting().evalCourseNode(courseNode).getAssessmentStatus()) {
+			assessmentViewCtrl = new AssessmentViewController(ureq, getWindowControl(), courseNode, assessedUserCourseEnvironment);
+			listenTo(assessmentViewCtrl);
+			identityAssessmentVC.put("assessmentForm", assessmentViewCtrl.getInitialComponent());
+		} else {
+			assessmentEditCtrl = new AssessmentEditController(ureq, getWindowControl(), courseNode, coachCourseEnv, assessedUserCourseEnvironment);
+			listenTo(assessmentEditCtrl);
+			identityAssessmentVC.put("assessmentForm", assessmentEditCtrl.getInitialComponent());
+		}
 	}
 }

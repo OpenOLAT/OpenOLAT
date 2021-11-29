@@ -535,6 +535,34 @@
 	}
 }
 
+.o_assessment_panel {
+	.panel-heading {
+		display: flex;
+		align-items: center;
+		h4 {
+			font-size: ceil(($font-size-base * 1.5));
+		}
+		:nth-child(2) {
+			margin-left: auto;
+		}
+	}
+	.o_table_part {
+		background-color: $o-course-assessment-table-part-bg-color;
+	}
+	a.o_button_results_visible,
+	button.o_button_results_visible.btn-default.dropdown-toggle {
+		border-color: 		$o-course-results-visible-color;
+		color: 				$o-course-results-visible-color;
+		background-color: 	$o-course-results-visible-bg-color;
+	}
+	a.o_button_results_hidden,
+	button.o_button_results_hidden.btn-default.dropdown-toggle {
+		border-color: 		$o-course-results-hidden-color;
+		color: 				$o-course-results-hidden-color;
+		background-color: 	$o-course-results-hidden-bg-color;
+	}
+}
+
 /* general course run classes */
 .o_course_run {
 	.o_toc {
