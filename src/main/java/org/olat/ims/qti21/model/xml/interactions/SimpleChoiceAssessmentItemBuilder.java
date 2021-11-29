@@ -248,7 +248,8 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	public List<SimpleChoice> getChoices() {
 		return choices;
 	}
-	
+
+	@Override
 	public SimpleChoice getChoice(Identifier identifier) {
 		for(SimpleChoice choice:choices) {
 			if(choice.getIdentifier().equals(identifier)) {

@@ -27,6 +27,7 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.PreDestroy;
 
@@ -54,6 +55,8 @@ import org.springframework.stereotype.Service;
 public class PdfServiceImpl implements PdfService {
 	
 	private static final Logger log = Tracing.createLoggerFor(PdfServiceImpl.class);
+	
+	private AtomicLong lastConversion = new AtomicLong(0l);
 	
 	@Autowired
 	private PdfModule pdfModule;
@@ -89,11 +92,26 @@ public class PdfServiceImpl implements PdfService {
 	public CompletionService<PdfDocument> borrowCompletionService() {
 		return new ExecutorCompletionService<>(executor);
 	}
+	
 
 	@Override
 	public void asyncConvert(final String name, Identity identity, ControllerCreator creator, WindowControl windowControl,
 			CompletionService<PdfDocument> service) {
 		service.submit(() -> {
+			long now = System.nanoTime();
+			long last = lastConversion.getAndSet(now);
+			// little trick to prevent to convert 2 pages at exactly the same moment (which seems to cause rendering without CSS sometimes)
+			if(now - last < 1000 * 1000 * 1000) {
+				try {
+					log.debug("Wait {}", name);
+					Thread.sleep(1000);
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			}
+			
+			log.debug("Convert {}", name);
+
 			try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 				convert(identity, creator, windowControl, out);
 				return new PdfDocument(name, out.toByteArray());

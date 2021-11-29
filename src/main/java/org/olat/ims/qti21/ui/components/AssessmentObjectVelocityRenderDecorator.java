@@ -54,6 +54,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
@@ -77,6 +78,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GapMatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
@@ -893,14 +895,14 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	public String renderScoreValuePerChoice(Interaction interaction, Choice choice) {
 		if(interaction == null || choice == null || !avc.isScorePerAnswers()) return "";
 
-		Double score = getScorePerchoice(assessmentItem, interaction, choice);
+		Double score = getScorePerChoice(assessmentItem, interaction, choice);
 		return translatedScorePerAnswer( score, translator);
 	}
 	
 	protected static String renderScorePerChoice(AssessmentItem item, Interaction interaction, Choice choice, Translator translator) {
 		if(interaction == null) return "";
 		
-		Double score = getScorePerchoice(item, interaction, choice);
+		Double score = getScorePerChoice(item, interaction, choice);
 		return renderScorePerAnswer(score, translator);
 	}
 	
@@ -950,12 +952,23 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return stringVal;
 	}
 	
-	private static final Double getScorePerchoice(AssessmentItem item, Interaction interaction, Choice choice) {
+	private static final Double getScorePerChoice(AssessmentItem item, Interaction interaction, Choice choice) {
 		Double score = null;
 		if(interaction instanceof ChoiceInteraction) {
-			Map<Identifier,Double> mapping = SimpleChoiceAssessmentItemBuilder.getMapping(item, (ChoiceInteraction)interaction);
+			ChoiceInteraction choiceInteraction = (ChoiceInteraction)interaction;
+			Map<Identifier,Double> mapping = SimpleChoiceAssessmentItemBuilder.getMapping(item, choiceInteraction);
 			if(mapping != null) {
 				score = mapping.get(choice.getIdentifier());
+			} else {
+				long numOfInteractions = item.getItemBody().findInteractions().stream()
+						.filter(interact -> !(interact instanceof EndAttemptInteraction))
+						.count();
+				List<Identifier> correctResponses = CorrectResponsesUtil.getCorrectIdentifierResponses(item, choiceInteraction);
+				if(numOfInteractions == 1l
+						&& correctResponses != null && correctResponses.size() == 1
+						&& choice != null && choice.getIdentifier() != null && choice.getIdentifier().equals(correctResponses.get(0))) {
+					score = QtiNodesExtractor.extractMaxScore(item);
+				}
 			}
 		} else if(interaction instanceof HottextInteraction) {
 			Map<Identifier,Double> mapping = HottextAssessmentItemBuilder.getMapping(item, (HottextInteraction)interaction);

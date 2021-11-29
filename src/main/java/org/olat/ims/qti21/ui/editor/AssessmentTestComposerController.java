@@ -827,6 +827,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		exportContext.setDescriptionValue(testEntry.getDescription());
 		exportContext.setIdentifierValue(testEntry.getExternalRef());
 		exportContext.setTitleValue(testEntry.getDisplayname());
+		exportContext.setFilePrefix(translate("export.prefix.default"));
 		
 		Step start = new TestsExport1OptionsStep(ureq, exportContext);
 		StepRunnerCallback finish = (uureq, lwControl, runContext) -> {

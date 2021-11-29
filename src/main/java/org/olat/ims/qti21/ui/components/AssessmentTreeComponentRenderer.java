@@ -219,7 +219,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			title = StringHelper.escapeHtml(itemNode.getSectionPartTitle());
 		} else {
 			int num = component.getCandidateSessionContext().getNumber(itemNode);
-			title = translator.translate("question.title", new String[] { Integer.toString(num) });
+			title = translator.translate("question.title", Integer.toString(num));
 		}
 		if(title != null) {
 			title = title.replace("_", " ");
@@ -283,7 +283,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			} else {
 				sb.append("o_assessmentitem_attempts_nomore");				
 			}
-			String title = translator.translate("attemptsleft", new String[] { Integer.toString((maxAttempts - numOfAttempts)) });
+			String title = translator.translate("attemptsleft", Integer.toString((maxAttempts - numOfAttempts)));
 			sb.append("' title=\"").append(StringHelper.escapeHtml(title)).append("\">");
 			sb.append(numOfAttempts).append(" / ").append(Integer.toString(maxAttempts));
 		} else {
