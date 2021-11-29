@@ -19,7 +19,7 @@
 			<ul class="list-unstyled o_match_dnd_sources source-top clearfix">
 			#foreach($choice in $orderedSet1)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
-				<li class="o_match_dnd_source" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}">$r.renderFlowStatics($choice.getFlowStatics())</li>
+				<li class="o_match_dnd_source" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}" data-qti-scores="$r.renderDirectedScoreAttribute($interaction,$choice.identifier)">$r.renderFlowStatics($choice.getFlowStatics())</li>
 			#end
 			</ul>
 			<ul class="list-unstyled o_match_dnd_targets target-bottom clearfix">
@@ -45,7 +45,7 @@
 			<ul class="list-unstyled o_match_dnd_sources source-left">
 			#foreach($choice in $orderedSet1)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
-				<li class="o_match_dnd_source" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}">$r.renderFlowStatics($choice.getFlowStatics())</li>
+				<li class="o_match_dnd_source" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}" data-qti-scores="$r.renderDirectedScoreAttribute($interaction,$choice.identifier)">$r.renderFlowStatics($choice.getFlowStatics())</li>
 			#end
 			</ul>
 		#elseif($r.hasCssClass($interaction, "source-bottom"))
@@ -62,7 +62,7 @@
 			<ul class="list-unstyled o_match_dnd_sources source-bottom clearfix">
 			#foreach($choice in $orderedSet1)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
-				<li class="o_match_dnd_source" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}">$r.renderFlowStatics($choice.getFlowStatics())</li>
+				<li class="o_match_dnd_source" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}" data-qti-scores="$r.renderDirectedScoreAttribute($interaction,$choice.identifier)">$r.renderFlowStatics($choice.getFlowStatics())</li>
 			#end
 			</ul>
 		#else
@@ -70,7 +70,7 @@
 			<ul class="list-unstyled o_match_dnd_sources source-left">
 			#foreach($choice in $orderedSet1)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
-				<li class="o_match_dnd_source" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}">$r.renderFlowStatics($choice.getFlowStatics())</li>
+				<li class="o_match_dnd_source" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}" data-qti-scores="$r.renderDirectedScoreAttribute($interaction,$choice.identifier)">$r.renderFlowStatics($choice.getFlowStatics())</li>
 			#end
 			</ul>
 			<ul class="list-unstyled o_match_dnd_targets target-right">

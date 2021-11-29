@@ -1,4 +1,5 @@
 (function ($) {
+	"use strict";
 	$.fn.matchInteractionDnd = function(options) {
 		var settings = $.extend({
 			responseIdentifier : null,
@@ -25,11 +26,10 @@
 	function drawMatch($obj, settings) {
 		var containerId = $obj.attr('id');
 		var associationPairs = settings.responseValue.split(',');
-		var associationEls = jQuery('#' + containerId);
-		for (var i = 0; i < associationPairs.length; i++) {
-			var associationPair = associationPairs[i].split(' ');
-			var sourceId = associationPair[0];
-			var targetId = associationPair[1];
+		for (var i=0; i<associationPairs.length; i++) {
+			var associationArr = associationPairs[i].split(' ');
+			var sourceId = associationArr[0];
+			var targetId = associationArr[1];
 
 			var sourceEl = jQuery("#" + containerId + " .o_match_dnd_sources li[data-qti-id='" + sourceId + "']");
 			if (needToBeAvailable(sourceEl, containerId)) {
@@ -40,6 +40,18 @@
 			jQuery(sourceEl).addClass('oo-choosed');
 			jQuery(targetEl).addClass('oo-choosed');
 			jQuery(targetEl).addClass('oo-filled').append(sourceEl);
+			
+			var scores = sourceEl.attr('data-qti-scores');
+			if(scores != null && scores.length > 0) {
+				var scoreArr = scores.split(';');
+				for(var  j=0; j<scoreArr.length; j++) {
+					var targetScore = scoreArr[j];
+					if(targetScore.indexOf(targetId) == 0) {
+						var score = targetScore.split('=')[1];
+						sourceEl.append("<div style='text-align: right;' class='o_qti_score_infos'>" + score + "</div>");
+					}
+				}
+			}
 		}
 
 		recalculate(containerId, settings);
@@ -47,7 +59,7 @@
 		if (settings.unrestricted && settings.opened) {
 			addNewAssociationBoxAndEvents(containerId, settings);
 		}
-	};
+	}
 
 	function match($obj, settings) {
 		var containerId = $obj.attr('id');
@@ -56,7 +68,7 @@
 		initializeSourceEvents(sources, containerId, settings);
 		var targets = jQuery("#" + containerId + " .o_match_dnd_target");
 		initializeTargetEvents(targets, containerId, settings);
-	};
+	}
 
 	function initializeSourcePanelEvents(containerId, settings) {
 		jQuery("#" + containerId + " .o_match_dnd_sources").droppable({
@@ -85,7 +97,7 @@
 				setFlexiFormDirty(settings.formDispatchFieldId, false);
 			}
 		}).on('click', {formId : settings.formDispatchFieldId}, setFlexiFormDirtyByListener);
-	};
+	}
 
 	function initializeSourceEvents(jElements, containerId, settings) {
 		jElements.on('click', function(e, el) {
@@ -135,14 +147,14 @@
 				return choiceEl;
 			}
 		}).on('click', {formId: settings.formDispatchFieldId}, setFlexiFormDirtyByListener);
-    };
+    }
     
     function guid() {
 		function s4() {
 		    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 		}
 		return s4() + s4() + s4() + s4() + s4() + s4() + s4();
-	};
+	}
 
     function needToBeAvailable(selectedEl, containerId) {
 		var choiceEl = jQuery(selectedEl);
@@ -247,7 +259,7 @@
 				setFlexiFormDirty(settings.formDispatchFieldId, false);
 			}
 		}).on('click', {formId: settings.formDispatchFieldId}, setFlexiFormDirtyByListener);
-    };
+    }
 
 	function moveSourceToTarget(sourceEl, box, containerId) {
 		var container = box.find("ul.o_match_dnd_target_drop_zone");
@@ -256,7 +268,7 @@
 			.css({'width' : 'auto', 'left' : '0px', 'top' : '0px', 'z-index' : ''})
 			.addClass('oo-choosed').appendTo(container);
 		box.addClass('oo-filled');
-	};
+	}
 
 	function removeSourceFromTarget(selectedEl, containerId) {
 		var jSelectedEl = jQuery(selectedEl);
@@ -272,7 +284,7 @@
 		} else {
 			jSelectedEl.remove();
 		}
-	};
+	}
 
 	function recalculate(containerId, settings) {
 		settings.matchCount = 0;
@@ -296,7 +308,7 @@
 				divContainer.prepend(inputElement);
 			});
 		});
-	};
+	}
 
 	function checkMatch(settings, inputElement) {
 		withCheckbox(settings, inputElement, function(inputElement, directedPair, left, right) {

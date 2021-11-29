@@ -16,6 +16,18 @@
 		return c;
 	};
 	
+	var draw_annotation = function(context, shape, coords, annotation) {
+		context.font = "18px Arial";
+		if(shape == 'rect') {
+			// x, y, width, height
+			context.fillText(annotation, coords[0] + 5, coords[1] + 20);
+		} else if(shape == 'poly') {
+			context.fillText(annotation, coords[0], coords[1]);
+		} else if(shape == 'circ') {
+			context.fillText(annotation, coords[0] - 15, coords[1] + 3);
+		}
+	}
+	
 	var draw_shape = function(context, shape, coords, x_shift, y_shift) {
 		x_shift = x_shift || 0;
 		y_shift = y_shift || 0;
@@ -26,7 +38,7 @@
 			context.rect(coords[0] + x_shift, coords[1] + y_shift, coords[2] - coords[0], coords[3] - coords[1]);
 		} else if(shape == 'poly') {
 			context.moveTo(coords[0] + x_shift, coords[1] + y_shift);
-			for(i=2; i < coords.length; i+=2) {
+			for(var i=2; i < coords.length; i+=2) {
 				context.lineTo(coords[i] + x_shift, coords[i+1] + y_shift);
 			}
 		} else if(shape == 'circ') {
@@ -35,7 +47,7 @@
 		}
 		context.closePath();
 	}
-	add_shape_to = function(canvas, shape, coords, options, name) {
+	add_shape_to = function(canvas, shape, coords, annotation, options, name) {
 		var context = canvas.getContext('2d');
 		
 		// Because I don't want to worry about setting things back to a base state
@@ -97,6 +109,7 @@
 		context.save();
 		
 		draw_shape(context, shape, coords);
+		draw_annotation(context, shape, coords, annotation);
 		
 		// fill has to come after shadow, otherwise the shadow will be drawn over the fill,
 		// which mostly looks weird when the shadow has a high opacity
@@ -125,7 +138,7 @@
 	shape_from_area = function(area) {
 		var i, coords = area.getAttribute('coords').split(',');
 		for (i=0; i < coords.length; i++) { coords[i] = parseFloat(coords[i]); }
-		return [area.getAttribute('shape').toLowerCase().substr(0,4), coords];
+		return [area.getAttribute('shape').toLowerCase().substr(0,4), coords, area.getAttribute('data-annotation')];
 	};
 
 	options_from_area = function(area, options) {
@@ -232,7 +245,7 @@
 					!area_options.alwaysOn
 				) {
 					shape = shape_from_area(this);
-					add_shape_to(canvas, shape[0], shape[1], area_options, "highlighted");
+					add_shape_to(canvas, shape[0], shape[1], shape[2], area_options, "highlighted");
 					if(area_options.groupBy) {
 						var areas;
 						// two ways groupBy might work; attribute and selector
@@ -246,8 +259,8 @@
 							if(this != first) {
 								var subarea_options = options_from_area(this, options);
 								if(!subarea_options.neverOn && !subarea_options.alwaysOn) {
-									var shape = shape_from_area(this);
-									add_shape_to(canvas, shape[0], shape[1], subarea_options, "highlighted");
+									var shapeArr = shape_from_area(this);
+									add_shape_to(canvas, shapeArr[0], shapeArr[1], shapeArr[2], subarea_options, "highlighted");
 								}
 							}
 						});
@@ -274,7 +287,7 @@
 						}
 						area_options.fade = area_options.alwaysOnFade; // alwaysOn shouldn't fade in initially
 						shape = shape_from_area(this);
-						add_shape_to(canvas_always, shape[0], shape[1], area_options, "");
+						add_shape_to(canvas_always, shape[0], shape[1], shape[2], area_options, "");
 					}
 				});
 			});

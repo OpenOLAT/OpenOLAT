@@ -58,6 +58,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.AbstractEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
@@ -443,7 +444,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			List<Identifier> choiceOrders = itemSessionState.getShuffledInteractionChoiceOrder(interaction.getResponseIdentifier());
 			
 			choices = new ArrayList<>();
-			choiceOrders.forEach((choiceIdentifier)
+			choiceOrders.forEach(choiceIdentifier
 					-> choices.add(interaction.getSimpleChoice(choiceIdentifier)));
 		} else {
 			choices = interaction.getSimpleChoices();
@@ -882,21 +883,24 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return renderScorePerChoice(assessmentItem, interaction, choice, translator);
 	}
 	
+	/**
+	 * Return the value as (1 pt).
+	 * 
+	 * @param interaction The interaction
+	 * @param choice The choice
+	 * @return Decorated score with html tag.
+	 */
+	public String renderScoreValuePerChoice(Interaction interaction, Choice choice) {
+		if(interaction == null || choice == null || !avc.isScorePerAnswers()) return "";
+
+		Double score = getScorePerchoice(assessmentItem, interaction, choice);
+		return translatedScorePerAnswer( score, translator);
+	}
+	
 	protected static String renderScorePerChoice(AssessmentItem item, Interaction interaction, Choice choice, Translator translator) {
 		if(interaction == null) return "";
 		
-		Double score = null;
-		if(interaction instanceof ChoiceInteraction) {
-			Map<Identifier,Double> mapping = SimpleChoiceAssessmentItemBuilder.getMapping(item, (ChoiceInteraction)interaction);
-			if(mapping != null) {
-				score = mapping.get(choice.getIdentifier());
-			}
-		} else if(interaction instanceof HottextInteraction) {
-			Map<Identifier,Double> mapping = HottextAssessmentItemBuilder.getMapping(item, (HottextInteraction)interaction);
-			if(mapping != null) {
-				score = mapping.get(choice.getIdentifier());
-			}
-		}
+		Double score = getScorePerchoice(item, interaction, choice);
 		return renderScorePerAnswer(score, translator);
 	}
 	
@@ -930,13 +934,72 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		if(value == null) {
 			return "";
 		}
+		String stringVal = translatedScorePerAnswer(value, translator);
+		return "<span class='o_qti_score_infos'>" + stringVal + "</span>";
+	}
+	
+	public static String translatedScorePerAnswer(Double value, Translator translator) {
 		String stringVal;
-		if(value.doubleValue() < 1.99d) {
+		if(value == null) {
+			stringVal = "";
+		} else if(value.doubleValue() < 1.99d) {
 			stringVal = translator.translate("point.answer.singular", AssessmentHelper.getRoundedScore(value));
 		} else {
 			stringVal = translator.translate("point.answer.plural", AssessmentHelper.getRoundedScore(value));
 		}
-		return "<span class='o_qti_score_infos'>" + stringVal + "</span>";
+		return stringVal;
+	}
+	
+	private static final Double getScorePerchoice(AssessmentItem item, Interaction interaction, Choice choice) {
+		Double score = null;
+		if(interaction instanceof ChoiceInteraction) {
+			Map<Identifier,Double> mapping = SimpleChoiceAssessmentItemBuilder.getMapping(item, (ChoiceInteraction)interaction);
+			if(mapping != null) {
+				score = mapping.get(choice.getIdentifier());
+			}
+		} else if(interaction instanceof HottextInteraction) {
+			Map<Identifier,Double> mapping = HottextAssessmentItemBuilder.getMapping(item, (HottextInteraction)interaction);
+			if(mapping != null) {
+				score = mapping.get(choice.getIdentifier());
+			}
+		} else if(interaction instanceof HotspotInteraction) {
+			Map<Identifier,Double> mapping = HotspotAssessmentItemBuilder.getMapping(item, (HotspotInteraction)interaction);
+			if(mapping != null) {
+				score = mapping.get(choice.getIdentifier());
+			}
+		}
+		return score;
+	}
+	
+	public String renderDirectedScoreAttribute(Interaction interaction, Identifier source) {
+		if(interaction == null || source == null || !avc.isScorePerAnswers()) return "";
+		
+		StringBuilder sb = new StringBuilder();
+		
+		if(interaction instanceof MatchInteraction) {
+			ResponseDeclaration responseDeclaration = assessmentItem
+					.getResponseDeclaration(interaction.getResponseIdentifier());
+			if(responseDeclaration != null) {
+				Mapping mapping = responseDeclaration.getMapping();
+				
+				if(mapping != null) {
+					for(MapEntry entry:mapping.getMapEntries()) {
+						SingleValue sValue = entry.getMapKey();
+						if(sValue instanceof DirectedPairValue) {
+							Identifier sourceIdentifier = ((DirectedPairValue)sValue).sourceValue();
+							if(source.equals(sourceIdentifier)) {
+								Identifier destIdentifier = ((DirectedPairValue)sValue).destValue();
+								String val = translatedScorePerAnswer(entry.getMappedValue(), translator);
+								sb.append(destIdentifier.toString()).append("=").append(val).append(";");
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return sb.toString();
+		
 	}
 	
 	public String placeholder(Interaction interaction) {

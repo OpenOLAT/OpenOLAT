@@ -8,7 +8,7 @@
 * http://mattstow.com
 * Licensed under the MIT license
 */
-;(function($) {
+(function($) {
 	"use strict";
 	$.fn.rwdImageMaps = function(options) {
 		var settings = $.extend({

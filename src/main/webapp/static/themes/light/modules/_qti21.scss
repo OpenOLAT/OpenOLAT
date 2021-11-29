@@ -1517,6 +1517,11 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	font-style: italic;
 }
 
+.o_match_dnd_source .o_qti_score_infos {
+	text-align: right;
+	margin-bottom: -10px;
+} 
+
 .o_offline_test_additional_sheet,
 .o_offline_test.o_assessment_test_results {
 	page-break-before: always;
