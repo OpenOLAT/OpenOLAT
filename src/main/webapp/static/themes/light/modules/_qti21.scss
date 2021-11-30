@@ -525,11 +525,71 @@ body>li.o_assessmentitem_order_item  {
 		padding: $padding-small-vertical $padding-small-horizontal;
 		line-height: 1.5em;
 		position: relative;
+		@include clearfix();
+		
 		
 		.o_qti_item_max_score {
-			position: absolute;
-			left: 49%;
+			display: inline-block;
+			padding: 0.2em 0.4em;
+			margin-left: 10px;
+			border-radius: 0.3em;
+			border: 1px solid $o-qti-item-title-border-color;
+			font-size: 0.8em;
+			line-height: 1.2em;
+			color: $text-color;		
+			background: #fff;	
+			
 		}
+		.o_qti_item_meta {
+			float: right;		
+			display: flex;
+			margin: 0 0 5px 10px;
+			
+			.o_assessmentitem_status {
+				margin-left: 0;
+			}			
+			.o_qti_item_max_score {
+				order: 1;			
+				z-index: 2;
+			}
+			.o_assessmentitem_status {
+				order: 2;
+			}	
+			.o_assessmentitem_status + .o_qti_item_max_score {
+				/* visually make split-button view */
+				margin-right: -3px;
+				border-right: 0;
+				border-top-right-radius: 0;
+				border-bottom-right-radius: 0;
+			}
+		}
+		
+		@media (max-width: $screen-xs-max) { 		
+			/* on mobile the score is displayed below the status */
+			.o_qti_item_meta {
+				flex-direction: column;
+				
+				.o_qti_item_max_score, .o_assessmentitem_status {
+					float: none;
+					margin: 0;				
+					text-align: center;
+				}
+				.o_qti_item_max_score {
+					order: 2;			
+				}
+				.o_assessmentitem_status {
+					order: 1;
+				}	
+				.o_assessmentitem_status + .o_qti_item_max_score {
+					margin-top: -3px;
+					border-top: 0;
+					border-bottom-right-radius: 0.3em;
+					border-top-left-radius: 0;
+				}
+			}
+		}
+		
+		
 	}
 	.o_qti_item_body {
 		min-height: $o-qti-item-min-height;
@@ -601,12 +661,11 @@ body>li.o_assessmentitem_order_item  {
 	}	
 	
 	.o_assessmentitem_status {
-		float: right;
-		display: block;
-		padding: 0.3em;
-		margin-left: 1em;
+		display: inline-block;
+		padding: 0.2em 0.4em;
+		margin-left: 10px;
 		border-radius: 0.3em;
-		border-width: 1px;
+		border: 1px solid transparent;
 		font-size: 0.8em;
 		line-height: 1.2em;
 		color: #fff;

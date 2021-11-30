@@ -418,8 +418,10 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<div class='o_assessmentitem_wrapper'>");
 		//title + status
 		sb.append("<h4 class='itemTitle'>");
+		sb.append("<span class='o_qti_item_meta'>");
 		renderItemStatus(sb, itemSessionState, options, translator);
 		renderMaxScoreItem(sb, component, itemSessionState, translator);
+		sb.append("</span>");
 		String title;
 		if(component.isShowTitles()) {
 			title = StringHelper.escapeHtml(itemNode.getSectionPartTitle());
