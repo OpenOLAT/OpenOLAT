@@ -20,12 +20,18 @@
 package org.olat.ims.qti21.ui.editor.testsexport;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -65,6 +71,9 @@ import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 public class QTI21OfflineTestsPDFMediaResource implements MediaResource {
 	
 	private static final Logger log = Tracing.createLoggerFor(QTI21OfflineTestsPDFMediaResource.class);
+	
+	private static final AtomicLong counter = new AtomicLong(0l);
+	private final AtomicLong lastConversion = new AtomicLong(0l);
 	
 	private final String label;
 	private final Identity identity;
@@ -136,12 +145,23 @@ public class QTI21OfflineTestsPDFMediaResource implements MediaResource {
 		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(file));			
 		hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(label));
 
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		try(OutputStream out = hres.getOutputStream()) {
+			convert(executor, out);
+		} catch(Exception e) {
+			log.error("", e);
+		} finally {
+			executor.shutdownNow();
+		}
+	}
+	
+	private final void convert(ExecutorService executor, OutputStream out) {
 		final File fUnzippedDirRoot = exportContext.getUnzippedDirRoot();
 		final URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 		final Mapper mapper = new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, (File)null);
 		
 		final int numOfTests = exportContext.getNumOfTests();
-		CompletionService<PdfDocument> completion = pdfService.borrowCompletionService();
+		ExecutorCompletionService<PdfDocument> completion = new ExecutorCompletionService<>(executor);
 		for(int i=1; i<=numOfTests; i++) {
 			try {
 				TestSessionController testSessionController = exportContext.createTestSessionState();
@@ -149,19 +169,18 @@ public class QTI21OfflineTestsPDFMediaResource implements MediaResource {
 				String testName = "tests/" + serialNumber + ".pdf";
 
 				OfflineContentCreator test = new OfflineContentCreator(mapper, fUnzippedDirRoot, testSessionController, serialNumber, false);
-				pdfService.asyncConvert(testName, identity, test, windowControl, completion);
-				
+				asyncConvert(testName, test, completion);
+
 				String solutionName = "solutions/" + serialNumber + "_solutions.pdf";
 				OfflineContentCreator solution = new OfflineContentCreator(mapper, fUnzippedDirRoot, testSessionController, serialNumber, true);
-				pdfService.asyncConvert(solutionName, identity, solution, windowControl, completion);
+				asyncConvert(solutionName, solution, completion);
 			} catch(Exception e) {
 				log.error("Cannot show results", e);
 			}
 		}
 		
 		int count = (2 * numOfTests);
-		try(OutputStream out = hres.getOutputStream();
-				ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
+		try(ZipOutputStream zout = new ZipOutputStream(out)) {
 			while (count>0) {
 				Future<PdfDocument> resultFuture = completion.take();
 				count--;
@@ -174,19 +193,35 @@ public class QTI21OfflineTestsPDFMediaResource implements MediaResource {
 			}
 		} catch(Exception e) {
 			log.error("", e);
-		} finally {
-			exhaustCompletion(count, completion);
 		}
 	}
+
 	
-	private void exhaustCompletion(int count, CompletionService<PdfDocument> completion) {
-		for (; count-->0; ) {
-			try {
-				completion.take();
-			} catch (Exception e) {
-				log.error("", e);
+	private final void asyncConvert(final String name, ControllerCreator creator, CompletionService<PdfDocument> service) {
+		service.submit(() -> {
+			log.debug("Convert {}", name);
+			
+			long now = System.nanoTime();
+			long last = lastConversion.getAndSet(now);
+			// little trick to prevent to convert 2 pages at exactly the same moment (which seems to cause rendering without CSS sometimes)
+			if(now - last < 1000 * 1000 * 1000) {
+				try {
+					log.debug("Wait {}", name);
+					Thread.sleep(1000);
+				} catch (Exception e) {
+					log.error("", e);
+				}
 			}
-		}
+
+			try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+				log.debug("Convert: {}", name);
+				pdfService.convert(identity, creator, windowControl, out);
+				return new PdfDocument(name, out.toByteArray());
+			} catch(IOException e) {
+				log.error("", e);
+				return null;
+			}
+		});
 	}
 	
 	private class OfflineContentCreator implements ControllerCreator {
@@ -210,7 +245,7 @@ public class QTI21OfflineTestsPDFMediaResource implements MediaResource {
 		@Override
 		public Controller createController(UserRequest ureq, WindowControl wControl) {
 			UserSession usess = ureq.getUserSession();
-			MapperKey mapperBaseKey = mapperService.register(usess, "QTI21DetailsResources::", mapper, 3000);
+			MapperKey mapperBaseKey = mapperService.register(usess, "QTI21DetailsResources::" + counter.incrementAndGet(), mapper, 3000);
 			String mapperUriForPdf = mapperBaseKey.getUrl();
 			ureq = new SyntheticUserRequest(ureq.getIdentity(), exportContext.getLocale(), ureq.getUserSession());
 			return new QTI21OfflineTestsPDFController(ureq, wControl, fUnzippedDirRoot, mapperUriForPdf,
