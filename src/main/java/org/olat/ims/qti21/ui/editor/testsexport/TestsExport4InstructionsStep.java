@@ -53,7 +53,7 @@ public class TestsExport4InstructionsStep extends BasicStep {
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, true, true);
+		return new PrevNextFinishConfig(true, true, false);
 	}
 
 	@Override
