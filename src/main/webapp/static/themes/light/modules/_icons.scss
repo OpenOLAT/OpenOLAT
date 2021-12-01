@@ -38,7 +38,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_align_middle:before { content: $fa-var-align-center; }
 .o_icon_align_right:before { content: $fa-var-align-right; }
 .o_icon_archive_tool:before { content: $fa-var-download;}
-.o_icon_assessment_mode:before { content: $fa-var-pencil-square-o;}
+.o_icon_assessment_mode{
+	position: relative; /* special case: combined icon */ 
+	&:before { content: $fa-var-laptop;}
+	&:after { content: $fa-var-pencil; position: absolute; top: -15%; right: 0; font-size: 80%;}
+}
 .o_icon_assessment_tool:before { content: $fa-var-trophy;}
 .o_icon_assignment:before { content: $fa-var-bolt; color: $o-portfolio-assignment-color;}
 .o_icon_attempt_limit:before { content: $fa-var-refresh; }
@@ -473,8 +477,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_pf_icon:before { content: $fa-var-inbox; }
 .o_blog_icon:before { content: $fa-var-bullhorn; }
 .o_ep_icon:before { content: $fa-var-briefcase; }
-.o_iqtest_icon:before { content: $fa-var-pencil-square-o; }
-.o_iqself_icon:before { content: $fa-var-pencil-square-o; }
+.o_iqtest_icon:before { content: $fa-var-pencil-square; }
+.o_iqself_icon:before { content: $fa-var-pencil-square; }
 .o_iqsurv_icon:before { content: $fa-var-meh-o; }
 .o_survey_icon:before { content: $fa-var-sliders; }
 .o_qtiassessment_icon:before { content: $fa-var-pencil-square; }
