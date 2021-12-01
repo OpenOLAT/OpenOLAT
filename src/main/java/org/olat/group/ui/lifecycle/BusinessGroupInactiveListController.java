@@ -79,6 +79,9 @@ public class BusinessGroupInactiveListController extends AbstractBusinessGroupLi
 	@Override
 	protected void initStatusColumnModel(FlexiTableColumnModel columnsModel) {
 		super.initStatusColumnModel(columnsModel);
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.inactivationDate, new DateFlexiCellRenderer(getLocale())));
+		
 		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedSoftDeleteDate, new DateFlexiCellRenderer(getLocale()));
 		plannedCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(plannedCol);
@@ -132,6 +135,9 @@ public class BusinessGroupInactiveListController extends AbstractBusinessGroupLi
 		boolean actionVisible = (tab == toSoftDeleteTab);
 		actionColumn.setAlwaysVisible(actionVisible);
 		tableEl.setColumnModelVisible(actionColumn, actionVisible);
+		if(startSoftDeleteButton != null) {
+			startSoftDeleteButton.setVisible(tab != responseDelayTab);
+		}
 	}
 	
 	@Override
@@ -142,12 +148,14 @@ public class BusinessGroupInactiveListController extends AbstractBusinessGroupLi
 		if(withMail && !groupModule.isAutomaticGroupSoftDeleteEnabled()) {
 			startSoftDeleteButton = uifactory.addFormLink("table.start.soft.delete", TABLE_ACTION_START_SOFT_DELETE, "table.start.soft.delete", null, formLayout, Link.BUTTON);
 			tableEl.addBatchButton(startSoftDeleteButton);
-		
-			reactivateButton = uifactory.addFormLink("table.reactivate", TABLE_ACTION_REACTIVATE, "table.reactivate", null, formLayout, Link.BUTTON);
-			tableEl.addBatchButton(reactivateButton);
 		}
 		
 		softDeleteButton = uifactory.addFormLink("table.soft.delete", TABLE_ACTION_SOFT_DELETE, "table.soft.delete", null, formLayout, Link.BUTTON);
 		tableEl.addBatchButton(softDeleteButton);
+		
+		if(withMail && !groupModule.isAutomaticGroupSoftDeleteEnabled()) {
+			reactivateButton = uifactory.addFormLink("table.reactivate", TABLE_ACTION_REACTIVATE, "table.reactivate", null, formLayout, Link.BUTTON);
+			tableEl.addBatchButton(reactivateButton);
+		}
 	}
 }

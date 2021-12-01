@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupStatusController extends FormBasicController {
 	
-	private FormLink undeleteButton;
+	private FormLink restoreButton;
 	private FormLink softDeleteButton;
 	private FormLink reactivateButton;
 	private FormLink inactivateButton;
@@ -68,6 +68,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 	private BusinessGroup businessGroup;
 
 	private CloseableModalController cmc;
+	private ConfirmRestoreController confirmRestoreCtrl;
 	private ConfirmBusinessGroupChangeStatusController confirmChangeStatusCtlr;
 	private ConfirmBusinessGroupStartChangeStatusController confirmStartChangeStatusCtlr;
 	private ConfirmBusinessGroupDefinitivelyDeleteController confirmDefinitivelyDeleteCtrl;
@@ -164,7 +165,9 @@ public class BusinessGroupStatusController extends FormBasicController {
 		String inactivation = formatter.formatDate(inactivationDate);
 		long days = DateUtils.countDays(ureq.getRequestTimestamp(), inactivationDate);
 		String inactivationI18n;
-		if(days == 0 || days == 1) {
+		if(days == 0) {
+			inactivationI18n = "status.inactivation.at.today";
+		} else if(days == 1) {
 			inactivationI18n = "status.inactivation.at.singular";
 		} else if(days > 1) {
 			inactivationI18n = "status.inactivation.at";
@@ -173,7 +176,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		} else {
 			inactivationI18n = "status.inactivation.overdue";
 		}
-		uifactory.addStaticTextElement("status.inactivation", translate(inactivationI18n, new String[] { inactivation, Long.toString(Math.abs(days)) }), formLayout);
+		uifactory.addStaticTextElement("status.inactivation", translate(inactivationI18n, inactivation, Long.toString(Math.abs(days))), formLayout);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -229,7 +232,9 @@ public class BusinessGroupStatusController extends FormBasicController {
 			long numOfDaysBeforeDelete = DateUtils.countDays(ureq.getRequestTimestamp(), planedDate);
 			String[] args = new String[] { formatter.formatDate(planedDate), Long.toString(Math.abs(numOfDaysBeforeDelete)) };
 			String plan;
-			if(numOfDaysBeforeDelete == 0 || numOfDaysBeforeDelete == 1) {
+			if(numOfDaysBeforeDelete == 0) {
+				plan = translate("status.soft.delete.planned.days.of.today", args);
+			} else if(numOfDaysBeforeDelete == 1) {
 				plan = translate("status.soft.delete.planned.days.of.singular", args);
 			} else if(numOfDaysBeforeDelete > 1) {
 				plan = translate("status.soft.delete.planned.days.of", args);
@@ -294,7 +299,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		formLayout.add(buttonsCont);
 		definitivelyDeleteButton = uifactory.addFormLink("delete.group", buttonsCont, Link.BUTTON);
 		definitivelyDeleteButton.setCustomEnabledLinkCSS("btn btn-default btn-danger");
-		undeleteButton = uifactory.addFormLink("undelete.group", buttonsCont, Link.BUTTON);
+		restoreButton = uifactory.addFormLink("restore", buttonsCont, Link.BUTTON);
 	}
 	
 	private String buildMode(boolean auto, Boolean days) {
@@ -310,7 +315,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(confirmChangeStatusCtlr == source || confirmStartChangeStatusCtlr == source) {
+		if(confirmChangeStatusCtlr == source || confirmStartChangeStatusCtlr == source || confirmRestoreCtrl == source) {
 			cmc.deactivate();
 			if(event == Event.DONE_EVENT) {
 				businessGroup = businessGroupService.loadBusinessGroup(businessGroup);
@@ -345,8 +350,10 @@ public class BusinessGroupStatusController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(inactivateButton == source) {
 			doConfirmChangeStatus(ureq, BusinessGroupStatusEnum.inactive);
-		} else if(reactivateButton == source || undeleteButton == source) {
+		} else if(reactivateButton == source) {
 			doReactivate(ureq);
+		} else if(restoreButton == source) {
+			doConfirmRestore(ureq);
 		} else if(softDeleteButton == source) {
 			doConfirmChangeStatus(ureq, BusinessGroupStatusEnum.trash);
 		} else if(definitivelyDeleteButton == source) {
@@ -375,7 +382,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		} else {
 			key = "dialog.modal.bg.inactivate.title.singular";
 		}
-		String title = translate(key, new String[] { businessGroup.getName(), "1" });
+		String title = translate(key, businessGroup.getName(), "1");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeStatusCtlr.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
@@ -392,7 +399,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		} else {
 			key = "dialog.modal.bg.inactivate.title.singular";
 		}
-		String title = translate(key, new String[] { businessGroup.getName(), "1" });
+		String title = translate(key, businessGroup.getName(), "1" );
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmStartChangeStatusCtlr.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
@@ -410,8 +417,19 @@ public class BusinessGroupStatusController extends FormBasicController {
 		listenTo(confirmDefinitivelyDeleteCtrl);
 
 		String key = "dialog.modal.bg.delete.title";	
-		String title = translate(key, new String[] { businessGroup.getName(), "1" });
+		String title = translate(key, businessGroup.getName(), "1");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDefinitivelyDeleteCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doConfirmRestore(UserRequest ureq) {
+		confirmRestoreCtrl = new ConfirmRestoreController(ureq, getWindowControl(), List.of(businessGroup));
+		listenTo(confirmRestoreCtrl);
+
+		String key = "dialog.modal.bg.restore.title";	
+		String title = translate(key, businessGroup.getName(), "1");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRestoreCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

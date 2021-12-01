@@ -17,29 +17,26 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.pdf;
+package org.olat.core.gui.components.link;
+
+import org.olat.core.gui.components.form.flexible.FormItem;
 
 /**
  * 
- * Initial date: 16 nov. 2021<br>
+ * Initial date: 1 déc. 2021<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PdfDocument {
+public interface ExternalLinkItem extends FormItem {
 	
-	private final String name;
-	private final byte[] content;
-	
-	public PdfDocument(String name, byte[] content) {
-		this.name = name;
-		this.content = content;
-	}
-	
-	public String getName() {
-		return name;
-	}
+	public void setName(String name);
 
-	public byte[] getContent() {
-		return content;
-	}
+	public String getUrl();
+
+	public void setUrl(String url);
+
+	public String getTarget();
+
+	public void setTarget(String target);
+
 }

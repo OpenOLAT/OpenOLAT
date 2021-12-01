@@ -21,9 +21,8 @@ package org.olat.group.ui.lifecycle;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroupModule;
@@ -37,9 +36,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupAdminProcessController extends FormBasicController {
 	
-	private FormLink inactiveStepLink;
-	private FormLink softDeleteStepLink;
-	private FormLink definitiveDeleteStepLink;
+	private ExternalLinkItem inactiveStepLink;
+	private ExternalLinkItem softDeleteStepLink;
+	private ExternalLinkItem definitiveDeleteStepLink;
 	
 	@Autowired
 	private BusinessGroupModule businessGroupModule;
@@ -53,12 +52,12 @@ public class BusinessGroupAdminProcessController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		inactiveStepLink = uifactory.addFormLink("inactive.step", "inactive.step", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		inactiveStepLink.setElementCssClass("btn-arrow-right");
-		softDeleteStepLink = uifactory.addFormLink("soft.step", "inactive.step", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		softDeleteStepLink.setElementCssClass("btn-arrow-right");
-		definitiveDeleteStepLink = uifactory.addFormLink("definitive.step", "inactive.step", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
-		definitiveDeleteStepLink.setElementCssClass("btn-arrow-right");
+		inactiveStepLink = uifactory.addExternalLink("inactive.step", "javascript:o_scrollToElement('#inactive');", "_self", formLayout);
+		inactiveStepLink.setElementCssClass("btn btn-default btn-arrow-right");
+		softDeleteStepLink = uifactory.addExternalLink("soft.step", "javascript:o_scrollToElement('#soft');", "_self", formLayout);
+		softDeleteStepLink.setElementCssClass("btn btn-default btn-arrow-right");
+		definitiveDeleteStepLink = uifactory.addExternalLink("definitive.step", "javascript:o_scrollToElement('#delete');", "_self", formLayout);
+		definitiveDeleteStepLink.setElementCssClass("btn btn-default btn-arrow-right");
 	}
 
 	protected void updateUI() {
@@ -76,11 +75,11 @@ public class BusinessGroupAdminProcessController extends FormBasicController {
 		if(daysBeforeEmail <= 0) {
 			mail = translate("process.without.email");
 		} else {
-			mail = translate("process.with.email", new String[] {Integer.toString(daysBeforeEmail) });
+			mail = translate("process.with.email", Integer.toString(daysBeforeEmail));
 		}
 		
 		String days = translate("process.inactive.days",
-				new String[] { Integer.toString(businessGroupModule.getNumberOfInactiveDayBeforeDeactivation()) });
+				Integer.toString(businessGroupModule.getNumberOfInactiveDayBeforeDeactivation()));
 
 		updateStep(inactiveStepLink, translate("process.inactive.title"), mode, mail, days);
 	}
@@ -94,10 +93,10 @@ public class BusinessGroupAdminProcessController extends FormBasicController {
 		if(dayBeforeEmail <= 0) {
 			mail = translate("process.without.email");
 		} else {
-			mail = translate("process.with.email", new String[] {Integer.toString(dayBeforeEmail) });
+			mail = translate("process.with.email", Integer.toString(dayBeforeEmail));
 		}
 		String days = translate("process.soft.delete.days",
-				new String[] { Integer.toString(businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete()) });
+				Integer.toString(businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete()));
 		
 		updateStep(softDeleteStepLink, translate("process.soft.delete.title"), mode, mail, days);
 	}
@@ -108,23 +107,20 @@ public class BusinessGroupAdminProcessController extends FormBasicController {
 		String mode = automaticEnabled ? translate("process.auto") : translate("process.manual");
 		String mail = translate("process.without.email");
 		String days = translate("process.definitive.delete.days",
-				new String[] { Integer.toString(businessGroupModule.getNumberOfSoftDeleteDayBeforeDefinitivelyDelete()) });
+				Integer.toString(businessGroupModule.getNumberOfSoftDeleteDayBeforeDefinitivelyDelete()));
 		
 		updateStep(definitiveDeleteStepLink, translate("process.definitive.delete.title"), mode, mail, days);
 	}
 	
-	private void updateStep(FormLink link, String title, String mode, String mail, String days) {
+	private void updateStep(ExternalLinkItem link, String title, String mode, String mail, String days) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<strong>").append(title).append("</strong><br>")
 		  .append(mode).append(" - ").append(mail).append("<br>").append(days);
-		link.getComponent().setCustomDisplayText(sb.toString());
+		link.setName(sb.toString());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
-	
-
 }

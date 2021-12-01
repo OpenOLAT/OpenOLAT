@@ -88,9 +88,12 @@ public class OverviewBusinessGroupLifecycleController extends BasicController im
 		if(daysBeforeEmail <= 0) {
 			mail = translate("process.without.email");
 		} else {
-			mail = translate("process.with.email", new String[] {Integer.toString(daysBeforeEmail) });
+			mail = translate("process.with.email", Integer.toString(daysBeforeEmail));
 		}
-		updateStep(activeLink, translate("search.process.active.title"), translate("search.process.active.sub.title"), mode, mail);
+		
+		String days = translate("search.process.active.sub.title",
+				Integer.toString(businessGroupModule.getNumberOfInactiveDayBeforeDeactivation()));
+		updateStep(activeLink, translate("search.process.active.title"), mode, mail, days);
 	}
 	
 	private void initInactiveStep() {
@@ -102,9 +105,12 @@ public class OverviewBusinessGroupLifecycleController extends BasicController im
 		if(dayBeforeEmail <= 0) {
 			mail = translate("process.without.email");
 		} else {
-			mail = translate("process.with.email", new String[] {Integer.toString(dayBeforeEmail) });
+			mail = translate("process.with.email", Integer.toString(dayBeforeEmail));
 		}
-		updateStep(inactiveLink, translate("search.process.inactive.title"), translate("search.process.inactive.sub.title"), mode, mail);
+		
+		String days = translate("search.process.inactive.sub.title",
+				Integer.toString(businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete()));
+		updateStep(inactiveLink, translate("search.process.inactive.title"), mode, mail, days);
 	}
 	
 	private void initDeleteStep() {
@@ -112,14 +118,18 @@ public class OverviewBusinessGroupLifecycleController extends BasicController im
 		
 		String mode = automaticEnabled ? translate("process.auto") : translate("process.manual");
 		String mail = translate("process.without.email");
-		updateStep(deletedLink, translate("search.process.delete.title"), translate("search.process.delete.sub.title"), mode, mail);
+
+		String days = translate("search.process.delete.sub.title",
+				Integer.toString(businessGroupModule.getNumberOfSoftDeleteDayBeforeDefinitivelyDelete()));
+		updateStep(deletedLink, translate("search.process.delete.title"), mode, mail, days);
 	}
 	
-	private void updateStep(Link link, String title, String subTitle, String mode, String mail) {
+	private void updateStep(Link link, String title, String mode, String mail, String process) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("<strong>").append(title).append("</strong>")
-		  .append("<br>").append(subTitle)
-		  .append("<br>").append(mode).append(" - ").append(mail);
+		sb.append("<strong>").append(title).append("</strong>").append("<br>")
+		  .append(mode).append(" - ").append(mail)
+		  .append("<br>").append(process);
+		  
 		link.setCustomDisplayText(sb.toString());
 	}
 
@@ -175,7 +185,7 @@ public class OverviewBusinessGroupLifecycleController extends BasicController im
 		if(activeListCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Active", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			activeListCtrl = new BusinessGroupActiveListController(ureq, bwControl, "active-admin-v1");
+			activeListCtrl = new BusinessGroupActiveListController(ureq, bwControl, "active-admin-v2");
 			listenTo(activeListCtrl);
 		}
 		
@@ -188,7 +198,7 @@ public class OverviewBusinessGroupLifecycleController extends BasicController im
 		if(inactiveListCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Inactive", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			inactiveListCtrl = new BusinessGroupInactiveListController(ureq, bwControl, "inactive-admin-v1");
+			inactiveListCtrl = new BusinessGroupInactiveListController(ureq, bwControl, "inactive-admin-v2");
 			listenTo(inactiveListCtrl);
 		}
 		
@@ -201,7 +211,7 @@ public class OverviewBusinessGroupLifecycleController extends BasicController im
 		if(softDeleteCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Deleted", 0l);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			softDeleteCtrl = new BusinessGroupSoftDeleteListController(ureq, bwControl, "soft-delete-admin-v1");
+			softDeleteCtrl = new BusinessGroupSoftDeleteListController(ureq, bwControl, "soft-delete-admin-v2");
 			listenTo(softDeleteCtrl);
 		}
 		

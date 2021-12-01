@@ -84,9 +84,9 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 			String names = BGMailHelper.joinNames(businessGroups);
 			String msg;
 			if(businessGroups.size() == 1) {
-				msg = translate("dialog.modal.bg.definitively.delete.text.singular", new String[] { names });
+				msg = translate("dialog.modal.bg.definitively.delete.text.singular", names);
 			} else {
-				msg = translate("dialog.modal.bg.definitively.delete.text.plural", new String[] { names });
+				msg = translate("dialog.modal.bg.definitively.delete.text.plural", names);
 			}		
 			((FormLayoutContainer)formLayout).contextPut("msg", msg);
 		}

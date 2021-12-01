@@ -78,6 +78,9 @@ public class BusinessGroupSoftDeleteListController extends AbstractBusinessGroup
 	@Override
 	protected void initStatusColumnModel(FlexiTableColumnModel columnsModel) {
 		super.initStatusColumnModel(columnsModel);
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.softDeleteDate, new DateFlexiCellRenderer(getLocale())));
+		
 		DefaultFlexiColumnModel plannedCol = new DefaultFlexiColumnModel(Cols.plannedDeletionDate, new DateFlexiCellRenderer(getLocale()));
 		plannedCol.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(plannedCol);
@@ -127,8 +130,5 @@ public class BusinessGroupSoftDeleteListController extends AbstractBusinessGroup
 		
 		restoreButton = uifactory.addFormLink("table.restore", TABLE_ACTION_DEFINITIVELY_DELETE, "table.restore", null, formLayout, Link.BUTTON);
 		tableEl.addBatchButton(restoreButton);
-
-		inactivateButton = uifactory.addFormLink("table.inactivate", TABLE_ACTION_REACTIVATE, "table.inactivate", null, formLayout, Link.BUTTON);
-		tableEl.addBatchButton(inactivateButton);
 	}
 }

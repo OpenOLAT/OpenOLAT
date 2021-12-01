@@ -74,7 +74,7 @@ public class BGMailHelper {
 	public static MailTemplate createAddParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.added.subject";
 		String bodyKey = "notification.mail.added.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey, false);
+		return createMailTemplate(group, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class BGMailHelper {
 	public static MailTemplate createRemoveParticipantMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.removed.subject";
 		String bodyKey = "notification.mail.removed.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey, false);
+		return createMailTemplate(group, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class BGMailHelper {
 	public static MailTemplate createAddMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.added.self.subject";
 		String bodyKey = "notification.mail.added.self.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey, false);
+		return createMailTemplate(group, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class BGMailHelper {
 	public static MailTemplate createRemoveMyselfMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.removed.self.subject";
 		String bodyKey = "notification.mail.removed.self.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey, false);
+		return createMailTemplate(group, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class BGMailHelper {
 	public static MailTemplate createAddWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.added.subject";
 		String bodyKey = "notification.mail.waitingList.added.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey, false);
+		return createMailTemplate(group, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -149,7 +149,7 @@ public class BGMailHelper {
 	public static MailTemplate createRemoveWaitinglistMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.removed.subject";
 		String bodyKey = "notification.mail.waitingList.removed.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey, false);
+		return createMailTemplate(group, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -165,7 +165,7 @@ public class BGMailHelper {
 	public static MailTemplate createWaitinglistTransferMailTemplate(BusinessGroupShort group, Identity actor) {
 		String subjectKey = "notification.mail.waitingList.transfer.subject";
 		String bodyKey = "notification.mail.waitingList.transfer.body";
-		return createMailTemplate(group, actor, subjectKey, bodyKey, false);
+		return createMailTemplate(group, actor, subjectKey, bodyKey);
 	}
 
 	/**
@@ -177,34 +177,47 @@ public class BGMailHelper {
 	 * @param bodyKey
 	 * @return
 	 */
-	public static MailTemplate createMailTemplate(BusinessGroupShort group, Identity actor, String subjectKey, String bodyKey, boolean isCopy) {
+	public static MailTemplate createMailTemplate(BusinessGroupShort group, Identity recipient, String subjectKey, String bodyKey) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
-		String[] bodyArgs = null;
 		String lang = null;
-		if (actor != null) {
-			lang = actor.getUser().getPreferences().getLanguage();
+		if (recipient != null) {
+			lang = recipient.getUser().getPreferences().getLanguage();
 		}
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
-		if (actor != null) {
-			bodyArgs = new String[] {
-					actor.getUser().getProperty(UserConstants.FIRSTNAME, null),
-					actor.getUser().getProperty(UserConstants.LASTNAME, null),
-					UserManager.getInstance().getUserDisplayEmail(actor, locale),
-					UserManager.getInstance().getUserDisplayEmail(actor, locale),// 2x for compatibility with old i18m properties
-			};
-		}
-		
-		return createMailTemplate(group, bodyArgs, subjectKey, bodyKey, locale, isCopy);
+		String[] bodyArgs = getBodyArgs(recipient, locale);
+		return createMailTemplate(group, null, bodyArgs, subjectKey, bodyKey, locale);
 	}
 
-	public static MailTemplate createMailTemplate(BusinessGroupShort group, String recepient, String subjectKey, String bodyKey, Locale locale, boolean isCopy) {
-		String[] bodyArgs = new String[] {
-				"",
-				"",
-				recepient,
-				recepient
+	public static MailTemplate createCopyMailTemplate(BusinessGroupShort group, Identity recipient, String subjectKey, String bodyKey, Locale locale) {
+
+		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
+				Util.createPackageTranslator(BusinessGroupListController.class, locale));
+		
+		String[] bodyArgs = getBodyArgs(recipient, locale);
+		MailTemplate template = createMailTemplate(group, recipient, bodyArgs, subjectKey, bodyKey, locale);
+
+		String[] args = new String[] {
+			group.getName(),
+			(recipient == null ? "" : recipient.getUser().getProperty(UserConstants.FIRSTNAME, null)),
+			(recipient == null ? "" : recipient.getUser().getProperty(UserConstants.LASTNAME, null))
 		};
-		return createMailTemplate(group, bodyArgs, subjectKey, bodyKey, locale, isCopy);
+
+		String copy = trans.translate("notification.mail.copy.addition", args);
+		template.setBodyTemplate(copy + template.getBodyTemplate());
+		return template;
+	}
+	
+	private static String[] getBodyArgs(Identity recipient, Locale locale) {
+		String[] bodyArgs = null;
+		if (recipient != null) {
+			bodyArgs = new String[] {
+					recipient.getUser().getProperty(UserConstants.FIRSTNAME, null),
+					recipient.getUser().getProperty(UserConstants.LASTNAME, null),
+					UserManager.getInstance().getUserDisplayEmail(recipient, locale),
+					UserManager.getInstance().getUserDisplayEmail(recipient, locale),// 2x for compatibility with old i18m properties
+			};
+		}
+		return bodyArgs;
 	}
 	
 	public static String joinNames(Collection<BusinessGroup> groups) {
@@ -216,7 +229,8 @@ public class BGMailHelper {
 		return names.toString();
 	}
 	
-	private static MailTemplate createMailTemplate(BusinessGroupShort group, String[] args, String subjectKey, String bodyKey, Locale locale, boolean isCopy) {
+	private static MailTemplate createMailTemplate(BusinessGroupShort group, Identity overrideIdentity, String[] args,
+			String subjectKey, String bodyKey, Locale locale) {
 	
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
 				Util.createPackageTranslator(BusinessGroupListController.class, locale));
@@ -235,18 +249,15 @@ public class BGMailHelper {
 			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
 				body = body.replace("$courselist", infos.getCourseList());
 			} else {
-				body = body.replace("$courselist", trans.translate("notification.mail.no.ressource", null));
+				body = body.replace("$courselist", trans.translate("notification.mail.no.ressource"));
 			}
 			
-			if(isCopy) {
-				String copy = trans.translate("notification.mail.copy.addition", new String[] { group.getName() });
-				body = copy + body;
-			}
+			
 		} else {
 			infos = new BGMailTemplateInfos("", "", "", "");
 		}
 		
-		return new BGMailTemplate(subject, body, infos, trans);
+		return new BGMailTemplate(subject, body, overrideIdentity, infos, trans);
 	}
 	
 	public static BGMailTemplateInfos getTemplateInfos(BusinessGroupShort group, List<RepositoryEntryShort> repoEntries) {
@@ -333,11 +344,21 @@ public class BGMailHelper {
 		
 		private final BGMailTemplateInfos infos;
 		private final Translator translator;
+		private final Identity overrideIdentity;
 		
-		public BGMailTemplate(String subject, String body, BGMailTemplateInfos infos, Translator translator) {
+		/**
+		 * 
+		 * @param subject The subject
+		 * @param body The body of the mail
+		 * @param overrideIdentity Override firstname variable (for copy E-mail)
+		 * @param infos
+		 * @param translator
+		 */
+		public BGMailTemplate(String subject, String body, Identity overrideIdentity, BGMailTemplateInfos infos, Translator translator) {
 			super(subject, body, null);
 			this.infos = infos;
 			this.translator = translator;
+			this.overrideIdentity = overrideIdentity;
 		}
 		
 		public static final Collection<String> allVariableNames() {
@@ -369,12 +390,14 @@ public class BGMailHelper {
 
 		@Override
 		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-			fillContextWithStandardIdentityValues(context, identity, translator.getLocale());
+			Identity identityForVariables = overrideIdentity == null ? identity : overrideIdentity;
+			
+			fillContextWithStandardIdentityValues(context, identityForVariables, translator.getLocale());
 
 			// Put user variables into velocity context
-			if(identity != null) {
+			if(identityForVariables != null) {
 				//the email of the user, needs to stay named 'login'
-				context.put("login", identity.getUser().getProperty(UserConstants.EMAIL, null));
+				context.put("login", identityForVariables.getUser().getProperty(UserConstants.EMAIL, null));
 			}
 			// Put variables from greater context
 			context.put(GROUP_NAME, infos.getGroupNameWithUrl());
@@ -385,11 +408,13 @@ public class BGMailHelper {
 				context.put(COURSE_LIST, infos.getCourseList());
 				context.put("courselist", infos.getCourseList());
 			} else {
-				context.put(COURSE_LIST, translator.translate("notification.mail.no.ressource", null));
-				context.put("courselist", translator.translate("notification.mail.no.ressource", null));
+				context.put(COURSE_LIST, translator.translate("notification.mail.no.ressource"));
+				context.put("courselist", translator.translate("notification.mail.no.ressource"));
 			}
-			context.put(COURSE_LIST_EMPTY, translator.translate("notification.mail.no.ressource", null));
-			context.put("courselistempty", translator.translate("notification.mail.no.ressource", null));
+			context.put(COURSE_LIST_EMPTY, translator.translate("notification.mail.no.ressource"));
+			context.put("courselistempty", translator.translate("notification.mail.no.ressource"));
+			
+			//TODO group reactionTime 
 		}
 	}
 }

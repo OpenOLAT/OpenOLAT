@@ -88,15 +88,15 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 			String names = BGMailHelper.joinNames(groups);
 			if(newStatus == BusinessGroupStatusEnum.inactive) {
 				if(groups.size() == 1) {
-					layoutCont.contextPut("msg", translate("dialog.modal.bg.inactivate.text.singular", new String[] { names }));
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.inactivate.text.singular", names));
 				} else {
-					layoutCont.contextPut("msg", translate("dialog.modal.bg.inactivate.text.plural", new String[] { names }));
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.inactivate.text.plural", names));
 				}
 			} else if(newStatus == BusinessGroupStatusEnum.trash || newStatus == BusinessGroupStatusEnum.deleted) {
 				if(groups.size() == 1) {
-					layoutCont.contextPut("msg", translate("dialog.modal.bg.delete.text.singular", new String[] { names }));
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.delete.text.singular", names));
 				} else {
-					layoutCont.contextPut("msg", translate("dialog.modal.bg.delete.text.plural", new String[] { names }));
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.delete.text.plural", names));
 				}
 			}
 		}

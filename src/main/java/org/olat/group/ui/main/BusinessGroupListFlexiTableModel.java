@@ -158,6 +158,8 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 				case plannedInactivationDate: return wrapped.getPlannedInactivationDate();
 				case plannedSoftDeleteDate: return wrapped.getPlannedSoftDeleteDate();
 				case plannedDeletionDate: return wrapped.getPlannedDeletionDate();
+				case inactivationDate: return wrapped.getInactivationDate();
+				case softDeleteDate: return wrapped.getSoftDeleteDate();
 				default: return "ERROR";
 			}
 		}
@@ -222,7 +224,9 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		status("table.header.status"),
 		plannedInactivationDate("table.header.planned.inactivation.date"),
 		plannedSoftDeleteDate("table.header.planned.soft.delete.date"),
-		plannedDeletionDate("table.header.planned.deletion.date");
+		plannedDeletionDate("table.header.planned.deletion.date"),
+		inactivationDate("table.header.inactivation.date"),
+		softDeleteDate("table.header.soft.delete.date");
 		
 		private final String i18n;
 		

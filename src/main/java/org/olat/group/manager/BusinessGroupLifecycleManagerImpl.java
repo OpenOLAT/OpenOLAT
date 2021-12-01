@@ -250,8 +250,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			if(!businessGroups.isEmpty()) {
 				for(BusinessGroup businessGroup:businessGroups) {
 					if(businessGroup.getLastUsage() != null && (vetoed.isEmpty() || !vetoed.contains(businessGroup))) {
-						sendEmail(businessGroup, "notification.mail.before.deactivation.subject", "notification.mail.before.deactivation.body", "before deactiviation");
-						sendEmailCopy(businessGroup, businessGroupModule.getMailCopyBeforeDeactivation(), "notification.mail.before.deactivation.subject", "notification.mail.before.deactivation.body", "before deactiviation");
+						sendEmail(businessGroup, "notification.mail.before.deactivation.subject", "notification.mail.before.deactivation.body", "before deactivation",
+								businessGroupModule.getMailCopyBeforeDeactivation());
 						businessGroup = setBusinessGroupInactivationMail(businessGroup);
 						vetoed.add(businessGroup);
 					}
@@ -296,8 +296,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			if(vetoed.isEmpty() || !vetoed.contains(businessGroup)) {
 				businessGroup = setBusinessGroupAsInactive(businessGroup, null);
 				if(businessGroup.getLastUsage() != null && businessGroupModule.isMailAfterDeactivation()) {
-					sendEmail(businessGroup, "notification.mail.after.deactivation.subject", "notification.mail.after.deactivation.body", "after deactiviation");
-					sendEmailCopy(businessGroup, businessGroupModule.getMailCopyAfterDeactivation(), "notification.mail.after.deactivation.subject", "notification.mail.after.deactivation.body", "after deactiviation");
+					sendEmail(businessGroup, "notification.mail.after.deactivation.subject", "notification.mail.after.deactivation.body",
+							"after deactivation", businessGroupModule.getMailCopyAfterDeactivation());
 				}
 				vetoed.add(businessGroup);
 			}
@@ -465,7 +465,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			  .append(" where bgi.baseGroup.key=reToGroup.group.key)")
 			  .append(" and bgi.technicalType <> '").append(BusinessGroupLifecycleTypeEnum.lti.name()).append("'");
 		} else {
-			log.error("Unseen settings", types);
+			log.error("Unseen settings: {}", types);
 		}
 		
 		sb.append(")");
@@ -474,8 +474,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	@Override
 	public BusinessGroup sendInactivationEmail(BusinessGroup businessGroup) {
 		businessGroup = setBusinessGroupInactivationMail(businessGroup);
-		sendEmail(businessGroup, "notification.mail.before.deactivation.subject", "notification.mail.before.deactivation.body", "before deactiviation");
-		sendEmailCopy(businessGroup, businessGroupModule.getMailCopyBeforeDeactivation(), "notification.mail.before.deactivation.subject", "notification.mail.before.deactivation.body", "before deactiviation");
+		sendEmail(businessGroup, "notification.mail.before.deactivation.subject", "notification.mail.before.deactivation.body",
+				"before deactivation", businessGroupModule.getMailCopyBeforeDeactivation());
 		return businessGroup;
 	}
 	
@@ -483,7 +483,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	public BusinessGroup inactivateBusinessGroup(BusinessGroup businessGroup, Identity doer, boolean withMail) {
 		businessGroup = setBusinessGroupAsInactive(businessGroup, doer);
 		if(withMail) {
-			sendEmail(businessGroup, "notification.mail.after.deactivation.subject", "notification.mail.after.deactivation.body", "after deactiviation");
+			sendEmail(businessGroup, "notification.mail.after.deactivation.subject", "notification.mail.after.deactivation.body", "after deactiviation", null);
 		}
 		return businessGroup;
 	}
@@ -508,8 +508,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			if(!businessGroups.isEmpty()) {
 				for(BusinessGroup businessGroup:businessGroups) {
 					if(((BusinessGroupImpl)businessGroup).getInactivationDate() != null && (vetoed.isEmpty() || !vetoed.contains(businessGroup))) {
-						sendEmail(businessGroup, "notification.mail.before.soft.delete.subject", "notification.mail.before.soft.delete.body", "before soft delete");
-						sendEmailCopy(businessGroup, businessGroupModule.getMailCopyBeforeSoftDelete(), "notification.mail.before.soft.delete.subject", "notification.mail.before.soft.delete.body", "before soft delete");
+						sendEmail(businessGroup, "notification.mail.before.soft.delete.subject", "notification.mail.before.soft.delete.body",
+								"before soft delete",  businessGroupModule.getMailCopyBeforeSoftDelete());
 						businessGroup = setBusinessGroupSoftDeleteMail(businessGroup);
 						vetoed.add(businessGroup);
 					}
@@ -543,14 +543,13 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 	
 	private void softDeleteBusinessGroups(List<BusinessGroup> businessGroupsToSoftDelete, Set<BusinessGroup> vetoed) {
-		
 		for(BusinessGroup businessGroup:businessGroupsToSoftDelete) {
 			if(vetoed.isEmpty() || !vetoed.contains(businessGroup)) {
 				List<Identity> recipients = getEmailRecipients(businessGroup);
 				businessGroup = deleteBusinessGroupSoftly(businessGroup, null);
 				if(businessGroup.getLastUsage() != null && businessGroupModule.isMailAfterSoftDelete()) {
-					sendEmail(businessGroup, recipients, null, "notification.mail.after.soft.delete.subject", "notification.mail.after.soft.delete.body", "after soft delete");
-					sendEmailCopy(businessGroup, businessGroupModule.getMailCopyAfterSoftDelete(), "notification.mail.after.soft.delete.subject", "notification.mail.after.soft.delete.body", "after soft delete");
+					sendEmail(businessGroup, recipients, null, "notification.mail.after.soft.delete.subject", "notification.mail.after.soft.delete.body",
+							"after soft delete", businessGroupModule.getMailCopyAfterSoftDelete());
 				}
 				vetoed.add(businessGroup);
 			}
@@ -597,7 +596,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		List<Identity> recipients = getEmailRecipients(businessGroup);
 		businessGroup = deleteBusinessGroupSoftly(businessGroup, deletedBy);
 		if(withMail) {
-			sendEmail(businessGroup, recipients, null, "notification.mail.after.soft.delete.subject", "notification.mail.after.soft.delete.body", "after soft delete");
+			sendEmail(businessGroup, recipients, null, "notification.mail.after.soft.delete.subject", "notification.mail.after.soft.delete.body",
+					"after soft delete", null);
 		}
 		return businessGroup;
 	}
@@ -670,8 +670,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	@Override
 	public BusinessGroup sendDeleteSoftlyEmail(BusinessGroup businessGroup) {
 		businessGroup = setBusinessGroupSoftDeleteMail(businessGroup);
-		sendEmail(businessGroup, "notification.mail.before.soft.delete.subject", "notification.mail.before.soft.delete.body", "before soft delete");
-		sendEmailCopy(businessGroup, businessGroupModule.getMailCopyBeforeSoftDelete(), "notification.mail.before.soft.delete.subject", "notification.mail.before.soft.delete.body", "before soft delete");
+		sendEmail(businessGroup, "notification.mail.before.soft.delete.subject", "notification.mail.before.soft.delete.body",
+				"before soft delete", businessGroupModule.getMailCopyBeforeSoftDelete());
 		return businessGroup;
 	}
 
@@ -706,7 +706,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		if(!users.isEmpty() && withMail) {
 			// finally send email
 			String metaId = UUID.randomUUID().toString();
-			sendEmail(businessGroupToDelete, users, metaId, "notification.mail.deleted.subject", "notification.mail.deleted.body", "after definitively deleted group");
+			sendEmail(businessGroupToDelete, users, metaId, "notification.mail.deleted.subject", "notification.mail.deleted.body",
+					"after definitively deleted group", null);
 		}
 	}
 	
@@ -789,23 +790,26 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		return recipients;
 	}
 	
-	private void sendEmail(BusinessGroup businessGroup, String subjectI18nKey, String bodyI18nKey, String type) {
+	private void sendEmail(BusinessGroup businessGroup, String subjectI18nKey, String bodyI18nKey, String type, List<String> bcc) {
 		List<Identity> recipients = getEmailRecipients(businessGroup);
-		sendEmail(businessGroup, recipients, null, subjectI18nKey, bodyI18nKey, type);
+		sendEmail(businessGroup, recipients, null, subjectI18nKey, bodyI18nKey, type, bcc);
 	}
 	
 	private MailerResult sendEmail(BusinessGroup businessGroup, List<Identity> recipients, String metaId,
-			String subjectI18nKey, String bodyI18nKey, String type) {
+			String subjectI18nKey, String bodyI18nKey, String type, List<String> bcc) {
 
 		MailerResult result = new MailerResult();
 		for(Identity identity:recipients) {
-			MailTemplate template = BGMailHelper.createMailTemplate(businessGroup, identity, subjectI18nKey, bodyI18nKey, false);
+			MailTemplate template = BGMailHelper.createMailTemplate(businessGroup, identity, subjectI18nKey, bodyI18nKey);
 			sendUserEmailTo(businessGroup, identity, metaId, template, type, result);
+			if(bcc != null && !bcc.isEmpty()) {
+				sendEmailCopy(businessGroup, identity, bcc, subjectI18nKey, bodyI18nKey, type);
+			}
 		}
 		return result;
 	}
 	
-	private void sendEmailCopy(BusinessGroup businessGroup, List<String> recepients, String subjectI18nKey, String bodyI18nKey, String type) {
+	private void sendEmailCopy(BusinessGroup businessGroup, Identity identity, List<String> recepients, String subjectI18nKey, String bodyI18nKey, String type) {
 		if (recepients == null || recepients.isEmpty()) {
 			return;
 		}
@@ -813,7 +817,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(null);
 		for (String recepient : recepients) {
 			if (MailHelper.isValidEmailAddress(recepient)) {
-				MailTemplate template = BGMailHelper.createMailTemplate(businessGroup, recepient, subjectI18nKey, bodyI18nKey, locale, true);
+				MailTemplate template = BGMailHelper.createCopyMailTemplate(businessGroup, identity, subjectI18nKey, bodyI18nKey, locale);
 				sendUserEmailCopyTo(businessGroup, recepient, template, type);
 			}
 		}
@@ -845,7 +849,4 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		}
 		log.info(Tracing.M_AUDIT, "Business group lifecycle {} send copy regarding business group={} ({}) to email={}", type, businessGroup.getKey(), businessGroup.getName(), receiver);
 	}
-	
-	
-
 }

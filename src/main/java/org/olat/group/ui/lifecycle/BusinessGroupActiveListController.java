@@ -122,7 +122,7 @@ public class BusinessGroupActiveListController extends AbstractBusinessGroupLife
 		}
 		
 		if(withMail) {
-			responseDelayTab= FlexiFiltersTabFactory.tabWithImplicitFilters("ResponseDelay", translate("admin.groups.response.delay.preset"),
+			responseDelayTab = FlexiFiltersTabFactory.tabWithImplicitFilters("ResponseDelay", translate("admin.groups.response.delay.preset"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.LIFECYCLE, LifecycleSyntheticStatus.ACTIVE_RESPONSE_DELAY.name())));
 			tabs.add(responseDelayTab);
 		}
@@ -133,6 +133,9 @@ public class BusinessGroupActiveListController extends AbstractBusinessGroupLife
 		boolean actionVisible = (tab == toInactivateTab);
 		actionColumn.setAlwaysVisible(actionVisible);
 		tableEl.setColumnModelVisible(actionColumn, actionVisible);
+		if(startInactivateButton != null) {
+			startInactivateButton.setVisible(tab != responseDelayTab);
+		}
 	}
 	
 	@Override

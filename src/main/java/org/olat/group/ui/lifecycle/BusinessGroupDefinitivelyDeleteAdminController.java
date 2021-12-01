@@ -61,8 +61,8 @@ public class BusinessGroupDefinitivelyDeleteAdminController extends FormBasicCon
 		
 		// day inactivity
 		String daysBefore = Integer.toString(businessGroupModule.getNumberOfSoftDeleteDayBeforeDefinitivelyDelete());
-		numberOfSoftDeleteDayDefinitivelyDeletionEl = uifactory.addTextElement("num.inactive.day.soft.deletion", "num.inactive.day.soft.deletion", 4, daysBefore, formLayout);
-		initDays(numberOfSoftDeleteDayDefinitivelyDeletionEl, "num.inactive.day.soft.deletion.addon");
+		numberOfSoftDeleteDayDefinitivelyDeletionEl = uifactory.addTextElement("num.inactive.day.deletion", "num.inactive.day.deletion", 4, daysBefore, formLayout);
+		initDays(numberOfSoftDeleteDayDefinitivelyDeletionEl, "num.inactive.day.deletion.addon");
 		
 		SelectionValues modeValues = new SelectionValues();
 		modeValues.add(new SelectionValue("auto", translate("mode.definitively.deletion.auto"), translate("mode.definitively.deletion.auto.desc")));

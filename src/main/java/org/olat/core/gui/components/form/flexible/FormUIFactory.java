@@ -87,6 +87,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTex
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
+import org.olat.core.gui.components.link.ExternalLinkItem;
+import org.olat.core.gui.components.link.ExternalLinkItemImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
@@ -1441,6 +1443,16 @@ public class FormUIFactory {
 		AddRemoveElement addRemove = addAddRemoveElement(name, i18nLabel, presentation, showText, formLayout);
 		addRemove.setAddRemoveMode(displayMode);
 		return addRemove;
+	}
+	
+	public ExternalLinkItem addExternalLink(String name, String url, String target, FormItemContainer formLayout) {
+		ExternalLinkItemImpl link = new ExternalLinkItemImpl(name);
+		link.setTarget(target);
+		link.setUrl(url);
+		if(formLayout != null) {
+			formLayout.add(link);
+		}
+		return link;
 	}
 	
 }

@@ -339,6 +339,7 @@ public class BusinessGroupEditController extends BasicController implements Gene
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				currBusinessGroup = lifecycleCtrl.getBusinessGroup();
 				setAllTabs(ureq);
+				updateContainer();
 				fireEvent(ureq, event);
 			} else if(event == Event.CLOSE_EVENT) {
 				fireEvent(ureq, event);

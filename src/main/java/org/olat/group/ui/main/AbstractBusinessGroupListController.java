@@ -106,6 +106,7 @@ import org.olat.group.ui.NewBGController;
 import org.olat.group.ui.lifecycle.ConfirmBusinessGroupChangeStatusController;
 import org.olat.group.ui.lifecycle.ConfirmBusinessGroupDefinitivelyDeleteController;
 import org.olat.group.ui.lifecycle.ConfirmBusinessGroupStartChangeStatusController;
+import org.olat.group.ui.lifecycle.ConfirmRestoreController;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 import org.olat.group.ui.wizard.BGConfigBusinessGroup;
 import org.olat.group.ui.wizard.BGConfigToolsStep;
@@ -172,10 +173,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	protected FormLink selectButton;
 
 
-	
 	private ContactFormController contactCtrl;
 	private NewBGController groupCreateController;
 	private BGUserManagementController userManagementController;
+	private ConfirmRestoreController confirmRestoreController;
 	private BGMailNotificationEditController userManagementSendMailController;
 	private ConfirmBusinessGroupChangeStatusController confirmChangeStatusController;
 	private ConfirmBusinessGroupStartChangeStatusController confirmStartChangeStatusController;
@@ -379,8 +380,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			confirmChangeStatus(ureq, getSelectedItems(), BusinessGroupStatusEnum.inactive);
 		} else if(startInactivateButton == source) {
 			doConfirmStartChangeStatus(ureq, getSelectedItems(), BusinessGroupStatusEnum.inactive);
-		} else if(cancelInactivateButton == source) {
-			doReactivate(getSelectedItems());
+		} else if(cancelInactivateButton == source || reactivateButton == source) {
+			doCancelInactivation(getSelectedItems());
+		} else if(restoreButton == source) {
+			doConfirmRestore(ureq, getSelectedItems());
 		} else if(definitivelyDeleteButton == source) {
 			doConfirmDefinitivelyDelete(ureq, getSelectedItems());
 		} else if(duplicateButton == source) {
@@ -490,7 +493,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == confirmDefinitivelyDeleteController || source == confirmChangeStatusController
-				|| source == confirmStartChangeStatusController) {
+				|| source == confirmStartChangeStatusController || source == confirmRestoreController) {
 			if(event == Event.DONE_EVENT) {
 				tableEl.deselectAll();
 				reloadModel();
@@ -1124,7 +1127,26 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		}
 	}
 	
-	private void doReactivate(List<? extends BusinessGroupRef> selectedItems) {
+	private void doConfirmRestore(UserRequest ureq, List<? extends BusinessGroupRef> selectedItems) {
+		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
+		if(groups.isEmpty()) {
+			showWarning("msg.alleastone.editable.group");
+			return;
+		}
+		if(selectedItems.size() != groups.size()) {
+			showWarning("msg.only.editable.group");
+			return;
+		}
+		
+		confirmRestoreController = new ConfirmRestoreController(ureq, getWindowControl(), groups);
+		listenTo(confirmRestoreController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRestoreController.getInitialComponent(),
+				true, translate("dialog.modal.bg.restore.title"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doCancelInactivation(List<? extends BusinessGroupRef> selectedItems) {
 		List<BusinessGroup> groups = toBusinessGroups(selectedItems, true);
 		if(groups.isEmpty()) {
 			showWarning("msg.alleastone.editable.group");
@@ -1136,7 +1158,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		}
 		
 		for(BusinessGroup group:groups) {
-			boolean asOwner = this.businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name());
+			boolean asOwner = businessGroupService.hasRoles(getIdentity(), group, GroupRoles.coach.name());
 			businessGroupLifecycleManager.reactivateBusinessGroup(group, getIdentity(), asOwner);
 		}
 		
