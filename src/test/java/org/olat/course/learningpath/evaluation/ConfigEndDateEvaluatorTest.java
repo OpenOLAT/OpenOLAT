@@ -32,7 +32,7 @@ import java.util.GregorianCalendar;
 import org.junit.Test;
 import org.olat.core.util.DateUtils;
 import org.olat.course.duedate.DueDateConfig;
-import org.olat.course.duedate.manager.RelativeDateServiceImpl;
+import org.olat.course.duedate.manager.DueDateServiceImpl;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
@@ -57,7 +57,7 @@ public class ConfigEndDateEvaluatorTest {
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
 		LearningPathService learningPathService = mock(LearningPathService.class);
 		sut.setLearningPathService(learningPathService);
-		sut.setDueDateService(new RelativeDateServiceImpl());
+		sut.setDueDateService(new DueDateServiceImpl());
 		
 		Date configDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
 		CourseNode courseNode = new SPCourseNode();
@@ -75,7 +75,7 @@ public class ConfigEndDateEvaluatorTest {
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
 		LearningPathService learningPathService = mock(LearningPathService.class);
 		sut.setLearningPathService(learningPathService);
-		sut.setDueDateService(new RelativeDateServiceImpl());
+		sut.setDueDateService(new DueDateServiceImpl());
 		
 		Date configDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
 		Date overriddenDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
@@ -97,7 +97,7 @@ public class ConfigEndDateEvaluatorTest {
 		ConfigEndDateEvaluator sut = new ConfigEndDateEvaluator();
 		LearningPathService learningPathService = mock(LearningPathService.class);
 		sut.setLearningPathService(learningPathService);
-		sut.setDueDateService(new RelativeDateServiceImpl());
+		sut.setDueDateService(new DueDateServiceImpl());
 		
 		Date configDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();
 		Date overriddenDate = new GregorianCalendar(2017, 2, 3, 1, 2 ,3).getTime();

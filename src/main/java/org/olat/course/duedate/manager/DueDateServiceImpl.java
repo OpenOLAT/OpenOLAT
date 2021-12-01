@@ -28,8 +28,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.util.DateUtils;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.duedate.DueDateConfig;
-import org.olat.course.duedate.RelativeDueDateConfig;
 import org.olat.course.duedate.DueDateService;
+import org.olat.course.duedate.RelativeDueDateConfig;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class RelativeDateServiceImpl implements DueDateService {
+public class DueDateServiceImpl implements DueDateService {
 	
 	@Autowired
 	private RepositoryService repositoryService;
@@ -59,7 +59,8 @@ public class RelativeDateServiceImpl implements DueDateService {
 
 	@Override
 	public List<String> getCourseRelativeToDateTypes(RepositoryEntry courseEntry) {
-		boolean courseStart = courseEntry.getLifecycle() != null && courseEntry.getLifecycle().getValidFrom() != null;
+		RepositoryEntryLifecycle lifecycle = getRepositoryEntryLifecycle(courseEntry);
+		boolean courseStart = lifecycle != null && lifecycle.getValidFrom() != null;
 		return courseStart
 				? List.of(TYPE_COURSE_START, TYPE_COURSE_LAUNCH, TYPE_ENROLLMENT)
 				: List.of(TYPE_COURSE_LAUNCH, TYPE_ENROLLMENT);
@@ -122,7 +123,7 @@ public class RelativeDateServiceImpl implements DueDateService {
 		try {
 			RepositoryEntryLifecycle lifecycle = re.getLifecycle();
 			if(lifecycle != null) {
-				lifecycle.getValidTo();//
+				lifecycle.getValidTo();
 			}
 			return lifecycle;
 		} catch (LazyInitializationException e) {
