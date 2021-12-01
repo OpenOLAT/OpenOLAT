@@ -42,6 +42,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -67,16 +68,19 @@ public class AssessmentViewController extends BasicController {
 	private Link userVisibilityHiddenLink;
 
 	private final CourseNode courseNode;
-	private final UserCourseEnvironment userCourseEnv;
+	private final UserCourseEnvironment coachCourseEnv;
+	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final AssessmentConfig assessmentConfig;
 
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
-	protected AssessmentViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+	protected AssessmentViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
-		this.userCourseEnv = userCourseEnv;
+		this.coachCourseEnv = coachCourseEnv;
+		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(MSCourseNodeRunController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
@@ -95,33 +99,51 @@ public class AssessmentViewController extends BasicController {
 	}
 
 	private void updateUserVisibilityUI() {
-		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-		if (assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue()) {
-			Dropdown userVisibility = new Dropdown("user.visibility", "user.visibility.visible", false, getTranslator());
-			userVisibility.setIconCSS("o_icon o_icon_results_visible");
-			userVisibility.setElementCssClass("o_button_results_visible");
-			userVisibility.setOrientation(DropdownOrientation.right);
-			userVisibility.setEmbbeded(true);
-			userVisibility.setButton(true);
-			
-			userVisibilityHiddenLink = LinkFactory.createToolLink("user.visibility.hidden", translate("user.visibility.hidden"), this);
-			userVisibilityHiddenLink.setIconLeftCSS("o_icon o_icon_results_hidden");
-			userVisibilityHiddenLink.setElementCssClass("o_button_results_hidden");
-			userVisibility.addComponent(userVisibilityHiddenLink);
-			mainVC.put("user.visibility", userVisibility);
+		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
+		
+		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		
+		if (canChangeUserVisibility) {
+			if (assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue()) {
+				Dropdown userVisibility = new Dropdown("user.visibility", "user.visibility.visible", false, getTranslator());
+				userVisibility.setIconCSS("o_icon o_icon_results_visible");
+				userVisibility.setElementCssClass("o_button_results_visible");
+				userVisibility.setOrientation(DropdownOrientation.right);
+				userVisibility.setEmbbeded(true);
+				userVisibility.setButton(true);
+				
+				userVisibilityHiddenLink = LinkFactory.createToolLink("user.visibility.hidden", translate("user.visibility.hidden"), this);
+				userVisibilityHiddenLink.setIconLeftCSS("o_icon o_icon_results_hidden");
+				userVisibilityHiddenLink.setElementCssClass("o_button_results_hidden");
+				userVisibility.addComponent(userVisibilityHiddenLink);
+				mainVC.put("user.visibility", userVisibility);
+			} else {
+				Dropdown userVisibility = new Dropdown("user.visibility", "user.visibility.hidden", false, getTranslator());
+				userVisibility.setIconCSS("o_icon o_icon_results_hidden");
+				userVisibility.setElementCssClass("o_button_results_hidden");
+				userVisibility.setOrientation(DropdownOrientation.right);
+				userVisibility.setEmbbeded(true);
+				userVisibility.setButton(true);
+				
+				userVisibilityVisibleLink = LinkFactory.createToolLink("user.visibility.visible", translate("user.visibility.visible"), this);
+				userVisibilityVisibleLink.setIconLeftCSS("o_icon o_icon_results_visible");
+				userVisibilityVisibleLink.setElementCssClass("o_button_results_visible");
+				userVisibility.addComponent(userVisibilityVisibleLink);
+				mainVC.put("user.visibility", userVisibility);
+			}
 		} else {
-			Dropdown userVisibility = new Dropdown("user.visibility", "user.visibility.hidden", false, getTranslator());
-			userVisibility.setIconCSS("o_icon o_icon_results_hidden");
-			userVisibility.setElementCssClass("o_button_results_hidden");
-			userVisibility.setOrientation(DropdownOrientation.right);
-			userVisibility.setEmbbeded(true);
-			userVisibility.setButton(true);
-			
-			userVisibilityVisibleLink = LinkFactory.createToolLink("user.visibility.visible", translate("user.visibility.visible"), this);
-			userVisibilityVisibleLink.setIconLeftCSS("o_icon o_icon_results_visible");
-			userVisibilityVisibleLink.setElementCssClass("o_button_results_visible");
-			userVisibility.addComponent(userVisibilityVisibleLink);
-			mainVC.put("user.visibility", userVisibility);
+			if (assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue()) {
+				userVisibilityVisibleLink = LinkFactory.createLink("user.visibility", "user.visibility", "vis", "user.visibility.visible", getTranslator(), mainVC, this, Link.BUTTON);
+				userVisibilityVisibleLink.setIconLeftCSS("o_icon o_icon_results_visible");
+				userVisibilityVisibleLink.setElementCssClass("o_button_results_visible");
+				userVisibilityVisibleLink.setEnabled(false);
+			} else {
+				userVisibilityHiddenLink = LinkFactory.createLink("user.visibility", "user.visibility", "vis", "user.visibility.hidden", getTranslator(), mainVC, this, Link.BUTTON);
+				userVisibilityHiddenLink.setIconLeftCSS("o_icon o_icon_results_hidden");
+				userVisibilityHiddenLink.setElementCssClass("o_button_results_hidden");
+				userVisibilityHiddenLink.setEnabled(false);
+			}
 		}
 	}
 
@@ -142,7 +164,7 @@ public class AssessmentViewController extends BasicController {
 	}
 
 	private void putAssessmentDataToVC(UserRequest ureq) {
-		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
+		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 		
 		mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 		mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
@@ -157,7 +179,7 @@ public class AssessmentViewController extends BasicController {
 		}
 
 		if (assessmentConfig.hasIndividualAsssessmentDocuments()) {
-			List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+			List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, assessedUserCourseEnv);
 			String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 			mainVC.contextPut("docsMapperUri", mapperUri);
 			mainVC.contextPut("docs", docs);
@@ -178,24 +200,24 @@ public class AssessmentViewController extends BasicController {
 	}
 
 	private void doSetUserVisibility(UserRequest ureq, Boolean userVisibility) {
-		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 				scoreEval.getAssessmentStatus(), userVisibility,
 				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-		courseAssessmentService.updateScoreEvaluation(courseNode, eval, userCourseEnv, getIdentity(), false, Role.coach);
+		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		
 		updateUserVisibilityUI();
 		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_CHANGED, false));
 	}
 
 	private void doReopen(UserRequest ureq) {
-		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		
-		courseAssessmentService.updateScoreEvaluation(courseNode, eval, userCourseEnv, getIdentity(), false, Role.coach);
+		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));
 	}
 

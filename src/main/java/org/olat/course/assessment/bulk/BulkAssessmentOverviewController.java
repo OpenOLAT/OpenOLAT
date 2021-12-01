@@ -81,6 +81,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	private DialogBoxController errorCtrl;
 	
 	private final RepositoryEntry courseEntry;
+	private final boolean canEditUserVisibility;
 	
 	@Autowired
 	private UserManager userManager;
@@ -89,9 +90,10 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	
 	private Task editedTask;
 	
-	public BulkAssessmentOverviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
+	public BulkAssessmentOverviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, boolean canEditUserVisibility) {
 		super(ureq, wControl, "overview");
 		this.courseEntry = courseEntry;
+		this.canEditUserVisibility = canEditUserVisibility;
 		
 		initForm(ureq);
 	}
@@ -253,9 +255,9 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 
 		Step start;
 		if(nodes.size() > 1) {
-			start = new BulkAssessment_1_SelectCourseNodeStep(ureq, courseEntry);
+			start = new BulkAssessment_1_SelectCourseNodeStep(ureq, courseEntry, canEditUserVisibility);
 		} else if(nodes.size() == 1){
-			start = new BulkAssessment_2_DatasStep(ureq, nodes.get(0));
+			start = new BulkAssessment_2_DatasStep(ureq, nodes.get(0), canEditUserVisibility);
 		} else {
 			showWarning("bulk.action.no.coursenodes");
 			return;
@@ -294,7 +296,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			BulkAssessmentTask runnable = taskManager.getPersistedRunnableTask(editableTask, BulkAssessmentTask.class);
 			BulkAssessmentDatas datas = runnable.getDatas();
 			
-			Step start = new BulkAssessment_2_DatasStep(ureq, courseNode, datas, editableTask);
+			Step start = new BulkAssessment_2_DatasStep(ureq, courseNode, datas, editableTask, canEditUserVisibility);
 			StepRunnerCallback finish = new StepRunnerCallback() {
 				@Override
 				public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {

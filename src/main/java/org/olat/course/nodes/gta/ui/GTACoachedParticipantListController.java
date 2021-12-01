@@ -82,6 +82,7 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
@@ -271,17 +272,22 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkDoneButton);
 			
-			bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
-			bulkVisibleButton.setElementCssClass("o_sel_assessment_bulk_visible");
-			bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
-			bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-			tableEl.addBatchButton(bulkVisibleButton);
+			boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+					|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 			
-			bulkHiddenButton = uifactory.addFormLink("bulk.hidden", formLayout, Link.BUTTON);
-			bulkHiddenButton.setElementCssClass("o_sel_assessment_bulk_hidden");
-			bulkHiddenButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_hidden");
-			bulkHiddenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-			tableEl.addBatchButton(bulkHiddenButton);
+			if (canChangeUserVisibility) {
+				bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
+				bulkVisibleButton.setElementCssClass("o_sel_assessment_bulk_visible");
+				bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
+				bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+				tableEl.addBatchButton(bulkVisibleButton);
+				
+				bulkHiddenButton = uifactory.addFormLink("bulk.hidden", formLayout, Link.BUTTON);
+				bulkHiddenButton.setElementCssClass("o_sel_assessment_bulk_hidden");
+				bulkHiddenButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_hidden");
+				bulkHiddenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+				tableEl.addBatchButton(bulkHiddenButton);
+			}
 		}
 		
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();

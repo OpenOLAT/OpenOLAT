@@ -55,6 +55,7 @@ import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
 import org.olat.course.config.ui.AssessmentResetController;
 import org.olat.course.config.ui.AssessmentResetController.AssessmentResetEvent;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
@@ -243,7 +244,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 	
 	private void doBulkAssessmentView(UserRequest ureq) {
-		bulkAssessmentOverviewCtrl = new BulkAssessmentOverviewController(ureq, getWindowControl(), courseEntry);
+		boolean canChangeUserVisibility = coachUserEnv.isAdmin()
+				|| coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		bulkAssessmentOverviewCtrl = new BulkAssessmentOverviewController(ureq, getWindowControl(), courseEntry, canChangeUserVisibility);
 		listenTo(bulkAssessmentOverviewCtrl);
 		stackPanel.pushController(translate("menu.bulkfocus"), bulkAssessmentOverviewCtrl);
 	}

@@ -109,7 +109,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "st";
 	private static final String ICON_CSS_CLASS = "o_st_icon";
 	
-	private static final int CURRENT_VERSION = 6;
+	private static final int CURRENT_VERSION = 7;
 	
 	// Score calculation without conditions.
 	public static final String CONFIG_SCORE_KEY = "score.key";
@@ -123,6 +123,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PASSED_POINTS_CUT = "passed.points.cut";
 	// Defines whether the COACH can override the passed.
 	public static final String CONFIG_PASSED_MANUALLY = "passed.manually";
+	public static final String CONFIG_COACH_USER_VISIBILITY = "coach.user.visibility";
 
 	// Score calculation with conditions.
 	public static final String CONFIG_SCORE_CALCULATOR_SUPPORTED = "score.calculator.supported";
@@ -424,6 +425,9 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 					? STCourseNodeEditController.CONFIG_VALUE_CHILDREN_SELECTION
 					: STCourseNodeEditController.CONFIG_VALUE_CHILDREN_ALL;
 			config.setStringValue(STCourseNodeEditController.CONFIG_KEY_CHILDREN_FILTER, childrenFilter);
+		}
+		if (config.getConfigurationVersion() < 7) {
+			config.setBooleanEntry(CONFIG_COACH_USER_VISIBILITY, true);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

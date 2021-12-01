@@ -153,7 +153,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		removeAsListenerAndDispose(bulkAssessmentToolCtrl);
 		
 		bulkAssessmentToolCtrl = new BulkAssessmentToolController(ureq, getWindowControl(), getCourseEnvironment(),
-				courseNode);
+				courseNode, canEditUserVisibility);
 		listenTo(bulkAssessmentToolCtrl);
 		formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());	
 	}

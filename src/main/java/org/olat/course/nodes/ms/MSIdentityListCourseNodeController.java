@@ -93,7 +93,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
 			BulkAssessmentToolController bulkAssessmentToolCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
-					coachCourseEnv.getCourseEnvironment(), courseNode);
+					coachCourseEnv.getCourseEnvironment(), courseNode, canEditUserVisibility);
 			listenTo(bulkAssessmentToolCtrl);
 			formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());
 			

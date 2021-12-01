@@ -40,6 +40,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -74,6 +75,7 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	private final boolean courseReadonly;
 	protected final Identity assessedIdentity;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final RepositoryEntry courseEntry;
 	private final AssessmentEvaluation scoreEval;
 	protected final CourseNode courseNode;
@@ -85,15 +87,15 @@ public abstract class AbstractToolsController extends BasicController {
 	public AbstractToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl);
-		
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));
-
+		
 		String velocityRoot = Util.getPackageVelocityRoot(AbstractToolsController.class);
 		String page = velocityRoot + "/tools.html";
 		mainVC = new VelocityContainer("tools", "vc_tools", page, getTranslator(), this);
 		
 		this.courseNode = courseNode;
 		this.assessedIdentity = assessedIdentity;
+		this.coachCourseEnv = coachCourseEnv;
 		courseReadonly = coachCourseEnv.isCourseReadOnly();
 		courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
@@ -146,12 +148,16 @@ public abstract class AbstractToolsController extends BasicController {
 			} else {
 				setDoneLink = addLink("tool.set.done", "tool.set.done", "o_icon o_icon-fw o_icon_status_done");
 			}
-
+			
 			// result as visible / not visible
-			if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
-				notVisibleLink = addLink("tool.set.not.visible", "tool.set.not.visible", "o_icon o_icon-fw o_icon_results_hidden");	
-			} else {
-				visibleLink = addLink("tool.set.visible", "tool.set.visible", "o_icon o_icon-fw o_icon_results_visible");	
+			boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+					|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+			if (canChangeUserVisibility) {
+				if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
+					notVisibleLink = addLink("tool.set.not.visible", "tool.set.not.visible", "o_icon o_icon-fw o_icon_results_hidden");	
+				} else {
+					visibleLink = addLink("tool.set.visible", "tool.set.visible", "o_icon o_icon-fw o_icon_results_visible");	
+				}
 			}
 		}
 	}

@@ -65,6 +65,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -395,8 +396,11 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
-		boolean visibility = userVisibility.isKeySelected(KEY_VISIBLE)
-;		// Update score,passed properties in db
+		Boolean visibility = userVisibility.isVisible()
+				? Boolean.valueOf(userVisibility.isKeySelected(KEY_VISIBLE))
+				: assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode).getUserVisible();
+		
+		// Update score,passed properties in db
 		ScoreEvaluation scoreEval;
 		if(setAsDone) {
 			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, AssessmentEntryStatus.done, visibility, null, null, null, null);
@@ -625,6 +629,9 @@ public class AssessmentForm extends FormBasicController {
 		} else {
 			userVisibility.select(KEY_HIDDEN, true);
 		}
+		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
+				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		userVisibility.setVisible(canChangeUserVisibility);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);

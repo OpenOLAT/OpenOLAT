@@ -41,14 +41,15 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	private final Task task;
 	private final BulkAssessmentDatas savedDatas;
 	private final CourseNode courseNode;
+	private final boolean canEditUserVisibility;
 	private boolean hasPreviousStep = true;
 
-	public BulkAssessment_2_DatasStep(UserRequest ureq) {
-		this(ureq, null, null, null);
+	public BulkAssessment_2_DatasStep(UserRequest ureq, boolean canEditUserVisibility) {
+		this(ureq, null, null, null, canEditUserVisibility);
 	}
 	
-	public BulkAssessment_2_DatasStep(UserRequest ureq, CourseNode courseNode) {
-		this(ureq, courseNode, null, null);
+	public BulkAssessment_2_DatasStep(UserRequest ureq, CourseNode courseNode, boolean canEditUserVisibility) {
+		this(ureq, courseNode, null, null, canEditUserVisibility);
 	}
 	
 	/**
@@ -58,11 +59,12 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	 * @param datas
 	 */
 	public BulkAssessment_2_DatasStep(UserRequest ureq, CourseNode courseNode,
-			BulkAssessmentDatas savedDatas, Task task) {
+			BulkAssessmentDatas savedDatas, Task task, boolean canEditUserVisibility) {
 		super(ureq);
 		this.task = task;
 		this.savedDatas = savedDatas;
 		this.courseNode = courseNode;
+		this.canEditUserVisibility = canEditUserVisibility;
 		setI18nTitleAndDescr("data.title", "data.title");
 		if(savedDatas == null) {
 			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq));
@@ -90,9 +92,9 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 		
 		DataStepForm ctrl;
 		if(savedDatas != null) {
-			ctrl = new DataStepForm(ureq, wControl, courseNode, savedDatas, context, form);
+			ctrl = new DataStepForm(ureq, wControl, courseNode, savedDatas, context, canEditUserVisibility, form);
 		} else {
-			ctrl = new DataStepForm(ureq, wControl, context, form);
+			ctrl = new DataStepForm(ureq, wControl, context, canEditUserVisibility, form);
 		}
 		return ctrl;
 	}

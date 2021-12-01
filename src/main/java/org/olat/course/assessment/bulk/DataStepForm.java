@@ -89,22 +89,25 @@ public class DataStepForm extends StepFormBasicController {
 	private VFSLeaf targetArchive;
 	private BulkAssessmentDatas savedDatas;
 	private final CourseNode courseNode;
+	private final boolean canEditUserVisibility;
 	private VFSContainer bulkAssessmentTmpDir;
 
-	public DataStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
+	public DataStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, boolean canEditUserVisibility, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
+		this.canEditUserVisibility = canEditUserVisibility;
 		courseNode = (CourseNode)getFromRunContext("courseNode");
 
 		initForm(ureq);
 	}
 
 	public DataStepForm(UserRequest ureq, WindowControl wControl, CourseNode courseNode, BulkAssessmentDatas savedDatas,
-			StepsRunContext runContext, Form rootForm) {
+			StepsRunContext runContext, boolean canEditUserVisibility, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
 		this.savedDatas = savedDatas;
 		this.courseNode = courseNode;
+		this.canEditUserVisibility = canEditUserVisibility;
 		addToRunContext("courseNode", courseNode);
 		initForm(ureq);
 	}
@@ -153,12 +156,15 @@ public class DataStepForm extends StepFormBasicController {
 		};
 		statusEl = uifactory.addRadiosVertical("form.step3.status", "form.step3.status", formLayout, statusKeys, statusValues);
 		statusEl.select(statusKeys[statusKeys.length - 1], true);
-		String[] visibilityValues = new String[] {
-				translate("form.step3.visibility.visible"), translate("form.step3.visibility.notvisible"),
-				translate("form.step3.visibility.dont.change")
-		};
-		visibilityEl = uifactory.addRadiosVertical("form.step3.visibility", "form.step3.visibility", formLayout, visibilityKeys, visibilityValues);
-		visibilityEl.select(visibilityKeys[visibilityKeys.length - 1], true);
+		
+		if (canEditUserVisibility) {
+			String[] visibilityValues = new String[] {
+					translate("form.step3.visibility.visible"), translate("form.step3.visibility.notvisible"),
+					translate("form.step3.visibility.dont.change")
+			};
+			visibilityEl = uifactory.addRadiosVertical("form.step3.visibility", "form.step3.visibility", formLayout, visibilityKeys, visibilityValues);
+			visibilityEl.select(visibilityKeys[visibilityKeys.length - 1], true);
+		}
 		
 		if(courseNode instanceof GTACourseNode) {
 			String[] submissionValues = new String[] {
@@ -228,7 +234,7 @@ public class DataStepForm extends StepFormBasicController {
 			}
 		}
 		
-		if(visibilityEl.isOneSelected()) {
+		if(visibilityEl != null && visibilityEl.isOneSelected()) {
 			String selectedVisibility = visibilityEl.getSelectedKey();
 			if("visible".equals(selectedVisibility)) {
 				datas.setVisibility(Boolean.TRUE);

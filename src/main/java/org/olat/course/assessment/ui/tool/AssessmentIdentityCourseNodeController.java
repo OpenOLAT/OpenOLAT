@@ -241,7 +241,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		assessmentEditCtrl = null;
 		
 		if (AssessmentEntryStatus.done == assessedUserCourseEnvironment.getScoreAccounting().evalCourseNode(courseNode).getAssessmentStatus()) {
-			assessmentViewCtrl = new AssessmentViewController(ureq, getWindowControl(), courseNode, assessedUserCourseEnvironment);
+			assessmentViewCtrl = new AssessmentViewController(ureq, getWindowControl(), courseNode, coachCourseEnv, assessedUserCourseEnvironment);
 			listenTo(assessmentViewCtrl);
 			identityAssessmentVC.put("assessmentForm", assessmentViewCtrl.getInitialComponent());
 		} else {

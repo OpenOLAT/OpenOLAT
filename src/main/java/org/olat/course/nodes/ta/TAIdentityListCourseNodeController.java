@@ -61,7 +61,7 @@ public class TAIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		if(!coachCourseEnv.isCourseReadOnly()) {
 			BulkAssessmentToolController bulkAssessmentTollCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
-					getCourseEnvironment(), courseNode);
+					getCourseEnvironment(), courseNode, canEditUserVisibility);
 			listenTo(bulkAssessmentTollCtrl);
 			formLayout.put("bulk.assessment", bulkAssessmentTollCtrl.getInitialComponent());	
 		}

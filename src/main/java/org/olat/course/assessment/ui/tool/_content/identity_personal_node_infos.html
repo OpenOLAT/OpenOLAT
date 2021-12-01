@@ -16,8 +16,10 @@
 #if($r.available("details")) 
 	$r.render("details")
 #end
-#if($r.available("assessmentForm")) 
-	$r.render("assessmentForm")
+#if($r.available("assessmentForm"))
+	<div class="o_block_top">
+		$r.render("assessmentForm")
+	</div>
 #end
 
 #if($r.isNotNull($log))

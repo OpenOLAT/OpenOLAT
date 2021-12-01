@@ -62,6 +62,7 @@ public class CourseScoreController extends FormBasicController {
 	private static final String[] UNTRANSLATED = { "" };
 
 	private SingleSelection scoreEl;
+	private MultipleSelectionElement userVisibilityEl;
 	private MultipleSelectionElement passedManuallyEl;
 	private MultipleSelectionElement passedProgressEl;
 	private MultipleSelectionElement passedAllEl;
@@ -144,9 +145,16 @@ public class CourseScoreController extends FormBasicController {
 		String scoreKey = moduleConfig.has(STCourseNode.CONFIG_SCORE_KEY)? moduleConfig.getStringValue(STCourseNode.CONFIG_SCORE_KEY): SCORE_VALUE_NONE;
 		scoreEl.select(scoreKey, true);
 		
-		// Passed manually
+		// Coach rights
+		uifactory.addStaticTextElement("options.coach.can", null, formLayout);
+		
+		userVisibilityEl = uifactory.addCheckboxesHorizontal("options.user.visibility", formLayout, ONE_OPTION, UNTRANSLATED);
+		userVisibilityEl.addActionListener(FormEvent.ONCHANGE);
+		boolean coachUserVisibility = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		userVisibilityEl.select(userVisibilityEl.getKey(0), coachUserVisibility);
+		userVisibilityEl.setEnabled(editable);
+		
 		passedManuallyEl = uifactory.addCheckboxesHorizontal("options.passed.manually", formLayout, ONE_OPTION, UNTRANSLATED);
-		passedManuallyEl.addActionListener(FormEvent.ONCHANGE);
 		boolean passedManually = moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
 		passedManuallyEl.select(passedManuallyEl.getKey(0), passedManually);
 		passedManuallyEl.setEnabled(editable);
@@ -204,6 +212,9 @@ public class CourseScoreController extends FormBasicController {
 	}
 
 	private void updateUI() {
+		boolean userVisibility = userVisibilityEl.isAtLeastSelected(1);
+		passedManuallyEl.setVisible(userVisibility);
+		
 		boolean passedNumber = passedNumberEl.isAtLeastSelected(1);
 		passedNumberCutEl.setVisible(passedNumber);
 		
@@ -213,7 +224,9 @@ public class CourseScoreController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == passedNumberEl) {
+		if (source == userVisibilityEl) {
+			updateUI();
+		} else if (source == passedNumberEl) {
 			updateUI();
 		} else if (source == passedPointsEl) {
 			updateUI();
@@ -338,7 +351,11 @@ public class CourseScoreController extends FormBasicController {
 			editorConfig.setStringValue(STCourseNode.CONFIG_SCORE_KEY, selectedScoreKey);
 		}
 		
-		boolean passedManually = passedManuallyEl.isAtLeastSelected(1);
+		boolean userVisibility = userVisibilityEl.isAtLeastSelected(1);
+		runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, userVisibility);
+		editorConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, userVisibility);
+		
+		boolean passedManually = passedManuallyEl.isVisible() && passedManuallyEl.isAtLeastSelected(1);
 		if (passedManually) {
 			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);
 			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_MANUALLY, true);

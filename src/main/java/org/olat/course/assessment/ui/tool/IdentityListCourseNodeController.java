@@ -106,6 +106,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -164,6 +165,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final boolean showTitle;
 	private final boolean learningPath;
+	protected final boolean canEditUserVisibility;
 
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab toReviewTab;
@@ -226,6 +228,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		this.assessmentCallback = assessmentCallback;
 		courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(courseEnv).getType());
+		canEditUserVisibility = coachCourseEnv.isAdmin()
+				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		
 		
 		if(courseNode.needsReferenceToARepositoryEntry()) {
 			referenceEntry = courseNode.getReferencedRepositoryEntry();
@@ -598,17 +603,19 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkDoneButton);
 			
-			bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
-			bulkVisibleButton.setElementCssClass("o_sel_assessment_bulk_visible");
-			bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
-			bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-			tableEl.addBatchButton(bulkVisibleButton);
-			
-			bulkHiddenButton = uifactory.addFormLink("bulk.hidden", formLayout, Link.BUTTON);
-			bulkHiddenButton.setElementCssClass("o_sel_assessment_bulk_hidden");
-			bulkHiddenButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_hidden");
-			bulkHiddenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-			tableEl.addBatchButton(bulkHiddenButton);
+			if (canEditUserVisibility) {
+				bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
+				bulkVisibleButton.setElementCssClass("o_sel_assessment_bulk_visible");
+				bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
+				bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+				tableEl.addBatchButton(bulkVisibleButton);
+				
+				bulkHiddenButton = uifactory.addFormLink("bulk.hidden", formLayout, Link.BUTTON);
+				bulkHiddenButton.setElementCssClass("o_sel_assessment_bulk_hidden");
+				bulkHiddenButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_hidden");
+				bulkHiddenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+				tableEl.addBatchButton(bulkHiddenButton);
+			}
 		}
 	}
 	

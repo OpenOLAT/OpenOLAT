@@ -53,15 +53,18 @@ public class BulkAssessmentToolController extends BasicController {
 	
 	private final Link startButton;
 	private final CourseNode courseNode;
+	private final boolean canEditUserVisibility;
 
 	private DialogBoxController errorCtrl;
 	private StepsMainRunController bulkAssessmentCtrl;
 	private final TaskExecutorManager taskManager;
 	private final OLATResource courseOres;
 	
-	public BulkAssessmentToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, CourseNode courseNode) {
+	public BulkAssessmentToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
+			CourseNode courseNode, boolean canEditUserVisibility) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
+		this.canEditUserVisibility = canEditUserVisibility;
 		taskManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);
 		courseOres = courseEnv.getCourseGroupManager().getCourseResource();
 		
@@ -106,7 +109,7 @@ public class BulkAssessmentToolController extends BasicController {
 			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
-		Step start = new BulkAssessment_2_DatasStep(ureq, courseNode);
+		Step start = new BulkAssessment_2_DatasStep(ureq, courseNode, canEditUserVisibility);
 		bulkAssessmentCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("bulk.wizard.title"), "o_sel_bulk_assessment_wizard");
 		listenTo(bulkAssessmentCtrl);
