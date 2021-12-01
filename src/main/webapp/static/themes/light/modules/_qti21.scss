@@ -1590,6 +1590,10 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	}
 }
 
+.o_offline_test .o_assessmentsection_rubrics {
+	page-break-after: always;
+}
+
 .o_offline_test_cover_sheet,
 .o_offline_test_additional_sheet {
 	font-size: 18px;
@@ -1628,10 +1632,18 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 
 	.o_offline_test_solution {
 		background-color: #edf1f6;
-		border: 5px solid black;
+		border: 5px solid rgba(211,211,211,0.66);
 		font-size: 36px;
 		font-weight: bold;
 		padding: 1em;
+		
+		font-size: 72px;
+		color: rgba(211,211,211,0.66) !important;
+		position: absolute;
+		top: 200px;
+		transform: rotate(45deg);
+		margin: auto;
+		left: 200px;
 	}
 }
 
@@ -1646,6 +1658,9 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 
 	.o_qti_item {
 		page-break-after: always;
+	}
+	.o_qti_item.o_qti_last_item {
+		page-break-after: avoid;
 	}
 }
 

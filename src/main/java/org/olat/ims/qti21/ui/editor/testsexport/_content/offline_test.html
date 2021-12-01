@@ -160,7 +160,7 @@
 		#if (!$inItem)
 			<div class="o_qti_items">		
 		#end
-		<div class="o_qti_item panel panel-default o_print_break_avoid">
+		<div class="o_qti_item panel panel-default o_print_break_avoid #if($itemResult.last) o_qti_last_item #end">
 		<div class="panel-heading">
 			<h4 class="panel-title">
 				<i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
@@ -211,5 +211,4 @@
 	</div>
 #end
 </div> ## END of o_qti_sections
-
 </div> ## END of o_assessment_test_results

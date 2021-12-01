@@ -218,6 +218,11 @@ public class QTI21OfflineTestsPDFController extends FormBasicController {
 				}
 			}
 		}
+		
+		if(!itemResults.isEmpty()) {
+			Results lastResults = itemResults.get(itemResults.size() - 1);
+			lastResults.setLast(true);
+		}
 	}
 	
 	private List<FlowFormItem> getSectionRubric(FormLayoutContainer layoutCont, TestPlanNode node) {
@@ -380,6 +385,7 @@ public class QTI21OfflineTestsPDFController extends FormBasicController {
 		private int numberOfQuestions = 0;
 		
 		private boolean deleted = false;
+		private boolean last = false;
 		
 		private FormItem correctSolutionItem;
 		private final List<FlowFormItem> rubrics;
@@ -568,6 +574,14 @@ public class QTI21OfflineTestsPDFController extends FormBasicController {
 		
 		public void setInteractionResults(InteractionResults interactionResults) {
 			this.interactionResults = interactionResults;
+		}
+
+		public boolean isLast() {
+			return last;
+		}
+
+		public void setLast(boolean last) {
+			this.last = last;
 		}
 	}
 	

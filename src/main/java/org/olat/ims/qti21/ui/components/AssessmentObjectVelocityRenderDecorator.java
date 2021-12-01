@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
 import java.util.stream.Collectors;
@@ -994,7 +995,6 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 					.getResponseDeclaration(interaction.getResponseIdentifier());
 			if(responseDeclaration != null) {
 				Mapping mapping = responseDeclaration.getMapping();
-				
 				if(mapping != null) {
 					for(MapEntry entry:mapping.getMapEntries()) {
 						SingleValue sValue = entry.getMapKey();
@@ -1004,6 +1004,22 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 								Identifier destIdentifier = ((DirectedPairValue)sValue).destValue();
 								String val = translatedScorePerAnswer(entry.getMappedValue(), translator);
 								sb.append(destIdentifier.toString()).append("=").append(val).append(";");
+							}
+						}
+					}
+				} else {
+					long numOfInteractions = assessmentItem.getItemBody().findInteractions().stream()
+							.filter(interact -> !(interact instanceof EndAttemptInteraction))
+							.count();
+					Set<String> correctResponses = CorrectResponsesUtil.getCorrectDirectPairResponses(assessmentItem, interaction, false);
+					if(numOfInteractions == 1l && correctResponses != null && correctResponses.size() == 1) {
+						String correctResponse = correctResponses.iterator().next();
+						if(correctResponse.startsWith(source.toString())) {
+							String[] pairs = correctResponse.split("[ ]");
+							Double score = QtiNodesExtractor.extractMaxScore(assessmentItem);
+							if(score != null && pairs != null && pairs.length == 2) {
+								String val = translatedScorePerAnswer(score, translator);
+								sb.append(pairs[1]).append("=").append(val).append(";");
 							}
 						}
 					}

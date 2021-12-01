@@ -1,2 +1,5 @@
-<div class="o_button_group o_button_group_right">$r.render("preview")</div>
+<div class="o_button_group o_button_group_right">$r.render("preview") $r.render("preview.solution")</div>
 <div class="o_warning o_block">$r.translate("warning.start.download")</div>
+#if($r.available("test"))
+	$r.render("test")
+#end

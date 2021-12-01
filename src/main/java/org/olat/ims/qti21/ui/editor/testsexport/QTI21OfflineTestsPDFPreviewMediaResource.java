@@ -61,6 +61,7 @@ public class QTI21OfflineTestsPDFPreviewMediaResource implements MediaResource {
 	private static final Logger log = Tracing.createLoggerFor(QTI21OfflineTestsPDFPreviewMediaResource.class);
 	
 	private final String label;
+	private final boolean solution;
 	private final Identity identity;
 	private final WindowControl windowControl;
 	private final TestsExportContext exportContext;
@@ -73,8 +74,9 @@ public class QTI21OfflineTestsPDFPreviewMediaResource implements MediaResource {
 	private MapperService mapperService;
 	
 	public QTI21OfflineTestsPDFPreviewMediaResource(Identity identity, WindowControl windowControl,
-			TestsExportContext exportContext, String label) {
+			TestsExportContext exportContext, String label, boolean solution) {
 		this.label = label;
+		this.solution = solution;
 		this.identity = identity;
 		this.windowControl = windowControl;
 		this.exportContext = exportContext;
@@ -160,7 +162,7 @@ public class QTI21OfflineTestsPDFPreviewMediaResource implements MediaResource {
 			TestSessionController testSessionController = exportContext.createTestSessionState();
 			ureq = new SyntheticUserRequest(ureq.getIdentity(), exportContext.getLocale(), ureq.getUserSession());
 			return new QTI21OfflineTestsPDFController(ureq, wControl,
-					fUnzippedDirRoot, mapperUriForPdf, exportContext, testSessionController, serialNumber, true);
+					fUnzippedDirRoot, mapperUriForPdf, exportContext, testSessionController, serialNumber, solution);
 		}
 	}
 }

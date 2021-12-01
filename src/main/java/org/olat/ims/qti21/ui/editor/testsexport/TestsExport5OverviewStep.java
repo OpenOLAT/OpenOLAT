@@ -41,9 +41,11 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
@@ -82,6 +84,7 @@ public class TestsExport5OverviewStep extends BasicStep {
 		
 		public OverviewController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
+			setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 			mapperUri = registerCacheableMapper(ureq, null, new PreviewMapper(getIdentity(), wControl, exportContext));
 			
 			initForm(ureq);
@@ -109,6 +112,26 @@ public class TestsExport5OverviewStep extends BasicStep {
 			link.setUrl(mapperUri + "/preview.pdf?test=" + CodeHelper.getForeverUniqueID());
 			link.setTarget("_blank");
 			previewCont.put("preview", link);
+			
+			ExternalLink linkSolution = new ExternalLink("preview.solution", "preview.solution");
+			linkSolution.setElementCssClass("btn btn-default");
+			linkSolution.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
+			linkSolution.setName(translate("preview.solution"));
+			linkSolution.setUrl(mapperUri + "/preview.pdf?solution=true&amp;test=" + CodeHelper.getForeverUniqueID());
+			linkSolution.setTarget("_blank");
+			previewCont.put("preview.solution", linkSolution);
+			
+			/* for debugging purpose
+			final File fUnzippedDirRoot = exportContext.getUnzippedDirRoot();
+			final URI assessmentObjectUri = CoreSpringFactory.getImpl(QTI21Service.class).createAssessmentTestUri(fUnzippedDirRoot);
+			final Mapper mapper = new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, (File)null);
+			String mapperUriForPdf = registerCacheableMapper(ureq, "QTI21DetailsResources::" + CodeHelper.getForeverUniqueID(), mapper, 3000);
+			String serialNumber = exportContext.getSerialNumber(1);
+			TestSessionController testSessionController = exportContext.createTestSessionState();
+			QTI21OfflineTestsPDFController previewCtrl = new QTI21OfflineTestsPDFController(ureq, getWindowControl(),
+					fUnzippedDirRoot, mapperUriForPdf, exportContext, testSessionController, serialNumber, true);
+			previewCont.add("test", previewCtrl.getInitialFormItem());
+			*/
 		}
 		
 		private void initGeneralForm(FormItemContainer formLayout) {
@@ -232,7 +255,9 @@ public class TestsExport5OverviewStep extends BasicStep {
 	
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
-			return new QTI21OfflineTestsPDFPreviewMediaResource(identity, wControl, exportContext, "preview");
+			String withSolution = request.getParameter("solution");
+			return new QTI21OfflineTestsPDFPreviewMediaResource(identity, wControl, exportContext,
+					"preview", "true".equalsIgnoreCase(withSolution));
 		}
 	}
 }
