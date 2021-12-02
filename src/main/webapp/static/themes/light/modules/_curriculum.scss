@@ -10,7 +10,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 
 @mixin o-make-responsive-inline-block($cols : $o-curriculum-entry-cols, $screen-max: $screen-sm-max, $right-margin: $padding-base-vertical, $bg : $o-curriculum-entry-bg) {
 	@if $cols > 1 and not $o-curriculum-level-steps-enabled {
-		$width: floor(100% / $cols);
+		$width: math.floor(math.div(100%,$cols));
 		
 		display: inline-block;
 		width: $width;			
@@ -159,7 +159,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 				}
 			}						
   			.o_curriculum_element_desc {
-				padding: ($padding-base-horizontal  / 2) $padding-base-vertical $padding-large-horizontal $padding-base-vertical;
+				padding: math.div($padding-base-horizontal,2) $padding-base-vertical $padding-large-horizontal $padding-base-vertical;
   			}
 			.o_curriculum_element_empty {
 				font-style: italic;
@@ -189,6 +189,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
   				}
   			} @else {
 				.o_visual {
+					position: absolute;
 					left: 0;
 					border: none;		
 					background-color: #fff;
@@ -221,7 +222,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
   			.o_user_state {
   				position: absolute;
   				right: 0;
-  				bottom: floor($o-coursesite-rowelem-height-md / 4);
+  				bottom: math.floor(math.div($o-coursesite-rowelem-height-md,4));
   				.o_failed {
   					font-weight: normal;
   				}
@@ -245,14 +246,14 @@ $o-curriculum-entry-bg							: #CCFFCC;
 				bottom: 0; right: 0;
 				overflow: hidden;
 				width: $o-coursesite-rowelem-width-md;
-				height: floor($o-coursesite-rowelem-height-md / 4);
+				height: math.floor(math.div($o-coursesite-rowelem-height-md,4));
 				.o_start, .o_details {
 					position: absolute;
 					display: block;
 					bottom: 0;
-					width: floor($o-coursesite-rowelem-width-md / 2);
-					height: floor($o-coursesite-rowelem-height-md / 4);
-					line-height: floor($o-coursesite-rowelem-height-md / 4);
+					width: math.floor(math.div($o-coursesite-rowelem-width-md,2));
+					height: math.floor(math.div($o-coursesite-rowelem-height-md,4));
+					line-height: math.floor(math.div($o-coursesite-rowelem-height-md,4));
 					text-align: center;
 					@extend %o_undecorated;
 				}
@@ -261,7 +262,7 @@ $o-curriculum-entry-bg							: #CCFFCC;
 					@include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); 
 				}
 				.o_details {
-					right: floor($o-coursesite-rowelem-width-md / 2);
+					right: math.floor(math.div($o-coursesite-rowelem-width-md,2));
 					@include button-variant($o-coursesite-details-color, $o-coursesite-details-bg, $o-coursesite-details-border);
 				}
 			}

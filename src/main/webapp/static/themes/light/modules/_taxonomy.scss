@@ -23,10 +23,12 @@
 	}
 }
 
-.o_tag.o_competence {
+.o_tag.o_competence,
+.o_tag.o_taxonomy {
 	background-color: #ffffff;
 	color: $o-competences-font-color;
 	border-color: $o-competences-color; 
+	border-radius: 0.5em;
 	
 	&:hover {
 		text-decoration: none;

@@ -833,15 +833,16 @@ public class RepositoryEntryListController extends FormBasicController
 		String iconCss;
 		if(row.isBookable() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
 			label = "book";
-			iconCss = "o_book btn-block";
+			iconCss = "btn btn-sm btn-primary o_book ";
 		} else {
 			label = "start";
-			iconCss = "o_start btn-block";
+			iconCss = "btn btn-sm btn-primary o_start";
 		}
 		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
 		startLink.setUserObject(row);
 		startLink.setCustomEnabledLinkCSS(iconCss);
 		startLink.setIconRightCSS("o_icon o_icon_start");
+		startLink.setTitle(label);
 		String businessPath = "[RepositoryEntry:" + row.getKey() + "]";
 		startLink.setUrl(BusinessControlFactory.getInstance()
 				.getAuthenticatedURLFromBusinessPathString(businessPath));
@@ -851,7 +852,9 @@ public class RepositoryEntryListController extends FormBasicController
 	@Override
 	public void forgeDetails(RepositoryEntryRow row) {
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, null, Link.LINK);
-		detailsLink.setCustomEnabledLinkCSS("o_details");
+		detailsLink.setCustomEnabledLinkCSS("btn btn-sm btn-default o_details");
+		detailsLink.setIconRightCSS("o_icon o_icon_details");
+		detailsLink.setTitle("details");
 		detailsLink.setUserObject(row);
 		if (row.isMember()) {
 			String businessPath = "[RepositoryEntry:" + row.getKey() + "][Infos:0]";

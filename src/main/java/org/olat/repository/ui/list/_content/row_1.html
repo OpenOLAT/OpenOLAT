@@ -1,4 +1,4 @@
-<div class="#if($row.selected) o_selected #end #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
+<div class="o_repo_entry_card #if($row.selected) o_selected #end #if($row.getEducationalType()) $row.getEducationalType().getCssClass() #end">
 	<div class="o_visual">
 		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}" title="$r.escapeForHtmlAttribute($row.displayName)">
 		#if($row.isThumbnailAvailable())
@@ -10,14 +10,16 @@
 	</div>
 	<div class="o_meta">
 		<div class="o_go_xs visible-xs">
-			<i class=" o_icon o_icon_start o_icon-lg"></i>
+			<i class=" o_icon o_icon-fw o_icon_start o_icon-lg"></i>
 		</div>
-		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())
-			#if ($row.getExternalRef())
-				<small>$r.escapeHtml($row.getExternalRef())</small>
-			#end
-		</h4>
-		
+
+		#if ($row.getExternalRef())
+		<div class="o_ext_ref">
+			$r.escapeHtml($row.getExternalRef())
+		</div>
+		#end
+		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())</h4>
+				
 		#if($row.getEducationalType())
 		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
 			<span>$r.translate($row.getEducationalTypei18nKey())</span>
@@ -29,103 +31,98 @@
 		#end
 		#if($row.closed)
 			<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>
+		#else
+			#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location  && !${row.location.isEmpty()}))
+				<div class="o_lifecycle #if ($row.isActive()) o_active #end">
+					#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+						<div class="o_lifecycle_date"><i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i>
+						#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
+							#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $r.escapeHtml($row.lifecycleSoftKey)
+							#else $r.escapeHtml($row.lifecycleLabel) #end
+						#else
+							#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
+							#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end
+						#end</div>
+					#end
+					#if($row.location  && !${row.location.isEmpty()})
+						<div class="o_lifecycle_location">
+							#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
+								<span class="o_spacer">•</span>
+							#else
+								<i class="o_icon o_icon-fw o_icon_location"> </i> 
+							#end
+							$r.escapeHtml($row.location)
+						</div>
+					#end
+				</div>
+			#end
 		#end
-		#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location  && !${row.location.isEmpty()}))
-			<div class="o_lifecycle #if ($row.isActive()) o_active #end">
-				#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
-					<div><i class="o_icon o_icon_lifecycle_date"> </i>
-					#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
-						#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $r.escapeHtml($row.lifecycleSoftKey)
-						#else $r.escapeHtml($row.lifecycleLabel) #end
-					#else
-						#if($row.lifecycleStart) $r.formatDate($row.lifecycleStart) #end
-						#if($row.lifecycleEnd) - $r.formatDate($row.lifecycleEnd) #end
-					#end</div>
-				#end
-				#if($row.location  && !${row.location.isEmpty()})
-					<div><i class="o_icon o_icon_home"> </i> $r.escapeHtml($row.location)</div>
-				#end
-			</div>
-		#end
-		<div class="o_desc">
-			$row.shortenedDescription
+			
+		#if($row.taxonomyLevels && !$row.taxonomyLevels.empty)
+		<div class="o_taxonomy_levels">	
+			<i class="o_icon o_icon-fw o_icon_tags"> </i>
+			#foreach($taxonomy in $row.taxonomyLevels)			
+			<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomy.materializedPathIdentifiersWithoutSlash)">
+				$taxonomy.displayName
+			</span>
+			#end
 		</div>
+		#end
+		
 		#if($row.markLinkName)
 		<div class="o_bookmark">$r.render($row.markLinkName)</div>
 		#end
 	</div>
-	<div class="o_access container">
-		#if($r.get("ac_$row.key"))
-			#foreach($ac_type in $r.get("ac_$row.key"))
-				#if($ac_type.price && $ac_type.price.length() > 0)
-					<span class="o_nowrap"><i class='o_icon $ac_type.type o_icon-lg'></i> $ac_type.price</span>
-				#else
-					<i class='o_icon $ac_type.type o_icon-lg'></i>
-				#end
-			#end
-		#end
-
+	
+	<div class="o_access">
 		#if($row)
-		#if($row.completionItemName)
-			<div class="o_completion row">
-				$r.render($row.getCompletionItemName())
-			</div>
-		#else
-			#if($row.passed || $row.failed)
-			<div class="row">
-				#if($row.passed)
-					$r.translate("passed.true")
-				#elseif($row.failed)
-					$r.translate("passed.false")
+			#if($row.completionItemName)
+				<div class="o_completion">
+					$r.render($row.getCompletionItemName())
+				</div>
+			#else
+				#if($row.passed || $row.failed)
+				<div class="o_passed">
+					#if($row.passed)
+						$r.translate("passed.true")
+					#elseif($row.failed)
+						$r.translate("passed.false")
+					#end
+				</div>
 				#end
-			</div>
+			
+				#if($row.score) 
+				<div class="o_score">
+					$row.score 
+					<span class="o_label">
+						$r.translate("details.label.score")
+					</span>
+				</div> 
+				#end			
 			#end
-		
-			#if($row.score) 
-			<div class="o_score row">
-				$row.score 
-				<span class="o_label">
-					$r.translate("details.label.score")
-				</span>
-			</div> 
-			#end			
-		#end
 		#end
 		
 		#if($row.accessTypes && !$row.isMember())
-		<div class="o_bookings row">
-			<div class="o_label">
-				$r.translate("details.orders"):
-			</div>
+		<div class="o_bookings">
 			<div class="o_methods">
-				<ul class="list-inline">
+				<ul class="list-unstyled">
 				#foreach($type in $row.accessTypes)
-					<li class="o_nowrap" style="width:100%"><i class="o_icon $type.type o_icon-lg"></i>#if($type.price && $type.price.length() > 0)<span class="o_access_price"> ($type.price) </span>#end <span class="o_access_name small "> $r.escapeHtml("$type.displayName")</span></li>
+					<li class="o_nowrap">
+						<i class="o_icon o_icon-fw $type.type o_icon-lg"></i>
+						#if($type.price && $type.price.length() > 0)<span class="o_access_price"> ($type.price) </span>#end 
+						<span class="o_access_name"> $r.escapeHtml("$type.displayName")</span>
+					</li>
 				#end
 				</ul>
 			</div>							
 		</div> 
 		#end
-
-#*
-TODO: Discuss: disturbing on the course listing page, only on course info page?		
-		#if($row.ratingFormItemName || $row.commentsLinkName)
-		<div class="o_social o_ratings_and_comments row">
-			#if($row.ratingFormItemName)
-			<div class="o_rating_wrapper">
-				$r.render($row.ratingFormItemName)
-			</div>
-			#end
-			#if($row.commentsLinkName)
-				$r.render($row.commentsLinkName)
+		
+		<div class="o_actions">
+			$r.render($row.getDetailsLinkName())
+			#if($row.getStartLinkName())
+				$r.render($row.getStartLinkName())
 			#end
 		</div>
-		#end
-*#
-		
-		$r.render($row.getDetailsLinkName())
-		#if($row.getStartLinkName())
-			$r.render($row.getStartLinkName())
-		#end
 	</div>	
 </div>

@@ -1,11 +1,10 @@
 /* custom layout */
 .o_visual {
-	position: absolute;
-	top: 0; left: 0;
 	overflow: hidden;
 	height: $o-coursesite-rowelem-height-md;	
 	width: $o-coursesite-rowelem-width-md;
 	vertical-align: middle;
+	background: #fff;
 	
 	@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 		height: $o-coursesite-rowelem-height-sm;	
@@ -35,30 +34,177 @@
 .o_coursetable {
 	&.o_rendertype_custom {	
 		 .o_table_row {
-			position: relative;
-			border: 1px solid $o-coursesite-rowelem-border;
-			border-radius: $o-coursesite-rowelem-border-radius;	
-			background: $o-coursesite-rowelem-bg;
-	
-			margin-bottom: floor($line-height-computed / 2);
+			margin-bottom: math.floor(math.div($line-height-computed,2));
 			
-			.o_visual {
-				box-sizing: content-box;
-				border-top-left-radius: $o-coursesite-rowelem-border-radius;
-				border-bottom-left-radius: $o-coursesite-rowelem-border-radius;
-				.o_visual_not_available {
-					background-color: $o-coursesite-rowelem-bg;
+			 .o_repo_entry_card {
+				display: flex;
+				position: relative;
+				height: $o-coursesite-rowelem-height-md + (2 * $o-coursesite-rowelem-space-md);	
+				padding: $o-coursesite-rowelem-space-md;
+				border: 1px solid $o-coursesite-rowelem-border;
+				border-radius: $o-coursesite-rowelem-border-radius;	
+				background: $o-coursesite-rowelem-bg;			
+				
+				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+					height: $o-coursesite-rowelem-height-sm + (2 * $o-coursesite-rowelem-space-sm);	
+					padding: $o-coursesite-rowelem-space-sm;
 				}
+				@media (max-width: $screen-xs-max) { 
+					height: $o-coursesite-rowelem-height-xs + (2 * $o-coursesite-rowelem-space-xs) + 2px;	
+					padding: $o-coursesite-rowelem-space-xs;
+				}	
+			}
+									
+			.o_visual {
+				flex: 0 0 auto;
+				box-sizing: content-box;
+				border-radius: $o-coursesite-rowelem-border-radius;
+				
+				@media (max-width: $screen-xs-max) { 
+					border-top-right-radius: 0;
+					border-bottom-right-radius: 0;
+				}
+			}
+
+			.o_meta {
+				flex: 1 1 auto;
+				position: relative;
+				padding: 0  $o-coursesite-rowelem-space-md;
+				
+				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+					padding: 0  $o-coursesite-rowelem-space-sm;
+				}
+				@media (max-width: $screen-xs-max) { 
+					padding: 0  10px;
+				}	
+
+				/* flex box hack to make text overflow and ellipsis work for following elements (title) */
+				min-width: 0;				
+				
+				.o_ext_ref {
+					color: $text-muted;
+					font-size: 10px;
+					line-height: 12px;
+					height: 12px;
+				}
+	
+				.o_title {
+					margin: 0.2em 0 0.1em 0; /* box moves down otherwise, replaced with padding */
+					position: relative;
+					a {
+						@extend %o_undecorated;
+						@include text-overflow();
+						display: block;
+						color: $o-coursesite-meta-title-color;
+						&:hover {
+						    color: darken($o-coursesite-meta-title-color, 10%);
+						}				
+					}
+				}
+				.o_educational_type {
+					margin-right: .25em;
+					margin-top: 0;
+					vertical-align: text-bottom;
+					font-size: 70%;
+				}
+				
+				.o_author{
+					display: inline;
+					font-size: 85%;
+					@include text-overflow();
+					color: $o-coursesite-meta-author-color;
+				}
+				.o_lifecycle {
+					margin: 0.5em 0;
+					font-size: 85%;
+					line-height: normal;
+					@include text-overflow();
+					color: $text-muted;
+					&:not(.o_active) .o_lifecycle_date {
+						color: $state-danger-text;
+					}
+					.o_lifecycle_date, .o_lifecycle_location {
+						display: inline;
+					}
+					.o_spacer {
+						margin: 0 0.5em;					
+					}
+				}
+				.o_desc {
+					display: none;
+				}
+				
+				.o_taxonomy_levels {
+					position: absolute;
+					bottom: 0;
+					color: $text-muted;
+					font-size: 85%;
+					vertical-align: text-bottom;
+					.o_taxonomy {
+						font-size: 82%;
+					}
+					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+						display: none;
+					}
+				}
+				
+				.o_bookmark {
+					position: absolute;
+					z-index: 2;
+					top: (-$o-coursesite-rowelem-space-md - 3px);
+					right: 10px;
+					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+						top: (-$o-coursesite-rowelem-space-sm - 3px);
+					}
+				}
+				
+				@media (max-width: $screen-xs-max) { 
+					.o_title {
+						line-height: $o-coursesite-rowelem-height-xs;
+						margin-top: 0;
+						a {
+							border-right:math.floor($o-coursesite-rowelem-height-xs * .75) solid transparent;
+							@include text-overflow();
+						}
+					}
+					.o_educational_type, .o_author, .o_lifecycle, .o_desc, .o_taxonomy_levels, .o_bookmark {
+						display: none;
+					}	
+					.o_ext_ref {
+						position: absolute;
+						top: 0;
+						left: 10px;
+					}
+				}
+				.o_go_xs {
+					position: absolute;
+					top: 0;
+					right: 0;
+					padding: 0 1em;
+					height: $o-coursesite-rowelem-height-xs;
+					width: math.floor($o-coursesite-rowelem-height-xs * .75);
+					line-height: $o-coursesite-rowelem-height-xs;
+					color: $o-coursesite-go-xs-color;
+					background-color: $o-coursesite-go-xs-bg;
+					border-top-right-radius: $o-coursesite-rowelem-border-radius;
+					border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
+					.o_icon {
+						margin-left: -5px;
+					}
+				}	
 			}
 			
 			.o_access {
-				position: absolute;
-				top: 0; right: 0;
+				flex: 0 0 auto;
 				height: $o-coursesite-rowelem-height-md;	
 				width: $o-coursesite-rowelem-width-md;
+				position: relative;
 				overflow: hidden;
-				border-left: 1px solid $o-coursesite-rowelem-border;
-				padding-top: 0.25em;
+				
+				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+					height: $o-coursesite-rowelem-height-sm;	
+					width: $o-coursesite-rowelem-width-sm;
+				}
 				
 				.o_completion {
 					text-align: center;
@@ -66,16 +212,13 @@
 					
 				.o_state, .o_score {
 					@extend %o_small;
-					padding: 0 1em;		
-					height: floor($o-coursesite-rowelem-height-md / 6);
-					line-height: floor($o-coursesite-rowelem-height-md / 6);
+					height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
+					line-height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
 					position: relative;
 					@include text-overflow();
 				}	
 					
-				.o_score {
-					position: relative; 
-					left: 2px;
+				.o_score, o_passed {
 					.o_label {
 						color: $text-muted;
 					}
@@ -84,8 +227,8 @@
 				.o_social {
 					position: absolute;
 					width: 100%;
-					bottom: floor($o-coursesite-rowelem-height-md / 4) + 2px;
-					height: floor($o-coursesite-rowelem-height-md / 6);
+					bottom: math.floor(math.div($o-coursesite-rowelem-height-md,4)) + 2px;
+					height: math.floor(math.div($o-coursesite-rowelem-height-md,6));
 					padding-left: 1em;
 				
 					.o_rating {
@@ -99,43 +242,60 @@
 				}
 				
 				.o_bookings {
-					padding: 0 0 0 1em;							
+					padding-top: 20px;							
 					@include text-overflow();
 					color: $text-muted;
-					.o_label {
-						margin-bottom: 0.8em;		
-						font-weight: bold;
-						@extend %o_small;
-					}
-					.o_methods { }				
+					font-size: 80%;
+					.o_methods { 
+					
+					}				
+					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+						padding-top: 10px;					
+					}		
+					
 				}
 				
-				
-				.o_start, .o_book, .o_details {
+				.o_actions {
 					position: absolute;
 					display: block;
-					bottom: 0;
-					width: floor($o-coursesite-rowelem-width-md / 2);
-					height: floor($o-coursesite-rowelem-height-md / 4);
-					line-height: floor($o-coursesite-rowelem-height-md / 4);
-					text-align: center;
-					@extend %o_undecorated;
+					bottom: 0;				
+					white-space: nowrap;
+					
+					a {
+						width: math.div($o-coursesite-rowelem-width-md ,2) - 5px;
+						@include text-overflow();
+
+						.o_icon_details {
+							display: none;
+						}
+						
+						@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+							width: math.div($o-coursesite-rowelem-width-sm ,2) - 5px;		
+							span {
+								display: none;
+							}
+							.o_icon_details {
+								display: inline;
+							}
+						}
+					}
+				}
+				
+				.o_start, .o_book, .o_details {
+					@include text-overflow();
 				}
 				.o_start, .o_book {
-					right: 0;
-					border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
+				
 				}
 				.o_start { @include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); }
 				.o_book  { @include button-variant($o-coursesite-book-color, $o-coursesite-book-bg, $o-coursesite-book-border); }
 
 				.o_details {
-					right: floor($o-coursesite-rowelem-width-md / 2);
-					@include button-variant($o-coursesite-details-color, $o-coursesite-details-bg, $o-coursesite-details-border);
+					margin-right: 5px;
+				
 				}
 				
 				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					height: $o-coursesite-rowelem-height-sm;	
-					width: $o-coursesite-rowelem-width-sm;		
 					.o_score, .o_comments, .o_label {
 						display: none;
 					}					
@@ -152,100 +312,7 @@
 				}	
 				
 			}
-			.o_meta {
-				height: $o-coursesite-rowelem-height-md;	
-				margin: 0 $o-coursesite-rowelem-width-md 0 $o-coursesite-rowelem-width-md;
-				position: relative;
-				padding: 1em 0.5em 0.25em 1em;
-				background: $o-coursesite-rowelem-bg;		
-				border-left: 1px solid $o-coursesite-rowelem-border;					
-
-				overflow: hidden;
-	
-				.o_title {
-					margin: 0; /* box moves down otherwhise, replaced with padding */
-					position: relative;
-					@include text-overflow();
-					a {
-						@extend %o_undecorated;
-						display: block;
-						color: $o-coursesite-meta-title-color;
-						&:hover {
-						    color: darken($o-coursesite-meta-title-color, 10%);
-						}				
-					}
-				}
-				.o_author{
-					margin-top: 0.5em;
-					line-height: normal;
-					font-size: 90%;
-					@include text-overflow();
-					color: $o-coursesite-meta-author-color;
-					background: $o-coursesite-rowelem-bg;
-				}
-				.o_lifecycle {
-					position: absolute; 
-					top: 5px; right: 40px;
-					z-index: 2px;
-					background: $o-coursesite-rowelem-bg;
-					padding: 0 3px 3px 3px;
-					border-radius: 0px 0px $border-radius-small $border-radius-small;
-					font-size: 90%;
-					line-height: normal;
-					@include text-overflow();
-					color: $text-muted;
-					&.o_active {
-						color: $state-success-text;
-						&:hover {
-							color: darken($state-success-text, 10%);
-						}
-					}
-				}
-				.o_desc {
-					margin-top: 0.5em;	
-					background: $o-coursesite-rowelem-bg;				
-				}
-				.o_bookmark {
-					position: absolute;
-					top: -1px;
-					right: 15px;
-				}
-				@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
-					height: $o-coursesite-rowelem-height-sm;	
-					margin: 0 $o-coursesite-rowelem-width-sm;
-				}
-				@media (max-width: $screen-xs-max) { 
-					height: $o-coursesite-rowelem-height-xs;	
-					margin: 0 0 0 $o-coursesite-rowelem-width-xs;
-					padding: 0 0 0 1em;
-					.o_title {
-						line-height: $o-coursesite-rowelem-height-xs;
-						a {
-							border-right:floor($o-coursesite-rowelem-height-xs * .75) solid transparent;
-							@include text-overflow();
-							span {
-							}
-						}
-					}
-					.o_author, .o_bookmark, .o_lifecycle, .o_desc {
-						display: none;
-					}	
-				}
-				.o_go_xs {
-					position: absolute;
-					top: 0;
-					right: 0;
-					padding: 0 1em;
-					height: $o-coursesite-rowelem-height-xs;
-					width: floor($o-coursesite-rowelem-height-xs * .75);
-					line-height: $o-coursesite-rowelem-height-xs;
-					color: $o-coursesite-go-xs-color;
-					background-color: $o-coursesite-go-xs-bg;
-					border-top-right-radius: $o-coursesite-rowelem-border-radius;
-					border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
-				}
-				
-			}
+			
 		}
 	}
 	&.o_rendertype_classic {
@@ -281,7 +348,8 @@
 
 	.o_level {
 		position: relative;
-		margin-bottom: $o-coursesite-catalog-space / 2;
+		display: flex;
+		margin-bottom: math.div($o-coursesite-catalog-space,2);
 		padding: 0;
 
 		border-top: 1px solid $o-coursesite-catalog-border;
@@ -296,9 +364,7 @@
 			min-height: $o-coursesite-rowelem-width-md;	
 			height: $o-coursesite-rowelem-width-md;	
 
-			margin: 0 0 0 $o-coursesite-rowelem-width-md;
-			padding: 1em 0.5em 0.5em 2em;
-			
+			padding: 1em 0.5em 0.5em 2em;			
 			overflow-y: hidden;
 
 			.o_title {
@@ -323,7 +389,6 @@
 			.o_meta {
 				min-height: $o-coursesite-rowelem-width-sm;	
 				height: $o-coursesite-rowelem-width-sm;	
-				margin: 0 0 0 $o-coursesite-rowelem-width-sm;
 			}
 		}	
 		@media (max-width: $screen-xs-max) { 
@@ -333,7 +398,6 @@
 			.o_meta {
 				min-height: $o-coursesite-rowelem-width-xs;	
 				height: $o-coursesite-rowelem-width-xs;	
-				margin: 0 0 0 $o-coursesite-rowelem-width-xs;
 				padding: 0 0 0 1em;
 				.o_title {
 					line-height: $o-coursesite-rowelem-width-xs;
@@ -348,8 +412,9 @@
 	.o_sublevels_list {
 		.o_sublevel {
 			position: relative;
+			display: flex;
 			border: 1px solid $o-coursesite-rowelem-border;
-			margin-bottom: floor($line-height-computed / 2);
+			margin-bottom: math.floor(math.div($line-height-computed,2));
 			
 			.o_visual {
 				height: $o-coursesite-rowelem-width-xs;
@@ -370,7 +435,6 @@
 				border-left: 1px solid $o-coursesite-rowelem-border;
 				min-height: $o-coursesite-rowelem-width-xs;	
 				height: $o-coursesite-rowelem-width-xs;	
-				margin: 0 0 0 $o-coursesite-rowelem-width-xs;
 				padding: 0 0 0 1em;
 				
 				overflow: hidden;
@@ -404,12 +468,12 @@
 	
 	.o_sublevels {
 		position: relative;
+		display: flex;
+		flex-wrap: wrap;
 		margin-bottom: $o-coursesite-catalog-space;
-		@include clearfix();
 		
 		.o_sublevel {
 			position: relative;
-			float: left; 
 			margin: 0 $o-coursesite-catalog-space $o-coursesite-catalog-space 0;
 			width: $o-coursesite-rowelem-width-md;	
 
