@@ -1606,6 +1606,7 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 		width: 100%;
 		border: dotted;
 		border-width: 1px;
+		margin-bottom: 0px;
 	}
 	h1 {
 		font-size: 48px;
@@ -1618,7 +1619,7 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	}
 	div.o_offline_test_block {
 		border-top: 1px black solid;
-		margin: 1em 0;
+		margin: 0.3em 0;
 	}
 	
 	div.o_offline_test_block>div {
@@ -1626,19 +1627,17 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	}
 	
 	div.o_offline_test_description {
-		margin-top: 3em;
+		margin-top: 0;
 		padding: 2em 0;
 	}
 
 	.o_offline_test_solution {
 		background-color: #edf1f6;
 		border: 5px solid rgba(211,211,211,0.66);
-		font-size: 36px;
-		font-weight: bold;
-		padding: 1em;
-		
 		font-size: 72px;
+		font-weight: bold;
 		color: rgba(211,211,211,0.66) !important;
+		padding: 1em;
 		position: absolute;
 		top: 200px;
 		transform: rotate(45deg);

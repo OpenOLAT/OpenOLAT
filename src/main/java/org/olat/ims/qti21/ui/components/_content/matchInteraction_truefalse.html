@@ -50,7 +50,7 @@
                 	<td class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">
                   	<input id="oo_${set1Identifier}_${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked, $responseValue) || $r.trueFalseDefault($responseChecked, $set2Identifier, $interaction)) checked #end #if($r.isItemSessionEnded()) disabled #end/><i> </i>
                 		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
-                		$r.renderScorePerMatch($interaction, $choice1, $choice2)
+                		$r.renderDirectedScoreAttribute($interaction, $choice1.identifier, $choice2.identifier)
                 	</td>
 				#end
 				

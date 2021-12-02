@@ -887,6 +887,12 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return renderScorePerAnswer(score, translator);
 	}
 	
+	/**
+	 * 
+	 * @param interaction The interaction
+	 * @param choice The choice
+	 * @return
+	 */
 	public String renderScorePerChoice(Interaction interaction, Choice choice) {
 		if(interaction == null || interaction.getResponseIdentifier() == null || !avc.isScorePerAnswers()) return "";
 		return renderScorePerChoice(assessmentItem, interaction, choice, translator);
@@ -913,32 +919,11 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return renderScorePerAnswer(score, translator);
 	}
 	
-	public String renderScorePerMatch(Interaction interaction, Choice choice1, Choice choice2) {
-		if(interaction == null || !avc.isScorePerAnswers()) return "";
-		
-		Double score = null;
-		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
-		if(interaction instanceof MatchInteraction && responseDeclaration != null
-				&& responseDeclaration.getMapping() != null
-				&& responseDeclaration.getMapping().getMapEntries() != null) {
-			List<MapEntry> entries = responseDeclaration.getMapping().getMapEntries();
-			for(MapEntry entry:entries) {
-				SingleValue key = entry.getMapKey();
-				if(key instanceof DirectedPairValue) {
-					DirectedPairValue pairKey = (DirectedPairValue)key;
-					Identifier sourceIdentifier = pairKey.sourceValue();
-					Identifier destIdentifier = pairKey.destValue();
-					if(sourceIdentifier.equals(choice1.getIdentifier()) && destIdentifier.equals(choice2.getIdentifier())) {
-						score = entry.getMappedValue();
-						break;
-					}
-				}
-			}
-		}
-		
-		return renderScorePerAnswer(score, translator);
-	}
-	
+	/**
+	 * @param value The score value
+	 * @param translator The translator
+	 * @return Returns the value formatted and decorated in a span with a short translated add on for points.
+	 */
 	public static String renderScorePerAnswer(Double value, Translator translator) {
 		if(value == null) {
 			return "";
@@ -959,6 +944,13 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return stringVal;
 	}
 	
+	/**
+	 * 
+	 * @param item The assessment item
+	 * @param interaction The interaction
+	 * @param choice The choice
+	 * @return The score of single/multiple choices, hottext or hotspot interactions
+	 */
 	private static final Double getScorePerChoice(AssessmentItem item, Interaction interaction, Choice choice) {
 		Double score = null;
 		if(interaction instanceof ChoiceInteraction) {
@@ -989,14 +981,22 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return score;
 	}
 	
+	/**
+	 * Very specialized method which pack the scores of the specified source identifier in the
+	 * form of target1.identifier=score1;target2.identifier=score2 suited for the Javascript
+	 * library which rendered the D&D version of the match interaction.
+	 * 
+	 * @param interaction The interaction
+	 * @param source The source choice identifier
+	 * @return A string
+	 */
 	public String renderDirectedScoreAttribute(Interaction interaction, Identifier source) {
 		if(interaction == null || source == null || !avc.isScorePerAnswers()) return "";
 		
 		StringBuilder sb = new StringBuilder();
 		
 		if(interaction instanceof MatchInteraction) {
-			ResponseDeclaration responseDeclaration = assessmentItem
-					.getResponseDeclaration(interaction.getResponseIdentifier());
+			ResponseDeclaration responseDeclaration = getResponseDeclaration(interaction.getResponseIdentifier());
 			if(responseDeclaration != null) {
 				Mapping mapping = responseDeclaration.getMapping();
 				if(mapping != null) {
@@ -1030,7 +1030,55 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		}
 		
 		return sb.toString();
+	}
+	
+
+	public boolean renderDirectedScore(Interaction interaction) {
+		if(interaction == null || !avc.isScorePerAnswers()) return false;
 		
+		return AssessmentRenderFunctions.getResponseMapping(assessmentItem, interaction.getResponseIdentifier()) != null;
+	}
+	
+	/**
+	 * Specialized methods for match. Returns the score of a particular directed pair.
+	 * 
+	 * @param interaction The interaction
+	 * @param source The source choice identifier
+	 * @param destination The target choice identifier
+	 * @return Mapped score of a match choice
+	 */
+	public String renderDirectedScoreAttribute(Interaction interaction, Identifier source, Identifier destination) {
+		if(interaction == null || source == null || !avc.isScorePerAnswers()) return "";
+		
+		Double score = null;
+		if(interaction instanceof MatchInteraction) {
+			score = CorrectResponsesUtil.getMappedValue(assessmentItem, interaction, source, destination);
+		}
+		return renderScorePerAnswer(score, translator);
+	}
+	
+	/**
+	 * Specialized methods for match. check if a particular directed pair is correct or not.
+	 * 
+	 * @param interaction The interaction
+	 * @param source The source choice identifier
+	 * @param destination The target choice identifier
+	 * @return Correctness of a match choice
+	 */
+	public boolean isDirectedCorrect(Interaction interaction, Identifier source, Identifier destination) {
+		if(interaction == null || source == null || !avc.isScorePerAnswers()) return false;
+		
+		boolean correct = false;
+		if(interaction instanceof MatchInteraction) {
+			Set<String> correctResponses = CorrectResponsesUtil.getCorrectDirectPairResponses(assessmentItem, interaction, false);
+			String pair = source.toString() + " " + destination.toString();
+			correct = correctResponses != null && correctResponses.contains(pair);
+		}
+		return correct;
+	}
+	
+	public boolean hasMapping() {
+		return true;
 	}
 	
 	public String placeholder(Interaction interaction) {

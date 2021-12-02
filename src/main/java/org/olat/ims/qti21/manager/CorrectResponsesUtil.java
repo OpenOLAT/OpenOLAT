@@ -48,6 +48,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.AbstractPairValue;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
@@ -382,6 +383,26 @@ public class CorrectResponsesUtil {
 						Identifier identifier = ((IdentifierValue)sValue).identifierValue();
 						if(identifier.equals(choice.getIdentifier())) {
 							return entry.getMappedValue();
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static final Double getMappedValue(AssessmentItem assessmentItem, Interaction interaction, Identifier source, Identifier destination) {
+		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
+		if(responseDeclaration != null && responseDeclaration.getMapping() != null) {
+			Mapping mapping = responseDeclaration.getMapping();
+			if(mapping != null && mapping.getMapEntries() != null) {
+				for(MapEntry entry:mapping.getMapEntries()) {
+					SingleValue sValue = entry.getMapKey();
+					if(sValue instanceof AbstractPairValue) {
+						Identifier sourceIdentifier = ((AbstractPairValue)sValue).sourceValue();
+						Identifier destIdentifier = ((AbstractPairValue)sValue).destValue();
+						if(source.equals(sourceIdentifier) && destination.equals(destIdentifier)) {
+							return Double.valueOf(entry.getMappedValue());
 						}
 					}
 				}

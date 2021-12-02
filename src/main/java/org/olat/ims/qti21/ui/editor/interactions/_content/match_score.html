@@ -1,18 +1,18 @@
 <table class="table matchInteraction score">
 	<thead>
 		<tr>
-			#if($r.isTrue($sourceLeft)) <th></th> #end
+			#if($r.isTrue($sourceLeft)) <th scope="cols"></th> #end
 			#foreach($targetChoice in $targetChoices)
-				<th>${r.render($targetChoice.getSummaryEl())}
+				<th scope="cols">${r.render($targetChoice.getSummaryEl())}</th>
 			#end
-			#if($r.isFalse($sourceLeft)) <th></th> #end
+			#if($r.isFalse($sourceLeft)) <th scope="cols"></th> #end
 		</tr>
 	</thead>
 	<tbody>
 	#foreach($sourceChoice in $sourceChoices)
 		<tr>
 			#if($r.isTrue($sourceLeft)) 
-				<th>${r.render($sourceChoice.getSummaryEl())}</th>
+				<th scope="rows">${r.render($sourceChoice.getSummaryEl())}</th>
 			#end
 			#set($sourceIndex = ${foreach.index})
 			#foreach($targetChoice in $targetChoices)
@@ -28,7 +28,7 @@
 				</td>
 			#end
 			#if($r.isFalse($sourceLeft)) 
-				<td>${r.render($sourceChoice.getSummaryEl())}</td>
+				<th scope="rows">${r.render($sourceChoice.getSummaryEl())}</th>
 			#end
 		</tr>
 	#end

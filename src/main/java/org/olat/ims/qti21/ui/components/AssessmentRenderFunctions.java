@@ -50,6 +50,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
@@ -254,10 +255,16 @@ public class AssessmentRenderFunctions {
 		return assessmentItem.getResponseDeclaration(identifier);
 	}
 	
+	public static Mapping getResponseMapping(AssessmentItem assessmentItem, Identifier identifier) {
+		ResponseDeclaration responseDeclaration = getResponseDeclaration(assessmentItem, identifier);
+		if(responseDeclaration != null) {
+			return responseDeclaration.getMapping();
+		}
+		return null;
+	}
+	
 	public static ResponseData getResponseInput(ItemSessionState itemSessionState, Identifier identifier) {
-		ResponseData responseInput =  itemSessionState.getRawResponseDataMap().get(identifier);
-		
-		return responseInput;
+		return itemSessionState.getRawResponseDataMap().get(identifier);
 	}
 	
 	public static String extractSingleCardinalityResponseInput(ResponseData data) {

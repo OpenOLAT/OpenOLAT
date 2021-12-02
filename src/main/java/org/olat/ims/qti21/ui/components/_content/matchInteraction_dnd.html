@@ -95,4 +95,35 @@
 		});
 	});
 	</script>
+	#if($r.renderDirectedScore($interaction))
+	<fieldset>
+		<legend>$r.translate("results.points")</legend>	
+		<table class="table matchInteraction score">
+			<thead>
+				<tr>
+					<th scope="cols"></th>
+					#foreach($targetChoice in $orderedSet2)
+						<th scope="cols">$r.renderFlowStatics($targetChoice.getFlowStatics())</th>
+					#end
+				</tr>
+			</thead>
+			<tbody>
+			#foreach($sourceChoice in $orderedSet1)
+				<tr>
+					<th scope="rows">${r.renderFlowStatics($sourceChoice.getFlowStatics())}</th>
+					#set($sourceIndex = ${foreach.index})
+					#foreach($targetChoice in $orderedSet2)
+						<td class="o_sel_match_${sourceIndex}_${foreach.index}">
+						#if($r.isDirectedCorrect($interaction, $sourceChoice.identifier, $targetChoice.identifier))
+							<i class=" o_icon o_icon-lg o_icon_accept"> </i>
+						#end
+						$r.renderDirectedScoreAttribute($interaction, $sourceChoice.identifier, $targetChoice.identifier)
+						</td>
+					#end
+				</tr>
+			#end
+			</tbody>
+		</table>
+	</fieldset>
+	#end
 </div>
