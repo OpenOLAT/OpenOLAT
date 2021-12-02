@@ -479,7 +479,7 @@ public class QTI21OfflineTestsPDFController extends FormBasicController {
 		}
 		
 		public boolean maxScoreSingular() {
-			return maxScore < 2.0d; 
+			return maxScore < 1.1d; 
 		}
 		
 		public String getMaxScore() {

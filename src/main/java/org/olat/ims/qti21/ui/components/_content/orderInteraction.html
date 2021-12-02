@@ -36,7 +36,8 @@
 			<ul class="clearfix">
 				#foreach($respondedChoice in $respondedVisibleChoices)
 				<li id="qtiworks_response_${respondedChoice.identifier}" class="o_assessmentitem_order_item">$r.renderFlowStatics($respondedChoice.getFlowStatics())</li>
-            		#end
+            	#end
+            	$r.renderScorePerInteraction($interaction)
 			</ul>
 		</div>
 		<script>

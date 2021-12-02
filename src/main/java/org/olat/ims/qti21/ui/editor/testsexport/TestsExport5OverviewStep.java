@@ -147,16 +147,18 @@ public class TestsExport5OverviewStep extends BasicStep {
 			uifactory.addStaticTextElement("language", "overview.language", language, generalCont);
 			
 			String serialNumbers;
+			String serialNumbersLabel = "overview.serial.number";
 			String startSerialNumber = exportContext.getSerialNumber(1);
 			if(exportContext.getNumOfTests() == 1) {
 				serialNumbers = startSerialNumber;
 			} else if(exportContext.getNumOfTests() > 1) {
 				String endSerialNumber = exportContext.getSerialNumber(exportContext.getNumOfTests());
 				serialNumbers = translate("overview.serial.number.val", startSerialNumber, endSerialNumber);
+				serialNumbersLabel = "overview.serial.numbers";
 			} else {
 				serialNumbers = "";
 			}
-			uifactory.addStaticTextElement("serial.number", "overview.serial.number", serialNumbers, generalCont);	
+			uifactory.addStaticTextElement("serial.number", serialNumbersLabel, serialNumbers, generalCont);	
 		}
 		
 		private void initTestForm(FormItemContainer formLayout) {

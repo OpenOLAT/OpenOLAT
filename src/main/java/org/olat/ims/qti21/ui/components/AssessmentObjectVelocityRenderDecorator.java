@@ -877,7 +877,13 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 				FIBAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 				score = numericalEntry.getScore();
 			} 
+		} else if(interaction instanceof OrderInteraction) {
+			long numOfInteractions = getNumOfInteractions(assessmentItem);
+			if(numOfInteractions == 1) {
+				score = QtiNodesExtractor.extractMaxScore(assessmentItem);
+			}
 		}
+		
 		return renderScorePerAnswer(score, translator);
 	}
 	
@@ -945,7 +951,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		String stringVal;
 		if(value == null) {
 			stringVal = "";
-		} else if(value.doubleValue() < 1.99d) {
+		} else if(value.doubleValue() < 1.1d) {
 			stringVal = translator.translate("point.answer.singular", AssessmentHelper.getRoundedScore(value));
 		} else {
 			stringVal = translator.translate("point.answer.plural", AssessmentHelper.getRoundedScore(value));
@@ -961,9 +967,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 			if(mapping != null) {
 				score = mapping.get(choice.getIdentifier());
 			} else {
-				long numOfInteractions = item.getItemBody().findInteractions().stream()
-						.filter(interact -> !(interact instanceof EndAttemptInteraction))
-						.count();
+				long numOfInteractions = getNumOfInteractions(item);
 				List<Identifier> correctResponses = CorrectResponsesUtil.getCorrectIdentifierResponses(item, choiceInteraction);
 				if(numOfInteractions == 1l
 						&& correctResponses != null && correctResponses.size() == 1
@@ -1008,9 +1012,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 						}
 					}
 				} else {
-					long numOfInteractions = assessmentItem.getItemBody().findInteractions().stream()
-							.filter(interact -> !(interact instanceof EndAttemptInteraction))
-							.count();
+					long numOfInteractions = getNumOfInteractions(assessmentItem);
 					Set<String> correctResponses = CorrectResponsesUtil.getCorrectDirectPairResponses(assessmentItem, interaction, false);
 					if(numOfInteractions == 1l && correctResponses != null && correctResponses.size() == 1) {
 						String correctResponse = correctResponses.iterator().next();
@@ -1045,6 +1047,15 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		String id = FormBaseComponentIdProvider.DISPPREFIX.concat(avc.getDispatchID()); 
 		return FormJSHelper.getJSFnCallFor(avc.getQtiItem().getRootForm(), id, 2,
 				false, QTIWorksAssessmentTestEvent.Event.fullTmpResponse.name());
+	}
+	
+	/**
+	 * @return The number of interactions but without the end attempts.
+	 */
+	private static long getNumOfInteractions(AssessmentItem item) {
+		return item.getItemBody().findInteractions().stream()
+				.filter(interact -> !(interact instanceof EndAttemptInteraction))
+				.count();
 	}
 	
 	public int getNumOfUploadInteractions() {
