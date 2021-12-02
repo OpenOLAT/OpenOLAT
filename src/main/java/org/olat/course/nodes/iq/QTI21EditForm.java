@@ -49,6 +49,7 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
+import org.olat.course.duedate.model.NoDueDateConfig;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
 import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -509,6 +510,8 @@ public class QTI21EditForm extends FormBasicController {
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
 			update();
+		} else if(testStartDateEl == source) {
+			updateTestEndDate();
 		} else if(testDateDependentEl == source) {
 			if(testDateDependentEl.isAtLeastSelected(1)) {
 				confirmTestDates(ureq);
@@ -544,6 +547,13 @@ public class QTI21EditForm extends FormBasicController {
 				leadTimeEl.setVisible(false);
 				followupTimeEl.setVisible(false);
 			}
+		}
+	}
+	
+	private void updateTestEndDate() {
+		if (testEndDateEl.isVisible() && testEndDateEl.getDueDateConfig() == NoDueDateConfig.NO_DUE_DATE_CONFIG) {
+			testEndDateEl.setDueDateConfig(testStartDateEl.getDueDateConfig());
+			testEndDateEl.setFocus(true);
 		}
 	}
 

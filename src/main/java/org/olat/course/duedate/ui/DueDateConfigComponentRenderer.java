@@ -66,6 +66,16 @@ public class DueDateConfigComponentRenderer extends DefaultComponentRenderer {
 			}
 		}
 		sb.append("</div>");
+		
+		setRendered(dueDateItem.getNumOfDaysEl());
+		setRendered(dueDateItem.getRealtiveToDateEl());
+		setRendered(dueDateItem.getAbsoluteDateEl());
+	}
+	
+	private void setRendered(FormItem item) {
+		if(item != null) {
+			item.getComponent().setDirty(false);
+		}
 	}
 
 }

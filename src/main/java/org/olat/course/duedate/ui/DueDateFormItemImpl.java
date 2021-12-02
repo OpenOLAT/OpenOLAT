@@ -29,6 +29,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
@@ -94,11 +96,21 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 					: realtiveToDateEl.getKey(0);
 			realtiveToDateEl.select(selectedKey, true);
 			
-			absoluteDateEl = new JSDateChooser("ad_" + getName(), initialDueDateConfig.getAbsoluteDate(), getTranslator().getLocale());
+			absoluteDateEl = new JSDateChooser("ad_" + getFormDispatchId(), "ad_" + getName(), initialDueDateConfig.getAbsoluteDate(), getTranslator().getLocale()) {
+				/**
+				 * Catch the request to the date chooser and redirect it the our due date item.
+				 * 
+				 */
+				@Override
+				public void doDispatchFormRequest(UserRequest ureq) {
+					DueDateFormItemImpl.this.doDispatchFormRequest(ureq);
+				}
+			};
 			absoluteDateEl.setTranslator(getTranslator());
 			absoluteDateEl.setValidDateCheck("form.error.date");
 			absoluteDateEl.setRootForm(getRootForm());
 			absoluteDateEl.setDateChooserTimeEnabled(true);
+			absoluteDateEl.addActionListener(FormEvent.ONCHANGE);
 		}
 	}
 	
@@ -142,6 +154,32 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		//
+	}
+
+	@Override
+	public void doDispatchFormRequest(UserRequest ureq) {
+		if(getRootForm().hasAlreadyFired()){
+			//dispatchFormRequest did fire already
+			//in this case we do not try to fire the general events
+			return;
+		}
+		
+		Form form = getRootForm();
+		String dispatchuri = form.getRequestParameter("dispatchuri");
+		if(action == getRootForm().getAction() && absoluteDateEl != null
+				&& dispatchuri.equals(DISPPREFIX.concat(absoluteDateEl.getComponent().getDispatchID()))) {
+			absoluteDateEl.evalFormRequest(ureq);
+			getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, action));
+		}
+	}
+
+	@Override
+	public void setFocus(boolean hasFocus) {
+		if(this.absoluteDateEl != null && absoluteDateEl.isVisible()) {
+			absoluteDateEl.setFocus(true);
+		} else {
+			super.setFocus(hasFocus);
+		}
 	}
 
 	@Override
