@@ -374,16 +374,18 @@ public class IdentityListCourseNodeController extends FormBasicController
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		toReviewTab = FlexiFiltersTabFactory.tabWithImplicitFilters(FAILED_TAB_ID, translate("filter.to.review"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "inReview")));
-		toReviewTab.setFiltersExpanded(true);
-		tabs.add(toReviewTab);
+		if(Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
+			toReviewTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TO_REVIEW_TAB_ID, translate("filter.to.review"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "inReview")));
+			toReviewTab.setFiltersExpanded(true);
+			tabs.add(toReviewTab);
 		
-		toReleaseTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TO_RELEASE_TAB_ID, translate("filter.to.release"),
-				TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "done"),
-						FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_USER_VISIBILITY, "notReleased")));
-		toReleaseTab.setFiltersExpanded(true);
-		tabs.add(toReleaseTab);
+			toReleaseTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TO_RELEASE_TAB_ID, translate("filter.to.release"),
+					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "done"),
+							FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_USER_VISIBILITY, "notReleased")));
+			toReleaseTab.setFiltersExpanded(true);
+			tabs.add(toReleaseTab);
+		}
 		
 		if(Mode.none != assessmentConfig.getPassedMode()) {
 			passedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(PASSED_TAB_ID, translate("filter.passed"),
@@ -438,11 +440,13 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 		
 		// user visibility
-		SelectionValues userVisibilityValues = new SelectionValues();
-		userVisibilityValues.add(SelectionValues.entry("released", translate("filter.released")));
-		userVisibilityValues.add(SelectionValues.entry("notReleased", translate("filter.not.released")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.release"),
-				AssessedIdentityListState.FILTER_USER_VISIBILITY, userVisibilityValues, true));
+		if(Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
+			SelectionValues userVisibilityValues = new SelectionValues();
+			userVisibilityValues.add(SelectionValues.entry("released", translate("filter.released")));
+			userVisibilityValues.add(SelectionValues.entry("notReleased", translate("filter.not.released")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("filter.release"),
+					AssessedIdentityListState.FILTER_USER_VISIBILITY, userVisibilityValues, true));
+		}
 		
 		// obligation
 		if (learningPath) {
@@ -710,7 +714,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	private boolean matchesStatusFilter(SearchAssessedIdentityParams params, AssessmentEntry entry) {
 		if (hasStatusFilter(params)) {
-			return params.getAssessmentStatus().contains(entry.getAssessmentStatus());
+			return params.getAssessmentStatus().contains(entry.getAssessmentStatus())
+					// AssessmentEntry without status is displayed as notStarted
+					|| (params.getAssessmentStatus().contains(AssessmentEntryStatus.notStarted) && entry.getAssessmentStatus() == null);
 		}
 		return true;
 	}
