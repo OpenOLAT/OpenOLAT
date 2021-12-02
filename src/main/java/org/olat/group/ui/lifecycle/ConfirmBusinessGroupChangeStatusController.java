@@ -101,7 +101,7 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 			}
 		}
 
-		String[] notifications = new String[] { translate("dialog.modal.bg.mail.text") };
+		String[] notifications = new String[] { translate("dialog.modal.bg.mail.responsible.text") };
 		notificationEl = uifactory.addCheckboxesHorizontal("notifications", "dialog.modal.bg.mail.text", formLayout, new String[]{ "" },  notifications);
 		notificationEl.setVisible(hasMembers);
 		if((newStatus == BusinessGroupStatusEnum.inactive && businessGroupModule.isMailAfterDeactivation())
@@ -148,9 +148,17 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 		}
 		dbInstance.commit();
 		if(newStatus == BusinessGroupStatusEnum.inactive) {
-			showInfo("info.group.inactivated");
+			if(groups.size() == 1) {
+				showInfo(withMail ? "info.group.inactivated.singular.mail" : "info.group.inactivated.singular");
+			} else {
+				showInfo(withMail ? "info.group.inactivated.plural.mail" : "info.group.inactivated.plural", Integer.toString(groups.size()));
+			}
 		} else if(newStatus == BusinessGroupStatusEnum.trash) {
-			showInfo("info.group.deleted");
+			if(groups.size() == 1) {
+				showInfo(withMail ? "info.group.deleted.mail" : "info.group.deleted");
+			} else {
+				showInfo(withMail ? "info.group.deleted.plural.mail" : "info.group.deleted.plural", Integer.toString(groups.size()));
+			}
 		}
 	}
 

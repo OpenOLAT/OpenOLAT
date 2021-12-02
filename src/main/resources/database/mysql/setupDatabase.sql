@@ -81,6 +81,7 @@ create table if not exists o_gp_business (
    reactivationdate datetime,
    softdeleteemaildate datetime,
    softdeletedate datetime,
+   data_for_restore mediumtext,
    groupname varchar(255),
    technical_type varchar(32) default 'business' not null,
    external_id varchar(64),

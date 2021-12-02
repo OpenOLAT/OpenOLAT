@@ -65,8 +65,8 @@ public class ConfirmRestoreController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		SelectionValues modeValues = new SelectionValues();
-		modeValues.add(new SelectionValue("active", translate("restore.to.inactive.label"), translate("restore.to.inactive.desc")));
-		modeValues.add(new SelectionValue("inactive", translate("restore.to.active.label"), translate("restore.to.active.desc")));
+		modeValues.add(new SelectionValue("inactive", translate("restore.to.inactive.label"), translate("restore.to.inactive.desc")));
+		modeValues.add(new SelectionValue("active", translate("restore.to.active.label"), translate("restore.to.active.desc")));
 		activationEl = uifactory.addCardSingleSelectHorizontal("restore.mode", formLayout, modeValues.keys(), modeValues.values(), modeValues.descriptions(), null);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

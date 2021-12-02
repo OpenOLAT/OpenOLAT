@@ -176,7 +176,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		} else {
 			inactivationI18n = "status.inactivation.overdue";
 		}
-		uifactory.addStaticTextElement("status.inactivation", translate(inactivationI18n, inactivation, Long.toString(Math.abs(days))), formLayout);
+		uifactory.addStaticTextElement("status.inactivation.planned", translate(inactivationI18n, inactivation, Long.toString(Math.abs(days))), formLayout);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

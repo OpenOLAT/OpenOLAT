@@ -241,6 +241,8 @@ public class BusinessGroupEditController extends BasicController implements Gene
 				if(resourceController == null) {
 					resourceController = new BusinessGroupEditResourceController(uureq, getWindowControl(), currBusinessGroup);
 					listenTo(resourceController);
+				} else {
+					resourceController.updateBusinessGroup(currBusinessGroup);
 				}
 				return resourceController.getInitialComponent();
 			});

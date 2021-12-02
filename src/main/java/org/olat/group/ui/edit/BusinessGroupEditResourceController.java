@@ -40,7 +40,6 @@ import org.olat.core.gui.components.table.TableEvent;
 import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -77,7 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author gnaegi
  */
-public class BusinessGroupEditResourceController extends BasicController implements ControllerEventListener {
+public class BusinessGroupEditResourceController extends BasicController {
 
 	private final VelocityContainer mainVC;
 
@@ -141,6 +140,14 @@ public class BusinessGroupEditResourceController extends BasicController impleme
 		}
 		mainVC.put("resources", resourcesCtr.getInitialComponent());
 		putInitialPanel(mainVC);
+	}
+	
+	public void updateBusinessGroup(BusinessGroup bGroup) {
+		this.group = bGroup;
+		
+		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
+		repoTableModel.setObjects(repoTableModelEntries);
+		resourcesCtr.setTableDataModel(repoTableModel);
 	}
 
 	@Override

@@ -1264,7 +1264,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				}
 			}
 					
-			String title = translate(key, new String[] { names.toString(), Integer.toString(groups.size()) });
+			String title = translate(key, names.toString(), Integer.toString(groups.size()));
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeStatusController.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);

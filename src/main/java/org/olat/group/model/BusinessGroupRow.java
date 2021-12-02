@@ -25,7 +25,6 @@ import java.util.List;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.group.BusinessGroupLifecycle;
 import org.olat.group.BusinessGroupManagedFlag;
-import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.repository.RepositoryEntryShort;
@@ -37,7 +36,7 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort, BusinessGroupLifecycle {
+public class BusinessGroupRow implements BusinessGroupShort, BusinessGroupLifecycle {
 	
 	private final Long key;
 	private final Date creationDate;

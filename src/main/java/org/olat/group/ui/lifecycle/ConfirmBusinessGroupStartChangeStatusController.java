@@ -74,16 +74,16 @@ public class ConfirmBusinessGroupStartChangeStatusController extends FormBasicCo
 			String names = BGMailHelper.joinNames(groups);
 			if(nextStatus == BusinessGroupStatusEnum.inactive) {
 				if(groups.size() == 1) {
-					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.inactivate.text.singular", new String[] { names }));
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.inactivate.text.singular", names));
 				} else {
-					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.inactivate.text.plural", new String[] { names }));
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.inactivate.text.plural", names));
 				}
 				i18nAction = "inactivate.group.start";
 			} else if(nextStatus == BusinessGroupStatusEnum.trash || nextStatus == BusinessGroupStatusEnum.deleted) {
 				if(groups.size() == 1) {
-					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.delete.text.singular", new String[] { names }));
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.delete.text.singular", names));
 				} else {
-					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.delete.text.plural", new String[] { names }));
+					layoutCont.contextPut("msg", translate("dialog.modal.bg.start.delete.text.plural", names));
 				}
 				i18nAction = "soft.delete.group.start";
 			}
@@ -115,7 +115,12 @@ public class ConfirmBusinessGroupStartChangeStatusController extends FormBasicCo
 			}
 		}
 		dbInstance.commit();
-		showInfo("info.send.mail");
+
+		if(nextStatus == BusinessGroupStatusEnum.inactive) {
+			showInfo("info.start.inactivation");
+		} else if(nextStatus == BusinessGroupStatusEnum.trash) {
+			showInfo("info.start.deletion");
+		}
 	}
 
 	@Override

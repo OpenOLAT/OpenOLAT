@@ -8,6 +8,8 @@ alter table o_gp_business add column reactivationdate timestamp;
 alter table o_gp_business add column softdeleteemaildate timestamp;
 alter table o_gp_business add column softdeletedate timestamp;
 
+alter table o_gp_business add column data_for_restore text;
+
 alter table o_gp_business add column fk_inactivatedby_id int8;
 alter table o_gp_business add column fk_softdeletedby_id int8;
 

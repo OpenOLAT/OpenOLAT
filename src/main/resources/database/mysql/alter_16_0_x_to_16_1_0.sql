@@ -8,6 +8,8 @@ alter table o_gp_business add column reactivationdate datetime;
 alter table o_gp_business add column softdeleteemaildate datetime;
 alter table o_gp_business add column softdeletedate datetime;
 
+alter table o_gp_business add column data_for_restore mediumtext;
+
 alter table o_gp_business add column fk_inactivatedby_id bigint;
 alter table o_gp_business add column fk_softdeletedby_id bigint;
 

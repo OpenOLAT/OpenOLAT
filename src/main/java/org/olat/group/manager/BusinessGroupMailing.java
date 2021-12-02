@@ -180,9 +180,9 @@ public class BusinessGroupMailing {
 	
 	public static class MailTemplateDelegate extends MailTemplate {
 		
-		private final static String GROUP_NAME = "groupName";
-		private final static String GROUP_DESCRIPTION = "groupDescription";
-		private final static String COURSE_LIST = "courseList";
+		private static final String GROUP_NAME = "groupName";
+		private static final String GROUP_DESCRIPTION = "groupDescription";
+		private static final String COURSE_LIST = "courseList";
 		
 		private final MailTemplate delegate;
 		private final BGMailTemplateInfos infos;
@@ -190,7 +190,7 @@ public class BusinessGroupMailing {
 		public MailTemplateDelegate(MailTemplate delegate, BusinessGroupShort group, List<RepositoryEntryShort> entries) {
 			super(null, null, null);
 			this.delegate = delegate;
-			infos = BGMailHelper.getTemplateInfos(group, entries);
+			infos = BGMailHelper.getTemplateInfos(group, entries, null);
 			String subject = delegate.getSubjectTemplate();
 			if(subject != null) {
 				subject = subject.replace("$groupname", infos.getGroupName());

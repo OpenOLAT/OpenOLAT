@@ -8,6 +8,8 @@ alter table o_gp_business add reactivationdate date;
 alter table o_gp_business add softdeleteemaildate date;
 alter table o_gp_business add softdeletedate date;
 
+alter table o_gp_business add data_for_restore CLOB;
+
 alter table o_gp_business add fk_inactivatedby_id number(20);
 alter table o_gp_business add fk_softdeletedby_id number(20);
 

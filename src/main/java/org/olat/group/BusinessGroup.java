@@ -30,7 +30,6 @@ import java.util.Date;
 import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
 
@@ -41,7 +40,7 @@ import org.olat.resource.OLATResource;
  *         Comment: All OLAT business group implementation share this interface.
  *         Examples are the buddygroups or the learning groups
  */
-public interface BusinessGroup extends BusinessGroupShort, BusinessGroupLifecycle, Persistable, CreateInfo, ModifiedInfo, OLATResourceable {
+public interface BusinessGroup extends BusinessGroupShort, BusinessGroupLifecycle, Persistable, CreateInfo, ModifiedInfo {
 
 	/** regular expression to check for valid group names */
 	// commas are not allowed. name is used in course conditions for weak binding

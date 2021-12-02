@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.calendar.CalendarUtils;
@@ -51,6 +52,7 @@ import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -62,6 +64,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
@@ -74,13 +77,20 @@ import org.olat.group.DeletableGroupData;
 import org.olat.group.GroupLoggingAction;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.BusinessGroupDeletedEvent;
+import org.olat.group.model.DeletedBusinessGroupBackup;
 import org.olat.group.ui.BGMailHelper;
+import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.group.ui.lifecycle.BusinessGroupLifecycleTypeEnum;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryDeletionModule;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -93,8 +103,18 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 
 	private static final Logger log = Tracing.createLoggerFor(BusinessGroupLifecycleManagerImpl.class);
 	
+	private static final XStream backupXStream = XStreamHelper.createXStreamInstance();
+	static {
+		Class<?>[] types = new Class[] {
+				DeletedBusinessGroupBackup.class
+			};
+		backupXStream.addPermission(new ExplicitTypePermission(types));
+	}
+	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private IdentityDAO identityDao;
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -105,6 +125,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	private AssessmentModeDAO assessmentModeDao;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private BusinessGroupModule businessGroupModule;
 	@Autowired
@@ -322,6 +344,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	public BusinessGroup changeBusinessGroupStatus(BusinessGroup businessGroup, BusinessGroupStatusEnum status, Identity doer, boolean asOwner) {
 		BusinessGroupImpl reloadedBusinessGroup = (BusinessGroupImpl)businessGroupDao.loadForUpdate(businessGroup);
 		BusinessGroup mergedGroup = null;
+		
+		boolean tryRestore = false;
 		if(reloadedBusinessGroup != null) {
 			BusinessGroupStatusEnum previousStatus = reloadedBusinessGroup.getGroupStatus();
 			reloadedBusinessGroup.setGroupStatus(status);
@@ -335,14 +359,18 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 				if(BusinessGroupStatusEnum.inactive == previousStatus || BusinessGroupStatusEnum.trash == previousStatus) {
 					if(asOwner) {
 						reloadedBusinessGroup.setLastUsage(new Date());
+						reloadedBusinessGroup.setReactivationDate(null);
 					} else {
 						reloadedBusinessGroup.setReactivationDate(new Date());
 					}
 				}
+				tryRestore = (BusinessGroupStatusEnum.trash == previousStatus || BusinessGroupStatusEnum.deleted == previousStatus);
 			} else if(status == BusinessGroupStatusEnum.inactive) {
 				reloadedBusinessGroup.setInactivationDate(new Date());
 				reloadedBusinessGroup.setInactivatedBy(doer);
 				reloadedBusinessGroup.setReactivationDate(null);
+
+				tryRestore = (BusinessGroupStatusEnum.trash == previousStatus || BusinessGroupStatusEnum.deleted == previousStatus);
 			} else if(status == BusinessGroupStatusEnum.trash) {
 				reloadedBusinessGroup.setSoftDeleteDate(new Date());
 				reloadedBusinessGroup.setSoftDeletedBy(doer);
@@ -352,7 +380,59 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			mergedGroup.getBaseGroup().getKey();
 		}
 		dbInstance.commit();
+		if(tryRestore) {
+			restoreRelations((BusinessGroupImpl)mergedGroup);
+		}
 		return mergedGroup;
+	}
+	
+	private void restoreRelations(BusinessGroupImpl businessGroup) {
+		String backupXml = businessGroup.getDataForRestore();
+		if(!StringHelper.containsNonWhitespace(backupXml)) return;
+		
+		DeletedBusinessGroupBackup backup = backupToString(backupXml);
+		if(backup == null) return;
+		
+		int count = 0;
+		List<Long> repositoryEntryKeys = backup.getRepositoryEntryKeys();
+		for(Long repositoryEntryKey:repositoryEntryKeys) {
+			RepositoryEntry re = repositoryEntryDao.loadByKey(repositoryEntryKey);
+			if(re != null) {
+				businessGroupRelationDao.addRelationToResource(businessGroup, re);
+			}
+			if((++count % 25) == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		
+		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<>();
+		
+		List<Long> coachKeys = backup.getCoachKeys();
+		List<Identity> coaches = identityDao.loadByKeys(coachKeys);
+		for(Identity identityToAdd:coaches) {
+			businessGroupRelationDao.addRole(identityToAdd, businessGroup, GroupRoles.coach.name());
+			// notify currently active users of this business group
+			events.add(BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, businessGroup, identityToAdd));
+
+			if((++count % 25) == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+
+		List<Long> participantKeys = backup.getParticipantKeys();
+		List<Identity> participants = identityDao.loadByKeys(participantKeys);
+		for(Identity identityToAdd:participants) {
+			businessGroupRelationDao.addRole(identityToAdd, businessGroup, GroupRoles.participant.name());
+			// notify currently active users of this business group
+			events.add(BusinessGroupModifiedEvent.createDeferredEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, businessGroup, identityToAdd));
+
+			if((++count % 25) == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		dbInstance.commitAndCloseSession();
+		
+		BusinessGroupModifiedEvent.fireDeferredEvents(events);
 	}
 	
 	@Override
@@ -495,6 +575,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		return businessGroup;
 	}
 	
+	
 	@Override
 	public void softDeleteAutomaticallyBusinessGroups(Set<BusinessGroup> vetoed) {
 		int numOfDaysBeforeSoftDelete = businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete();
@@ -567,10 +648,12 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	protected BusinessGroup deleteBusinessGroupSoftly(BusinessGroup businessGroup, Identity deletedBy) {
 		businessGroup = changeBusinessGroupStatus(businessGroup, BusinessGroupStatusEnum.trash, deletedBy, false);
 		
-		List<Long> memberKeys = businessGroupRelationDao
-				.getMemberKeys(Collections.singletonList(businessGroup), GroupRoles.coach.name(), GroupRoles.participant.name());
+		List<Long> participantKeys = businessGroupRelationDao
+				.getMemberKeys(Collections.singletonList(businessGroup), GroupRoles.participant.name());
+		List<Long> coachKeys = businessGroupRelationDao
+				.getMemberKeys(Collections.singletonList(businessGroup), GroupRoles.coach.name());
 		List<Long> entryKeys = businessGroupRelationDao.getRepositoryEntryKeys(businessGroup);
-		
+
 		// remove members
 		businessGroupDao.removeMemberships(businessGroup);
 		// 2) Delete the group areas
@@ -578,17 +661,34 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		// 3) Delete the relations
 		businessGroupRelationDao.deleteRelationsToRepositoryEntry(businessGroup);
 		assessmentModeDao.deleteAssessmentModesToGroup(businessGroup);
+		// 4) Backup some informations
+		DeletedBusinessGroupBackup backup = new DeletedBusinessGroupBackup();
+		backup.setCoachKeys(coachKeys);
+		backup.setParticipantKeys(participantKeys);
+		backup.setRepositoryEntryKeys(entryKeys);
+		((BusinessGroupImpl)businessGroup).setDataForRestore(this.backupToString(backup));
+		businessGroup = businessGroupDao.merge(businessGroup);
 		
 		// log
 		log.info(Tracing.M_AUDIT, "Soft deleted Business Group {}", businessGroup);
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_TRASHED, getClass(), LoggingResourceable.wrap(businessGroup));
 		
 		//notify
+		List<Long> memberKeys = new ArrayList<>(participantKeys);
+		memberKeys.addAll(coachKeys);
 		BusinessGroupDeletedEvent event = new BusinessGroupDeletedEvent(BusinessGroupDeletedEvent.RESOURCE_DELETED_EVENT, memberKeys, entryKeys);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.fireEventToListenersOf(event, OresHelper.lookupType(BusinessGroup.class));
 
 		return businessGroup;
+	}
+	
+	private String backupToString(DeletedBusinessGroupBackup backup) {
+		return backupXStream.toXML(backup);
+	}
+	
+	private DeletedBusinessGroupBackup backupToString(String backupXml) {
+		return (DeletedBusinessGroupBackup)XStreamHelper.readObject(backupXStream, backupXml);
 	}
 	
 	@Override

@@ -46,7 +46,6 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -64,7 +63,7 @@ import org.olat.resource.OLATResourceImpl;
  */
 @Entity(name="businessgroup")
 @Table(name="o_gp_business")
-public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGroup {
+public class BusinessGroupImpl implements BusinessGroup {
 
 	private static final long serialVersionUID = -6977108696910447781L;
 	private static final Logger log = Tracing.createLoggerFor(BusinessGroupImpl.class);
@@ -114,6 +113,8 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="softdeletedate", nullable=true, insertable=true, updatable=true)
 	private Date softDeleteDate;
+	@Column(name="data_for_restore", nullable=true, insertable=true, updatable=true)
+	private String dataForRestore;
 
 	@Column(name="technical_type", nullable=true, insertable=true, updatable=false)
 	private String technicalType;
@@ -244,6 +245,7 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		setStatus(status.name());
 	}
 
+	@Override
 	public Date getInactivationDate() {
 		return inactivationDate;
 	}
@@ -252,6 +254,7 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.inactivationDate = inactivationDate;
 	}
 
+	@Override
 	public Date getInactivationEmailDate() {
 		return inactivationEmailDate;
 	}
@@ -260,6 +263,7 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.inactivationEmailDate = inactivationEmailDate;
 	}
 
+	@Override
 	public Date getReactivationDate() {
 		return reactivationDate;
 	}
@@ -268,6 +272,7 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.reactivationDate = reactivationDate;
 	}
 
+	@Override
 	public Date getSoftDeleteEmailDate() {
 		return softDeleteEmailDate;
 	}
@@ -276,12 +281,21 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		this.softDeleteEmailDate = softDeleteEmailDate;
 	}
 
+	@Override
 	public Date getSoftDeleteDate() {
 		return softDeleteDate;
 	}
 
 	public void setSoftDeleteDate(Date softDeleteDate) {
 		this.softDeleteDate = softDeleteDate;
+	}
+
+	public String getDataForRestore() {
+		return dataForRestore;
+	}
+
+	public void setDataForRestore(String dataForRestore) {
+		this.dataForRestore = dataForRestore;
 	}
 
 	@Override

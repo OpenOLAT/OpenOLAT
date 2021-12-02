@@ -48,6 +48,7 @@ public class InactiveMessageController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private BusinessGroup businessGroup;
+	private final BusinessGroupStatusEnum currentStatus;
 	
 	@Autowired
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
@@ -55,18 +56,23 @@ public class InactiveMessageController extends BasicController {
 	public InactiveMessageController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean groupAdmin) {
 		super(ureq, wControl);
 		this.businessGroup = businessGroup;
+		currentStatus = businessGroup.getGroupStatus();
 		
 		mainVC = createVelocityContainer("inactive_warn");
 		
+		groupAdmin = true;
+		
 		String i18nKey = "";
 		long days = 0;
-		if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.active) {
+		if(currentStatus == BusinessGroupStatusEnum.active) {
 			Date softDeleteDate = businessGroupLifecycleManager.getInactivationDate(businessGroup);
 			days = DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
 			if(groupAdmin) {
 				if(days > 1) {
 					i18nKey = "warning.soon.readonly.group.admin.plural";
-				} else if(days == 1 || days == 0) {
+				} else if(days == 0) {
+					i18nKey = "warning.soon.readonly.group.admin.today";
+				} else if(days == 1) {
 					i18nKey = "warning.soon.readonly.group.admin.singular";
 				} else if(days == -1) {
 					i18nKey = "warning.soon.readonly.overdue.group.admin.singular";
@@ -77,7 +83,9 @@ public class InactiveMessageController extends BasicController {
 			} else {
 				if(days > 1) {
 					i18nKey = "warning.soon.readonly.group.plural";
-				} else if(days == 1 || days == 0) {
+				} else if(days == 0) {
+					i18nKey = "warning.soon.readonly.group.today";
+				} else if(days == 1) {
 					i18nKey = "warning.soon.readonly.group.singular";
 				} else if(days == -1) {
 					i18nKey = "warning.soon.readonly.overdue.group.singular";
@@ -87,15 +95,27 @@ public class InactiveMessageController extends BasicController {
 			}
 		} else if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.inactive) {
 			Date softDeleteDate = businessGroupLifecycleManager.getSoftDeleteDate(businessGroup);
-			days = DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
+			days = 4;DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
 			if(groupAdmin) {
-				i18nKey = days > 1 ? "warning.readonly.group.admin.plural" : "warning.readonly.group.admin.singular";
+				if(days <= 0) {
+					i18nKey = "warning.readonly.group.admin.today";
+				} else if(days == 1) {
+					i18nKey = "warning.readonly.group.admin.singular";
+				} else {
+					i18nKey = "warning.readonly.group.admin.plural";
+				}
 				reactivateLink = LinkFactory.createCustomLink("reactivate.group", "reactivate", "reactivate.group", Link.BUTTON_SMALL, mainVC, this);
 			} else {
-				i18nKey = days > 1 ? "warning.readonly.group.plural" : "warning.readonly.group.singular";
+				if(days <= 0) {
+					i18nKey = "warning.readonly.group.today";
+				} else if(days == 1) {
+					i18nKey = "warning.readonly.group.singular";
+				} else {
+					i18nKey = "warning.readonly.group.plural";
+				}
 			}
 		}
-		String message = translate(i18nKey, new String[] { Long.toString(Math.abs(days))} );
+		String message = translate(i18nKey, Long.toString(Math.abs(days)));
 		mainVC.contextPut("message", StringHelper.escapeHtml(message));
 		putInitialPanel(mainVC);
 	}
@@ -112,7 +132,12 @@ public class InactiveMessageController extends BasicController {
 	}
 	
 	private void doReactivate(UserRequest ureq) {
-		businessGroup = businessGroupLifecycleManager.reactivateBusinessGroup(businessGroup, getIdentity(), false);//TODO group
+		businessGroup = businessGroupLifecycleManager.reactivateBusinessGroup(businessGroup, getIdentity(), false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		if(currentStatus == BusinessGroupStatusEnum.active) {
+			showInfo("info.inactivation.canceled");
+		} else if(currentStatus == BusinessGroupStatusEnum.inactive) {
+			showInfo("info.deletion.canceled");
+		}
 	}
 }

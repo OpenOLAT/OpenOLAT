@@ -79,6 +79,7 @@ create table o_gp_business (
    reactivationdate timestamp,
    softdeleteemaildate timestamp,
    softdeletedate timestamp,
+   data_for_restore text,
    groupname varchar(255),
    technical_type varchar(32) default 'business' not null,
    external_id varchar(64),

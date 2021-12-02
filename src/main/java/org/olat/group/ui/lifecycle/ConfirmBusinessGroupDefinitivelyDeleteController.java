@@ -123,7 +123,11 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 		
-		showInfo("info.group.deleted");
+		if(businessGroups.size() == 1) {
+			showInfo("info.group.permanently.deleted.singular");
+		} else {
+			showInfo("info.group.permanently.deleted.plural");
+		}
 	}
 
 	@Override

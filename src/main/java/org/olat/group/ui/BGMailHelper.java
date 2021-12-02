@@ -37,6 +37,7 @@ package org.olat.group.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -46,14 +47,18 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycle;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.repository.RepositoryEntryShort;
@@ -242,7 +247,7 @@ public class BGMailHelper {
 		if(group != null) {
 			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
-			infos = getTemplateInfos(group, repoEntries);
+			infos = getTemplateInfos(group, repoEntries, trans);
 			subject = subject.replace("$groupname", infos.getGroupName());
 			body = body.replace("$groupname", infos.getGroupNameWithUrl());
 			body = body.replace("$groupdescription", infos.getGroupDescription());
@@ -251,16 +256,14 @@ public class BGMailHelper {
 			} else {
 				body = body.replace("$courselist", trans.translate("notification.mail.no.ressource"));
 			}
-			
-			
 		} else {
-			infos = new BGMailTemplateInfos("", "", "", "");
+			infos = new BGMailTemplateInfos("", "", "", "", "");
 		}
 		
 		return new BGMailTemplate(subject, body, overrideIdentity, infos, trans);
 	}
 	
-	public static BGMailTemplateInfos getTemplateInfos(BusinessGroupShort group, List<RepositoryEntryShort> repoEntries) {
+	public static BGMailTemplateInfos getTemplateInfos(BusinessGroupShort group, List<RepositoryEntryShort> repoEntries, Translator translator) {
 		StringBuilder learningResources = new StringBuilder();
 		if(repoEntries != null && !repoEntries.isEmpty()) {
 			for (RepositoryEntryShort entry: repoEntries) {
@@ -297,7 +300,23 @@ public class BGMailHelper {
 			}
 			groupDescription = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
 		}
-		return new BGMailTemplateInfos(group.getName(), groupNameWithUrl, groupDescription, courseList);
+		
+		String reactionTime = "";
+		if(translator != null && group instanceof BusinessGroupLifecycle) {
+			BusinessGroupLifecycle bGroup = (BusinessGroupLifecycle)group;
+			Date date = null;
+			if(bGroup.getGroupStatus() == BusinessGroupStatusEnum.active) {
+				date = CoreSpringFactory.getImpl(BusinessGroupLifecycleManager.class).getInactivationDate(bGroup);
+			} else if(bGroup.getGroupStatus() == BusinessGroupStatusEnum.inactive) {
+				date = CoreSpringFactory.getImpl(BusinessGroupLifecycleManager.class).getSoftDeleteDate(bGroup);
+			}
+			if(date != null) {
+				long days = DateUtils.countDays(new Date(), date);
+				reactionTime = translator.translate(days <= 1 ? "day.in" : "days.in", Long.toString(days));
+			}
+		}
+		
+		return new BGMailTemplateInfos(group.getName(), groupNameWithUrl, groupDescription, courseList, reactionTime);
 		
 	}
 	
@@ -306,12 +325,14 @@ public class BGMailHelper {
 		private final String groupNameWithUrl;
 		private final String groupDescription;
 		private final String courseList;
+		private final String reactionTime;
 		
-		public BGMailTemplateInfos(String groupName, String groupNameWithUrl, String groupDescription, String courseList) {
+		public BGMailTemplateInfos(String groupName, String groupNameWithUrl, String groupDescription, String courseList, String reactionTime) {
 			this.groupName = groupName;
 			this.groupNameWithUrl = groupNameWithUrl;
 			this.groupDescription = groupDescription;
 			this.courseList = courseList;
+			this.reactionTime = reactionTime;
 		}
 		
 		public String getGroupName() {
@@ -332,6 +353,11 @@ public class BGMailHelper {
 		public String getCourseList() {
 			if(courseList == null) return "";
 			return courseList;
+		}
+		
+		public String getReactionTime() {
+			if(reactionTime == null) return "";
+			return reactionTime;
 		}
 	}
 	
@@ -412,9 +438,8 @@ public class BGMailHelper {
 				context.put("courselist", translator.translate("notification.mail.no.ressource"));
 			}
 			context.put(COURSE_LIST_EMPTY, translator.translate("notification.mail.no.ressource"));
-			context.put("courselistempty", translator.translate("notification.mail.no.ressource"));
-			
-			//TODO group reactionTime 
+			context.put("reactiontime", infos.getReactionTime());
+			context.put("reactionTime", infos.getReactionTime());
 		}
 	}
 }
