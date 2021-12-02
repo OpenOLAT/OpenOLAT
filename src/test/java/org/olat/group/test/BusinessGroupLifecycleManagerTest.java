@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
@@ -43,6 +44,7 @@ import org.olat.group.manager.BusinessGroupLifecycleManagerImpl;
 import org.olat.group.ui.lifecycle.BusinessGroupLifecycleTypeEnum;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +70,8 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupLifecycleManagerImpl lifecycleManager;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	@Test
 	public void getInactivationDate() {
@@ -1060,6 +1064,34 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Assert.assertNull(((BusinessGroupImpl)permanentBg3).getSoftDeleteEmailDate());
 	}
 	
+	@Test
+	public void getEmailRecipientsWithCoach() {
+		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-recipient-1");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-recipient-2");
+		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "Recipients", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
+		repositoryEntryRelationDao.addRole(owner, resource, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> recipients = lifecycleManager.getEmailRecipients(group);
+		Assert.assertEquals(1, recipients.size());
+		Assert.assertEquals(coach, recipients.get(0));
+	}
+	
+	@Test
+	public void getEmailRecipientsWithCourseOwner() {
+		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-recipient-2");
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Recipients", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, resource);
+		repositoryEntryRelationDao.addRole(owner, resource, GroupRoles.owner.name());
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> recipients = lifecycleManager.getEmailRecipients(group);
+		Assert.assertEquals(1, recipients.size());
+		Assert.assertEquals(owner, recipients.get(0));
+	}
 	
 	private BusinessGroup setLastUsage(BusinessGroup group, BusinessGroupStatusEnum status, Date date) {
 		group.setLastUsage(date);

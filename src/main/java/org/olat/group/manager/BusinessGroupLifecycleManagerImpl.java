@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
@@ -84,7 +85,11 @@ import org.olat.group.ui.lifecycle.BusinessGroupLifecycleTypeEnum;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -137,6 +142,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryDeletionModule repositoryDeletionModule;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
 	private Date getDate(int days) {
 		Calendar cal = Calendar.getInstance();
@@ -882,10 +889,17 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		}
 	}
 	
-	private List<Identity> getEmailRecipients(BusinessGroup businessGroup) {
+	public List<Identity> getEmailRecipients(BusinessGroup businessGroup) {
 		List<Identity> recipients = businessGroupRelationDao.getMembers(businessGroup, GroupRoles.coach.name());
 		if(recipients == null || recipients.isEmpty()) {
-			recipients = businessGroupRelationDao.getMembers(businessGroup, GroupRoles.participant.name());
+			List<Long> repositoryEntries = businessGroupRelationDao.getRepositoryEntryKeys(businessGroup);
+			if(!repositoryEntries.isEmpty()) {
+				List<RepositoryEntryRef> entries = repositoryEntries.stream()
+						.map(RepositoryEntryRefImpl::new)
+						.collect(Collectors.toList());
+				recipients = repositoryEntryRelationDao
+						.getMembers(entries, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+			}
 		}
 		return recipients;
 	}
