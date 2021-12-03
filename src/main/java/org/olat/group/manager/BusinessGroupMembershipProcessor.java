@@ -90,9 +90,9 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 	public void event(Event event) {
 		if(event instanceof BusinessGroupModifiedEvent) {
 			BusinessGroupModifiedEvent e = (BusinessGroupModifiedEvent)event;
-			if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(e.getCommand())) {
+			if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(e.getCommand()) && e.getAffectedRepositoryEntryKey() == null) {
 				processIdentityRemoved(e.getModifiedGroupKey(), e.getAffectedIdentityKey());
-			} else if(BusinessGroupModifiedEvent.IDENTITY_ADD_PENDING_EVENT.equals(e.getCommand())) {
+			} else if(BusinessGroupModifiedEvent.IDENTITY_ADD_PENDING_EVENT.equals(e.getCommand()) && e.getAffectedRepositoryEntryKey() == null) {
 				sendNotificationsToIdentities(e.getAffectedIdentityKey());
 			}
 		} else if(event instanceof BusinessGroupRelationModified) {

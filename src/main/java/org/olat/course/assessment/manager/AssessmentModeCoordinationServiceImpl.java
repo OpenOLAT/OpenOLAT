@@ -52,6 +52,7 @@ import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.AssessmentModeStatistics;
 import org.olat.course.assessment.model.CoordinatedAssessmentMode;
 import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
@@ -174,6 +175,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 	public void afterPropertiesSet() throws Exception {
 		coordinatorManager.getCoordinator().getEventBus()
 			.registerFor(this, null, OresHelper.lookupType(RepositoryEntry.class));
+		coordinatorManager.getCoordinator().getEventBus()
+			.registerFor(this, null, OresHelper.lookupType(BusinessGroup.class));
 		
 		coordinatedModeStatistics = coordinatorManager.getCoordinator().getCacher()
 				.getCache(AssessmentModeStatistics.class.getSimpleName(), "waiting");
@@ -184,7 +187,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		if(event instanceof BusinessGroupModifiedEvent) {
 			try {
 				BusinessGroupModifiedEvent mod = (BusinessGroupModifiedEvent)event;
-				if(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(mod.getCommand())) {
+				if(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(mod.getCommand())
+						&& mod.getAffectedRepositoryEntryKey() == null) {
+					// all assessment modes are checked, need only to catch the main event (not the course specific ones)
 					Long identityKey = mod.getAffectedIdentityKey();
 					sendEventAfterMembershipChange(identityKey);
 				}

@@ -223,9 +223,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		}	
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		super.doDispose();
 		// de-register for businessgroup type events
@@ -234,15 +232,17 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 		// (listeners lock in EventAgency)
 	}
 
+	@Override
 	public void event(Event event) {
 		if (event instanceof BusinessGroupModifiedEvent) {
-			BusinessGroupModifiedEvent mev = (BusinessGroupModifiedEvent) event;
-			if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(event.getCommand()) &&
-					getIdentity().getKey().equals(mev.getAffectedIdentityKey())) {
+			BusinessGroupModifiedEvent mev = (BusinessGroupModifiedEvent)event;
+			if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(mev.getCommand())
+					&& getIdentity().getKey().equals(mev.getAffectedIdentityKey())
+					&& mev.getAffectedRepositoryEntryKey() == null) {
 				
 				Long modifiedKey = mev.getModifiedGroupKey();
 				for(PortletEntry<BusinessGroupEntry> portlet:groupListModel.getObjects()) {
-					if(modifiedKey.equals(portlet.getKey())) {;
+					if(modifiedKey.equals(portlet.getKey())) {
 						groupListModel.getObjects().remove(portlet);
 						tableCtr.modelChanged();
 						break;

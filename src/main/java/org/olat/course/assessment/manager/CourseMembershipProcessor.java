@@ -20,7 +20,6 @@
 package org.olat.course.assessment.manager;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -103,8 +102,9 @@ public class CourseMembershipProcessor implements GenericEventListener {
 			// Identity was added to a group.
 			// Group member got other roles in group.
 			BusinessGroupModifiedEvent e = (BusinessGroupModifiedEvent)event;
-			if (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(e.getCommand())) {
-				tryProcessAddedToGroup(e.getAffectedIdentityKey(), e.getModifiedGroupKey());
+			if (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(e.getCommand())
+					&& e.getAffectedRepositoryEntryKey() != null) {
+				tryProcessAddedToGroup(e.getAffectedIdentityKey(), e.getModifiedGroupKey(), e.getAffectedRepositoryEntryKey());
 			}
 		} else if (event instanceof BusinessGroupRepositoryEntryEvent) {
 			// Group was added to a repository entry
@@ -140,23 +140,21 @@ public class CourseMembershipProcessor implements GenericEventListener {
 		}
 	}
 	
-	private void tryProcessAddedToGroup(Long identityKey, Long groupKey) {
+	private void tryProcessAddedToGroup(Long identityKey, Long groupKey, Long repositoryEntryKey) {
 		try {
-			processAddedToGroup(identityKey, groupKey);
+			processAddedToGroup(identityKey, groupKey, repositoryEntryKey);
 		} catch (Exception e) {
 			log.error("Error when tried to process added to group of Identity {} to Group {}",
 					groupKey, identityKey);
 		}
 	}
 	
-	private void processAddedToGroup(Long identityKey, Long groupKey) {
+	private void processAddedToGroup(Long identityKey, Long groupKey, Long repositoryEntryKey) {
 		if (!isParticipant(identityKey, groupKey)) return;
 	
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
-		List<RepositoryEntry> repositoryEntries = groupService
-				.findRepositoryEntries(Collections.singletonList(new BusinessGroupRefImpl(groupKey)), 0, -1);
-		
-		for (RepositoryEntry repositoryEntry : repositoryEntries) {
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(repositoryEntryKey);
+		if(repositoryEntry != null) {
 			evaluateAll(identity, repositoryEntry);
 		}
 	}
