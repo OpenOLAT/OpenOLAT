@@ -1,3 +1,5 @@
+@use "sass:list";
+
 .o_video_poster {
 	position: relative;
 	display: inline-block;
@@ -233,7 +235,7 @@
 .mejs__controls .mejs__sourcechooser-button > button {
     background: transparent;
     display: inline-block;
-	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
+	font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
 	font-size: inherit; // can't have font-size inherit on line above, so need to override
 	text-rendering: auto; // optimizelegibility throws things off #1094
 	-webkit-font-smoothing: antialiased;

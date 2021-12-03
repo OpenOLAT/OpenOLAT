@@ -4,6 +4,8 @@
    It is treated as "content" in contrast to other elements which are "application" elements.
    Use this block to override application styles
 */
+@use "sass:math";
+
 .o_user_content_block {
 	/* In some cases links in content area don't have same color as in app */
 	a {
@@ -311,13 +313,13 @@ img.b_with_border {
 
 /* headers and captions for images or tables */
 p.b_figure_title {
-	margin: $line-height-computed 0 ($line-height-computed / 4) 0;
-	font-size: floor((100% * $font-size-small / $font-size-base));
+	margin: $line-height-computed 0 ($line-height-computed * 0.25) 0;
+	font-size: floor(math.div(100% * $font-size-small, $font-size-base));
 	font-family: $headings-font-family;
 }
 p.b_figure_caption {
 	clear: both;
-	margin: ($line-height-computed / 4) 0 $line-height-computed 0;
+	margin: ($line-height-computed * 0.25) 0 $line-height-computed 0;
 }
 
 

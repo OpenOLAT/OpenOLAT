@@ -360,7 +360,7 @@
 				content: ' ';
 				position: absolute;
 				top: $o-lp-step-top + $o-lp-step-size;
-				left: $o-lp-left + (($o-lp-step-size - $o-lp-path-width) / 2);
+				left: $o-lp-left + (($o-lp-step-size - $o-lp-path-width) * 0.5);
 				height: (($o-tree-padding-vertical * 2 + $line-height-computed) - $o-lp-step-size + 1px);
 				width: $o-lp-path-width;
 			}

@@ -12,7 +12,7 @@
     }
     
     &.o_toolbar_with_segments {
-    	margin-bottom: ($o-toolbar-margin-bottom + $line-height-computed / 2);
+    	margin-bottom: ($o-toolbar-margin-bottom + $line-height-computed * 0.5);
     }
 
 	.o_breadcrumb {
@@ -182,7 +182,7 @@
 	
 	.o_tool_next, .o_tool_previous {
 		padding: 0;
-		margin-top: floor($o-toolbar-nav-size-icon-md / 4);
+		margin-top: floor($o-toolbar-nav-size-icon-md * 0.25);
 		border: 1px solid $o-toolbar-nav-border-color;
 		background-color: $o-toolbar-nav-bg-color;
 		a {
@@ -203,7 +203,7 @@
 			font-size: $o-toolbar-nav-size-icon-md;
 		}
 		@media (min-width: $screen-xs-max) and (max-width: $screen-sm-max) { 
-			margin-top: floor($o-toolbar-nav-size-icon-sm / 4);
+			margin-top: floor($o-toolbar-nav-size-icon-sm * 0.25);
 			i {
 				font-size: $o-toolbar-nav-size-icon-sm;
 			}
@@ -245,7 +245,7 @@
 			.o_icon_caret {
 				position: absolute;
 				right: 50%;
-				top: floor($o-toolbar-size-icon-md / 4);
+				top: floor($o-toolbar-size-icon-md * 0.25);
 				margin-right: floor($o-toolbar-size-icon-md * -1.1);
 				font-size: $o-toolbar-size-caret-md;
 			}
@@ -257,7 +257,7 @@
 					font-size: $o-toolbar-size-text-sm;
 				}
 				.o_icon_caret {
-					top: floor($o-toolbar-size-icon-sm / 4);
+					top: floor($o-toolbar-size-icon-sm * 0.25);
 					margin-right: floor($o-toolbar-size-icon-sm * -1.1);	
 					font-size: $o-toolbar-size-caret-sm;				
 				}

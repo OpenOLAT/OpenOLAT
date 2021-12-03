@@ -8,10 +8,10 @@
 	#o_im_summary {
 		float: left;
 		position: relative;
-		padding: floor($grid-gutter-width / 2) floor($grid-gutter-width / 8);
+		padding: floor($grid-gutter-width * 0.5) floor($grid-gutter-width * 0.125);
 	}
 	#o_im_status, #o_im_message {
-		padding-left: floor($grid-gutter-width / 2);
+		padding-left: floor($grid-gutter-width * 0.5);
 	}
 	#o_im_summary {
 		.badge {

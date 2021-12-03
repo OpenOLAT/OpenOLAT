@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .o_home_main {
 	h1 {
 		text-align: center;
@@ -39,7 +41,7 @@
 		margin-top: 0;
 	}
 	.o_table_empty.o_info {
-		padding: floor($o-box-padding / 3);
+		padding: floor(math.div($o-box-padding, 3));
 	}
 	
 	/* tools when in edit mode */

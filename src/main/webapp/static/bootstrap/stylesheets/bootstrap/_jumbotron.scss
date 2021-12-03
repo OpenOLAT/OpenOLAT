@@ -4,7 +4,7 @@
 
 
 .jumbotron {
-  padding: $jumbotron-padding ($jumbotron-padding / 2);
+  padding: $jumbotron-padding ($jumbotron-padding * 0.5);
   margin-bottom: $jumbotron-padding;
   color: $jumbotron-color;
   background-color: $jumbotron-bg;
@@ -14,7 +14,7 @@
     color: $jumbotron-heading-color;
   }
   p {
-    margin-bottom: ($jumbotron-padding / 2);
+    margin-bottom: ($jumbotron-padding * 0.5);
     font-size: $jumbotron-font-size;
     font-weight: 200;
   }

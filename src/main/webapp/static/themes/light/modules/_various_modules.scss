@@ -1050,7 +1050,7 @@ ul.o_assessment_docs>li:last-child {
 
 /* web documents */
 .o_web_content {
-	padding-bottom: floor($grid-gutter-width / 2);
+	padding-bottom: floor($grid-gutter-width * 0.5);
 }
 
 /* label */

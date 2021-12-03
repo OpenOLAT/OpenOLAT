@@ -3,6 +3,8 @@
  * Overwrite jquery ui dialog and datepicker
  */
  
+@use "sass:list";
+
 .ui-widget {
 	font-family: $font-family-base;
 	font-size: 100%;
@@ -226,7 +228,7 @@ label.mce-label {
 
 i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext,i.mce-ico.mce-i-gapnumerical, i.mce-ico.mce-i-hottext, i.mce-ico.mce-i-edit {
 	display: inline-block;
-	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
+	font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
 	font-size: inherit; // can't have font-size inherit on line above, so need to override
 	text-rendering: auto; // optimizelegibility throws things off #1094
 	-webkit-font-smoothing: antialiased;
@@ -276,7 +278,7 @@ i.mce-ico.mce-i-help:before {
 
 .mce-wordcount:after {
 	display: inline-block;
-	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
+	font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
 	font-size: inherit; // can't have font-size inherit on line above, so need to override
 	text-rendering: auto; // optimizelegibility throws things off #1094
 	-webkit-font-smoothing: antialiased;

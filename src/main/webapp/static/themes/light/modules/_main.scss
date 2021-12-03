@@ -17,7 +17,7 @@
 			background: $o-main-left-bg;
 			
 			#o_main_left_content {
-				padding: 0 0 0 floor($grid-gutter-width / 2);
+				padding: 0 0 0 floor($grid-gutter-width * 0.5);
 				/* no hight - used to calcualte inner content height in OPOL.adjustHeight() function */
 			}			
 
@@ -58,7 +58,7 @@
 			background: $o-main-right-bg;
 
 			#o_main_right_content {
-				padding: 0 floor($grid-gutter-width / 2) 0 0;
+				padding: 0 floor($grid-gutter-width * 0.5) 0 0;
 				/* no hight - used to calcualte inner content height in OPOL.adjustHeight() function */
 			}
 		}
@@ -76,12 +76,12 @@
 			}
 			
 			#o_main_center_content {
-				padding: 0 floor($grid-gutter-width / 2);
+				padding: 0 floor($grid-gutter-width * 0.5);
 				/* no hight - used to calculate inner content height in OPOL.adjustHeight() function */
 				
 				#o_main_center_content_inner {
 					/* space to top link */
-					padding-bottom: floor($grid-gutter-width / 2);
+					padding-bottom: floor($grid-gutter-width * 0.5);
 				}
 			}
 		}		
@@ -90,7 +90,7 @@
 	#o_toplink {
 		position: absolute;
 		bottom: 0; 
-		right: floor($grid-gutter-width / 2);
+		right: floor($grid-gutter-width * 0.5);
 		text-align: center;
 		z-index: 3;
 		@extend %o_undecorated;
@@ -100,7 +100,7 @@
 		#o_main_container {
 			#o_main_center {
 				#o_main_center_content {
-					padding: floor($grid-gutter-width / 2);
+					padding: floor($grid-gutter-width * 0.5);
 				}
 			}
 		}

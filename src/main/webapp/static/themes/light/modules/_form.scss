@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .o_form{
 	.o_desc {
 		@extend %o_note;
@@ -255,19 +257,19 @@
 		  		flex-grow: 0;
 				flex-shrink: 0;
 				margin: auto 0 auto 10px;
-				height: ($o-radio-card-width / 3 / 3 * 2);
+				height: (math.div(math.div($o-radio-card-width, 3), 3) * 2);
 				&:not(.o_icon) {
-					width: ($o-radio-card-width / 3);
+					width: math.div($o-radio-card-width, 3);
 					border: 1px solid $o-radio-card-image-border-color;
 					border-radius: $o-radio-card-image-border-radius;
 					background-position: 50% 50%;
 					background-size: contain;
 				}
 				&.o_icon {
-					width: ($o-radio-card-width / 4);
+					width: ($o-radio-card-width * 0.25);
 					text-align: center;
 					font-size: $o-radio-card-icon-font-size;
-					padding: ((($o-radio-card-width / 3 / 3 * 2) - $o-radio-card-icon-font-size - 4px) / 2) 0px;
+					padding: (((math.div(math.div($o-radio-card-width, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
 				}
 		 }
 
@@ -298,26 +300,26 @@
 	.o_radio_cards_sm label {
 		flex-basis: $o-radio-card-width-sm;
 		.o_radio_icon {
-			height: ($o-radio-card-width-sm / 3 / 3 * 2);
+			height: (math.div(math.div($o-radio-card-width-sm, 3), 3) * 2);
 			&:not(.o_icon) {
-				width: ($o-radio-card-width-sm / 3);
+				width: math.div($o-radio-card-width-sm, 3);
 			}
 			&.o_icon {
-				width: ($o-radio-card-width-sm / 4);
-				padding: ((($o-radio-card-width-sm / 3 / 3 * 2) - $o-radio-card-icon-font-size - 4px) / 2) 0px;
+				width: ($o-radio-card-width-sm * 0.25);
+				padding: (((math.div(math.div($o-radio-card-width-sm, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
 			}
 		}
 	}
 	.o_radio_cards_lg label {
 		flex-basis: $o-radio-card-width-lg;
 		.o_radio_icon {
-			height: ($o-radio-card-width-lg / 3 / 3 * 2);
+			height: (math.div(math.div($o-radio-card-width-lg, 3), 3) * 2);
 			&:not(.o_icon) {
-				width: ($o-radio-card-width-lg / 3);
+				width: math.div($o-radio-card-width-lg, 3);
 			}
 			&.o_icon {
-				width: ($o-radio-card-width-lg / 4);
-				padding: ((($o-radio-card-width-lg / 3 / 3 * 2) - $o-radio-card-icon-font-size - 4px) / 2) 0px;
+				width: ($o-radio-card-width-lg * 0.25);
+				padding: (((math.div(math.div($o-radio-card-width-lg, 3), 3) * 2) - $o-radio-card-icon-font-size - 4px) * 0.5) 0px;
 			}
 		}
 	}
@@ -553,8 +555,8 @@
 /* TOGGLE SLIDERS */
 .o_button_toggle {
 	border: 1px solid $o-toggle-border-color;
-	@include border-top-radius($o-toggle-size/2 + 1px);
-	@include border-bottom-radius($o-toggle-size/2 + 1px);
+	@include border-top-radius($o-toggle-size*0.5 + 1px);
+	@include border-bottom-radius($o-toggle-size*0.5 + 1px);
 	background: $o-toggle-bg;
 	display: inline-block;
 	height: $o-toggle-size + 2px;

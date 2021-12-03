@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .o_process {
 	position: relative;
 	padding-left: 25px;
@@ -13,14 +15,14 @@
 	.o_bar {
 		position: absolute;
 		top: $o-step-padding-top;
-		left: floor($o-step-milestone-size / 2);
+		left: floor($o-step-milestone-size * 0.5);
 		height: 100%;
 		border-left: $o-step-border-width solid $o-step-color;
 		
 		&:after {
 			position: absolute;
 			top: 0;
-			left: floor($o-step-milestone-size/-2 - $o-step-border-width/2);
+			left: floor(math.div($o-step-milestone-size, -2) - $o-step-border-width*0.5);
 			height: $o-step-milestone-size;
 			width: $o-step-milestone-size;
 			border: $o-step-border-width solid $o-step-color;
@@ -31,7 +33,7 @@
 	}
 
 	.o_title {
-		margin-top: round($headings-line-height/2) * -1 + px;	
+		margin-top: round($headings-line-height*0.5) * -1 + px;	
 		color: $o-step-color !important;
 		&:before {
 			/* ok or hand icon */

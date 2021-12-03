@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .o_members_pagination {
 	text-align:center;
 }
@@ -51,7 +53,7 @@
 		img {
 			/* tricky: scale to match new max height */
 			position: relative;
-			transform: scale( (50/66) ); 	/* scale to fit to new box size... */
+			transform: scale( math.div(50, 66) ); 	/* scale to fit to new box size... */
 			top: -8px; 						/* .. and move 8px down (16px divided by 2 for top and bottom) */
 		}
 	}	

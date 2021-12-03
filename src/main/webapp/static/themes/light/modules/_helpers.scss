@@ -3,6 +3,8 @@
 /* ------------------------------------------------------------- */
 
 /* a block of content that should have margins like a paragraph */
+@use "sass:math";
+
 .o_block_bottom, %o_block_bottom {
 	margin-bottom: 1em;
 }
@@ -161,13 +163,13 @@
 			margin-top: ($line-height-computed);
 	}	
 	h4 +.o_button_group {
-			margin-top: ($line-height-computed / 2);
+			margin-top: ($line-height-computed * 0.5);
 	}	
 	h5 +.o_button_group {
-			margin-top: ($line-height-computed / 3);
+			margin-top: math.div($line-height-computed, 3);
 	}	
 	h6 +.o_button_group {
-			margin-top: ($line-height-computed / 4);
+			margin-top: ($line-height-computed * 0.25);
 	}	
 }
 /* special case for no-margin headers in content area */

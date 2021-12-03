@@ -82,8 +82,8 @@ div.o_callout_overlay {
 	
 	.o_icon_info_msg {
 		position: absolute;
-		left: floor($line-height-computed / 2);
-		top: floor($line-height-computed / 4);
+		left: floor($line-height-computed * 0.5);
+		top: floor($line-height-computed * 0.25);
 		font-size: $line-height-computed * 2;
 	}
 	

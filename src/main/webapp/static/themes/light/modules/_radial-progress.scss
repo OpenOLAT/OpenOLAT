@@ -102,7 +102,7 @@ $o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 
 		}		
 	}
 
-	$increment: 180deg / 100;
+	$increment: 180deg * 0.01;
 	@for $i from 0 through 100 {
 		&[data-progress="#{$i}"] {
 			svg .radial-bar {

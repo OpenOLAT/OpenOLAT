@@ -28,7 +28,7 @@
 
 #o_footer_user { 
 	position: absolute;
-	left: ($grid-gutter-width / 2);
+	left: ($grid-gutter-width * 0.5);
 	top: $o-footer-padding-top;
 	z-index: 1;
 	#o_counter { 
@@ -42,7 +42,7 @@
 
 #o_footer_version { 
 	position: absolute; 
-	right: ($grid-gutter-width / 2);
+	right: ($grid-gutter-width * 0.5);
 	top: $o-footer-padding-top;
 	text-align: right;
 	z-index: 1;
@@ -56,7 +56,7 @@
 #o_footer_powered { 
 	position: absolute; 
 	top: ($line-height-computed + $o-footer-padding-top);
-	right: ($grid-gutter-width / 2);
+	right: ($grid-gutter-width * 0.5);
 	z-index: 1;
 	/* make powerd-by buttons a bit less colorful to not distract user from learning */
 	img {	

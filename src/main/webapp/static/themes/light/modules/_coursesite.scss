@@ -304,10 +304,10 @@
 					}					
 					
 					.o_start, .o_book, .o_details {
-						width: floor($o-coursesite-rowelem-width-sm / 2);
+						width: floor($o-coursesite-rowelem-width-sm * 0.5);
 					}
 					.o_details {
-						right: floor($o-coursesite-rowelem-width-sm / 2);
+						right: floor($o-coursesite-rowelem-width-sm * 0.5);
 					}
 				}
 				@media (max-width: $screen-xs-max) { 

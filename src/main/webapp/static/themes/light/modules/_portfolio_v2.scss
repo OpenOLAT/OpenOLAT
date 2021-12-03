@@ -507,7 +507,7 @@
 	
 	.o_section_actions {
 		position: absolute;
-		top: -($line-height-computed / 2);
+		top: -($line-height-computed * 0.5);
 		right: 0;
 		
 		.o_section_move_up_and_down,
