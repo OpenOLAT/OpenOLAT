@@ -73,7 +73,6 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.BusinessGroupRefImpl;
@@ -86,6 +85,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -118,6 +118,8 @@ public class EnrollmentManager implements GenericEventListener {
 	private BaseSecurity securityManager;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
 
 	@PostConstruct
 	public void registerForEvents() {
@@ -545,28 +547,33 @@ public class EnrollmentManager implements GenericEventListener {
 				BusinessGroupModifiedEvent bgmEvent = (BusinessGroupModifiedEvent) event;
 				if (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(bgmEvent.getCommand())
 						|| BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(bgmEvent.getCommand())) {
-					Long modifiedGroupKey = bgmEvent.getModifiedGroupKey();
-					Long identityKey = bgmEvent.getAffectedIdentityKey();
-					Identity identity = identityKey != null? securityManager.loadIdentityByKey(identityKey): null;
-					Long senderKey = bgmEvent.getSenderKey();
-					Identity sender = senderKey != null? securityManager.loadIdentityByKey(senderKey): null;
-					BusinessGroupRef businessGroupRef = new BusinessGroupRefImpl(modifiedGroupKey);
-					List<RepositoryEntry> entries = businessGroupService
-							.findRepositoryEntries(Collections.singletonList(businessGroupRef), 0, -1);
-					for (RepositoryEntry entry : entries) {
-						ICourse course = CourseFactory.loadCourse(entry);
-						if (course != null ) {
-							List<CourseNode> courseNodes = getENNodesOfGroup(course, modifiedGroupKey);
-							if (!courseNodes.isEmpty()) {
-								syncAssessmentStatus(course, courseNodes, identity, sender);
-							}
-						}
-					}
+					processBusinessGroupModifiedEvent(bgmEvent);
 				}
 			} catch (Exception e) {
 				log.error("", e);
 			}
 		} 
+	}
+	
+	private void processBusinessGroupModifiedEvent(BusinessGroupModifiedEvent bgmEvent) {
+		if(bgmEvent.getAffectedRepositoryEntryKey() == null) return;
+
+		RepositoryEntry entry = repositoryEntryDao.loadByKey(bgmEvent.getAffectedRepositoryEntryKey());
+		if(entry == null) return;
+		
+		Long modifiedGroupKey = bgmEvent.getModifiedGroupKey();
+		Long identityKey = bgmEvent.getAffectedIdentityKey();
+		Identity identity = identityKey != null? securityManager.loadIdentityByKey(identityKey): null;
+		Long senderKey = bgmEvent.getSenderKey();
+		Identity sender = senderKey != null ? securityManager.loadIdentityByKey(senderKey): null;
+		
+		ICourse course = CourseFactory.loadCourse(entry);
+		if (course != null ) {
+			List<CourseNode> courseNodes = getENNodesOfGroup(course, modifiedGroupKey);
+			if (!courseNodes.isEmpty()) {
+				syncAssessmentStatus(course, courseNodes, identity, sender);
+			}
+		}
 	}
 
 	private List<CourseNode> getENNodesOfGroup(ICourse course, Long modifiedGroupKey) {

@@ -1139,7 +1139,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			}	
 		} else if (event instanceof BusinessGroupModifiedEvent) {
 			BusinessGroupModifiedEvent bgmfe = (BusinessGroupModifiedEvent) event;
-			if (event.getCommand().equals(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT)) {
+			if (bgmfe.getCommand().equals(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT)
+					&& bgmfe.getAffectedRepositoryEntryKey() == null) {
 				if(bgmfe.isSender(getIdentity())) {
 					return;// receive event by other means
 				}
@@ -1160,7 +1161,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 					// Activate edit menu item
 					bgTree.setSelectedNodeId(ACTIVITY_MENUSELECT_ADMINISTRATION);
 				}
-			} else if (bgmfe.wasMyselfRemoved(getIdentity()) && !wildcard && !isGroupsAdmin) {
+			} else if (bgmfe.wasMyselfRemoved(getIdentity()) && !wildcard && !isGroupsAdmin
+					&& bgmfe.getAffectedRepositoryEntryKey() == null && !isDisposed()) {
 				//nothing more here!! The message will be created and displayed upon disposing
 				dispose();//disposed message controller will be set
 			}

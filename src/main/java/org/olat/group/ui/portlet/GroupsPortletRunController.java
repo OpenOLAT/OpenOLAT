@@ -236,13 +236,14 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	@Override
 	public void event(Event event) {
 		if (event instanceof BusinessGroupModifiedEvent) {
-			BusinessGroupModifiedEvent mev = (BusinessGroupModifiedEvent) event;
-			if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(event.getCommand()) &&
-					getIdentity().getKey().equals(mev.getAffectedIdentityKey())) {
+			BusinessGroupModifiedEvent mev = (BusinessGroupModifiedEvent)event;
+			if(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(mev.getCommand())
+					&& getIdentity().getKey().equals(mev.getAffectedIdentityKey())
+					&& mev.getAffectedRepositoryEntryKey() == null) {
 				
 				Long modifiedKey = mev.getModifiedGroupKey();
 				for(PortletEntry<BusinessGroupEntry> portlet:groupListModel.getObjects()) {
-					if(modifiedKey.equals(portlet.getKey())) {;
+					if(modifiedKey.equals(portlet.getKey())) {
 						groupListModel.getObjects().remove(portlet);
 						tableCtr.modelChanged();
 						break;

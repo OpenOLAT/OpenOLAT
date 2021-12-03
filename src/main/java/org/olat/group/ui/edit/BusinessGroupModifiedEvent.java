@@ -39,11 +39,13 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * Description:<br>
- * This event signalizes that a group has been changed. it contains the modified
- * group
+ * This event signalizes that a group has been changed. It contains the modified
+ * group. The event is replicated for every course / repository entry in relation
+ * to the group. The affected repository entry is given in the event if needed.
  * <p>
  * Initial Date: Sep 2, 2004
  * 
@@ -69,15 +71,31 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	private Long identityKey;
 	private boolean isTutor = false;
 	private Long senderKey;
+	private Long repositoryEntryKey;
 	
 	/**
-	 * @param command one of the class constants
-	 * @param group
-	 * @param identity
+	 * 
+	 * @param command One of the class constants
+	 * @param group The business group
+	 * @param identity The identity (membership changes for example)
+	 * @param sender Which identity send the event
 	 */
 	public BusinessGroupModifiedEvent(String command, BusinessGroup group, IdentityRef identity, IdentityRef sender) {
+		this(command, group, identity, sender, null);
+	}
+	
+	/**
+	 * 
+	 * @param command One of the class constants
+	 * @param group The business group
+	 * @param identity The identity (membership changes for example)
+	 * @param sender Which identity send the event
+	 * @param repositoryEntry The related course to the event
+	 */
+	public BusinessGroupModifiedEvent(String command, BusinessGroup group, IdentityRef identity, IdentityRef sender, RepositoryEntryRef repositoryEntry) {
 		super(command);
 		this.groupKey = group.getKey();
+		this.repositoryEntryKey = repositoryEntry == null ? null : repositoryEntry.getKey();
 		this.identityKey = (identity == null ? null : identity.getKey());
 		this.senderKey = (sender == null ? null : sender.getKey());
 		if (identity != null) {
@@ -93,7 +111,7 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	 * @return the key of the modified group
 	 */
 	public Long getModifiedGroupKey() {
-		return this.groupKey;
+		return groupKey;
 	}
 	
 	public boolean isSender(IdentityRef identity) {
@@ -108,7 +126,7 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	 * @return The key of the affected identity
 	 */
 	public Long getAffectedIdentityKey() {
-		return this.identityKey;
+		return identityKey;
 	}
 
 	/**
@@ -149,6 +167,15 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 		}
 		return getCommand().equals(IDENTITY_REMOVED_EVENT) && getAffectedIdentityKey().equals(identity.getKey());
 	}
+	
+	/**
+	 * Get the course key notified by the event.
+	 * 
+	 * @return
+	 */
+	public Long getAffectedRepositoryEntryKey() {
+		return repositoryEntryKey;
+	}
 
 	/**
 	 * @param businessGroups a list of BusinessGroup objects
@@ -185,9 +212,9 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 
 	/**
 	 * Fires event to all listeners of this business group and the listeners of
-	 * the ressources associated with the group context of this group
+	 * the resources associated with the group context of this group
 	 * 
-	 * @param command The event identifyer, one of CONFIGURATION_MODIFIED_EVENT,
+	 * @param command The event identifier, one of CONFIGURATION_MODIFIED_EVENT,
 	 *          IDENTITY_ADDED_EVENT or IDENTITY_REMOVED_EVENT
 	 * @param group The group affected by the modification
 	 * @param identity The identity affected by the modification
@@ -201,7 +228,8 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		List<RepositoryEntry> repoEntries = bgs.findRepositoryEntries(Collections.singletonList(group), 0, -1);
 		for (RepositoryEntry entry:repoEntries) {
-			eventBus.fireEventToListenersOf(modifiedEvent, entry);
+			BusinessGroupModifiedEvent modifiedEventForCourse = new BusinessGroupModifiedEvent(command, group, identity, sender, entry);
+			eventBus.fireEventToListenersOf(modifiedEventForCourse, entry);
 		}
 	}
 	
@@ -219,7 +247,7 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	
 	@Override
 	public String toString() {
-		return "groupkey:"+groupKey+",identityKey:"+identityKey+", isTutor:"+isTutor+"|"+super.toString();
+		return "groupkey:"+groupKey+",identityKey:"+identityKey+", isTutor:"+isTutor +"|"+super.toString();
 	}
 	
 	public static class Deferred {

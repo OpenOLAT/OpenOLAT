@@ -121,9 +121,12 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			// Identity was added to a group.
 			// Group member got other roles in group.
 			BusinessGroupModifiedEvent e = (BusinessGroupModifiedEvent)event;
-			if (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(e.getCommand())) {
-				tryProcessIdentityAddedToBusinessGroup(e.getAffectedIdentityKey(), e.getModifiedGroupKey());
-			} else if (BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(e.getCommand())) {
+			if (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(e.getCommand())
+					&& e.getAffectedRepositoryEntryKey() != null) {
+				tryProcessIdentityAddedToBusinessGroup(e.getAffectedIdentityKey(), e.getModifiedGroupKey(), e.getAffectedRepositoryEntryKey());
+			} else if (BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(e.getCommand())
+					&& e.getAffectedRepositoryEntryKey() == null) {
+				// process will take care of all courses
 				tryProcessIdentityRemovedFromBusinessGroup(e.getAffectedIdentityKey(), e.getModifiedGroupKey());
 			}
 		} else if (event instanceof BusinessGroupRepositoryEntryEvent) {
@@ -174,29 +177,25 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		}
 	}
 	
-	private void tryProcessIdentityAddedToBusinessGroup(Long identityKey, Long groupKey) {
+	private void tryProcessIdentityAddedToBusinessGroup(Long identityKey, Long groupKey, Long repositoryEntryKey) {
 		try {
 			log.debug("Process Identity {} added to BusinessGroup {}", identityKey, groupKey);
-			processIdentityAddedToBusinessGroup(identityKey, groupKey);
+			processIdentityAddedToBusinessGroup(identityKey, groupKey, repositoryEntryKey);
 		} catch (Exception e) {
 			log.warn("Error when processing Identity {} added to BusinessGroup {}", identityKey, groupKey);
 		}
 	}
 	
-	private void processIdentityAddedToBusinessGroup(Long identityKey, Long groupKey) {
+	private void processIdentityAddedToBusinessGroup(Long identityKey, Long groupKey, Long entryKey) {
 		if (!isParticipant(identityKey, groupKey)) return;
 	
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
-		List<RepositoryEntry> repositoryEntries = groupService
-				.findRepositoryEntries(Collections.singletonList(new BusinessGroupRefImpl(groupKey)), 0, -1);
-		
-		List<Long> evalutedRepositoryEntryKeys = new ArrayList<>(repositoryEntries.size());
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(entryKey);
+
+		List<Long> evalutedRepositoryEntryKeys = new ArrayList<>(1);
 		ObligationContext obligationContext = new SingleUserObligationContext();
-		for (RepositoryEntry repositoryEntry : repositoryEntries) {
-			evaluateAll(identity, repositoryEntry, false, obligationContext);
-			evalutedRepositoryEntryKeys.add(repositoryEntry.getKey());
-		}
-		
+		evaluateAll(identity, repositoryEntry, false, obligationContext);
+		evalutedRepositoryEntryKeys.add(repositoryEntry.getKey());
 		processExceptionlObligationsGroup(identity, groupKey, evalutedRepositoryEntryKeys, obligationContext);
 	}
 
