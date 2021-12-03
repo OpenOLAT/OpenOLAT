@@ -228,7 +228,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 			myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			myContent.contextPut("passed", assessmentEntry.getPassed());
-			myContent.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview ==  assessmentEntry.getAssessmentStatus()));
+			myContent.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
 			
 			if(resultsVisible) {
 				if(hasComment) {

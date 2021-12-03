@@ -48,7 +48,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.ui.LearningPathIdentityDataModel.LearningPathIdentityCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -56,6 +55,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -128,7 +128,7 @@ public class LearningPathIdentityListController extends FormBasicController impl
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.completion,
 				new LearningProgressCompletionCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathIdentityCols.score, new ScoreCellRenderer()));
 		
 		dataModel = new LearningPathIdentityDataModel(columnsModel, getLocale());

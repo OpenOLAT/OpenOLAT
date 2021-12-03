@@ -52,6 +52,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.login.LoginModule;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
@@ -99,6 +100,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 			CurriculumElement curriculumElement, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_resources");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(getTranslator(), AssessedIdentityListController.class, getLocale()));
 		this.secCallback = secCallback;
 		this.curriculumElement = curriculumElement;
 		resourcesManaged = CurriculumElementManagedFlag.isManaged(curriculumElement, CurriculumElementManagedFlag.resources);

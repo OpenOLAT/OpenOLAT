@@ -289,9 +289,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("passed", scoreEval.getPassed());
 				mainVC.contextPut("attempts", attempts); //at least one attempt
 				mainVC.contextPut("showChangeLog", Boolean.TRUE && enableScoreInfo);
-				exposeResults(ureq, true, scoreEval.getPassed() != null && scoreEval.getPassed().booleanValue());
+				exposeResults(ureq, true, scoreEval.getPassed() != null && scoreEval.getPassed().booleanValue(), AssessmentEntryStatus.done);
 			} else {
-				exposeResults(ureq, false, false);
+				exposeResults(ureq, false, false, AssessmentEntryStatus.notStarted);
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
@@ -324,6 +324,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 				mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);
+				mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
 				if(resultsVisible) {
 					if(assessmentConfig.hasComment()) {
 						StringBuilder comment = Formatter.stripTabsAndReturns(
@@ -345,7 +346,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? Integer.valueOf(0) : attempts);
-				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible());
+				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(passed, assessmentEntry.getAssessmentStatus()));
 				mainVC.contextPut("showChangeLog", showChangelog);
 				
 				if(deliveryOptions.isDigitalSignature()) {
@@ -365,7 +366,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					}
 				}
 
-				exposeResults(ureq, resultsVisible, passed);
+				exposeResults(ureq, resultsVisible, passed, assessmentEntry.getAssessmentStatus());
 			}
 		}
 	}
@@ -466,36 +467,33 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	 * if there is difference when displaying passed or failed results.
 	 * 
 	 * @param ureq
+	 * @param status
 	 */
-	private void exposeResults(UserRequest ureq, boolean resultsAvailable, boolean passed) {
+	private void exposeResults(UserRequest ureq, boolean resultsAvailable, boolean passed, AssessmentEntryStatus status) {
 		//migration: check if old tests have no summary configured
 		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		QTI21AssessmentResultsOptions showSummary = deliveryOptions.getAssessmentResultsOptions();
-		if(resultsAvailable && !showSummary.none()) {
-			mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(showResultsOnHomePage));			
-			boolean dateRelatedVisibility = isResultVisible();		
-			if(showResultsOnHomePage && dateRelatedVisibility) {
-				mainVC.contextPut("showResultsVisible",Boolean.TRUE);
-				showResultsButton = LinkFactory.createLink("command.showResults", "command.showResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
-				showResultsButton.setCustomDisplayText(translate("showResults.title"));
-				showResultsButton.setElementCssClass("o_qti_show_assessment_results");
-				showResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_open_togglebox");
-				
-				hideResultsButton = LinkFactory.createLink("command.hideResults", "command.hideResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
-				hideResultsButton.setCustomDisplayText(translate("showResults.title"));
-				hideResultsButton.setElementCssClass("o_qti_hide_assessment_results");
-				hideResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_close_togglebox");
-				if(isPanelOpen(ureq, "results", true)) {
-					doShowResults(ureq);
-				}
-			} else {
-				exposeVisiblityPeriod(passed);
-				mainVC.contextPut("showResultsVisible", Boolean.FALSE);
+		mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(showResultsOnHomePage));
+		if(showResultsOnHomePage && resultsAvailable && AssessmentEntryStatus.done == status && !showSummary.none() && isResultVisible(passed, status)) {
+			mainVC.contextPut("showResultsVisible",Boolean.TRUE);
+			showResultsButton = LinkFactory.createLink("command.showResults", "command.showResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+			showResultsButton.setCustomDisplayText(translate("showResults.title"));
+			showResultsButton.setElementCssClass("o_qti_show_assessment_results");
+			showResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_open_togglebox");
+			
+			hideResultsButton = LinkFactory.createLink("command.hideResults", "command.hideResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
+			hideResultsButton.setCustomDisplayText(translate("showResults.title"));
+			hideResultsButton.setElementCssClass("o_qti_hide_assessment_results");
+			hideResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_close_togglebox");
+			if(isPanelOpen(ureq, "results", true)) {
+				doShowResults(ureq);
 			}
 		} else {
-			exposeVisiblityPeriod(passed);
-			mainVC.contextPut("showResultsVisible", Boolean.FALSE);
-			mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(showResultsOnHomePage && !showSummary.none()));	
+			if (showSummary.none()) {
+				mainVC.contextPut("showResultsOnHomePage", Boolean.FALSE);
+			} else {
+				exposeVisiblityPeriod(resultsAvailable, passed, status);
+			}
 		}
 		
 		if(!anonym && resultsAvailable && userCourseEnv.isParticipant()) {
@@ -505,138 +503,75 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 	}
 	
-	private void exposeVisiblityPeriod(boolean passed) {
+	private void exposeVisiblityPeriod(boolean resultsAvailable, boolean passed, AssessmentEntryStatus status) {
 		String showResultsActive = config.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
 		
 		if (showResultsActive != null) {
-			Date startDate;
-			Date endDate;
-			Date currentDate = new Date();
-
 			switch (showResultsActive) {
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
-				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
+				if (AssessmentEntryStatus.inReview == status) {
+					mainVC.contextPut("visibilityStatus", translate("showResults.in.review"));
+				} else if (!resultsAvailable) {
+					mainVC.contextPut("visibilityStatus", translate("showResults.in.release"));
+				}
 				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
 				if (passed) {
-					startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
-					endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
-
-					if(startDate != null && currentDate.before(startDate)) {
-						Formatter formatter = Formatter.getInstance(getLocale());
-						String visibilityStartDate = formatter.formatDateAndTime(startDate);
-						String visibilityEndDate = "-";
-						if(endDate != null && currentDate.before(endDate)) {
-							visibilityEndDate = formatter.formatDateAndTime(endDate);
-						} else if(endDate != null && currentDate.after(endDate)) {
-							String visibilityPeriod = translate("showResults.visibility.past");
-							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-							break;
-						}
-						String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
-						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-						break;
-					}
+					Date startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+					Date endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+					mainVC.contextPut("visibilityPeriod", getResultPeriodText(startDate, endDate));
 				} else {
-					startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-					endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-
-					if(startDate != null && currentDate.before(startDate)) {
-						Formatter formatter = Formatter.getInstance(getLocale());
-						String visibilityStartDate = formatter.formatDateAndTime(startDate);
-						String visibilityEndDate = "-";
-						if(endDate != null && currentDate.before(endDate)) {
-							visibilityEndDate = formatter.formatDateAndTime(endDate);
-						} else if(endDate != null && currentDate.after(endDate)) {
-							String visibilityPeriod = translate("showResults.visibility.past");
-							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-							break;
-						}
-						String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
-						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-						break;
-					}
+					Date startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					Date endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+					mainVC.contextPut("visibilityPeriod", getResultPeriodText(startDate, endDate));
 				}
-				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
 				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
-				if (!passed) {
-					startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-					endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-
-					if(startDate != null && currentDate.before(startDate)) {
-						Formatter formatter = Formatter.getInstance(getLocale());
-						String visibilityStartDate = formatter.formatDateAndTime(startDate);
-						String visibilityEndDate = "-";
-						if(endDate != null && currentDate.before(endDate)) {
-							visibilityEndDate = formatter.formatDateAndTime(endDate);
-						} else if(endDate != null && currentDate.after(endDate)) {
-							String visibilityPeriod = translate("showResults.visibility.past");
-							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-							break;
-						}
-						String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
-						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-						break;
-					}
+				if (!passed && AssessmentEntryStatus.done == status) {
+					Date startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					Date endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+					mainVC.contextPut("visibilityPeriod", getResultPeriodText(startDate, endDate));
 				} else {
-					mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(false));
-					break;
+					mainVC.contextPut("showResultsOnHomePage", Boolean.FALSE);
 				}
-				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
 				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
-				if (passed) {
-					startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-					endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-
-					if(startDate != null && currentDate.before(startDate)) {
-						Formatter formatter = Formatter.getInstance(getLocale());
-						String visibilityStartDate = formatter.formatDateAndTime(startDate);
-						String visibilityEndDate = "-";
-						if(endDate != null && currentDate.before(endDate)) {
-							visibilityEndDate = formatter.formatDateAndTime(endDate);
-						} else if(endDate != null && currentDate.after(endDate)) {
-							String visibilityPeriod = translate("showResults.visibility.past");
-							mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-							break;
-						}
-						String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
-						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-						break;
-					}
+				if (passed && AssessmentEntryStatus.done == status) {
+					Date startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+					Date endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+					mainVC.contextPut("visibilityPeriod", getResultPeriodText(startDate, endDate));
 				} else {
-					mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(false));
-					break;
+					mainVC.contextPut("showResultsOnHomePage", Boolean.FALSE);
 				}
-				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
 				break;
 			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
-				startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-				endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-
-				if(startDate != null && currentDate.before(startDate)) {
-					Formatter formatter = Formatter.getInstance(getLocale());
-					String visibilityStartDate = formatter.formatDateAndTime(startDate);
-					String visibilityEndDate = "-";
-					if(endDate != null && currentDate.before(endDate)) {
-						visibilityEndDate = formatter.formatDateAndTime(endDate);
-					} else if(endDate != null && currentDate.after(endDate)) {
-						String visibilityPeriod = translate("showResults.visibility.past");
-						mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-						break;
-					}
-					String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
-					mainVC.contextPut("visibilityPeriod", visibilityPeriod);
-					break;
-				}
-				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
+				Date startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+				Date endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+				mainVC.contextPut("visibilityPeriod", getResultPeriodText(startDate, endDate));
 				break;
 			default:
-				mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
+				mainVC.contextPut("showResultsOnHomePage", Boolean.FALSE);
 				break;
 			}
 		}
+	}
+	
+	private String getResultPeriodText(Date startDate, Date endDate) {
+		if (startDate == null) return null;
+		
+		Formatter formatter = Formatter.getInstance(getLocale());
+		Date now = new Date();
+		String resultPeriodText = null;
+		if (endDate != null) {
+			if (now.after(endDate)) {
+				resultPeriodText = translate("showResults.past", formatter.formatDateAndTime(endDate));
+			} else {
+				resultPeriodText = translate("showResults.range", formatter.formatDateAndTime(startDate), formatter.formatDateAndTime(endDate));
+			}
+		} else {
+			resultPeriodText = translate("showResults.future", formatter.formatDateAndTime(startDate));
+		}
+		return resultPeriodText;
 	}
 	
 	/**
@@ -646,37 +581,33 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	 * 
 	 * @return true if is visible.
 	 */
-	private boolean isResultVisible() {
+	private boolean isResultVisible(boolean passed, AssessmentEntryStatus status) {
 		boolean isVisible = false;
 		String showResultsActive = config.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS);
 		Date startDate, endDate;
 		Date passedStartDate, passedEndDate;
 		Date failedStartDate, failedEndDate;
-		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 		
 		switch (showResultsActive) {
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
-			isVisible = true;
+			isVisible = AssessmentEntryStatus.done == status? true: false;
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
 			passedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
 			passedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
 			failedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
 			failedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			
-			isVisible = isResultVisible(scoreEval, passedStartDate, passedEndDate, failedStartDate, failedEndDate);
+			isVisible = passed ? isResultVisible(passedStartDate, passedEndDate): isResultVisible(failedStartDate, failedEndDate);
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
 			failedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
 			failedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			
-			isVisible = isResultVisibleFailedOnly(scoreEval, failedStartDate, failedEndDate);
+			isVisible = !passed ? isResultVisible(failedStartDate, failedEndDate): false;
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
 			passedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
 			passedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			
-			isVisible = isResultVisiblePassedOnly(scoreEval, passedStartDate, passedEndDate);
+			isVisible = passed ? isResultVisible(passedStartDate, passedEndDate): false;
 			break;
 		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
 			startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
@@ -700,48 +631,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		if (endDate != null && currentDate.after(endDate)) {
 			isVisible &= false;
-		}
-		
-		return isVisible;
-	}
-	
-	private boolean isResultVisibleFailedOnly(ScoreEvaluation scoreEval, Date startDate, Date endDate) {
-		boolean isVisible = scoreEval != null;
-		
-		if (isVisible) {			
-			if (scoreEval.getPassed() != null && !scoreEval.getPassed()) {
-				isVisible &= isResultVisible(startDate, endDate);
-			} else {
-				isVisible &= false;
-			}
-		}
-		
-		return isVisible;
-	}
-	
-	private boolean isResultVisiblePassedOnly(ScoreEvaluation scoreEval, Date startDate, Date endDate) {
-		boolean isVisible = scoreEval != null;
-		
-		if (isVisible) {			
-			if (scoreEval.getPassed() != null && scoreEval.getPassed()) {
-				isVisible &= isResultVisible(startDate, endDate);
-			} else {
-				isVisible &= false;
-			}
-		}
-		
-		return isVisible;
-	}
-	
-	private boolean isResultVisible(ScoreEvaluation scoreEval, Date passedStartDate, Date passedEndDate, Date failedStartDate, Date failedEndDate) {
-		boolean isVisible = scoreEval != null;
-		
-		if (isVisible) {
-			if (scoreEval.getPassed() != null && scoreEval.getPassed()) {
-				isVisible &= isResultVisible(passedStartDate, passedEndDate);
-			} else {
-				isVisible &= isResultVisible(failedStartDate, failedEndDate);
-			}
 		}
 		
 		return isVisible;

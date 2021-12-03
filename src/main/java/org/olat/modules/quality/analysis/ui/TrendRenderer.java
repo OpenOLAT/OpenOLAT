@@ -43,7 +43,7 @@ public class TrendRenderer  extends IconCssCellRenderer {
 	}
 
 	@Override
-	protected String getCssClass(Object val) {
+	protected String getIconCssClass(Object val) {
 		if (val instanceof Trend) {
 			Trend trend = (Trend) val;
 			StringBuilder sb = new StringBuilder();
@@ -104,11 +104,6 @@ public class TrendRenderer  extends IconCssCellRenderer {
 		default:
 			return null;
 		}
-	}
-
-	@Override
-	protected String getHoverText(Object val) {
-		return null;
 	}
 
 }

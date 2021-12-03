@@ -72,7 +72,6 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
@@ -83,10 +82,13 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
+import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -307,7 +309,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName, treeRenderer));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion, new LearningProgressCompletionCellRenderer()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new PassedCellRenderer()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new PassedCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));		
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
@@ -383,8 +385,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
 				.collect(Collectors.toMap(
-						ae -> ae.getRepositoryEntryKey(),
-						ae -> ae.getCompletion()
+						AssessmentEntryScoring::getRepositoryEntryKey,
+						AssessmentEntryScoring::getCompletion
 					));
 		
 		efficiencyStatementsList.forEach(statement -> {
@@ -418,7 +420,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 							return false; 
 						}
 					})
-					.map(level -> level.getTaxonomyLevel())
+					.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
 					.collect(Collectors.toList());
 			
 			// Map all courses to taxonomy level and collect unmapped courses
@@ -572,8 +574,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
 				.collect(Collectors.toMap(
-						ae -> ae.getRepositoryEntryKey(),
-						ae -> ae.getCompletion()
+						AssessmentEntryScoring::getRepositoryEntryKey,
+						AssessmentEntryScoring::getCompletion
 					));
 		
 		for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {

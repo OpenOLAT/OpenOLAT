@@ -143,9 +143,9 @@
 							<th>$r.translate("details.label.status")</th>
 							<td>
 							#if($passed)
-								$r.translate("passed.true")
+								<span class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.true")</span>
 							#elseif($failed)
-								$r.translate("passed.false")
+								<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.false")</span>
 							#end
 							</td>
 						</tr>

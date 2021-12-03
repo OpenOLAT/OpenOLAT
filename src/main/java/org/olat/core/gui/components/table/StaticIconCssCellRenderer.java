@@ -42,7 +42,7 @@ public class StaticIconCssCellRenderer extends IconCssCellRenderer {
 	}
 
 	@Override
-	protected String getCssClass(Object val) {
+	protected String getIconCssClass(Object val) {
 		return cssClass;
 	}
 

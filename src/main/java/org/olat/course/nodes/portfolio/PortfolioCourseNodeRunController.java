@@ -61,6 +61,7 @@ import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
@@ -279,6 +280,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
 			assessmentInfosContainer.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
+			assessmentInfosContainer.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == scoreEval.getAssessmentStatus()));
 			//score
 			Boolean hasScore = Boolean.valueOf(Mode.none != assessmentConfig.getScoreMode());
 			Boolean hasPassed = Boolean.valueOf(Mode.none != assessmentConfig.getPassedMode());

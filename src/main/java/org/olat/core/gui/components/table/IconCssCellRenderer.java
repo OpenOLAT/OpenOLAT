@@ -55,14 +55,21 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			target.append(value);
 		} else {
-			target.append("<div style='white-space: nowrap;'");
+			target.append("<div");
+			String cssClass = getCssClass(cellValue);
+			if (StringHelper.containsNonWhitespace(cssClass)) {
+				target.append(" class=\"");
+				target.appendHtmlEscaped(cssClass);
+				target.append("\"");
+			}
+			target.append(" style='white-space: nowrap;'");
 			String hoverText = getHoverText(cellValue);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
 				target.append(" title=\"");
 				target.appendHtmlEscaped(hoverText);
 			}
 			target.append("\">");
-			target.append("<i class='").append(blankIfNull(getCssClass(cellValue))).append("'> </i> <span>");
+			target.append("<i class='").append(blankIfNull(getIconCssClass(cellValue))).append("'> </i> <span>");
 	
 			target.append(blankIfNull(getCellValue(cellValue)));
 			target.append("</span></div>");
@@ -80,7 +87,14 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			sb.append(value);
 		} else {
-			sb.append("<div style='white-space: nowrap;'><i class='").append(blankIfNull(getCssClass(val))).append("'> </i> <span");
+			sb.append("<div");
+			String cssClass = getCssClass(val);
+			if (StringHelper.containsNonWhitespace(cssClass)) {
+				sb.append(" class=\"");
+				sb.appendHtmlEscaped(cssClass);
+				sb.append("\"");
+			}
+			sb.append(" style='white-space: nowrap;'><i class='").append(blankIfNull(getIconCssClass(val))).append("'> </i> <span");
 			String hoverText = getHoverText(val);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
 				sb.append(" title=\"");
@@ -92,7 +106,17 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 		}
 	}
 	
-	protected abstract String getCssClass(Object val);
+	
+	protected abstract String getIconCssClass(Object val);
 	protected abstract String getCellValue(Object val);
-	protected abstract String getHoverText(Object val);
+	
+	@SuppressWarnings("unused")
+	protected String getCssClass(Object val) {
+		return null;
+	}
+	
+	@SuppressWarnings("unused")
+	protected String getHoverText(Object val) {
+		return null;
+	}
 }

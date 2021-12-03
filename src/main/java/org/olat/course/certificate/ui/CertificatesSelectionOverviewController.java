@@ -38,8 +38,8 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessedIdentitiesTableDataModel;
 import org.olat.course.assessment.AssessmentModule;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +75,7 @@ public class CertificatesSelectionOverviewController extends StepFormBasicContro
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();;
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		int colPos = 0;
 
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessedIdentitiesTableDataModel.usageIdentifyer, isAdministrativeUser);
@@ -91,7 +91,7 @@ public class CertificatesSelectionOverviewController extends StepFormBasicContro
 		}
 		
 		if(hasAssessableNodes) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.passed", CertificatesSelectionDataModel.PASSED_COL, new PassedCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.passed", CertificatesSelectionDataModel.PASSED_COL, new PassedCellRenderer(getLocale())));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.score", CertificatesSelectionDataModel.SCORE_COL));
 		}
 		

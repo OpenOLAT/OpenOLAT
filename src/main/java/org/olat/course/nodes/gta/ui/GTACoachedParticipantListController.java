@@ -73,7 +73,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -106,6 +105,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.co.ContactFormController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -244,7 +244,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 
 		columnsModel.addFlexiColumnModel(userVisibilityCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.score, new ScoreCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.numOfSubmissionDocs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
 		

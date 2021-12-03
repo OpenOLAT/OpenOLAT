@@ -257,6 +257,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_paragraph:before { content: $fa-var-paragraph; }
 .o_icon_passed:before { content: $fa-var-check-circle;}
+.o_icon_passed_undefined:before { content: $fa-var-dot-circle-o;}
 .o_icon_password:before { content: $fa-var-lock;}
 .o_icon_pending:before { content: $fa-var-spinner; }
 .o_icon_phone:before { content: $fa-var-phone; }
@@ -359,14 +360,15 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_start:before { content: $fa-var-chevron-right; }
 .o_icon_status_available:before { content: $fa-var-circle; color: $o-im-status-available-color; }
 .o_icon_status_chat:before { content: $fa-var-comment; }
+.o_icon_status_confirm:before { content: $fa-var-check-circle; }
 .o_icon_status_dnd:before { content: $fa-var-dot-circle-o; color: $o-im-status-dnd-color; }
 .o_icon_status_unavailable:before { content: $fa-var-times-circle-o; color: $o-im-status-unavailable-color; }
 .o_icon_status_not_ready:before { content: $fa-var-ban; }
 .o_icon_status_not_started:before { content: $fa-var-circle-o; }
 .o_icon_status_in_progress:before { content: $fa-var-play; }
 .o_icon_status_in_review:before { content: $fa-var-hand-o-up; }
-.o_icon_status_done:before { content: $fa-var-check-circle; }
-.o_icon_status_undone:before { content: $fa-var-check-circle-o; }
+.o_icon_status_done:before { content: $fa-var-check; }
+.o_icon_status_unconfirm:before { content: $fa-var-check-circle-o; }
 .o_icon_statistics_tool:before { content: $fa-var-bar-chart-o;}
 .o_icon_submit:before { content: $fa-var-check; }
 .o_icon_table:before { content: $fa-var-table; }

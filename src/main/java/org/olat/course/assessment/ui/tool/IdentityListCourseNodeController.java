@@ -94,7 +94,6 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.bulk.PassedOverridenCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -125,6 +124,7 @@ import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.CompletionItem;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.modules.co.ContactFormController;
@@ -549,7 +549,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.passedOverriden, new PassedOverridenCellRenderer()));
 			}
 			if(Mode.none != assessmentConfig.getPassedMode()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer()));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer(getLocale())));
 			}
 			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.numOfAssessmentDocs));

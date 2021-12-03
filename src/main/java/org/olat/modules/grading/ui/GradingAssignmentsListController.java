@@ -80,7 +80,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -98,6 +97,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.grading.GraderToIdentity;
@@ -299,7 +299,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.assignmentDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.doneDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.score, new ScoreCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GAssignmentsCol.passed, new PassedCellRenderer(getLocale())));
 
 		if(secCallback.canGrade()) {
 			StaticFlexiCellRenderer gradeRenderer = new StaticFlexiCellRenderer(translate("grade"), "grade", null, "o_icon o_icon_assessment_mode");

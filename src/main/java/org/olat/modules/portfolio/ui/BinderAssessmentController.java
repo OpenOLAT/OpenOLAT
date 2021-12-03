@@ -54,6 +54,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -67,7 +68,6 @@ import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.ui.BinderAssessmentDataModel.AssessmentSectionCols;
 import org.olat.modules.portfolio.ui.component.SectionStatusCellRenderer;
-import org.olat.modules.portfolio.ui.renderer.PassedCellRenderer;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -123,7 +123,7 @@ public class BinderAssessmentController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.sectionName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.numOfPages));
 		if(withPassed) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.passed, new PassedCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.passed, new PassedCellRenderer(getLocale())));
 		}
 		if(withScore) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentSectionCols.score, new ScoreCellRenderer()));

@@ -51,7 +51,7 @@ public class BinderAssessmentPage {
 	}
 	
 	public BinderAssessmentPage assertPassed(int numOfPassed) {
-		By passedBy = By.cssSelector("span.o_state.o_passed");
+		By passedBy = By.cssSelector("div.o_state.o_passed");
 		List<WebElement> passedEls = browser.findElements(passedBy);
 		Assert.assertEquals(numOfPassed, passedEls.size());
 		return this;

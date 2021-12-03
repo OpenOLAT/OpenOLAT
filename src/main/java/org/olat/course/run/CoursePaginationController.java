@@ -99,7 +99,7 @@ public class CoursePaginationController extends FormBasicController {
 		// If doConfirm (click to confirm), show the current state "undone" and vice versa.
 		confirmButton.setI18nKey(doConfirm? "command.assessment.undone": "command.assessment.done");
 		confirmButton.setLinkTitle(doConfirm? "command.assessment.undone.alt": "command.assessment.done.alt");
-		confirmButton.setIconLeftCSS(doConfirm? "o_icon o_icon_status_undone": "o_icon o_icon_status_done");
+		confirmButton.setIconLeftCSS(doConfirm? "o_icon o_icon_status_unconfirm": "o_icon o_icon_status_confirm");
 		confirmButton.setUserObject(doConfirm? Boolean.TRUE: Boolean.FALSE);
 		confirmButton.setElementCssClass(doConfirm ? "o_course_pagination_status_undone" : "o_course_pagination_status_done");
 		if (largeStyle) {

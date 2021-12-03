@@ -127,7 +127,7 @@ public class AssessmentToolPage {
 		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span[contains(text(),'" + nodeTitle + "')]]");
 		List<WebElement> rowEls = browser.findElements(rowsBy);
 		Assert.assertEquals(1, rowEls.size());
-		By passedBy = By.cssSelector("td span.o_state.o_passed");
+		By passedBy = By.cssSelector("td div.o_state.o_passed");
 		WebElement passedEl = rowEls.get(0).findElement(passedBy);
 		Assert.assertTrue(passedEl.isDisplayed());
 		return this;
@@ -176,7 +176,7 @@ public class AssessmentToolPage {
 		By userInfosBy = By.xpath("//div[@class='o_user_infos']/div[@class='o_user_infos_inner']//tr[contains(@class,'o_userDisplayName')]/td[text()[contains(.,'" + user.getFirstName() + "')]]");
 		OOGraphene.waitElement(userInfosBy, browser);
 		
-		By passedBy = By.cssSelector("div.o_table_wrapper table tr td.text-left span.o_state.o_passed");
+		By passedBy = By.cssSelector("div.o_table_wrapper table tr td.text-left div.o_state.o_passed");
 		OOGraphene.waitElement(passedBy, browser);
 		return this;
 	}

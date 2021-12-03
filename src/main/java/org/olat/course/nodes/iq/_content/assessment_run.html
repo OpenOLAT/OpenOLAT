@@ -24,37 +24,47 @@
 				<tr class="o_score">
 					<th>$r.translate("score.yourscore")</th>
 					<td>
-					#if($r.isNotNull($score))
-						#if($resultsVisible)
-							$score
-						#else
+						#if($inReview)
 							<span id="o_score_in_review" class="o_in_review">
 								<i class="o_icon o_icon-fw o_icon_warn"> </i>
 								$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
 							</span>
-							$r.mouseoverHelp("o_score_in_review", "assessment.review.explanation")
+							$r.mouseoverHelpTranslated("o_score_in_review", $r.translateWithPackage("org.olat.course.nodes.ms", "in.review.desc"))
+						#elseif(!$resultsVisible)
+							<span id="o_score_in_release" class="o_in_release">
+								<i class="o_icon o_icon-fw o_icon_warn"> </i>
+								$r.translateWithPackage("org.olat.course.nodes.ms", "in.release")
+							</span>
+							$r.mouseoverHelpTranslated("o_score_in_release", $r.translateWithPackage("org.olat.course.nodes.ms", "in.release.desc"))
+						#elseif($score)
+							$score
+						#else
+							<div class="o_noinfo">$r.translate("score.noscore")</div>
 						#end
-					#end
 					</td>
 				</tr>
 				<tr class="o_state #if(!$resultsVisible) #elseif ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
 					<th>$r.translate("passed.yourpassed")</th>
 					<td>
-					#if($hasPassedValue && !$resultsVisible)
-						<span id="o_passed_in_review" class="o_in_review">
-							<i class="o_icon o_icon-fw o_icon_warn"> </i>
-							$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
-						</span>
-						$r.mouseoverHelp("o_passed_in_review", "assessment.review.explanation")
-					#elseif($hasPassedValue && $passed)	
-						<i class="o_icon o_icon_passed"></i> 
-						$r.translate("passed.yes")
-					#elseif($hasPassedValue && !$passed)		
-						<i class="o_icon o_icon_failed"></i> 
-						$r.translate("passed.no")
-					#else
-						$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
-					#end
+						#if($inReview)
+							<span id="o_passed_in_review" class="o_in_review">
+								<i class="o_icon o_icon-fw o_icon_warn"> </i>
+								$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+							</span>
+							$r.mouseoverHelpTranslated("o_passed_in_review", $r.translateWithPackage("org.olat.course.nodes.ms", "in.review.desc"))
+						#elseif(!$resultsVisible)
+							<span id="o_passed_in_release" class="o_in_release">
+								<i class="o_icon o_icon-fw o_icon_warn"> </i>
+								$r.translateWithPackage("org.olat.course.nodes.ms", "in.release")
+							</span>
+							$r.mouseoverHelpTranslated("o_passed_in_release", $r.translateWithPackage("org.olat.course.nodes.ms", "in.release.desc"))
+						#elseif($hasPassedValue && $passed)
+							<i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")
+						#elseif($hasPassedValue && !$passed)
+							<i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")
+						#else
+							<div class="o_noinfo">$r.translate("passed.nopassed")</div>
+						#end
 					</td>
 				</tr>
 				#if($r.available("digital.signature.download.link"))
@@ -140,11 +150,15 @@
 #if($showResultsOnHomePage && $r.isNotNull($attempts) && $attempts > 0)	
 	<div class="panel panel-default o_results">
 	  	<div class="panel-heading">
-	  		<h4 class="panel-title">#if ($showResults && $r.available("command.hideResults"))
-				$r.render("command.hideResults")					  				  
-			#elseif($r.available("command.showResults"))
-				$r.render("command.showResults")
-			#else$r.translate("showResults.title")#end</h4>
+	  		<h4 class="panel-title">
+				#if ($showResults && $r.available("command.hideResults"))
+					$r.render("command.hideResults")
+				#elseif($showResults && $r.available("command.showResults"))
+					$r.render("command.showResults")
+				#else
+					$r.translate("showResults.title")
+				#end
+			</h4>
 	  	</div>
 	  	#if($showResultsVisible)				
 	       	#if($showResults)
@@ -152,8 +166,12 @@
 				<div id="o_qti_results">$r.render("resultReport")</div>
 			</div></div>
 	       	#end
-	  	#elseif($r.isNotNull($visibilityPeriod))
-	       	<div class="panel-collapse collapse in"><div class="panel-body">$visibilityPeriod</div></div>
+		#elseif($r.isNotNull($visibilityStatus))
+			<div class="panel-collapse collapse in"><div class="panel-body o_statusinfo">$visibilityPeriod</div></div>
+		#elseif($r.isNotNull($visibilityPeriod))
+			<div class="panel-collapse collapse in"><div class="panel-body o_statusinfo">
+				<i class="o_icon o_icon-fw o_icon_time"> </i> $visibilityPeriod
+			</div></div>
 		#end
 	</div>
 #end

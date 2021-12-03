@@ -63,6 +63,7 @@ import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormCPManifestTreeModel;
 import org.olat.modules.scorm.ScormConstants;
@@ -238,6 +239,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 			startPage.contextPut("passed", scoreEval.getPassed());
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
 			startPage.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
+			startPage.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == scoreEval.getAssessmentStatus()));
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
 			if(resultsVisible && assessmentConfig.hasComment()) {
 				StringBuilder comment = Formatter

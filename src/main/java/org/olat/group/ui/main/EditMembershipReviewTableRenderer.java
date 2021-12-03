@@ -53,7 +53,7 @@ public class EditMembershipReviewTableRenderer extends IconCssCellRenderer{
 				target.appendHtmlEscaped(hoverText);
 			}
 			target.append("\">");
-			target.append("<i class='").append(blankIfNull(getCssClass(cellValue))).append("'> </i> <span>");
+			target.append("<i class='").append(blankIfNull(getIconCssClass(cellValue))).append("'> </i> <span>");
 	
 			target.append(blankIfNull(getCellValue(cellValue)));
 			target.append("</span></span>");
@@ -88,7 +88,7 @@ public class EditMembershipReviewTableRenderer extends IconCssCellRenderer{
 	}
 	
 	@Override
-	protected String getCssClass(Object val) {
+	protected String getIconCssClass(Object val) {
 		if (val instanceof Integer) {
 			switch ((Integer) val) {
 				case 1:

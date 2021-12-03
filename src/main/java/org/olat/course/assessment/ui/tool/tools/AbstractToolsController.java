@@ -154,9 +154,9 @@ public abstract class AbstractToolsController extends BasicController {
 					|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
 			if (canChangeUserVisibility) {
 				if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
-					notVisibleLink = addLink("tool.set.not.visible", "tool.set.not.visible", "o_icon o_icon-fw o_icon_results_hidden");	
+					notVisibleLink = addLink("tool.set.hidden", "tool.set.hidden", "o_icon o_icon-fw o_icon_results_hidden");
 				} else {
-					visibleLink = addLink("tool.set.visible", "tool.set.visible", "o_icon o_icon-fw o_icon_results_visible");	
+					visibleLink = addLink("tool.set.visible", "tool.set.visible", "o_icon o_icon-fw o_icon_results_visible");
 				}
 			}
 		}

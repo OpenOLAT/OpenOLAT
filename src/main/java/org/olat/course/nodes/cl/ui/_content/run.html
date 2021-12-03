@@ -17,20 +17,24 @@
 			<tr class="o_score">
 				<th>$r.translate("score.yourscore")</th>
 				<td>
-				#if($score)
-					#if($resultsVisible)
-						$score
-					#else
+					#if($inReview)
 						<span id="o_score_in_review" class="o_in_review">
 							<i class="o_icon o_icon-fw o_icon_warn"> </i>
 							$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
 						</span>
-						$r.mouseoverHelp("o_score_in_review", "assessment.review.explanation")
+						$r.mouseoverHelpTranslated("o_score_in_review", $r.translateWithPackage("org.olat.course.nodes.ms", "in.review.desc"))
+					#elseif(!$resultsVisible)
+						<span id="o_score_in_release" class="o_in_release">
+							<i class="o_icon o_icon-fw o_icon_warn"> </i>
+							$r.translateWithPackage("org.olat.course.nodes.ms", "in.release")
+						</span>
+						$r.mouseoverHelpTranslated("o_score_in_release", $r.translateWithPackage("org.olat.course.nodes.ms", "in.release.desc"))
+					#elseif($score)
+						$score
+					#else
+						<div class="o_noinfo">$r.translate("score.noscore")</div>
 					#end
-				#else
-					<div class="o_noinfo">$r.translate("score.noscore")</div>
-				#end				
-				</td> 
+				</td>
 			</tr>
 			#end 
 			
@@ -44,21 +48,26 @@
 			<tr class="o_state #if(!$resultsVisible) #elseif($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
 				<th>$r.translate("passed.yourpassed")</th>
 				<td>
-				#if($hasPassedValue && !$resultsVisible)
-					<span id="o_passed_in_review" class="o_in_review">
-						<i class="o_icon o_icon-fw o_icon_warn"> </i>
-						$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
-					</span>
-					$r.mouseoverHelp("o_passed_in_review", "assessment.review.explanation")
-				#elseif($hasPassedValue && $passed)
-					<i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")
-				#elseif($hasPassedValue && !$passed)
-					<i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")
-				#else
-					<div class="o_noinfo">$r.translate("passed.nopassed")</div>
-				#end
+					#if($inReview)
+						<span id="o_passed_in_review" class="o_in_review">
+							<i class="o_icon o_icon-fw o_icon_warn"> </i>
+							$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+						</span>
+						$r.mouseoverHelpTranslated("o_passed_in_review", $r.translateWithPackage("org.olat.course.nodes.ms", "in.review.desc"))
+					#elseif(!$resultsVisible)
+						<span id="o_passed_in_release" class="o_in_release">
+							<i class="o_icon o_icon-fw o_icon_warn"> </i>
+							$r.translateWithPackage("org.olat.course.nodes.ms", "in.release")
+						</span>
+						$r.mouseoverHelpTranslated("o_passed_in_release", $r.translateWithPackage("org.olat.course.nodes.ms", "in.release.desc"))
+					#elseif($hasPassedValue && $passed)
+						<i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")
+					#elseif($hasPassedValue && !$passed)
+						<i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")
+					#else
+						<div class="o_noinfo">$r.translate("passed.nopassed")</div>
+					#end
 				</td>
-			</tr>
 			#end
 		</tbody>
 		</table>				

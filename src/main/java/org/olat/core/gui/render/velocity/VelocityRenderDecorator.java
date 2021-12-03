@@ -547,6 +547,30 @@ public class VelocityRenderDecorator implements Closeable {
 	}
 
 	/**
+	 * Add some mouse-over help text to an element, ideally an icon
+	 * 
+	 * @param domElem The DOM id of the element that triggers the mouse-over 
+	 * @param text The text to be displayed (including HTML formatting)
+	 * @param position Optional param, values: top, bottom, left right. Default is "top"
+	 * @return
+	 */
+	public StringOutput mouseoverHelpTranslated(String... args) {
+		String domElem = args[0];
+		String text = args[1];
+		String position = "top"; // default
+		if (args.length > 2 && args[2] != null) {
+			position = args[2];
+		}
+		StringOutput sb = new StringOutput(100);
+		sb.append("<script>jQuery(function () {jQuery('#").append(domElem).append("').tooltip({placement:\"").append(position).append("\",container: \"body\",html:true,title:\"");
+		if (text != null) {
+			sb.append(StringHelper.escapeJavaScript(text));
+		}
+		sb.append("\"});})</script>");
+		return sb;
+	}
+
+	/**
 	 * @param componentName
 	 * @param arg1
 	 * @return

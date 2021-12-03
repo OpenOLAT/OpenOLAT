@@ -56,6 +56,7 @@ import org.olat.ims.lti13.LTI13ToolDeployment;
 import org.olat.ims.lti13.ui.LTI13DisplayController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -251,6 +252,7 @@ public class LTIRunController extends BasicController {
 			startPage.contextPut("hasScore", Boolean.TRUE);
 			boolean resultsVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
 			startPage.contextPut("resultsVisible", Boolean.valueOf(resultsVisible));
+			startPage.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == eval.getAssessmentStatus()));
 			mainPanel.setContent(startPage);
 		}
 		

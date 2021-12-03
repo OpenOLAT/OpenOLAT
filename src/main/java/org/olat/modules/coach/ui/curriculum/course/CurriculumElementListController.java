@@ -79,6 +79,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CorruptedCourseException;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.curriculum.course.CurriculumElementWithViewsDataModel.ElementViewCols;
 import org.olat.modules.curriculum.Curriculum;
@@ -164,6 +165,7 @@ public class CurriculumElementListController extends FormBasicController impleme
     public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
                                            Identity assessedIdentity, List<CurriculumRef> curriculumRefList, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback) {
         super(ureq, wControl, "curriculum_element_list", Util.createPackageTranslator(CurriculumListController.class, RepositoryService.class, ureq.getLocale()));
+        setTranslator(Util.createPackageTranslator(getTranslator(), AssessedIdentityListController.class, getLocale()));
         this.curriculumRefList = curriculumRefList;
         this.stackPanel = stackPanel;
         this.curriculumSecurityCallback = curriculumSecurityCallback;

@@ -38,7 +38,7 @@ public class MeetingValidationRenderer extends IconCssCellRenderer {
 	}
 
 	@Override
-	protected String getCssClass(Object val) {
+	protected String getIconCssClass(Object val) {
 		if (val instanceof AppointmentInput) {
 			AppointmentInput appointment = (AppointmentInput)val;
 			if (appointment.getMeetingValidation() != null) {
@@ -73,11 +73,6 @@ public class MeetingValidationRenderer extends IconCssCellRenderer {
 			}
 		}
 		return value;
-	}
-
-	@Override
-	protected String getHoverText(Object val) {
-		return null;
 	}
 
 }

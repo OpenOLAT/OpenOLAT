@@ -47,7 +47,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.learningpath.ui.CurriculumLearningPathRepositoryDataModel.LearningPathRepositoryCols;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -55,6 +54,7 @@ import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
@@ -103,7 +103,7 @@ public class CurriculumLearningPathRepositoryListController extends FormBasicCon
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.reponame, CMD_OPEN_COURSE));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.completion,
 				new LearningProgressCompletionCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathRepositoryCols.score, new ScoreCellRenderer()));
 		
 		DefaultFlexiColumnModel learningPathColumn = new DefaultFlexiColumnModel(LearningPathRepositoryCols.learningPath);

@@ -30,7 +30,7 @@ public class TranscodingErrorIconRenderer extends IconCssCellRenderer implements
 	
 
 	@Override
-	protected String getCssClass(Object val) {
+	protected String getIconCssClass(Object val) {
 		if(val == null) {
 			return null;
 		}

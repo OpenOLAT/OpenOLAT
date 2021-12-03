@@ -91,7 +91,9 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListContr
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel;
 import org.olat.course.certificate.ui.UploadExternalCertificateController;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.ui.curriculum.certificate.CurriculumElementWithViewsDataModel.ElementViewCols;
 import org.olat.modules.curriculum.Curriculum;
@@ -186,6 +188,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
                                                                      Identity assessedIdentity, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback) {
         super(ureq, wControl, "curriculum_element_list");
         setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
         setTranslator(Util.createPackageTranslator(CertificateAndEfficiencyStatementListController.class, getLocale(), getTranslator()));
         setTranslator(Util.createPackageTranslator(CurriculumListController.class, getLocale(), getTranslator()));
         setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -355,8 +358,8 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
                 .loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
                 .filter(ae -> ae.getCompletion() != null)
                 .collect(Collectors.toMap(
-                        ae -> ae.getRepositoryEntryKey(),
-                        ae -> ae.getCompletion()
+                        AssessmentEntryScoring::getRepositoryEntryKey,
+                        AssessmentEntryScoring::getCompletion
                 ));
 
         for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {

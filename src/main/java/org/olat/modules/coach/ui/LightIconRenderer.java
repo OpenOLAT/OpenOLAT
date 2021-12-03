@@ -31,7 +31,7 @@ import org.olat.modules.coach.ui.LightedValue.Light;
 public class LightIconRenderer extends IconCssCellRenderer implements FlexiCellRenderer {
 
 	@Override
-	protected String getCssClass(Object val) {
+	protected String getIconCssClass(Object val) {
 		if(val == null) {
 			return null;
 		}
@@ -65,11 +65,6 @@ public class LightIconRenderer extends IconCssCellRenderer implements FlexiCellR
 			return AssessmentHelper.getRoundedScore((Float)val);
 		}
 		return val.toString();
-	}
-
-	@Override
-	protected String getHoverText(Object val) {
-		return null;
 	}
 
 }

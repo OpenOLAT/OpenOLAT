@@ -47,6 +47,7 @@ import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,7 +89,7 @@ public class ValidationStepForm extends StepFormBasicController {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.score", Cols.score.ordinal(), new ScoreCellRenderer(settings)));
 		}
 		if(settings.isHasPassed() && settings.getCut() == null) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.passed", Cols.passed.ordinal(), new PassedCellRenderer()));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.passed", Cols.passed.ordinal(), new PassedCellRenderer(getLocale())));
 		}
 		if(settings.isHasUserComment()) {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.comment", Cols.comment.ordinal()));

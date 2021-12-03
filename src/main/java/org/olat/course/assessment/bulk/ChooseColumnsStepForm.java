@@ -40,12 +40,14 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 
 /**
  *
@@ -70,6 +72,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 			StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		setTranslator(new HeaderColumnTranslator(getTranslator()));
+		setTranslator(Util.createPackageTranslator(getTranslator(), AssessedIdentityListController.class, getLocale()));
 		this.columnsSettings = columnsSettings;
 
 		@SuppressWarnings("unchecked")

@@ -73,6 +73,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -218,6 +219,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			layoutCont.contextPut("passed", scoreEval.getPassed());
+			layoutCont.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == scoreEval.getAssessmentStatus()));
 			if(resultsVisible) {
 				if(assessmentConfig.hasComment()) {
 					StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
