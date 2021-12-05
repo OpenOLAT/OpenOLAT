@@ -587,7 +587,7 @@ function o_ainvoke(r) {
 								for(var t=0; t<eds.length; t++) {
 									try {
 										var edId = jQuery(eds.get(t)).attr('id');
-										if(typeof tinymce != undefined) {
+										if(typeof tinymce !== 'undefined') {
 											tinymce.remove('#' + edId);
 										}
 									} catch(e) {

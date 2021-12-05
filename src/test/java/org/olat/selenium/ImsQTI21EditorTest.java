@@ -970,13 +970,13 @@ public class ImsQTI21EditorTest extends Deployments {
 		URL backgroundImageUrl = JunitTestHelper.class.getResource("file_resources/house.jpg");
 		File backgroundImageFile = new File(backgroundImageUrl.toURI());
 		hotspotEditor
+			.setCardinality(Cardinality.SINGLE)
 			.updloadBackground(backgroundImageFile)
 			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(300, 120)
 			.addRectangle()
 			.moveRectangle(150, 150)
-			.setCardinality(Cardinality.SINGLE)
 			.save();
 		// change max score
 		hotspotEditor
@@ -996,13 +996,13 @@ public class ImsQTI21EditorTest extends Deployments {
 		hotspotEditor = qtiEditor
 			.addHotspot();
 		hotspotEditor
+			.setCardinality(Cardinality.SINGLE)
 			.updloadBackground(backgroundImageFile)
 			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(310, 125)
 			.addRectangle()
 			.moveRectangle(145, 155)
-			.setCardinality(Cardinality.SINGLE)
 			.save();
 		// change scoring
 		hotspotEditor
@@ -1150,13 +1150,13 @@ public class ImsQTI21EditorTest extends Deployments {
 		URL backgroundImageUrl = JunitTestHelper.class.getResource("file_resources/house.jpg");
 		File backgroundImageFile = new File(backgroundImageUrl.toURI());
 		hotspotEditor
+			.setCardinality(Cardinality.MULTIPLE)
 			.updloadBackground(backgroundImageFile)
 			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(300, 120)
 			.addRectangle()
 			.moveRectangle(150, 150)
-			.setCardinality(Cardinality.MULTIPLE)
 			.setCorrect("2.", true)
 			.save();
 		// change max score
@@ -1177,13 +1177,13 @@ public class ImsQTI21EditorTest extends Deployments {
 		hotspotEditor = qtiEditor
 			.addHotspot();
 		hotspotEditor
+			.setCardinality(Cardinality.MULTIPLE)
 			.updloadBackground(backgroundImageFile)
 			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(310, 125)
 			.addRectangle()
 			.moveRectangle(145, 155)
-			.setCardinality(Cardinality.MULTIPLE)
 			.setCorrect("2.", true)
 			.save();
 		// change scoring
@@ -3544,12 +3544,12 @@ public class ImsQTI21EditorTest extends Deployments {
 		File backgroundImageFile = new File(backgroundImageUrl.toURI());
 		hotspotEditor
 			.updloadBackground(backgroundImageFile)
+			.setCardinality(Cardinality.SINGLE)
 			.moveToHotspotEditor()
 			.resizeCircle()
 			.moveCircle(300, 120)
 			.addRectangle()
 			.moveRectangle(150, 150)
-			.setCardinality(Cardinality.SINGLE)
 			.save();
 		hotspotEditor
 			.selectScores()
