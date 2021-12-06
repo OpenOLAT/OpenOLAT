@@ -71,7 +71,6 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 	public ChooseColumnsStepForm(UserRequest ureq, WindowControl wControl, BulkAssessmentColumnSettings columnsSettings,
 			StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		setTranslator(new HeaderColumnTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(getTranslator(), AssessedIdentityListController.class, getLocale()));
 		this.columnsSettings = columnsSettings;
 
@@ -149,7 +148,8 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		for(int i=0; i<numOfColumns; i++) {
-			DefaultFlexiColumnModel colModel = new DefaultFlexiColumnModel("ccc" + (i+1), i);
+			DefaultFlexiColumnModel colModel = new DefaultFlexiColumnModel("column", i);
+			colModel.setHeaderLabel(translate("column", Integer.toString(i + 1)));
 			tableColumnModel.addFlexiColumnModel(colModel);
 		}
 

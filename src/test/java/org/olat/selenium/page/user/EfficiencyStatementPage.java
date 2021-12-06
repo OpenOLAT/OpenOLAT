@@ -91,7 +91,7 @@ public class EfficiencyStatementPage {
 			courseTitle = courseTitle.substring(0, 25);
 		}
 		String passedCss = passed ? "o_passed" : "o_failed";
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/span[contains(@class,'o_state')][contains(@class,'" + passedCss + "')]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/div[contains(@class,'o_state')][contains(@class,'" + passedCss + "')]");
 		OOGraphene.waitElement(courseCertificateBy, browser);
 		return this;
 	}
@@ -106,7 +106,7 @@ public class EfficiencyStatementPage {
 	 */
 	public EfficiencyStatementPage assertOnCourseDetails(String testNodeTitle, boolean passed) {
 		String stateClassname = passed ? "o_passed" : "o_failed";
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_efficiencystatement')]//table//tr[td/span[contains(text(),'" + testNodeTitle + "')]]/td[contains(@class,'text-left')]/span[contains(@class,'o_state')][contains(@class,'" + stateClassname + "')]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_efficiencystatement')]//table//tr[td/span[contains(text(),'" + testNodeTitle + "')]]/td[contains(@class,'text-left')]/div[contains(@class,'o_state')][contains(@class,'" + stateClassname + "')]");
 		OOGraphene.waitElement(courseCertificateBy, browser);
 		return this;
 	}

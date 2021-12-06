@@ -90,6 +90,7 @@ public class AssessmentViewController extends BasicController {
 		mainVC = createVelocityContainer("assessment_view");
 		
 		reopenLink = LinkFactory.createButton("reopen", mainVC, this);
+		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
 		reopenLink.setIconLeftCSS("o_icon o_icon_status_in_review");
 		updateUserVisibilityUI();
 		

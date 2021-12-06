@@ -39,7 +39,6 @@ public class ChooseColumnsStepSkipForm extends StepFormBasicController {
 	public ChooseColumnsStepSkipForm(UserRequest ureq, WindowControl wControl,
 			StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		setTranslator(new HeaderColumnTranslator(getTranslator()));		
 		initForm(ureq);
 	}
 	

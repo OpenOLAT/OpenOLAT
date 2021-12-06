@@ -90,7 +90,7 @@ public class Util {
 	public static Translator createPackageTranslator(Translator baseClass, Class<?> fallbackClass, Locale locale) {
 		String fallbackpackage = Util.getPackageName(fallbackClass);
 		Translator fallback = new PackageTranslator(fallbackpackage, locale);
-		return new PackageTranslator(((PackageTranslator)baseClass).getPackageName(), locale, fallback);
+		return new PackageTranslator(baseClass.getPackageName(), locale, fallback);
 	}
 	
 	public static Translator createPackageTranslator(Translator translator, Translator fallback, Locale locale) {

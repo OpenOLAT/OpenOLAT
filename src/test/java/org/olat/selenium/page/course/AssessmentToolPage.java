@@ -169,6 +169,8 @@ public class AssessmentToolPage {
 		By saveBy = By.cssSelector("a.o_sel_assessment_form_reopen");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		By assessmentPanelBy = By.cssSelector("div.o_personal.o_assessment_panel");
+		OOGraphene.waitElement(assessmentPanelBy, browser);
 		return this;
 	}
 	
@@ -195,7 +197,7 @@ public class AssessmentToolPage {
 	
 	public AssessmentToolPage assertStatusDone(UserVO user) {
 		try {
-			By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/i[contains(@class,'o_icon_status_done')]");
+			By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/i[contains(@class,'o_icon_status_done')]");
 			OOGraphene.waitElementSlowly(doneBy, 10, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Status done", browser);
