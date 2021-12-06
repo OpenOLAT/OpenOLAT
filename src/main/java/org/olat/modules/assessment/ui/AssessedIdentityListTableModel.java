@@ -102,11 +102,6 @@ public class AssessedIdentityListTableModel extends DefaultFlexiTableDataModel<A
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AssessedIdentityElementRow> createCopyWithEmptyList() {
-		return new AssessedIdentityListTableModel(getTableColumnModel(), element);
-	}
 	
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {
 		attempts("table.header.attempts"),

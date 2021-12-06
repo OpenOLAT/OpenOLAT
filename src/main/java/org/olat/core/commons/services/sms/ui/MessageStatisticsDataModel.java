@@ -70,11 +70,6 @@ public class MessageStatisticsDataModel extends DefaultFlexiTableDataModel<Messa
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<MessageStatistics> createCopyWithEmptyList() {
-		return new MessageStatisticsDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum MLogStatsCols implements FlexiSortableColumnDef {
 		year("table.header.year"),

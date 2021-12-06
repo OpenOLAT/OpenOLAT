@@ -59,11 +59,6 @@ public class ModifyOwnersRemoveTableModel extends DefaultFlexiTableDataModel<Mod
 				return "error";
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ModifyOwnersRemoveTableRow> createCopyWithEmptyList() {
-		return null;
-	}
 	
 	public enum ModifyOwnersStep1Cols implements FlexiColumnDef {
 		firstName("table.name.firstName"),

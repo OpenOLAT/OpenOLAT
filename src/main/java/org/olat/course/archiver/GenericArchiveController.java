@@ -118,7 +118,7 @@ public class GenericArchiveController extends FormBasicController {
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("archive"), "select"), null));	
 			columnsModel.addFlexiColumnModel(selectColumn);
 			
-			nodeTableModel = new NodeTableDataModel(columnsModel, getTranslator());
+			nodeTableModel = new NodeTableDataModel(columnsModel);
 			
 			tableEl = uifactory.addTableElement(getWindowControl(), "nodeTable", nodeTableModel, 1024, false, getTranslator(), layoutCont);
 			tableEl.setExportEnabled(false);

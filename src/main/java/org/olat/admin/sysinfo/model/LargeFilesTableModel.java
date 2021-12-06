@@ -101,11 +101,6 @@ implements SortableFlexiTableDataModel<LargeFilesTableContentRow> {
 		}
 	}
 
-	@Override 
-	public DefaultFlexiTableDataModel<LargeFilesTableContentRow> createCopyWithEmptyList() {
-		return new LargeFilesTableModel(getTableColumnModel(), locale);
-	}
-
 	private Object returnNullSafeDate(Date d) {
 		if (d == null || d.getTime() - 172800000 < 0) {
 			return null;

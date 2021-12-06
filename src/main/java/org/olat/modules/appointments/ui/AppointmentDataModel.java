@@ -118,11 +118,6 @@ implements SortableFlexiTableDataModel<AppointmentRow>, FilterableFlexiTableMode
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AppointmentRow> createCopyWithEmptyList() {
-		return new AppointmentDataModel(getTableColumnModel(), translator);
-	}
 	
 	public enum AppointmentCols implements FlexiSortableColumnDef {
 		id("appointment.id"),

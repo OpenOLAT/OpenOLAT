@@ -107,11 +107,6 @@ implements SortableFlexiTableDataModel<IdentityLecturesRollCallsRow> {
 		
 		return Integer.valueOf(numOfAbsences);
 	}
-
-	@Override
-	public IdentitiesLecturesRollCallTableModel createCopyWithEmptyList() {
-		return new IdentitiesLecturesRollCallTableModel(getTableColumnModel(), userPropertyHandlers, locale);
-	}
 	
 	public enum IdentitiesLecturesCols implements FlexiSortableColumnDef {
 		status("table.header.status"),

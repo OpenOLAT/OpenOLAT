@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -86,11 +85,6 @@ public class CompetenceBrowserTableModel extends DefaultFlexiTreeTableDataModel<
 	@Override
 	public boolean hasChildren(int row) {
 		return getObject(row).hasChildren();
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CompetenceBrowserTableRow> createCopyWithEmptyList() {
-		return new CompetenceBrowserTableModel(getTableColumnModel());
 	}
 	
 	public enum CompetenceBrowserCols implements FlexiSortableColumnDef {

@@ -42,11 +42,6 @@ public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGro
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<CoachedGroupRow> createCopyWithEmptyList() {
-		return new CoachGroupsTableModel(getTableColumnModel());
-	}
-
-	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			List<CoachedGroupRow> views = new CoachGroupsModelSort(orderBy, this, null).sort();

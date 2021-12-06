@@ -47,11 +47,6 @@ public class CertificatesSelectionDataModel extends DefaultFlexiTableDataModel<C
 	}
 
 	@Override
-	public CertificatesSelectionDataModel createCopyWithEmptyList() {
-		return new CertificatesSelectionDataModel(getTableColumnModel(), userPropertyHandlers);
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		CertificateInfos infos = getObject(row);
 		Identity identity = infos.getAssessedIdentity();

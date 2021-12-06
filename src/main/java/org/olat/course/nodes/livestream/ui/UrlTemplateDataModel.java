@@ -68,11 +68,6 @@ implements SortableFlexiTableDataModel<UrlTemplate> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<UrlTemplate> createCopyWithEmptyList() {
-		return new UrlTemplateDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum UrlTemplateCols implements FlexiSortableColumnDef {
 		id("url.template.id"),

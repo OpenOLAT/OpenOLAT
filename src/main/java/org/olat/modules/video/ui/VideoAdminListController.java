@@ -106,7 +106,7 @@ public class VideoAdminListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.size));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.format));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.delete));
-		tableModel = new TranscodingQueueTableModel(columnsModel, getTranslator());
+		tableModel = new TranscodingQueueTableModel(columnsModel);
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "queue", tableModel, getTranslator(), flc);
 		tableEl.setCustomizeColumns(false);

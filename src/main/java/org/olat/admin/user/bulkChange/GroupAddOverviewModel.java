@@ -19,7 +19,6 @@
  */
 package org.olat.admin.user.bulkChange;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -87,10 +86,5 @@ public class GroupAddOverviewModel extends DefaultFlexiTableDataModel<BusinessGr
 			default: 
 				return "error";
 		}
-	}
-
-	@Override
-	public GroupAddOverviewModel createCopyWithEmptyList() {
-		return new GroupAddOverviewModel(new ArrayList<>(), ownGroupIDs, partGroupIDs, mailGroupIDs, translator, getTableColumnModel());
 	}
 }

@@ -53,11 +53,6 @@ public class AssessmentModeOverviewListTableModel extends DefaultFlexiTableDataM
 		}
 	}
 	
-	@Override
-	public AssessmentModeOverviewListTableModel createCopyWithEmptyList() {
-		return new AssessmentModeOverviewListTableModel(getTableColumnModel());
-	}
-	
 	public enum ModeCols implements FlexiSortableColumnDef {
 		status("table.header.status"),
 		name("table.header.name"),

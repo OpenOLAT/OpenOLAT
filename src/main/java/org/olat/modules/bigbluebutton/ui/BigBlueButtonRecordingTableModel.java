@@ -87,11 +87,6 @@ implements SortableFlexiTableDataModel<BigBlueButtonRecordingRow> {
 		}
 		return permanent;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<BigBlueButtonRecordingRow> createCopyWithEmptyList() {
-		return new BigBlueButtonRecordingTableModel(getTableColumnModel(), defaultPermanentRecording, locale);
-	}
 	
 	public enum BRecordingsCols implements FlexiSortableColumnDef {
 		

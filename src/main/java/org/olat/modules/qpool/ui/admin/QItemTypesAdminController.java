@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui.admin;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -32,16 +31,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -219,61 +217,10 @@ public class QItemTypesAdminController extends FormBasicController {
 		}
 	}
 	
-	private class QItemTypeDataModel implements FlexiTableDataModel<QItemType>, TableDataModel<QItemType> {
+	private class QItemTypeDataModel extends DefaultFlexiTableDataModel<QItemType>{
 
-		private FlexiTableColumnModel columnModel;
-		private List<QItemType> types;
-		
 		public QItemTypeDataModel(FlexiTableColumnModel columnModel) {
-			this.columnModel = columnModel;
-		}
-		
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel columnModel) {
-			this.columnModel = columnModel;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return columnModel.getColumnCount();
-		}
-
-		@Override
-		public boolean isSelectable(int row) {
-			return true;
-		}
-
-		@Override
-		public QItemType getObject(int row) {
-			if(types != null && row >= 0 && row < types.size()) {
-				return types.get(row);
-			}
-			return null;
-		}
-
-		@Override
-		public void setObjects(List<QItemType> objects) {
-			types = new ArrayList<>(objects);
-		}
-
-		@Override
-		public Object createCopyWithEmptyList() {
-			return new QItemTypeDataModel(columnModel);
-		}
-
-		@Override
-		public int getRowCount() {
-			return types == null ? 0 : types.size();
-		}
-
-		@Override
-		public boolean isRowLoaded(int row) {
-			return types != null && row < types.size();
+			super(columnModel);
 		}
 
 		@Override
@@ -295,5 +242,4 @@ public class QItemTypesAdminController extends FormBasicController {
 			}
 		}
 	}
-
 }

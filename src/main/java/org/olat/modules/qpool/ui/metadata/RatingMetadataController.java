@@ -88,11 +88,6 @@ public class RatingMetadataController extends FormBasicController {
 		public RatingInfosDataModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
-		
-		@Override
-		public DefaultFlexiTableDataModel<UserRating> createCopyWithEmptyList() {
-			return new RatingInfosDataModel(getTableColumnModel());
-		}
 
 		@Override
 		public Object getValueAt(int row, int col) {

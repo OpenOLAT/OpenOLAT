@@ -38,7 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class AbsenceCategoryAdminDataModel extends DefaultFlexiTableDataModel<AbsenceCategoryRow>
 implements SortableFlexiTableDataModel<AbsenceCategoryRow> {
 	
-	private static CategoryCols[] COLS = CategoryCols.values();
+	private static final CategoryCols[] COLS = CategoryCols.values();
 	private final Locale locale;
 	
 	public AbsenceCategoryAdminDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
@@ -68,11 +68,6 @@ implements SortableFlexiTableDataModel<AbsenceCategoryRow> {
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AbsenceCategoryRow> createCopyWithEmptyList() {
-		return new AbsenceCategoryAdminDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum CategoryCols implements FlexiSortableColumnDef {

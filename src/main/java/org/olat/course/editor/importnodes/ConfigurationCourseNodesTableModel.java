@@ -20,7 +20,6 @@
 package org.olat.course.editor.importnodes;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
@@ -37,11 +36,8 @@ public class ConfigurationCourseNodesTableModel extends DefaultFlexiTreeTableDat
 	
 	private static final ConfigurationCols[] COLS = ConfigurationCols.values();
 	
-	private final Locale locale;
-	
-	public ConfigurationCourseNodesTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public ConfigurationCourseNodesTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
-		this.locale = locale;
 	}
 
 	@Override
@@ -66,11 +62,6 @@ public class ConfigurationCourseNodesTableModel extends DefaultFlexiTreeTableDat
 		ConfigurationCourseNodeRow node = getObject(row);
 		int numOfChildren = node.getEditorTreeNode().getChildCount();
 		return numOfChildren > 0;
-	}
-	
-	@Override
-	public ConfigurationCourseNodesTableModel createCopyWithEmptyList() {
-		return new ConfigurationCourseNodesTableModel(getTableColumnModel(), locale);
 	}
 	
 	public enum ConfigurationCols implements FlexiColumnDef {

@@ -25,8 +25,6 @@ import java.util.List;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -34,13 +32,10 @@ import org.olat.core.gui.translator.Translator;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class GroupSelectionTableModel extends DefaultFlexiTableDataModel<GroupSelectionTableContentRow> implements FlexiTableDataModel<GroupSelectionTableContentRow> {
+public class GroupSelectionTableModel extends DefaultFlexiTableDataModel<GroupSelectionTableContentRow> {
 	
-	private final Translator translator;
-	
-	public GroupSelectionTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public GroupSelectionTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.translator = translator;
 	}
 	
 	@Override
@@ -50,13 +45,8 @@ public class GroupSelectionTableModel extends DefaultFlexiTableDataModel<GroupSe
 		return getValueAt(group, col);
 	}
 	
-	@Override 
-	public DefaultFlexiTableDataModel<GroupSelectionTableContentRow> createCopyWithEmptyList() {
-		return new GroupSelectionTableModel(getTableColumnModel(), translator);
-	}
-	
 	public List<String> getNames() {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 
 		for (GroupSelectionTableContentRow row : getObjects()) {
 			names.add(row.getGroupName());
@@ -66,7 +56,7 @@ public class GroupSelectionTableModel extends DefaultFlexiTableDataModel<GroupSe
 	}
 
 	public List<Long> getKeys() {
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 
 		for (GroupSelectionTableContentRow row : getObjects()) {
 			keys.add(row.getKey());

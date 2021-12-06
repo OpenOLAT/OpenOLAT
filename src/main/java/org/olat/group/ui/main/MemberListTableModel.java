@@ -132,11 +132,6 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 		this.curriculumInfos = curriculumInfos;
 	}
 
-	@Override
-	public MemberListTableModel createCopyWithEmptyList() {
-		return new MemberListTableModel(getTableColumnModel(), onlineStatusEnabled);
-	}
-
 	public enum Cols implements FlexiSortableColumnDef {
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),

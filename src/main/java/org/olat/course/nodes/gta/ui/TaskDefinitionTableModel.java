@@ -36,11 +36,6 @@ public class TaskDefinitionTableModel extends DefaultFlexiTableDataModel<TaskDef
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<TaskDefinitionRow> createCopyWithEmptyList() {
-		return new TaskDefinitionTableModel(getTableColumnModel());
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		TaskDefinitionRow taskDefRow = getObject(row);
 		TaskDefinition taskDef = taskDefRow.getTaskDefinition();

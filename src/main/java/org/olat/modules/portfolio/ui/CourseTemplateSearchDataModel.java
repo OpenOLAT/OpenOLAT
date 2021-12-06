@@ -63,11 +63,6 @@ public class CourseTemplateSearchDataModel extends DefaultFlexiTableDataModel<Co
 		}
 		return null;
 	}
-	
-	@Override
-	public DefaultFlexiTableDataModel<CourseTemplateRow> createCopyWithEmptyList() {
-		return new CourseTemplateSearchDataModel(getTableColumnModel());
-	}
 
 	public enum CTCols implements FlexiSortableColumnDef {
 		course("table.header.course"),

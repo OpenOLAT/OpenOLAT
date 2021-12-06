@@ -22,7 +22,6 @@ package org.olat.repository.ui.author.copy.wizard;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -102,11 +101,6 @@ public class CopyCourseOverviewDataModel extends DefaultFlexiTreeTableDataModel<
 			case resourceChooser: return row.getResourceChooser();
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CopyCourseOverviewRow> createCopyWithEmptyList() {
-		return new CopyCourseOverviewDataModel(getTableColumnModel());
 	}
 	
 	public enum CopyCourseOverviewCols implements FlexiColumnDef {

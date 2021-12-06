@@ -365,11 +365,6 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 				default: return null;
 			}
 		}
-
-		@Override
-		public DefaultFlexiTableDataModel<AppointmentInput> createCopyWithEmptyList() {
-			return new AppointmentInputDataModel(getTableColumnModel(), translator);
-		}
 	}
 		
 	private enum Cols implements FlexiColumnDef {

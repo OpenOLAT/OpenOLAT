@@ -127,11 +127,6 @@ implements SortableFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow>  {
 	public void setBackupList(List<CourseDisclaimerConsenstPropertiesRow> backupList) {
 		this.backupList = backupList;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CourseDisclaimerConsenstPropertiesRow> createCopyWithEmptyList() {
-		return new CourseDisclaimerConsentTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum ConsentCols implements FlexiSortableColumnDef {
 		consent("consent"),

@@ -73,11 +73,6 @@ class CurriculumElementListDataModel extends DefaultFlexiTableDataModel<Curricul
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CurriculumElement> createCopyWithEmptyList() {
-		return new CurriculumElementListDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum Cols implements FlexiSortableColumnDef {
 		displayName("curriculum.element.display.name"),

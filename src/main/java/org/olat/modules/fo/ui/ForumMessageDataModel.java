@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -106,11 +105,6 @@ public class ForumMessageDataModel extends DefaultFlexiTreeTableDataModel<Messag
 			return propPos == 0 ? translator.translate("guest") : null;
 		}
 		return row.getView().getIdentityProp(propPos);
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<MessageLightViewRow> createCopyWithEmptyList() {
-		return new ForumMessageDataModel(getTableColumnModel(), translator);
 	}
 	
 	public enum ForumMessageCols implements FlexiSortableColumnDef {

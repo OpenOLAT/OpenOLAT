@@ -19,12 +19,9 @@
  */
 package org.olat.core.commons.services.vfs.ui.management;
 
-import java.util.Locale;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 
 /**
@@ -33,22 +30,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class VFSOverviewTableModel extends DefaultFlexiTableDataModel<VFSOverviewTableContentRow> implements FlexiTableDataModel<VFSOverviewTableContentRow>, FlexiTableFooterModel{
+public class VFSOverviewTableModel extends DefaultFlexiTableDataModel<VFSOverviewTableContentRow> implements FlexiTableFooterModel{
 
-	private final Locale locale;
-	
 	private VFSOverviewTableFooterRow footerRow;
 
-	public VFSOverviewTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public VFSOverviewTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.locale = locale;
 	}
-
-	@Override 
-	public DefaultFlexiTableDataModel<VFSOverviewTableContentRow> createCopyWithEmptyList() {
-		return new VFSOverviewTableModel(getTableColumnModel(), locale);
-	}
-
 
 	@Override
 	public Object getValueAt(int row, int col) {

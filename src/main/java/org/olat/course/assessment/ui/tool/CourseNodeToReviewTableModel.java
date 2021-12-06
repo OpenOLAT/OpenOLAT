@@ -64,11 +64,6 @@ public class CourseNodeToReviewTableModel extends DefaultFlexiTableDataModel<Cou
 		}
 		return null;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CourseNodeToReviewRow> createCopyWithEmptyList() {
-		return new CourseNodeToReviewTableModel(getTableColumnModel());
-	}
 	
 	public enum ToReviewCols implements FlexiSortableColumnDef {
 		courseNode("table.header.course.node"),

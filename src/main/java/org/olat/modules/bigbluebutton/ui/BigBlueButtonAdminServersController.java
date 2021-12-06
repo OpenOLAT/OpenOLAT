@@ -79,7 +79,7 @@ public class BigBlueButtonAdminServersController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ServersCols.breakoutRecordingMeetings));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ServersCols.load, new CapacityFactorCellRenderer()));
 		
-		serversTableModel = new BigBlueButtonAdminServersTableModel(columnsModel, getLocale());
+		serversTableModel = new BigBlueButtonAdminServersTableModel(columnsModel);
 		
 		serversTableEl = uifactory.addTableElement(getWindowControl(), "servers", serversTableModel, 10, false, getTranslator(), formLayout);
 		serversTableEl.setCustomizeColumns(true);

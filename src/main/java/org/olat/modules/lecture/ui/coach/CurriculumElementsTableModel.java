@@ -76,11 +76,6 @@ implements SortableFlexiTableDataModel<LectureCurriculumElementInfos> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public CurriculumElementsTableModel createCopyWithEmptyList() {
-		return new CurriculumElementsTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum LectureCurriculumCols implements FlexiSortableColumnDef {
 		

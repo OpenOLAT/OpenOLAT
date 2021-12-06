@@ -69,11 +69,6 @@ implements SortableFlexiTableDataModel<ReasonRow> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ReasonRow> createCopyWithEmptyList() {
-		return new ReasonAdminDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum ReasonCols implements FlexiSortableColumnDef {
 		id("reason.id"),

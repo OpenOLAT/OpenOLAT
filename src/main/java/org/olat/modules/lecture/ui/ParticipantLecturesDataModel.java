@@ -120,11 +120,6 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 		super.setObjects(objects);
 		this.totalStatistics = totalStatistics;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<LectureBlockStatistics> createCopyWithEmptyList() {
-		return new ParticipantLecturesDataModel(getTableColumnModel(), translator, locale);
-	}
 	
 	public enum LecturesCols implements FlexiSortableColumnDef {
 		externalRef("table.header.external.ref"),

@@ -22,7 +22,6 @@ package org.olat.modules.quality.analysis.ui;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.modules.quality.analysis.HeatMapStatistic;
@@ -48,11 +47,6 @@ class FooterGroupByDataModel extends GroupByDataModel implements FlexiTableFoote
 		super.setObjects(objects);
 		this.footerDataValues = footerDataValues;
 		this.footerTotal = footerTotal;
-	}
-	
-	@Override
-	public DefaultFlexiTableDataModel<GroupByRow> createCopyWithEmptyList() {
-		return new FooterGroupByDataModel(getTableColumnModel(), locale, footerHeader);
 	}
 
 	@Override

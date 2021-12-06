@@ -139,7 +139,7 @@ public class VFSOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(sizeColumn);
 		columnsModel.addFlexiColumnModel(actionColumn);		
 
-		vfsOverviewTableModel = new VFSOverviewTableModel(columnsModel, getLocale());
+		vfsOverviewTableModel = new VFSOverviewTableModel(columnsModel);
 		vfsOverviewTableElement = uifactory.addTableElement(getWindowControl(), "vfs.overview.table", vfsOverviewTableModel, getTranslator(), formLayout);
 		vfsOverviewTableElement.setSearchEnabled(false);
 		vfsOverviewTableElement.setCustomizeColumns(false);

@@ -84,11 +84,6 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 		}
 		return text;
 	}
-
-	@Override
-	public AssessmentTestOverviewDataModel createCopyWithEmptyList() {
-		return new AssessmentTestOverviewDataModel(getTableColumnModel());
-	}
 	
 	public enum PartCols implements FlexiSortableColumnDef {
 		

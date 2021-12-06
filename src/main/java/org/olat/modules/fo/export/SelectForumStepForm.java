@@ -29,13 +29,12 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -116,9 +115,7 @@ public class SelectForumStepForm extends StepFormBasicController {
 				new DefaultFlexiColumnModel(Cols.select, "forum.select", new StaticFlexiCellRenderer(
 						translate("forum.select"), "forum.select", "", "o_icon o_icon_select o_icon-fw")));
 		
-		tableModel = new NodeTableDataModel(courseNodes);
-		tableModel.setTableColumnModel(tableColumnModel);
-		
+		tableModel = new NodeTableDataModel(courseNodes, tableColumnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
@@ -151,26 +148,10 @@ public class SelectForumStepForm extends StepFormBasicController {
 	}
 	
 	
-	private static class NodeTableDataModel extends DefaultTableDataModel<CourseNode> implements FlexiTableDataModel<CourseNode> {
-		private FlexiTableColumnModel columnModel;
-		
-		public NodeTableDataModel(List<CourseNode> nodes) {
-			super(nodes);
-		}
+	private static class NodeTableDataModel extends DefaultFlexiTableDataModel<CourseNode> {
 
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-			this.columnModel = tableColumnModel;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return 2;
+		public NodeTableDataModel(List<CourseNode> nodes, FlexiTableColumnModel columnModel) {
+			super(nodes, columnModel);
 		}
 
 		@Override

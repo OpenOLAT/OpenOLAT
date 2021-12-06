@@ -70,11 +70,6 @@ public class BinderAssessmentDataModel extends DefaultFlexiTableDataModel<Assess
 		}
 		return null;
 	}
-	
-	@Override
-	public DefaultFlexiTableDataModel<AssessmentSectionWrapper> createCopyWithEmptyList() {
-		return new BinderAssessmentDataModel(getTableColumnModel());
-	}
 
 	public enum AssessmentSectionCols implements FlexiSortableColumnDef {
 		sectionName("table.header.section"),

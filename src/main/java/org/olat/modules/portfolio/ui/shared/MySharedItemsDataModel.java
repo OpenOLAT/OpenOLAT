@@ -70,11 +70,6 @@ public class MySharedItemsDataModel extends DefaultFlexiTableDataModel<MySharedI
 		}
 		return null;
 	}
-	
-	@Override
-	public MySharedItemsDataModel createCopyWithEmptyList() {
-		return new MySharedItemsDataModel(getTableColumnModel(), locale);
-	}
 
 	public enum MySharedItemCols implements FlexiSortableColumnDef {
 		binderKey("table.header.key"),

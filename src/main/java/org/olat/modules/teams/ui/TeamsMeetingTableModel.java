@@ -78,11 +78,6 @@ implements SortableFlexiTableDataModel<TeamsMeeting> {
 		return row.isPermanent()
 				|| (row.getEndWithFollowupTime() != null && row.getEndWithFollowupTime().after(new Date()));
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<TeamsMeeting> createCopyWithEmptyList() {
-		return new TeamsMeetingTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum MeetingsCols implements FlexiSortableColumnDef {
 		

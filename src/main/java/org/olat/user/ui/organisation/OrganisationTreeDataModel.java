@@ -22,7 +22,6 @@ package org.olat.user.ui.organisation;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -69,11 +68,6 @@ public class OrganisationTreeDataModel extends DefaultFlexiTreeTableDataModel<Or
 			case tools: return organisation.getTools();
 			default: return "ERROR";
 		}
-	}
-	
-	@Override
-	public DefaultFlexiTableDataModel<OrganisationRow> createCopyWithEmptyList() {
-		return new OrganisationTreeDataModel(getTableColumnModel());
 	}
 	
 	public enum OrganisationCols implements FlexiSortableColumnDef {

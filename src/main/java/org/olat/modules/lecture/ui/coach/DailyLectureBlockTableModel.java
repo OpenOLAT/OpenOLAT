@@ -22,12 +22,10 @@ package org.olat.modules.lecture.ui.coach;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -45,12 +43,10 @@ import org.olat.modules.lecture.model.LectureBlockBlockStatistics;
 public class DailyLectureBlockTableModel extends DefaultFlexiTreeTableDataModel<DailyLectureBlockRow>
 implements SortableFlexiTableDataModel<DailyLectureBlockRow> {
 	
-	private final Locale locale;
 	private final boolean dailyRecordingEnabled;
 
-	public DailyLectureBlockTableModel(FlexiTableColumnModel columnModel, Locale locale, boolean dailyRecordingEnabled) {
+	public DailyLectureBlockTableModel(FlexiTableColumnModel columnModel, boolean dailyRecordingEnabled) {
 		super(columnModel);
-		this.locale = locale;
 		this.dailyRecordingEnabled = dailyRecordingEnabled;
 	}
 	
@@ -143,11 +139,6 @@ implements SortableFlexiTableDataModel<DailyLectureBlockRow> {
 		Date start = row.getLectureBlock().getStartDate();
 		Date now = new Date();
 		return end.before(new Date()) || (row.isIamTeacher() && start.compareTo(now) <= 0);
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<DailyLectureBlockRow> createCopyWithEmptyList() {
-		return new DailyLectureBlockTableModel(getTableColumnModel(), locale, dailyRecordingEnabled);
 	}
 	
 	public enum BlockCols implements FlexiSortableColumnDef {

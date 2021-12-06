@@ -99,11 +99,6 @@ implements SortableFlexiTableDataModel<DocumentsInUseRow>, FilterableFlexiTableM
 		int propPos = col - DocumentsInUseListController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<DocumentsInUseRow> createCopyWithEmptyList() {
-		return new DocumentsInUseDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum DocumentsInUseCols implements FlexiSortableColumnDef {
 		fileName("table.header.file.name"),

@@ -19,8 +19,6 @@
  */
 package org.olat.course.learningpath.ui;
 
-import java.util.Locale;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -34,11 +32,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 public class ExceptionalObligationDataModel extends DefaultFlexiTableDataModel<ExceptionalObligationRow> {
 	
 	private static final ExceptionalObligationCols[] COLS = ExceptionalObligationCols.values();
-	private final Locale locale;
 	
-	public ExceptionalObligationDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public ExceptionalObligationDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
-		this.locale = locale;
 	}
 
 	@Override
@@ -58,11 +54,6 @@ public class ExceptionalObligationDataModel extends DefaultFlexiTableDataModel<E
 			case delete: return row.getDeleteLink();
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ExceptionalObligationRow> createCopyWithEmptyList() {
-		return new ExceptionalObligationDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum ExceptionalObligationCols implements FlexiColumnDef {

@@ -252,7 +252,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		if(gtaManager.isDueDateEnabled(gtaNode) && !coachCourseEnv.isCourseReadOnly()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.duedates", translate("duedates"), "duedates"));
 		}
-		tableModel = new CoachParticipantsTableModel(userPropertyHandlers, getLocale(), columnsModel);
+		tableModel = new CoachParticipantsTableModel(getLocale(), columnsModel);
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);

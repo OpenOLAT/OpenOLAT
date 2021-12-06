@@ -68,11 +68,6 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 	}
 
 	@Override
-	public AssessmentModeListModel createCopyWithEmptyList() {
-		return new AssessmentModeListModel(getTableColumnModel(),translator,  coordinationService);
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		AssessmentMode mode = getObject(row);
 		return getValueAt(mode, col);

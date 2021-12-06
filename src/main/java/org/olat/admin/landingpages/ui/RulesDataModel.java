@@ -19,12 +19,10 @@
  */
 package org.olat.admin.landingpages.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.table.TableDataModel;
 
 /**
  * 
@@ -32,69 +30,18 @@ import org.olat.core.gui.components.table.TableDataModel;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RulesDataModel implements FlexiTableDataModel<RuleWrapper>, TableDataModel<RuleWrapper> {
+public class RulesDataModel extends DefaultFlexiTableDataModel<RuleWrapper> {
 	
-	private FlexiTableColumnModel columnModel;
-	private List<RuleWrapper> rules;
+	private static final RCols[] COLS = RCols.values();
 	
 	public RulesDataModel(FlexiTableColumnModel columnModel, List<RuleWrapper> rules) {
-		this.columnModel = columnModel;
-		this.rules = rules;
-	}
-	
-	@Override
-	public FlexiTableColumnModel getTableColumnModel() {
-		return columnModel;
-	}
-
-	@Override
-	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-		this.columnModel = tableColumnModel;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return 4;
-	}
-	
-	public List<RuleWrapper> getObjects() {
-		return rules;
-	}
-
-	@Override
-	public boolean isSelectable(int row) {
-		return true;
-	}
-
-	@Override
-	public void setObjects(List<RuleWrapper> objects) {
-		rules = new ArrayList<>(objects);
-	}
-
-	@Override
-	public RulesDataModel createCopyWithEmptyList() {
-		return new RulesDataModel(columnModel, new ArrayList<RuleWrapper>());
-	}
-
-	@Override
-	public int getRowCount() {
-		return rules == null ? 0 : rules.size();
-	}
-
-	@Override
-	public boolean isRowLoaded(int row) {
-		return true;
-	}
-
-	@Override
-	public RuleWrapper getObject(int row) {
-		return rules.get(row);
+		super(rules, columnModel);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		RuleWrapper rule = getObject(row);
-		switch(RCols.values()[col]) {
+		switch(COLS[col]) {
 			case position: return rule.getPosition();
 			case role: return rule.getRoleEl();
 			case userAttributeKey: return rule.getAttrNameEl();

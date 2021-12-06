@@ -181,11 +181,6 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		this.certificateMap = certificates;
 	}
 
-	@Override
-	public CurriculumElementWithViewsDataModel createCopyWithEmptyList() {
-		return new CurriculumElementWithViewsDataModel(getTableColumnModel());
-	}
-
 	public enum ElementViewCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		displayName("table.header.curriculum.element.displayName"),

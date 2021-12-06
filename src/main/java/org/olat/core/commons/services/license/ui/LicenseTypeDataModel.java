@@ -43,11 +43,6 @@ class LicenseTypeDataModel extends DefaultFlexiTableDataModel<LicenseTypeRow> {
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<LicenseTypeRow> createCopyWithEmptyList() {
-		return new LicenseTypeDataModel(getTableColumnModel(), locale);
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		LicenseTypeRow licenseTypeRow = getObject(row);
 			if (col <= LicenseTypeCols.values().length - 1) {

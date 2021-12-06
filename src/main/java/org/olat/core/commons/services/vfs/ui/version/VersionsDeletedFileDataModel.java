@@ -71,11 +71,6 @@ implements SortableFlexiTableDataModel<VersionsDeletedFileRow> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public VersionsDeletedFileDataModel createCopyWithEmptyList() {
-		return new VersionsDeletedFileDataModel(getTableColumnModel(), translator);
-	}
 	
 	public enum VersionsDeletedCols implements FlexiSortableColumnDef {
 		

@@ -72,11 +72,6 @@ implements SortableFlexiTableDataModel<OrganisationUserRow> {
 		int propPos = col - OrganisationUserManagementController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<OrganisationUserRow> createCopyWithEmptyList() {
-		return new OrganisationUserManagementTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum MemberCols implements FlexiSortableColumnDef {
 		role("table.header.role"),

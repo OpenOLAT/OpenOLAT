@@ -98,11 +98,6 @@ public class GoToMeetingTableModel extends DefaultFlexiTableDataModel<GoToMeetin
 		return null;
 	}
 	
-	@Override
-	public DefaultFlexiTableDataModel<GoToMeeting> createCopyWithEmptyList() {
-		return new GoToMeetingTableModel(getTableColumnModel());
-	}
-	
 	public enum MeetingsCols {
 		
 		name("meeting.name"),

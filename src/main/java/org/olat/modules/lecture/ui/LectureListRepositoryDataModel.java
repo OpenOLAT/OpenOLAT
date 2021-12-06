@@ -98,11 +98,6 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		return String.join(", ", names);
 	}
 	
-	@Override
-	public DefaultFlexiTableDataModel<LectureBlockRow> createCopyWithEmptyList() {
-		return new LectureListRepositoryDataModel(getTableColumnModel(), locale);
-	}
-	
 	public enum BlockCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
 		title("lecture.title"),

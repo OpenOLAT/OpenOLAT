@@ -78,11 +78,6 @@ public class FormParticipationTableModel extends DefaultFlexiTableDataModel<Form
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<FormParticipationRow> createCopyWithEmptyList() {
-		return new FormParticipationTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum ParticipationCols implements FlexiSortableColumnDef {
 		status("table.header.status"),

@@ -23,8 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
@@ -33,8 +31,7 @@ import org.olat.core.util.i18n.I18nModule;
  * Initial date: 1 Apr 2020<br>
  * @author Alexander Boeckle, alexander.boeckle@frentix.com
  */
-public class HelpAdminTableModel extends DefaultFlexiTableDataModel<HelpAdminTableContentRow>
-implements FlexiTableDataModel<HelpAdminTableContentRow> {
+public class HelpAdminTableModel extends DefaultFlexiTableDataModel<HelpAdminTableContentRow> {
 
 	private final Translator translator;
 	private final Translator adminTranslator;
@@ -85,12 +82,6 @@ implements FlexiTableDataModel<HelpAdminTableContentRow> {
 		default:
 			return "ERROR";
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<HelpAdminTableContentRow> createCopyWithEmptyList() {
-		return new HelpAdminTableModel(FlexiTableDataModelFactory.createFlexiTableColumnModel());
-
 	}
 	
 	public enum HelpAdminTableColumn implements FlexiColumnDef {

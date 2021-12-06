@@ -22,7 +22,6 @@ package org.olat.modules.video.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.translator.Translator;
 
 /**
  * Table Model for Transcoding Queue listing 
@@ -33,15 +32,8 @@ import org.olat.core.gui.translator.Translator;
  */
 public class TranscodingQueueTableModel extends DefaultFlexiTableDataModel<TranscodingQueueTableRow>{
 
-	private Translator translator;
-	public TranscodingQueueTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public TranscodingQueueTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.translator = translator;
-	}
-
-	@Override
-	public TranscodingQueueTableModel createCopyWithEmptyList() {
-		return new TranscodingQueueTableModel(getTableColumnModel(), translator);
 	}
 
 	@Override

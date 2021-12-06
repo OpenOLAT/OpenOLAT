@@ -64,11 +64,6 @@ public class ForumPseudonymsDataModel extends DefaultFlexiTableDataModel<Pseudon
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public ForumPseudonymsDataModel createCopyWithEmptyList() {
-		return new ForumPseudonymsDataModel(getTableColumnModel());
-	}
 	
 	public enum PseudoCols implements FlexiSortableColumnDef {
 		pseudonym("table.header.typeimg"),

@@ -102,11 +102,6 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 	private static final long positive(long pos) {
 		return pos < 0 ? 0 : pos;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ParticipantRow> createCopyWithEmptyList() {
-		return new ParticipantListDataModel(getTableColumnModel(), translator, locale);
-	}
 	
 	public enum ParticipantsCols implements FlexiSortableColumnDef {
 		plannedLectures("table.header.planned.lectures"),

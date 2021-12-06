@@ -87,11 +87,6 @@ public class ThreadListDataModel extends DefaultFlexiTableDataModel<ForumThread>
 		}
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<ForumThread> createCopyWithEmptyList() {
-		return new ThreadListDataModel(getTableColumnModel(), translator);
-	}
-
 	public enum ThreadListCols implements FlexiSortableColumnDef {
 		type("table.header.typeimg"),
 		thread("table.thread"),

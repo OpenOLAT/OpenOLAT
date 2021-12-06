@@ -132,11 +132,6 @@ implements SortableFlexiTableDataModel<AbsenceNoticeRow> {
 		}
 		return sb.toString();
 	}
-
-	@Override
-	public AbsenceNoticesListTableModel createCopyWithEmptyList() {
-		return new AbsenceNoticesListTableModel(getTableColumnModel(), userManager, userPropertyHandlers, locale);
-	}
 	
 	public enum NoticeCols implements FlexiSortableColumnDef {
 		id("table.header.id"),

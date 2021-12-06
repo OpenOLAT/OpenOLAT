@@ -39,11 +39,6 @@ public class CheckboxConfigDataModel extends DefaultFlexiTableDataModel<Checkbox
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<CheckboxConfigRow> createCopyWithEmptyList() {
-		return new CheckboxConfigDataModel(translator, getTableColumnModel());
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		CheckboxConfigRow box = getObject(row);
 		switch(Cols.values()[col]) {

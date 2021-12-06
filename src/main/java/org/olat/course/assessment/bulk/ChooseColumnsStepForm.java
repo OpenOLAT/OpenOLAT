@@ -30,10 +30,9 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -62,7 +61,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 	private SingleSelection passedColumnEl;
 	private SingleSelection commentColumnEl;
 	private SingleSelection userNameColumnEl;
-	private final OverviewDataModel overviewDataModel;
+	private OverviewDataModel overviewDataModel;
 	private final BulkAssessmentColumnSettings columnsSettings;
 	
 	private final String translatedPassed;
@@ -83,7 +82,6 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		translatedPassed = FilterFactory.getHtmlTagsFilter().filter(translate("passed.true")).trim();
 		translatedFailed = FilterFactory.getHtmlTagsFilter().filter(translate("passed.false")).trim();
 
-		overviewDataModel = new OverviewDataModel(splittedRows);
 		initForm(ureq);
 	}
 
@@ -153,7 +151,9 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 			tableColumnModel.addFlexiColumnModel(colModel);
 		}
 
-		overviewDataModel.setTableColumnModel(tableColumnModel);
+		@SuppressWarnings("unchecked")
+		List<String[]> splittedRows = (List<String[]>)getFromRunContext("splittedRows");
+		overviewDataModel = new OverviewDataModel(splittedRows, tableColumnModel);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "overviewList", overviewDataModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
@@ -308,31 +308,10 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		}
 	}
 
-	private static class OverviewDataModel extends DefaultTableDataModel<String[]> implements FlexiTableDataModel<String[]> {
-		private FlexiTableColumnModel columnModel;
-
-		public OverviewDataModel(List<String[]> nodes) {
-			super(nodes);
-		}
-
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-
-		@Override
-		public int getRowCount() {
-			return Math.min(3, super.getRowCount());
-		}
-
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-			this.columnModel = tableColumnModel;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return columnModel.getColumnCount();
+	private static class OverviewDataModel extends DefaultFlexiTableDataModel<String[]> {
+		
+		public OverviewDataModel(List<String[]> nodes, FlexiTableColumnModel columnModel) {
+			super(nodes, columnModel);
 		}
 
 		@Override

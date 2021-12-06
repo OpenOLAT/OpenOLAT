@@ -47,11 +47,6 @@ public class VideoMarkersTableModel extends DefaultFlexiTableDataModel<VideoMark
 		}
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<VideoMarker> createCopyWithEmptyList() {
-		return new VideoMarkersTableModel(getTableColumnModel());
-	}
-
 	public enum MarkerCols implements FlexiSortableColumnDef {
 		
 		text("marker.table.header.text"),

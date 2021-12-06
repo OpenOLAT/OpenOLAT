@@ -53,11 +53,6 @@ public class DialogElementsTableModel extends DefaultFlexiTableDataModel<DialogE
 		int propPos = col - DialogElementListController.USER_PROPS_OFFSET;
 		return entry.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DialogElementsTableModel createCopyWithEmptyList() {
-		return new DialogElementsTableModel(getTableColumnModel());
-	}	
 	
 	public enum DialogCols implements FlexiSortableColumnDef {
 		filename("table.header.filename"),

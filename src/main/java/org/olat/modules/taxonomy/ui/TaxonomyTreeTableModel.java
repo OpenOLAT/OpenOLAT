@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -93,11 +92,6 @@ implements FilterableFlexiTableModel  {
 			return noType;
 		}
 		return typeKeys.contains(row.getTypeKey());
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<TaxonomyLevelRow> createCopyWithEmptyList() {
-		return new TaxonomyTreeTableModel(getTableColumnModel());
 	}
 
 	@Override

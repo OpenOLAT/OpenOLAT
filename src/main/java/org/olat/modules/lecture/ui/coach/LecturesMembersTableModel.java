@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -39,12 +38,10 @@ public class LecturesMembersTableModel extends DefaultFlexiTableDataModel<Lectur
 implements SortableFlexiTableDataModel<LecturesMemberRow> {
 	
 	private final Locale locale;
-	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	public LecturesMembersTableModel(FlexiTableColumnModel columnModel, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public LecturesMembersTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
-		this.userPropertyHandlers = userPropertyHandlers;
 	}
 	
 	@Override
@@ -68,10 +65,5 @@ implements SortableFlexiTableDataModel<LecturesMemberRow> {
 			return row.getIdentityProp(propPos);
 		}
 		return "ERROR";
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<LecturesMemberRow> createCopyWithEmptyList() {
-		return new LecturesMembersTableModel(getTableColumnModel(), userPropertyHandlers, locale);
 	}
 }

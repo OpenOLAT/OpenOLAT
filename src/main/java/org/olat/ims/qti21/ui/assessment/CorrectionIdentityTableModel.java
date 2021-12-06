@@ -80,11 +80,6 @@ implements SortableFlexiTableDataModel<CorrectionIdentityRow> {
 		return row.getIdentityProp(propPos);
 	}
 	
-	@Override
-	public DefaultFlexiTableDataModel<CorrectionIdentityRow> createCopyWithEmptyList() {
-		return new CorrectionIdentityTableModel(getTableColumnModel(), locale);
-	}
-	
 	public enum IdentityCols implements FlexiSortableColumnDef {
 		user("table.header.user"),
 		score("table.header.score"),

@@ -128,11 +128,6 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 		backups = objects;
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<AssessmentNodeData> createCopyWithEmptyList() {
-		return new IdentityAssessmentOverviewTableModel(getTableColumnModel());
-	}
-
 	public enum NodeCols implements FlexiSortableColumnDef {
 		
 		node("table.header.node", true),

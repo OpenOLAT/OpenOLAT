@@ -36,11 +36,6 @@ public class ChoiceDataModel extends DefaultFlexiTableDataModel<ChoiceRow> {
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<ChoiceRow> createCopyWithEmptyList() {
-		return new ChoiceDataModel(getTableColumnModel());
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		ChoiceRow choiceRow = getObject(row);
 		switch (ChoiceCols.values()[col]) {

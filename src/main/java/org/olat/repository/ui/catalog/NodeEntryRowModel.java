@@ -35,11 +35,6 @@ public class NodeEntryRowModel extends DefaultFlexiTableDataModel<NodeEntryRow> 
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<NodeEntryRow> createCopyWithEmptyList() {
-		return new NodeEntryRowModel(getTableColumnModel());
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		NodeEntryRow item = getObject(row);
 		switch (NodeCols.values()[col]) {

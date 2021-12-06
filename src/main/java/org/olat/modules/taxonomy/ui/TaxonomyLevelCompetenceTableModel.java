@@ -70,11 +70,6 @@ implements SortableFlexiTableDataModel<TaxonomyLevelCompetenceRow> {
 		}
 		return null;
 	}
-
-	@Override
-	public TaxonomyLevelCompetenceTableModel createCopyWithEmptyList() {
-		return new TaxonomyLevelCompetenceTableModel(getTableColumnModel());
-	}
 	
 	public enum CompetenceCols implements FlexiSortableColumnDef {
 		key("table.header.key"),

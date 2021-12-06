@@ -21,14 +21,12 @@ package org.olat.course.nodes.en;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-import org.olat.core.util.Formatter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.filter.FilterFactory;
 
 /**
@@ -38,15 +36,12 @@ import org.olat.core.util.filter.FilterFactory;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGroupTableContentRow>
-		implements FlexiTableDataModel<ENEditGroupTableContentRow> {
+public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGroupTableContentRow> {
 
-	private final Locale locale;
 	private final Translator translator;
 
-	public ENEditGroupTableModel(FlexiTableColumnModel columnModel, Locale locale, Translator translator) {
+	public ENEditGroupTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
-		this.locale = locale;
 		this.translator = translator;
 	}
 
@@ -89,11 +84,6 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 		default:
 			return "ERROR";
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ENEditGroupTableContentRow> createCopyWithEmptyList() {
-		return new ENEditGroupTableModel(getTableColumnModel(), locale, translator);
 	}
 
 	public List<String> getNames() {

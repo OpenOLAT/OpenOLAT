@@ -74,11 +74,6 @@ implements SortableFlexiTableDataModel<NodeRightGrantRow> {
 		super.setObjects(rows);
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<NodeRightGrantRow> createCopyWithEmptyList() {
-		return new NodeRightGrantDataModel(getTableColumnModel(), locale);
-	}
-	
 	public enum GrantCols implements FlexiSortableColumnDef {
 		type("grant.type"),
 		name("grant.name"),

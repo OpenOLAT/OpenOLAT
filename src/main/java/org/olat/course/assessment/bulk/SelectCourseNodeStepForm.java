@@ -30,13 +30,12 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -73,7 +72,6 @@ public class SelectCourseNodeStepForm extends StepFormBasicController {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		List<Node> courseNodes = addManualTaskNodesAndParentsToList(0, rootNode);
-		tableModel = new NodeTableDataModel(courseNodes);
 
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.header.node",
@@ -81,8 +79,8 @@ public class SelectCourseNodeStepForm extends StepFormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.action.select",
 				Cols.assessable.ordinal(), "select",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.action.select"), "select"), null)));
-		tableModel.setTableColumnModel(tableColumnModel);
-		
+
+		tableModel = new NodeTableDataModel(courseNodes, tableColumnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "nodeList", tableModel, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
 	}
@@ -156,26 +154,10 @@ public class SelectCourseNodeStepForm extends StepFormBasicController {
 		}
 	}
 	
-	private static class NodeTableDataModel extends DefaultTableDataModel<Node> implements FlexiTableDataModel<Node> {
-		private FlexiTableColumnModel columnModel;
+	private static class NodeTableDataModel extends DefaultFlexiTableDataModel<Node> {
 		
-		public NodeTableDataModel(List<Node> nodes) {
-			super(nodes);
-		}
-
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-			this.columnModel = tableColumnModel;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return 2;
+		public NodeTableDataModel(List<Node> nodes, FlexiTableColumnModel columnModel) {
+			super(nodes, columnModel);
 		}
 
 		@Override

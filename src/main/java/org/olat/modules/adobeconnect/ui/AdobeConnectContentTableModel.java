@@ -80,11 +80,6 @@ implements SortableFlexiTableDataModel<AdobeConnectContentRow> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AdobeConnectContentRow> createCopyWithEmptyList() {
-		return new AdobeConnectContentTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum ACContentsCols implements FlexiSortableColumnDef {
 		

@@ -53,11 +53,6 @@ public class OverviewMoveTableModel extends DefaultFlexiTableDataModel<OverviewI
 		return null;
 	}
 	
-	@Override
-	public OverviewMoveTableModel createCopyWithEmptyList() {
-		return new OverviewMoveTableModel(getTableColumnModel());
-	}
-	
 	public enum MoveUserCols implements FlexiSortableColumnDef {
 		id("table.identity.id"),
 		creationDate("table.identity.creationdate"),

@@ -109,11 +109,6 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingRow> {
 		}
 		return displayName;
 	}
-
-	@Override
-	public BigBlueButtonMeetingTableModel createCopyWithEmptyList() {
-		return new BigBlueButtonMeetingTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum BMeetingsCols implements FlexiSortableColumnDef {
 		

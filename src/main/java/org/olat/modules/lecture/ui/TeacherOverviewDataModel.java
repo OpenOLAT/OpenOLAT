@@ -82,11 +82,6 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<LectureBlockRow> createCopyWithEmptyList() {
-		return new TeacherOverviewDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum TeachCols implements FlexiSortableColumnDef {
 		externalRef("table.header.external.ref"),

@@ -66,11 +66,6 @@ implements SortableFlexiTableDataModel<TaxonomyLevelTypeRow> {
 		}
 	}
 	
-	@Override
-	public DefaultFlexiTableDataModel<TaxonomyLevelTypeRow> createCopyWithEmptyList() {
-		return new TaxonomyLevelTypesTableModel(getTableColumnModel());
-	}
-	
 	public enum TypesCols implements FlexiSortableColumnDef {
 		identifier("table.header.type.identifier"),
 		displayName("table.header.type.displayName"),

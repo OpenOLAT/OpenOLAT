@@ -91,12 +91,6 @@ implements SortableFlexiTableDataModel<LectureAbsenceRollCallRow> {
 		return "ERROR";
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<LectureAbsenceRollCallRow> createCopyWithEmptyList() {
-		return new LecturesAbsenceRollCallsTableModel(getTableColumnModel(), userPropertyHandlers, locale);
-	}
-	
-
 	public enum AbsenceCallCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
 		externalRef("table.header.entry.external.ref"),

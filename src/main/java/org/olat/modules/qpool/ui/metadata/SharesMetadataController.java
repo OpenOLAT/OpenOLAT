@@ -100,11 +100,6 @@ public class SharesMetadataController extends FormBasicController {
 		}
 
 		@Override
-		public DefaultFlexiTableDataModel<QuestionItem2Resource> createCopyWithEmptyList() {
-			return new SharesDataModel(getTableColumnModel());
-		}
-
-		@Override
 		public Object getValueAt(int row, int col) {
 			QuestionItem2Resource share = getObject(row);
 			if(col == 0) {
@@ -113,6 +108,4 @@ public class SharesMetadataController extends FormBasicController {
 			return share.getName();
 		}
 	}
-
 }
-

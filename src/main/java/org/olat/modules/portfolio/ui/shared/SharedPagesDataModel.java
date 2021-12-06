@@ -127,11 +127,6 @@ public class SharedPagesDataModel extends DefaultFlexiTableDataModel<SharedPageR
 		super.setObjects(objects);
 		backups = objects;
 	}
-
-	@Override
-	public SharedPagesDataModel createCopyWithEmptyList() {
-		return new SharedPagesDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum SharePageCols implements FlexiSortableColumnDef {
 		pageKey("table.header.key"),

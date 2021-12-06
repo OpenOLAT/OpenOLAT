@@ -102,11 +102,6 @@ implements SortableFlexiTableDataModel<UserDisadvantageCompensationRow>, Filtera
 		super.setObjects(objects);
 	}
 
-	@Override
-	public UserDisadvantageCompensationTableModel createCopyWithEmptyList() {
-		return new UserDisadvantageCompensationTableModel(getTableColumnModel());
-	}
-
 	public enum CompensationCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
 		creationDate("table.header.creationdate"),

@@ -70,11 +70,6 @@ implements SortableFlexiTableDataModel<AssignmentTemplateRow> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AssignmentTemplateRow> createCopyWithEmptyList() {
-		return new AssignmentTemplatesDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum TemplateCols implements FlexiSortableColumnDef {
 		type("table.header.template.type"),

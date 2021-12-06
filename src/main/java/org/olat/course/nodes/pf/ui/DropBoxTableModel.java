@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.gui.translator.Translator;
 
 /**
  *
@@ -39,17 +38,10 @@ import org.olat.core.gui.translator.Translator;
 public class DropBoxTableModel extends DefaultFlexiTableDataModel<DropBoxRow> implements SortableFlexiTableDataModel<DropBoxRow>{
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
-	private Translator translator;
-	public DropBoxTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+
+	public DropBoxTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.translator = translator;
 	}
-
-	@Override
-	public DropBoxTableModel createCopyWithEmptyList() {
-		return new DropBoxTableModel(getTableColumnModel(), translator);
-	}
-
 
 	@Override
 	public Object getValueAt(int row, int col) {

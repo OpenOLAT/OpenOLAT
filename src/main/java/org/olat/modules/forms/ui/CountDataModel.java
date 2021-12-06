@@ -63,11 +63,6 @@ implements SortableFlexiTableDataModel<CountRatioResult> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CountRatioResult> createCopyWithEmptyList() {
-		return new CountDataModel(getTableColumnModel());
-	}
 	
 	public enum CountReportCols implements FlexiSortableColumnDef {
 		name("report.count.name.title"),

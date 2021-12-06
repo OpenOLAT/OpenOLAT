@@ -56,13 +56,11 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	private Float minScore;
 	private Float maxScore;
 	private Float cutValue;
-	private final CourseNode courseNode;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
 	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, CourseNode courseNode, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
-		this.courseNode = courseNode;
 	
 		if (courseNode != null) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
@@ -145,11 +143,6 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		}
 		BigDecimal ms = row.getMaxScore();
 		return Float.valueOf(ms.floatValue());
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AssessedIdentityElementRow> createCopyWithEmptyList() {
-		return new IdentityListCourseNodeTableModel(getTableColumnModel(), courseNode, locale);
 	}
 	
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {

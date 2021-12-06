@@ -70,11 +70,6 @@ implements SortableFlexiTableDataModel<EducationalTypeRow> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<EducationalTypeRow> createCopyWithEmptyList() {
-		return new EducationalTypeDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum EducationalTypeCols implements FlexiSortableColumnDef {
 		identifier("educational.type.identifier"),

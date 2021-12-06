@@ -136,7 +136,7 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
         this.locationRegistrationMap = locationRegistrationMap;
 
         // Call setObjects
-        setObjects(new ArrayList<ContactTracingLocation>(locationRegistrationMap.keySet()));
+        setObjects(new ArrayList<>(locationRegistrationMap.keySet()));
     }
     
     @Override
@@ -208,11 +208,6 @@ implements SortableFlexiTableDataModel<ContactTracingLocation>, FilterableFlexiT
     public Object getValueAt(int row, int col) {
         ContactTracingLocation location = getObject(row);
         return getValueAt(location, col);
-    }
-
-    @Override
-    public DefaultFlexiTableDataModel<ContactTracingLocation> createCopyWithEmptyList() {
-        return null;
     }
 
     public enum ContactTracingLocationCols implements FlexiSortableColumnDef {

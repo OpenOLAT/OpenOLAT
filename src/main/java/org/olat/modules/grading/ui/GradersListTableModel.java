@@ -91,13 +91,6 @@ public class GradersListTableModel extends DefaultFlexiTableDataModel<GraderRow>
 		return "ERROR";
 	}
 	
-
-
-	@Override
-	public GradersListTableModel createCopyWithEmptyList() {
-		return new GradersListTableModel(getTableColumnModel(), userPropertyHandlers, locale);
-	}
-	
 	public enum GradersCol implements FlexiSortableColumnDef {
 		status("table.header.status"),
 		total("table.header.assignments.total"),

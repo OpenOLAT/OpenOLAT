@@ -56,11 +56,6 @@ public class OverviewLectureBlocksDataModel extends DefaultFlexiTableDataModel<I
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ImportedLectureBlock> createCopyWithEmptyList() {
-		return new OverviewLectureBlocksDataModel(getTableColumnModel());
-	}
 	
 	public enum BlockCols implements FlexiSortableColumnDef {
 		status("table.header.import.status"),

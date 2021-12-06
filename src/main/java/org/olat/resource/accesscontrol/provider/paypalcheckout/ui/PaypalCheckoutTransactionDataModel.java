@@ -126,11 +126,6 @@ public class PaypalCheckoutTransactionDataModel extends DefaultFlexiTableDataMod
 		}
 		return null;
 	}
-
-	@Override
-	public PaypalCheckoutTransactionDataModel createCopyWithEmptyList() {
-		return new PaypalCheckoutTransactionDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum CheckoutCols implements FlexiSortableColumnDef {
 		status("table.header.order.status"),

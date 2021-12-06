@@ -101,11 +101,6 @@ public class CurriculumMemberListTableModel extends DefaultFlexiTableDataModel<C
 		}
 		return -1;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CurriculumMemberRow> createCopyWithEmptyList() {
-		return new CurriculumMemberListTableModel(getTableColumnModel(), userPropertyHandlers, locale);
-	}
 	
 	public enum MemberCols implements FlexiSortableColumnDef {
 		id("table.header.id"),

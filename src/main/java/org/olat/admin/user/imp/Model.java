@@ -25,7 +25,6 @@
 
 package org.olat.admin.user.imp;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -86,12 +85,6 @@ public class Model extends DefaultFlexiTableDataModel<Identity> {
 	private String previewCred(TransientIdentity ident) {
 		return ident.getPassword() == null ? "-" : "***";
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<Identity> createCopyWithEmptyList() {
-		return new Model(new ArrayList<>(), getTableColumnModel(), userPropertyHandlers, locale);
-	}
-	
 	
 	public enum ModelCols implements FlexiSortableColumnDef {
 		newUser("table.user.existing"),

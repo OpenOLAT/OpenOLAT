@@ -205,7 +205,7 @@ public class TeacherRollCallController extends FormBasicController {
 			layoutCont.contextPut("teachers", sb.toString());
 			String numOfLecturesI18n = lectureBlock.getPlannedLecturesNumber() > 1 ? "rollcall.lectures" : "rollcall.lecture";
 			layoutCont.contextPut("numOfLectures", translate(numOfLecturesI18n,
-					new String[] { Integer.toString(lectureBlock.getPlannedLecturesNumber()) }));
+					Integer.toString(lectureBlock.getPlannedLecturesNumber())));
 			layoutCont.contextPut("lectureBlockTitle", StringHelper.escapeHtml(lectureBlock.getTitle()));
 			layoutCont.contextPut("lectureBlockExternalId", StringHelper.escapeHtml(lectureBlock.getExternalId()));
 			StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(lectureBlock.getDescription(), true));
@@ -218,7 +218,7 @@ public class TeacherRollCallController extends FormBasicController {
 			layoutCont.setFormTitle(translate("lecture.block", args));
 			layoutCont.setFormDescription(StringHelper.escapeJavaScript(lectureBlock.getDescription()));
 			String i18nInfos = lectureBlock.getPlannedLecturesNumber() == 1 ? "rollcall.coach.hint" : "rollcall.coach.hints";
-			layoutCont.contextPut("lecturesInfos", translate(i18nInfos, new String[] { Integer.toString(lectureBlock.getPlannedLecturesNumber())}));
+			layoutCont.contextPut("lecturesInfos", translate(i18nInfos, Integer.toString(lectureBlock.getPlannedLecturesNumber())));
 		}
 		
 		expandButton = uifactory.addFormLink("expandButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
@@ -281,7 +281,7 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.comment));
 
-		tableModel = new TeacherRollCallDataModel(columnsModel, secCallback, getLocale()); 
+		tableModel = new TeacherRollCallDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setSortSettings(options);

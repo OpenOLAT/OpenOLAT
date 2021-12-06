@@ -22,13 +22,13 @@ package org.olat.admin.user;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -36,32 +36,15 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel<Identity>, SortableFlexiTableDataModel<Identity> {
+public class UserSearchFlexiTableModel extends DefaultFlexiTableDataModel<Identity> implements SortableFlexiTableDataModel<Identity> {
 	private Locale locale;
-	private FlexiTableColumnModel columnModel;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	public UserSearchFlexiTableModel(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers,
 			Locale locale, FlexiTableColumnModel columnModel) {
-		super(identities);
+		super(identities, columnModel);
 		this.locale = locale;
-		this.columnModel = columnModel;
 		this.userPropertyHandlers = userPropertyHandlers;
-	}
-
-	@Override
-	public FlexiTableColumnModel getTableColumnModel() {
-		return columnModel;
-	}
-
-	@Override
-	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-		columnModel = tableColumnModel;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return columnModel.getColumnCount();
 	}
 
 	@Override
@@ -78,10 +61,13 @@ public class UserSearchFlexiTableModel extends DefaultTableDataModel<Identity> i
 		}
 		return "";
 	}
-
-	@Override
-	public UserSearchFlexiTableModel createCopyWithEmptyList() {
-		return new UserSearchFlexiTableModel(new ArrayList<Identity>(), userPropertyHandlers, locale, columnModel);
+	
+	public List<Identity> getObjects(final Set<Integer> objectMarkers) {
+		List<Identity> results = new ArrayList<>();
+		for(Integer objectMarker:objectMarkers) {
+			results.add(getObject(objectMarker.intValue()));
+		}
+		return results;
 	}
 
 	@Override

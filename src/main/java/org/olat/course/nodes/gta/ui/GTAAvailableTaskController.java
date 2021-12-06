@@ -430,11 +430,6 @@ public class GTAAvailableTaskController extends FormBasicController {
 		}
 
 		@Override
-		public DefaultFlexiTableDataModel<AvailableTask> createCopyWithEmptyList() {
-			return new AvailableTaskTableModel(getTableColumnModel());
-		}
-
-		@Override
 		public Object getValueAt(int row, int col) {
 			AvailableTask task = getObject(row);
 			switch(ATDCols.values()[col]) {

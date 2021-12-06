@@ -21,7 +21,6 @@ package org.olat.course.groupsandrights;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.group.right.BGRightsRole;
 
@@ -31,7 +30,7 @@ import org.olat.group.right.BGRightsRole;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
- public class GroupsAndRightsDataModel extends DefaultFlexiTableDataModel<BGRightsRow> implements FlexiTableDataModel<BGRightsRow> {
+ public class GroupsAndRightsDataModel extends DefaultFlexiTableDataModel<BGRightsRow> {
 	
 	private final Translator translator;
 
@@ -59,10 +58,5 @@ import org.olat.group.right.BGRightsRole;
 		//rights
 		int rightPos = col - 2;
 		return rightsRow.getRightsEl().get(rightPos).getSelection();
-	}
-
-	@Override
-	public GroupsAndRightsDataModel createCopyWithEmptyList() {
-		return new GroupsAndRightsDataModel(getTableColumnModel(), translator);
 	}
 }

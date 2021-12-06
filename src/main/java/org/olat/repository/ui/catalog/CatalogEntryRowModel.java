@@ -43,11 +43,6 @@ public class CatalogEntryRowModel extends DefaultFlexiTableDataModel<CatalogEntr
 	public CatalogEntryRowModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CatalogEntryRow> createCopyWithEmptyList() {
-		return new CatalogEntryRowModel(getTableColumnModel());
-	}
 	
 	@Override
 	public String getUrl(Component source, Object object, String action) {

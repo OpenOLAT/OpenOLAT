@@ -67,11 +67,6 @@ public class SessionSelectionModel extends DefaultFlexiTableDataModel<SessionSel
 			default: return null;
 		}	
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<SessionSelectionRow> createCopyWithEmptyList() {
-		return new SessionSelectionModel(getTableColumnModel());
-	}
 	
 	public enum SessionSelectionCols implements FlexiSortableColumnDef {
 		participant("report.session.participant"),

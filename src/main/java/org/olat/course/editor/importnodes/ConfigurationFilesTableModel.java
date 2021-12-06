@@ -96,11 +96,6 @@ public class ConfigurationFilesTableModel extends DefaultFlexiTreeTableDataModel
 		return node.getItem() instanceof VFSContainer && node.getNumOfChildren() > 0;
 	}
 	
-	@Override
-	public ConfigurationFilesTableModel createCopyWithEmptyList() {
-		return new ConfigurationFilesTableModel(getTableColumnModel(), translator);
-	}
-	
 	public enum FilesCols implements FlexiColumnDef {
 		file("table.header.file"),
 		size("table.header.size"),

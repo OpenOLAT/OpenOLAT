@@ -92,7 +92,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.format));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.delete));
 
-		tableModel = new VideoQualityTableModel(columnsModel, getTranslator());
+		tableModel = new VideoQualityTableModel(columnsModel);
 		
 		initTable();	
 	}

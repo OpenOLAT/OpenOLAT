@@ -80,11 +80,6 @@ implements SortableFlexiTableDataModel<GradingInformationsRow> {
 		return "ERROR";
 	}
 
-	@Override
-	public GradingInformationsTableModel createCopyWithEmptyList() {
-		return new GradingInformationsTableModel(getTableColumnModel(), userPropertyHandlers, locale);
-	}
-
 	public enum GInfosCol implements FlexiSortableColumnDef {
 		status("table.header.status"),
 		absence("table.header.absence.leave");

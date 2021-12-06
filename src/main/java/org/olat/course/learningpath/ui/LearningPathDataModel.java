@@ -22,7 +22,6 @@ package org.olat.course.learningpath.ui;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -76,11 +75,6 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 			case fullyAssessedDate: return row.getFullyAssessedDate();
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<LearningPathRow> createCopyWithEmptyList() {
-		return new LearningPathDataModel(getTableColumnModel());
 	}
 	
 	public enum LearningPathCols implements FlexiColumnDef {

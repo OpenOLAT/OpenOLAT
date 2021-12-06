@@ -82,11 +82,6 @@ implements SortableFlexiTableDataModel<LectureReportRow> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public LecturesReportTableModel createCopyWithEmptyList() {
-		return new LecturesReportTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum ReportCols implements FlexiSortableColumnDef {
 		key("table.header.id"),

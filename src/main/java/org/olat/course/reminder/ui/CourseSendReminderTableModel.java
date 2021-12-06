@@ -40,11 +40,6 @@ public class CourseSendReminderTableModel extends DefaultFlexiTableDataModel<Sen
 	}
 
 	@Override
-	public CourseSendReminderTableModel createCopyWithEmptyList() {
-		return new CourseSendReminderTableModel(getTableColumnModel());
-	}
-
-	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			List<SentReminderRow> views = new CourseSendReminderTableSort(orderBy, this, null).sort();

@@ -75,11 +75,6 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public IdentityCompetenceTableModel createCopyWithEmptyList() {
-		return new IdentityCompetenceTableModel(getTableColumnModel());
-	}
 	
 	public enum IdCompetenceCols implements FlexiSortableColumnDef {
 		key("table.header.key"),

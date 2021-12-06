@@ -59,11 +59,6 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> createCopyWithEmptyList() {
-		return new QTI21AssessmentTestSessionTableModel(getTableColumnModel(), translator);
-	}
-
-	@Override
 	public String getWrapperCssClass(FlexiTableRendererType type) {
 		return null;
 	}

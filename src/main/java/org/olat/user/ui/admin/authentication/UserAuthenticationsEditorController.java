@@ -317,10 +317,5 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 			}
 			return auth.getIssuer();
 		}
-
-		@Override
-		public AuthenticationsTableDataModel createCopyWithEmptyList() {
-			return new AuthenticationsTableDataModel(getTableColumnModel(), locale);
-		}
 	}
 }

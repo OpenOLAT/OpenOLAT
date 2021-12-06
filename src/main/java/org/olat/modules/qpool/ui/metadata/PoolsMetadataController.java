@@ -98,11 +98,6 @@ public class PoolsMetadataController extends FormBasicController {
 		public PoolInfosDataModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
-		
-		@Override
-		public DefaultFlexiTableDataModel<QuestionItem2Pool> createCopyWithEmptyList() {
-			return new PoolInfosDataModel(getTableColumnModel());
-		}
 
 		@Override
 		public Object getValueAt(int row, int col) {

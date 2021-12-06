@@ -65,11 +65,6 @@ public class GoToRecordingsTableModel extends DefaultFlexiTableDataModel<GoToRec
 		return null;
 	}
 	
-	@Override
-	public DefaultFlexiTableDataModel<GoToRecordingsG2T> createCopyWithEmptyList() {
-		return new GoToRecordingsTableModel(getTableColumnModel());
-	}
-	
 	public enum RecordingsCols {
 		
 		name("meeting.name"),

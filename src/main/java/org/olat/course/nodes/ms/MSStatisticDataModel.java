@@ -86,11 +86,6 @@ implements FlexiTableFooterModel, SortableFlexiTableDataModel<MSStatisticRow> {
 		List<MSStatisticRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<MSStatisticRow> createCopyWithEmptyList() {
-		return new MSStatisticDataModel(getTableColumnModel(), footerHeader, locale);
-	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {

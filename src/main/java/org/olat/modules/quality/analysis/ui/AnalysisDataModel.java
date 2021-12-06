@@ -79,11 +79,6 @@ class AnalysisDataModel extends DefaultFlexiTableDataModel<AnalysisRow>
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AnalysisRow> createCopyWithEmptyList() {
-		return new AnalysisDataModel(getTableColumnModel(), locale);
-	}
 	
 	enum AnalysisCols implements FlexiSortableColumnDef {
 		formTitle("analysis.table.form.title"),

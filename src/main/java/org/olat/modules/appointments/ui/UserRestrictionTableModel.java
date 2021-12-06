@@ -66,9 +66,4 @@ implements SortableFlexiTableDataModel<UserPropertiesRow> {
 		int propPos = col - USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<UserPropertiesRow> createCopyWithEmptyList() {
-		return new UserRestrictionTableModel(getTableColumnModel(), locale);
-	}
 }

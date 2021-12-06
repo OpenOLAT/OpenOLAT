@@ -105,11 +105,6 @@ public class AdvanceOrderDataModel extends DefaultFlexiTableDataModel<AdvanceOrd
 		}
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<AdvanceOrderRow> createCopyWithEmptyList() {
-		return new AdvanceOrderDataModel(getTableColumnModel(), locale);
-	}
-
 	public enum AdvanceOrderCol implements FlexiSortableColumnDef {
 		creationDate("advanceOrder.creationDate", "creationdate"),
 		identifierKey("advanceOrder.identitfier.key", "a_identitfier_key"),

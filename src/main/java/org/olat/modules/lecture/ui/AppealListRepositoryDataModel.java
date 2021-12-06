@@ -197,12 +197,6 @@ implements SortableFlexiTableDataModel<AppealRollCallRow>, FilterableFlexiTableM
 		super.setObjects(objects);
 		backups = objects;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AppealRollCallRow> createCopyWithEmptyList() {
-		return new AppealListRepositoryDataModel(getTableColumnModel(),
-				authorizedAbsenceEnabled, absenceDefaultAuthorized, locale);
-	}
 	
 	public enum AppealCols implements FlexiSortableColumnDef {
 		lectureBlockDate("table.header.date"),

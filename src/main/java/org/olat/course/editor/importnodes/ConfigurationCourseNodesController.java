@@ -127,7 +127,7 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 		messageCol.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.antisamy));
 		columnsModel.addFlexiColumnModel(messageCol);
 		
-		dataModel = new ConfigurationCourseNodesTableModel(columnsModel, getLocale());
+		dataModel = new ConfigurationCourseNodesTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_import_course_nodes o_import_course_nodes_configuration");
 		tableEl.setMultiSelect(false);

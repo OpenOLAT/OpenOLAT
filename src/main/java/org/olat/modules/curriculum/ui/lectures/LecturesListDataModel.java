@@ -146,11 +146,6 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 		backups = objects;
 	}
 	
-	@Override
-	public DefaultFlexiTableDataModel<LectureBlockIdentityStatistics> createCopyWithEmptyList() {
-		return new LecturesListDataModel(exportDelegate, getTableColumnModel(), translator);
-	}
-	
 	public enum StatsCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
 		plannedLectures("table.header.planned.lectures"),

@@ -39,11 +39,6 @@ public class TranscodingTableModel extends DefaultFlexiTableDataModel<Transcodin
 	}
 
 	@Override
-	public TranscodingTableModel createCopyWithEmptyList() {
-		return new TranscodingTableModel(getTableColumnModel(), translator);
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		TranscodingRow resolution = getObject(row);
 		switch(TranscodingCols.values()[col]) {

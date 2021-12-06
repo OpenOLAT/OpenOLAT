@@ -115,7 +115,7 @@ public class ColorCategoryAdminController extends FormBasicController {
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(ColorCategoryCols.delete.i18nHeaderKey()), CMD_DELETE), null));
 		columnsModel.addFlexiColumnModel(deleteCol);
 		
-		dataModel = new ColorCategoryDataModel(columnsModel, getLocale());
+		dataModel = new ColorCategoryDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "coourse-color-categories");
 	}

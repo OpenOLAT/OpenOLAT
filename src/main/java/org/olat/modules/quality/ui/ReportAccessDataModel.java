@@ -66,11 +66,6 @@ class ReportAccessDataModel extends DefaultFlexiTableDataModel<ReportAccessRow>
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ReportAccessRow> createCopyWithEmptyList() {
-		return new ReportAccessDataModel(getTableColumnModel(), translator);
-	}
 	
 	enum ReportAccessCols implements FlexiSortableColumnDef {
 		name("report.access.name"),

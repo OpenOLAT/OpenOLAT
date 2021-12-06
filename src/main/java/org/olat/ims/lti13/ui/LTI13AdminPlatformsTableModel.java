@@ -73,11 +73,6 @@ implements SortableFlexiTableDataModel<LTI13PlatformWithInfos> {
 		}
 	}
 
-	@Override
-	public LTI13AdminPlatformsTableModel createCopyWithEmptyList() {
-		return new LTI13AdminPlatformsTableModel(getTableColumnModel(), locale);
-	}
-
 	public enum PlatformsCols implements FlexiSortableColumnDef  {
 		name("table.header.name"),
 		issuer("table.header.issuer"),

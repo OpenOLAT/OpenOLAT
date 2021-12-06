@@ -77,11 +77,6 @@ implements SortableFlexiTableDataModel<CorrectionAssessmentItemRow> {
 		}
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<CorrectionAssessmentItemRow> createCopyWithEmptyList() {
-		return new CorrectionAssessmentItemTableModel(getTableColumnModel(), locale);
-	}
-
 	public enum ItemCols implements FlexiSortableColumnDef {
 		section("table.header.section"),
 		itemTitle("table.header.item.title"),

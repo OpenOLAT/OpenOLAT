@@ -256,7 +256,7 @@ public class GroupAssessmentController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.commentEl.i18nKey(), Cols.commentEl.ordinal()));
 		}
 		
-		model = new GroupAssessmentModel(gtaNode, userPropertyHandlers, getLocale(), columnsModel);
+		model = new GroupAssessmentModel(userPropertyHandlers, getLocale(), columnsModel);
 		table = uifactory.addTableElement(getWindowControl(), "group-list", model, getTranslator(), formLayout);
 		table.setCustomizeColumns(true);
 		table.setEditMode(true);

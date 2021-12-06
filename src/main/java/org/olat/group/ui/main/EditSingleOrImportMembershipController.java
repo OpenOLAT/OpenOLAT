@@ -915,11 +915,6 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 				default: return "ERROR";
 			}
 		}
-
-		@Override
-		public DefaultFlexiTableDataModel<MemberCurriculumOption> createCopyWithEmptyList() {
-			return new EditCurriculumMembershipTableDataModel(new ArrayList<>(), this.getTableColumnModel());
-		}
 	}
 	
 	private static class EditGroupMembershipTableDataModel extends DefaultFlexiTableDataModel<MemberGroupOption>  {
@@ -948,11 +943,6 @@ public class EditSingleOrImportMembershipController extends FormBasicController 
 				case waitingList: return option.getWaiting();
 				default: return option;
 			}
-		}
-
-		@Override
-		public EditGroupMembershipTableDataModel createCopyWithEmptyList() {
-			return new EditGroupMembershipTableDataModel(new ArrayList<>(), getTableColumnModel());
 		}
 	}
 	

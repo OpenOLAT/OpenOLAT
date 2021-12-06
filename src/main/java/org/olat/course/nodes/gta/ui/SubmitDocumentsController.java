@@ -605,18 +605,12 @@ class SubmitDocumentsController extends FormBasicController {
 		public Mode getMode() {
 			return mode;
 		}
-
 	}
 	
 	private static class DocumentTableModel extends DefaultFlexiTableDataModel<SubmittedSolution>  {
 		
 		public DocumentTableModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
-		}
-
-		@Override
-		public DefaultFlexiTableDataModel<SubmittedSolution> createCopyWithEmptyList() {
-			return new DocumentTableModel(getTableColumnModel());
 		}
 
 		@Override

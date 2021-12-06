@@ -183,7 +183,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.excluded));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.delete));
 		
-		dataModel = new ExceptionalObligationDataModel(columnsModel, getLocale());
+		dataModel = new ExceptionalObligationDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), obligationCont);
 		tableEl.setElementCssClass("o_lp_exobli_table");
 		tableEl.setCustomizeColumns(false);

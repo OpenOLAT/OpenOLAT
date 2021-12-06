@@ -198,11 +198,6 @@ public class SchedulerController extends FormBasicController {
 				default: return "ERROR";
 			}
 		}
-
-		@Override
-		public DefaultFlexiTableDataModel<JobTriggerRow> createCopyWithEmptyList() {
-			return new JobTriggerDataModel(getTableColumnModel(), locale);
-		}
 	}
 	
 	public enum JobCols implements FlexiSortableColumnDef {

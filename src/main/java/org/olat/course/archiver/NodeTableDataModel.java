@@ -28,7 +28,6 @@ package org.olat.course.archiver;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.model.AssessmentNodeData;
 
 /**
@@ -40,11 +39,9 @@ import org.olat.course.assessment.model.AssessmentNodeData;
  * Use the IndentedNodeRenderer to render the node element!
  */
 public class NodeTableDataModel extends DefaultFlexiTableDataModel<AssessmentNodeData> {
-	private final Translator translator;
 
-    public NodeTableDataModel(FlexiTableColumnModel columnModel, Translator trans) {
+    public NodeTableDataModel(FlexiTableColumnModel columnModel) {
         super(columnModel);
-        this.translator = trans;
     }
 
     @Override
@@ -61,11 +58,6 @@ public class NodeTableDataModel extends DefaultFlexiTableDataModel<AssessmentNod
 			default: return "error";
 		}
     } 
-
-    @Override
-	public DefaultFlexiTableDataModel<AssessmentNodeData> createCopyWithEmptyList() {
-		return new NodeTableDataModel(getTableColumnModel(), translator);
-	}
 
 	public enum NodeCols implements FlexiSortableColumnDef {
     	data("table.header.node"),

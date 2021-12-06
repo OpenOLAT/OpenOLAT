@@ -76,11 +76,6 @@ class RepositoryEntryListDataModel extends DefaultFlexiTableDataModel<Repository
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<RepositoryEntry> createCopyWithEmptyList() {
-		return new RepositoryEntryListDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum Cols implements FlexiSortableColumnDef {
 		id("repository.entry.id"),

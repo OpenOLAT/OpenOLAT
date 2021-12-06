@@ -284,11 +284,6 @@ public class CreateTestOverviewController extends FormBasicController {
 		}
 
 		@Override
-		public QItemDataModel createCopyWithEmptyList() {
-			return new QItemDataModel(getTableColumnModel(), format, locale);
-		}
-
-		@Override
 		public Object getValueAt(int row, int col) {
 			QuestionRow share = getObject(row);
 			switch(Cols.values()[col]) {

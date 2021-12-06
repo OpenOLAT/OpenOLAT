@@ -18,7 +18,6 @@
  * <p>
  */
 package org.olat.course.highscore.ui;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -52,10 +51,5 @@ public class HighScoreFlexiTableModel extends DefaultFlexiTableDataModel<HighSco
 			case 2: return anonymous && !entry.getIdentity().equals(ownId) ? placeholder : entry.getName();
 			default: return entry;
 		}
-	}
-
-	@Override
-	public HighScoreFlexiTableModel createCopyWithEmptyList() {
-		return new HighScoreFlexiTableModel(new ArrayList<>(), anonymous, placeholder, ownId, getTableColumnModel());
 	}
 }

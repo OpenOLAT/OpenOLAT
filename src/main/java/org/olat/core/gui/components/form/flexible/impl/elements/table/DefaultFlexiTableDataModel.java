@@ -22,8 +22,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.components.table.TableDataModel;
-
 /**
  * 
  * Don't forget to implement the getObject(int row, int col) method :-)
@@ -33,7 +31,7 @@ import org.olat.core.gui.components.table.TableDataModel;
  *
  * @param <U>
  */
-public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataModel<U>, TableDataModel<U> {
+public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataModel<U> {
 	private List<U> rows;
 	private FlexiTableColumnModel columnModel;
 	
@@ -47,10 +45,12 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 		this.columnModel = columnModel;
 	}
 	
+	/*
 	@Override
 	public int getColumnCount() {
 		return columnModel.getColumnCount();
 	}
+	*/
 	
 	@Override
 	public U getObject(int row) {
@@ -74,8 +74,10 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 		return true;
 	}
 
+	/*
 	@Override
 	public abstract DefaultFlexiTableDataModel<U> createCopyWithEmptyList();
+	*/
 	
 	@Override
 	public int getRowCount() {

@@ -22,7 +22,6 @@ package org.olat.course.editor.overview;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -100,11 +99,6 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 					: null;
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<OverviewRow> createCopyWithEmptyList() {
-		return new OverviewDataModel(getTableColumnModel());
 	}
 	
 	public enum OverviewCols implements FlexiColumnDef {

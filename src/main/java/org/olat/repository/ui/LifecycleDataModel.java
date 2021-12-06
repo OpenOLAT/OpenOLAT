@@ -19,12 +19,8 @@
  */
 package org.olat.repository.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
@@ -33,65 +29,18 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LifecycleDataModel implements FlexiTableDataModel<RepositoryEntryLifecycle>, TableDataModel<RepositoryEntryLifecycle> {
+public class LifecycleDataModel extends DefaultFlexiTableDataModel<RepositoryEntryLifecycle> {
 	
-	private FlexiTableColumnModel columnModel;
-	private List<RepositoryEntryLifecycle> lifecycles;
+	private static final LCCols[] COLS = LCCols.values();
 	
 	public LifecycleDataModel(FlexiTableColumnModel columnModel) {
-		this.columnModel = columnModel;
-		this.lifecycles = new ArrayList<>();
-	}
-	
-	@Override
-	public FlexiTableColumnModel getTableColumnModel() {
-		return columnModel;
-	}
-
-	@Override
-	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-		this.columnModel = tableColumnModel;
-	}
-
-	@Override
-	public boolean isSelectable(int row) {
-		return true;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return 4;
-	}
-
-	@Override
-	public void setObjects(List<RepositoryEntryLifecycle> objects) {
-		lifecycles = new ArrayList<>(objects);
-	}
-
-	@Override
-	public LifecycleDataModel createCopyWithEmptyList() {
-		return new LifecycleDataModel(columnModel);
-	}
-
-	@Override
-	public int getRowCount() {
-		return lifecycles == null ? 0 : lifecycles.size();
-	}
-
-	@Override
-	public boolean isRowLoaded(int row) {
-		return true;
-	}
-
-	@Override
-	public RepositoryEntryLifecycle getObject(int row) {
-		return lifecycles.get(row);
+		super(columnModel);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		RepositoryEntryLifecycle cycle = getObject(row);
-		switch(LCCols.values()[col]) {
+		switch(COLS[col]) {
 			case label: return cycle.getLabel();
 			case softkey: return cycle.getSoftKey();
 			case validFrom: return cycle.getValidFrom();

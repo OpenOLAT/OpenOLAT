@@ -23,7 +23,6 @@ package org.olat.core.configuration.model;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -64,11 +63,6 @@ public class ConfigurationPropertiesTableModel extends DefaultFlexiTreeTableData
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		// Nothing to filter right now		
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ConfigurationPropertiesContentRow> createCopyWithEmptyList() {
-		return new ConfigurationPropertiesTableModel(getTableColumnModel());
 	}
 	
 	public enum ConfigurationPropertiesCols implements FlexiColumnDef {

@@ -107,7 +107,7 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 		
 		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 		ImportAuthorOverviewDataModel userTableModel = new ImportAuthorOverviewDataModel(oks, resultingPropertyHandlers,
-				isAdministrativeUser, getLocale(), tableColumnModel);
+				getLocale(), tableColumnModel);
 		uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
 	}
 	

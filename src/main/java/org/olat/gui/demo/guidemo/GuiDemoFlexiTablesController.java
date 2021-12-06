@@ -142,11 +142,6 @@ public class GuiDemoFlexiTablesController extends FormBasicController {
 				default: return entry;
 			}
 		}
-
-		@Override
-		public DefaultFlexiTableDataModel<Row> createCopyWithEmptyList() {
-			return new SampleFlexiTableModel(getTableColumnModel());
-		}
 	}
 	
 	private class Row {

@@ -68,11 +68,6 @@ implements SortableFlexiTableDataModel<TaxonomyLevelRelationRow> {
 		}
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<TaxonomyLevelRelationRow> createCopyWithEmptyList() {
-		return new TaxonomyLevelRelationsTableModel(getTableColumnModel());
-	}
-
 	public enum RelationsCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		type("table.header.competence.type"),

@@ -168,7 +168,7 @@ public class SystemImageAdminController extends FormBasicController {
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(SystemImageCols.delete.i18nHeaderKey()), CMD_DELETE), null));
 		columnsModel.addFlexiColumnModel(deleteCol);
 		
-		dataModel = new SystemImageDataModel(columnsModel, getLocale());
+		dataModel = new SystemImageDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-system-image");
 	}

@@ -19,8 +19,6 @@
  */
 package org.olat.course.style.ui;
 
-import java.util.Locale;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -35,11 +33,9 @@ import org.olat.course.style.ColorCategory;
 public class ColorCategoryDataModel extends DefaultFlexiTableDataModel<ColorCategoryRow> {
 	
 	private static final ColorCategoryCols[] COLS = ColorCategoryCols.values();
-	private final Locale locale;
 	
-	public ColorCategoryDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public ColorCategoryDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
-		this.locale = locale;
 	}
 
 	@Override
@@ -60,11 +56,6 @@ public class ColorCategoryDataModel extends DefaultFlexiTableDataModel<ColorCate
 			case delete: return Boolean.valueOf(ColorCategory.Type.custom == row.getColorCategory().getType());
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ColorCategoryRow> createCopyWithEmptyList() {
-		return new ColorCategoryDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum ColorCategoryCols implements FlexiColumnDef {

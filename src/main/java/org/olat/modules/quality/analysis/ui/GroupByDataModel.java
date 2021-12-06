@@ -72,10 +72,4 @@ class GroupByDataModel extends DefaultFlexiTableDataModel<GroupByRow>
 		}
 		return null;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<GroupByRow> createCopyWithEmptyList() {
-		return new GroupByDataModel(getTableColumnModel(), locale);
-	}
-	
 }

@@ -19,13 +19,11 @@
  */
 package org.olat.course.noderight.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -35,33 +33,16 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AddIdentitiesOverviewDataModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel<Identity> {
+public class AddIdentitiesOverviewDataModel extends DefaultFlexiTableDataModel<Identity> {
 
 	private final Locale locale;
-	private FlexiTableColumnModel columnModel;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	public AddIdentitiesOverviewDataModel(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers,
 			Locale locale, FlexiTableColumnModel columnModel) {
-		super(identities);
+		super(identities, columnModel);
 		this.locale = locale;
-		this.columnModel = columnModel;
 		this.userPropertyHandlers = userPropertyHandlers;
-	}
-
-	@Override
-	public FlexiTableColumnModel getTableColumnModel() {
-		return columnModel;
-	}
-
-	@Override
-	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-		columnModel = tableColumnModel;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return columnModel.getColumnCount();
 	}
 
 	@Override
@@ -73,10 +54,5 @@ public class AddIdentitiesOverviewDataModel extends DefaultTableDataModel<Identi
 			return handler.getUserProperty(identity.getUser(), locale);
 		}
 		return "";
-	}
-
-	@Override
-	public AddIdentitiesOverviewDataModel createCopyWithEmptyList() {
-		return new AddIdentitiesOverviewDataModel(new ArrayList<Identity>(), userPropertyHandlers, locale, columnModel);
 	}
 }

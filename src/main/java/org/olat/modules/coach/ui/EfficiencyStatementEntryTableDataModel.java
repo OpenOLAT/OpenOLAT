@@ -191,11 +191,6 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		this.completionsMap = completionsMap;
 		this.lecturesStatisticsMap = lecturesStatisticsMap;
 	}
-
-	@Override
-	public EfficiencyStatementEntryTableDataModel createCopyWithEmptyList() {
-		return new EfficiencyStatementEntryTableDataModel(getTableColumnModel());
-	}
 	
 	public enum Columns implements FlexiSortableColumnDef {
 		repoName("table.header.course.name"),

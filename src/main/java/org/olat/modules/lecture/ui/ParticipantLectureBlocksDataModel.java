@@ -182,12 +182,6 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 		super.setObjects(objects);
 		backups = objects;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<LectureBlockAndRollCallRow> createCopyWithEmptyList() {
-		return new ParticipantLectureBlocksDataModel(getTableColumnModel(),
-				authorizedAbsenceEnabled, absenceDefaultAuthorized, locale);
-	}
 	
 	public enum ParticipantCols implements FlexiSortableColumnDef {
 		date("table.header.date"),

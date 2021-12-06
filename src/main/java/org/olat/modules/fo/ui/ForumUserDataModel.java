@@ -84,11 +84,6 @@ public class ForumUserDataModel extends DefaultFlexiTableDataModel<ForumUser>
 		}
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ForumUser> createCopyWithEmptyList() {
-		return new ForumUserDataModel(getTableColumnModel(), translator);
-	}
 	
 	public enum UserCols implements FlexiSortableColumnDef {
 		replies("table.user.replies"),

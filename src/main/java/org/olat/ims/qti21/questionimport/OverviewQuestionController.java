@@ -19,7 +19,6 @@
  */
 package org.olat.ims.qti21.questionimport;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -88,7 +87,6 @@ public class OverviewQuestionController extends StepFormBasicController {
 	}
 	
 	private class ItemsTableDataModel extends DefaultFlexiTableDataModel<AssessmentItemAndMetadata> {
-		private FlexiTableColumnModel columnModel;
 		
 		public ItemsTableDataModel(List<AssessmentItemAndMetadata> options, FlexiTableColumnModel columnModel) {
 			super(options, columnModel);
@@ -126,11 +124,6 @@ public class OverviewQuestionController extends StepFormBasicController {
 				case matchtruefalse: return translate("item.type.matchtruefalse");
 				default: return "??";
 			}
-		}
-
-		@Override
-		public ItemsTableDataModel createCopyWithEmptyList() {
-			return new ItemsTableDataModel(new ArrayList<>(), columnModel);
 		}
 	}
 	

@@ -73,11 +73,6 @@ implements SortableFlexiTableDataModel<CourseMemberView> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CourseMemberView> createCopyWithEmptyList() {
-		return new CourseOverviewMembershipDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum MSCols implements FlexiSortableColumnDef {
 		key("table.header.key"),

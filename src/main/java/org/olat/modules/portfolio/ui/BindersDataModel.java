@@ -62,11 +62,6 @@ public class BindersDataModel extends DefaultFlexiTableDataModel<BinderRow> {
 		return null;
 	}
 	
-	@Override
-	public DefaultFlexiTableDataModel<BinderRow> createCopyWithEmptyList() {
-		return new BindersDataModel(getTableColumnModel());
-	}
-	
 	public enum PortfolioCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		title("table.header.title"),

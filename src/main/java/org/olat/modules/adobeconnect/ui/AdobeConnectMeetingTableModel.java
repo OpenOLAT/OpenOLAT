@@ -81,11 +81,6 @@ implements SortableFlexiTableDataModel<AdobeConnectMeeting> {
 		}
 		return displayName;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<AdobeConnectMeeting> createCopyWithEmptyList() {
-		return new AdobeConnectMeetingTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum ACMeetingsCols implements FlexiSortableColumnDef {
 		

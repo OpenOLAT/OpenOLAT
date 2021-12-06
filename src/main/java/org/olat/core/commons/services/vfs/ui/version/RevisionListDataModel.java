@@ -81,11 +81,6 @@ implements SortableFlexiTableDataModel<RevisionRow> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public RevisionListDataModel createCopyWithEmptyList() {
-		return new RevisionListDataModel(getTableColumnModel(), translator);
-	}
 	
 	public enum RevisionCols implements FlexiSortableColumnDef {
 		

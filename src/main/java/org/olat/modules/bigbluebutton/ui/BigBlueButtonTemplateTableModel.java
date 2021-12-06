@@ -76,11 +76,6 @@ implements SortableFlexiTableDataModel<BigBlueButtonMeetingTemplate> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public BigBlueButtonTemplateTableModel createCopyWithEmptyList() {
-		return new BigBlueButtonTemplateTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum BTemplatesCols implements FlexiSortableColumnDef {
 		

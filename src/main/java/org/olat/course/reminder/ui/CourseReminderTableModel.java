@@ -39,11 +39,6 @@ public class CourseReminderTableModel extends DefaultFlexiTableDataModel<Reminde
 	public CourseReminderTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
-
-	@Override
-	public CourseReminderTableModel createCopyWithEmptyList() {
-		return new CourseReminderTableModel(getTableColumnModel());
-	}
 	
 	@Override
 	public void sort(SortKey orderBy) {

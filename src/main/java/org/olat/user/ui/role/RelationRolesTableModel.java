@@ -89,11 +89,6 @@ implements SortableFlexiTableDataModel<RelationRoleRow> {
 		}
 		return translatedRole;
 	}
-
-	@Override
-	public RelationRolesTableModel createCopyWithEmptyList() {
-		return new RelationRolesTableModel(getTableColumnModel(), translator, locale);
-	}
 	
 	public enum RelationRoleCols implements FlexiSortableColumnDef {
 		key("table.header.id"),

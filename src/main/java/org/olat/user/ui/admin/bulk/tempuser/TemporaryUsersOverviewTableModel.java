@@ -51,11 +51,6 @@ public class TemporaryUsersOverviewTableModel extends DefaultFlexiTableDataModel
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<TemporaryUserRow> createCopyWithEmptyList() {
-		return new TemporaryUsersOverviewTableModel(getTableColumnModel());
-	}
 	
 	public enum TransientIdentityCols implements FlexiSortableColumnDef {
 		status("table.header.status"),

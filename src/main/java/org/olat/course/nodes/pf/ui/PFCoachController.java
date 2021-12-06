@@ -280,7 +280,7 @@ public class PFCoachController extends FormBasicController {
 		openCellRenderer.setIconRightCSS("o_icon_start o_icon-fw");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DropBoxCols.openbox,
 				"open.box", openCellRenderer));	
-		tableModel = new DropBoxTableModel(columnsModel, getTranslator());
+		tableModel = new DropBoxTableModel(columnsModel);
 		
 		dropboxTable = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		dropboxTable.setMultiSelect(true);

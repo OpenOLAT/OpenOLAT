@@ -49,11 +49,6 @@ public class VideoQuestionsTableModel extends DefaultFlexiTableDataModel<VideoQu
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public VideoQuestionsTableModel createCopyWithEmptyList() {
-		return new VideoQuestionsTableModel(getTableColumnModel());
-	}
 	
 	public enum QuestionCols implements FlexiSortableColumnDef {
 		start("marker.table.header.start"),

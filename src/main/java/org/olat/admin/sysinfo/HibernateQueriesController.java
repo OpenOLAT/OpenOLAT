@@ -203,11 +203,6 @@ public class HibernateQueriesController extends FormBasicController {
 				default: return null;
 			}
 		}
-
-		@Override
-		public DefaultFlexiTableDataModel<QueryInfos> createCopyWithEmptyList() {
-			return new QueryStatisticsDataModel(getTableColumnModel());
-		}
 	}
 	
 	private static class QueryStatisticsModelSort extends SortableFlexiTableModelDelegate<QueryInfos> {

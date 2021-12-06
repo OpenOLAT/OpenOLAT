@@ -19,7 +19,6 @@
  */
 package org.olat.admin.user.bulkChange;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -46,10 +45,5 @@ public class OverviewModel extends DefaultFlexiTableDataModel<List<String>> {
 		List<String> dataArray = getObject(row);
 		String value = dataArray.get(col);
 		return (value == null ? "n/a" : value);
-	}
-
-	@Override
-	public OverviewModel createCopyWithEmptyList() {
-		return new OverviewModel(new ArrayList<List<String>>(), getTableColumnModel());
 	}
 }

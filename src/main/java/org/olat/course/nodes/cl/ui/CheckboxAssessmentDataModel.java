@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes.cl.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,11 +41,6 @@ public class CheckboxAssessmentDataModel extends DefaultFlexiTableDataModel<Chec
 	public CheckboxAssessmentDataModel(List<CheckboxAssessmentRow> datas, FlexiTableColumnModel columnModel, Locale locale) {
 		super(datas, columnModel);
 		this.locale = locale;
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CheckboxAssessmentRow> createCopyWithEmptyList() {
-		return new CheckboxAssessmentDataModel(new ArrayList<CheckboxAssessmentRow>(), getTableColumnModel(), locale);
 	}
 	
 	@Override

@@ -22,7 +22,6 @@ package org.olat.modules.video.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.translator.Translator;
 
 /**
  * Tablemodel for qualityversions listing 
@@ -33,15 +32,8 @@ import org.olat.core.gui.translator.Translator;
  */
 public class VideoQualityTableModel extends DefaultFlexiTableDataModel<QualityTableRow>{
 
-	private Translator translator;
-	public VideoQualityTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public VideoQualityTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.translator = translator;
-	}
-
-	@Override
-	public VideoQualityTableModel createCopyWithEmptyList() {
-		return new VideoQualityTableModel(getTableColumnModel(), translator);
 	}
 
 	@Override

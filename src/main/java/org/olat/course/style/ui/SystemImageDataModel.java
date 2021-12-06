@@ -19,8 +19,6 @@
  */
 package org.olat.course.style.ui;
 
-import java.util.Locale;
-
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -34,11 +32,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 public class SystemImageDataModel extends DefaultFlexiTableDataModel<SystemImageRow> {
 	
 	private static final SystemImageCols[] COLS = SystemImageCols.values();
-	private final Locale locale;
-	
-	public SystemImageDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+
+	public SystemImageDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
-		this.locale = locale;
 	}
 
 	@Override
@@ -56,11 +52,6 @@ public class SystemImageDataModel extends DefaultFlexiTableDataModel<SystemImage
 			case delete: return Boolean.TRUE;
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<SystemImageRow> createCopyWithEmptyList() {
-		return new SystemImageDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum SystemImageCols implements FlexiColumnDef {

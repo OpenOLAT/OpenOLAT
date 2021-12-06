@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.id.User;
-import org.olat.course.nodes.GTACourseNode;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -41,20 +40,13 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 	implements SortableFlexiTableDataModel<AssessmentRow> {
 	
 	private final Locale locale;
-	private final GTACourseNode gtaNode;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
-	public GroupAssessmentModel(GTACourseNode gtaNode, List<UserPropertyHandler> userPropertyHandlers, Locale locale,
+	public GroupAssessmentModel(List<UserPropertyHandler> userPropertyHandlers, Locale locale,
 			FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.gtaNode = gtaNode;
 		this.locale = locale;
 		this.userPropertyHandlers = userPropertyHandlers;
-	}
-	
-	@Override
-	public DefaultFlexiTableDataModel<AssessmentRow> createCopyWithEmptyList() {
-		return new GroupAssessmentModel(gtaNode, userPropertyHandlers, locale, getTableColumnModel());
 	}
 	
 	@Override

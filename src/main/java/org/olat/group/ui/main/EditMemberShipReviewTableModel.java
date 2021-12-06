@@ -21,7 +21,6 @@ package org.olat.group.ui.main;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -85,11 +84,6 @@ public class EditMemberShipReviewTableModel extends DefaultFlexiTreeTableDataMod
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<EditMembershipReviewTableRow> createCopyWithEmptyList() {
-		return null;
 	}
 	
 	public enum EditMemberShipReviewCols implements FlexiSortableColumnDef {

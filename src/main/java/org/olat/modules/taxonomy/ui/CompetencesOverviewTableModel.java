@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -100,11 +99,6 @@ public class CompetencesOverviewTableModel extends DefaultFlexiTreeTableDataMode
 			case info: return row.getDetailsLink();
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CompetencesOverviewTableRow> createCopyWithEmptyList() {
-		return new CompetencesOverviewTableModel(getTableColumnModel());
 	}
 	
 	public enum CompetencesOverviewCols implements FlexiSortableColumnDef {

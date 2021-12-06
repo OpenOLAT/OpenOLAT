@@ -72,11 +72,6 @@ public class SingleParticipantRollCallsDataModel extends DefaultFlexiTableDataMo
 		return sb.toString();
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<SingleParticipantRollCallRow> createCopyWithEmptyList() {
-		return new SingleParticipantRollCallsDataModel(getTableColumnModel(), userManager);
-	}
-
 	public enum RollCallsCols implements FlexiSortableColumnDef {
 		entry("table.header.entry"),
 		externalRef("table.header.external.ref"),

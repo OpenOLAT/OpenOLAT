@@ -111,11 +111,6 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		}
 		return null;
 	}
-
-	@Override
-	public CoursesTableDataModel createCopyWithEmptyList() {
-		return new CoursesTableDataModel(getTableColumnModel());
-	}
 	
 	public enum Columns implements FlexiSortableColumnDef {
 		name("table.header.course.name"),

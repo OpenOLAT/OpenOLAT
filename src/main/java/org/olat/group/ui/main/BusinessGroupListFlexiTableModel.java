@@ -190,11 +190,6 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 			setObjects(items);
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<BGTableItem> createCopyWithEmptyList() {
-		return new BusinessGroupListFlexiTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum Cols implements FlexiSortableColumnDef {
 		createionDate("table.header.createionDate"),

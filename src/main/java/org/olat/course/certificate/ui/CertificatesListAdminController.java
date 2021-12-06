@@ -197,11 +197,6 @@ public class CertificatesListAdminController extends FormBasicController {
 		}
 
 		@Override
-		public DefaultFlexiTableDataModel<CertificateTemplate> createCopyWithEmptyList() {
-			return new TemplatesDataModel(getTableColumnModel());
-		}
-
-		@Override
 		public Object getValueAt(int row, int col) {
 			CertificateTemplate template = getObject(row);
 			switch(Cols.values()[col]) {

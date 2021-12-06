@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.List;
 
 /**
  * Interface for table data model including column models.
@@ -46,6 +47,8 @@ public interface FlexiTableDataModel<T> {
 	public boolean isRowLoaded(int row);
 
 	public T getObject(int row);
+	
+	public void setObjects(List<T> objects);
 
 	/**
 	 * Return Object for certain table cell.

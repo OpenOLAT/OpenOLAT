@@ -119,11 +119,6 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatisticsRow>, Flexi
 		this.totalStatistics = totalStatistics;
 	}
 	
-	@Override
-	public LecturesListDataModel createCopyWithEmptyList() {
-		return new LecturesListDataModel(getTableColumnModel(), translator);
-	}
-	
 	public enum StatsCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
 		externalRef("table.header.entry.external.ref"),

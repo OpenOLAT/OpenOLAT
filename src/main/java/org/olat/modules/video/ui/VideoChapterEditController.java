@@ -147,7 +147,7 @@ public class VideoChapterEditController extends BasicController {
 			chapterTableModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableCols.intervals));
 			chapterTableModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 			chapterTableModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
-			tableModel = new VideoChapterTableModel(chapterTableModel, getTranslator());
+			tableModel = new VideoChapterTableModel(chapterTableModel);
 	
 			chapterTable = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 			chapterTable.setCustomizeColumns(false);

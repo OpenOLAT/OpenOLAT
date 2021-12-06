@@ -103,11 +103,6 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 	public Object getFooterValueAt(int col) {
 		return getValueAt(totalRow, col);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<RubricRow> createCopyWithEmptyList() {
-		return new RubricDataModel(getTableColumnModel(), footerHeader);
-	}
 	
 	public enum RubricReportCols implements FlexiColumnDef {
 		startLabel("rubric.report.start.label.title"),

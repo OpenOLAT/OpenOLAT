@@ -88,13 +88,6 @@ implements SortableFlexiTableDataModel<AssignedReferenceEntryRow> {
 		return null;
 	}
 	
-	
-
-	@Override
-	public AssignedReferenceEntryListTableModel createCopyWithEmptyList() {
-		return new AssignedReferenceEntryListTableModel(getTableColumnModel(), locale);
-	}
-	
 	public enum GEntryCol implements FlexiSortableColumnDef {
 		id("table.header.id"),
 		displayName("table.header.reference.entry"),

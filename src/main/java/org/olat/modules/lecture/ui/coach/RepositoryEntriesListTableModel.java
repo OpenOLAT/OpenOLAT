@@ -80,11 +80,6 @@ implements SortableFlexiTableDataModel<LectureRepositoryEntryInfos>  {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<LectureRepositoryEntryInfos> createCopyWithEmptyList() {
-		return new RepositoryEntriesListTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum LectureRepoCols implements FlexiSortableColumnDef {
 		id("table.header.id"),

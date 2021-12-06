@@ -42,13 +42,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -393,27 +392,10 @@ public class GroupSearchController extends StepFormBasicController {
 		}
 	}
 	
-	private static class GroupTableDataModel extends DefaultTableDataModel<GroupWrapper> implements FlexiTableDataModel<GroupWrapper> {
-		private FlexiTableColumnModel columnModel;
-		
+	private static class GroupTableDataModel extends DefaultFlexiTableDataModel<GroupWrapper> {
+
 		public GroupTableDataModel(List<GroupWrapper> options, FlexiTableColumnModel columnModel) {
-			super(options);
-			this.columnModel = columnModel;
-		}
-
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-			columnModel = tableColumnModel;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return columnModel.getColumnCount();
+			super(options, columnModel);
 		}
 
 		@Override
@@ -432,11 +414,6 @@ public class GroupSearchController extends StepFormBasicController {
 				case participant: return option.getParticipant();
 				default: return option;
 			}
-		}
-
-		@Override
-		public GroupTableDataModel createCopyWithEmptyList() {
-			return new GroupTableDataModel(new ArrayList<GroupWrapper>(), columnModel);
 		}
 	}
 	

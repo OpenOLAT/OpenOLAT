@@ -148,11 +148,6 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 		this.backupList = objects;
 		super.setObjects(objects);
 	}
-
-	@Override
-	public StudentsTableDataModel createCopyWithEmptyList() {
-		return new StudentsTableDataModel(getTableColumnModel());
-	}
 	
 	public enum Columns implements FlexiSortableColumnDef {
 		countCourse("table.header.countCourses"),

@@ -83,11 +83,6 @@ implements SortableFlexiTableDataModel<IdentityRelationRow> {
 		}
 		return "ERROR";
 	}
-
-	@Override
-	public UserRelationsTableModel createCopyWithEmptyList() {
-		return new UserRelationsTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum RelationCols implements FlexiSortableColumnDef {
 		

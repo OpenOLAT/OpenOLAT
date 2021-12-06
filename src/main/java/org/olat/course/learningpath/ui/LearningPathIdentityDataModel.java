@@ -72,11 +72,6 @@ implements SortableFlexiTableDataModel<LearningPathIdentityRow> {
 		List<LearningPathIdentityRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<LearningPathIdentityRow> createCopyWithEmptyList() {
-		return new LearningPathIdentityDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum LearningPathIdentityCols implements FlexiSortableColumnDef {
 		completion("table.header.completion"),

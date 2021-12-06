@@ -76,11 +76,6 @@ public class CourseReminderSendTableModel extends DefaultFlexiTableDataModel<Cou
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CourseReminderSendRow> createCopyWithEmptyList() {
-		return new CourseReminderSendTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum SendCols implements FlexiSortableColumnDef {
 		sendDate("table.header.send");

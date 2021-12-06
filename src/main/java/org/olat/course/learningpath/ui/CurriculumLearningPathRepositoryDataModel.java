@@ -71,11 +71,6 @@ implements SortableFlexiTableDataModel<CurriculumLearningPathRepositoryRow> {
 		List<CurriculumLearningPathRepositoryRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CurriculumLearningPathRepositoryRow> createCopyWithEmptyList() {
-		return new CurriculumLearningPathRepositoryDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum LearningPathRepositoryCols implements FlexiSortableColumnDef {
 		reponame("table.header.reponame"),

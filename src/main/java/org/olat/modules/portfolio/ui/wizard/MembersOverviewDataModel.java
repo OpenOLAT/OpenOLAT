@@ -19,13 +19,11 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -35,34 +33,15 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MembersOverviewDataModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel<Identity> {
+public class MembersOverviewDataModel extends DefaultFlexiTableDataModel<Identity> {
 	private final Locale locale;
-	private final boolean isAdministrativeUser;
-	private FlexiTableColumnModel columnModel;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	public MembersOverviewDataModel(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers,
-			boolean isAdministrativeUser, Locale locale, FlexiTableColumnModel columnModel) {
-		super(identities);
+			Locale locale, FlexiTableColumnModel columnModel) {
+		super(identities, columnModel);
 		this.locale = locale;
-		this.columnModel = columnModel;
-		this.isAdministrativeUser = isAdministrativeUser;
 		this.userPropertyHandlers = userPropertyHandlers;
-	}
-
-	@Override
-	public FlexiTableColumnModel getTableColumnModel() {
-		return columnModel;
-	}
-
-	@Override
-	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-		columnModel = tableColumnModel;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return columnModel.getColumnCount();
 	}
 
 	@Override
@@ -73,10 +52,5 @@ public class MembersOverviewDataModel extends DefaultTableDataModel<Identity> im
 			return handler.getUserProperty(identity.getUser(), locale);
 		}
 		return "";
-	}
-
-	@Override
-	public MembersOverviewDataModel createCopyWithEmptyList() {
-		return new MembersOverviewDataModel(new ArrayList<Identity>(), userPropertyHandlers, isAdministrativeUser, locale, columnModel);
 	}
 }

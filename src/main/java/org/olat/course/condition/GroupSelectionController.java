@@ -237,7 +237,7 @@ public class GroupSelectionController extends FormBasicController {
 		minParticipantsColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(minParticipantsColumn);
 		
-		groupTableModel = new ENEditGroupTableModel(columnsModel, getLocale(), getTranslator());
+		groupTableModel = new ENEditGroupTableModel(columnsModel, getTranslator());
 		groupTableElement = uifactory.addTableElement(getWindowControl(), "entries", groupTableModel, getTranslator(), formLayout);
 		groupTableElement.setEmptyTableSettings("groupselection.noentries", null, "o_icon_group");
 		groupTableElement.setMultiSelect(true);		

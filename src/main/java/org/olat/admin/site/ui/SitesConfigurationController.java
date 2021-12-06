@@ -386,11 +386,6 @@ public class SitesConfigurationController extends FormBasicController {
 		public SiteDefModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
-		
-		@Override
-		public SiteDefModel createCopyWithEmptyList() {
-			return new SiteDefModel(getTableColumnModel());
-		}
 
 		@Override
 		public Object getValueAt(int row, int col) {

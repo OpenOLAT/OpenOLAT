@@ -65,12 +65,6 @@ implements SortableFlexiTableDataModel<CurriculumElementSearchRow> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public CurriculumElementSearchDataModel createCopyWithEmptyList() {
-		return new CurriculumElementSearchDataModel(getTableColumnModel());
-	}
-	
 	
 	public enum SearchCols implements FlexiSortableColumnDef {
 		key("table.header.key"),

@@ -95,17 +95,10 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 		return null;
 	}
 	
-	
-	
-		@Override
+	@Override
 	public void setObjects(List<MediaRow> objects) {
 		backups = objects;
 		super.setObjects(objects);
-	}
-
-		@Override
-	public DefaultFlexiTableDataModel<MediaRow> createCopyWithEmptyList() {
-		return new MediaDataModel(getTableColumnModel(), locale);
 	}
 		
 	public enum MediaCols implements FlexiSortableColumnDef {

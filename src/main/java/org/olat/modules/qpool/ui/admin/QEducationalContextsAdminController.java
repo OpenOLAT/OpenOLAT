@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui.admin;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
@@ -32,16 +31,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -220,61 +218,10 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		}
 	}
 	
-	private class LevelDataModel implements FlexiTableDataModel<QEducationalContext>, TableDataModel<QEducationalContext> {
-
-		private FlexiTableColumnModel columnModel;
-		private List<QEducationalContext> levels;
+	private class LevelDataModel extends DefaultFlexiTableDataModel<QEducationalContext> {
 		
 		public LevelDataModel(FlexiTableColumnModel columnModel) {
-			this.columnModel = columnModel;
-		}
-		
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel columnModel) {
-			this.columnModel = columnModel;
-		}
-
-		@Override
-		public boolean isSelectable(int row) {
-			return true;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return columnModel.getColumnCount();
-		}
-
-		@Override
-		public QEducationalContext getObject(int row) {
-			if(levels != null && row >= 0 && row < levels.size()) {
-				return levels.get(row);
-			}
-			return null;
-		}
-
-		@Override
-		public void setObjects(List<QEducationalContext> objects) {
-			levels = new ArrayList<>(objects);
-		}
-
-		@Override
-		public Object createCopyWithEmptyList() {
-			return new LevelDataModel(columnModel);
-		}
-
-		@Override
-		public int getRowCount() {
-			return levels == null ? 0 : levels.size();
-		}
-		
-		@Override
-		public boolean isRowLoaded(int row) {
-			return levels != null && row < levels.size();
+			super(columnModel);
 		}
 
 		@Override
@@ -296,5 +243,4 @@ public class QEducationalContextsAdminController extends FormBasicController {
 			}
 		}
 	}
-
 }

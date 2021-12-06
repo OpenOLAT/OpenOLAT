@@ -79,11 +79,6 @@ public class GoToOrganizerTableModel extends DefaultFlexiTableDataModel<GoToOrga
 		return null;
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<GoToOrganizer> createCopyWithEmptyList() {
-		return new GoToOrganizerTableModel(getTableColumnModel(), userManager);
-	}
-
 	public enum OrganizerCols implements FlexiSortableColumnDef {
 		
 		key("organizer.key"),

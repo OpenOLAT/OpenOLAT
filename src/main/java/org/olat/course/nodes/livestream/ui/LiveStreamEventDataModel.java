@@ -20,7 +20,6 @@
 package org.olat.course.nodes.livestream.ui;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -38,11 +37,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStreamEventRow>
 		implements SortableFlexiTableDataModel<LiveStreamEventRow> {
 	
-	private final Locale locale;
-	
-	public LiveStreamEventDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public LiveStreamEventDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
-		this.locale = locale;
 	}
 	
 	@Override
@@ -69,11 +65,6 @@ public class LiveStreamEventDataModel extends DefaultFlexiTableDataModel<LiveStr
 			case viewers: return row.getViewers();
 			default: return null;
 		}
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<LiveStreamEventRow> createCopyWithEmptyList() {
-		return new LiveStreamEventDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum EventCols implements FlexiSortableColumnDef {

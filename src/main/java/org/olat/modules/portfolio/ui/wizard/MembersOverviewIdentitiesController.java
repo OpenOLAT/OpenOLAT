@@ -97,7 +97,7 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 				if(sb.length() > 0) sb.append(", ");
 				sb.append(notfound);
 			}
-			String msg = translate("user.notfound", new String[]{sb.toString()});
+			String msg = translate("user.notfound", sb.toString());
 			addToRunContext("notFounds", sb.toString());
 			warnLayout.contextPut("notFounds", msg);
 		}
@@ -120,7 +120,7 @@ public class MembersOverviewIdentitiesController extends StepFormBasicController
 		
 		Translator myTrans = userManager.getPropertyHandlerTranslator(getTranslator());
 		MembersOverviewDataModel userTableModel = new MembersOverviewDataModel(oks, resultingPropertyHandlers,
-				isAdministrativeUser, getLocale(), tableColumnModel);
+				getLocale(), tableColumnModel);
 		FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, myTrans, formLayout);
 		tableEl.setCustomizeColumns(false);
 	}

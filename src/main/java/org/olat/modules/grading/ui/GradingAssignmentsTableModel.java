@@ -114,11 +114,6 @@ implements SortableFlexiTableDataModel<GradingAssignmentRow> {
 		}
 		return "ERROR";
 	}
-
-	@Override
-	public GradingAssignmentsTableModel createCopyWithEmptyList() {
-		return new GradingAssignmentsTableModel(getTableColumnModel(), userPropertyHandlers, assessedUserPropertyHandlers, translator, locale);
-	}
 	
 	public enum GAssignmentsCol implements FlexiSortableColumnDef {
 		deadline("table.header.deadline"),

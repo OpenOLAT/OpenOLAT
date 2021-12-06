@@ -352,11 +352,6 @@ public class CourseSiteAdminController extends FormBasicController {
 		}
 
 		@Override
-		public CourseSiteDataModel createCopyWithEmptyList() {
-			return new CourseSiteDataModel(getTableColumnModel());
-		}
-
-		@Override
 		public Object getValueAt(int row, int col) {
 			LanguageConfigurationRow id = getObject(row);
 			switch(CSCols.values()[col]) {

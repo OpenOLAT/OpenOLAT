@@ -307,7 +307,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ENEditGroupTableColumns.remove, CMD_REMOVE));
 
-		easyGroupTableModel = new ENEditGroupTableModel(columnsModel, getLocale(), getTranslator());
+		easyGroupTableModel = new ENEditGroupTableModel(columnsModel, getTranslator());
 		easyGroupTableElement = uifactory.addTableElement(getWindowControl(), "en_edit_group_table", easyGroupTableModel, getTranslator(), formLayout);
 		easyGroupTableElement.setCustomizeColumns(false);
 		easyGroupTableElement.setNumOfRowsEnabled(false);

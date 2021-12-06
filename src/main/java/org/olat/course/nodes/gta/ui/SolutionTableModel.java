@@ -35,11 +35,6 @@ public class SolutionTableModel extends DefaultFlexiTableDataModel<SolutionRow> 
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<SolutionRow> createCopyWithEmptyList() {
-		return new SolutionTableModel(getTableColumnModel());
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		SolutionRow solutionRow = getObject(row);
 		switch(SolCols.values()[col]) {

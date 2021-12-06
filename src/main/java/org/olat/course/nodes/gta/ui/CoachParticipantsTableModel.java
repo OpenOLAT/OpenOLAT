@@ -29,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -42,24 +41,16 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 	private static final CGCols[] COLS = CGCols.values();
 	
 	private final Locale locale;
-	private final List<UserPropertyHandler> userPropertyHandlers;
 	
-	public CoachParticipantsTableModel(List<UserPropertyHandler> userPropertyHandlers, Locale locale,
-			FlexiTableColumnModel columnModel) {
+	public CoachParticipantsTableModel(Locale locale, FlexiTableColumnModel columnModel) {
 		super(columnModel);
 		this.locale = locale;
-		this.userPropertyHandlers = userPropertyHandlers;
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CoachedIdentityRow> createCopyWithEmptyList() {
-		return new CoachParticipantsTableModel(userPropertyHandlers, locale, getTableColumnModel());
 	}
 	
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<CoachedIdentityRow> views = new CoachParticipantsModelSort(orderBy, this, null).sort();
+			List<CoachedIdentityRow> views = new CoachParticipantsModelSort(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}

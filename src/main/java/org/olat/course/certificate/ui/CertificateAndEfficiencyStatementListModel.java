@@ -25,7 +25,6 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -51,11 +50,6 @@ public class CertificateAndEfficiencyStatementListModel
 	public CertificateAndEfficiencyStatementListModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CertificateAndEfficiencyStatement> createCopyWithEmptyList() {
-		return new CertificateAndEfficiencyStatementListModel(getTableColumnModel(), locale);
 	}
 
 	@Override

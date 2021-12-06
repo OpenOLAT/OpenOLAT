@@ -72,12 +72,6 @@ public class OlatPropertiesTableModel extends DefaultFlexiTableDataModel<OlatPro
 		default:
 			return "ERROR";
 		}
-		
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<OlatPropertiesTableContentRow> createCopyWithEmptyList() {
-		return new OlatPropertiesTableModel(getTableColumnModel());
 	}
 	
 	public enum OlatPropertiesTableColumn implements FlexiSortableColumnDef {

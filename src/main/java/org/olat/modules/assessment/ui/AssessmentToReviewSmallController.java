@@ -206,10 +206,5 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 			int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
 			return row.getIdentityProp(propPos);
 		}
-
-		@Override
-		public DefaultFlexiTableDataModel<UserToReviewRow> createCopyWithEmptyList() {
-			return new UsersToReviewTableModel(getTableColumnModel());
-		}
 	}
 }

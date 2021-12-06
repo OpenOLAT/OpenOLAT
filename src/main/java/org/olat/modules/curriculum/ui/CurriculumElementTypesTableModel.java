@@ -66,11 +66,6 @@ implements SortableFlexiTableDataModel<CurriculumElementTypeRow> {
 		}
 	}
 	
-	@Override
-	public DefaultFlexiTableDataModel<CurriculumElementTypeRow> createCopyWithEmptyList() {
-		return new CurriculumElementTypesTableModel(getTableColumnModel());
-	}
-	
 	public enum TypesCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		identifier("table.type.header.type.identifier"),

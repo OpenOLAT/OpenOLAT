@@ -19,8 +19,6 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
-import java.util.Locale;
-
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -38,12 +36,9 @@ public class BigBlueButtonConfigurationServersTableModel extends DefaultFlexiTab
 implements SortableFlexiTableDataModel<BigBlueButtonServer> {
 	
 	private static final ConfigServerCols[] COLS = ConfigServerCols.values();
-
-	private final Locale locale;
 	
-	public BigBlueButtonConfigurationServersTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
+	public BigBlueButtonConfigurationServersTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
-		this.locale = locale;
 	}
 
 	@Override
@@ -65,11 +60,6 @@ implements SortableFlexiTableDataModel<BigBlueButtonServer> {
 			case manualOnly: return Boolean.valueOf(row.isManualOnly());
 			default: return "ERROR";
 		}
-	}
-
-	@Override
-	public BigBlueButtonConfigurationServersTableModel createCopyWithEmptyList() {
-		return new BigBlueButtonConfigurationServersTableModel(getTableColumnModel(), locale);
 	}
 	
 	public enum ConfigServerCols implements FlexiSortableColumnDef {

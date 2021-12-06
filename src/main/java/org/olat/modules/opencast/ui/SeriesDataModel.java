@@ -71,11 +71,6 @@ implements SortableFlexiTableDataModel<OpencastSeries> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<OpencastSeries> createCopyWithEmptyList() {
-		return new SeriesDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum SeriesCols implements FlexiSortableColumnDef {
 		identifier("series.identifier"),

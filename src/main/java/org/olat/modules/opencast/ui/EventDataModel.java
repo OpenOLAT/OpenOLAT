@@ -72,11 +72,6 @@ implements SortableFlexiTableDataModel<OpencastEvent> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<OpencastEvent> createCopyWithEmptyList() {
-		return new EventDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum EventCols implements FlexiSortableColumnDef {
 		identifier("event.identifier"),

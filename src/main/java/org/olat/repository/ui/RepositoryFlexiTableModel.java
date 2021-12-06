@@ -236,11 +236,6 @@ implements SortableFlexiTableDataModel<RepositoryEntry>, FilterableFlexiTableMod
 		return author;
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<RepositoryEntry> createCopyWithEmptyList() {
-		return new RepositoryFlexiTableModel(getTableColumnModel(), translator.getLocale());
-	}
-
 	public enum RepoCols implements FlexiSortableColumnDef {
 		ac("table.header.ac"),
 		repoEntry("table.header.typeimg"),

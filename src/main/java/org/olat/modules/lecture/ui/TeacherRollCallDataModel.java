@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.modules.lecture.RollCallSecurityCallback;
 
 /**
  * 
@@ -41,12 +40,10 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 	private static final RollCols[] COLS = RollCols.values();
 
 	private final Locale locale;
-	private final RollCallSecurityCallback secCallback;
 	
-	public TeacherRollCallDataModel(FlexiTableColumnModel columnModel, RollCallSecurityCallback secCallback, Locale locale) {
+	public TeacherRollCallDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
-		this.secCallback = secCallback;
 	}
 
 	@Override
@@ -80,11 +77,6 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 		
 		int propPos = col - TeacherRollCallController.CHECKBOX_OFFSET;
 		return row.getCheck(propPos);
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<TeacherRollCallRow> createCopyWithEmptyList() {
-		return new TeacherRollCallDataModel(getTableColumnModel(), secCallback, locale);
 	}
 	
 	public enum RollCols implements FlexiSortableColumnDef {

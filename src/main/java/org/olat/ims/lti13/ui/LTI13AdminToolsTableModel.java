@@ -71,11 +71,6 @@ implements SortableFlexiTableDataModel<ToolRow> {
 		}
 	}
 
-	@Override
-	public LTI13AdminToolsTableModel createCopyWithEmptyList() {
-		return new LTI13AdminToolsTableModel(getTableColumnModel(), locale);
-	}
-
 	public enum ToolsCols implements FlexiSortableColumnDef  {
 		toolName("table.header.tool.name"),
 		toolUrl("table.header.tool.url"),

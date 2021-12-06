@@ -147,11 +147,6 @@ public class CollectionListController extends FormBasicController {
 		}
 
 		@Override
-		public DefaultFlexiTableDataModel<QuestionItemCollection> createCopyWithEmptyList() {
-			return null;
-		}
-
-		@Override
 		public Object getValueAt(int row, int col) {
 			QuestionItemCollection coll = getObject(row);
 			switch(col) {

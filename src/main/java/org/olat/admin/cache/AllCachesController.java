@@ -295,11 +295,6 @@ public class AllCachesController extends FormBasicController {
 				default: return "ERROR";
 			}
 		}
-
-		@Override
-		public DefaultFlexiTableDataModel<CacheInfos> createCopyWithEmptyList() {
-			return new CachesDataModel(getTableColumnModel(), locale);
-		}
 	}
 
 	public enum CacheCols implements FlexiSortableColumnDef {

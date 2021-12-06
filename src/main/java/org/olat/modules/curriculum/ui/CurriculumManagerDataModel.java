@@ -106,11 +106,6 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 		super.setObjects(objects);
 		backups = objects;
 	}
-
-	@Override
-	public CurriculumManagerDataModel createCopyWithEmptyList() {
-		return new CurriculumManagerDataModel(getTableColumnModel(), locale);
-	}
 	
 	public enum CurriculumCols implements FlexiSortableColumnDef {
 		key("table.header.key"),

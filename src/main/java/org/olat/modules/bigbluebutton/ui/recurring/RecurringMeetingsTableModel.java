@@ -96,11 +96,6 @@ implements SortableFlexiTableDataModel<RecurringMeeting> {
 			default: return "";
 		}
 	}
-
-	@Override
-	public RecurringMeetingsTableModel createCopyWithEmptyList() {
-		return new RecurringMeetingsTableModel(getTableColumnModel(), translator);
-	}
 	
 	public enum RecurringCols implements FlexiSortableColumnDef {
 

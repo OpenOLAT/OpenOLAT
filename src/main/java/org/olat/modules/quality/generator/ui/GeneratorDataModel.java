@@ -83,11 +83,6 @@ class GeneratorDataModel extends DefaultFlexiTableDataModel<GeneratorRow>
 			default: return null;
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<GeneratorRow> createCopyWithEmptyList() {
-		return new GeneratorDataModel(getTableColumnModel(), translator);
-	}
 	
 	enum GeneratorCols implements FlexiSortableColumnDef {
 		enabled("generator.enabled"),

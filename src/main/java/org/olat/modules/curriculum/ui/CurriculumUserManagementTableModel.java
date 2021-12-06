@@ -77,11 +77,6 @@ implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 		int propPos = col - CurriculumElementUserManagementController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CurriculumMemberRow> createCopyWithEmptyList() {
-		return new CurriculumUserManagementTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum CurriculumMemberCols implements FlexiSortableColumnDef {
 		role("table.header.role");

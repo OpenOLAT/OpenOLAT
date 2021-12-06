@@ -107,11 +107,6 @@ public class SharedBindersDataModel extends DefaultFlexiTableDataModel<SharedIte
 		super.setObjects(objects);
 		backups = objects;
 	}
-	
-	@Override
-	public SharedBindersDataModel createCopyWithEmptyList() {
-		return new SharedBindersDataModel(getTableColumnModel(), locale);
-	}
 
 	public enum ShareItemCols implements FlexiSortableColumnDef {
 		binderKey("table.header.key"),

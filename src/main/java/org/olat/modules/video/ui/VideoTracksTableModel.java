@@ -42,12 +42,6 @@ public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTable
 	}
 
 	@Override
-	public VideoTracksTableModel createCopyWithEmptyList() {
-		return new VideoTracksTableModel(getTableColumnModel(), locale);
-	}
-
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		TrackTableRow track = getObject(row);
 		switch(TrackTableCols.values()[col]) {

@@ -118,11 +118,6 @@ public class PaypalTransactionDataModel extends DefaultFlexiTableDataModel<Paypa
 		}
 		return null;
 	}
-
-	@Override
-	public PaypalTransactionDataModel createCopyWithEmptyList() {
-		return new PaypalTransactionDataModel(getTableColumnModel());
-	}
 	
 	public enum Columns implements FlexiSortableColumnDef {
 		status("paypal.transaction.status"),

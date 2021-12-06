@@ -91,11 +91,6 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	public List<CheckListAssessmentRow> getBackedUpRows() {
 		return backupRows;
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CheckListAssessmentRow> createCopyWithEmptyList() {
-		return new CheckListAssessmentDataModel(checkboxList, new ArrayList<CheckListAssessmentRow>(), getTableColumnModel(), locale);
-	}
 	
 	@Override
 	public void sort(SortKey orderBy) {

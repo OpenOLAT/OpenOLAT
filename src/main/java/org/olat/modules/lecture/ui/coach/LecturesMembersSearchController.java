@@ -90,7 +90,7 @@ public abstract class LecturesMembersSearchController extends FormBasicControlle
 			colIndex++;
 		}
 		
-		tableModel = new LecturesMembersTableModel(columnsModel, userPropertyHandlers, getLocale());
+		tableModel = new LecturesMembersTableModel(columnsModel, getLocale());
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 26, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);

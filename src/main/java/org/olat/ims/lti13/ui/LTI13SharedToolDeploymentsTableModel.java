@@ -73,11 +73,6 @@ implements SortableFlexiTableDataModel<LTI13SharedToolDeployment> {
 		}
 	}
 
-	@Override
-	public LTI13SharedToolDeploymentsTableModel createCopyWithEmptyList() {
-		return new LTI13SharedToolDeploymentsTableModel(getTableColumnModel(), locale);
-	}
-
 	public enum SharedToolsCols implements FlexiSortableColumnDef  {
 		platformName("table.header.name"),
 		issuer("table.header.issuer"),

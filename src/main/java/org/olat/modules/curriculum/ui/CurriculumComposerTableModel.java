@@ -197,11 +197,6 @@ public class CurriculumComposerTableModel extends DefaultFlexiTreeTableDataModel
 		}
 	}
 	
-	@Override
-	public CurriculumComposerTableModel createCopyWithEmptyList() {
-		return new CurriculumComposerTableModel(getTableColumnModel());
-	}
-	
 	public enum ElementCols implements FlexiSortableColumnDef {
 		key("table.header.key"),
 		displayName("table.header.displayName"),

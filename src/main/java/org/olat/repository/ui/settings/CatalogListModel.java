@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.settings;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -35,11 +34,6 @@ public class CatalogListModel extends DefaultFlexiTableDataModel<CatalogEntry> {
 
 	public CatalogListModel(List<CatalogEntry> catalogEntries, FlexiTableColumnModel columnModel) {
 		super(catalogEntries, columnModel);
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CatalogEntry> createCopyWithEmptyList() {
-		return new CatalogListModel(new ArrayList<CatalogEntry>(), getTableColumnModel());
 	}
 
 	@Override

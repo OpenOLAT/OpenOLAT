@@ -82,7 +82,7 @@ public class LiveStreamStatisticController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EventCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EventCols.description));
 		
-		dataModel = new LiveStreamEventDataModel(columnsModel, getLocale());
+		dataModel = new LiveStreamEventDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "livestream-statistic");
 		tableEl.setEmptyTableSettings("statistic.table.empty", null, "o_icon_calendar");

@@ -21,9 +21,8 @@ package org.olat.course.assessment.bulk;
 
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 
 /**
  * 
@@ -31,38 +30,23 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaskDataModel extends DefaultTableDataModel<TaskData> implements FlexiTableDataModel<TaskData> {
-	private FlexiTableColumnModel columnModel; 
+public class TaskDataModel extends DefaultFlexiTableDataModel<TaskData> {
 	
+	private static final Cols[] COLS = Cols.values();
+
 	public TaskDataModel(List<TaskData> tasks, FlexiTableColumnModel columnModel) {
-		super(tasks);
-		this.columnModel = columnModel;
-	}
-
-	@Override
-	public FlexiTableColumnModel getTableColumnModel() {
-		return columnModel;
-	}
-
-	@Override
-	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-		this.columnModel = tableColumnModel;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return 5;
+		super(tasks, columnModel);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
 		TaskData data = getObject(row);
-		switch(Cols.values()[col]) {
+		switch(COLS[col]) {
 			case courseNode: return data.getCourseNode();
-			case score: return new Boolean(data.isHasScore());
-			case status: return new Boolean(data.isHasPassed());
-			case comment: return new Boolean(data.isHasUserComment());
-			case returnFile: return new Boolean(data.isHasReturnFiles());
+			case score: return Boolean.valueOf(data.isHasScore());
+			case status: return Boolean.valueOf(data.isHasPassed());
+			case comment: return Boolean.valueOf(data.isHasUserComment());
+			case returnFile: return Boolean.valueOf(data.isHasReturnFiles());
 			case numOfAssessedUsers: return data.getNumOfAssessedIds();
 			case scheduledDate: return data.getTask().getScheduledDate();
 			case taskStatus: return data.getTask().getStatus();
@@ -70,7 +54,7 @@ public class TaskDataModel extends DefaultTableDataModel<TaskData> implements Fl
 		}
 		return null;
 	}
-	
+
 	public enum Cols {
 		courseNode,
 		score,

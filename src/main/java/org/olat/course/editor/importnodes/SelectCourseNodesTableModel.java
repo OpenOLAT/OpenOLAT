@@ -86,11 +86,6 @@ public class SelectCourseNodesTableModel extends DefaultFlexiTreeTableDataModel<
 	public List<SelectCourseNodeRow> getAllRows() {
 		return new ArrayList<>(backupRows);
 	}
-
-	@Override
-	public SelectCourseNodesTableModel createCopyWithEmptyList() {
-		return new SelectCourseNodesTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum SelectCols implements FlexiColumnDef {
 		node("table.header.node"),

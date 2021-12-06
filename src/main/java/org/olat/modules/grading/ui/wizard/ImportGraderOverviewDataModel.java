@@ -36,7 +36,6 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class ImportGraderOverviewDataModel extends DefaultFlexiTableDataModel<Identity> {
 	
 	private final Locale locale;
-	private FlexiTableColumnModel columnModel;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	public ImportGraderOverviewDataModel(List<UserPropertyHandler> userPropertyHandlers,
@@ -54,10 +53,5 @@ public class ImportGraderOverviewDataModel extends DefaultFlexiTableDataModel<Id
 			return handler.getUserProperty(identity.getUser(), locale);
 		}
 		return "ERROR";
-	}
-
-	@Override
-	public ImportGraderOverviewDataModel createCopyWithEmptyList() {
-		return new ImportGraderOverviewDataModel(userPropertyHandlers, locale, columnModel);
 	}
 }

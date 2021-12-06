@@ -22,7 +22,6 @@ package org.olat.repository.ui.author;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -56,11 +55,6 @@ public class ModifyOwnersReviewTableModel extends DefaultFlexiTreeTableDataModel
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		
-	}
-
-	@Override
-	public DefaultFlexiTableDataModel<ModifyOwnersReviewTableRow> createCopyWithEmptyList() {
-		return null;
 	}
 	
 	@Override

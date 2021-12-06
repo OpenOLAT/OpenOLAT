@@ -63,10 +63,4 @@ class SliderTrendDataModel extends DefaultFlexiTableDataModel<SliderTrendRow>
 		}
 		return row.getTrend(col -1);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<SliderTrendRow> createCopyWithEmptyList() {
-		return new SliderTrendDataModel(getTableColumnModel(), locale);
-	}
-	
 }

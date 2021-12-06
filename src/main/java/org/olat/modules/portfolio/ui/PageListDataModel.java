@@ -206,12 +206,6 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		return null;
 	}
 
-	
-	@Override
-	public DefaultFlexiTableDataModel<PortfolioElementRow> createCopyWithEmptyList() {
-		return new PageListDataModel(getTableColumnModel(), locale);
-	}
-
 	public enum PageCols implements FlexiSortableColumnDef {
 		type("table.header.type", false),
 		key("table.header.key", false),

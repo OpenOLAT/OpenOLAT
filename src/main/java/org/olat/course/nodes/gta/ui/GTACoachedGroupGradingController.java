@@ -231,7 +231,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.commentVal.i18nKey(), Cols.commentVal.ordinal()));
 		}
 		
-		model = new GroupAssessmentModel(gtaNode, userPropertyHandlers, getLocale(), columnsModel);
+		model = new GroupAssessmentModel(userPropertyHandlers, getLocale(), columnsModel);
 		table = uifactory.addTableElement(getWindowControl(), "group-list", model, getTranslator(), formLayout);
 		table.setCustomizeColumns(true);
 		table.setAndLoadPersistedPreferences(ureq, "gtagroup-assessment-v2");

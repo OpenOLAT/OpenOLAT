@@ -22,7 +22,6 @@ package org.olat.modules.video.ui;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.translator.Translator;
 
 /**
  *
@@ -32,16 +31,8 @@ import org.olat.core.gui.translator.Translator;
  */
 public class VideoChapterTableModel extends DefaultFlexiTableDataModel<VideoChapterTableRow>{
 
-	private final Translator translator;
-	
-	public VideoChapterTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public VideoChapterTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
-		this.translator = translator;
-	}
-
-	@Override
-	public VideoChapterTableModel createCopyWithEmptyList() {
-		return new VideoChapterTableModel(getTableColumnModel(), translator);
 	}
 
 	@Override

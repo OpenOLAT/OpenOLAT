@@ -75,11 +75,6 @@ implements SortableFlexiTableDataModel<CorrectionIdentityAssessmentItemRow> {
 			default: return "ERROR";
 		}
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<CorrectionIdentityAssessmentItemRow> createCopyWithEmptyList() {
-		return new CorrectionIdentityAssessmentItemTableModel(getTableColumnModel(), locale);
-	}
 	
 	public enum IdentityItemCols implements FlexiSortableColumnDef {
 		section("table.header.section"),

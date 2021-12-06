@@ -191,7 +191,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		toolsCol.setSortable(false);
 		columnsModel.addFlexiColumnModel(toolsCol);
 		
-		tableModel = new DailyLectureBlockTableModel(columnsModel, getLocale(), dailyRecordingEnabled);
+		tableModel = new DailyLectureBlockTableModel(columnsModel, dailyRecordingEnabled);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setDefaultOrderBy(new SortKey(BlockCols.times.name(), true));

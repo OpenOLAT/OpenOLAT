@@ -107,11 +107,6 @@ public class ExportOverviewController extends StepFormBasicController {
 		}
 
 		@Override
-		public QItemDataModel createCopyWithEmptyList() {
-			return new QItemDataModel(getTableColumnModel(), format);
-		}
-
-		@Override
 		public Object getValueAt(int row, int col) {
 			QuestionItemShort share = getObject(row);
 			switch(Cols.values()[col]) {

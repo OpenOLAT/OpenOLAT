@@ -23,9 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.id.Identity;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -33,9 +32,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class ImportMemberOverviewDataModel extends DefaultTableDataModel<Identity> implements FlexiTableDataModel<Identity> {
+public class ImportMemberOverviewDataModel extends DefaultFlexiTableDataModel<Identity>  {
 	private final Locale locale;
-	private FlexiTableColumnModel columnModel;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	public ImportMemberOverviewDataModel(List<UserPropertyHandler> userPropertyHandlers, Locale locale,
@@ -45,25 +43,9 @@ public class ImportMemberOverviewDataModel extends DefaultTableDataModel<Identit
 	
 	public ImportMemberOverviewDataModel(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers,
 			Locale locale, FlexiTableColumnModel columnModel) {
-		super(identities);
+		super(identities, columnModel);
 		this.locale = locale;
-		this.columnModel = columnModel;
 		this.userPropertyHandlers = userPropertyHandlers;
-	}
-
-	@Override
-	public FlexiTableColumnModel getTableColumnModel() {
-		return columnModel;
-	}
-
-	@Override
-	public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-		columnModel = tableColumnModel;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return columnModel.getColumnCount();
 	}
 
 	@Override
@@ -74,10 +56,5 @@ public class ImportMemberOverviewDataModel extends DefaultTableDataModel<Identit
 			return handler.getUserProperty(identity.getUser(), locale);
 		}
 		return "";
-	}
-
-	@Override
-	public ImportMemberOverviewDataModel createCopyWithEmptyList() {
-		return new ImportMemberOverviewDataModel(new ArrayList<Identity>(), userPropertyHandlers, locale, columnModel);
 	}
 }

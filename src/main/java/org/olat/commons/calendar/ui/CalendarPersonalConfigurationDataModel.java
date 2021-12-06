@@ -41,11 +41,6 @@ public class CalendarPersonalConfigurationDataModel extends DefaultFlexiTableDat
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<CalendarPersonalConfigurationRow> createCopyWithEmptyList() {
-		return new CalendarPersonalConfigurationDataModel(getTableColumnModel());
-	}
-
-	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			List<CalendarPersonalConfigurationRow> configRows = new CalendarPersonalConfigurationTableSort(orderBy, this, null).sort();

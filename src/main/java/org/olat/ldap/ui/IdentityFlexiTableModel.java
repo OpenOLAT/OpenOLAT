@@ -19,7 +19,6 @@
  */
 package org.olat.ldap.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -43,11 +42,6 @@ public class IdentityFlexiTableModel extends DefaultFlexiTableDataModel<Identity
 		super(identities, columnModel);
 		this.handlers = handlers;
 		this.locale = locale;
-	}
-	
-	@Override
-	public DefaultFlexiTableDataModel<Identity> createCopyWithEmptyList() {
-		return new IdentityFlexiTableModel(new ArrayList<Identity>(), getTableColumnModel(), handlers, locale);
 	}
 
 	@Override

@@ -36,18 +36,16 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
@@ -103,7 +101,7 @@ public class PoolsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, "name"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select-pool"));
 
-		model = new PoolDataModel(columnsModel, getTranslator());
+		model = new PoolDataModel(columnsModel);
 		poolTable = uifactory.addTableElement(getWindowControl(), "pools", model, getTranslator(), formLayout);
 		poolTable.setMultiSelect(true);
 		poolTable.setRendererType(FlexiTableRendererType.classic);
@@ -176,60 +174,10 @@ public class PoolsController extends FormBasicController {
 		}
 	}
 	
-	private static class PoolDataModel implements FlexiTableDataModel<Pool>, TableDataModel<Pool> {
-	
-		private List<Pool> rows;
-		private FlexiTableColumnModel columnModel;
-		private final Translator translator;
+	private static class PoolDataModel extends DefaultFlexiTableDataModel<Pool> {
 		
-		public PoolDataModel(FlexiTableColumnModel columnModel, Translator translator) {
-			this.columnModel = columnModel;
-			this.translator = translator;
-		}
-		
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-	
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-			this.columnModel = tableColumnModel;
-		}
-
-		@Override
-		public boolean isSelectable(int row) {
-			return true;
-		}
-
-		@Override
-		public int getRowCount() {
-			return rows == null ? 0 : rows.size();
-		}
-		
-		@Override
-		public boolean isRowLoaded(int row) {
-			return rows != null && row < rows.size();
-		}
-	
-		@Override
-		public Pool getObject(int row) {
-			return rows.get(row);
-		}
-	
-		@Override
-		public void setObjects(List<Pool> objects) {
-			rows = new ArrayList<>(objects);
-		}
-	
-		@Override
-		public int getColumnCount() {
-			return columnModel.getColumnCount();
-		}
-		
-		@Override
-		public PoolDataModel createCopyWithEmptyList() {
-			return new PoolDataModel(columnModel, translator);
+		public PoolDataModel(FlexiTableColumnModel columnModel) {
+			super(columnModel);
 		}
 	
 		@Override

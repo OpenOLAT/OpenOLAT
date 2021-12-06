@@ -65,11 +65,6 @@ implements SortableFlexiTableDataModel<OrganisationTypeRow> {
 			default: return null;
 		}
 	}
-
-	@Override
-	public OrganisationTypesDataModel createCopyWithEmptyList() {
-		return new OrganisationTypesDataModel(getTableColumnModel());
-	}
 	
 	public enum TypeCols implements FlexiSortableColumnDef {
 		key("table.header.key"),

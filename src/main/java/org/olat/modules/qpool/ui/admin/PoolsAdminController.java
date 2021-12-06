@@ -258,7 +258,6 @@ public class PoolsAdminController extends FormBasicController {
 	
 	private static class PoolDataModel extends DefaultFlexiTableDataModel<Pool> implements SortableFlexiTableDataModel<Pool> {
 
-		private FlexiTableColumnModel columnModel;
 		private final Translator translator;
 		
 		public PoolDataModel(FlexiTableColumnModel columnModel, Translator translator) {
@@ -272,11 +271,6 @@ public class PoolsAdminController extends FormBasicController {
 				List<Pool> views = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
 				super.setObjects(views);
 			}
-		}
-
-		@Override
-		public PoolDataModel createCopyWithEmptyList() {
-			return new PoolDataModel(columnModel, translator);
 		}
 	
 		@Override

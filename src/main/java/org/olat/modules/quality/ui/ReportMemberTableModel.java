@@ -64,9 +64,4 @@ implements SortableFlexiTableDataModel<UserPropertiesRow> {
 		int propPos = col - ReportAccessController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-
-	@Override
-	public DefaultFlexiTableDataModel<UserPropertiesRow> createCopyWithEmptyList() {
-		return new ReportMemberTableModel(getTableColumnModel(), locale);
-	}
 }

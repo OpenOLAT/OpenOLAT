@@ -32,10 +32,9 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -98,13 +97,11 @@ public class ValidationStepForm extends StepFormBasicController {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.numOfReturnFiles", Cols.numOfReturnFiles.ordinal()));
 		}
 		
-		validModel = new ValidDataModel(Collections.<UserData>emptyList());
-		validModel.setTableColumnModel(tableColumnModel);
+		validModel = new ValidDataModel(tableColumnModel);
 		validTableEl = uifactory.addTableElement(getWindowControl(), "validList", validModel, getTranslator(), formLayout);
 		validTableEl.setCustomizeColumns(false);
 		
-		invalidModel = new ValidDataModel(Collections.<UserData>emptyList());
-		invalidModel.setTableColumnModel(tableColumnModel);
+		invalidModel = new ValidDataModel(tableColumnModel);
 		invalidTableEl = uifactory.addTableElement(getWindowControl(), "notFoundList", invalidModel, getTranslator(), formLayout);
 		invalidTableEl.setCustomizeColumns(false);
 		
@@ -248,26 +245,10 @@ public class ValidationStepForm extends StepFormBasicController {
 		numOfReturnFiles
 	}
 	
-	private static class ValidDataModel  extends DefaultTableDataModel<UserData> implements FlexiTableDataModel<UserData> {
-		private FlexiTableColumnModel columnModel;
+	private static class ValidDataModel  extends DefaultFlexiTableDataModel<UserData> {
 		
-		public ValidDataModel(List<UserData> nodes) {
-			super(nodes);
-		}
-
-		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-			this.columnModel = tableColumnModel;
-		}
-
-		@Override
-		public int getColumnCount() {
-			return 5;
+		public ValidDataModel(FlexiTableColumnModel columnModel) {
+			super(columnModel);
 		}
 
 		@Override

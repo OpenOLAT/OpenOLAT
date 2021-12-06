@@ -36,11 +36,6 @@ public class TaxonomyListDataModel extends DefaultFlexiTableDataModel<TaxonomyRo
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<TaxonomyRow> createCopyWithEmptyList() {
-		return new TaxonomyListDataModel(getTableColumnModel());
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
 		return null;
 	}

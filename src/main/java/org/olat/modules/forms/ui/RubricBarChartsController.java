@@ -259,11 +259,6 @@ public abstract class RubricBarChartsController extends FormBasicController {
 		}
 
 		@Override
-		public DefaultFlexiTableDataModel<StatisticRow> createCopyWithEmptyList() {
-			return new StatisticDataModel(getTableColumnModel(), footerHeader);
-		}
-
-		@Override
 		public String getFooterHeader() {
 			return footerHeader;
 		}
