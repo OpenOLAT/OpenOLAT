@@ -589,7 +589,7 @@ function o_ainvoke(r) {
 								for(var t=0; t<eds.length; t++) {
 									try {
 										var edId = jQuery(eds.get(t)).attr('id');
-										if(typeof tinymce != undefined) {
+										if(typeof tinymce !== 'undefined') {
 											tinymce.remove('#' + edId);
 										}
 									} catch(e) {
@@ -2176,6 +2176,15 @@ function showMessageBox(type, title, message, buttonCallback) {
  	}
  	rowEl.toggleClass(cssClass);
  }
+ 
+ function o_ffTableToggleRowListener(rowId, cssClass) {
+  	o_ffTableToggleRowCheck(rowId, cssClass);
+  	var checkEl = jQuery('#' + rowId + ">td.o_multiselect>input");
+ 	if(checkEl.length > 0) {
+ 		var checked = jQuery('#' + rowId).hasClass(cssClass);
+ 		checkEl.get(0).checked = checked;
+ 	}
+  }
 
 /*
  * For standard tables
@@ -2200,10 +2209,18 @@ function o_table_updateCheckAllMenu(dispatchId, showSelectAll, showDeselectAll, 
 		jQuery('#' + dispatchId + '_bab').each(function(index, el) {
 			if (showSelectAll) {
 				jQuery(el).addClass("o_table_batch_hide").removeClass("o_table_batch_show");
-				jQuery(el).prev('.o_table_toolbar').addClass("o_table_batch_hide").removeClass("o_table_batch_show");
 			} else {
 				jQuery(el).addClass("o_table_batch_show").removeClass("o_table_batch_hide");
-				jQuery(el).prev('.o_table_toolbar').addClass("o_table_batch_show").removeClass("o_table_batch_hide");
+			}
+			
+			// show / hide only if batch buttons are present
+			var toolbarEl = jQuery(el).prev('.o_table_toolbar');
+			if(toolbarEl.length > 0 && el.querySelector("a.btn") != null) {
+				if (showSelectAll) {
+					toolbarEl.addClass("o_table_batch_hide").removeClass("o_table_batch_show");
+				} else {
+					toolbarEl.addClass("o_table_batch_show").removeClass("o_table_batch_hide");
+				}
 			}
 		});
 		

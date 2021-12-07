@@ -139,7 +139,7 @@ public class ConfigurationCourseNodesController extends StepFormBasicController 
 		List<ImportCourseNode> selectedNodes = importCourseContext.getNodes();
 		Map<String,ImportCourseNode> nodesMap = selectedNodes.stream()
 				.collect(Collectors.toMap(ImportCourseNode::getIdent, n -> n));
-
+		
 		RepositoryEntry entry = importCourseContext.getEntry();
 		ICourse course = CourseFactory.loadCourse(entry);
 		TreeNode rootNode = course.getEditorTreeModel().getRootNode();

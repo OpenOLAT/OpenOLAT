@@ -49,6 +49,11 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	}
 
 	@Override
+	public int getTotalNodesCount() {
+		return backupRows == null ? 0 : backupRows.size();
+	}
+
+	@Override
 	public int getIndentation(int row) {
 		FlexiTreeTableNode node = getObject(row);
 		return getIndentation(node);

@@ -31,6 +31,11 @@ import java.util.List;
 public interface FlexiTreeTableDataModel<T extends FlexiTreeTableNode> extends FlexiTableDataModel<T> {
 	
 	/**
+	 * @return The total number of rows if the tree is fully opened.
+	 */
+	public int getTotalNodesCount();
+	
+	/**
 	 * @param row The specified row
 	 * @return The indentation of the specified row
 	 */

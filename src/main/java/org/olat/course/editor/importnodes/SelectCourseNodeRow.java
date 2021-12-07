@@ -38,6 +38,8 @@ public class SelectCourseNodeRow implements FlexiTreeTableNode, IndentedCourseNo
 	private final int recursionLevel;
 	private final SelectCourseNodeRow parent;
 	
+	private boolean selected;
+	
 	public SelectCourseNodeRow(CourseEditorTreeNode editorCourseNode, SelectCourseNodeRow parent, int recursionLevel) {
 		this.editorCourseNode = editorCourseNode;
 		courseNode = editorCourseNode.getCourseNode();
@@ -45,6 +47,14 @@ public class SelectCourseNodeRow implements FlexiTreeTableNode, IndentedCourseNo
 		this.recursionLevel = recursionLevel;
 	}
 	
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+
 	@Override
 	public String getShortTitle() {
 		return courseNode.getShortTitle();

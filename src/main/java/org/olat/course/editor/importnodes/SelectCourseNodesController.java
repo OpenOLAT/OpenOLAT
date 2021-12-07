@@ -90,7 +90,7 @@ public class SelectCourseNodesController extends StepFormBasicController {
 		dataModel = new SelectCourseNodesTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableMessageKey("table.empty");
-		tableEl.setMultiSelect(true);
+		tableEl.setSelection(true, true, true);
 		tableEl.setSelectAllEnable(true);	
 	}
 	
@@ -159,11 +159,9 @@ public class SelectCourseNodesController extends StepFormBasicController {
 		Map<String,ImportCourseNode> currentNodesMap = currentNodesList.stream()
 				.collect(Collectors.toMap(ImportCourseNode::getIdent, n -> n));
 		
-		Set<SelectCourseNodeRow> selectedRows = tableEl.getMultiSelectedIndex()
-				.stream()
-				.map(index -> dataModel.getObject(index.intValue()))
-				.collect(Collectors.toSet());
-
+		List<SelectCourseNodeRow> selectedList = dataModel.getSelectedTreeNodes();
+		Set<SelectCourseNodeRow> selectedRows = Set.copyOf(selectedList);
+		
 		List<SelectCourseNodeRow> rows = dataModel.getAllRows();
 		List<ImportCourseNode> nodes = new ArrayList<>(rows.size());
 		for(SelectCourseNodeRow row:rows) {
@@ -184,13 +182,16 @@ public class SelectCourseNodesController extends StepFormBasicController {
 		Set<Integer> newIndexes = new HashSet<>(indexes);
 		
 		SelectCourseNodeRow selectedNode = dataModel.getObject(index);
+		selectedNode.setSelected(checked);
 		for(int i=index+1; i<dataModel.getRowCount(); i++) {
-			if(hasParent(dataModel.getObject(i), selectedNode)) {
+			SelectCourseNodeRow row = dataModel.getObject(i);
+			if(hasParent(row, selectedNode)) {
 				if(checked) {
 					newIndexes.add(Integer.valueOf(i));
 				} else {
 					newIndexes.remove(Integer.valueOf(i));
 				}
+				row.setSelected(checked);
 			} else {
 				break;
 			}

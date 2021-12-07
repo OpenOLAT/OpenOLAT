@@ -22,11 +22,13 @@ package org.olat.course.editor.importnodes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSelectionDelegate;
 import org.olat.course.nodes.CourseNodeFactory;
 
 /**
@@ -35,7 +37,8 @@ import org.olat.course.nodes.CourseNodeFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectCourseNodesTableModel extends DefaultFlexiTreeTableDataModel<SelectCourseNodeRow> {
+public class SelectCourseNodesTableModel extends DefaultFlexiTreeTableDataModel<SelectCourseNodeRow>
+	implements FlexiTableSelectionDelegate<SelectCourseNodeRow> {
 	
 	private static final SelectCols[] COLS = SelectCols.values();
 	
@@ -83,6 +86,13 @@ public class SelectCourseNodesTableModel extends DefaultFlexiTreeTableDataModel<
 				.getLinkText(locale);
 	}
 	
+	@Override
+	public List<SelectCourseNodeRow> getSelectedTreeNodes() {
+		return backupRows.stream()
+				.filter(SelectCourseNodeRow::isSelected)
+				.collect(Collectors.toList());
+	}
+
 	public List<SelectCourseNodeRow> getAllRows() {
 		return new ArrayList<>(backupRows);
 	}

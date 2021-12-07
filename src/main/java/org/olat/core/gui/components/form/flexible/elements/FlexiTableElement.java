@@ -135,7 +135,7 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 */
 	public void setMultiSelect(boolean enable);
 	
-	public void setSelection(boolean enabled, boolean multiSelection);
+	public void setSelection(boolean enabled, boolean multiSelection, boolean rowSelection);
 	
 	/**
 	 * 

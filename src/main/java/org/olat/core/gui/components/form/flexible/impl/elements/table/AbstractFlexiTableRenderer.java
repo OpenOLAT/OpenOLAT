@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl.SelectionMode;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -288,7 +289,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		// num. of entries
 		if(!empty && ftE.isNumOfRowsEnabled()) {
 			sb.append(" <span>");
-			int rowCount = ftE.getTableDataModel().getRowCount();
+			int rowCount = ftE.getTreeTableDataModel() == null
+					? ftE.getTableDataModel().getRowCount() : ftE.getTreeTableDataModel().getTotalNodesCount();
 			if(rowCount == 1) {
 				sb.append(rowCount).append(" ").append(ftE.getTranslator().translate("table.entry"));
 			} else if(rowCount > 1) {
@@ -544,16 +546,16 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	
 	protected void renderBulkActions(Renderer renderer, StringOutput sb, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
-		if(!hasVisibleBulkActions(ftC)) return;
+		if(!hasVisibleBulkActions(ftC) && ftC.getFlexiTableElement().getSelectionMode() != SelectionMode.multi) return;
 		
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		List<FormItem> items = ftE.getBatchButtons();
 		int numOf = ftE.getNumOfMultiSelectedIndex();
 		String entryI18n;
 		if(numOf <= 1) {
-			entryI18n = translator.translate("number.selected.entry", new String[] { Integer.toString(numOf) });
+			entryI18n = translator.translate("number.selected.entry", Integer.toString(numOf));
 		} else {
-			entryI18n = translator.translate("number.selected.entries", new String[] { Integer.toString(numOf) });
+			entryI18n = translator.translate("number.selected.entries", Integer.toString(numOf));
 		}
 		
 		String dispatchId = ftE.getFormDispatchId();	

@@ -315,12 +315,23 @@ public class ConfigurationFilesController extends StepFormBasicController {
 	
 	private void doSelect(int index) {
 		ConfigurationFileRow fileRow = dataModel.getObject(index);
-		fileRow.setSelected(true);
+		setSelectionRecursive(fileRow, true);
 	}
 	
 	private void doUnselect(int index) {
 		ConfigurationFileRow fileRow = dataModel.getObject(index);
 		fileRow.setSelected(false);
+	}
+	
+	private void setSelectionRecursive(ConfigurationFileRow fileRow, boolean selected) {
+		fileRow.setSelected(selected);
+		
+		List<ConfigurationFileRow> children = fileRow.getChildren();
+		if(children != null && !children.isEmpty()) {
+			for(ConfigurationFileRow child:children) {
+				setSelectionRecursive(child, selected);
+			}
+		}
 	}
 	
 	private void recalculateSelection() {
@@ -378,8 +389,10 @@ public class ConfigurationFilesController extends StepFormBasicController {
 			if(parent != null) {
 				ImportCourseFile file = map.get(row);
 				ImportCourseFile parentFile = map.get(parent);
-				file.setParent(parentFile);
-				parentFile.getChildren().add(file);
+				if(parentFile != null) {
+					file.setParent(parentFile);
+					parentFile.getChildren().add(file);
+				}
 			}	
 		}
 		

@@ -19,26 +19,17 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import java.util.List;
 
 /**
- * This event is fired when the next primary action button in the empty table
- * state has been clicked
  * 
- * Initial date: 08.04.2021<br>
  * 
- * @author gnaegi, Florian Gnägi @frentix.com, https://www.frentix.com
+ * Initial date: 6 déc. 2021<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FlexiTableEmptyNextPrimaryActionEvent extends FormEvent {
-
-	private static final long serialVersionUID = 1506734364410290088L;
+public interface FlexiTableSelectionDelegate<T> {
 	
-	public static final String NEXT_PRIMARY_ACTION = "next-primary-action";
-
-	protected FlexiTableEmptyNextPrimaryActionEvent(FormItem source) {
-		super(NEXT_PRIMARY_ACTION, source, FormEvent.ONCLICK);
-	}
+	public List<T> getSelectedTreeNodes();
 
 }

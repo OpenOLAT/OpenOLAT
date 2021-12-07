@@ -32,6 +32,7 @@ public abstract class AbstractConfigurationRow implements FlexiTreeTableNode {
 	private final AbstractConfigurationRow parent;
 	
 	private String message;
+	private boolean selected;
 
 	protected AbstractConfigurationRow(AbstractConfigurationRow parent) {
 		this.parent = parent;
@@ -53,5 +54,13 @@ public abstract class AbstractConfigurationRow implements FlexiTreeTableNode {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
 	}
 }

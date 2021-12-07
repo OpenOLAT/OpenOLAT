@@ -20,11 +20,13 @@
 package org.olat.course.editor.importnodes;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSelectionDelegate;
 
 /**
  * 
@@ -32,7 +34,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ConfigurationCourseNodesTableModel extends DefaultFlexiTreeTableDataModel<ConfigurationCourseNodeRow> {
+public class ConfigurationCourseNodesTableModel extends DefaultFlexiTreeTableDataModel<ConfigurationCourseNodeRow>
+	implements FlexiTableSelectionDelegate<ConfigurationCourseNodeRow> {
 	
 	private static final ConfigurationCols[] COLS = ConfigurationCols.values();
 	
@@ -64,6 +67,13 @@ public class ConfigurationCourseNodesTableModel extends DefaultFlexiTreeTableDat
 		return numOfChildren > 0;
 	}
 	
+	@Override
+	public List<ConfigurationCourseNodeRow> getSelectedTreeNodes() {
+		return getObjects().stream()
+				.filter(ConfigurationCourseNodeRow::isSelected)
+				.collect(Collectors.toList());
+	}
+
 	public enum ConfigurationCols implements FlexiColumnDef {
 		node("table.header.node"),
 		resource("table.header.resource"),

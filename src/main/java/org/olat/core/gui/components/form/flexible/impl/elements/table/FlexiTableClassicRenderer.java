@@ -282,9 +282,17 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		if(ftE.isMultiSelectedIndex(row)) {
 			target.append(" o_row_selected");				
 		}
-		target.append("'>");
-			
+		target.append("'");
+
 		SelectionMode selectionMode = ftE.getSelectionMode();
+		if(selectionMode == SelectionMode.multi && ftE.isRowSelectionEnabled()) {
+			target.append(" onclick=\"o_ffTableToggleRowListener('").append(rowIdPrefix).append(row).append("','o_row_selected');")
+		          .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
+		    		  new NameValuePair("chkbox", Integer.toString(row))))
+			     .append(";\"");	
+		}
+		target.append(">");
+			
 		if(selectionMode != null && selectionMode != SelectionMode.disabled) {
 			final String selectionType;
 			if(selectionMode == SelectionMode.single) {
@@ -294,7 +302,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			}
 			target.append("<td class='").append("o_singleselect", "o_multiselect", selectionMode == SelectionMode.single).append(" o_col_sticky_left'>")
 			      .append("<input type='").append(selectionType).append("' name='tb_ms' value='").append(rowIdPrefix).append(row).append("'")
-			      .append(" onclick=\"javascript:o_ffTableToggleRowCheck('").append(rowIdPrefix).append(row).append("','o_row_selected');")
+			      .append(" onclick=\"o_ffTableToggleRowCheck('").append(rowIdPrefix).append(row).append("','o_row_selected');")
 			      .append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
 			    		  new NameValuePair("chkbox", Integer.toString(row))))
 				  .append(";\"");	 

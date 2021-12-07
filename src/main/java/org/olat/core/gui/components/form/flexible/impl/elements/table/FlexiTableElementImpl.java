@@ -108,6 +108,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	
 	//settings
 	private SelectionMode multiSelect = SelectionMode.disabled;
+	private boolean rowSelection = false;
 	private FlexiTableRendererType rendererType = FlexiTableRendererType.classic;
 	private FlexiTableRendererType[] availableRendererType = new FlexiTableRendererType[] {
 		FlexiTableRendererType.classic
@@ -335,18 +336,23 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		return multiSelect;
 	}
 	
+	public boolean isRowSelectionEnabled() {
+		return rowSelection;
+	}
+	
 	@Override
 	public void setMultiSelect(boolean multiSelect) {
 		this.multiSelect = multiSelect ? SelectionMode.multi : SelectionMode.disabled;
 	}
 
 	@Override
-	public void setSelection(boolean enabled, boolean multiSelection) {
+	public void setSelection(boolean enabled, boolean multiSelection, boolean rowSelection) {
 		if(enabled) {
 			multiSelect = multiSelection ? SelectionMode.multi : SelectionMode.single;
 		} else {
 			multiSelect = SelectionMode.disabled;
 		}
+		this.rowSelection = rowSelection;
 	}
 
 	@Override
@@ -1168,11 +1174,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(StringHelper.containsNonWhitespace(removeFilter)) {
 			doFilter(ureq, null);
 		} else if(StringHelper.isLong(treeTableFocus)) {
-			doFocus(Integer.parseInt(treeTableFocus));
+			doTreeFocus(Integer.parseInt(treeTableFocus));
 		} else if(StringHelper.isLong(treeTableOpen)) {
-			doOpen(Integer.parseInt(treeTableOpen));
+			doTreeOpen(Integer.parseInt(treeTableOpen));
 		} else if(StringHelper.isLong(treeTableClose)) {
-			doClose(Integer.parseInt(treeTableClose));
+			doTreeClose(Integer.parseInt(treeTableClose));
 		} else if(StringHelper.containsNonWhitespace(crumb)) {
 			doCrumb(crumb);
 		} else if(StringHelper.containsNonWhitespace(openCloseAll)) {
@@ -1533,7 +1539,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				getQuickSearchString(), getFilters(), FormEvent.ONCLICK));
 	}
 	
-	private void doFocus(int row) {
+	private void doTreeFocus(int row) {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			FlexiTreeTableNode node = ((FlexiTreeTableDataModel<?>)dataModel).getObject(row);
 			crumbs = new ArrayList<>();
@@ -1546,17 +1552,37 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 	
-	private void doOpen(int row) {
+	private void doTreeOpen(int row) {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			((FlexiTreeTableDataModel<?>)dataModel).open(row);
-			resetInternComponents();
+			updateTreeInternComponents();
 		}
 	}
 	
-	private void doClose(int row) {
+	private void doTreeClose(int row) {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			((FlexiTreeTableDataModel<?>)dataModel).close(row);
-			resetInternComponents();
+			updateTreeInternComponents();
+		}
+	}
+	
+	private void updateTreeInternComponents() {
+		rowCount = dataModel.getRowCount();
+		component.setDirty(true);
+		detailsIndex = null;
+
+		if(multiSelectedIndex != null && dataModel instanceof FlexiTableSelectionDelegate) {
+			FlexiTableSelectionDelegate<?> treeModel = (FlexiTableSelectionDelegate<?>)dataModel;
+			List<?> nodes = treeModel.getSelectedTreeNodes();
+			Set<?> nodeSet = new HashSet<>(nodes);
+
+			multiSelectedIndex.clear();
+			for(int i=0; i<rowCount; i++) {
+				if(nodeSet.contains(dataModel.getObject(i))) {
+					multiSelectedIndex.put(Integer.valueOf(i), dataModel.getObject(i));
+				}
+			}
+			allSelectedNeedLoadOfWholeModel = false;
 		}
 	}
 	
@@ -1947,11 +1973,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			
 			String selectedEntriesInfo;
 			if(selectCount <= 1) {
-				selectedEntriesInfo = translator.translate("number.selected.entry",
-						new String[] { Integer.toString(selectCount) });
+				selectedEntriesInfo = translator.translate("number.selected.entry", Integer.toString(selectCount));
 			} else {
-				selectedEntriesInfo = translator.translate("number.selected.entries",
-						new String[] { Integer.toString(selectCount) });
+				selectedEntriesInfo = translator.translate("number.selected.entries", Integer.toString(selectCount));
 			}
 			
 			StringBuilder sb = new StringBuilder();
@@ -2203,31 +2227,6 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		} catch (NumberFormatException e) {
 			//can happen
-		}
-		updateSelectAllToggle();
-	}
-	
-	protected void setMultiSelectIndex(String[] selections) {
-		if(multiSelectedIndex == null) {
-			multiSelectedIndex = new HashMap<>();
-		}
-		// selection format row_{formDispId}-{index}
-		if(selections != null && selections.length > 0) {
-			int firstIndex = getPageSize() * getPage();
-			int lastResult = firstIndex + getPageSize() -1;
-			for(int i=firstIndex; i<lastResult; i++) {
-				multiSelectedIndex.remove(Integer.valueOf(i));
-			}
-
-			for(String selection:selections) {	
-				int index = selection.lastIndexOf('-');
-				if(index > 0 && index+1 < selection.length()) {
-					String rowStr = selection.substring(index+1);
-					int row = Integer.parseInt(rowStr);
-					Object objectRow = dataModel.getObject(row);
-					multiSelectedIndex.put(Integer.valueOf(row), objectRow);
-				}
-			}
 		}
 		updateSelectAllToggle();
 	}

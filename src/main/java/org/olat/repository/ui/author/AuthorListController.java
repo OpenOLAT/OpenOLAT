@@ -527,7 +527,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setShowAllRowsEnabled(true);
 		if(configuration.isSelectRepositoryEntries()) {
-			tableEl.setSelection(true, configuration.getSelectRepositoryEntries() == SelectionMode.multi);
+			tableEl.setSelection(true, configuration.getSelectRepositoryEntries() == SelectionMode.multi, false);
 		} else {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
@@ -1117,11 +1117,20 @@ public class AuthorListController extends FormBasicController implements Activat
 			reloadRows();
 		}
 	}
+	
 	protected void reloadRows() {
 		tableEl.deselectAll();
 		tableEl.reloadData();
 		dirtyRows.clear();
 		flc.setDirty(true);
+	}
+	
+	public void setSelectedRow(AuthoringEntryRow row) {
+		int index = model.getIndexOfObject(row);
+		if(index >= 0) {
+			tableEl.setMultiSelectedIndex(Set.of(Integer.valueOf(index)));
+			flc.setDirty(true);
+		}
 	}
 
 	private void doOpenTools(UserRequest ureq, AuthoringEntryRow row, FormLink link) {

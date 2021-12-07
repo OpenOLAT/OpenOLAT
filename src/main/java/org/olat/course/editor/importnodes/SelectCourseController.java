@@ -90,10 +90,8 @@ public class SelectCourseController extends StepFormBasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (event instanceof AuthoringEntryRowSelectionEvent) {
-			AuthoringEntryRow row = ((AuthoringEntryRowSelectionEvent)event).getRow();
-			RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
-			importCourseContext.setEntry(entry);
-			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+			AuthoringEntryRowSelectionEvent aerse = (AuthoringEntryRowSelectionEvent)event;
+			listCtrl.setSelectedRow(aerse.getRow());
 		}
 		super.event(ureq, source, event);
 	}
