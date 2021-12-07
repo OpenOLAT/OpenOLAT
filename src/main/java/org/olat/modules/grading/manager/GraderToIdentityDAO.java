@@ -21,7 +21,12 @@ package org.olat.modules.grading.manager;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.FlushModeType;
@@ -292,7 +297,7 @@ public class GraderToIdentityDAO {
 	
 	public List<IdentityTimeRecordStatistics> findGradersRecordedTimeGroupByIdentity(GradersSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select ident.key, sum(record.time), sum(record.metadataTime)")
+		sb.append("select ident.key, record.time, record.metadataTime, record.assignment.key")
 		  .append(" from gradingtimerecord as record ")
 		  .append(" inner join record.grader as rel")
 		  .append(" inner join rel.identity as ident");
@@ -319,22 +324,61 @@ public class GraderToIdentityDAO {
 		} else if(searchParams.getClosedToDate() != null) {
 			sb.and().append("assignment.closingDate<=:closedToDate");
 		}
-		
-		sb.append(" group by ident.key");
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class);
 		applyGradersSearchParameters(query, searchParams, true);
 		
 		List<Object[]> rawObjects = query.getResultList();
-		List<IdentityTimeRecordStatistics> records = new ArrayList<>(rawObjects.size());
+		Map<Long,IdentityTimeRecordStatistics> records = new HashMap<>(rawObjects.size());
+		
+		Set<IdentityAssignmentKey> assignmentsSet = new HashSet<>();
+		
 		for(Object[] objects:rawObjects) {
 			Long identityKey = (Long)objects[0];
 			long time = PersistenceHelper.extractPrimitiveLong(objects, 1);
 			long metadataTime = PersistenceHelper.extractPrimitiveLong(objects, 2);
-			records.add(new IdentityTimeRecordStatistics(identityKey, time, metadataTime));
+			Long assignmentKey = PersistenceHelper.extractPrimitiveLong(objects, 3);
+			
+			IdentityTimeRecordStatistics stats = records
+					.computeIfAbsent(identityKey, idKey -> new IdentityTimeRecordStatistics(identityKey));
+			stats.addTime(time);
+			
+			IdentityAssignmentKey key = new IdentityAssignmentKey(assignmentKey, identityKey);
+			if(!assignmentsSet.contains(key)) {
+				stats.addMetadataTime(metadataTime);
+				assignmentsSet.add(key);
+			}
 		}
-		return records;
+		return new ArrayList<>(records.values());
+	}
+	
+	private static class IdentityAssignmentKey {
+		
+		private final Long assignmentKey;
+		private final Long identityKey;
+		
+		public IdentityAssignmentKey(Long assignmentKey, Long identityKey) {
+			this.assignmentKey = assignmentKey;
+			this.identityKey = identityKey;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(assignmentKey, identityKey);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj instanceof IdentityAssignmentKey) {
+				IdentityAssignmentKey other = (IdentityAssignmentKey) obj;
+				return Objects.equals(assignmentKey, other.assignmentKey) && Objects.equals(identityKey, other.identityKey);
+			}
+			return false;
+		}
 	}
 	
 	public List<GraderToIdentity> findGradersWithAssignmentInAbsenceLeave(Date date) {

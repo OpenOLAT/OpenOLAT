@@ -147,8 +147,8 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 					   .append(" onchange=\"b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload)\"");
 				 }
 				 // Add pseudo focus marker on fake file chooser button
-				 sb.append(" onfocus=\"this.form.fake_").append(id).append(".nextSibling.style.border = '1px dotted black';\"")
-				   .append(" onblur=\"this.form.fake_").append(id).append(".nextSibling.style.border = '0';\"");
+				 sb.append(" onfocus=\"try{ this.form.fake_").append(id).append(".nextSibling.style.border = '1px dotted black'; } catch(e) {} \"")
+				   .append(" onblur=\"try { this.form.fake_").append(id).append(".nextSibling.style.border = '0'; } catch(e) {}\"");
 				 // Add select text (hover)
 				 sb.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");
 			}

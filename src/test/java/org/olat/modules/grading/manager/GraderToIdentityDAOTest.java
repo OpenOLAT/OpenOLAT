@@ -657,6 +657,55 @@ public class GraderToIdentityDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findGradersRecordedTimeGroupByIdentity_metatime() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-28");
+		Identity graderId = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-29");
+		Identity student1 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-30");
+		Identity student2 = JunitTestHelper.createAndPersistIdentityAsRndUser("graded-31");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry assessment1 = assessmentEntryDao
+				.createAssessmentEntry(student1, null, entry, null, Boolean.TRUE, entry);
+		AssessmentEntry assessment2 = assessmentEntryDao
+				.createAssessmentEntry(student2, null, entry, null, Boolean.TRUE, entry);
+		
+		GraderToIdentity relation = gradedToIdentityDao.createRelation(entry, graderId);
+		GradingAssignment assignment1 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment1, null, null);
+		GradingAssignment assignment2 = gradingAssignmentDao.createGradingAssignment(relation, entry, assessment2, null, null);
+		dbInstance.commit();
+		
+		// record 3 is off
+		GradingTimeRecord record1 = gradingTimeRecordDao.createRecord(relation, assignment1, new Date());
+		record1.setMetadataTime(900l);
+		record1 = gradingTimeRecordDao.updateTimeRecord(record1);
+		
+		GradingTimeRecord record1b = gradingTimeRecordDao.createRecord(relation, assignment1, new Date());
+		record1b.setMetadataTime(900l);
+		record1b = gradingTimeRecordDao.updateTimeRecord(record1b);
+		
+		GradingTimeRecord record2 = gradingTimeRecordDao.createRecord(relation, assignment2, new Date());
+		record2.setMetadataTime(900l);
+		record2 = gradingTimeRecordDao.updateTimeRecord(record2);
+		dbInstance.commit();
+		
+		gradingTimeRecordDao.appendTimeInSeconds(record1, 120l);
+		gradingTimeRecordDao.appendTimeInSeconds(record1, 25l);
+		gradingTimeRecordDao.appendTimeInSeconds(record2, 1300l);
+		dbInstance.commit();
+		
+		GradersSearchParameters searchParams = new GradersSearchParameters();
+		searchParams.setReferenceEntry(entry);
+		List<IdentityTimeRecordStatistics> statistics = gradedToIdentityDao.findGradersRecordedTimeGroupByIdentity(searchParams);
+		Assert.assertNotNull(statistics);
+		Assert.assertEquals(1, statistics.size());
+		
+		IdentityTimeRecordStatistics stats = statistics.get(0);
+		Assert.assertEquals(1445l, stats.getTime());
+		Assert.assertEquals(1800, stats.getMetadataTime());
+	}
+	
+	@Test
 	public void findGradersRecordedTimeGroupByEntry_checkDates() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-32");
 		Identity graderId = JunitTestHelper.createAndPersistIdentityAsRndUser("grader-33");
