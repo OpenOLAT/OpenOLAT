@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlsite.OlatCmdEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
@@ -39,6 +40,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.ui.tool.AssessmentModeOverviewListController;
+import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -132,12 +134,23 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			doOpenParticipants(ureq);
 			segmentView.select(participantsLink);
 		} else if(ORES_TYPE_ASSESSMENT_MODE.equalsIgnoreCase(type) && assessmentModeLink != null) {
-			doOpenAssessmentMode();
+			doOpenAssessmentMode(ureq);
 			segmentView.select(assessmentModeLink);
 		} else if(ORES_TYPE_PREVIEW.equalsIgnoreCase(type)) {
 			doOpenPreview(ureq);
 			segmentView.select(previewLink);
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(assessmentModeCtrl == source) {
+			if(event instanceof CourseNodeEvent) {
+				CourseNodeEvent cne = (CourseNodeEvent)event;
+				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, cne.getIdent()));
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -150,7 +163,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 				if (clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if (clickedLink == assessmentModeLink) {
-					doOpenAssessmentMode();
+					doOpenAssessmentMode(ureq);
 				} else if (clickedLink == previewLink) {
 					doOpenPreview(ureq);
 				}
@@ -170,10 +183,15 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		participantsCtrl = new IQTESTCoachIdentitiesController(ureq, swControl, userCourseEnv, courseNode, assessmentCallback);
 		listenTo(participantsCtrl);
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
+		addToHistory(ureq, participantsCtrl);
 	}
 	
-	private void doOpenAssessmentMode() {
-		mainVC.put("segmentCmp", assessmentModeCtrl.getInitialComponent());
+	private void doOpenAssessmentMode(UserRequest ureq) {
+		if (assessmentModeLink != null) {
+			assessmentModeCtrl.loadModel();
+			mainVC.put("segmentCmp", assessmentModeCtrl.getInitialComponent());
+			addToHistory(ureq, assessmentModeCtrl);
+		}
 	}
 	
 	private void doOpenPreview(UserRequest ureq) {
@@ -183,6 +201,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		previewCtrl = new QTI21AssessmentRunController(ureq, swControl, userCourseEnv, courseNode);
 		listenTo(previewCtrl);
 		mainVC.put("segmentCmp", previewCtrl.getInitialComponent());
+		addToHistory(ureq, previewCtrl);
 	}
 	
 }
