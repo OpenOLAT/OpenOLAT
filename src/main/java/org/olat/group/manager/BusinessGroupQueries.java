@@ -440,7 +440,7 @@ public class BusinessGroupQueries {
 			  .append(" inner join ownerMember.identity as ownerIdentity")
 			  .append(" inner join ownerIdentity.user as ownerUser")
 			//query the name in login, firstName and lastName
-			  .append(" where (");
+			  .and().append(" (");
 			searchLikeOwnerUserProperty(sb, "firstName", "owner");
 			sb.append(" or ");
 			searchLikeOwnerUserProperty(sb, "lastName", "owner");
