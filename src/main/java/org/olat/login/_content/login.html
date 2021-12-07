@@ -40,12 +40,14 @@
 			<div class="o_login_providers" role="navigation">
 				<div class="btn-group btn-group-lg btn-group-justified">
 				#foreach ($authProvider in $providerSet)
-					<a $r.hrefAndOnclick("login",true,true,"lp","$authProvider.getName()") title="$r.escapeHtml("$authProvider.getDescription($locale)")" class="btn btn-default #if ($currentProvider == $authProvider.getName()) btn-primary #end ">
+					<a $r.hrefAndOnclick("login",true,true,"lp","$authProvider.getName()") title="$r.escapeHtml("$authProvider.getDescription($locale)")" class="btn btn-default #if ($currentProvider == $authProvider.getName()) btn-primary #end">
 						<i class="o_icon o_icon-2x $authProvider.getIconCssClass()"></i><span>$authProvider.getLinktext($locale)</span>
 					</a>
 				#end
-				#if ($r.available("menu.guest"))
-					$r.render("menu.guest")
+				#if ($r.isTrue($guestLogin))
+					<a $r.hrefAndOnclick("login",true,true,"lp","guest") title="$r.translate("menu.guest.alt")" class="btn btn-default">
+						<i class="o_icon o_icon-2x o_icon_provider_guest"></i><span>$r.translate("menu.guest")</span>
+					</a>
 				#end
 				</div>
 			</div>
