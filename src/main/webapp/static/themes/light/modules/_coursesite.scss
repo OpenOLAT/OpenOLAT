@@ -111,8 +111,9 @@
 				}
 				
 				.o_author{
-					display: inline;
+					display: inline-block;
 					font-size: 85%;
+					max-width: 100%;
 					@include text-overflow();
 					color: $o-coursesite-meta-author-color;
 				}
@@ -142,6 +143,10 @@
 					color: $text-muted;
 					font-size: 85%;
 					vertical-align: text-bottom;
+
+					@include text-overflow();					
+					width: 98%;
+					
 					.o_taxonomy {
 						font-size: 82%;
 					}
