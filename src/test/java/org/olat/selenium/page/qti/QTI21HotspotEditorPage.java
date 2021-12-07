@@ -60,6 +60,10 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		WebElement correctCheckboxEl = browser.findElement(correctCheckboxBy);
 		OOGraphene.check(correctCheckboxEl, Boolean.valueOf(correct));
 		OOGraphene.waitBusy(browser);
+		if(correct) {
+			By setCorrectBy = By.xpath("//div[contains(@class,'o_qti_hotspot_correct')]/span[@class='o_qti_hotspot_label'][text()[contains(.,'" + indexName + "')]]");
+			OOGraphene.waitElement(setCorrectBy, browser);
+		}
 		return this;
 	}
 	
@@ -143,24 +147,36 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 
 	public QTI21HotspotEditorPage save() {
-		By saveBy = By.cssSelector("div.o_sel_hotspots_save button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.o_sel_hotspots_save>button.btn.btn-primary");
 		OOGraphene.moveAndClick(saveBy, browser);
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitingLong();
 		// waits are needed for chrome on our test server
 		OOGraphene.waitTinymce(browser);
 		OOGraphene.scrollTop(browser);
-		OOGraphene.waitingTooLong();
+		OOGraphene.waitingLong();
 		return this;
 	}
 	
 	public QTI21HotspotScoreEditorPage selectScores() {
 		try {
-			selectTabSlowly(By.className("o_sel_assessment_item_options"));
-			return new QTI21HotspotScoreEditorPage(browser);
+			By tabLinkBy = By.xpath("//ul[contains(@class,'o_sel_assessment_item_config')]/li[2]/a");
+			OOGraphene.waitElementSlowly(tabLinkBy, 5, browser);
+			browser.findElement(tabLinkBy).click();
+			OOGraphene.waitElement(By.className("o_sel_assessment_item_options"), browser);
 		} catch (Exception e) {
-			OOGraphene.takeScreenshot("Select scores", browser);
-			throw e;
+			try {
+				OOGraphene.waitingLong();
+				By tabLinkBy = By.xpath("//ul[contains(@class,'o_sel_assessment_item_config')]/li[2]/a");
+				OOGraphene.waitElementSlowly(tabLinkBy, 5, browser);
+				browser.findElement(tabLinkBy).click();
+				OOGraphene.waitElement(By.className("o_sel_assessment_item_options"), browser);
+			} catch (Exception e1) {
+				OOGraphene.takeScreenshot("Select scores", browser);
+				throw e1;
+			}
 		}
+		return new QTI21HotspotScoreEditorPage(browser);
 	}
 	
 	public QTI21FeedbacksEditorPage selectFeedbacks() {

@@ -30,13 +30,11 @@ import org.olat.basesecurity.IdentityRef;
 public class IdentityTimeRecordStatistics implements IdentityRef {
 
 	private final Long identityKey;
-	private final long time;
-	private final long metadataTime;
+	private long time = 0l;
+	private long metadataTime = 0l;
 	
-	public IdentityTimeRecordStatistics(Long identityKey, long time, long metadataTime) {
+	public IdentityTimeRecordStatistics(Long identityKey) {
 		this.identityKey = identityKey;
-		this.time = time;
-		this.metadataTime = metadataTime;
 	}
 	
 	@Override
@@ -48,8 +46,16 @@ public class IdentityTimeRecordStatistics implements IdentityRef {
 		return time;
 	}
 	
+	public void addTime(long timeToAdd) {
+		time += timeToAdd;
+	}
+	
 	public long getMetadataTime() {
 		return metadataTime;
+	}
+	
+	public void addMetadataTime(long timeToAdd) {
+		metadataTime += timeToAdd;
 	}
 	
 	@Override

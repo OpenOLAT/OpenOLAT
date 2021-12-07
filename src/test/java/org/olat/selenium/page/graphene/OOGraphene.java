@@ -607,6 +607,13 @@ public class OOGraphene {
 	}
 	
 	/**
+	 * Wait 2 seconds.
+	 */
+	public static final void waitingLong() {
+		waiting(2000);
+	}
+	
+	/**
 	 * Wait 5 seconds. Only use it if you lose all hopes.
 	 */
 	public static final void waitingTooLong() {

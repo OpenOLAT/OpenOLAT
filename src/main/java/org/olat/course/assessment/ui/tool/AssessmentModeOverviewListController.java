@@ -165,7 +165,7 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		return cmps;
 	}
 
-	protected void loadModel() {
+	public void loadModel() {
 		Date today = CalendarUtils.removeTime(new Date());
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, 5);

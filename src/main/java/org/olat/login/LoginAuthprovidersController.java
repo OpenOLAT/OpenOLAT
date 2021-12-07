@@ -39,8 +39,6 @@ import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -81,7 +79,6 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 	private VelocityContainer content;
 	private Controller authController;
 	private final List<Controller> authControllers = new ArrayList<>();
-	private Link anoLink;
 	private StackedPanel dmzPanel;
 	
 	@Autowired
@@ -215,49 +212,48 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		if(AuthHelper.isLoginBlocked()) {
 			contentBorn.contextPut("loginBlocked", Boolean.TRUE);
 		}
-
-		// guest link
-		if (loginModule.isGuestLoginEnabled()) {
-			anoLink = LinkFactory.createButton("menu.guest", contentBorn, this);
-			anoLink.setIconLeftCSS("o_icon o_icon-2x o_icon_provider_guest");
-			anoLink.setTitle("menu.guest.alt");
-			anoLink.setEnabled(!AuthHelper.isLoginBlocked());
-		}
-
 		
+		// guest link
+		contentBorn.contextPut("guestLogin", Boolean.valueOf(loginModule.isGuestLoginEnabled()));
 		return contentBorn;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		 if (source == anoLink) {
-			if (loginModule.isGuestLoginEnabled()) {				
-				int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
-				if (loginStatus == AuthHelper.LOGIN_OK) {
-					//
-				} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
-					DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
-				} else if(loginStatus == AuthHelper.LOGIN_DENIED) {
-					getWindowControl().setError(translate("error.guest.login", WebappHelper.getMailConfig("mailSupport")));
-				} else {
-					getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
-				}	
-			} else {
-				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
-			}
-		} else if (event.getCommand().equals(ACTION_LOGIN)) { 
+		if (event.getCommand().equals(ACTION_LOGIN)) { 
 			// show traditional login page
 			String loginProvider = ureq.getParameter(ATTR_LOGIN_PROVIDER);
-			AuthenticationProvider authProvider = loginModule.getAuthenticationProvider(loginProvider);
-			if (authProvider != null) {
-				dmzPanel.popContent();
-				content = initLoginContent(ureq, loginProvider);
-				dmzPanel.pushContent(content);
-				
-				OLATResourceable ores = OresHelper.createOLATResourceableInstance(loginProvider, 0l);
-				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				addToHistory(ureq, bwControl);
+			if("guest".equalsIgnoreCase(loginProvider)) {
+				doGuestLogin(ureq);
+			} else {
+				AuthenticationProvider authProvider = loginModule.getAuthenticationProvider(loginProvider);
+				if (authProvider != null) {
+					dmzPanel.popContent();
+					content = initLoginContent(ureq, loginProvider);
+					dmzPanel.pushContent(content);
+					
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance(loginProvider, 0l);
+					WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+					addToHistory(ureq, bwControl);
+				}
 			}
+		}
+	}
+	
+	private void doGuestLogin(UserRequest ureq) {
+		if (loginModule.isGuestLoginEnabled()) {				
+			int loginStatus = AuthHelper.doAnonymousLogin(ureq, ureq.getLocale());
+			if (loginStatus == AuthHelper.LOGIN_OK) {
+				//
+			} else if (loginStatus == AuthHelper.LOGIN_NOTAVAILABLE) {
+				DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
+			} else if(loginStatus == AuthHelper.LOGIN_DENIED) {
+				getWindowControl().setError(translate("error.guest.login", WebappHelper.getMailConfig("mailSupport")));
+			} else {
+				getWindowControl().setError(translate("login.error", WebappHelper.getMailConfig("mailSupport")));
+			}	
+		} else {
+			DispatcherModule.redirectToServiceNotAvailable( ureq.getHttpResp() );
 		}
 	}
 

@@ -947,6 +947,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void doEdit(UserRequest ureq) {
 		if(!reSecurity.isEntryAdmin()) return;
+		removeAsListenerAndDispose(editorCtrl);
 		
 		WindowControl bwControl = getSubWindowControl("Editor");
 		Controller ctrl = handler.createEditorController(re, ureq, addToHistory(ureq, bwControl), toolbarPanel);
