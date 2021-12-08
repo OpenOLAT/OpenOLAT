@@ -434,8 +434,10 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			markDirty();
 		} else if (source == showExceptionalObligationLink) {
 			updateExceptionalObligationsUI(true);
+			markDirty();
 		} else if (source == hideExceptionalObligationLink) {
 			updateExceptionalObligationsUI(false);
+			markDirty();
 		} else if(relativeDatesEl == source) {
 			updateDatesUI();
 		} else if (source == triggerEl) {

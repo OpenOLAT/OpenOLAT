@@ -130,6 +130,8 @@ public class STLearningPathConfigController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
 		setFormContextHelp("Learning Path");
+		formLayout.setElementCssClass("o_lp_config_edit");
+		
 		SelectionValues sequenceKV = new SelectionValues();
 		sequenceKV.add(SelectionValues.entry(STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_SEQUENTIAL, translate("config.sequence.sequential")));
 		sequenceKV.add(SelectionValues.entry(STLearningPathConfigs.CONFIG_LP_SEQUENCE_VALUE_WITHOUT, translate("config.sequence.without")));
@@ -138,20 +140,21 @@ public class STLearningPathConfigController extends FormBasicController {
 		String sequenceKey = moduleConfig.getStringValue(STLearningPathConfigs.CONFIG_LP_SEQUENCE_KEY, STLearningPathConfigs.CONFIG_LP_SEQUENCE_DEFAULT);
 		sequenceEl.select(sequenceKey, true);
 		
+		String page = Util.getPackageVelocityRoot(LearningPathNodeConfigController.class) + "/config_obligation.html";
+		obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), page);
+		obligationCont.setLabel("config.obligation", null);
+		obligationCont.setRootForm(mainForm);
+		formLayout.add(obligationCont);
+		
 		SelectionValues obligationKV = new SelectionValues();
 		obligationKV.add(entry(AssessmentObligation.evaluated.name(), translate("config.obligation.evaluated")));
 		obligationKV.add(entry(AssessmentObligation.excluded.name(), translate("config.obligation.excluded")));
-		obligationEl = uifactory.addRadiosHorizontal("config.obligation", formLayout, obligationKV.keys(), obligationKV.values());
+		obligationEl = uifactory.addRadiosHorizontal("config.obligation", obligationCont, obligationKV.keys(), obligationKV.values());
 		obligationEl.addActionListener(FormEvent.ONCHANGE);
 		String obligationKey = selectedObligation.name();
 		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
 			obligationEl.select(obligationKey, true);
 		}
-		
-		String page = Util.getPackageVelocityRoot(LearningPathNodeConfigController.class) + "/config_obligation.html";
-		obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), page);
-		obligationCont.setRootForm(mainForm);
-		formLayout.add(obligationCont);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExceptionalObligationCols.name));
@@ -199,11 +202,6 @@ public class STLearningPathConfigController extends FormBasicController {
 		obligationEl.setVisible(!showExceptional);
 		flc.setDirty(true);
 		
-		if (showExceptional) {
-			obligationCont.setLabel("config.obligation", null);
-		} else {
-			obligationCont.setLabel(null, null);
-		}
 		obligationCont.contextPut("exceptional", Boolean.valueOf(showExceptional));
 	}
 
@@ -309,8 +307,10 @@ public class STLearningPathConfigController extends FormBasicController {
 			markDirty();
 		} else if (source == showExceptionalObligationLink) {
 			updateExceptionalObligationsUI(true);
+			markDirty();
 		} else if (source == hideExceptionalObligationLink) {
 			updateExceptionalObligationsUI(false);
+			markDirty();
 		} else if (source instanceof SingleSelection) {
 			if (source.getName().startsWith("eo_")) {
 				ExceptionalObligationRow row = (ExceptionalObligationRow)source.getUserObject();
