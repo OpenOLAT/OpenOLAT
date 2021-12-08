@@ -19,6 +19,8 @@
  */
 package org.olat.modules.assessment;
 
+import java.math.BigDecimal;
+
 /**
  * 
  * Initial date: 27 Apr 2020<br>
@@ -28,5 +30,7 @@ package org.olat.modules.assessment;
 public interface AssessmentEntryScoring extends AssessmentEntryLight, AssessmentEntryCompletion {
 	
 	public Long getRepositoryEntryKey();
+	
+	public BigDecimal getMaxScore();
 	
 }

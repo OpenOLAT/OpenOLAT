@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -382,12 +383,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.map(UserEfficiencyStatementLight::getCourseRepoKey)
 				.filter(key -> key != null)
 				.collect(Collectors.toList());
-		Map<Long, Double> courseEntryKeysToCompletion = assessmentService
+		Map<Long, AssessmentEntryScoring> courseEntryKeysToScoring = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
 				.collect(Collectors.toMap(
 						AssessmentEntryScoring::getRepositoryEntryKey,
-						AssessmentEntryScoring::getCompletion
+						Function.identity()
 					));
 		
 		efficiencyStatementsList.forEach(statement -> {
@@ -502,27 +503,24 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 						parent = courseRow;
 					}
 					
-					//IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, userRoles);
-					//ICourse iCourse = CourseFactory.loadCourse(course.getOlatResource());
-					//UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, iCourse.getCourseEnvironment());
-					
-					//AssessmentEvaluation scoreEvaluation = assessedUserCourseEnv.getScoreAccounting().evaluateAll();
-					
 					for (UserEfficiencyStatementLight statement : olatResourceKeys.get(course.getOlatResource().getKey())) {
 						CertificateAndEfficiencyStatement statementRow = new CertificateAndEfficiencyStatement();
 						statementRow.setParent(parent);
 						statementRow.setDisplayName(statement.getTitle());
 						statementRow.setPassed(statement.getPassed());
-						//statementRow.setScore(statement.getScore());
 						statementRow.setEfficiencyStatementKey(statement.getKey());
 						statementRow.setResourceKey(statement.getArchivedResourceKey());
 						statementRow.setLastModified(statement.getLastModified());
 						statementRow.setLastUserModified(statement.getLastUserModified());
-						statementRow.addToScore(0f, statement.getScore(), !scoresAdded.contains(statement));
-						scoresAdded.add(statement);
-
-						Double completion = courseEntryKeysToCompletion.get(statement.getCourseRepoKey());
-						statementRow.setCompletion(completion);
+						
+						AssessmentEntryScoring scoring = courseEntryKeysToScoring.get(statement.getCourseRepoKey());
+						if (scoring != null) {
+							statementRow.addToScore(scoring.getMaxScore() != null ? scoring.getMaxScore().floatValue() : null, 
+									scoring.getScore() != null ? scoring.getScore().floatValue() : null,
+									!scoresAdded.contains(statement));
+							statementRow.setCompletion(scoring.getCompletion());
+							scoresAdded.add(statement);
+						}
 						
 						statements.add(statementRow);
 						
@@ -559,16 +557,19 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					statementRow.setParent(parent);
 					statementRow.setDisplayName(statement.getTitle());
 					statementRow.setPassed(statement.getPassed());
-					//statementRow.setScore(statement.getScore());
 					statementRow.setEfficiencyStatementKey(statement.getKey());
 					statementRow.setResourceKey(statement.getArchivedResourceKey());
 					statementRow.setLastModified(statement.getLastModified());
 					statementRow.setLastUserModified(statement.getLastUserModified());
-					statementRow.addToScore(0f, statement.getScore(), !scoresAdded.contains(statement));
-					scoresAdded.add(statement);
 
-					Double completion = courseEntryKeysToCompletion.get(statement.getCourseRepoKey());
-					statementRow.setCompletion(completion);
+					AssessmentEntryScoring scoring = courseEntryKeysToScoring.get(statement.getCourseRepoKey());
+					if (scoring != null) {
+						statementRow.addToScore(scoring.getMaxScore() != null ? scoring.getMaxScore().floatValue() : null, 
+								scoring.getScore() != null ? scoring.getScore().floatValue() : null,
+								!scoresAdded.contains(statement));
+						statementRow.setCompletion(scoring.getCompletion());
+						scoresAdded.add(statement);
+					}
 					
 					statements.add(statementRow);
 					
@@ -578,6 +579,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		}
 		
 		tableModel.setObjects(statements);
+		tableEl.setSortEnabled(false);
 		tableEl.reset(true, true, true);
 	}
 	
@@ -689,6 +691,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		tableModel.setObjects(statments);
 		tableModel.openAll();
+		tableEl.setSortEnabled(true);
 		tableEl.reset();
 	}
 

@@ -169,11 +169,24 @@ public class CertificateAndEfficiencyStatementListModel
 		}
 
 		public String getScore() {
-			if (scoreMax != null) {
-				return AssessmentHelper.getRoundedScore(score).toString() + " / " + AssessmentHelper.getRoundedScore(scoreMax).toString();
+			String returnScore = "";
+			
+			if (holdsScore) {
+				if (score != null) {
+					returnScore += AssessmentHelper.getRoundedScore(score).toString();
+				}
+				
+				if (scoreMax != null) {
+					if (score == null) {
+						returnScore += "0";
+					}
+					
+					returnScore += " / ";
+					returnScore += AssessmentHelper.getRoundedScore(scoreMax).toString();
+				}
 			}
 			
-			return "";
+			return returnScore;
 		}
 
 		public void setScore(Float score) {
@@ -181,14 +194,16 @@ public class CertificateAndEfficiencyStatementListModel
 		}
 		
 		public void addToScore(Float maxScore, Float score, boolean addToParent) {
-			if (holdsScore && maxScore != null && score != null) {
+			if (holdsScore) {
 				if (scoreMax == null) {
 					scoreMax = maxScore;
-				} else {
+				} else if (maxScore != null) {
 					scoreMax += maxScore;
 				}
 				
-				this.score += score;
+				if (score != null) {
+					this.score += score;
+				}
 			}
 			
 			if (addToParent && parent != null) {

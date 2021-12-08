@@ -452,6 +452,7 @@ public class AssessmentEntryDAO {
 		sb.append("     , ae.repositoryEntry.key");
 		sb.append("     , ae.completion");
 		sb.append("     , ae.score");
+		sb.append("     , ae.maxScore");
 		sb.append("     , ae.passed");
 		sb.append("     , ae.passedOriginal");
 		sb.append("     , ae.passedModificationDate");

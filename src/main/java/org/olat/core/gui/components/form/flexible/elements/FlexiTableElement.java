@@ -321,6 +321,13 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void setSortSettings(FlexiTableSortOptions options);
 	
 	/**
+	 * Enabled or disable sorting for the whole table element
+	 * 
+	 * @param sortEnabled
+	 */
+	public void setSortEnabled(boolean sortEnabled);
+	
+	/**
 	 * Return the current sorting if any.
 	 * @return
 	 */

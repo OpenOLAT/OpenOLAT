@@ -37,17 +37,19 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 	private final Long repositoryEntryKey;
 	private final Double completion;
 	private final BigDecimal score;
+	private final BigDecimal maxScore;
 	private transient Overridable<Boolean> passedOverridable;
 	private final Boolean passed;
 	private final Boolean passedOriginal;
 	private final Date passedModificationDate;
 	
-	public AssessmentEntryScoringImpl(Long key, Long repositoryEntryKey, Double completion, BigDecimal score,
+	public AssessmentEntryScoringImpl(Long key, Long repositoryEntryKey, Double completion, BigDecimal score, BigDecimal maxScore,
 			Boolean passed, Boolean passedOriginal, Date passedModificationDate) {
 		this.key = key;
 		this.repositoryEntryKey = repositoryEntryKey;
 		this.completion = completion;
 		this.score = score;
+		this.maxScore = maxScore;
 		this.passed = passed;
 		this.passedOriginal = passedOriginal;
 		this.passedModificationDate = passedModificationDate;
@@ -83,6 +85,11 @@ public class AssessmentEntryScoringImpl implements AssessmentEntryScoring {
 	@Override
 	public BigDecimal getScore() {
 		return score;
+	}
+	
+	@Override
+	public BigDecimal getMaxScore() {
+		return maxScore;
 	}
 	
 }

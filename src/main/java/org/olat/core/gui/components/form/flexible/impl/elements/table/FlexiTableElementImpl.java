@@ -171,6 +171,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	private SortKey[] orderBy;
 	private FlexiTableSortOptions sortOptions;
+	private boolean sortEnabled = true;
 	private List<FlexiTableFilter> filters;
 	private boolean multiFilterSelection = false;
 	private boolean allSelectedNeedLoadOfWholeModel = false;
@@ -548,7 +549,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	public boolean isSortEnabled() {
-		return sortOptions != null && (!sortOptions.getSorts().isEmpty() || sortOptions.isFromColumnModel());
+		return sortEnabled && (sortOptions != null && (!sortOptions.getSorts().isEmpty() || sortOptions.isFromColumnModel()));
+	}
+	
+	@Override
+	public void setSortEnabled(boolean sortEnabled) {
+		this.sortEnabled = sortEnabled;
 	}
 	
 	public FlexiTableSortOptions getSortOptions() {
