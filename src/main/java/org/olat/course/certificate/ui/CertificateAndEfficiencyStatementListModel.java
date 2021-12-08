@@ -73,8 +73,7 @@ public class CertificateAndEfficiencyStatementListModel
 		case displayName:
 			return statement.getDisplayName();
 		case score:
-			Float score = statement.getScore();
-			return AssessmentHelper.getRoundedScore(score);
+			return statement.getScore();
 		case passed:
 			return statement.getPassed();
 		case completion:
@@ -143,7 +142,8 @@ public class CertificateAndEfficiencyStatementListModel
 
 	public static class CertificateAndEfficiencyStatement implements FlexiTreeTableNode {
 
-		private Float score;
+		private Float score = 0f;
+		private Float scoreMax;
 		private Boolean passed;
 		private Date lastModified;
 		private String displayName;
@@ -156,6 +156,7 @@ public class CertificateAndEfficiencyStatementListModel
 		
 		private boolean hasChildren;
 		private boolean isTaxonomy;
+		private boolean holdsScore = true;
 		
 		private CertificateAndEfficiencyStatement parent;
 
@@ -167,12 +168,32 @@ public class CertificateAndEfficiencyStatementListModel
 			this.displayName = displayName;
 		}
 
-		public Float getScore() {
-			return score;
+		public String getScore() {
+			if (scoreMax != null) {
+				return AssessmentHelper.getRoundedScore(score).toString() + " / " + AssessmentHelper.getRoundedScore(scoreMax).toString();
+			}
+			
+			return "";
 		}
 
 		public void setScore(Float score) {
 			this.score = score;
+		}
+		
+		public void addToScore(Float maxScore, Float score, boolean addToParent) {
+			if (holdsScore && maxScore != null && score != null) {
+				if (scoreMax == null) {
+					scoreMax = maxScore;
+				} else {
+					scoreMax += maxScore;
+				}
+				
+				this.score += score;
+			}
+			
+			if (addToParent && parent != null) {
+				parent.addToScore(maxScore, score, addToParent);
+			}
 		}
 
 		public Boolean getPassed() {
@@ -237,6 +258,7 @@ public class CertificateAndEfficiencyStatementListModel
 		}
 		
 		public void setParent(CertificateAndEfficiencyStatement parent) {
+			parent.setHasChildren(true);
 			this.parent = parent;
 		}
 		
@@ -254,6 +276,10 @@ public class CertificateAndEfficiencyStatementListModel
 		
 		public void setTaxonomy(boolean isTaxonomy) {
 			this.isTaxonomy = isTaxonomy;
+		}
+		
+		public void setHoldsScore(boolean holdsScore) {
+			this.holdsScore = holdsScore;
 		}
 
 		@Override

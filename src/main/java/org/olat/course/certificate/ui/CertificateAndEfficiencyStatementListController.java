@@ -87,6 +87,7 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumService;
@@ -401,6 +402,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		
 		List<CertificateAndEfficiencyStatement> statements = new ArrayList<>();
+		Map<CurriculumElement, CertificateAndEfficiencyStatement> addedParents = new HashMap<>();
 		
 		CertificateAndEfficiencyStatement curriculumRow = new CertificateAndEfficiencyStatement();
 		curriculumRow.setDisplayName(curriculum.getDisplayName());
@@ -409,6 +411,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		Roles userRoles = baseSecurityManager.getRoles(assessedIdentity);
 		List<CurriculumElementRepositoryEntryViews> curriculumElements = curriculumService.getCurriculumElements(assessedIdentity, userRoles, Collections.singletonList(curriculum));
+		curriculumElements.sort(new CurriculumElementRepositoryEntryViewsComparator());
 		
 		for (CurriculumElementRepositoryEntryViews element : curriculumElements) {			
 			// Collect all levels, which are allowed for grouping
@@ -426,6 +429,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			// Map all courses to taxonomy level and collect unmapped courses
 			Map<TaxonomyLevel, List<RepositoryEntryMyView>> mappedCourses = new HashMap<>();
 			List<RepositoryEntryMyView> unmappedCourses = new ArrayList<>();
+			Set<UserEfficiencyStatementLight> scoresAdded = new HashSet<>();
 			
 			taxonomyLevels.forEach(level -> mappedCourses.put(level, new ArrayList<>()));
 			
@@ -434,9 +438,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			for (RepositoryEntryMyView course : element.getEntries()) {
 				boolean mapped = false;
 				
-				for (TaxonomyLevel level : course.getTaxonomyLevels()) {
-					if (mappedCourses.containsKey(level)) {
-						mappedCourses.get(level).add(course);
+				for (CurriculumElementToTaxonomyLevel relation : element.getCurriculumElement().getTaxonomyLevels()) {
+					if (mappedCourses.containsKey(relation.getTaxonomyLevel())) {
+						mappedCourses.get(relation.getTaxonomyLevel()).add(course);
 						mapped = true;
 						hasTaxonomyWithContent = true;
 					}
@@ -447,16 +451,24 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				}
 			}
 			
+			// Load parent elements
+			List<CurriculumElement> parents = curriculumService.getCurriculumElementParentLine(element.getCurriculumElement());
+			parents.sort(new CurriculumElementComparator());
+			// Remove the last one (current element). It would be added twice otherwise
+			parents.remove(parents.size() - 1);
+			
+			CertificateAndEfficiencyStatement parentElementRow = addParents(parents, addedParents, statements, curriculumRow);
+			
 			CertificateAndEfficiencyStatement elementRow;
 			if (hasTaxonomyWithContent || unmappedCourses.size() > 1) {
 				elementRow = new CertificateAndEfficiencyStatement();
-				elementRow.setParent(curriculumRow);
+				elementRow.setParent(parentElementRow);
 				elementRow.setDisplayName(element.getCurriculumElement().getDisplayName());
 				curriculumRow.setHasChildren(true);
 				
 				statements.add(elementRow);
 			} else {
-				elementRow = curriculumRow;
+				elementRow = parentElementRow;
 			}
 			
 			for (TaxonomyLevel level : mappedCourses.keySet()) {
@@ -468,6 +480,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				levelRow.setParent(elementRow);
 				levelRow.setDisplayName(level.getDisplayName());
 				levelRow.setTaxonomy(true);
+				levelRow.setHoldsScore(false);
 				elementRow.setHasChildren(true);
 				
 				statements.add(levelRow);
@@ -489,16 +502,24 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 						parent = courseRow;
 					}
 					
+					//IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, userRoles);
+					//ICourse iCourse = CourseFactory.loadCourse(course.getOlatResource());
+					//UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, iCourse.getCourseEnvironment());
+					
+					//AssessmentEvaluation scoreEvaluation = assessedUserCourseEnv.getScoreAccounting().evaluateAll();
+					
 					for (UserEfficiencyStatementLight statement : olatResourceKeys.get(course.getOlatResource().getKey())) {
 						CertificateAndEfficiencyStatement statementRow = new CertificateAndEfficiencyStatement();
 						statementRow.setParent(parent);
 						statementRow.setDisplayName(statement.getTitle());
 						statementRow.setPassed(statement.getPassed());
-						statementRow.setScore(statement.getScore());
+						//statementRow.setScore(statement.getScore());
 						statementRow.setEfficiencyStatementKey(statement.getKey());
 						statementRow.setResourceKey(statement.getArchivedResourceKey());
 						statementRow.setLastModified(statement.getLastModified());
 						statementRow.setLastUserModified(statement.getLastUserModified());
+						statementRow.addToScore(0f, statement.getScore(), !scoresAdded.contains(statement));
+						scoresAdded.add(statement);
 
 						Double completion = courseEntryKeysToCompletion.get(statement.getCourseRepoKey());
 						statementRow.setCompletion(completion);
@@ -538,11 +559,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					statementRow.setParent(parent);
 					statementRow.setDisplayName(statement.getTitle());
 					statementRow.setPassed(statement.getPassed());
-					statementRow.setScore(statement.getScore());
+					//statementRow.setScore(statement.getScore());
 					statementRow.setEfficiencyStatementKey(statement.getKey());
 					statementRow.setResourceKey(statement.getArchivedResourceKey());
 					statementRow.setLastModified(statement.getLastModified());
 					statementRow.setLastUserModified(statement.getLastUserModified());
+					statementRow.addToScore(0f, statement.getScore(), !scoresAdded.contains(statement));
+					scoresAdded.add(statement);
 
 					Double completion = courseEntryKeysToCompletion.get(statement.getCourseRepoKey());
 					statementRow.setCompletion(completion);
@@ -556,6 +579,30 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		tableModel.setObjects(statements);
 		tableEl.reset(true, true, true);
+	}
+	
+	private CertificateAndEfficiencyStatement addParents(List<CurriculumElement> parents, Map<CurriculumElement, CertificateAndEfficiencyStatement> addedParents, List<CertificateAndEfficiencyStatement> statements, CertificateAndEfficiencyStatement returnValue) {
+		if (parents == null || parents.isEmpty()) {
+			return returnValue;
+		}
+		
+		CurriculumElement parent = parents.get(0);
+		
+		if (!addedParents.containsKey(parent)) {
+			CertificateAndEfficiencyStatement parentRow = new CertificateAndEfficiencyStatement();
+			parentRow.setDisplayName(parent.getDisplayName());
+			parentRow.setParent(returnValue);
+			parentRow.setHoldsScore(false);
+			
+			statements.add(parentRow);
+			addedParents.put(parent, parentRow);
+			returnValue = parentRow;
+		} else {
+			returnValue = addedParents.get(parent);
+		}
+		
+		parents.remove(parent);
+		return addParents(parents, addedParents, statements, returnValue);
 	}
 	
 	private void loadModelFlat(boolean onlyFreeFloatingCourses) {
