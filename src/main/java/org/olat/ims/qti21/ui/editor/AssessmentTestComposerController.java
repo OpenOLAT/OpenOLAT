@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
 
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
-import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
@@ -68,7 +67,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -92,7 +90,6 @@ import org.olat.ims.qti21.AssessmentTestHelper.AssessmentTestVisitor;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.manager.openxml.QTI21WordExport;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -130,9 +127,6 @@ import org.olat.ims.qti21.ui.editor.events.SelectEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 import org.olat.ims.qti21.ui.editor.metadata.MetadataChangedEvent;
 import org.olat.ims.qti21.ui.editor.overview.AssessmentTestOverviewConfigurationController;
-import org.olat.ims.qti21.ui.editor.testsexport.QTI21OfflineTestsPDFMediaResource;
-import org.olat.ims.qti21.ui.editor.testsexport.TestsExport1OptionsStep;
-import org.olat.ims.qti21.ui.editor.testsexport.TestsExportContext;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
@@ -181,9 +175,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private Link importFromPoolLink;
 	private Link importFromTableLink;
 	private Link exportToPoolLink;
-	private Link exportToDocxLink;
-	private Link exportTestsWizardLink;
-	private Link reloadInCacheLink, deleteLink, copyLink;
+	private Link reloadInCacheLink;
+	private Link deleteLink;
+	private Link copyLink;
 	private Link configurationOverviewLink;
 	private final TooledStackedPanel toolbar;
 	private VelocityContainer mainVC;
@@ -193,7 +187,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private SelectItemController selectQItemCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private StepsMainRunController importTableWizard;
-	private StepsMainRunController exportTestsWizard;
 	private LayoutMain3ColsController columnLayoutCtr;
 	private AssessmentTestOverviewConfigurationController overviewConfigCtrl;
 	
@@ -212,8 +205,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private LockResult lockEntry;
 	
-	@Autowired
-	private PdfModule pdfModule;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -237,7 +228,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		if (!lockEntry.isSuccess()) {
 			String fullName = userManager.getUserDisplayName(lockEntry.getOwner());
 			String i18nMsg = lockEntry.isDifferentWindows() ? "error.lock.same.user" : "error.lock";
-			String msg = translate(i18nMsg, new String[] { fullName, Formatter.formatDatetime(new Date(lockEntry.getLockAquiredTime())) });
+			String msg = translate(i18nMsg, fullName, Formatter.formatDatetime(new Date(lockEntry.getLockAquiredTime())));
 			wControl.setWarning(msg);
 			MessageController contentCtr = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), translate("error.lock.title"), msg);
 			listenTo(contentCtr);
@@ -350,18 +341,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		exportToPoolLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
 		exportToPoolLink.setDomReplacementWrapperRequired(false);
 		exportItemTools.addComponent(exportToPoolLink);
-		
-		exportToDocxLink = LinkFactory.createToolLink("export.pool", translate("tools.export.docx"), this, "o_mi_docx_export");
-		exportToDocxLink.setIconLeftCSS("o_icon o_icon_download o_icon-fw");
-		exportToDocxLink.setDomReplacementWrapperRequired(false);
-		exportItemTools.addComponent(exportToDocxLink);
-		
-		if(pdfModule.isEnabled()) {
-			exportTestsWizardLink = LinkFactory.createToolLink("export.pool", translate("tools.export.tests.wizard"), this, "o_mi_tests_export");
-			exportTestsWizardLink.setIconLeftCSS("o_icon o_icon_files o_icon-fw");
-			exportTestsWizardLink.setDomReplacementWrapperRequired(false);
-			exportItemTools.addComponent(exportTestsWizardLink);
-		}
 
 		//changes
 		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
@@ -514,9 +493,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				doInsert(ureq, importPackage);
 			}
-		} else if(exportTestsWizard == source) {
-			getWindowControl().pop();
-			cleanUp();
 		} else if(confirmDeleteCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // yes, delete
 				doDelete(ureq, (TreeNode)confirmDeleteCtrl.getUserObject());
@@ -608,10 +584,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doImportTable(ureq);
 		} else if(exportToPoolLink == source) {
 			doExportPool();
-		} else if(exportToDocxLink == source) {
-			doExportDocx(ureq);
-		} else if(exportTestsWizardLink == source) {
-			doExportTestsWizard(ureq);
 		} else if(deleteLink == source) {
 			doConfirmDelete(ureq);
 		} else if(copyLink == source) {
@@ -813,33 +785,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		qti21QPoolServiceProvider
 				.importAssessmentItemRef(getIdentity(), assessmentItem, itemFile, metadata, getLocale());
-	}
-	
-	private void doExportDocx(UserRequest ureq) {
-		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, unzippedDirRoot, getLocale());
-		ureq.getDispatchResult().setResultingMediaResource(mr);
-	}
-	
-	private void doExportTestsWizard(UserRequest ureq) {
-		removeAsListenerAndDispose(exportTestsWizard);
-
-		final TestsExportContext exportContext = new TestsExportContext(testEntry, resolvedAssessmentTest, unzippedContRoot, unzippedDirRoot);
-		exportContext.setDescriptionValue(testEntry.getDescription());
-		exportContext.setIdentifierValue(testEntry.getExternalRef());
-		exportContext.setTitleValue(testEntry.getDisplayname());
-		exportContext.setFilePrefix(translate("export.prefix.default"));
-		
-		Step start = new TestsExport1OptionsStep(ureq, exportContext);
-		StepRunnerCallback finish = (uureq, lwControl, runContext) -> {
-			MediaResource mr = new QTI21OfflineTestsPDFMediaResource(uureq.getIdentity(), lwControl,
-					exportContext, "Tests_" + exportContext.getFilePrefix());
-			uureq.getDispatchResult().setResultingMediaResource(mr);
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		exportTestsWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("tools.export.tests.wizard"), "o_mi_tests_export_wizard");
-		listenTo(exportTestsWizard);
-		getWindowControl().pushAsModalDialog(exportTestsWizard.getInitialComponent());
 	}
 	
 	private void doImportTable(UserRequest ureq) {

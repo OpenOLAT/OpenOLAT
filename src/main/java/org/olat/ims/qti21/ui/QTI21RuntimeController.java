@@ -22,9 +22,11 @@ package org.olat.ims.qti21.ui;
 import java.io.File;
 import java.util.List;
 
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.Dropdown.Spacer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -32,20 +34,29 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.openxml.QTI21WordExport;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
+import org.olat.ims.qti21.ui.editor.testsexport.QTI21OfflineTestsPDFMediaResource;
+import org.olat.ims.qti21.ui.editor.testsexport.TestsExport1OptionsStep;
+import org.olat.ims.qti21.ui.editor.testsexport.TestsExportContext;
 import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessableResource;
@@ -74,13 +85,18 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	private Link gradingLink;
 	private Link assessmentLink;
 	private Link testStatisticLink;
+	private Link exportToDocxLink;
+	private Link exportTestsWizardLink;
 
+	private StepsMainRunController exportTestsWizard;
 	private AssessmentToolController assessmentToolCtrl;
 	private QTI21RuntimeStatisticsController statsToolCtr;
 	private GradingRepositoryOverviewController gradingCtr;
 	
 	private boolean reloadRuntime = false;
 
+	@Autowired
+	private PdfModule pdfModule;
 	@Autowired
 	private QTI21Service qtiService;
 
@@ -113,6 +129,25 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		}
 		
 		super.initToolsMenuRuntime(toolsDropdown);
+		
+		if(pdfModule.isEnabled()) {
+			toolsDropdown.addComponent(new Spacer("export-exams-tools"));
+			exportTestsWizardLink = LinkFactory.createToolLink("export.pool", translate("tools.export.tests.wizard"), this, "o_mi_tests_export");
+			exportTestsWizardLink.setIconLeftCSS("o_icon o_icon_files o_icon-fw");
+			exportTestsWizardLink.setDomReplacementWrapperRequired(false);
+			toolsDropdown.addComponent(exportTestsWizardLink);
+		}
+	}
+	
+	@Override
+	protected void initToolsMenuEdition(Dropdown toolsDropdown) {
+		super.initToolsMenuEdition(toolsDropdown);
+		if (reSecurity.isEntryAdmin()) {
+			exportToDocxLink = LinkFactory.createToolLink("export.pool", translate("tools.export.docx"), this, "o_mi_docx_export");
+			exportToDocxLink.setIconLeftCSS("o_icon o_icon_download o_icon-fw");
+			exportToDocxLink.setDomReplacementWrapperRequired(false);
+			toolsDropdown.addComponent(exportToDocxLink);
+		}
 	}
 
 	@Override
@@ -161,8 +196,18 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 				AssessmentTestDisplayController ctrl = (AssessmentTestDisplayController)source;
 				doRestartRunningRuntimeController(ureq, ctrl.getCandidateSession());
 			}
+		} else if(exportTestsWizard == source) {
+			getWindowControl().pop();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
+		removeAsListenerAndDispose(exportTestsWizard);
+		exportTestsWizard = null;
 	}
 
 	@Override
@@ -173,6 +218,10 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			doAssessmentTool(ureq);
 		} else if(gradingLink == source) {
 			doGrading(ureq);
+		} else if(exportToDocxLink == source) {
+			doExportDocx(ureq);
+		} else if(exportTestsWizardLink == source) {
+			doExportTestsWizard(ureq);
 		} else if(toolbarPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
@@ -303,5 +352,44 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		boolean hasScore = assessmentTest.getOutcomeDeclaration(QTI21Constants.SCORE_IDENTIFIER) != null;
 		boolean hasPassed = passedType != PassedType.none;
 		return new QTI21AssessableResource(hasScore, hasPassed, true, true, minScore, maxScore, cutValue);
+	}
+	
+	private void doExportDocx(UserRequest ureq) {
+		RepositoryEntry testEntry = getRepositoryEntry();
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		VFSContainer unzippedContRoot = frm.getFileResourceRootImpl(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+		
+		MediaResource mr = new QTI21WordExport(resolvedAssessmentTest, unzippedContRoot, fUnzippedDirRoot, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(mr);
+	}
+	
+	private void doExportTestsWizard(UserRequest ureq) {
+		removeAsListenerAndDispose(exportTestsWizard);
+		
+		RepositoryEntry testEntry = getRepositoryEntry();
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		VFSContainer unzippedContRoot = frm.getFileResourceRootImpl(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+
+		final TestsExportContext exportContext = new TestsExportContext(testEntry, resolvedAssessmentTest, unzippedContRoot, fUnzippedDirRoot);
+		exportContext.setDescriptionValue(testEntry.getDescription());
+		exportContext.setIdentifierValue(testEntry.getExternalRef());
+		exportContext.setTitleValue(testEntry.getDisplayname());
+		exportContext.setFilePrefix(translate("export.prefix.default"));
+		
+		Step start = new TestsExport1OptionsStep(ureq, exportContext);
+		StepRunnerCallback finish = (uureq, lwControl, runContext) -> {
+			MediaResource mr = new QTI21OfflineTestsPDFMediaResource(uureq.getIdentity(), lwControl,
+					exportContext, "Tests_" + exportContext.getFilePrefix());
+			uureq.getDispatchResult().setResultingMediaResource(mr);
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		exportTestsWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("tools.export.tests.wizard"), "o_mi_tests_export_wizard");
+		listenTo(exportTestsWizard);
+		getWindowControl().pushAsModalDialog(exportTestsWizard.getInitialComponent());
 	}
 }
