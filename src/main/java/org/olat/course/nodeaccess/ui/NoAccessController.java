@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NoAccessController extends BasicController {
 	
-	private final HeaderController headerCtrl;
+	private HeaderController headerCtrl;
 	private final EmptyState emptyState;
 
 	private final CourseNode courseNode;
@@ -77,9 +77,12 @@ public class NoAccessController extends BasicController {
 		
 		VelocityContainer mainVC = createVelocityContainer("no_access");
 		
-		headerCtrl = new HeaderController(ureq, wControl, createHeader());
-		listenTo(headerCtrl);
-		mainVC.put("header", headerCtrl.getInitialComponent());
+		Header header = createHeader();
+		if (header != null) {
+			headerCtrl = new HeaderController(ureq, wControl, header);
+			listenTo(headerCtrl);
+			mainVC.put("header", headerCtrl.getInitialComponent());
+		}
 		
 		noAccessMessage = nodeAccessService.getNoAccessResolver(userCourseEnv).getNoAccessMessage(courseNode);
 		emptyState = EmptyStateFactory.create("no.access", mainVC, this);
