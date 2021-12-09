@@ -1,4 +1,5 @@
 <div class="o_sel_author_env">
+	#if($r.isNotEmpty($title) || $r.visible("cmd.import.ressource") || $r.visible("cmd.import.url.ressource") || $r.visible("cmd.create.ressource") || $r.visible("help.single") || $r.visible("help.list"))
 	<div class="o_header_with_buttons">
 		#if($r.isNotEmpty($title))
 			<h2>$r.translate($title)</h2>
@@ -22,6 +23,7 @@
 			#end
 		</div>
 	</div>
+	#end
 	#if ($off_desc)
 		<div class="o_info">$off_desc</div>
 	#end

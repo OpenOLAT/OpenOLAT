@@ -64,6 +64,9 @@ public class ImportCourseNode {
 		return editorTreeNode.getCourseNode();
 	}
 
+	/**
+	 * @return true if the node cannot be imported for some reason (incompatible shared folder)
+	 */
 	public boolean isExcludeFromImport() {
 		return excludeFromImport;
 	}
@@ -72,6 +75,9 @@ public class ImportCourseNode {
 		this.excludeFromImport = excludeFromImport;
 	}
 
+	/**
+	 * @return true if the user selected the node
+	 */
 	public boolean isSelected() {
 		return selected;
 	}

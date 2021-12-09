@@ -116,7 +116,8 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		nodeModel.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(nodeModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FilesCols.size));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FilesCols.usedBy, new ConfigurationFileRowUseRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FilesCols.usedBy,
+				new ConfigurationFileRowUseRenderer(getLocale())));
 		DefaultFlexiColumnModel messageCol = new DefaultFlexiColumnModel(FilesCols.messages);
 		messageCol.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.antisamy));
 		columnsModel.addFlexiColumnModel(messageCol);
@@ -320,7 +321,7 @@ public class ConfigurationFilesController extends StepFormBasicController {
 	
 	private void doUnselect(int index) {
 		ConfigurationFileRow fileRow = dataModel.getObject(index);
-		fileRow.setSelected(false);
+		setSelectionRecursive(fileRow, false);
 	}
 	
 	private void setSelectionRecursive(ConfigurationFileRow fileRow, boolean selected) {
@@ -339,8 +340,6 @@ public class ConfigurationFilesController extends StepFormBasicController {
 		fileRows.stream()
 			.forEach(row -> row.setParentLine(false));
 		
-		Set<Integer> selectedIndexes = new HashSet<>();
-
 		int numOfRows = fileRows.size();
 		for(int i=0; i<numOfRows; i++) {
 			ConfigurationFileRow fileRow = fileRows.get(i);
@@ -350,7 +349,8 @@ public class ConfigurationFilesController extends StepFormBasicController {
 				}
 			}
 		}
-		
+
+		Set<Integer> selectedIndexes = new HashSet<>();
 		for(int i=0; i<numOfRows; i++) {
 			ConfigurationFileRow fileRow = fileRows.get(i);
 			if(fileRow.isSelected() || fileRow.isParentLine()) {

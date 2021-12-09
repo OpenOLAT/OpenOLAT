@@ -38,7 +38,6 @@ public class ConfigurationFileRow extends AbstractConfigurationRow {
 	private int numOfChildren;
 	private List<ConfigurationFileRow> children = new ArrayList<>();
 	
-	private boolean selected;
 	private boolean parentLine;
 	private String renamedFilename;
 	private String courseFolderSubPath;
@@ -49,14 +48,6 @@ public class ConfigurationFileRow extends AbstractConfigurationRow {
 	public ConfigurationFileRow(ConfigurationFileRow parent, VFSItem item) {
 		super(parent);
 		this.item = item;
-	}
-	
-	public boolean isSelected() {
-		return selected;
-	}
-
-	public void setSelected(boolean selected) {
-		this.selected = selected;
 	}
 
 	public boolean isParentLine() {

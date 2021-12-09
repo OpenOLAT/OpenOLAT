@@ -1974,6 +1974,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if (multiSelect == SelectionMode.multi && multiSelectedIndex != null) {
 			int count = dataModel.getRowCount();
 			int selectCount = multiSelectedIndex.size();
+			if(dataModel instanceof FlexiTableSelectionDelegate) {
+				selectCount = ((FlexiTableSelectionDelegate<?>)dataModel).getSelectedTreeNodes().size();
+			}
+			
 			boolean showSelectAll = (selectCount == 0);
 			boolean showDeselectAll = (count != 0 && count == selectCount);
 			

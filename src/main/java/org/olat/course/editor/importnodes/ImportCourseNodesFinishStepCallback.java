@@ -166,7 +166,7 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 	}
 
 	private void recursiveConfigure(ImportCourseNode node, CourseEnvironmentMapper envMapper) {
-		if(!node.isExcludeFromImport()) {
+		if(node.isSelected() && !node.isExcludeFromImport()) {
 			PersistingCourseImpl targetCourse = CourseFactory.getCourseEditSession(targetCourseId);
 			ICourse sourceCourse = CourseFactory.loadCourse(importCourseContext.getEntry());
 			
@@ -188,7 +188,7 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 	}
 	
 	private void recursiveCopy(ImportCourseNode node, CourseNode parentNode, int pos, Identity identity, CourseEnvironmentMapper envMapper) {
-		if(!node.isExcludeFromImport()) {
+		if(node.isSelected() && !node.isExcludeFromImport()) {
 			PersistingCourseImpl targetCourse = CourseFactory.getCourseEditSession(targetCourseId);
 			
 			CourseEditorTreeNode sourceEditorTreeNode = node.getEditorTreeNode();

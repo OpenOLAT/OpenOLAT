@@ -551,6 +551,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
 		List<FormItem> items = ftE.getBatchButtons();
 		int numOf = ftE.getNumOfMultiSelectedIndex();
+		if(ftE.getTableDataModel() instanceof FlexiTableSelectionDelegate) {
+			numOf = ((FlexiTableSelectionDelegate<?>)ftE.getTableDataModel()).getSelectedTreeNodes().size();
+		}
 		String entryI18n;
 		if(numOf <= 1) {
 			entryI18n = translator.translate("number.selected.entry", Integer.toString(numOf));

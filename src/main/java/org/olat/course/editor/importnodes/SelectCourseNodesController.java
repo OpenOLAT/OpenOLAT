@@ -155,7 +155,7 @@ public class SelectCourseNodesController extends StepFormBasicController {
 
 	@Override
 	protected void formNext(UserRequest ureq) {
-		List<ImportCourseNode> currentNodesList = importCourseContext.getSelectedNodes();
+		List<ImportCourseNode> currentNodesList = importCourseContext.getNodes();
 		Map<String,ImportCourseNode> currentNodesMap = currentNodesList.stream()
 				.collect(Collectors.toMap(ImportCourseNode::getIdent, n -> n));
 		
@@ -178,25 +178,27 @@ public class SelectCourseNodesController extends StepFormBasicController {
 	}
 	
 	private void doSelectionUpdate(int index, boolean checked) {
-		Set<Integer> indexes = tableEl.getMultiSelectedIndex();
-		Set<Integer> newIndexes = new HashSet<>(indexes);
-		
 		SelectCourseNodeRow selectedNode = dataModel.getObject(index);
 		selectedNode.setSelected(checked);
-		for(int i=index+1; i<dataModel.getRowCount(); i++) {
-			SelectCourseNodeRow row = dataModel.getObject(i);
+
+		List<SelectCourseNodeRow> allRows = dataModel.getAllRows();
+		int allIndex = allRows.indexOf(selectedNode);
+		for(int i=allIndex+1; i<allRows.size(); i++) {
+			SelectCourseNodeRow row = allRows.get(i);
 			if(hasParent(row, selectedNode)) {
-				if(checked) {
-					newIndexes.add(Integer.valueOf(i));
-				} else {
-					newIndexes.remove(Integer.valueOf(i));
-				}
 				row.setSelected(checked);
 			} else {
 				break;
 			}
 		}
 		
+		Set<Integer> newIndexes = new HashSet<>();
+		for(int i=0; i<dataModel.getRowCount(); i++) {
+			SelectCourseNodeRow row = dataModel.getObject(i);
+			if(row.isSelected()) {
+				newIndexes.add(Integer.valueOf(i));
+			}
+		}
 		tableEl.setMultiSelectedIndex(newIndexes);
 		tableEl.reloadData();	
 	}

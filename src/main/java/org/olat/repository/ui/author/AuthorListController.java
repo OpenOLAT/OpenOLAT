@@ -316,6 +316,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void initImportTools(List<OrderedRepositoryHandler> handlers, FormLayoutContainer formLayout) {	
+		if(!configuration.isImportRessources()) return;
+		
 		importLink = uifactory.addFormLink("cmd.import.ressource", "cmd.import.ressource", null, formLayout, Link.BUTTON);
 		importLink.setDomReplacementWrapperRequired(false);
 		importLink.setIconLeftCSS("o_icon o_icon_import");
@@ -330,6 +332,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 
 	private void initCreateTools(List<OrderedRepositoryHandler> handlers, FormLayoutContainer formLayout) {
+		if(!configuration.isCreateRessources()) return;
+		
 		List<OrderedRepositoryHandler> creatorHandlers = getAllowedRepositoryHandlersToCreate(handlers);
 		
 		if(creatorHandlers.size() == 1) {

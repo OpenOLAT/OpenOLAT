@@ -613,8 +613,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 					}
 					return false;
 				}).collect(Collectors.toList());
-		
-		learningPathConfigs.setExceptionalObligations(filteredExceptionalObligations);
+		if(filteredExceptionalObligations.isEmpty()) {
+			learningPathConfigs.setExceptionalObligations(null);
+		} else {
+			learningPathConfigs.setExceptionalObligations(filteredExceptionalObligations);
+		}
 	}
 	
 	protected void removeCourseNodeLearningPathsconfigs() {

@@ -21,11 +21,13 @@ package org.olat.course.editor.importnodes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSelectionDelegate;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
@@ -38,7 +40,8 @@ import org.olat.core.util.vfs.VFSLeaf;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ConfigurationFilesTableModel extends DefaultFlexiTreeTableDataModel<ConfigurationFileRow> {
+public class ConfigurationFilesTableModel extends DefaultFlexiTreeTableDataModel<ConfigurationFileRow>
+	implements FlexiTableSelectionDelegate<ConfigurationFileRow> {
 	
 	private static final FilesCols[] COLS = FilesCols.values();
 	
@@ -63,7 +66,7 @@ public class ConfigurationFilesTableModel extends DefaultFlexiTreeTableDataModel
 	public List<ConfigurationFileRow> getAllObjects() {
 		return new ArrayList<>(backupRows);
 	}
-	
+
 	@Override
 	public Object getValueAt(int row, int col) {
 		ConfigurationFileRow node = getObject(row);
@@ -96,6 +99,13 @@ public class ConfigurationFilesTableModel extends DefaultFlexiTreeTableDataModel
 		return node.getItem() instanceof VFSContainer && node.getNumOfChildren() > 0;
 	}
 	
+	@Override
+	public List<ConfigurationFileRow> getSelectedTreeNodes() {
+		return backupRows.stream()
+				.filter(row -> row.isSelected() || row.isParentLine())
+				.collect(Collectors.toList());
+	}
+	
 	public enum FilesCols implements FlexiColumnDef {
 		file("table.header.file"),
 		size("table.header.size"),
@@ -114,5 +124,4 @@ public class ConfigurationFilesTableModel extends DefaultFlexiTreeTableDataModel
 			return i18nKey;
 		}
 	}
-
 }

@@ -19,16 +19,22 @@
  */
 package org.olat.course.editor.importnodes;
 
-import java.util.Collection;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.CourseNodeFactory;
 
@@ -39,16 +45,24 @@ import org.olat.course.nodes.CourseNodeFactory;
  *
  */
 public class ConfigurationFileRowUseRenderer implements FlexiCellRenderer {
+	
+	private static final Logger log = Tracing.createLoggerFor(ConfigurationFileRowUseRenderer.class);
+	
+	private final Collator collator;
+	
+	public ConfigurationFileRowUseRenderer(Locale locale) {
+		collator = Collator.getInstance(locale);
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof ConfigurationFileRow) {
 			ConfigurationFileRow fileRow = (ConfigurationFileRow)cellValue;
-			Set<ImportCourseNode> usedByList = new HashSet<>();
-			collectRecursively(fileRow, usedByList);
-			if(!usedByList.isEmpty()) {
-				render(target, usedByList);
+			Set<ImportCourseNode> usedBySet = new HashSet<>();
+			collectRecursively(fileRow, usedBySet);
+			if(!usedBySet.isEmpty()) {
+				render(target, new ArrayList<>(usedBySet));
 			}
 		}
 	}
@@ -63,7 +77,14 @@ public class ConfigurationFileRowUseRenderer implements FlexiCellRenderer {
 	}
 	
 	
-	private void render(StringOutput sb, Collection<ImportCourseNode> nodes) {
+	private void render(StringOutput sb, List<ImportCourseNode> nodes) {
+		if(nodes.size() > 1) {
+			try {
+				Collections.sort(nodes, new ImportCourseNodeComparator(collator));
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
 		sb.append("<ul class='list-unstyled'>");
 		for(ImportCourseNode node:nodes) {
 			render(sb, node);
