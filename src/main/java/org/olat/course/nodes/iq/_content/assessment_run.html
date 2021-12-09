@@ -44,7 +44,7 @@
 					</td>
 				</tr>
 				<tr class="o_state #if(!$resultsVisible) #elseif ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-					<th>$r.translate("passed.yourpassed")</th>
+					<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
 					<td>
 						#if($inReview)
 							<span id="o_passed_in_review" class="o_in_review">
@@ -59,11 +59,11 @@
 							</span>
 							$r.mouseoverHelpTranslated("o_passed_in_release", $r.translateWithPackage("org.olat.course.nodes.ms", "in.release.desc"))
 						#elseif($hasPassedValue && $passed)
-							<i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")
+							<i class="o_icon o_icon_passed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
 						#elseif($hasPassedValue && !$passed)
-							<i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")
+							<i class="o_icon o_icon_failed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
 						#else
-							<div class="o_noinfo">$r.translate("passed.nopassed")</div>
+							<div class="o_noinfo">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")</div>
 						#end
 					</td>
 				</tr>
@@ -148,7 +148,7 @@
 #end
 
 #if($showResultsOnHomePage && $r.isNotNull($attempts) && $attempts > 0)	
-	<div class="panel panel-default o_results">
+	<div class="panel panel-default o_results o_msg_panel">
 	  	<div class="panel-heading">
 	  		<h4 class="panel-title">
 				#if ($showResults && $r.available("command.hideResults"))
@@ -167,9 +167,9 @@
 			</div></div>
 	       	#end
 		#elseif($r.isNotNull($visibilityStatus))
-			<div class="panel-collapse collapse in"><div class="panel-body o_statusinfo">$visibilityPeriod</div></div>
+			<div class="panel-collapse collapse in"><div class="panel-body o_note">$visibilityStatus</div></div>
 		#elseif($r.isNotNull($visibilityPeriod))
-			<div class="panel-collapse collapse in"><div class="panel-body o_statusinfo">
+			<div class="panel-collapse collapse in"><div class="panel-body o_note">
 				<i class="o_icon o_icon-fw o_icon_time"> </i> $visibilityPeriod
 			</div></div>
 		#end
@@ -177,10 +177,10 @@
 #end
 
 #if (($attemptsConfig && $attemptsConfig > 0 && ($attemptsConfig <= $attempts)) || $blockAfterSuccess)
-	<div class="o_statusinfo">$r.translate("attempts.nomoreattempts")</div>		
+	<div class="o_note">$r.translate("attempts.nomoreattempts")</div>		
 	$r.render("disclaimer")
 #elseif($blockDate)
-	<div class="o_statusinfo">#if($r.isNotNull($startDateMessage))
+	<div class="o_note">#if($r.isNotNull($startDateMessage))
 		<p><i class="o_icon o_icon-fw o_icon_time"> </i> $startDateMessage</p>
 	#end
 	#if($r.isNotEmpty($timeLimitMessage))
@@ -196,7 +196,7 @@
 
 	#if($infobox)	
 		#if($type == "test")
-		<div class="o_statusinfo">
+		<div class="o_note">
 			<p>$r.translate("Intro.test")</p>
 			<p>$r.translate("info.assessment")</p>
 			#if($r.isNotNull($startDateMessage))
@@ -213,7 +213,7 @@
 			#end
 		</div>
 		#elseif($type == "self")
-		<div class="o_statusinfo">
+		<div class="o_note">
 			<p>$r.translate("Intro.self")</p>
 			<p>$r.translate("info.selfassessment")</p>
 		</div>

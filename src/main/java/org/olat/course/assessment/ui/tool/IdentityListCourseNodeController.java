@@ -434,7 +434,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			SelectionValues passedValues = new SelectionValues();
 			passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.passed.name(), translate("filter.passed")));
 			passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.failed.name(), translate("filter.failed")));
-			passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.notGraded.name(), translate("filter.not.graded")));
+			passedValues.add(SelectionValues.entry(SearchAssessedIdentityParams.Passed.notGraded.name(), translate("filter.nopassed")));
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.passed.label"),
 					AssessedIdentityListState.FILTER_PASSED, passedValues, true));
 		}

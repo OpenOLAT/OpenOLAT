@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -46,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseNodeToReviewSmallController extends CourseNodeToReviewAbstractSmallController {
 	
 	private static final Supplier<AssessedIdentityListState> IDENTITY_FILTER = 
-			() -> new AssessedIdentityListState(Collections.singletonList("inReview"), null, null, null, null, null, true);
+			() -> new AssessedIdentityListState(null, null, null, null, null, IdentityListCourseNodeController.TO_REVIEW_TAB_ID, true);
 	
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
@@ -54,7 +53,6 @@ public class CourseNodeToReviewSmallController extends CourseNodeToReviewAbstrac
 	public CourseNodeToReviewSmallController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, courseEntry, assessmentCallback);
-	
 	}
 	
 	@Override

@@ -23,12 +23,12 @@
 				<td>
 				#if($hasPassedValue && $scorePassed)	
 					<i class="o_icon o_icon_passed"></i> 
-					$r.translate("passed.yes")
+					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
 				#elseif($hasPassedValue && !$scorePassed)		
 					<i class="o_icon o_icon_failed"></i> 
-					$r.translate("passed.no")
+					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
 				#else
-					$r.translate("passed.noinfo")
+					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed"))
 				#end
 				</td>
 			</tr>

@@ -578,12 +578,6 @@
 	}	
 	.o_no_scoreinfo {
 		@extend %o_important;
-	}	
-	.o_statusinfo {
-		@extend %o_note;
-		&.panel-body {
-			margin: 0px;
-		}
 	}
 	.o_in_review, .o_in_release {
 		font-style: italic;

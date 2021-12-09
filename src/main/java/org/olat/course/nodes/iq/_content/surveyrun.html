@@ -11,7 +11,7 @@
 	
 #if ($attempts == 0)
 	#if ($infobox)			
-	<div class="o_statusinfo">
+	<div class="o_note">
 		<p>
 			$r.translate("Intro.surv")	
 		</p>
@@ -25,7 +25,7 @@
 		$r.render("start")
 	</div>	
 #else
-	<div class="o_statusinfo">
+	<div class="o_note">
 		$r.translate("info.survey.alreadydone")
 	</div>
 #end

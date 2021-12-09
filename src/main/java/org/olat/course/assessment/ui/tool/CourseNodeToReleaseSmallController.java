@@ -19,7 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -46,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseNodeToReleaseSmallController extends CourseNodeToReviewAbstractSmallController {
 	
 	private static final Supplier<AssessedIdentityListState> IDENTITY_FILTER = 
-			() -> new AssessedIdentityListState(Collections.singletonList("done"), null, "false", null, null, null, true);
+			() -> new AssessedIdentityListState(null, null, null, null, null, IdentityListCourseNodeController.TO_RELEASE_TAB_ID, true);
 	
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
@@ -73,7 +72,7 @@ public class CourseNodeToReleaseSmallController extends CourseNodeToReviewAbstra
 
 	@Override
 	protected String getTableEmptyI18nKey() {
-		return "user.visibility.hidden.emtpy";
+		return "user.visibility.hidden.empty";
 	}
 
 	@Override

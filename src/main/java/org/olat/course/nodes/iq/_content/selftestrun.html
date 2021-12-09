@@ -19,16 +19,16 @@
 					</td> 
 				</tr> 
 				<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-					<th>$r.translate("passed.yourpassed")</th>
+					<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
 					<td>
 					#if($hasPassedValue && $passed)	
 						<i class="o_icon o_icon_passed"></i> 
-						$r.translate("passed.yes")
+						$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
 					#elseif($hasPassedValue && !$passed)		
 						<i class="o_icon o_icon_failed"></i> 
-						$r.translate("passed.no")
+						$r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
 					#else
-						$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
+						$r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")
 					#end
 					</td>
 				</tr>
@@ -117,7 +117,7 @@
 </div>
 #end
 #if ($infobox)		
-	<div class="o_statusinfo">
+	<div class="o_note">
 		<p>
 			$r.translate("Intro.self")
 		</p>

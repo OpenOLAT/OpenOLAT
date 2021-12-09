@@ -149,6 +149,7 @@ public class AssessmentViewController extends BasicController {
 	}
 
 	private void putConfigToVC() {
+		mainVC.contextPut("hasAttemptsField", Boolean.valueOf(assessmentConfig.hasAttempts()));
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		mainVC.contextPut("hasScoreField", Boolean.valueOf(hasScore));
 		if (hasScore) {
@@ -167,17 +168,22 @@ public class AssessmentViewController extends BasicController {
 	private void putAssessmentDataToVC(UserRequest ureq) {
 		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
 		
+		Integer attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
+		mainVC.contextPut("attempts", attemptsValue == null ? 0 : attemptsValue.intValue());
 		mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 		mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 		mainVC.contextPut("passed", assessmentEntry.getPassed());
-		mainVC.contextPut("inReview",
-				Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
+		mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
 
 		String rawComment = assessmentEntry.getComment();
-		if (assessmentConfig.hasComment() && StringHelper.containsNonWhitespace(rawComment)) {
+		if (assessmentConfig.hasComment()) {
 			StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
 			mainVC.contextPut("comment", StringHelper.xssScan(comment));
 		}
+		
+		String rawCoachComment = assessmentEntry.getCoachComment();
+		StringBuilder coachComment = Formatter.stripTabsAndReturns(rawCoachComment);
+		mainVC.contextPut("coachComment", StringHelper.xssScan(coachComment));
 
 		if (assessmentConfig.hasIndividualAsssessmentDocuments()) {
 			List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, assessedUserCourseEnv);

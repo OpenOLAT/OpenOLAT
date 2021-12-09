@@ -111,7 +111,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		stackPanel.addListener(this);
 		segmentButtonsCmp = new ButtonGroupComponent("segments");
 		
-		overviewCtrl = new AssessmentCourseOverviewController(ureq, getWindowControl(), courseEntry, assessmentCallback);
+		overviewCtrl = new AssessmentCourseOverviewController(ureq, getWindowControl(), courseEntry, coachUserEnv, assessmentCallback);
 		listenTo(overviewCtrl);
 		putInitialPanel(overviewCtrl.getInitialComponent());
 	}
@@ -121,7 +121,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		overviewLink.setElementCssClass("o_sel_assessment_tool_overview");
 		segmentButtonsCmp.addButton(overviewLink, true);
 		
-		usersLink = LinkFactory.createToolLink("users", translate("users"), this/*, "o_icon_user"*/);
+		usersLink = LinkFactory.createToolLink("users", translate("details"), this/*, "o_icon_user"*/);
 		usersLink.setElementCssClass("o_sel_assessment_tool_users");
 		segmentButtonsCmp.addButton(usersLink, false);
 		

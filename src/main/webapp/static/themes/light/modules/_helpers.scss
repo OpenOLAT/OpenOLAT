@@ -251,6 +251,14 @@
 	}
 }
 
+.o_msg_panel {
+	.panel-body {
+		&.o_note {
+			margin: 0px;
+		}
+	}
+}
+
 
 /* ---------------------------------------------------------- */
 /* general content styles for fonts, links and other elements */

@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.messages.MessagePanelController;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -41,6 +42,8 @@ import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +63,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final CourseNodeToReviewSmallController toReviewCtrl;
-	private final CourseNodeToReleaseSmallController toReleaseCtrl;
+	private final Controller toReleaseCtrl;
 	private final AssessmentModeOverviewListController assessmentModeListCtrl;
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
@@ -75,7 +78,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
 	public AssessmentCourseOverviewController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
+			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
@@ -106,12 +109,16 @@ public class AssessmentCourseOverviewController extends BasicController {
 			mainVC.put("certificationSubscription", certificateSubscriptionCtrl.getInitialComponent());
 		}
 		
-		
 		toReviewCtrl = new CourseNodeToReviewSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(toReviewCtrl);
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
 		
-		toReleaseCtrl = new CourseNodeToReleaseSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
+		if (coachUserEnv.isAdmin() || course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY, true)) {
+			toReleaseCtrl = new CourseNodeToReleaseSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
+		} else {
+			toReleaseCtrl = new MessagePanelController(ureq, wControl, "o_icon_results_hidden",
+					translate("user.visibility.hidden.title"), translate("user.visibility.hidden.owner.only"));
+		}
 		listenTo(toReleaseCtrl);
 		mainVC.put("toRelease", toReleaseCtrl.getInitialComponent());
 		

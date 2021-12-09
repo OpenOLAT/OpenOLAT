@@ -16,6 +16,18 @@
 			<th>$r.translate("personal.title")</th>
 			<td></td>
 		</tr>
+		
+		#if ($hasAttemptsField)
+			<tr>
+				<th>$r.translate("form.attempts")</th>
+				<td>
+					#if ($r.isNotEmpty($attempts))
+						$attempts
+					#end
+				</td>
+			</tr>
+		#end
+		
 		#if ($hasScoreField)
 			<tr class="o_score_config_min">
 				<th>$r.translate("score.min")</th>
@@ -34,19 +46,19 @@
 		#if ($hasPassedField)
 			#if ($passedCutValue)
 				<tr class="o_cutval">
-					<th>$r.translate("passed.cut")</th>
+					<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.cut")</th>
 					<td>$passedCutValue</td>
 				</tr>
 			#end
 			<tr class="o_state #if($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-				<th>$r.translate("passed.yourpassed")</th>
+				<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
 				<td>
 					#if($hasPassedValue && $passed)
-						<i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")
+						<i class="o_icon o_icon_passed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
 					#elseif($hasPassedValue && !$passed)
-						<i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")
+						<i class="o_icon o_icon_failed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
 					#else
-						<div class="o_noinfo">$r.translate("passed.nopassed")</div>
+						<div class="o_noinfo">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")</div>
 					#end
 				</td>
 			</tr>
@@ -54,7 +66,7 @@
 		
 		#if ($hasCommentField)
 			<tr>
-				<th>$r.translate("comment.title")</th>
+				<th>$r.translate("form.usercomment")</th>
 				<td>
 					#if ($r.isNotEmpty($comment))
 						$comment
@@ -75,6 +87,15 @@
 				</td>
 			</tr>
 		#end
+		
+		<tr>
+			<th>$r.translate("form.coachcomment")</th>
+			<td>
+				#if ($r.isNotEmpty($coachComment))
+					$coachComment
+				#end
+			</td>
+		</tr>
 	</tbody>
 	</table>
 </div>
