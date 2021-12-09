@@ -203,7 +203,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		if (source == detailsEditController) {
 			// reset SCORM test
 			if(event == Event.CHANGED_EVENT) {
-				assessmentEditCtrl.reloadData();
+				doOpenAssessment(ureq);
 				fireEvent(ureq, event);
 			} else if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.DONE_EVENT);
@@ -240,6 +240,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 		assessmentViewCtrl = null;
 		assessmentEditCtrl = null;
 		
+		assessedUserCourseEnvironment.getScoreAccounting().evaluateAll(true);
 		if (AssessmentEntryStatus.done == assessedUserCourseEnvironment.getScoreAccounting().evalCourseNode(courseNode).getAssessmentStatus()) {
 			assessmentViewCtrl = new AssessmentViewController(ureq, getWindowControl(), courseNode, coachCourseEnv, assessedUserCourseEnvironment);
 			listenTo(assessmentViewCtrl);

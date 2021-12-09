@@ -39,7 +39,11 @@
 			</tr>
 			<tr class="o_score">
 				<th>$r.translate("score.yourscore")</th>
-				<td>$score</td>
+				<td>
+					#if($r.isNotEmpty($score))
+						$score
+					#end
+				</td>
 			</tr>
 		#end 
 		
