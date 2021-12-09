@@ -93,6 +93,11 @@ public interface AssessmentConfig {
 	 */
 	public boolean hasAttempts();
 	
+	public boolean hasMaxAttempts();
+	
+	public Integer getMaxAttempts();
+
+	
 	/**
 	 * @return True if this course node produces a comment variable for the learner
 	 */

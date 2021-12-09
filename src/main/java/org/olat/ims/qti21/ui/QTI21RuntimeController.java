@@ -351,7 +351,9 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		Double minScore = QtiNodesExtractor.extractMinScore(assessmentTest);
 		boolean hasScore = assessmentTest.getOutcomeDeclaration(QTI21Constants.SCORE_IDENTIFIER) != null;
 		boolean hasPassed = passedType != PassedType.none;
-		return new QTI21AssessableResource(hasScore, hasPassed, true, true, minScore, maxScore, cutValue);
+		boolean hasMaxAttempts = deliveryOptions.getMaxAttempts() > 0;
+		Integer maxAttempts = hasMaxAttempts? Integer.valueOf(deliveryOptions.getMaxAttempts()): null;
+		return new QTI21AssessableResource(hasScore, hasPassed, true, hasMaxAttempts, true, minScore, maxScore, cutValue, maxAttempts);
 	}
 	
 	private void doExportDocx(UserRequest ureq) {

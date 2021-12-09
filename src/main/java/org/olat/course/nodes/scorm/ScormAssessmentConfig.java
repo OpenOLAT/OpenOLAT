@@ -102,6 +102,16 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean hasMaxAttempts() {
+		return config.getIntegerSafe(ScormEditController.CONFIG_MAXATTEMPTS, 0) > 0;
+	}
+
+	@Override
+	public Integer getMaxAttempts() {
+		return hasAttempts()? Integer.valueOf(config.getIntegerSafe(ScormEditController.CONFIG_MAXATTEMPTS, 0)): null;
+	}
+
+	@Override
 	public boolean hasComment() {
 		return false;
 	}

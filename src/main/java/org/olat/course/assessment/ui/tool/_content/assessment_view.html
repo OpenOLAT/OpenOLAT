@@ -23,6 +23,9 @@
 				<td>
 					#if ($r.isNotEmpty($attempts))
 						$attempts
+						#if ($hasMaxAttemptsField)
+							<span class="small">$r.translate("form.attempts.of.max", $maxAttempts)</span>
+						#end
 					#end
 				</td>
 			</tr>

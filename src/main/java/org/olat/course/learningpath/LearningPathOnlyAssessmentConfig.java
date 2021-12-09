@@ -85,6 +85,16 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean hasMaxAttempts() {
+		return false;
+	}
+
+	@Override
+	public Integer getMaxAttempts() {
+		return null;
+	}
+
+	@Override
 	public boolean hasComment() {
 		return false;
 	}

@@ -97,6 +97,16 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean hasMaxAttempts() {
+		return false;
+	}
+
+	@Override
+	public Integer getMaxAttempts() {
+		return null;
+	}
+
+	@Override
 	public boolean hasComment() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
 	}

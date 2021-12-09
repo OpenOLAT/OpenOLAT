@@ -108,6 +108,16 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 		// having score defined means the node is assessable
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 	}
+
+	@Override
+	public boolean hasMaxAttempts() {
+		return false;
+	}
+
+	@Override
+	public Integer getMaxAttempts() {
+		return null;
+	}
 	
 	@Override
 	public boolean hasComment() {

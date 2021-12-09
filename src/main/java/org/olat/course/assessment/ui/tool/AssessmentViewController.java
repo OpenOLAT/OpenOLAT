@@ -150,6 +150,7 @@ public class AssessmentViewController extends BasicController {
 
 	private void putConfigToVC() {
 		mainVC.contextPut("hasAttemptsField", Boolean.valueOf(assessmentConfig.hasAttempts()));
+		mainVC.contextPut("hasMaxAttemptsField", Boolean.valueOf(assessmentConfig.hasMaxAttempts()));
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		mainVC.contextPut("hasScoreField", Boolean.valueOf(hasScore));
 		if (hasScore) {
@@ -170,6 +171,10 @@ public class AssessmentViewController extends BasicController {
 		
 		Integer attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
 		mainVC.contextPut("attempts", attemptsValue == null ? 0 : attemptsValue.intValue());
+		if (assessmentConfig.hasMaxAttempts()) {
+			mainVC.contextPut("maxAttempts", assessmentConfig.getMaxAttempts());
+		}
+		
 		mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 		mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 		mainVC.contextPut("passed", assessmentEntry.getPassed());

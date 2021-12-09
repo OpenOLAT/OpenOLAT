@@ -38,7 +38,7 @@ public class AssessableBinderResource extends AssessableResource {
 	
 	public AssessableBinderResource(boolean hasScore, boolean hasPassed, boolean hasAttempts, boolean hasComments,
 			Double minScore, Double maxScore, Double cutValue) {
-		super(hasScore, hasPassed, hasAttempts, hasComments, minScore, maxScore, cutValue);
+		super(hasScore, hasPassed, hasAttempts, false, hasComments, minScore, maxScore, cutValue, null);
 	}
 
 	@Override

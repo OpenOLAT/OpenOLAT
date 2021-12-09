@@ -247,6 +247,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 				startPage.contextPut("comment", StringHelper.xssScan(comment));
 			}
 			startPage.contextPut("attempts", courseAssessmentService.getAttempts(scormNode, userCourseEnv));
+			startPage.contextPut("attemptsConfig", config.getIntegerSafe(ScormEditController.CONFIG_MAXATTEMPTS, 0));
 			
 			if(ureq == null) {// High score need one
 				ureq = new SyntheticUserRequest(getIdentity(), getLocale(), userSession);

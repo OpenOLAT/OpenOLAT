@@ -33,24 +33,28 @@ import org.olat.repository.RepositoryEntry;
  */
 public abstract class AssessableResource {
 	
-	private Double minScore;
-	private Double maxScore;
-	private Double cutValue;
+	private final Double minScore;
+	private final Double maxScore;
+	private final Double cutValue;
+	private final Integer maxAttempts;
 	
-	private boolean hasScore;
-	private boolean hasPassed;
-	private boolean hasAttempts;
-	private boolean hasComments = false;
+	private final boolean hasScore;
+	private final boolean hasPassed;
+	private final boolean hasAttempts;
+	private final boolean hasMaxAttempts;
+	private final boolean hasComments;
 	
-	public AssessableResource(boolean hasScore, boolean hasPassed, boolean hasAttempts, boolean hasComments,
-			Double minScore, Double maxScore, Double cutValue) {
+	public AssessableResource(boolean hasScore, boolean hasPassed, boolean hasAttempts, boolean hasMaxAttempts, boolean hasComments,
+			Double minScore, Double maxScore, Double cutValue, Integer maxAttempts) {
 		this.hasScore = hasScore;
 		this.hasPassed = hasPassed;
 		this.hasAttempts = hasAttempts;
+		this.hasMaxAttempts = hasMaxAttempts;
 		this.hasComments = hasComments;
 		this.minScore = minScore;
 		this.maxScore = maxScore;
 		this.cutValue = cutValue;
+		this.maxAttempts = maxAttempts;
 	}
 	
 	public Double getMinScoreConfiguration() {
@@ -73,6 +77,14 @@ public abstract class AssessableResource {
 		return hasAttempts;
 	}
 	
+	public boolean hasMaxAttemptsConfigured() {
+		return hasMaxAttempts;
+	}
+	
+	public Integer getMaxAttempts() {
+		return maxAttempts;
+	}
+
 	public boolean hasPassedConfigured() {
 		return hasPassed;
 	}

@@ -8,7 +8,12 @@
 			<tbody>
 				<tr class="o_attempts">
 					<th>$r.translate("attempts.yourattempts")</th>
-					<td>$attempts</td> 
+					<td>
+						$attempts
+						#if ($attemptsConfig && $attemptsConfig > 0)
+							<span class="small">$r.translate("attempts.of.max", $attemptsConfig)</span>
+						#end
+					</td>
 				</tr> 
 				<tr class="o_score">
 					<th>$r.translate("score.yourscore")</th>

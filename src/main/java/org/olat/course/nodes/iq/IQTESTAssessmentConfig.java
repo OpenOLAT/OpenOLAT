@@ -210,6 +210,41 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	public boolean hasAttempts() {
 		return true;
 	}
+
+	@Override
+	public boolean hasMaxAttempts() {
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		// for onyx and QTI 1.2
+		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
+				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
+			return false;
+		}
+		return getConfigMaxAttempts() > 0;
+	}
+
+	@Override
+	public Integer getMaxAttempts() {
+		return hasAttempts()? Integer.valueOf(getConfigMaxAttempts()): null;
+	}
+	
+	private int getConfigMaxAttempts() {
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		if (config.has(IQEditController.CONFIG_KEY_ATTEMPTS)) {
+			return config.getIntegerSafe(IQEditController.CONFIG_KEY_ATTEMPTS, 0);
+		}
+		RepositoryEntry testEntry = courseNode.getCachedReferencedRepositoryEntry();
+		if (testEntry != null) {
+			if (QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
+				AssessmentTest assessmentTest = courseNode.loadAssessmentTest(testEntry);
+				if (assessmentTest != null) {
+					QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+					QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
+					return deliveryOptions.getMaxAttempts();
+				}
+			}
+		}
+		return 0;
+	}
 	
 	@Override
 	public boolean hasComment() {

@@ -109,6 +109,9 @@ public class AssessmentForm extends FormBasicController {
 			attempts = uifactory.addIntegerElement("attempts", "form.attempts", (attemptsValue == null ? 0 : attemptsValue.intValue()), formLayout);
 			attempts.setDisplaySize(3);
 			attempts.setMinValueCheck(0, null);
+			if (assessableElement.hasMaxAttemptsConfigured()) {
+				attempts.setExampleKey("form.attempts.example", new String[] {Integer.toString(assessableElement.getMaxAttempts())});
+			}
 		}
 
 		if (assessableElement.hasScoreConfigured()) {

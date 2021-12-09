@@ -103,6 +103,7 @@ public class AssessmentForm extends FormBasicController {
 	
 	private final boolean hasScore, hasPassed, hasComment, hasIndividualAssessmentDocs, hasAttempts;
 	private Float min, max, cut;
+	private final Integer maxAttempts;
 
 	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
@@ -137,6 +138,7 @@ public class AssessmentForm extends FormBasicController {
 		hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		hasComment = assessmentConfig.hasComment();
 		hasIndividualAssessmentDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
+		maxAttempts = assessmentConfig.hasMaxAttempts()? assessmentConfig.getMaxAttempts(): null;
 		
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
@@ -543,6 +545,9 @@ public class AssessmentForm extends FormBasicController {
 			attempts = uifactory.addIntegerElement("attempts", "form.attempts", attemptsValue.intValue(), formLayout);
 			attempts.setDisplaySize(3);
 			attempts.setMinValueCheck(0, null);
+			if (maxAttempts != null) {
+				attempts.setExampleKey("form.attempts.example", new String[] {Integer.toString(maxAttempts)});
+			}
 		}
 
 		if (hasScore) {
