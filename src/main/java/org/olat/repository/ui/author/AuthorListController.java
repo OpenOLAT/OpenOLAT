@@ -34,6 +34,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
@@ -106,6 +107,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -234,13 +237,15 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
-	protected RepositoryModule repositoryModule;
+	private RepositoryModule repositoryModule;
 	@Autowired
-	protected RepositoryService repositoryService;
+	private RepositoryService repositoryService;
 	@Autowired
-	protected RepositoryManager repositoryManager;
+	private RepositoryManager repositoryManager;
 	@Autowired
-	protected RepositoryHandlerFactory repositoryHandlerFactory;
+	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
@@ -576,6 +581,22 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.type"),
 				AuthorSourceFilter.TYPE.name(), resourceValues, true));
+		
+		// organizations
+		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		List<Organisation> organisationList = new ArrayList<>(organisations);
+		Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
+		
+		SelectionValues organisationValues = new SelectionValues();
+		for(Organisation organisation:organisationList) {
+			String key = organisation.getKey().toString();
+			organisationValues.add(SelectionValues.entry(key, organisation.getDisplayName()));
+		}
+		if(organisationValues.size() > 1) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.organisations"),
+				AuthorSourceFilter.ORGANISATION.name(), organisationValues, false));
+		}
 		
 		// taxonomy
 		SelectionValues taxonomyValues = getTaxonomyLevels();
