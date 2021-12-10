@@ -1040,7 +1040,7 @@ table.o_qti_item_kprim {
 		position: absolute;
 		top: 0.1em;
 		left: 0.05em;
-		+label {
+		+i+label {
 			display: inline;
 			padding: 0 0.1em 0 1.2em;
 			background: $o-qti-hottext-bg;
@@ -1511,7 +1511,8 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 	}
 	
 	/* align tables in assessment results to have same column width */
-	table th {
+	table.o_assessment_test_infos th,
+	div.o_userShortDescription th {
 		width: 40%;	
 	}
 	.o_qti_metainfo {
@@ -1653,6 +1654,12 @@ ul.o_qti_statistics_answers li span.o_qti_statistics_answer {
 		h3, h4 {
 			font-size: 150%;
 		}
+		
+		tr.choiceinteraction td.control,
+		table.o_match_true_false_edit td.control,
+		div.matchInteraction td.control {
+			white-space: nowrap;
+		}
 	}
 
 	.o_qti_item {
@@ -1754,12 +1761,15 @@ div.o_qti_statistics {
 	.choiceinteraction input[type="radio"][disabled],
 	.choiceinteraction input[type="checkbox"][disabled],
 	.matchInteraction input[type="radio"][disabled],
-	.matchInteraction input[type="checkbox"][disabled] {
+	.matchInteraction input[type="checkbox"][disabled],
+	.hottextInteraction .hottext input[type="radio"][disabled],
+	.hottextInteraction .hottext input[type="checkbox"][disabled] {
 		display: none;
 	}
 	
 	.choiceinteraction input + i,
-	.matchInteraction input + i  {
+	.matchInteraction input + i,
+	.hottextInteraction .hottext input + i {
 		display: inline;
 		font-family: FontAwesome;
 		font-style: normal;
@@ -1769,22 +1779,33 @@ div.o_qti_statistics {
 		-moz-osx-font-smoothing: grayscale;
 	}
 	
+	.hottextInteraction .hottext input + i  {
+		margin: 0 3px 0 2px;
+		position: absolute;
+		top: 0em;
+		left: 0.05em;
+	}
+	
 	.choiceInteraction input[type="radio"][disabled] + i:before,
 	.matchInteraction input[type="radio"][disabled] + i:before,
-	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i:before {
+	.matchInteraction.match_true_false input[type="checkbox"][disabled] + i:before,
+	.hottextInteraction  .hottext input[type="radio"][disabled] + i:before {
 		content: $fa-var-circle-o;
 	}
 	.choiceInteraction input[type="radio"][disabled]:checked + i:before,
 	.matchInteraction input[type="radio"][disabled]:checked + i:before,
-	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i:before {
+	.matchInteraction.match_true_false input[type="checkbox"][disabled]:checked + i:before,
+	.hottextInteraction .hottext input[type="radio"][disabled]:checked + i:before {
 		content: $fa-var-dot-circle-o;
 	}
 	.choiceInteraction input[type="checkbox"][disabled] + i:before,
-	.matchInteraction input[type="checkbox"][disabled] + i:before {
+	.matchInteraction input[type="checkbox"][disabled] + i:before,
+	.hottextInteraction .hottext input[type="checkbox"][disabled] + i:before {
 		content: $fa-var-square-o;
 	}
 	.choiceInteraction input[type="checkbox"][disabled]:checked + i:before,
-	.matchInteraction input[type="checkbox"][disabled]:checked + i:before {
+	.matchInteraction input[type="checkbox"][disabled]:checked + i:before,
+	.hottextInteraction .hottext input[type="checkbox"][disabled]:checked + i:before {
 		content: $fa-var-check-square-o;
 	}
 	

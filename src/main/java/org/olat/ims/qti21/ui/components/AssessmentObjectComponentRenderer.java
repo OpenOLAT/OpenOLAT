@@ -1171,7 +1171,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			if(valueContains(responseValue, hottext.getIdentifier())) {
 				sb.append(" checked");
 			}
-			sb.append(" />");
+			sb.append(" /><i></i>");
 			sb.append("<label for='").append(guid).append("'>");
 			hottext.getInlineStatics().forEach(inline
 					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));

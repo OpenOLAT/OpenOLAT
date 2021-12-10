@@ -35,7 +35,7 @@
 </div>
 
 <div class="o_qti_contextinfo o_block_bottom_large">
-	<table class="table table-bordered table-condensed table-striped">
+	<table class="table table-bordered table-condensed table-striped o_assessment_test_infos">
 	<tbody>
 		#if($contextTitle)
 		<tr class="o_qti_coursename">
@@ -92,7 +92,7 @@
 	<div class="row">	
 	<div class="o_qti_metainfo_listing #if(${testResults.hasScore()})col-xs-12 col-sm-7 col-md-8 col-lg-9 #end"> ## START left column
 	<div class="o_sel_results_details o_block_large">
-	<table class="table table-condensed"><tbody>
+	<table class="table table-condensed o_assessment_test_infos"><tbody>
 		<tr class="o_qti_run_durationinfo">
 			<th scope="row">$r.translate("results.duration")</th>
 			<td class="o_sel_assessmenttest_duration">

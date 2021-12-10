@@ -23,7 +23,7 @@
 			#foreach($targetChoice in $targetChoices)
 				#set($set2Identifier = $targetChoice.getIdentifierString())
 				#set($responseValue = $set1Identifier + " " + $set2Identifier)
-				<td class="o_sel_match_${sourceIndex}_${foreach.index}">
+				<td class="o_sel_match_${sourceIndex}_${foreach.index} control">
 					<input id="oo_${set1Identifier}_${set2Identifier}" type="radio" name="${set1Identifier}" value="${set2Identifier}" #if(${sourceChoice.isCorrect(${targetChoice.getIdentifier()})}) checked #end #if($restrictedEdit) disabled #end/>
 					$f.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
 					#if(${sourceChoice.isErrorSingleChoice()})
