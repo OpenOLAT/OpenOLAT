@@ -142,7 +142,7 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 			methods.add(testAntigen);
 		}
 		
-		if (usedByCovidCommissioner) {
+		if (usedByCovidCommissioner && immunityProofModule.getMaxValidityMedicalCertificate() > 0) {
 			methods.add(medicalCertificate);
 		}
 		
@@ -338,6 +338,7 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Date proofFrom = null;
+		Date proofTo = null;
 		ImmunityProofType type = null;
 		
 		if (immunityMethodEl.getSelectedKey().equals(vaccination.getKey())) {
@@ -353,13 +354,14 @@ public class ImmunityProofCreateManuallyController extends FormBasicController {
 			proofFrom = testAntigenDateChooser.getDate();
 			type = ImmunityProofType.antigenTest;
 		} else if (immunityMethodEl.getSelectedKey().equals(medicalCertificate.getKey())) {
-			proofFrom = medicalCertificateDateChooser.getDate();
+			proofFrom = new Date(); // unknown since when valid
+			proofTo = medicalCertificateDateChooser.getDate();
 			type = ImmunityProofType.medicalCertificate;
 		}
 		
 		boolean sendMail = confirmReminderEl.isAtLeastSelected(1);
 		
-		immunityProofService.createImmunityProof(editedIdentity, type, proofFrom, null, sendMail, usedByCovidCommissioner, true);
+		immunityProofService.createImmunityProof(editedIdentity, type, proofFrom, proofTo, sendMail, usedByCovidCommissioner, true);
 		
 		fireEvent(ureq, new ImmunityProofAddedEvent(editedIdentity));
 	}

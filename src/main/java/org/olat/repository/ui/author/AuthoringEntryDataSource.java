@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.Resourceable;
@@ -162,7 +164,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		EDUCATIONALTYPE,
 		TAXONOMYLEVEL,
 		LICENSE,
-		USAGE
+		USAGE,
+		ORGANISATION
 	}
 	
 	private void setFilterValue(FlexiTableFilter filter) {
@@ -227,6 +230,17 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 					searchParams.setResourceUsage(ResourceUsage.valueOf(usageKey));
 				} else {
 					searchParams.setResourceUsage(null);
+				}
+				break;
+			case ORGANISATION:
+				List<Long> organisationKeys = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
+				if(organisationKeys == null || organisationKeys.isEmpty()) {
+					searchParams.setEntryOrganisations(null);
+				} else {
+					List<OrganisationRef> organisations = organisationKeys.stream()
+							.map(OrganisationRefImpl::new)
+							.collect(Collectors.toList());
+					searchParams.setEntryOrganisations(organisations);
 				}
 				break;
 			default:
