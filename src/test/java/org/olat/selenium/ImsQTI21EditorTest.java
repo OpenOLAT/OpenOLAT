@@ -1157,7 +1157,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.moveCircle(300, 120)
 			.addRectangle()
 			.moveRectangle(150, 150)
-			.setCorrect("Hotspot 2", true)
+			.setCorrect("Hotspot 2", "2.", true)
 			.save();
 		// change max score
 		hotspotEditor
@@ -1184,7 +1184,7 @@ public class ImsQTI21EditorTest extends Deployments {
 			.moveCircle(310, 125)
 			.addRectangle()
 			.moveRectangle(145, 155)
-			.setCorrect("Hotspot 2", true)
+			.setCorrect("Hotspot 2", "2.", true)
 			.save();
 		// change scoring
 		hotspotEditor

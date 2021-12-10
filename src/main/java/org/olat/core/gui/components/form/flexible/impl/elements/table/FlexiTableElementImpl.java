@@ -896,8 +896,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		setFiltersValues(null, tab.getEnabledFilters(), tab.getImplicitFilters(), tab.getDefaultFiltersValues());
 		
 		if(tab.getSelectionBehavior() == TabSelectionBehavior.reloadData) {
+			rowCount = -1;
+			currentPage = 0;
 			reloadData();
 		} else if(tab.getSelectionBehavior() == TabSelectionBehavior.clear) {
+			rowCount = -1;
+			currentPage = 0;
 			if(dataModel instanceof FlexiTableDataSource) {
 				((FlexiTableDataSource<?>)dataModel).clear();
 				reset(true, true, false);
