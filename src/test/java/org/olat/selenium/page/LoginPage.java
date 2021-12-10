@@ -113,7 +113,7 @@ public class LoginPage {
 	 * Enter OpenOLAT as guest
 	 */
 	public void asGuest() {
-		By guestLinkBy = By.xpath("//a[contains(@href,'menu.guest')]");
+		By guestLinkBy = By.xpath("//a[i[contains(@class,'o_icon_provider_guest')]]");
 		OOGraphene.waitElement(guestLinkBy, browser);
 		browser.findElement(guestLinkBy).click();
 		By footerUserDivBy = By.id("o_footer_user");
