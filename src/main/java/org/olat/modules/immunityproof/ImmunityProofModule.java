@@ -57,6 +57,7 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	private static final String PROP_MAX_VALIDITY_RECOVERY =			"immunity.proof.max.validity.recovery";
 	private static final String PROP_VALIDITY_TEST_PCR = 				"immunity.proof.validity.test.pcr";
 	private static final String PROP_VALIDITY_TEST_ANTIGEN = 			"immunity.proof.validity.test.antigen";
+	private static final String PROP_MAX_VALIDITY_MEDICAL_CERTIFICATE = "immunity.proof.max.validity.medical.certificate";
 	
 	private static final String PROP_VALID_VACCINES = 					"immunity.proof.vaccines";
 	
@@ -88,6 +89,8 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 	private int validityPCR;
 	@Value("${immunity.proof.validity.test.antigen}")
 	private int validityAntigen;
+	@Value("${immunity.proof.max.validity.medical.certificate}")
+	private int maxValidityMedicalCertificate;
 	
 	@Value("${immunity.proof.vaccines}")
 	private String validVaccines;
@@ -148,6 +151,7 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		maxValidityRecovery = getIntPropertyValue(PROP_MAX_VALIDITY_RECOVERY, maxValidityRecovery);
 		validityPCR = getIntPropertyValue(PROP_VALIDITY_TEST_PCR, validityPCR);
 		validityAntigen = getIntPropertyValue(PROP_VALIDITY_TEST_ANTIGEN, validityAntigen);
+		maxValidityMedicalCertificate = getIntPropertyValue(PROP_MAX_VALIDITY_MEDICAL_CERTIFICATE, maxValidityMedicalCertificate);
 		
 		validVaccines = getStringPropertyValue(PROP_VALID_VACCINES, validVaccines);
 		
@@ -221,6 +225,17 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		this.validityAntigen = validityAntigen;
 		setIntProperty(PROP_VALIDITY_TEST_ANTIGEN, validityAntigen, true);
 	}
+
+	public int getMaxValidityMedicalCertificate() {
+		return maxValidityMedicalCertificate;
+	}
+	
+	public void setMaxValidityMedicalCertificate(int maxValidityMedicalCertificate) {
+		this.maxValidityMedicalCertificate = maxValidityMedicalCertificate;
+		setIntProperty(PROP_MAX_VALIDITY_MEDICAL_CERTIFICATE, maxValidityMedicalCertificate, true);
+	}
+	
+
 	
 	public String getValidVaccines() {
 		if (validVaccines != null) {
@@ -294,7 +309,7 @@ public class ImmunityProofModule extends AbstractSpringModule implements ConfigO
 		case antigenTest:
 			return new ImmutablePair<>(getValidityAntigen(), getValidityAntigen());
 		case medicalCertificate:
-			return new ImmutablePair<>(0, 0);
+			return new ImmutablePair<>(getMaxValidityMedicalCertificate(), getMaxValidityMedicalCertificate());
 		}
 		
 		return null;

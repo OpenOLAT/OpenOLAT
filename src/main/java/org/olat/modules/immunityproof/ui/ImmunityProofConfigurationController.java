@@ -92,6 +92,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 	private IntegerElement maxValidityPeriodRecovery;
 	private IntegerElement validityPeriodTestPCR;
 	private IntegerElement validityPeriodTestAntigen;
+	private IntegerElement maxValidityMedicalCertificate;
 	private TextElement customHelpLinkEl;
 	
 	private FormLayoutContainer mailConfig;
@@ -210,6 +211,13 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		validityPeriodTestAntigen.setElementCssClass("form-inline");
 		validityPeriodTestAntigen.setTextAddOn("days");
 		validityPeriodTestAntigen.setHelpTextKey("validity.test.help", null);
+
+		// Max validity of manually entered dates, e.g. medical certificate
+		maxValidityMedicalCertificate = uifactory.addIntegerElement("validity.max.medical.certificate", 0, validityConfig);
+		maxValidityMedicalCertificate.setDisplaySize(3);
+		maxValidityMedicalCertificate.setMaxLength(3);
+		maxValidityMedicalCertificate.setElementCssClass("form-inline");
+		maxValidityMedicalCertificate.setTextAddOn("days");
 		
 		// Custom help link
 		customHelpLinkEl = uifactory.addTextElement("custom.help.link", -1, "", validityConfig);
@@ -444,6 +452,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		immunityProofModule.setMaxValidityRecovery(maxValidityPeriodRecovery.getIntValue());
 		immunityProofModule.setValidityPCR(validityPeriodTestPCR.getIntValue());
 		immunityProofModule.setValidityAntigen(validityPeriodTestAntigen.getIntValue());
+		immunityProofModule.setMaxValidityMedicalCertificate(maxValidityMedicalCertificate.getIntValue());
 		
 		immunityProofModule.setCustomHelpLink(customHelpLinkEl.getValue());
 		
@@ -482,6 +491,8 @@ public class ImmunityProofConfigurationController extends FormBasicController {
 		maxValidityPeriodRecovery.setIntValue(immunityProofModule.getMaxValidityRecovery());
 		validityPeriodTestPCR.setIntValue(immunityProofModule.getValidityPCR());
 		validityPeriodTestAntigen.setIntValue(immunityProofModule.getValidityAntigen());
+		maxValidityMedicalCertificate.setIntValue(immunityProofModule.getMaxValidityMedicalCertificate());
+
 		
 		customHelpLinkEl.setValue(immunityProofModule.getCustomHelpLink());
 		
