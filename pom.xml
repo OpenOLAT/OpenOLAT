@@ -62,19 +62,20 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>11</targetJdk>
-		<org.springframework.version>5.3.12</org.springframework.version>
-		<org.hibernate.version>5.6.1.Final</org.hibernate.version>
+		<org.springframework.version>5.3.13</org.springframework.version>
+		<org.hibernate.version>5.6.2.Final</org.hibernate.version>
 		<apache.cxf>3.4.5</apache.cxf>
 		<apache.pdfbox>2.0.24</apache.pdfbox>
-		<apache.poi>5.0.0</apache.poi>
+		<apache.poi>5.1.0</apache.poi>
 		<apache.log4j>2.15.0</apache.log4j>
+		<org.bouncycastle>1.70</org.bouncycastle>
 		<org.slf4j>1.7.32</org.slf4j>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
-		<io.undertow>2.2.12.Final</io.undertow>
+		<io.undertow>2.2.14.Final</io.undertow>
 		<jackson.version>2.13.0</jackson.version>
 		<org.mysql.version>8.0.27</org.mysql.version>
 		<org.postgresql.version>42.3.1</org.postgresql.version>
-		<org.infinispan.version>13.0.1.Final</org.infinispan.version>
+		<org.infinispan.version>13.0.2.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.4</version.drone>
@@ -447,7 +448,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.52.5</version>
+				    <version>4.1.2</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1915,12 +1916,12 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk15on</artifactId>
-			<version>1.69</version>
+			<version>${org.bouncycastle}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.69</version>
+			<version>${org.bouncycastle}</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
@@ -2162,7 +2163,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.14</version>
+			<version>4.4.15</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -2279,7 +2280,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20210307</version>
+			<version>20211205</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2327,13 +2328,13 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.30.0-SNAPSHOT</version>
+			<version>0.34.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Overwrite selenium dependency to okhttp v3 -->
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
-			<version>4.9.2</version>
+			<version>4.9.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
