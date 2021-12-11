@@ -125,7 +125,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private FormLink coachingToolButton;
 	private FormLink uploadCertificateButton;
 	private CertificateAndEfficiencyStatementListModel tableModel;
-	private CertificateAndEfficiencyStatement rootCrumb;
 	private CertificateAndEfficiencyStatementRenderer treeRenderer;
 	
 	private FormLink freeFloatingCoursesLink;
@@ -196,9 +195,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 		// Show heading
 		flc.contextPut("showHeading", true);
-		
-		// Create fake root crumb
-		rootCrumb = new CertificateAndEfficiencyStatement();
 		
 		initForm(ureq);
 		activateFilter(CMD_ALL_EVIDENCE);
@@ -313,10 +309,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion, new LearningProgressCompletionCellRenderer()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new PassedCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));		
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
-				translate("table.header.show"), CMD_SHOW));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastUserUpdate));
+		//tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
+		//		translate("table.header.show"), CMD_SHOW));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity, getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recertification, new DateFlexiCellRenderer(getLocale())));
 		if (canLaunchCourse) {
@@ -404,6 +400,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		List<CertificateAndEfficiencyStatement> statements = new ArrayList<>();
 		Map<CurriculumElement, CertificateAndEfficiencyStatement> addedParents = new HashMap<>();
+		Set<UserEfficiencyStatementLight> scoresAdded = new HashSet<>();
 		
 		CertificateAndEfficiencyStatement curriculumRow = new CertificateAndEfficiencyStatement();
 		curriculumRow.setDisplayName(curriculum.getDisplayName());
@@ -430,7 +427,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			// Map all courses to taxonomy level and collect unmapped courses
 			Map<TaxonomyLevel, List<RepositoryEntryMyView>> mappedCourses = new HashMap<>();
 			List<RepositoryEntryMyView> unmappedCourses = new ArrayList<>();
-			Set<UserEfficiencyStatementLight> scoresAdded = new HashSet<>();
 			
 			taxonomyLevels.forEach(level -> mappedCourses.put(level, new ArrayList<>()));
 			
@@ -481,7 +477,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				levelRow.setParent(elementRow);
 				levelRow.setDisplayName(level.getDisplayName());
 				levelRow.setTaxonomy(true);
-				levelRow.setHoldsScore(false);
 				elementRow.setHasChildren(true);
 				
 				statements.add(levelRow);
@@ -513,11 +508,15 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 						statementRow.setLastModified(statement.getLastModified());
 						statementRow.setLastUserModified(statement.getLastUserModified());
 						
+						FormLink linkToStatemnt = uifactory.addFormLink(CMD_SHOW + statement.getKey(), null, Link.LINK + Link.NONTRANSLATED);
+						linkToStatemnt.setI18nKey(statement.getTitle());
+						linkToStatemnt.setUserObject(statementRow);
+						statementRow.setLinkToStatement(linkToStatemnt);
+						
 						AssessmentEntryScoring scoring = courseEntryKeysToScoring.get(statement.getCourseRepoKey());
 						if (scoring != null) {
 							statementRow.addToScore(scoring.getMaxScore() != null ? scoring.getMaxScore().floatValue() : null, 
-									scoring.getScore() != null ? scoring.getScore().floatValue() : null,
-									!scoresAdded.contains(statement));
+									scoring.getScore() != null ? scoring.getScore().floatValue() : null, scoring.getKey());
 							statementRow.setCompletion(scoring.getCompletion());
 							scoresAdded.add(statement);
 						}
@@ -561,12 +560,17 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					statementRow.setResourceKey(statement.getArchivedResourceKey());
 					statementRow.setLastModified(statement.getLastModified());
 					statementRow.setLastUserModified(statement.getLastUserModified());
+					
+					FormLink linkToStatemnt = uifactory.addFormLink(CMD_SHOW + statement.getKey(), null, Link.LINK + Link.NONTRANSLATED);
+					linkToStatemnt.setI18nKey(statement.getTitle());
+					linkToStatemnt.setUserObject(statementRow);
+					statementRow.setLinkToStatement(linkToStatemnt);
 
 					AssessmentEntryScoring scoring = courseEntryKeysToScoring.get(statement.getCourseRepoKey());
 					if (scoring != null) {
 						statementRow.addToScore(scoring.getMaxScore() != null ? scoring.getMaxScore().floatValue() : null, 
 								scoring.getScore() != null ? scoring.getScore().floatValue() : null,
-								!scoresAdded.contains(statement));
+								scoring.getKey());
 						statementRow.setCompletion(scoring.getCompletion());
 						scoresAdded.add(statement);
 					}
@@ -594,7 +598,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			CertificateAndEfficiencyStatement parentRow = new CertificateAndEfficiencyStatement();
 			parentRow.setDisplayName(parent.getDisplayName());
 			parentRow.setParent(returnValue);
-			parentRow.setHoldsScore(false);
+
 			
 			statements.add(parentRow);
 			addedParents.put(parent, parentRow);
@@ -639,6 +643,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			Double completion = courseEntryKeysToCompletion.get(efficiencyStatement.getCourseRepoKey());
 			wrapper.setCompletion(completion);
 			statments.add(wrapper);
+			
+			FormLink linkToStatemnt = uifactory.addFormLink(CMD_SHOW + "_flat_" + efficiencyStatement.getKey(), null, Link.LINK + Link.NONTRANSLATED);
+			linkToStatemnt.setI18nKey(efficiencyStatement.getTitle());
+			linkToStatemnt.setUserObject(wrapper);
+			wrapper.setLinkToStatement(linkToStatemnt);
+			
 			resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
 		}
 		
@@ -732,6 +742,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				Curriculum curriculum = (Curriculum) source.getUserObject();
 				activateFilter(CMD_CURRICULUM + curriculum.getKey().toString());
 				currentCurriculum = curriculum;
+			} else if (sourceLink.getCmd().startsWith(CMD_SHOW)) {
+				if (sourceLink.getUserObject() instanceof CertificateAndEfficiencyStatement) {
+					doShowStatement(ureq, (CertificateAndEfficiencyStatement) sourceLink.getUserObject());
+				}
 			}
 			
 			loadModel();

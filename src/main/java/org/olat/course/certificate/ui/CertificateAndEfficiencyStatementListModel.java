@@ -19,12 +19,14 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -71,7 +73,7 @@ public class CertificateAndEfficiencyStatementListModel
 	public Object getValueAt(CertificateAndEfficiencyStatement statement, int col) {
 		switch (Cols.values()[col]) {
 		case displayName:
-			return statement.getDisplayName();
+			return statement.getDisplayNameOrLink();
 		case score:
 			return statement.getScore();
 		case passed:
@@ -158,7 +160,15 @@ public class CertificateAndEfficiencyStatementListModel
 		private boolean isTaxonomy;
 		private boolean holdsScore = true;
 		
+		private FormLink linkToStatement;
+		
+		private List<Long> addedToScoresIds = new ArrayList<>();
+		
 		private CertificateAndEfficiencyStatement parent;
+		
+		public Object getDisplayNameOrLink() {
+			return linkToStatement != null ? linkToStatement : displayName;
+		}
 
 		public String getDisplayName() {
 			return displayName;
@@ -193,8 +203,8 @@ public class CertificateAndEfficiencyStatementListModel
 			this.score = score;
 		}
 		
-		public void addToScore(Float maxScore, Float score, boolean addToParent) {
-			if (holdsScore) {
+		public void addToScore(Float maxScore, Float score, Long statementKey) {
+			if (holdsScore && !addedToScoresIds.contains(statementKey)) {
 				if (scoreMax == null) {
 					scoreMax = maxScore;
 				} else if (maxScore != null) {
@@ -204,10 +214,12 @@ public class CertificateAndEfficiencyStatementListModel
 				if (score != null) {
 					this.score += score;
 				}
+				
+				addedToScoresIds.add(statementKey);
 			}
 			
-			if (addToParent && parent != null) {
-				parent.addToScore(maxScore, score, addToParent);
+			if (parent != null) {
+				parent.addToScore(maxScore, score, statementKey);
 			}
 		}
 
@@ -295,6 +307,14 @@ public class CertificateAndEfficiencyStatementListModel
 		
 		public void setHoldsScore(boolean holdsScore) {
 			this.holdsScore = holdsScore;
+		}
+		
+		public void setLinkToStatement(FormLink linkToStatement) {
+			this.linkToStatement = linkToStatement;
+		}
+		
+		public FormLink getLinkToStatement() {
+			return linkToStatement;
 		}
 
 		@Override
