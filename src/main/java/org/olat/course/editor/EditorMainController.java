@@ -720,7 +720,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				String nodeId = moveCopyController.getCopyNodeId();				
 				if (nodeId != null) {
 					menuTree.setSelectedNodeId(nodeId);
-					euce.getCourseEditorEnv().setCurrentCourseNodeId(nodeId);					
+					updateViewForSelectedNodeId(ureq, nodeId);
 					CourseNode copyNode = cetm.getCourseNode(nodeId);
 					initNodeEditor(ureq, copyNode);
 				}
@@ -973,7 +973,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private void doPostInsert(UserRequest ureq, CourseNode newNode) {
 		menuTree.setSelectedNodeId(newNode.getIdent());
 		// update the current node in the editor course environment
-		euce.getCourseEditorEnv().setCurrentCourseNodeId(newNode.getIdent());
+		updateViewForSelectedNodeId(ureq, newNode.getIdent());
 		euce.getCourseEditorEnv().validateCourse();
 		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 		updateCourseStatusMessages(getLocale(), courseStatus);					
