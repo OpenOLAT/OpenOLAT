@@ -161,7 +161,7 @@
 				#elseif(!${testResults.getCalculatedPassed().booleanValue()})		
 					<i class="o_icon o_icon_failed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
 				#else
-					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")
+					<i class="o_icon o_icon_passed_undefined"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")
 				#end
 			</td>
 		</tr>
@@ -466,7 +466,7 @@
 					<i class="o_icon o_icon_failed"> </i> 
 					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
 				#else
-					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")
+					<i class="o_icon o_icon_passed_undefined"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")
 				#end
 				</td>
 			</tr>

@@ -67,7 +67,7 @@
 				#elseif($hasPassedValue && !$passed)
 					<i class="o_icon o_icon_failed"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
 				#else
-					<div class="o_noinfo">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")</div>
+					<div class="o_noinfo"><i class="o_icon o_icon_passed_undefined"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")</div>
 				#end
 			</td>
 		</tr>

@@ -71,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class CourseNodeToReviewAbstractSmallController extends FormBasicController {
 	
-	private static final String CMD_SELECT = "select";
+	private static final String CMD_IDENTITIES = "identities";
 	private static final String CMD_IDENTITY = "identity";
 
 	private FlexiTableElement tableEl;
@@ -129,7 +129,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		
 		IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
 		intendedNodeRenderer.setIndentationEnabled(false);
-		DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(ToReviewCols.courseNode, CMD_SELECT, intendedNodeRenderer);
+		DefaultFlexiColumnModel nodeModel = new DefaultFlexiColumnModel(ToReviewCols.courseNode, CMD_IDENTITIES, intendedNodeRenderer);
 		columnsModel.addFlexiColumnModel(nodeModel);
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToReviewCols.participant));
@@ -184,10 +184,10 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				if(CMD_SELECT.equals(se.getCommand())) {
+				if(CMD_IDENTITIES.equals(se.getCommand())) {
 					int index = se.getIndex();
 					CourseNodeToReviewRow row = usersTableModel.getObject(index);
-					doSelectIdentity(ureq, row);
+					doSelectIdentity(ureq, row.getCourseNodeIdent(), null);
 				}
 			}
 		} else if (source instanceof FormLink) {
@@ -227,7 +227,8 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		removeAsListenerAndDispose(identitySelectionCtrl);
 		
 		if (row.getIdentities().size() <=1) {
-			doSelectIdentity(ureq, row);
+			Identity identity = row.getIdentities().size() == 1? row.getIdentities().get(0): null;
+			doSelectIdentity(ureq, row.getCourseNodeIdent(), identity);
 		} else {
 			identitySelectionCtrl = new IdentitySelectionController(ureq, getWindowControl(), row.getCourseNodeIdent(),
 					row.getIdentities(), getIdentityFilter());
@@ -241,9 +242,8 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		}
 	}
 
-	private void doSelectIdentity(UserRequest ureq, CourseNodeToReviewRow row) {
-		Identity identity = row.getIdentities().size() == 1? row.getIdentities().get(0): null;
-		fireEvent(ureq, new CourseNodeIdentityEvent(row.getCourseNodeIdent(), identity, getIdentityFilter()));
+	private void doSelectIdentity(UserRequest ureq, String courseNodeIdent, Identity identity) {
+		fireEvent(ureq, new CourseNodeIdentityEvent(courseNodeIdent, identity, getIdentityFilter()));
 	}
 
 }
