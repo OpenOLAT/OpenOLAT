@@ -86,11 +86,6 @@ implements SortableFlexiTableDataModel<AssessmentCoachingRow> {
 		}
 		return "ERROR";
 	}
-
-	@Override
-	public AssessmentCoachingTableModel createCopyWithEmptyList() {
-		return new AssessmentCoachingTableModel(getTableColumnModel(), userPropertyHandlers, locale);
-	}
 	
 	public enum AssessmentCoachingsCol implements FlexiSortableColumnDef {
 		course("table.header.course"),

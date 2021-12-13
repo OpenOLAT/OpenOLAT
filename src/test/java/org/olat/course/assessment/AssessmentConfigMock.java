@@ -39,6 +39,8 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	private boolean passedOverridable;
 	private Mode completionMode;
 	private boolean attempts;
+	private boolean hasMaxAttempts;
+	private Integer maxAttempts;
 	private boolean comment;
 	private boolean individualAsssessmentDocuments;
 	private boolean hasStatus;
@@ -138,6 +140,24 @@ public class AssessmentConfigMock implements AssessmentConfig {
 
 	public void setAttempts(boolean attempts) {
 		this.attempts = attempts;
+	}
+
+	@Override
+	public boolean hasMaxAttempts() {
+		return hasMaxAttempts;
+	}
+
+	@Override
+	public Integer getMaxAttempts() {
+		return maxAttempts;
+	}
+	
+	public void setHasMaxAttempts(boolean hasMaxAttempts) {
+		this.hasMaxAttempts = hasMaxAttempts;
+	}
+
+	public void setMaxAttempts(Integer maxAttempts) {
+		this.maxAttempts = maxAttempts;
 	}
 
 	@Override
