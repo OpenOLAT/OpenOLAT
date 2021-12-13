@@ -19,13 +19,10 @@
  */
 package org.olat.ims.qti21.ui.editor.testsexport;
 
-import java.io.File;
-import java.net.URI;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,16 +43,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
-import org.olat.ims.qti21.ui.ResourcesMapper;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
-import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 
 /**
  * 
@@ -127,7 +121,7 @@ public class TestsExport5OverviewStep extends BasicStep {
 			linkSolution.setTarget("_blank");
 			previewCont.put("preview.solution", linkSolution);
 			
-			/* for debugging purpose */
+			/* for debugging purpose
 			final File fUnzippedDirRoot = exportContext.getUnzippedDirRoot();
 			final URI assessmentObjectUri = CoreSpringFactory.getImpl(QTI21Service.class).createAssessmentTestUri(fUnzippedDirRoot);
 			final Mapper mapper = new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, (File)null);
@@ -137,7 +131,7 @@ public class TestsExport5OverviewStep extends BasicStep {
 			QTI21OfflineTestsPDFController previewCtrl = new QTI21OfflineTestsPDFController(ureq, getWindowControl(),
 					fUnzippedDirRoot, mapperUriForPdf, exportContext, testSessionController, serialNumber, true);
 			previewCont.add("test", previewCtrl.getInitialFormItem());
-			/* */
+			*/
 		}
 		
 		private void initGeneralForm(FormItemContainer formLayout) {
