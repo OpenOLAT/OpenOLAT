@@ -407,7 +407,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 						List.of(AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name())));
 			});
 		}
-		if (assessmentCallback.canAssessNonMembers() && !courseEntry.isAllUsers()) {
+		if (assessmentCallback.canAssessNonMembers()) {
 			tabs.forEach(tab -> {
 				tab.addDefaultFilterValue(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, "membersOnly"));
 			});
