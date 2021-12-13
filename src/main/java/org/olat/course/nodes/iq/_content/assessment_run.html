@@ -38,7 +38,7 @@
 						#end
 					</td>
 				</tr>
-				<tr class="o_state #if(!$resultsVisible) #elseif ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+				<tr class="o_state #if(!$resultsVisible || $inReview)) #elseif ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
 					<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
 					<td>
 						#if($inReview)
