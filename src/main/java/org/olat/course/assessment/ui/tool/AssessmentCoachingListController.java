@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -84,8 +85,6 @@ import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.UserDisplayNameCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.base.Functions;
 
 /**
  * 
@@ -398,7 +397,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 				.map(AssessmentCoachingRow::getRepositoryEntryKey)
 				.collect(Collectors.toSet());
 		Map<Long, RepositoryEntry> repoEntryKeyToReproEntry = repositoryManager.lookupRepositoryEntries(repositoryEntryKeys).stream()
-				.collect(Collectors.toMap(RepositoryEntry::getKey, Functions.identity()));
+				.collect(Collectors.toMap(RepositoryEntry::getKey, Function.identity()));
 		
 		for (AssessmentCoachingRow row : selectedRows) {
 			RepositoryEntry repositoryEntry = repoEntryKeyToReproEntry.get(row.getRepositoryEntryKey());
