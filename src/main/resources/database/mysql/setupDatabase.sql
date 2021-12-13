@@ -1431,7 +1431,7 @@ create table o_as_score_accounting_trigger (
    e_curriculum_element_key bigint,
    e_user_property_name varchar(64),
    e_user_property_value varchar(128),
-   fk_entry bigint not null not null,
+   fk_entry bigint not null,
    e_subident varchar(64) not null,
    primary key (id)
 );
@@ -3328,6 +3328,23 @@ create table o_grad_configuration (
    primary key (id)
 );
 
+-- Course
+create table o_course_element (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   c_type varchar(32) not null,
+   c_short_title varchar(32) not null,
+   c_long_title varchar(1024) not null,
+   c_assesseable bool not null,
+   c_score_mode varchar(16) not null,
+   c_passed_mode varchar(16) not null,
+   c_cut_value float(65,30),
+   fk_entry bigint not null,
+   c_subident varchar(64) not null,
+   primary key (id)
+);
+
 -- course styles
 create table o_course_color_category (
    id bigint not null auto_increment,
@@ -3834,6 +3851,7 @@ alter table o_grad_to_identity ENGINE = InnoDB;
 alter table o_grad_assignment ENGINE = InnoDB;
 alter table o_grad_time_record ENGINE = InnoDB;
 alter table o_grad_configuration ENGINE = InnoDB;
+alter table o_course_element ENGINE = InnoDB;
 alter table o_course_color_category ENGINE = InnoDB;
 alter table o_course_disclaimer_consent ENGINE = InnoDB;
 alter table o_ap_topic ENGINE = InnoDB;
@@ -4592,6 +4610,10 @@ alter table o_grad_time_record add constraint grad_time_to_assign_idx foreign ke
 alter table o_grad_time_record add constraint grad_time_to_grader_idx foreign key (fk_grader) references o_grad_to_identity (id);
 
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+-- Course
+alter table o_course_element add constraint courseele_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create unique index idx_courseele_subident_idx on o_course_element (c_subident, fk_entry);
 
 -- Course styles
 create unique index idx_course_colcat_ident on o_course_color_category (c_identifier);

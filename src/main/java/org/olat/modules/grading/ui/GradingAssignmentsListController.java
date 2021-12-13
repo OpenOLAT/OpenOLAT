@@ -412,7 +412,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 		}
 	}
 	
-	protected void activate(OpenAssignmentsEvent openAssignments) {
+	public void activate(OpenAssignmentsEvent openAssignments) {
 		if(searchCtrl != null) {
 			searchCtrl.setSearchStatus(openAssignments.getSearchStatus());
 			searchCtrl.setGrader(openAssignments.getGrader());

@@ -75,6 +75,8 @@ public interface AssessmentToolManager {
 	 * @return
 	 */
 	public AssessmentEntry getAssessmentEntries(IdentityRef assessedIdentity, RepositoryEntry entry, String subIdent);
+
+	public List<CoachingAssessmentEntry> getCoachingEntries(CoachingAssessmentSearchParams params);
 	
 
 }

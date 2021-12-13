@@ -20,9 +20,14 @@
 package org.olat.course.assessment.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -34,15 +39,23 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.CoachingAssessmentEntry;
+import org.olat.course.assessment.CoachingAssessmentSearchParams;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessmentStatistics;
+import org.olat.course.assessment.model.CoachingAssessmentEntryImpl;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -544,6 +557,177 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		List<AssessmentEntry> entries = list.getResultList();
 		return entries == null || entries.isEmpty() ? null : entries.get(0);
+	}
+
+	@Override
+	public List<CoachingAssessmentEntry> getCoachingEntries(CoachingAssessmentSearchParams params) {
+		// This method queries the assessment entries of all relevant repository entries.
+		// In a second step the users without a relation to the coach are excluded.
+		// In this second step some other search parameters are applied.
+		List<CoachingAssessmentEntryImpl> loadedCoachedEntries = loadCoachingEntries(params);
+		
+		Map<Long, Identity> identityKeyToIdentity = loadIdentities(loadedCoachedEntries, params).stream()
+				.collect(Collectors.toMap(Identity::getKey, Function.identity()));
+		List<RepositoryEntry> repositoryEntries = loadRepositoryEntries(loadedCoachedEntries);
+		Map<Long, RepositoryEntry> repoKeyToEntry = repositoryEntries.stream()
+				.collect(Collectors.toMap(RepositoryEntry::getKey, Function.identity()));
+		Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable = params.isUserVisibilitySettable()
+				? getCoachUserVisibleSettable(repositoryEntries)
+				: Collections.emptyMap();
+		
+		List<CoachingAssessmentEntry> coachedEntries = new ArrayList<>();
+		for (CoachingAssessmentEntryImpl coachedEntry : loadedCoachedEntries) {
+			filterAndAppend(coachedEntries, params, coachedEntry, identityKeyToIdentity, repoKeyToEntry, repoKeyToCoachUserVisibilitySettable);
+		}
+		
+		return coachedEntries;
+	}
+
+	private void filterAndAppend(List<CoachingAssessmentEntry> coachedEntries, CoachingAssessmentSearchParams params,
+			CoachingAssessmentEntryImpl coachedEntry, Map<Long, Identity> identityKeyToIdentity,
+			Map<Long, RepositoryEntry> repoKeyToEntry, Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable) {
+		if (!coachedEntry.isOwner() && !coachedEntry.isCoach()) {
+			return;
+		}
+		
+		Identity identity = identityKeyToIdentity.get(coachedEntry.getAssessedIdentityKey());
+		if (identity == null) {
+			return;
+		}
+		coachedEntry.setAssessedIdentity(identity);
+		
+		// Remove if not course or decommissioned
+		RepositoryEntry repositoryEntry = repoKeyToEntry.get(coachedEntry.getRepositoryEntryKey());
+		if (repositoryEntry == null) {
+			return;
+		}
+		coachedEntry.setRepositoryEntryName(repositoryEntry.getDisplayname());
+		
+		if (params.isUserVisibilitySettable() && !canSetUserVisibility(coachedEntry, repoKeyToCoachUserVisibilitySettable)) {
+			return;
+		}
+		
+		coachedEntries.add(coachedEntry);
+	}
+
+	private List<CoachingAssessmentEntryImpl> loadCoachingEntries(CoachingAssessmentSearchParams params) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select new org.olat.course.assessment.model.CoachingAssessmentEntryImpl(");
+		sb.append("   aentry.key");
+		sb.append(" , aentry.identity.key");
+		sb.append(" , aentry.repositoryEntry.key");
+		sb.append(" , aentry.subIdent");
+		sb.append(" , courseele.type");
+		sb.append(" , courseele.shortTitle");
+		sb.append(" , courseele.longTitle");
+		sb.append(" , aentry.lastUserModified");
+		sb.append(" , aentry.assessmentDone");
+		sb.append(" , (");
+		sb.append("      select count(*) > 0 from repoentrytogroup as rel, bgroupmember as owner");
+		sb.append("       where rel.entry.key=aentry.repositoryEntry.key");
+		sb.append("         and rel.group=owner.group and owner.role='").append(GroupRoles.owner.name()).append("' and owner.identity.key=:identityKey");
+		sb.append("   ) as owner");
+		sb.append(" , (");
+		sb.append("      select count(*) > 0 from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach");
+		sb.append("       where rel.entry.key=aentry.repositoryEntry.key");
+		sb.append("         and rel.group=coach.group and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey");
+		sb.append("         and rel.group=participant.group and participant.role='").append(GroupRoles.participant.name()).append("' and participant.identity=aentry.identity");
+		sb.append("   ) as coach");
+		sb.append(")");
+		sb.append("  from assessmententry aentry");
+		sb.append("       inner join courseelement courseele");
+		sb.append("               on courseele.repositoryEntry.key = aentry.repositoryEntry.key");
+		sb.append("              and courseele.subIdent = aentry.subIdent");
+		sb.append("              and courseele.assesseable is true");
+		sb.append("              and (courseele.scoreMode = '").append(Mode.setByNode).append("'");
+		sb.append("                   or courseele.passedMode = '").append(Mode.setByNode).append("')");
+		sb.and().append("(aentry.obligation is null or aentry.obligation <> '").append(AssessmentObligation.excluded).append("')");
+		sb.and().append(" exists (select 1");
+		sb.append("                 from repoentrytogroup as rtg, bgroupmember as rtgm");
+		sb.append("                where rtg.entry.key=aentry.repositoryEntry.key");
+		sb.append("                  and rtg.group=rtgm.group and rtgm.role").in(GroupRoles.owner, GroupRoles.coach);
+		sb.append("                  and rtgm.identity.key=:identityKey");
+		sb.append(")");
+		if (params.getStatus() != null) {
+			sb.and().append("aentry.status = :status");
+		}
+		if (params.getUserVisibility() != null) {
+			sb.and().append("aentry.userVisibility = :userVisibility");
+		}
+		
+		TypedQuery<CoachingAssessmentEntryImpl> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CoachingAssessmentEntryImpl.class)
+				.setParameter("identityKey", params.getCoach().getKey());
+		if (params.getStatus() != null) {
+			query.setParameter("status", params.getStatus().name());
+		}
+		if (params.getUserVisibility() != null) {
+			query.setParameter("userVisibility", params.getUserVisibility());
+		}
+		
+		return query.getResultList();
+	}
+	
+	public List<Identity> loadIdentities(List<CoachingAssessmentEntryImpl> coachedEntries, CoachingAssessmentSearchParams params) {
+		if (coachedEntries == null || coachedEntries.isEmpty()) return Collections.emptyList();
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident");
+		sb.append(" inner join fetch ident.user user");
+		sb.and().append(" ident.key in (:identityKeys)");
+		sb.and().append(" ident.status<").append(Identity.STATUS_DELETED);
+		String[] searchArr = appendUserSearchFull(sb, params.getSearchString(), true);
+		
+		Set<Long> identityKeys = coachedEntries.stream()
+				.map(CoachingAssessmentEntryImpl::getAssessedIdentityKey)
+				.collect(Collectors.toSet());
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("identityKeys", identityKeys);
+		appendUserSearchToQuery(searchArr, query);
+		
+		return query
+				.getResultList();
+	}
+	
+	public List<RepositoryEntry> loadRepositoryEntries(List<CoachingAssessmentEntryImpl> coachedEntries) {
+		if (coachedEntries == null || coachedEntries.isEmpty()) return Collections.emptyList();
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select v");
+		sb.append("  from ").append(RepositoryEntry.class.getName()).append(" as v ");
+		sb.append("        inner join fetch v.olatResource as ores"); // Ores is not uses but this join avoids 1:n selects?!
+		sb.and().append("v.key in (:repoKeys)");
+		sb.and().append("v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
+		sb.and().append("ores.resName ='CourseModule'");
+
+		Set<Long> repositoryEntryKeys = coachedEntries.stream()
+				.map(CoachingAssessmentEntry::getRepositoryEntryKey)
+				.collect(Collectors.toSet());
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.setParameter("repoKeys", repositoryEntryKeys)
+				.getResultList();
+	}
+
+	private HashMap<Long, Boolean>  getCoachUserVisibleSettable(List<RepositoryEntry> repositoryEntries) {
+		HashMap<Long, Boolean> repoEntryKeyToCoachUserVisibilitySettable = new HashMap<>(repositoryEntries.size());
+		for (RepositoryEntry repositoryEntry : repositoryEntries) {
+			ICourse course = CourseFactory.loadCourse(repositoryEntry);
+			Boolean coachUserVisibility = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY, true);
+			repoEntryKeyToCoachUserVisibilitySettable.put(repositoryEntry.getKey(), coachUserVisibility);
+		}
+		return repoEntryKeyToCoachUserVisibilitySettable;
+	}
+	
+	private boolean canSetUserVisibility(CoachingAssessmentEntry coachedEntry, Map<Long, Boolean> repoEntryKeyToCoachUserVisibilitySettable) {
+		if (coachedEntry.isOwner()) {
+			return true;
+		} else if (coachedEntry.isCoach()) {
+			return repoEntryKeyToCoachUserVisibilitySettable.get(coachedEntry.getRepositoryEntryKey()).booleanValue();
+		}
+		return false;
 	}
 	
 }

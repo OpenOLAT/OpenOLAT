@@ -1425,6 +1425,31 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.course.assessment.ui.tool.AssessmentCoachingTableModel">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Assessments in coaching tool" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.course.learningpath.ui.LearningPathIdentityListController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Learning path of coaches" />

@@ -1453,7 +1453,7 @@ create table o_as_score_accounting_trigger (
    e_curriculum_element_key int8,
    e_user_property_name varchar(64),
    e_user_property_value varchar(128),
-   fk_entry int8 not null not null,
+   fk_entry int8 not null,
    e_subident varchar(64) not null,
    primary key (id)
 );
@@ -3350,6 +3350,23 @@ create table o_grad_configuration (
    primary key (id)
 );
 
+-- Course
+create table o_course_element (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   c_type varchar(32) not null,
+   c_short_title varchar(32) not null,
+   c_long_title varchar(1024) not null,
+   c_assesseable bool not null,
+   c_score_mode varchar(16) not null,
+   c_passed_mode varchar(16) not null,
+   c_cut_value decimal,
+   fk_entry int8 not null,
+   c_subident varchar(64) not null,
+   primary key (id)
+);
+
 -- Course styles
 create table o_course_color_category (
    id bigserial,
@@ -4686,6 +4703,11 @@ create index idx_grad_time_to_grader_idx on o_grad_time_record (fk_grader);
 
 alter table o_grad_configuration add constraint grad_config_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_grad_config_to_entry_idx on o_grad_configuration (fk_entry);
+
+-- Course
+alter table o_course_element add constraint courseele_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_courseele_entry_idx on o_course_element (fk_entry);
+create unique index idx_courseele_subident_idx on o_course_element (c_subident, fk_entry);
 
 -- Course styles
 create unique index idx_course_colcat_ident on o_course_color_category (c_identifier);

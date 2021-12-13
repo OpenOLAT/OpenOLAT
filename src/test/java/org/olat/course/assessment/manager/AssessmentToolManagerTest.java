@@ -20,6 +20,7 @@
 package org.olat.course.assessment.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.miniRandom;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
@@ -29,12 +30,23 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.course.CourseFactory;
+import org.olat.course.assessment.AssessmentConfigMock;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.CoachingAssessmentEntry;
+import org.olat.course.assessment.CoachingAssessmentSearchParams;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.core.CourseElement;
+import org.olat.course.core.manager.CourseElementDAO;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.SPCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -46,6 +58,7 @@ import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -64,6 +77,12 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private CourseElementDAO couurseElementDao;
+	@Autowired
+	private BaseSecurityManager securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
@@ -454,6 +473,258 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		params.setAssessmentObligations(List.of(AssessmentObligation.mandatory, AssessmentObligation.optional));
 		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3);
+	}
+	
+	@Test
+	public void getCoachingEntries() {
+		//course
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(admin);
+		RepositoryEntry entry3 = JunitTestHelper.deployBasicCourse(admin);
+		RepositoryEntry entry4 = JunitTestHelper.deployBasicCourse(admin);
+		RepositoryEntry entryTrashed = JunitTestHelper.deployBasicCourse(admin);
+			repositoryService.deleteSoftly(entryTrashed, admin, false, false);
+		String subIdent = random();
+		createCourseElement(entry1, subIdent);
+		createCourseElement(entry2, subIdent);
+		createCourseElement(entry3, subIdent);
+		createCourseElement(entry4, subIdent);
+		createCourseElement(entryTrashed, subIdent);
+		
+		// Group participant
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Group participant
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Group participant, group not linked to the course
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant and group participant
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant
+		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, no assessment entry
+		Identity assessedIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, obligation mandatory
+		Identity assessedIdentity9 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, obligation mandatory
+		Identity assessedIdentity10 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, obligation mandatory
+		Identity assessedIdentity11 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, obligation none
+		Identity assessedIdentity12 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant by owner
+		Identity assessedIdentity13 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, only group coach
+		Identity assessedIdentity14 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, wrong status
+		Identity assessedIdentity15 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, wrong user visibility
+		Identity assessedIdentity16 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Course participant, no user visibility (= true)
+		Identity assessedIdentity17 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Not member but assessment entry (coach)
+		Identity assessedIdentity18 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Not member but assessment entry (owner)
+		Identity assessedIdentity19 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		// Member, but course in trash
+		Identity assessedIdentity21 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		//Member but identity is deleted
+		Identity assessedIdentity22 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		assessedIdentity22 = securityManager.saveIdentityStatus(assessedIdentity22, Identity.STATUS_DELETED, admin);
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+
+		BusinessGroup group1 = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(group1, entry1);
+		
+		repositoryEntryRelationDao.addRole(coach, entry1, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(coach, entry2, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(coach, entry3, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(coach, entry3, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(coach, entryTrashed, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity4, entry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity5, entry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity8, entry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity9, entry2, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity10, entry2, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity11, entry2, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity12, entry2, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity13, entry2, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity14, entry3, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity15, entry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity16, entry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity17, entry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity21, entryTrashed, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity22, entryTrashed, GroupRoles.participant.name());
+		
+		businessGroupRelationDao.addRole(assessedIdentity1, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity2, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity4, group1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(coach, group1, GroupRoles.coach.name());
+		
+		// Group not linked to the course
+		BusinessGroup group2 = businessGroupDao.createAndPersist(null, random(), random(), BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(assessedIdentity3, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(coach, group2, GroupRoles.coach.name());
+		
+		// Group coach
+		dbInstance.commitAndCloseSession();
+		
+		// some datas
+		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae4 = createAssessmentEntry(assessedIdentity4, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae5 = createAssessmentEntry(assessedIdentity5, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae8 = createAssessmentEntry(null, entry1, random(), AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae9 = createAssessmentEntry(assessedIdentity9, entry2, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae10 = createAssessmentEntry(assessedIdentity10, entry2, subIdent, AssessmentObligation.optional, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae11 = createAssessmentEntry(assessedIdentity11, entry2, subIdent, AssessmentObligation.excluded, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae12 = createAssessmentEntry(assessedIdentity12, entry2, subIdent, null, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae13 = createAssessmentEntry(assessedIdentity13, entry2, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae14 = createAssessmentEntry(assessedIdentity14, entry3, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae15 = createAssessmentEntry(assessedIdentity15, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.notStarted, Boolean.FALSE);
+		AssessmentEntry ae16 = createAssessmentEntry(assessedIdentity16, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.TRUE);
+		AssessmentEntry ae17 = createAssessmentEntry(assessedIdentity17, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, null);
+		AssessmentEntry ae18 = createAssessmentEntry(assessedIdentity18, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae19 = createAssessmentEntry(assessedIdentity19, entry2, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae21 = createAssessmentEntry(assessedIdentity21, entryTrashed, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae22 = createAssessmentEntry(assessedIdentity22, entryTrashed, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		dbInstance.commitAndCloseSession();
+		
+		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
+		params.setCoach(coach);
+		params.setStatus(AssessmentEntryStatus.inReview);
+		params.setUserVisibility(Boolean.FALSE);
+		List<CoachingAssessmentEntry> coachingEntries = assessmentToolManager.getCoachingEntries(params);
+		
+		assertThat(coachingEntries).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert that is available")
+				.contains(
+					ae1.getKey(),
+					ae2.getKey(),
+					ae4.getKey(),
+					ae5.getKey(),
+					ae9.getKey(),
+					ae10.getKey(),
+					ae12.getKey(),
+					ae13.getKey(),
+					ae14.getKey(),
+					ae19.getKey()
+				).doesNotContain(
+					ae3.getKey(),
+					ae8.getKey(),
+					ae11.getKey(),
+					ae15.getKey(),
+					ae16.getKey(),
+					ae17.getKey(),
+					ae18.getKey(),
+					ae21.getKey(),
+					ae22.getKey()
+				);
+		
+		assertThat(coachingEntries).filteredOn(CoachingAssessmentEntry::isCoach).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert that is coach")
+				.contains(
+					ae1.getKey(),
+					ae2.getKey(),
+					ae4.getKey(),
+					ae5.getKey(),
+					ae14.getKey()
+				).doesNotContain(
+					ae9.getKey(),
+					ae10.getKey(),
+					ae12.getKey(),
+					ae13.getKey(),
+					ae18.getKey(),
+					ae19.getKey()
+				);
+		
+		assertThat(coachingEntries).filteredOn(CoachingAssessmentEntry::isOwner).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("assert that is owner")
+				.contains(
+					ae9.getKey(),
+					ae10.getKey(),
+					ae12.getKey(),
+					ae13.getKey(),
+					ae14.getKey(),
+					ae19.getKey()
+				).doesNotContain(
+					ae1.getKey(),
+					ae2.getKey(),
+					ae4.getKey(),
+					ae5.getKey(),
+					ae18.getKey()
+				);
+	}
+	
+	@Test
+	public void getCoachingEntries_filter_userVisibilitySetable() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(admin);
+		CourseFactory.loadCourse(entry1).getRunStructure().getRootNode().getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, true);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(admin);
+		CourseFactory.loadCourse(entry2).getRunStructure().getRootNode().getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, false);
+		String subIdent = random();
+		createCourseElement(entry1, subIdent);
+		createCourseElement(entry2, subIdent);
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		repositoryEntryRelationDao.addRole(owner, entry1, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(coach, entry1, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(participant, entry1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(owner, entry2, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(coach, entry2, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(participant, entry2, GroupRoles.participant.name());
+		
+		AssessmentEntry ae1 = createAssessmentEntry(participant, entry1, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		AssessmentEntry ae2 = createAssessmentEntry(participant, entry2, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		dbInstance.commitAndCloseSession();
+		
+		CoachingAssessmentSearchParams params = new CoachingAssessmentSearchParams();
+		params.setCoach(coach);
+		params.setUserVisibilitySettable(true);
+		List<CoachingAssessmentEntry> coachingEntries = assessmentToolManager.getCoachingEntries(params);
+		
+		assertThat(coachingEntries).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("coach can set user visibility")
+				.contains(ae1.getKey())
+				.doesNotContain(ae2.getKey());
+		
+		params.setCoach(owner);
+		coachingEntries = assessmentToolManager.getCoachingEntries(params);
+		assertThat(coachingEntries).extracting(CoachingAssessmentEntry::getAssessmentEntryKey)
+				.as("owner can set user visibility")
+				.contains(ae1.getKey(), ae2.getKey());
+	}
+
+	private AssessmentEntry createAssessmentEntry(Identity identity, RepositoryEntry entry, String subIdent,
+			AssessmentObligation obligation, AssessmentEntryStatus status, Boolean userVisibility) {
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(identity, null, entry, subIdent, null, null);
+		if (obligation != null) {
+			ae.setObligation(ObligationOverridable.of(obligation));
+		}
+		ae.setAssessmentStatus(status);
+		ae.setUserVisibility(userVisibility);
+		return assessmentEntryDao.updateAssessmentEntry(ae);
+	}
+
+	private CourseElement createCourseElement(RepositoryEntry entry, String subIdent) {
+		CourseNode courseNode = new SPCourseNode();
+		courseNode.setIdent(subIdent);
+		courseNode.setShortTitle(miniRandom());
+		courseNode.setLongTitle(random());
+		
+		AssessmentConfigMock assessmentConfig = new AssessmentConfigMock();
+		assessmentConfig.setAssessable(true);
+		assessmentConfig.setScoreMode(Mode.setByNode);
+		assessmentConfig.setPassedMode(Mode.setByNode);
+		assessmentConfig.setCutValue(Float.valueOf(2.4f));
+		
+		return couurseElementDao.create(entry, courseNode, assessmentConfig);
 	}
 
 }

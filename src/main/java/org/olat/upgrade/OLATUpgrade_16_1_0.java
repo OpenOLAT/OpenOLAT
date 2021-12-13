@@ -19,9 +19,19 @@
  */
 package org.olat.upgrade;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.Tracing;
+import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.Structure;
+import org.olat.course.core.CourseNodeService;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -36,9 +46,12 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_16.1.0";
 	private static final String UPDATE_ASSESSMENT_OBLIGATION = "UPDATE ASSESSMENT OBLIGATION";
+	private static final String INIT_COURSE_ELEMENT = "INIT COURSE ELEMENT";
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private CourseNodeService courseNodeService;
 
 	public OLATUpgrade_16_1_0() {
 		super();
@@ -62,7 +75,8 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		boolean allOk = true;
 		
 		allOk &= updateAssessmentObligation(upgradeManager, uhd);
-
+		allOk &= initCourseElements(upgradeManager, uhd);
+		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
@@ -92,6 +106,71 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		}
 
 		return allOk;
+	}
+	
+	private boolean initCourseElements(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(INIT_COURSE_ELEMENT)) {
+			try {
+				initCourseElements();
+				dbInstance.commitAndCloseSession();
+				log.info("All course elements initialized.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(INIT_COURSE_ELEMENT, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void initCourseElements() {
+		List<RepositoryEntry> courseEntries = getCourseEntries();
+
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (RepositoryEntry repositoryEntry : courseEntries) {
+			initCourseElements(repositoryEntry);
+			migrationCounter.incrementAndGet();
+			dbInstance.commitAndCloseSession();
+			if(migrationCounter.get() % 100 == 0) {
+				log.info("Init course elements: num. of courses migrated: {}", migrationCounter);
+			}
+		}
+	}
+	
+	private List<RepositoryEntry> getCourseEntries() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select re");
+		sb.append("  from repositoryentry re");
+		sb.append("       inner join re.olatResource as ores");
+		sb.and().append(" ores.resName = 'CourseModule'");
+		sb.append(" order by re.statistics.lastUsage desc");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntry.class)
+				.getResultList();
+	}
+	
+	private void initCourseElements(RepositoryEntry repositoryEntry) {
+		try {
+			ICourse course = CourseFactory.loadCourse(repositoryEntry);
+			if (course != null) {
+				Structure runStructure = course.getCourseEnvironment().getRunStructure();
+				if (runStructure != null) {
+					courseNodeService.syncCourseElements(course);
+					log.info("Init course elements done: course {} ({}).",
+							repositoryEntry.getKey(), repositoryEntry.getDisplayname());
+				}
+			}
+		} catch (CorruptedCourseException cce) {
+			log.warn("CorruptedCourseException in init course elements of course {} ({})",
+					repositoryEntry.getKey(), repositoryEntry.getDisplayname());
+		} catch (Exception e) {
+			log.error("Error in init course elements of course {} ({}).", repositoryEntry.getKey(),
+					repositoryEntry.getDisplayname());
+			log.error("", e);
+		}
 	}
 	
 }

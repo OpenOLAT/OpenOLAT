@@ -20,6 +20,28 @@ alter table o_gp_business add constraint gb_bus_softdeletedby_idx foreign key (f
 create index idx_gb_bus_softdeletedby_idx on o_gp_business (fk_softdeletedby_id);
 
 
+-- Course
+create table o_course_element (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   c_type varchar(32) not null,
+   c_short_title varchar(32) not null,
+   c_long_title varchar(1024) not null,
+   c_assesseable number(20) not null,
+   c_score_mode varchar(16) not null,
+   c_passed_mode varchar(16) not null,
+   c_cut_value decimal,
+   fk_entry number(20) not null,
+   c_subident varchar(64) not null,
+   primary key (id)
+);
+
+alter table o_course_element add constraint courseele_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_courseele_entry_idx on o_course_element (fk_entry);
+create unique index idx_courseele_subident_idx on o_course_element (c_subident, fk_entry);
+
+
 -- Assessment
 alter table o_as_entry add a_obligation_inherited varchar2(50);
 alter table o_as_entry add a_obligation_evaluated varchar2(50);

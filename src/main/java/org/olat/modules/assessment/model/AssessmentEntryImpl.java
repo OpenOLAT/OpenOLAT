@@ -274,6 +274,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		this.score = score;
 	}
 	
+	@Override
 	public BigDecimal getMaxScore() {
 		return maxScore;
 	}

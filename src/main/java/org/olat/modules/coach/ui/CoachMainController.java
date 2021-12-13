@@ -64,7 +64,6 @@ import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.GradingSecurityCallback;
 import org.olat.modules.grading.GradingSecurityCallbackFactory;
 import org.olat.modules.grading.model.GradingSecurity;
-import org.olat.modules.grading.ui.GradingCoachingOverviewController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
@@ -98,7 +97,8 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private CourseListController courseListCtrl;
 	private StudentListController studentListCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
-	private GradingCoachingOverviewController gradingCtrl;
+	private OrdersOverviewController ordersOverviewCtrl;
+	private OrdersAdminController ordersAdminCtrl;
 	private LecturesCoachingController lecturesTeacherCtrl;
 	private LecturesCoachingController lecturesMasterCoachCtrl;
 
@@ -308,16 +308,26 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(userSearchCtrl);
 			}
 			selectedCtrl = userSearchCtrl;
-		} else if("grading".equalsIgnoreCase(cmd) && gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())) {
-			if(gradingCtrl == null) {
-				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Grading", 0l);
+		} else if("orders".equalsIgnoreCase(cmd) && (coachingSec.isCoach() || (gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())))) {
+			if(ordersOverviewCtrl == null) {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Orders", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 				GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getSecurityCalllback(getIdentity(), gradingSec);
-				gradingCtrl = new GradingCoachingOverviewController(ureq, bwControl, content, secCallback);
-				listenTo(gradingCtrl);
+				ordersOverviewCtrl = new OrdersOverviewController(ureq, bwControl, content, coachingSec, secCallback);
+				listenTo(ordersOverviewCtrl);
 			}
-			selectedCtrl = gradingCtrl;
+			selectedCtrl = ordersOverviewCtrl;
+		} else if("ordersadmin".equalsIgnoreCase(cmd) && gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) {
+			if(ordersAdminCtrl == null) {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("OrdersAdmin", 0l);
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+				GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getSecurityCalllback(getIdentity(), gradingSec);
+				ordersAdminCtrl = new OrdersAdminController(ureq, bwControl, content, secCallback);
+				listenTo(ordersAdminCtrl);
+			}
+			selectedCtrl = ordersAdminCtrl;
 		} else if (userRelationRolesMap.keySet().contains(cmd)) {
 			selectMenuItem(ureq, userRelationRolesMap.get(cmd));
 		}
@@ -507,12 +517,20 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			root.addChild(organisationsNode);
 		}
 
-		if(gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())) {
-			GenericTreeNode courses = new GenericTreeNode();
-			courses.setUserObject("Grading");
-			courses.setTitle(translate("grading.menu.title"));
-			courses.setAltText(translate("grading.menu.title.alt"));
-			root.addChild(courses);
+		if (coachingSec.isCoach() || (gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager()))) {
+			GenericTreeNode ordersNode = new GenericTreeNode();
+			ordersNode.setUserObject("Orders");
+			ordersNode.setTitle(translate("orders.menu.title"));
+			ordersNode.setAltText(translate("orders.menu.title.alt"));
+			root.addChild(ordersNode);
+			
+			if (gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) {
+				GenericTreeNode ordersAdminNode = new GenericTreeNode();
+				ordersAdminNode.setUserObject("OrdersAdmin");
+				ordersAdminNode.setTitle(translate("orders.admin.menu.title"));
+				ordersAdminNode.setAltText(translate("orders.admin.menu.title.alt"));
+				ordersNode.addChild(ordersAdminNode);
+			}
 		}
 
 		if(userSearchAllowed) {

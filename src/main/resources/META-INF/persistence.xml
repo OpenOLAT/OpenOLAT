@@ -97,6 +97,7 @@
 		<class>org.olat.modules.immunityproof.model.ImmunityProofImpl</class>
 		<class>org.olat.modules.dcompensation.model.DisadvantageCompensationImpl</class>
 		<class>org.olat.modules.dcompensation.model.DisadvantageCompensationAuditLogImpl</class>
+		<class>org.olat.course.core.model.CourseElementImpl</class>
 		<class>org.olat.course.disclaimer.model.CourseDisclaimerConsentImpl</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>

@@ -101,6 +101,7 @@ import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigManager;
 import org.olat.course.config.ui.courselayout.CourseLayoutHelper;
+import org.olat.course.core.CourseNodeService;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.PublishSetInformations;
@@ -441,6 +442,8 @@ public class CourseFactory {
 		CoreSpringFactory.getImpl(GTAManager.class).deleteAllTaskLists(entry);
 		//delete the storage folder of info messages attachments
 		CoreSpringFactory.getImpl(InfoMessageFrontendManager.class).deleteStorage(course);
+		// Delete course elements
+		CoreSpringFactory.getImpl(CourseNodeService.class).deleteCourseElements(entry);
 
 		// cleanup cache
 		removeFromCache(res.getResourceableId());

@@ -184,7 +184,7 @@ public class GradersListController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "graders", tableModel, 24, false, getTranslator(), formLayout);
 	}
 	
-	protected void updateModel() {
+	public void updateModel() {
 		loadModel(false);
 	}
 
