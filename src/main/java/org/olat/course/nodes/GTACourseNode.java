@@ -909,7 +909,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	public boolean isOptional(UserCourseEnvironment userCourseEnv) {
-		if (userCourseEnv != null && LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnv).getType())) {
+		NodeAccessType nodeAccessType = NodeAccessType.of(userCourseEnv);
+		updateModuleConfigDefaults(false, getParent(), nodeAccessType);
+		if (userCourseEnv != null && LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
 			AssessmentEvaluation evaluation = userCourseEnv.getScoreAccounting().evalCourseNode(this);
 			if (evaluation != null && evaluation.getObligation() != null && evaluation.getObligation().getCurrent() != null) {
 				return AssessmentObligation.optional == evaluation.getObligation().getCurrent();
