@@ -91,7 +91,7 @@ public class EfficiencyStatementPage {
 			courseTitle = courseTitle.substring(0, 25);
 		}
 		String passedCss = passed ? "o_passed" : "o_failed";
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/div[contains(@class,'o_state')][contains(@class,'" + passedCss + "')]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td/a/span[contains(text(),'" + courseTitle + "')]]/td/div[contains(@class,'o_state')][contains(@class,'" + passedCss + "')]");
 		OOGraphene.waitElement(courseCertificateBy, browser);
 		return this;
 	}
@@ -123,7 +123,7 @@ public class EfficiencyStatementPage {
 		if(courseTitle.length() > 25) {
 			courseTitle = courseTitle.substring(0, 25);
 		}
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td//a[contains(@onclick,'cmd.show')]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr/td/a[span[contains(text(),'" + courseTitle + "')]]");
 		OOGraphene.waitElement(courseCertificateBy, browser);
 		browser.findElement(courseCertificateBy).click();
  		OOGraphene.waitBusy(browser);
@@ -141,7 +141,7 @@ public class EfficiencyStatementPage {
 		if(courseTitle.length() > 25) {
 			courseTitle = courseTitle.substring(0, 25);
 		}
-		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/a[contains(@onclick,'cmd.MEDIA')][i[contains(@class,'o_icon_eportfolio_add')]]");
+		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td/a/span[contains(text(),'" + courseTitle + "')]]/td/a[contains(@onclick,'cmd.MEDIA')][i[contains(@class,'o_icon_eportfolio_add')]]");
 		OOGraphene.waitElement(collectBy, browser);
 		OOGraphene.scrollTo(collectBy, browser);
 		browser.findElement(collectBy).click();
