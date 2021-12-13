@@ -5,6 +5,22 @@
 	}
 }
 
+.o_course_editor {
+	.o_titled_wrapper {
+		display: flex;
+		.o_title {
+			margin-right: auto;
+		}
+		.o_node_cmds {
+			display: flex;
+			>div {
+				margin-left: 5px;
+			}
+		}
+		
+	}
+}
+
 /* Course node rights */
 .o_node_right {
 	.o_toggle {

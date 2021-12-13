@@ -38,6 +38,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.badge.Badge.Level;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.MainPanel;
@@ -135,10 +136,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	protected static final String TB_ACTION = "o_tb_do_";
 
-	private static final String CMD_COPYNODE = "copyn";
+	private static final String CMD_DUPLICATE = "duplicate";
 	private static final String CMD_IMPORT = "importn";
 	private static final String CMD_MOVENODE = "moven";
-	private static final String CMD_DELNODE = "deln";
+	private static final String CMD_DELNODE = "command.deletenode";
 	private static final String CMD_PUBLISH = "pbl";
 	private static final String CMD_OVERVIEW = "overview";
 	private static final String CMD_COURSEPREVIEW = "cprev";
@@ -151,17 +152,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private static final String NLS_COMMAND_COURSEPREVIEW = "command.coursepreview";
 	private static final String NLS_COMMAND_PUBLISH = "command.publish";
 	private static final String NLS_HEADER_INSERTNODES = "header.insertnodes";
-	private static final String NLS_COMMAND_DELETENODE_HEADER = "command.deletenode.header";
-	private static final String NLS_COMMAND_DELETENODE = "command.deletenode";
 	private static final String NLS_COMMAND_MOVENODE = "command.movenode";
-	private static final String NLS_COMMAND_COPYNODE = "command.copynode";
 	private static final String NLS_DELETENODE_SUCCESS = "deletenode.success";
 	private static final String NLS_START_HELP_WIZARD = "start.help.wizard";
 	private static final String NLS_INSERTNODE_TITLE = "insertnode.title";
 	private static final String NLS_DELETENODE_ERROR_SELECTFIRST = "deletenode.error.selectfirst";
-	private static final String NLS_DELETENODE_ERROR_ROOTNODE = "deletenode.error.rootnode";
 	private static final String NLS_MOVECOPYNODE_ERROR_SELECTFIRST = "movecopynode.error.selectfirst";
-	private static final String NLS_MOVECOPYNODE_ERROR_ROOTNODE = "movecopynode.error.rootnode";
 	
 	protected static final Event MANUAL_PUBLISH = new Event("manual-publish");
 
@@ -190,11 +186,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	private EditorUserCourseEnvironmentImpl euce;
 	
-	private Dropdown nodeTools;
+	private Dropdown cmdsDropDown;
 	private Link undelButton, alternativeLink, statusLink;
 	private Link previewLink, publishLink, closeLink;
 	private Link overviewLink;
-	private Link createNodeLink, deleteNodeLink, moveNodeLink, copyNodeLink;
+	private Link createNodeLink, deleteNodeLink, moveNodeLink, duplicateNodeLink;
 	private Link importNodesLink;
 	
 	private CloseableModalController cmc;
@@ -206,6 +202,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private final OLATResourceable ores;
 	private RepositoryEntry repoEntry;
 	private final NodeAccessType nodeAccessType;
+	private boolean rootNode;
 	
 	private static final Logger log = Tracing.createLoggerFor(EditorMainController.class);
 	private static final String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
@@ -218,6 +215,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		this.ores = OresHelper.clone(course);
 		this.nodeAccessType = NodeAccessType.of(course);
 		this.stackPanel = toolbar;
+		this.rootNode = selectedNode != null && course.getEditorTreeModel().getRootNode().getIdent().equals(selectedNode.getIdent());
 
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the course editor to be of type 'admin'
@@ -303,19 +301,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				createNodeLink = LinkFactory.createToolLink(NLS_HEADER_INSERTNODES, translate(NLS_HEADER_INSERTNODES), this, "o_icon_add");
 				createNodeLink.setElementCssClass("o_sel_course_editor_create_node");
 				createNodeLink.setDomReplacementWrapperRequired(false);
-
-				nodeTools = new Dropdown("insertNodes", NLS_COMMAND_DELETENODE_HEADER, false, getTranslator());
-				nodeTools.setIconCSS("o_icon o_icon_customize");
-				nodeTools.setElementCssClass("o_sel_course_editor_change_node");
-
-				deleteNodeLink = LinkFactory.createToolLink(CMD_DELNODE, translate(NLS_COMMAND_DELETENODE), this, "o_icon_delete_item");
-				deleteNodeLink.setElementCssClass("o_sel_course_editor_delete_node");
-				nodeTools.addComponent(deleteNodeLink);
-				moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "o_icon_move");
-				moveNodeLink.setElementCssClass("o_sel_course_editor_move_node");
-				nodeTools.addComponent(moveNodeLink);
-				copyNodeLink = LinkFactory.createToolLink(CMD_COPYNODE, translate(NLS_COMMAND_COPYNODE), this, "o_icon_copy");
-				nodeTools.addComponent(copyNodeLink);
 				
 				importNodesLink = LinkFactory.createToolLink(CMD_IMPORT, translate(NLS_IMPORT), this,
 						"o_icon_upload");
@@ -325,6 +310,27 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				previewLink = LinkFactory.createToolLink(CMD_COURSEPREVIEW, translate(NLS_COMMAND_COURSEPREVIEW), this, "o_icon_preview");
 				publishLink = LinkFactory.createToolLink(CMD_PUBLISH, translate(NLS_COMMAND_PUBLISH), this, "o_icon_publish");
 				publishLink.setElementCssClass("o_sel_course_editor_publish");
+				
+				// cmds
+				deleteNodeLink = LinkFactory.createButton(CMD_DELNODE, main, this);
+				deleteNodeLink.setIconLeftCSS("o_icon o_icon_delete_item");
+				deleteNodeLink.setElementCssClass("o_sel_course_editor_delete_node");
+				deleteNodeLink.setVisible(!rootNode);
+				
+				cmdsDropDown = new Dropdown("cmds", null, false, getTranslator());
+				cmdsDropDown.setCarretIconCSS("o_icon o_icon_commands");
+				cmdsDropDown.setButton(true);
+				cmdsDropDown.setEmbbeded(true);
+				cmdsDropDown.setOrientation(DropdownOrientation.right);
+				cmdsDropDown.setElementCssClass("o_sel_course_editor_change_node");
+				cmdsDropDown.setVisible(!rootNode);
+				main.put("cmds", cmdsDropDown);
+
+				moveNodeLink = LinkFactory.createToolLink(CMD_MOVENODE, translate(NLS_COMMAND_MOVENODE), this, "o_icon_move");
+				moveNodeLink.setElementCssClass("o_sel_course_editor_move_node");
+				cmdsDropDown.addComponent(moveNodeLink);
+				duplicateNodeLink = LinkFactory.createToolLink(CMD_DUPLICATE, translate("command.duplicate"), this, "o_icon_copy");
+				cmdsDropDown.addComponent(duplicateNodeLink);
 
 				// validate course and update course status
 				euce.getCourseEditorEnv().validateCourse();
@@ -355,7 +361,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	@Override
 	public void initToolbar() {
 		stackPanel.addTool(createNodeLink, Align.left);
-		stackPanel.addTool(nodeTools, Align.left);
 		stackPanel.addTool(importNodesLink, Align.left);
 		stackPanel.addTool(statusLink, Align.right);
 		stackPanel.addTool(overviewLink, Align.right);
@@ -419,7 +424,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doDeleteNode(ureq);
 			} else if(moveNodeLink == source) {
 				doMove(ureq, course, false);
-			} else if(copyNodeLink == source) {
+			} else if(duplicateNodeLink == source) {
 				doMove(ureq, course, true);
 			} else if(statusLink == source) {
 				doOpenStatusOverview(ureq);
@@ -508,11 +513,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		euce.getCourseEditorEnv().setCurrentCourseNodeId(nodeId);
 		// Start necessary controller for selected node
 
+		rootNode = menuTree.getSelectedNode().getParent() == null;
 		if (cetn.isDeleted()) {
 			tabbedNodeConfig.setVisible(false);
-			deleteNodeLink.setEnabled(false);
-			moveNodeLink.setEnabled(false);
-			copyNodeLink.setEnabled(false);
+			deleteNodeLink.setVisible(false);
+			moveNodeLink.setVisible(false);
+			duplicateNodeLink.setVisible(false);
 
 			if (((CourseEditorTreeNode) cetn.getParent()).isDeleted()) {
 				main.setPage(VELOCITY_ROOT + "/deletednode.html");
@@ -521,9 +527,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			}
 		} else {
 			tabbedNodeConfig.setVisible(true);
-			deleteNodeLink.setEnabled(true);
-			moveNodeLink.setEnabled(true);
-			copyNodeLink.setEnabled(true);
+			cmdsDropDown.setVisible(!rootNode);
+			deleteNodeLink.setVisible(!rootNode);
+			moveNodeLink.setVisible(!rootNode);
+			duplicateNodeLink.setVisible(!rootNode);
 
 			initNodeEditor(ureq, cetn.getCourseNode());
 			main.setPage(VELOCITY_ROOT + "/index.html");					
@@ -709,7 +716,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		} else if (source == moveCopyController) {	
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
-				// Repositioning to move/copy course node
+				// Repositioning to move/duplicate course node
 				String nodeId = moveCopyController.getCopyNodeId();				
 				if (nodeId != null) {
 					menuTree.setSelectedNodeId(nodeId);
@@ -836,10 +843,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			showError(NLS_MOVECOPYNODE_ERROR_SELECTFIRST);
 			return;
 		}
-		if (tn.getParent() == null) {
-			showError(NLS_MOVECOPYNODE_ERROR_ROOTNODE);
-			return;
-		}
+		
 		removeAsListenerAndDispose(moveCopyController);
 		removeAsListenerAndDispose(cmc);
 		
@@ -905,9 +909,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 		tabbedNodeConfig.removeAll();
 		tabbedNodeConfig.setVisible(false);
-		deleteNodeLink.setEnabled(false);
-		moveNodeLink.setEnabled(false);
-		copyNodeLink.setEnabled(false);
+		deleteNodeLink.setVisible(false);
+		cmdsDropDown.setVisible(false);
+		moveNodeLink.setVisible(false);
+		duplicateNodeLink.setVisible(false);
 
 		main.setPage(VELOCITY_ROOT + "/undeletenode.html"); // offer undelete
 		showInfo(NLS_DELETENODE_SUCCESS);
@@ -931,9 +936,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		// show edit panels again
 		initNodeEditor(ureq, activeNode.getCourseNode());
 		tabbedNodeConfig.setVisible(true);
-		deleteNodeLink.setEnabled(true);
-		moveNodeLink.setEnabled(true);
-		copyNodeLink.setEnabled(true);
+		deleteNodeLink.setVisible(true);
+		cmdsDropDown.setVisible(true);
+		moveNodeLink.setVisible(true);
+		duplicateNodeLink.setVisible(true);
 
 		main.setPage(VELOCITY_ROOT + "/index.html");
 		// validate course and update course status
@@ -949,12 +955,8 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		TreeNode tn = menuTree.getSelectedNode();
 		if (tn == null) {
 			showError(NLS_DELETENODE_ERROR_SELECTFIRST);
-		} else if (tn.getParent() == null) {
-			showError(NLS_DELETENODE_ERROR_ROOTNODE);
 		} else {
 			// deletion is possible, start asking if really to delete.
-			tabbedNodeConfig.setVisible(false);
-
 			String title = translate("deletenode.header", tn.getTitle());
 			String message = translate("deletenode.confirm");
 			if(tn instanceof CourseEditorTreeNode
