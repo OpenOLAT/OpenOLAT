@@ -176,7 +176,7 @@ public class SingleParticipantCallController extends FormBasicController {
 			}
 			absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", "absence.category", formLayout, absenceKeyValues.keys(), absenceKeyValues.values());
 			absenceCategoriesEl.setDomReplacementWrapperRequired(false);
-			absenceCategoriesEl.setVisible(absenceKeyValues.size() > 1);
+			absenceCategoriesEl.setVisible(absenceKeyValues.size() > 1 && authorizedAbsencedEl.isAtLeastSelected(1));
 			absenceCategoriesEl.setMandatory(true);
 			if(currentCategory != null) {
 				for(AbsenceCategory absenceCategory: absenceCategories) {
@@ -290,7 +290,7 @@ public class SingleParticipantCallController extends FormBasicController {
 			doCheckAuthorized();
 			updateAbsences(ureq);
 		} else if(authorizedAbsencedEl == source) {
-			absenceReasonEl.setVisible(authorizedAbsencedEl.isAtLeastSelected(1));
+			updateUI();
 		} else if(closeButton == source) {
 			if(validateFormLogic(ureq)) {
 				doSave();
@@ -298,6 +298,18 @@ public class SingleParticipantCallController extends FormBasicController {
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateUI() {
+		
+		boolean authorized = authorizedAbsencedEl.isAtLeastSelected(1);
+		if(absenceCategoriesEl != null) {
+			String[] categoriesKeys = absenceCategoriesEl.getKeys();
+			absenceCategoriesEl.setVisible(categoriesKeys != null && categoriesKeys.length > 0 && authorized);
+		}
+		if(absenceReasonEl != null) {
+			absenceReasonEl.setVisible(authorized);
+		}
 	}
 
 	@Override

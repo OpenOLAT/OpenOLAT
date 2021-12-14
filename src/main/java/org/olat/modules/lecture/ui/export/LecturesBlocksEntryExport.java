@@ -110,19 +110,19 @@ public class LecturesBlocksEntryExport extends OpenXMLWorkbookResource {
 		Row headerRow = exportSheet.newRow();
 		
 		int pos = 0;
-		headerRow.addCell(pos++, translator.translate("lecture.title", null));
-		headerRow.addCell(pos++, translator.translate("lecture.location", null));
-		headerRow.addCell(pos++, translator.translate("lecture.date", null));
-		headerRow.addCell(pos++, translator.translate("table.header.start.time", null));
-		headerRow.addCell(pos++, translator.translate("table.header.end.time", null));
-		headerRow.addCell(pos++, translator.translate("table.header.teachers", null));
-		headerRow.addCell(pos++, translator.translate("table.header.status", null));
-		headerRow.addCell(pos++, translator.translate("table.header.auto.close.date", null));
-		headerRow.addCell(pos++, translator.translate("planned.lectures", null));
-		headerRow.addCell(pos++, translator.translate("table.header.effective.lectures", null));
-		headerRow.addCell(pos++, translator.translate("lecture.block.effective.end", null));
-		headerRow.addCell(pos++, translator.translate("lecture.block.effective.reason", null));
-		headerRow.addCell(pos++, translator.translate("table.header.comment", null));
+		headerRow.addCell(pos++, translator.translate("lecture.title"));
+		headerRow.addCell(pos++, translator.translate("lecture.location"));
+		headerRow.addCell(pos++, translator.translate("lecture.date"));
+		headerRow.addCell(pos++, translator.translate("table.header.start.time"));
+		headerRow.addCell(pos++, translator.translate("table.header.end.time"));
+		headerRow.addCell(pos++, translator.translate("table.header.teachers"));
+		headerRow.addCell(pos++, translator.translate("table.header.status"));
+		headerRow.addCell(pos++, translator.translate("table.header.auto.close.date"));
+		headerRow.addCell(pos++, translator.translate("planned.lectures"));
+		headerRow.addCell(pos++, translator.translate("table.header.effective.lectures"));
+		headerRow.addCell(pos++, translator.translate("lecture.block.effective.end"));
+		headerRow.addCell(pos++, translator.translate("lecture.block.effective.reason"));
+		headerRow.addCell(pos++, translator.translate("table.header.comment"));
 	}
 	
 	private void addContent(OpenXMLWorksheet exportSheet) {

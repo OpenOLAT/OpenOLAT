@@ -33,7 +33,6 @@ import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
@@ -52,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherOverviewController extends AbstractTeacherOverviewController implements TooledController, Activateable2  {
+public class TeacherOverviewController extends AbstractTeacherOverviewController implements TooledController  {
 	
 	private Link assessmentToolButton;
 	private final TooledStackedPanel toolbarPanel;

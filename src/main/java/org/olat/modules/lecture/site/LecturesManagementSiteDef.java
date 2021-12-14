@@ -24,7 +24,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
-import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
@@ -36,7 +35,7 @@ import org.olat.modules.lecture.LectureModule;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LecturesManagementSiteDef extends AbstractSiteDefinition implements SiteDefinition {
+public class LecturesManagementSiteDef extends AbstractSiteDefinition {
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {

@@ -223,6 +223,7 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		expandButton = uifactory.addFormLink("expandButton", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		expandButton.setIconLeftCSS("o_icon o_icon_lg o_icon_details_collaps");
+		expandButton.setTooltip(translate("more"));
 		expandButton.setElementCssClass("o_button_details");
 		expandButton.setUserObject(Boolean.TRUE);
 		
