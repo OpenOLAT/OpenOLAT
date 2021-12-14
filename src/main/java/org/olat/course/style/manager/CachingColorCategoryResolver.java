@@ -21,6 +21,7 @@ package org.olat.course.style.manager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.util.nodes.INode;
@@ -29,8 +30,6 @@ import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.style.ColorCategory;
 import org.olat.course.style.ColorCategoryResolver;
 import org.olat.course.style.ColorCategorySearchParams;
-
-import com.google.common.base.Functions;
 
 /**
  * 
@@ -53,7 +52,7 @@ public class CachingColorCategoryResolver implements ColorCategoryResolver {
 		this.courseColorCategoryIdentifier = courseColorCategoryIdentifier;
 		if (preloadParams != null) {
 			idenitiferToCategory = colorCategoryDao.load(preloadParams).stream()
-					.collect(Collectors.toMap(ColorCategory::getIdentifier, Functions.identity()));
+					.collect(Collectors.toMap(ColorCategory::getIdentifier, Function.identity()));
 		} else {
 			idenitiferToCategory = new HashMap<>();
 		}

@@ -361,7 +361,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		AssessmentEntryStatus previousStatus = getAssessmentStatus();
 		if (AssessmentEntryStatus.done.equals(assessmentStatus) && !AssessmentEntryStatus.done.equals(previousStatus)) {
 			assessmentDone = new Date();
-		} else {
+		} else if (AssessmentEntryStatus.done != assessmentStatus) {
 			assessmentDone = null;
 		}
 		
