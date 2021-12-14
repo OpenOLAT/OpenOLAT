@@ -24,6 +24,7 @@ import java.util.Collection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -41,7 +42,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupLifecycleTypeOptionsController extends FormBasicController {
 	
-	private MultipleSelectionElement typeEl;
+	private SingleSelection typeEl;
+	private MultipleSelectionElement excludedEl;
 	
 	@Autowired
 	private BusinessGroupModule businessGroupModule;
@@ -58,33 +60,41 @@ public class BusinessGroupLifecycleTypeOptionsController extends FormBasicContro
 		setFormDescription("group.type.description");
 		
 		SelectionValues typeValues = new SelectionValues();
-		typeValues.add(SelectionValues.entry(BusinessGroupLifecycleTypeEnum.business.name(), translate("group.type.business")));
-		typeValues.add(SelectionValues.entry(BusinessGroupLifecycleTypeEnum.course.name(), translate("group.type.course")));
-		typeValues.add(SelectionValues.entry(BusinessGroupLifecycleTypeEnum.lti.name(), translate("group.type.lti")));
-		typeValues.add(SelectionValues.entry(BusinessGroupLifecycleTypeEnum.managed.name(), translate("group.type.managed")));
-
-		typeEl = uifactory.addCheckboxesVertical("group.type", "group.type", formLayout,
-				typeValues.keys(), typeValues.values(), 1);
-		String[] selectedTypes = businessGroupModule.getGroupLifecycleTypes();
-		if(selectedTypes != null) {
-			for(String selectedType:selectedTypes) {
-				if(typeValues.containsKey(selectedType)) {
-					typeEl.select(selectedType, true);
-				}
-			}
-		}
+		typeValues.add(SelectionValues.entry(BusinessGroupLifecycleTypeEnum.all.name(), translate("group.type.all")));
+		typeValues.add(SelectionValues.entry(BusinessGroupLifecycleTypeEnum.withoutResources.name(), translate("group.type.withoutResources")));
 		
+		typeEl = uifactory.addRadiosVertical("group.type", "group.type", formLayout, typeValues.keys(), typeValues.values());
+		String selectedType = businessGroupModule.getGroupLifecycle();
+		if(typeValues.containsKey(selectedType)) {
+			typeEl.select(selectedType, true);
+		}
+
+		SelectionValues excludeValues = new SelectionValues();
+		excludeValues.add(SelectionValues.entry("lti", translate("group.type.lti")));
+		excludeValues.add(SelectionValues.entry("managed", translate("group.type.managed")));
+
+		excludedEl = uifactory.addCheckboxesVertical("group.exclusion", "group.exclusion", formLayout,
+				excludeValues.keys(), excludeValues.values(), 1);
+		if(businessGroupModule.isGroupLifecycleExcludeLti()) {
+			excludedEl.select("lti", true);
+		}
+		if(businessGroupModule.isGroupLifecycleExcludeManaged()) {
+			excludedEl.select("managed", true);
+		}
+	
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Collection<String> types = typeEl.getSelectedKeys();
-		businessGroupModule.setGroupLifecycleTypes(types);
+		String type = typeEl.getSelectedKey();
+		businessGroupModule.setGroupLifecycle(type);
+		Collection<String> excluded = excludedEl.getSelectedKeys();
+		businessGroupModule.setGroupLifecycleExcludeLti(excluded.contains("lti"));
+		businessGroupModule.setGroupLifecycleExcludeManaged(excluded.contains("managed"));
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

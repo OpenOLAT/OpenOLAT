@@ -199,23 +199,23 @@ public class QueryBuilder implements Appendable {
 	 * function for PostgreSQL and Oracle but omit it for MySQL where
 	 * the = is case insensitive.
 	 * 
-	 * @param var The field of the object
+	 * @param field The field of the object
 	 * @return Itself
 	 */
-	public QueryBuilder lowerEqual(String var) {
+	public QueryBuilder lowerEqual(String field) {
 		if(dbInstance.isMySQL()) {
-			append(" ").append(var).append("=");
+			append(" ").append(field).append("=");
 		} else {
-			append(" lower(").append(var).append(")=");
+			append(" lower(").append(field).append(")=");
 		}
 		return this;
 	}
 	
-	public QueryBuilder likeFuzzy(String var, String key) {
+	public QueryBuilder likeFuzzy(String field, String key) {
 		if(dbInstance.isMySQL()) {
-			append(" ").append(var).append(" like :").append(key);
+			append(" ").append(field).append(" like :").append(key);
 		} else {
-			append(" lower(").append(var).append(") like :").append(key);
+			append(" lower(").append(field).append(") like :").append(key);
 		}
 		if(dbInstance.isOracle()) {
 			append(" escape '\\'");

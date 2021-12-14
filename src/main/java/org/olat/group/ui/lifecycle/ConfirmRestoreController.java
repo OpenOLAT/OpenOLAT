@@ -32,10 +32,12 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupStatusEnum;
+import org.olat.group.ui.main.BusinessGroupListController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,7 +58,7 @@ public class ConfirmRestoreController extends FormBasicController {
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	public ConfirmRestoreController(UserRequest ureq, WindowControl wControl, List<BusinessGroup> businessGroups) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(BusinessGroupListController.class, ureq.getLocale()));
 		this.businessGroups = businessGroups;
 		
 		initForm(ureq);
@@ -106,9 +108,9 @@ public class ConfirmRestoreController extends FormBasicController {
 		}
 
 		if(businessGroups.size() == 1) {
-			showInfo("group.reactivated");
+			showInfo("group.restored");
 		} else {
-			showInfo("groups.reactivated", new String[] { Integer.toString(businessGroups.size()) });
+			showInfo("groups.restored", new String[] { Integer.toString(businessGroups.size()) });
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);

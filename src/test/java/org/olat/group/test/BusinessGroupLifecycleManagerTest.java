@@ -252,9 +252,9 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Date reactivationDateLimite = DateUtils.addDays(new Date(), -30);
 		
 		// all enabled
-		businessGroupModule.setGroupLifecycleTypes(List.of(BusinessGroupLifecycleTypeEnum.business.name(),
-				BusinessGroupLifecycleTypeEnum.lti.name(), BusinessGroupLifecycleTypeEnum.managed.name(),
-				BusinessGroupLifecycleTypeEnum.course.name()));
+		businessGroupModule.setGroupLifecycle(BusinessGroupLifecycleTypeEnum.all.name());
+		businessGroupModule.setGroupLifecycleExcludeLti(false);
+		businessGroupModule.setGroupLifecycleExcludeManaged(false);
 		List<BusinessGroup> businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
 		
 		Assert.assertTrue(businessGroupsToInactivate.contains(businessGroup));
@@ -264,8 +264,9 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Assert.assertTrue(businessGroupsToInactivate.contains(courseGroup));
 		
 		// business, lti, managed
-		businessGroupModule.setGroupLifecycleTypes(List.of(BusinessGroupLifecycleTypeEnum.business.name(),
-				BusinessGroupLifecycleTypeEnum.lti.name(), BusinessGroupLifecycleTypeEnum.managed.name()));
+		businessGroupModule.setGroupLifecycle(BusinessGroupLifecycleTypeEnum.withoutResources.name());
+		businessGroupModule.setGroupLifecycleExcludeLti(false);
+		businessGroupModule.setGroupLifecycleExcludeManaged(false);
 		businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
 		
 		Assert.assertTrue(businessGroupsToInactivate.contains(businessGroup));
@@ -275,8 +276,9 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Assert.assertFalse(businessGroupsToInactivate.contains(courseGroup));
 		
 		// business, course
-		businessGroupModule.setGroupLifecycleTypes(List.of(BusinessGroupLifecycleTypeEnum.business.name(),
-				BusinessGroupLifecycleTypeEnum.course.name()));
+		businessGroupModule.setGroupLifecycle(BusinessGroupLifecycleTypeEnum.all.name());
+		businessGroupModule.setGroupLifecycleExcludeLti(true);
+		businessGroupModule.setGroupLifecycleExcludeManaged(true);
 		businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
 		
 		Assert.assertTrue(businessGroupsToInactivate.contains(businessGroup));
@@ -284,30 +286,11 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Assert.assertFalse(businessGroupsToInactivate.contains(managedGroup));
 		Assert.assertTrue(businessGroupsToInactivate.contains(notManagedGroup));
 		Assert.assertTrue(businessGroupsToInactivate.contains(courseGroup));
-		
-		// managed, course
-		businessGroupModule.setGroupLifecycleTypes(List.of(BusinessGroupLifecycleTypeEnum.managed.name(),
-				BusinessGroupLifecycleTypeEnum.course.name()));
-		businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
-		
-		Assert.assertFalse(businessGroupsToInactivate.contains(businessGroup));
-		Assert.assertFalse(businessGroupsToInactivate.contains(ltiGroup));
-		Assert.assertTrue(businessGroupsToInactivate.contains(managedGroup));
-		Assert.assertFalse(businessGroupsToInactivate.contains(notManagedGroup));
-		Assert.assertTrue(businessGroupsToInactivate.contains(courseGroup));
-		
-		// course
-		businessGroupModule.setGroupLifecycleTypes(List.of(BusinessGroupLifecycleTypeEnum.course.name()));
-		businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
-		
-		Assert.assertFalse(businessGroupsToInactivate.contains(businessGroup));
-		Assert.assertFalse(businessGroupsToInactivate.contains(ltiGroup));
-		Assert.assertFalse(businessGroupsToInactivate.contains(managedGroup));
-		Assert.assertFalse(businessGroupsToInactivate.contains(notManagedGroup));
-		Assert.assertTrue(businessGroupsToInactivate.contains(courseGroup));
 
 		// business (must be last)
-		businessGroupModule.setGroupLifecycleTypes(List.of(BusinessGroupLifecycleTypeEnum.business.name()));
+		businessGroupModule.setGroupLifecycle(BusinessGroupLifecycleTypeEnum.withoutResources.name());
+		businessGroupModule.setGroupLifecycleExcludeLti(true);
+		businessGroupModule.setGroupLifecycleExcludeManaged(true);
 		businessGroupsToInactivate = lifecycleManager.getReadyToInactivateBusinessGroups(beforeDate, reactivationDateLimite);
 		
 		Assert.assertTrue(businessGroupsToInactivate.contains(businessGroup));
@@ -315,7 +298,6 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Assert.assertFalse(businessGroupsToInactivate.contains(managedGroup));
 		Assert.assertTrue(businessGroupsToInactivate.contains(notManagedGroup));
 		Assert.assertFalse(businessGroupsToInactivate.contains(courseGroup));
-
 	}
 	
 	@Test

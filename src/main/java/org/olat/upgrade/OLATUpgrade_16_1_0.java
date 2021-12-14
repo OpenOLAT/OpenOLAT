@@ -31,6 +31,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.core.CourseNodeService;
+import org.olat.group.BusinessGroupModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,11 +48,14 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 	private static final String VERSION = "OLAT_16.1.0";
 	private static final String UPDATE_ASSESSMENT_OBLIGATION = "UPDATE ASSESSMENT OBLIGATION";
 	private static final String INIT_COURSE_ELEMENT = "INIT COURSE ELEMENT";
+	private static final String GROUP_LIFECYCLE = "GROUP LIFECYCLE";
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private CourseNodeService courseNodeService;
+	@Autowired
+	private BusinessGroupModule businessGroupModule;
 
 	public OLATUpgrade_16_1_0() {
 		super();
@@ -74,6 +78,7 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		
+		allOk &= updateGroupLifecycle(upgradeManager, uhd);
 		allOk &= updateAssessmentObligation(upgradeManager, uhd);
 		allOk &= initCourseElements(upgradeManager, uhd);
 		
@@ -84,6 +89,24 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		} else {
 			log.info(Tracing.M_AUDIT, "OLATUpgrade_16_1_0 not finished, try to restart OpenOlat!");
 		}
+		return allOk;
+	}
+	
+	private boolean updateGroupLifecycle(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		
+		if (!uhd.getBooleanDataValue(GROUP_LIFECYCLE)) {
+			try {
+				businessGroupModule.setAutomaticGroupInactivationEnabled("disabled");
+				businessGroupModule.setAutomaticGroupSoftDeleteEnabled("disabled");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+			uhd.setBooleanDataValue(GROUP_LIFECYCLE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
 		return allOk;
 	}
 	

@@ -20,10 +20,8 @@
 package org.olat.group;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import org.apache.logging.log4j.util.Strings;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -113,7 +111,9 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	
 	private static final String MANAGED_GROUPS_ENABLED = "managedBusinessGroups";
 	
-	private static final String GROUP_LIFECYCLE_TYPE = "group.lifecycle.type";
+	private static final String GROUP_LIFECYCLE = "group.lifecycle";
+	private static final String GROUP_LIFECYCLE_EXCLUDE_MANAGED = "group.lifecycle.exclude.managed";
+	private static final String GROUP_LIFECYCLE_EXCLUDE_LTI = "group.lifecycle.exclude.lti";
 	
 	private static final String GROUP_AUTOMATIC_DEACTIVATION = "group.automatic.inactivation";
 	private static final String GROUP_NUM_OF_DAYS_BEFORE_DEACTIVATION = "group.days.before.deactivation";
@@ -215,13 +215,17 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	@Value("${group.managed}")
 	private boolean managedBusinessGroups;
 	
-	@Value("${group.lifecycle.type}")
-	private String groupLifecycleType;
+	@Value("${group.lifecycle:all}")
+	private String groupLifecycle;
+	@Value("${group.lifecycle.exclude.managed}")
+	private String groupLifecycleExcludeManaged;
+	@Value("${group.lifecycle.exclude.lti}")
+	private String groupLifecycleExcludeLti;
 
-	@Value("${group.automatic.inactivation:disabled}")
+	@Value("${group.automatic.inactivation:enabled}")
 	private String automaticGroupInactivation;
 	
-	@Value("${group.days.before.deactivation:720}")
+	@Value("${group.days.before.deactivation:400}")
 	private int numberOfInactiveDayBeforeDeactivation;
 	@Value("${group.days.reactivation.period:30}")
 	private int numberOfDayReactivationPeriod;
@@ -236,10 +240,10 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	@Value("${group.mail.copy.after.deactivation}")
 	private String mailCopyAfterDeactivation;
 	
-	@Value("${group.automatic.soft.delete:false}")
+	@Value("${group.automatic.soft.delete:true}")
 	private String automaticGroupSoftDeletion;
 	
-	@Value("${group.days.before.soft.delete:180}")
+	@Value("${group.days.before.soft.delete:200}")
 	private int numberOfInactiveDayBeforeSoftDelete;
 	@Value("${group.mail.before.soft.delete:true}")
 	private boolean mailBeforeSoftDelete;
@@ -254,7 +258,7 @@ public class BusinessGroupModule extends AbstractSpringModule {
 
 	@Value("${group.automatic.definitively.delete:false}")
 	private String automaticGroupDefinitivelyDeletion;
-	@Value("${group.days.before.definitively.delete:80}")
+	@Value("${group.days.before.definitively.delete:100}")
 	private int numberOfSoftDeleteDayBeforeDefinitivelyDelete;
 	
 	@Autowired
@@ -358,7 +362,9 @@ public class BusinessGroupModule extends AbstractSpringModule {
 			managedBusinessGroups = "true".equals(managedGroups);
 		}
 		
-		groupLifecycleType = getStringPropertyValue(GROUP_LIFECYCLE_TYPE, groupLifecycleType);
+		groupLifecycle = getStringPropertyValue(GROUP_LIFECYCLE, groupLifecycle);
+		groupLifecycleExcludeLti = getStringPropertyValue(GROUP_LIFECYCLE_EXCLUDE_LTI, groupLifecycleExcludeLti);
+		groupLifecycleExcludeManaged = getStringPropertyValue(GROUP_LIFECYCLE_EXCLUDE_MANAGED, groupLifecycleExcludeManaged);
 		
 		// life-cycle: inactivation
 		automaticGroupInactivation = getStringPropertyValue(GROUP_AUTOMATIC_DEACTIVATION, automaticGroupInactivation);
@@ -648,42 +654,38 @@ public class BusinessGroupModule extends AbstractSpringModule {
 		setStringProperty(MANAGED_GROUPS_ENABLED, Boolean.toString(enabled), true);
 	}
 	
-	public String[] getGroupLifecycleTypes() {
-		if(StringHelper.containsNonWhitespace(groupLifecycleType)) {
-			return groupLifecycleType.split("[,]");
-		}
-		return new String[0];
+	public String getGroupLifecycle() {
+		return groupLifecycle;
 	}
 	
-	public List<BusinessGroupLifecycleTypeEnum> getGroupLifecycleTypeEnumsList() {
-		List<BusinessGroupLifecycleTypeEnum> types = new ArrayList<>();
-		String[] typesArr = getGroupLifecycleTypes();
-		for(String type:typesArr) {
-			if(StringHelper.containsNonWhitespace(type)) {
-				types.add(BusinessGroupLifecycleTypeEnum.valueOf(type));
-			}
+	public BusinessGroupLifecycleTypeEnum getGroupLifecycleTypeEnum() {
+		if(StringHelper.containsNonWhitespace(groupLifecycle)) {
+			return BusinessGroupLifecycleTypeEnum.valueOf(groupLifecycle);
 		}
-		return types;
-	}
-	
-	public List<String> getGroupLifecycleTypesList() {
-		List<String> types = new ArrayList<>();
-		String[] typesArr = getGroupLifecycleTypes();
-		for(String type:typesArr) {
-			if(StringHelper.containsNonWhitespace(type)) {
-				types.add(type);
-			}
-		}
-		return types;
+		return null;
 	}
 
-	public void setGroupLifecycleTypes(Collection<String> types) {
-		if(types == null || types.isEmpty()) {
-			groupLifecycleType = null;
-		} else {
-			groupLifecycleType = Strings.join(types, ',');
-		}
-		setStringProperty(GROUP_LIFECYCLE_TYPE, groupLifecycleType, true);
+	public void setGroupLifecycle(String type) {
+		groupLifecycle = type;
+		setStringProperty(GROUP_LIFECYCLE, groupLifecycle, true);
+	}
+	
+	public boolean isGroupLifecycleExcludeManaged() {
+		return "true".equals(groupLifecycleExcludeManaged);
+	}
+	
+	public void setGroupLifecycleExcludeManaged(boolean excluded) {
+		groupLifecycleExcludeManaged = excluded ? "true" : "false";
+		setStringProperty(GROUP_LIFECYCLE_EXCLUDE_MANAGED, groupLifecycleExcludeManaged, true);
+	}
+	
+	public boolean isGroupLifecycleExcludeLti() {
+		return "true".equals(groupLifecycleExcludeLti);
+	}
+	
+	public void setGroupLifecycleExcludeLti(boolean excluded) {
+		groupLifecycleExcludeLti = excluded ? "true" : "false";
+		setStringProperty(GROUP_LIFECYCLE_EXCLUDE_LTI, groupLifecycleExcludeLti, true);
 	}
 	
 	public boolean isAutomaticGroupInactivationEnabled() {

@@ -64,7 +64,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 	private FormLink startInactivateButton;
 	private FormLink definitivelyDeleteButton;
 	
-	private final boolean hasMembers;
+	private final boolean hasMembersOrResources;
 	private BusinessGroup businessGroup;
 
 	private CloseableModalController cmc;
@@ -85,7 +85,8 @@ public class BusinessGroupStatusController extends FormBasicController {
 	public BusinessGroupStatusController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, Util.createPackageTranslator(BusinessGroupListController.class, ureq.getLocale()));
 		this.businessGroup = businessGroup;
-		hasMembers = businessGroupService.countMembers(businessGroup, GroupRoles.coach.name(), GroupRoles.participant.name()) > 0;
+		hasMembersOrResources = businessGroupService.countMembers(businessGroup, GroupRoles.coach.name(), GroupRoles.participant.name()) > 0
+				|| businessGroupService.hasResources(businessGroup);
 		
 		initForm(ureq);
 	}
@@ -181,7 +182,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		
-		if(withMail && hasMembers && businessGroupLifecycleManager.getInactivationEmailDate(businessGroup) == null) {
+		if(withMail && hasMembersOrResources && businessGroupLifecycleManager.getInactivationEmailDate(businessGroup) == null) {
 			startInactivateButton = uifactory.addFormLink("inactivate.group.start", buttonsCont, Link.BUTTON);
 			startInactivateButton.setCustomEnabledLinkCSS("btn btn-default btn-primary");
 		} else {
@@ -249,7 +250,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		
-		if(withMail && hasMembers && businessGroupLifecycleManager.getSoftDeleteEmailDate(businessGroup) == null) {
+		if(withMail && hasMembersOrResources && businessGroupLifecycleManager.getSoftDeleteEmailDate(businessGroup) == null) {
 			startSoftDeleteButton = uifactory.addFormLink("soft.delete.group.start", buttonsCont, Link.BUTTON);
 			startSoftDeleteButton.setCustomEnabledLinkCSS("btn btn-default btn-primary");
 		} else {
@@ -407,8 +408,14 @@ public class BusinessGroupStatusController extends FormBasicController {
 	
 	private void doReactivate(UserRequest ureq) {
 		boolean groupOwner = isCoach();
+		BusinessGroupStatusEnum currentStatus = businessGroup.getGroupStatus();
 		businessGroup = businessGroupLifecycleManager.reactivateBusinessGroup(businessGroup, getIdentity(), groupOwner);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		if(currentStatus == BusinessGroupStatusEnum.active) {
+			showInfo("info.inactivation.canceled");
+		} else {
+			showInfo("group.reactivated");
+		}
 	}
 	
 	private void doConfirmDefinitivelyDelete(UserRequest ureq) {

@@ -82,6 +82,7 @@ import org.olat.group.model.DeletedBusinessGroupBackup;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.group.ui.lifecycle.BusinessGroupLifecycleTypeEnum;
+import org.olat.ims.lti13.LTI13Service;
 import org.olat.properties.PropertyManager;
 import org.olat.repository.RepositoryDeletionModule;
 import org.olat.repository.RepositoryEntry;
@@ -510,52 +511,24 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	}
 	
 	private void appendBusinessGroupTypesRestrictions(QueryBuilder sb) {
-		List<BusinessGroupLifecycleTypeEnum> types = businessGroupModule.getGroupLifecycleTypeEnumsList();
-		sb.and().append(" (");
-		
-		// business, lti, managed, course
-		// business, lti, managed
-		// business, lti, course
-		// business, managed, course
-		// lti, managed, course
-		// business, lti
-		// business, managed
-		// business, course
-
-		if(types.contains(BusinessGroupLifecycleTypeEnum.business) || types.contains(BusinessGroupLifecycleTypeEnum.lti)) {
-			List<BusinessGroupLifecycleTypeEnum> technicalTypes = new ArrayList<>();
-			if(types.contains(BusinessGroupLifecycleTypeEnum.business)) {
-				technicalTypes.add(BusinessGroupLifecycleTypeEnum.business);
-			}
-			if(types.contains(BusinessGroupLifecycleTypeEnum.lti)) {
-				technicalTypes.add(BusinessGroupLifecycleTypeEnum.lti);
-			}
-			sb.append(" bgi.technicalType ").in(technicalTypes.toArray());
-			
-			if(!types.contains(BusinessGroupLifecycleTypeEnum.managed)) {
-				sb.append(" and (bgi.managedFlagsString is null or bgi.managedFlagsString='')");
-			}
-			
-			if(!types.contains(BusinessGroupLifecycleTypeEnum.course)) {
-				sb.append(" and not exists (select reToGroup.key from repoentrytogroup as reToGroup")
-				  .append(" where bgi.baseGroup.key=reToGroup.group.key)");
-			}
-		} else if(types.size() == 2 && types.contains(BusinessGroupLifecycleTypeEnum.managed) && types.contains(BusinessGroupLifecycleTypeEnum.course)) {
-			sb.append(" (bgi.managedFlagsString is not null and bgi.managedFlagsString <> '')")
-			  .append("  or exists (select reToGroup.key from repoentrytogroup as reToGroup")
-			  .append(" where bgi.baseGroup.key=reToGroup.group.key)")
-			  .append(" and bgi.technicalType <> '").append(BusinessGroupLifecycleTypeEnum.lti.name()).append("'");	
-		} else if(types.contains(BusinessGroupLifecycleTypeEnum.managed)) {
-			sb.append(" (bgi.managedFlagsString is not null and bgi.managedFlagsString <> '')");
-		} else if(types.contains(BusinessGroupLifecycleTypeEnum.course)) {
-			sb.append(" exists (select reToGroup.key from repoentrytogroup as reToGroup")
-			  .append(" where bgi.baseGroup.key=reToGroup.group.key)")
-			  .append(" and bgi.technicalType <> '").append(BusinessGroupLifecycleTypeEnum.lti.name()).append("'");
+		sb.and().append("bgi.technicalType ");
+		if(businessGroupModule.isGroupLifecycleExcludeLti()) {
+			sb.in(BusinessGroup.BUSINESS_TYPE);
 		} else {
-			log.error("Unseen settings: {}", types);
+			sb.in(BusinessGroup.BUSINESS_TYPE, LTI13Service.LTI_GROUP_TYPE);
+		}
+
+		// all groups or groups without resources
+		BusinessGroupLifecycleTypeEnum type = businessGroupModule.getGroupLifecycleTypeEnum();
+		if(type == BusinessGroupLifecycleTypeEnum.withoutResources) {
+			sb.and().append(" not exists (select reToGroup.key from repoentrytogroup as reToGroup")
+			  .append(" where bgi.baseGroup.key=reToGroup.group.key)");
 		}
 		
-		sb.append(")");
+		if(businessGroupModule.isGroupLifecycleExcludeManaged()) {
+			sb.and().append(" ((bgi.managedFlagsString is null or bgi.managedFlagsString='')")
+			  .append(" and (bgi.externalId is null or bgi.externalId=''))");
+		}
 	}
 	
 	@Override

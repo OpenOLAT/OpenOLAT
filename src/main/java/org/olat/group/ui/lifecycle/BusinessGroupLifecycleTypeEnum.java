@@ -27,16 +27,8 @@ package org.olat.group.ui.lifecycle;
  */
 public enum BusinessGroupLifecycleTypeEnum {
 	
-	/**
-	 * @see BusinessGroup.BUSINESS_TYPE
-	 */
-	business,
-	/**
-	 * @see LTI13Service.LTI_GROUP_TYPE
-	 */
-	lti,
-	managed,
-	course
+	all,
+	withoutResources
 	
 
 }

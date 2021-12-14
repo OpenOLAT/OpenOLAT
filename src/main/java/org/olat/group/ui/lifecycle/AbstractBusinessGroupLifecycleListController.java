@@ -51,6 +51,7 @@ import org.olat.group.ui.main.BGResourcesCellRenderer;
 import org.olat.group.ui.main.BGTableItem;
 import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
 import org.olat.group.ui.main.BusinessGroupNameCellRenderer;
+import org.olat.ims.lti13.LTI13Service;
 
 /**
  * 
@@ -80,8 +81,10 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.description.i18nHeaderKey(), Cols.description.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.antisamy)));
 		//courses
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18nHeaderKey(), Cols.resources.ordinal(),
+		if(groupModule.getGroupLifecycleTypeEnum() == BusinessGroupLifecycleTypeEnum.all) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.resources.i18nHeaderKey(), Cols.resources.ordinal(),
 				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
+		}
 		//access
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18nHeaderKey(), Cols.accessTypes.ordinal(),
 				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
@@ -186,7 +189,9 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 		}
 
 		//resources
-		filters.add(new FlexiTableSingleSelectionFilter(translate("search.resources"), BGSearchFilter.RESOURCES.name(), yesNoValues, true));
+		if(groupModule.getGroupLifecycleTypeEnum() == BusinessGroupLifecycleTypeEnum.all) {
+			filters.add(new FlexiTableSingleSelectionFilter(translate("search.resources"), BGSearchFilter.RESOURCES.name(), yesNoValues, true));
+		}
 		
 		// orphans
 		SelectionValues headlessValues = new SelectionValues();
@@ -204,7 +209,23 @@ public abstract class AbstractBusinessGroupLifecycleListController extends Abstr
 	@Override
 	protected BusinessGroupQueryParams getDefaultSearchParams() {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
-		params.setTechnicalTypes(List.of(groupModule.getGroupLifecycleTypes()));
+		List<String> types = new ArrayList<>();
+		types.add(BusinessGroup.BUSINESS_TYPE);
+		if(!groupModule.isGroupLifecycleExcludeLti()) {
+			types.add(LTI13Service.LTI_GROUP_TYPE);
+		}
+		params.setTechnicalTypes(types);
+
+		// all group / group without resource
+		BusinessGroupLifecycleTypeEnum type = groupModule.getGroupLifecycleTypeEnum();
+		if(type == BusinessGroupLifecycleTypeEnum.withoutResources) {
+			params.setResources(Boolean.FALSE);
+		}
+		
+		// exclude managed
+		if(groupModule.isGroupLifecycleExcludeManaged()) {
+			params.setManaged(Boolean.FALSE);
+		}
 		return params;
 	}
 	

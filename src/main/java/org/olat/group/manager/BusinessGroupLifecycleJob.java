@@ -47,9 +47,6 @@ public class BusinessGroupLifecycleJob extends JobWithDB {
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		BusinessGroupModule businessGroupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
-		if(businessGroupModule.getGroupLifecycleTypeEnumsList().isEmpty()) {
-			return;
-		}
 		
 		log.info("Start group lifecycle job");
 		

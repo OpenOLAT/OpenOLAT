@@ -872,7 +872,7 @@ public class BusinessGroupQueriesTest extends OlatTestCase {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setLifecycleStatusReference(new Date());
 		params.setLifecycleStatus(LifecycleSyntheticStatus.ACTIVE);
-		params.setTechnicalTypes(businessGroupModule.getGroupLifecycleTypesList());
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		List<StatisticsBusinessGroupRow> activeRows = businessGroupToSearchQueries.searchBusinessGroupsWithMemberships(params, id);
 		
 		Assert.assertTrue(contains(activeRows, group1));// active
@@ -917,7 +917,7 @@ public class BusinessGroupQueriesTest extends OlatTestCase {
 		BusinessGroupQueryParams params = new BusinessGroupQueryParams();
 		params.setLifecycleStatusReference(new Date());
 		params.setLifecycleStatus(LifecycleSyntheticStatus.INACTIVE);
-		params.setTechnicalTypes(businessGroupModule.getGroupLifecycleTypesList());
+		params.setTechnicalTypes(List.of(BusinessGroup.BUSINESS_TYPE));
 		List<StatisticsBusinessGroupRow> inactiveRows = businessGroupToSearchQueries.searchBusinessGroupsWithMemberships(params, id);
 		
 		Assert.assertTrue(contains(inactiveRows, group1));
