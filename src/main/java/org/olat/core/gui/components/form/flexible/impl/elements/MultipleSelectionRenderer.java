@@ -212,7 +212,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		onKeyword = "onfocus=";
 		onPos = substring.indexOf(onKeyword);
 		if (onPos != -1) {
-			substring = substring.substring(0, onPos);
+			substring = substring.substring(0, onPos - 2);
 		 }
 		
 		return substring;
