@@ -152,8 +152,10 @@ public class FileUploadController extends FormBasicController implements Evaluat
 		if (fileEl.isButtonsEnabled()) {
 			File file = fileEl.isUploadSuccess() ? fileEl.getUploadFile(): fileEl.getInitialFile();
 			if (file == null || !file.exists()) {
-				fileEl.setErrorKey("form.legende.mandatory", null);
-				allOk = false;
+				if (fileUpload.isMandatory()) {
+					fileEl.setErrorKey("form.legende.mandatory", null);
+					allOk = false;
+				}
 			} else {
 				if (fileUpload.getMaxUploadSizeKB() != null && file.length() > fileUpload.getMaxUploadSizeKB() * 1024l) {
 					fileEl.setErrorKey("file.upload.error.limit.exeeded", null);

@@ -42,6 +42,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.pdf.PdfDocument;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
@@ -181,12 +182,27 @@ public class CertificatePDFFormWorker {
 		fillField("firstNameLastName", firstNameLastName.toString(), acroForm);
 		fillField("lastNameFirstName", lastNameFirstName.toString(), acroForm);
 	}
+	
+	private String filterHtml(String text) {
+		if(!StringHelper.containsNonWhitespace(text)) {
+			return "";
+		}
+		return FilterFactory.getHtmlTagAndDescapingFilter().filter(text);
+	}
 
 	private void fillRepositoryEntry(PDAcroForm acroForm) throws IOException {
 		String title = entry.getDisplayname();
 		fillField("title", title, acroForm);
+		String description = entry.getDescription();
+		fillField("description", filterHtml(description), acroForm);
+		String requirements = entry.getRequirements();
+		fillField("requirements", filterHtml(requirements), acroForm);
+		String objectives = entry.getObjectives();
+		fillField("objectives", filterHtml(objectives), acroForm);
+		String credits = entry.getCredits();
+		fillField("credits", filterHtml(credits), acroForm);
 		String externalRef = entry.getExternalRef();
-		fillField("externalReference", externalRef, acroForm);
+		fillField("externalReference", filterHtml(externalRef), acroForm);
 		String authors = entry.getAuthors();
 		fillField("authors", authors, acroForm);
 		String expenditureOfWorks = entry.getExpenditureOfWork();
@@ -195,7 +211,7 @@ public class CertificatePDFFormWorker {
 		fillField("mainLanguage", mainLanguage, acroForm);
 		String location = entry.getLocation();
 		fillField("location", location, acroForm);
-		
+
 		if (entry.getLifecycle() != null) {
 			Formatter format = Formatter.getInstance(locale);
 
@@ -204,7 +220,6 @@ public class CertificatePDFFormWorker {
 			fillField("from", formattedFrom, acroForm);
 			String formattedFromLong = format.formatDateLong(from);
 			fillField("fromLong", formattedFromLong, acroForm);
-
 
 			Date to = entry.getLifecycle().getValidTo();
 			String formattedTo = format.formatDate(to);
@@ -260,14 +275,12 @@ public class CertificatePDFFormWorker {
 		fillField("progress", roundedCompletion, acroForm);
 	}
 	
-	
 	private void fillMetaInfos(PDAcroForm acroForm) throws IOException {
 		fillField("custom1", custom1, acroForm);
 		fillField("custom2", custom2, acroForm);
 		fillField("custom3", custom3, acroForm);
 		fillField("certificateVerificationUrl", certificateURL, acroForm);
 	}
-
 
 	private void fillField(String fieldName, String value, PDAcroForm acroForm)
 			throws IOException {
