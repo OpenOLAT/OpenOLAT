@@ -81,7 +81,7 @@ public class CertificationNotificationHandler implements NotificationsHandler {
 			// exceptions, course
 			// can't be loaded when already deleted
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
-				Long courseId = new Long(p.getData());
+				Long courseId = Long.valueOf(p.getData());
 				final ICourse course = CourseFactory.loadCourse(courseId);
 				if (courseStatus(course)) {
 					// course admins or users with the course right to have full access to
