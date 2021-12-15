@@ -616,16 +616,6 @@ public class QTI21EditForm extends FormBasicController {
 			break;
 		}
 		
-		boolean hasDate = testStartDateEl.isVisible()
-				|| testEndDateEl.isVisible()
-				|| resultStartDateEl.isVisible()
-				|| resultEndDateEl.isVisible()
-				|| resultFailedStartDateEl.isVisible()
-				|| resultFailedEndDateEl.isVisible()
-				|| resultPassedStartDateEl.isVisible()
-				|| resultPassedEndDateEl.isVisible();
-		relativeDatesEl.setVisible(hasDate);
-		
 		boolean relativeDates = relativeDatesEl.isAtLeastSelected(1);
 		testStartDateEl.setRelative(relativeDates);
 		testEndDateEl.setRelative(relativeDates);
