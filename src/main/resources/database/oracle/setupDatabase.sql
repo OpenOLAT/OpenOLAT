@@ -1472,6 +1472,7 @@ create table o_as_entry (
    fk_identity_passed_mod number(20),
    fk_identity_end_date_mod number(20),
    fk_identity_obligation_mod number(20),
+   fk_identity_passed_mod fk_identity_status_done(20),
    a_anon_identifier varchar2(128 char) default null,
    primary key (id),
    unique(fk_identity, fk_entry, a_subident)

@@ -1417,6 +1417,7 @@ create table o_as_entry (
    fk_identity_passed_mod bigint,
    fk_identity_end_date_mod bigint,
    fk_identity_obligation_mod bigint,
+   fk_identity_status_done bigint,
    a_anon_identifier varchar(128) default null,
    primary key (id),
    unique (fk_identity, fk_entry, a_subident)

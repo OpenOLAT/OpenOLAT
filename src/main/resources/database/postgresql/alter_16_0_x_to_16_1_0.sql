@@ -47,6 +47,7 @@ alter table o_as_entry add a_obligation_inherited varchar(50);
 alter table o_as_entry add a_obligation_evaluated varchar(50);
 alter table o_as_entry add a_obligation_config varchar(50);
 alter table o_as_entry add a_max_score decimal;
+alter table o_as_entry add fk_identity_status_done int8;
 create index idx_as_entry_to_courseele_idx on o_as_entry (fk_entry, a_subident);
 create index idx_as_entry_inreview_idx on o_as_entry (a_status) where a_status = 'inReview';
 

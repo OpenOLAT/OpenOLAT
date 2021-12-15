@@ -513,7 +513,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			assessmentEntry.setAssessmentId(assessmentId);
 		}
 		if(scoreEvaluation.getAssessmentStatus() != null) {
+			AssessmentEntryStatus previousStatus = assessmentEntry.getAssessmentStatus();
 			assessmentEntry.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
+			if (AssessmentEntryStatus.done == scoreEvaluation.getAssessmentStatus() && AssessmentEntryStatus.done != previousStatus) {
+				assessmentEntry.setAssessmentDoneBy(identity);
+			} else if (AssessmentEntryStatus.done != scoreEvaluation.getAssessmentStatus()) {
+				assessmentEntry.setAssessmentDoneBy(null);
+			}
 		}
 		if(scoreEvaluation.getUserVisible() != null) {
 			assessmentEntry.setUserVisibility(scoreEvaluation.getUserVisible());

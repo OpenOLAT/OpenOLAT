@@ -229,6 +229,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		ae.setScore(BigDecimal.valueOf(2.0));
 		ae.setPassed(Boolean.TRUE);
 		ae.getPassedOverridable().override(Boolean.FALSE, assessedIdentity, new Date());
+		Identity assessmentDoneBy = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		ae.setAssessmentDoneBy(assessmentDoneBy);
 		assessmentEntryDao.updateAssessmentEntry(ae);
 		dbInstance.commitAndCloseSession();
 		
@@ -247,6 +249,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertEquals(Integer.valueOf(0), resetedAssessmentRef.getAttempts());
 		Assert.assertNull(resetedAssessmentRef.getLastAttempt());
 		Assert.assertNull(resetedAssessmentRef.getCompletion());
+		Assert.assertNull(resetedAssessmentRef.getAssessmentDoneBy());
 		
 		// double check by reloading the entry
 		AssessmentEntry reloadedAssessmentRef = assessmentEntryDao
@@ -263,6 +266,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertNull(reloadedAssessmentRef.getPassedOverridable().getModDate());
 		Assert.assertEquals(Integer.valueOf(0), reloadedAssessmentRef.getAttempts());
 		Assert.assertNull(reloadedAssessmentRef.getCompletion());
+		Assert.assertNull(reloadedAssessmentRef.getAssessmentDoneBy());
 	}
 	
 	@Test
@@ -292,6 +296,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		ae.setNumberOfAssessmentDocuments(10);
 		ae.setComment("very good");
 		ae.setCoachComment("coach comment");
+		Identity assessmentDoneBy = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6a");
+		ae.setAssessmentDoneBy(assessmentDoneBy);
 		assessmentEntryDao.updateAssessmentEntry(ae);
 		dbInstance.commitAndCloseSession();
 		
@@ -311,6 +317,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		softly.assertThat(reloaded.getNumberOfAssessmentDocuments()).isEqualTo(10);
 		softly.assertThat(reloaded.getComment()).isEqualTo("very good");
 		softly.assertThat(reloaded.getCoachComment()).isEqualTo("coach comment");
+		softly.assertThat(reloaded.getAssessmentDoneBy()).isEqualTo(assessmentDoneBy);
 		softly.assertAll();
 	}
 	
@@ -464,6 +471,12 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNull(nodeAssessment.getAssessmentDone());
+		
+		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.done);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(nodeAssessment.getAssessmentDone());
 		
 		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.done);
 		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);

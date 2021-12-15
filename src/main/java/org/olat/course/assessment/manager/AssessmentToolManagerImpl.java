@@ -20,11 +20,13 @@
 package org.olat.course.assessment.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -566,7 +568,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		// In this second step some other search parameters are applied.
 		List<CoachingAssessmentEntryImpl> loadedCoachedEntries = loadCoachingEntries(params);
 		
-		Map<Long, Identity> identityKeyToIdentity = loadIdentities(loadedCoachedEntries, params).stream()
+		Map<Long, Identity> assessedIdentityKeyToIdentity = loadAssessedIdentities(loadedCoachedEntries, params).stream()
+				.collect(Collectors.toMap(Identity::getKey, Function.identity()));
+		Map<Long, Identity> statusDoneByIdentityKeyToIdentity = loadStatusDoneByIdentities(loadedCoachedEntries, params).stream()
 				.collect(Collectors.toMap(Identity::getKey, Function.identity()));
 		List<RepositoryEntry> repositoryEntries = loadRepositoryEntries(loadedCoachedEntries);
 		Map<Long, RepositoryEntry> repoKeyToEntry = repositoryEntries.stream()
@@ -577,20 +581,22 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		
 		List<CoachingAssessmentEntry> coachedEntries = new ArrayList<>();
 		for (CoachingAssessmentEntryImpl coachedEntry : loadedCoachedEntries) {
-			filterAndAppend(coachedEntries, params, coachedEntry, identityKeyToIdentity, repoKeyToEntry, repoKeyToCoachUserVisibilitySettable);
+			filterAndAppend(coachedEntries, params, coachedEntry, assessedIdentityKeyToIdentity,
+					statusDoneByIdentityKeyToIdentity, repoKeyToEntry, repoKeyToCoachUserVisibilitySettable);
 		}
 		
 		return coachedEntries;
 	}
 
 	private void filterAndAppend(List<CoachingAssessmentEntry> coachedEntries, CoachingAssessmentSearchParams params,
-			CoachingAssessmentEntryImpl coachedEntry, Map<Long, Identity> identityKeyToIdentity,
-			Map<Long, RepositoryEntry> repoKeyToEntry, Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable) {
+			CoachingAssessmentEntryImpl coachedEntry, Map<Long, Identity> assessedIdentityKeyToIdentity,
+			Map<Long, Identity> statusDoneByIdentityKeyToIdentity, Map<Long, RepositoryEntry> repoKeyToEntry,
+			Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable) {
 		if (!coachedEntry.isOwner() && !coachedEntry.isCoach()) {
 			return;
 		}
 		
-		Identity identity = identityKeyToIdentity.get(coachedEntry.getAssessedIdentityKey());
+		Identity identity = assessedIdentityKeyToIdentity.get(coachedEntry.getAssessedIdentityKey());
 		if (identity == null) {
 			return;
 		}
@@ -607,6 +613,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			return;
 		}
 		
+		Identity statusDoneBy = statusDoneByIdentityKeyToIdentity.get(coachedEntry.getStatusDoneByKey());
+		coachedEntry.setStatusDoneBy(statusDoneBy);
+		
 		coachedEntries.add(coachedEntry);
 	}
 
@@ -621,6 +630,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append(" , courseele.shortTitle");
 		sb.append(" , courseele.longTitle");
 		sb.append(" , aentry.lastUserModified");
+		sb.append(" , aentry.assessmentDoneBy.key");
 		sb.append(" , aentry.assessmentDone");
 		sb.append(" , (");
 		sb.append("      select count(*) > 0 from repoentrytogroup as rel, bgroupmember as owner");
@@ -668,29 +678,46 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		return query.getResultList();
 	}
 	
-	public List<Identity> loadIdentities(List<CoachingAssessmentEntryImpl> coachedEntries, CoachingAssessmentSearchParams params) {
+	private List<Identity> loadAssessedIdentities(List<CoachingAssessmentEntryImpl> coachedEntries, CoachingAssessmentSearchParams params) {
 		if (coachedEntries == null || coachedEntries.isEmpty()) return Collections.emptyList();
+		
+		Set<Long> identityKeys = coachedEntries.stream()
+				.map(CoachingAssessmentEntryImpl::getAssessedIdentityKey)
+				.collect(Collectors.toSet());
+		
+		return loadIdentities(identityKeys, params.getSearchString());
+	}
+	
+	private List<Identity> loadStatusDoneByIdentities(List<CoachingAssessmentEntryImpl> coachedEntries, CoachingAssessmentSearchParams params) {
+		if (coachedEntries == null || coachedEntries.isEmpty()) return Collections.emptyList();
+		
+		Set<Long> identityKeys = coachedEntries.stream()
+				.map(CoachingAssessmentEntryImpl::getStatusDoneByKey)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		
+		return loadIdentities(identityKeys, params.getSearchString());
+	}
+	
+	private List<Identity> loadIdentities(Collection<Long> identityKeys, String searchString) {
+		if (identityKeys == null || identityKeys.isEmpty()) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ident from ").append(Identity.class.getName()).append(" as ident");
 		sb.append(" inner join fetch ident.user user");
 		sb.and().append(" ident.key in (:identityKeys)");
 		sb.and().append(" ident.status<").append(Identity.STATUS_DELETED);
-		String[] searchArr = appendUserSearchFull(sb, params.getSearchString(), true);
+		String[] searchArr = appendUserSearchFull(sb, searchString, true);
 		
-		Set<Long> identityKeys = coachedEntries.stream()
-				.map(CoachingAssessmentEntryImpl::getAssessedIdentityKey)
-				.collect(Collectors.toSet());
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("identityKeys", identityKeys);
 		appendUserSearchToQuery(searchArr, query);
 		
-		return query
-				.getResultList();
+		return query.getResultList();
 	}
 	
-	public List<RepositoryEntry> loadRepositoryEntries(List<CoachingAssessmentEntryImpl> coachedEntries) {
+	private List<RepositoryEntry> loadRepositoryEntries(List<CoachingAssessmentEntryImpl> coachedEntries) {
 		if (coachedEntries == null || coachedEntries.isEmpty()) return Collections.emptyList();
 		
 		QueryBuilder sb = new QueryBuilder();

@@ -82,6 +82,16 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus);
 	
 	public Date getAssessmentDone();
+	
+	/**
+	 * The identity who set the status to done.
+	 * The identity is only stored for assessable course elements.
+	 *
+	 * @return
+	 */
+	public Identity getAssessmentDoneBy();
+	
+	public void setAssessmentDoneBy(Identity assessmentDoneBy);
 
 	public Boolean getFullyAssessed();
 

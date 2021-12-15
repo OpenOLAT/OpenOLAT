@@ -47,6 +47,7 @@ alter table o_as_entry add a_obligation_inherited varchar2(50);
 alter table o_as_entry add a_obligation_evaluated varchar2(50);
 alter table o_as_entry add a_obligation_config varchar2(50);
 alter table o_as_entry add a_max_score decimal;
+alter table o_as_entry add fk_identity_status_done number(20);
 
 create table o_as_score_accounting_trigger (
    id number(20) generated always as identity,

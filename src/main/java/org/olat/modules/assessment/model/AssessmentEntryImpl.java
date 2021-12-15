@@ -105,6 +105,9 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private String status;
 	@Column(name="a_date_done", nullable=true, insertable=true, updatable=true)
 	private Date assessmentDone;
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_identity_status_done", nullable=true, insertable=true, updatable=true)
+	private Identity assessmentDoneBy;
 	@Column(name="a_details", nullable=true, insertable=true, updatable=true)
 	private String details;
 	@Column(name="a_user_visibility", nullable=true, insertable=true, updatable=true)
@@ -343,14 +346,6 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		this.details = details;
 	}
 
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
 	@Override
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return StringHelper.containsNonWhitespace(status) ? AssessmentEntryStatus.valueOf(status) : null;
@@ -375,6 +370,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public Date getAssessmentDone() {
 		return assessmentDone;
+	}
+
+	@Override
+	public Identity getAssessmentDoneBy() {
+		return assessmentDoneBy;
+	}
+
+	@Override
+	public void setAssessmentDoneBy(Identity assessmentDoneBy) {
+		this.assessmentDoneBy = assessmentDoneBy;
 	}
 
 	@Override

@@ -202,6 +202,7 @@ public class AssessmentEntryDAO {
 		nodeAssessment.setLastAttempt(null);
 		nodeAssessment.setCompletion(null);
 		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		nodeAssessment.setAssessmentDoneBy(null);
 		if (nodeAssessment instanceof AssessmentEntryImpl) {
 			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
 			impl.setLastModified(new Date());

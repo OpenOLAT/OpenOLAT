@@ -42,14 +42,15 @@ public class CoachingAssessmentEntryImpl implements CoachingAssessmentEntry {
 	private final String courseElementShortTitle;
 	private final String courseElementLongTitle;
 	private final Date lastUserModified;
-	private final Identity statusDoneBy = null;
+	private final Long statusDoneByKey;
+	private Identity statusDoneBy;
 	private final Date statusDoneAt;
 	private final boolean owner;
 	private final boolean coach;
 	
 	public CoachingAssessmentEntryImpl(Long assessmentEntryKey, Long assessedIdentityKey, Long repositoryEntryKey,
 			String subIdent, String courseElementType, String courseElementShortTitle, String courseElementLongTitle,
-			Date lastUserModified, Date statusDoneAt, boolean owner, boolean coach) {
+			Date lastUserModified, Long statusDoneByKey, Date statusDoneAt, boolean owner, boolean coach) {
 		this.assessmentEntryKey = assessmentEntryKey;
 		this.assessedIdentityKey = assessedIdentityKey;
 		this.repositoryEntryKey = repositoryEntryKey;
@@ -58,6 +59,7 @@ public class CoachingAssessmentEntryImpl implements CoachingAssessmentEntry {
 		this.courseElementShortTitle = courseElementShortTitle;
 		this.courseElementLongTitle = courseElementLongTitle;
 		this.lastUserModified = lastUserModified;
+		this.statusDoneByKey = statusDoneByKey;
 		this.statusDoneAt = statusDoneAt;
 		this.owner = owner;
 		this.coach = coach;
@@ -120,9 +122,17 @@ public class CoachingAssessmentEntryImpl implements CoachingAssessmentEntry {
 		return lastUserModified;
 	}
 
+	public Long getStatusDoneByKey() {
+		return statusDoneByKey;
+	}
+
 	@Override
 	public Identity getStatusDoneBy() {
 		return statusDoneBy;
+	}
+
+	public void setStatusDoneBy(Identity statusDoneBy) {
+		this.statusDoneBy = statusDoneBy;
 	}
 
 	@Override
