@@ -85,7 +85,7 @@ public class BusinessGroupStatusController extends FormBasicController {
 	public BusinessGroupStatusController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl, Util.createPackageTranslator(BusinessGroupListController.class, ureq.getLocale()));
 		this.businessGroup = businessGroup;
-		hasMembersOrResources = businessGroupService.countMembers(businessGroup, GroupRoles.coach.name(), GroupRoles.participant.name()) > 0
+		hasMembersOrResources = businessGroupService.countMembers(businessGroup, GroupRoles.coach.name()) > 0
 				|| businessGroupService.hasResources(businessGroup);
 		
 		initForm(ureq);

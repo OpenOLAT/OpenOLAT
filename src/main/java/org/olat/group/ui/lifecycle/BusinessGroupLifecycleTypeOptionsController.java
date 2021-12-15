@@ -70,14 +70,10 @@ public class BusinessGroupLifecycleTypeOptionsController extends FormBasicContro
 		}
 
 		SelectionValues excludeValues = new SelectionValues();
-		excludeValues.add(SelectionValues.entry("lti", translate("group.type.lti")));
 		excludeValues.add(SelectionValues.entry("managed", translate("group.type.managed")));
 
 		excludedEl = uifactory.addCheckboxesVertical("group.exclusion", "group.exclusion", formLayout,
 				excludeValues.keys(), excludeValues.values(), 1);
-		if(businessGroupModule.isGroupLifecycleExcludeLti()) {
-			excludedEl.select("lti", true);
-		}
 		if(businessGroupModule.isGroupLifecycleExcludeManaged()) {
 			excludedEl.select("managed", true);
 		}
@@ -93,7 +89,6 @@ public class BusinessGroupLifecycleTypeOptionsController extends FormBasicContro
 		String type = typeEl.getSelectedKey();
 		businessGroupModule.setGroupLifecycle(type);
 		Collection<String> excluded = excludedEl.getSelectedKeys();
-		businessGroupModule.setGroupLifecycleExcludeLti(excluded.contains("lti"));
 		businessGroupModule.setGroupLifecycleExcludeManaged(excluded.contains("managed"));
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

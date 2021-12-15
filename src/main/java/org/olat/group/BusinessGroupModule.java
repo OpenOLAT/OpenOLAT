@@ -219,7 +219,7 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	private String groupLifecycle;
 	@Value("${group.lifecycle.exclude.managed}")
 	private String groupLifecycleExcludeManaged;
-	@Value("${group.lifecycle.exclude.lti}")
+	@Value("${group.lifecycle.exclude.lti:true}")
 	private String groupLifecycleExcludeLti;
 
 	@Value("${group.automatic.inactivation:enabled}")
