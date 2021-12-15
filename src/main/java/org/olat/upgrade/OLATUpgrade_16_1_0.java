@@ -115,10 +115,12 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		
 		if (!uhd.getBooleanDataValue(UPDATE_ASSESSMENT_OBLIGATION)) {
 			try {
+				log.info("Start assessment entry update.");
 				String query = "update assessmententry ae set ae.obligationConfig = ae.obligation";
 				dbInstance.getCurrentEntityManager()
 						.createQuery(query)
 						.executeUpdate();
+				log.info("Assessment entry update finished.");
 			} catch (Exception e) {
 				log.error("", e);
 				return false;
@@ -135,6 +137,7 @@ public class OLATUpgrade_16_1_0 extends OLATUpgrade {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(INIT_COURSE_ELEMENT)) {
 			try {
+				log.info("Start course elements initialization.");
 				initCourseElements();
 				dbInstance.commitAndCloseSession();
 				log.info("All course elements initialized.");
