@@ -107,6 +107,29 @@
     -webkit-overflow-scrolling: touch;	
 }
 
+/* Flex box helpers                                                                    */
+/* one_line renders on one line, with fixed width objects and others that take all     */
+/* the available space and overflow with ellipsis                                      */
+.o_flex_block_one_line_left, %o_flex_block_one_line_left {
+	display: flex;	
+	flex-wrap: nowrap;
+	justify-content: left;
+	width: 100%;
+}
+.o_flex_item_fix, %o_flex_item_fix {
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+.o_flex_item_max, %o_flex_item_max {
+	flex-grow: 1;
+	flex-shrink: 1;
+	flex-wrap: nowrap;
+	width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 /* block for multiple buttons, center aligned (default) and right aligned when in header wrapper */
 .o_button_group {
 	@extend %o_block;

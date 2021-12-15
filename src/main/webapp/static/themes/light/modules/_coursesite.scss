@@ -111,17 +111,13 @@
 				}
 				
 				.o_author{
-					display: inline-block;
 					font-size: 85%;
-					max-width: 100%;
-					@include text-overflow();
 					color: $o-coursesite-meta-author-color;
 				}
 				.o_lifecycle {
 					margin: 0.5em 0;
 					font-size: 85%;
 					line-height: normal;
-					@include text-overflow();
 					color: $text-muted;
 					&:not(.o_active) .o_lifecycle_date {
 						color: $state-danger-text;

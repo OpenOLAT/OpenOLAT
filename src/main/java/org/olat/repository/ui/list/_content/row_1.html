@@ -19,23 +19,25 @@
 		</div>
 		#end
 		<h4 class="o_title">#if($row.closed)#end$r.render($row.getSelectLinkName())</h4>
-				
+
+		<div class="o_flex_block_one_line_left">
 		#if($row.getEducationalType())
-		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
+		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type o_flex_item_fix">
 			<span>$r.translate($row.getEducationalTypei18nKey())</span>
 		</span>
-		#end
-		
+		#end		
 		#if($row.authors && !$row.authors.empty)
-			<div class="o_author"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
+			<div class="o_author o_flex_item_max"><span class="text-muted">$r.translate("course.made.by")</span> $r.escapeHtml($row.authors)</div>
 		#end
+		</div>				
+		
 		#if($row.closed)
 			<div class="o_warning o_closed">$r.translate("close.ressource.warning")</div>
 		#else
 			#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd || ($row.location  && !${row.location.isEmpty()}))
-				<div class="o_lifecycle #if ($row.isActive()) o_active #end">
+				<div class="o_lifecycle #if ($row.isActive()) o_active #end o_flex_block_one_line_left">
 					#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
-						<div class="o_lifecycle_date"><i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i>
+						<div class="o_lifecycle_date o_flex_item_fix"><i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i>
 						#if(($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) || ($row.lifecycleLabel and !$row.lifecycleLabel.isEmpty()))
 							#if($row.lifecycleSoftKey and !$row.lifecycleSoftKey.isEmpty()) $r.escapeHtml($row.lifecycleSoftKey)
 							#else $r.escapeHtml($row.lifecycleLabel) #end
@@ -45,7 +47,7 @@
 						#end</div>
 					#end
 					#if($row.location  && !${row.location.isEmpty()})
-						<div class="o_lifecycle_location">
+						<div class="o_lifecycle_location o_flex_item_max">
 							#if($row.lifecycle || $row.lifecycleSoftKey || $row.lifecycleLabel || $row.lifecycleStart || $row.lifecycleEnd)
 								<span class="o_spacer">•</span>
 							#else
