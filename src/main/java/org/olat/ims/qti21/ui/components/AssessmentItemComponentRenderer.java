@@ -176,7 +176,9 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		sb.append("<div class='o_assessmentitem_wrapper'>");
 		//title + status
 		sb.append("<h4 class='itemTitle'>");
+		sb.append("<span class='o_qti_item_meta'>");
 		renderItemStatus(renderer, sb, itemSessionState, translator);
+		sb.append("</span>");
 		sb.append(StringHelper.escapeHtml(assessmentItem.getTitle())).append("</h4>")
 		  .append("<div id='itemBody' class='o_qti_item_body clearfix'>");
 		
