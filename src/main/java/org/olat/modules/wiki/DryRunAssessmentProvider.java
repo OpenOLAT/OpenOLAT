@@ -29,18 +29,30 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public class DryRunAssessmentProvider implements WikiAssessmentProvider {
 	
-	private static final WikiAssessmentProvider INSTANCE = new DryRunAssessmentProvider();
+	private static final WikiAssessmentProvider LEARNING_PATH_CSS = new DryRunAssessmentProvider(true);
+	private static final WikiAssessmentProvider NO_LEARNING_PATH_CSS = new DryRunAssessmentProvider(false);
+	
+	private final boolean learningPathCSS;
 	
 	public static final WikiAssessmentProvider create() {
-		return INSTANCE;
+		return create(false);
 	}
 	
-	private DryRunAssessmentProvider() {
-		//
+	public static final WikiAssessmentProvider create(boolean learningPathCSS) {
+		return learningPathCSS? LEARNING_PATH_CSS: NO_LEARNING_PATH_CSS;
+	}
+	
+	private DryRunAssessmentProvider(boolean learningPathCSS) {
+		this.learningPathCSS = learningPathCSS;
 	}
 
 	@Override
 	public boolean isLearningPathCSS() {
+		return learningPathCSS;
+	}
+
+	@Override
+	public boolean isLearningPathStatus() {
 		return false;
 	}
 

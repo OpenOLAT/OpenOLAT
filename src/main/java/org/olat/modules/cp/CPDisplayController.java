@@ -499,7 +499,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		String identifier = userObject.getIdentifier();
 		AssessmentEntryStatus status = cpAssessmentProvider.onPageVisited(identifier);
 		if (cpAssessmentProvider.isLearningPathCSS()) {
-			String cssClass = CPManifestTreeModel.getItemCssClass(status);
+			String cssClass = CPManifestTreeModel.getItemCssClass(cpAssessmentProvider.isLearningPathStatus(), status);
 			((GenericTreeNode)treeNode).setCssClass(cssClass);
 		}
 	}

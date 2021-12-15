@@ -43,7 +43,12 @@ public class DryRunAssessmentProvider implements CPAssessmentProvider {
 	public boolean isLearningPathCSS() {
 		return false;
 	}
-	
+
+	@Override
+	public boolean isLearningPathStatus() {
+		return false;
+	}
+
 	@Override
 	public AssessmentEntryStatus onPageVisited(String itemIdentifier) {
 		return null;

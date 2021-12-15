@@ -51,6 +51,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CPCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -203,9 +205,12 @@ public class CPRunController extends BasicController implements ControllerEventL
 				}
 			}
 			
+			boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnv).getType())
+					&& (userCourseEnv.getCourseEnvironment().getCourseConfig().isMenuPathEnabled()
+							|| userCourseEnv.isParticipant());
 			cpAssessmentProvider = userCourseEnv.getIdentityEnvironment().getRoles().isGuestOnly()
 					? DryRunAssessmentProvider.create()
-					: PersistingAssessmentProvider.create(re, getIdentity(), userCourseEnv.isParticipant());
+					: PersistingAssessmentProvider.create(re, getIdentity(), learningPath, userCourseEnv.isParticipant());
 		}
 		// else cpRoot is already set (save some db access if the user opens /
 		// closes / reopens the cp from the same CPRuncontroller instance)

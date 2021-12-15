@@ -39,20 +39,18 @@ public class PersistingAssessmentProvider implements WikiAssessmentProvider {
 
 	private final Identity identity;
 	private final RepositoryEntry wikiEntry;
-	private final boolean learningPathCSS;
 	
 	private Map<String, AssessmentEntryStatus> pageIdToStatus;
 	
 	private AssessmentService assessmentService;
 	
-	public static final WikiAssessmentProvider create(RepositoryEntry wikiEntry, Identity identity, boolean learningPathCSS) {
-		return new PersistingAssessmentProvider(wikiEntry, identity, learningPathCSS);
+	public static final WikiAssessmentProvider create(RepositoryEntry wikiEntry, Identity identity) {
+		return new PersistingAssessmentProvider(wikiEntry, identity);
 	}
 	
-	private PersistingAssessmentProvider(RepositoryEntry wikiEntry, Identity identity, boolean learningPathCSS) {
+	private PersistingAssessmentProvider(RepositoryEntry wikiEntry, Identity identity) {
 		this.identity = identity;
 		this.wikiEntry = wikiEntry;
-		this.learningPathCSS = learningPathCSS;
 		this.assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
 		this.pageIdToStatus = assessmentService.loadAssessmentEntriesByAssessedIdentity(identity, wikiEntry).stream()
 				.filter(ae -> ae.getSubIdent() != null && ae.getAssessmentStatus() != null)
@@ -61,7 +59,12 @@ public class PersistingAssessmentProvider implements WikiAssessmentProvider {
 
 	@Override
 	public boolean isLearningPathCSS() {
-		return learningPathCSS;
+		return true;
+	}
+
+	@Override
+	public boolean isLearningPathStatus() {
+		return true;
 	}
 
 	@Override

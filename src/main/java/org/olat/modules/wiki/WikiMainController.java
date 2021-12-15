@@ -429,24 +429,24 @@ public class WikiMainController extends BasicController implements Activateable2
 		// Index
 		String navMainItem = "nav-main-item-" + resId;
 		navMainPageNode = new GenericTreeNode(navMainItem, translate("navigation.mainpage"), navMainItem);
-		navMainPageNode.setCssClass(getNodeDoneCssClass());
+		navMainPageNode.setCssClass(getNodeCssClass(AssessmentEntryStatus.done));
 		rootNode.addChild(navMainPageNode);
 
 		// Wiki-Menu
 		String wikiMenuTitle = translate("navigation.menu");
 		String wikiMenuItem = "menu-item-" + resId;
 		wikiMenuNode = new GenericTreeNode(wikiMenuItem, wikiMenuTitle, wikiMenuItem);
-		wikiMenuNode.setCssClass(getNodeDoneCssClass());
+		wikiMenuNode.setCssClass(getNodeCssClass(AssessmentEntryStatus.done));
 		rootNode.addChild(wikiMenuNode);
 
 		String navAZItem = "nav-az-item-" + resId;
 		navAZNode = new GenericTreeNode(navAZItem, translate("navigation.a-z"), navAZItem);
-		navAZNode.setCssClass(getNodeDoneCssClass());
+		navAZNode.setCssClass(getNodeCssClass(AssessmentEntryStatus.done));
 		rootNode.addChild(navAZNode);
 
 		String navChangesItem = "nav-changes-item-" + resId;
 		navChangesNode = new GenericTreeNode(navChangesItem, translate("navigation.changes"), navChangesItem);
-		navChangesNode.setCssClass(getNodeDoneCssClass());
+		navChangesNode.setCssClass(getNodeCssClass(AssessmentEntryStatus.done));
 		rootNode.addChild(navChangesNode);
 
 		updateWikiMenu(wiki);
@@ -465,18 +465,17 @@ public class WikiMainController extends BasicController implements Activateable2
 
 	private String getNodeCssClass(AssessmentEntryStatus status) {
 		if (assessmentProvider.isLearningPathCSS()) {
-			if (AssessmentEntryStatus.done.equals(status)) {
-				return getNodeDoneCssClass();
+			String itemCssClass = "o_lp_status ";
+			if (assessmentProvider.isLearningPathStatus()) {
+				if (AssessmentEntryStatus.done.equals(status)) {
+					itemCssClass += "o_lp_done o_lp_not_in_sequence o_lp_contains_no_sequence";
+				} else {
+					itemCssClass += "o_lp_ready o_lp_not_in_sequence o_lp_contains_no_sequence";
+				}
 			}
-			return "o_lp_ready o_lp_not_in_sequence o_lp_contains_no_sequence";
+			return itemCssClass;
 		}
 		return "";
-	}
-	
-	private String getNodeDoneCssClass() {
-		return assessmentProvider.isLearningPathCSS()
-				? "o_lp_done o_lp_not_in_sequence o_lp_contains_no_sequence"
-				: "";
 	}
 
 	@Override

@@ -218,7 +218,7 @@ public class ImsCPHandler extends FileHandler {
 			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 			
-			CPAssessmentProvider cpAssessmentProvider = PersistingAssessmentProvider.create(re, uureq.getIdentity(), false);
+			CPAssessmentProvider cpAssessmentProvider = PersistingAssessmentProvider.create(re, uureq.getIdentity(), false, false);
 			CPDisplayController cpCtr = new CPDisplayController(uureq, wwControl, vfsWrapper, true, true, activateFirstPage, true, deliveryOptions,
 					initialUri, entry.getOlatResource(), "", false, cpAssessmentProvider);
 			LayoutMain3ColsController ctr = new LayoutMain3ColsController(uureq, wwControl, cpCtr.getMenuComponent(), cpCtr.getInitialComponent(), vfsWrapper.getName());

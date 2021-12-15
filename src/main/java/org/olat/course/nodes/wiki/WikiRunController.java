@@ -42,6 +42,8 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.nodes.WikiCourseNode;
@@ -111,9 +113,11 @@ public class WikiRunController extends BasicController implements Activateable2 
 			Boolean courseEditRight = Boolean.valueOf(hasEditRights(wikiCourseNode, userCourseEnv, ne));
 			callback = new WikiSecurityCallbackImpl(courseEditRight, isAdmininstrator, isGuestOnly, false,
 					isResourceOwner, subsContext);
+			boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnv).getType())
+					&& (userCourseEnv.getCourseEnvironment().getCourseConfig().isMenuPathEnabled());
 			assessmentProvider = userCourseEnv.isParticipant()
-					? PersistingAssessmentProvider.create(wikiEntry, getIdentity(), true)
-					: DryRunAssessmentProvider.create();
+					? PersistingAssessmentProvider.create(wikiEntry, getIdentity())
+					: DryRunAssessmentProvider.create(learningPath);
 		}
 		
 		

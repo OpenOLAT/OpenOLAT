@@ -31,6 +31,8 @@ public interface CPAssessmentProvider {
 	
 	boolean isLearningPathCSS();
 	
+	boolean isLearningPathStatus();
+	
 	AssessmentEntryStatus onPageVisited(String itemIdentifier);
 
 	AssessmentEntryStatus getStatus(String itemIdentifier);

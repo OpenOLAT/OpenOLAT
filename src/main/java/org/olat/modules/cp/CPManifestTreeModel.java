@@ -263,14 +263,19 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	
 	private String getItemCssClass(String identifier) {
 		AssessmentEntryStatus status = cpAssessmentProvider.getStatus(identifier);
-		return getItemCssClass(status);
+		return getItemCssClass(cpAssessmentProvider.isLearningPathStatus(), status);
 	}
 
-	public static String getItemCssClass(AssessmentEntryStatus status) {
-		if (AssessmentEntryStatus.done.equals(status)) {
-			return "o_lp_done o_lp_not_in_sequence o_lp_contains_no_sequence";
+	public static String getItemCssClass(boolean learningPathStatus, AssessmentEntryStatus status) {
+		String itemCssClass = "o_lp_status ";
+		if (learningPathStatus) {
+			if (AssessmentEntryStatus.done.equals(status)) {
+				itemCssClass += "o_lp_done o_lp_not_in_sequence o_lp_contains_no_sequence";
+			} else {
+				itemCssClass += "o_lp_ready o_lp_not_in_sequence o_lp_contains_no_sequence";
+			}
 		}
-		return "o_lp_ready o_lp_not_in_sequence o_lp_contains_no_sequence";
+		return itemCssClass;
 	}
 
 	private Document loadDocument(VFSLeaf documentF) throws IOException {

@@ -40,20 +40,21 @@ public class PersistingAssessmentProvider implements CPAssessmentProvider {
 	private final Identity identity;
 	private final RepositoryEntry cpEntry;
 	private final boolean learningPathCSS;
-	
+	private final boolean learningPathStatus;
 	private Map<String, AssessmentEntryStatus> identifierToStatus;
 	
 	private AssessmentService assessmentService;
 	
 	public static final CPAssessmentProvider create(RepositoryEntry cpEntry, Identity identity,
-			boolean learningPathCSS) {
-		return new PersistingAssessmentProvider(cpEntry, identity, learningPathCSS);
+			boolean learningPathCSS, boolean learningPathStatus) {
+		return new PersistingAssessmentProvider(cpEntry, identity, learningPathCSS, learningPathStatus);
 	}
 	
-	private PersistingAssessmentProvider(RepositoryEntry cpEntry, Identity identity, boolean learningPathCSS) {
+	private PersistingAssessmentProvider(RepositoryEntry cpEntry, Identity identity, boolean learningPathCSS, boolean learningPathStatus) {
 		this.identity = identity;
 		this.cpEntry = cpEntry;
 		this.learningPathCSS = learningPathCSS;
+		this.learningPathStatus = learningPathStatus;
 		this.assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
 		this.identifierToStatus = assessmentService.loadAssessmentEntriesByAssessedIdentity(identity, cpEntry).stream()
 				.filter(ae -> ae.getSubIdent() != null && ae.getAssessmentStatus() != null)
@@ -65,6 +66,11 @@ public class PersistingAssessmentProvider implements CPAssessmentProvider {
 		return learningPathCSS;
 	}
 
+	@Override
+	public boolean isLearningPathStatus() {
+		return learningPathStatus;
+	}
+	
 	@Override
 	public AssessmentEntryStatus onPageVisited(String itemIdentifier) {
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(identity, null, cpEntry, itemIdentifier, false, null);

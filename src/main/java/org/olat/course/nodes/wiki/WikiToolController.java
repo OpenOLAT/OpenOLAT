@@ -99,7 +99,7 @@ public class WikiToolController extends BasicController implements Activateable2
 				callback = new WikiSecurityCallbackImpl(Boolean.TRUE, isAdmininstrator, isGuestOnly, false,
 						isResourceOwner, subsContext);
 				assessmentProvider = userCourseEnv.isParticipant()
-						? PersistingAssessmentProvider.create(wikiEntry, getIdentity(), false)
+						? PersistingAssessmentProvider.create(wikiEntry, getIdentity())
 						: DryRunAssessmentProvider.create();
 			}
 			

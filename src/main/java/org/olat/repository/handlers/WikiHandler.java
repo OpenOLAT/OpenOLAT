@@ -211,7 +211,7 @@ public class WikiHandler implements RepositoryHandler {
 		final ContextEntry ce = bc.popLauncherContextEntry();
 		SubscriptionContext subsContext = new SubscriptionContext(res, WikiManager.WIKI_RESOURCE_FOLDER_NAME);
 		final WikiSecurityCallback callback = new WikiSecurityCallbackImpl(null, isOLatAdmin, isGuestOnly, false, isResourceOwner, subsContext);
-		WikiAssessmentProvider assessmentProvider = PersistingAssessmentProvider.create(re, ureq.getIdentity(), false);
+		WikiAssessmentProvider assessmentProvider = PersistingAssessmentProvider.create(re, ureq.getIdentity());
 
 		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity,
 			new RuntimeControllerCreator() {
