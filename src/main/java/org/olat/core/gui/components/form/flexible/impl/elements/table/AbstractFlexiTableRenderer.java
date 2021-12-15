@@ -563,7 +563,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		String dispatchId = ftE.getFormDispatchId();	
 		sb.append("<div id='").append(dispatchId).append("_bab' class='o_button_group o_table_batch_buttons ")
-		  .append("o_table_batch_show", "o_table_batch_hide", ftE.hasMultiSelectedIndex()).append("'>")
+		  .append("o_table_batch_show", "o_table_batch_hide", numOf > 0 || ftE.hasMultiSelectedIndex()).append("'>")
 		  .append("<span id='").append(dispatchId).append("_mscount' class='o_table_batch_label'>")
 		  .append(entryI18n).append("</span> ");
 		for(FormItem item:items) {

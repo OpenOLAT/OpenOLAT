@@ -1975,11 +1975,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private void updateSelectAllToggle() {
-		if (multiSelect == SelectionMode.multi && multiSelectedIndex != null) {
+		if (multiSelect == SelectionMode.multi) {
 			int count = dataModel.getRowCount();
-			int selectCount = multiSelectedIndex.size();
+			int selectCount = 0;
 			if(dataModel instanceof FlexiTableSelectionDelegate) {
 				selectCount = ((FlexiTableSelectionDelegate<?>)dataModel).getSelectedTreeNodes().size();
+			} else if(multiSelectedIndex != null) {
+				selectCount = multiSelectedIndex.size();
 			}
 			
 			boolean showSelectAll = (selectCount == 0);

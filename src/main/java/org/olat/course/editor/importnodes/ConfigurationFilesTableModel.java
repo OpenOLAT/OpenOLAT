@@ -56,12 +56,6 @@ public class ConfigurationFilesTableModel extends DefaultFlexiTreeTableDataModel
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		// 
 	}
-	
-	@Override
-	public boolean isSelectable(int row) {
-		ConfigurationFileRow node = getObject(row);
-		return !node.isParentLine();
-	}
 
 	public List<ConfigurationFileRow> getAllObjects() {
 		return new ArrayList<>(backupRows);
