@@ -45,6 +45,7 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -372,6 +373,23 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 					}
 				}
 			}
+		} else if(wizard) {
+			Dates dates = getDates();
+			if(dates.getStartDate() != null && dates.getEndDate() != null) {
+				List<AbsenceNotice> notices = lectureService.detectCollision(noticedIdentity,
+						noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
+				if(autoProlongate(notices)) {
+					noticeWrapper.wrap(notices.get(0));
+					List<LectureBlockWithNotice> currentBlocks = lectureService.getLectureBlocksWithAbsenceNotices(notices);
+					for(LectureBlockWithNotice currentBlock:currentBlocks) {
+						String key = currentBlock.getLectureBlock().getKey().toString();
+						if(keyValues.containsKey(key)) {
+							lectureBlocksEl.select(key, true);
+						}
+					}
+					datesEl.setExampleKey("update.notice", null);
+				}
+			}
 		}
 	}
 	
@@ -439,21 +457,45 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			List<AbsenceNotice> notices = lectureService.detectCollision(noticedIdentity,
 					noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
 			if(!notices.isEmpty()) {
-				datesEl.setErrorKey("error.collision", null);
-				allOk &= false;
-				if(prolongateButton != null) {
-					prolongateButton.setVisible(true);
-					prolongateButton.setUserObject(notices);
-				}
-				if(entriesEl.isVisible()) {
-					markEntriesCollisions(notices);
-				} else if(lectureBlocksEl.isVisible()) {
-					markLectureBlocksCollisions(notices);
-				}
+				allOk &= analyseCollision(notices);
 			}
 		}
 
 		return allOk;
+	}
+	
+	private boolean analyseCollision(List<AbsenceNotice> notices) {
+		if(autoProlongate(notices)) {
+			noticeWrapper.wrap(notices.get(0));
+			datesEl.setExampleKey("update.notice", null);
+			return true;
+		}
+
+		datesEl.setErrorKey("error.collision", null);
+		if(prolongateButton != null) {
+			prolongateButton.setVisible(true);
+			prolongateButton.setUserObject(notices);
+		}
+		if(entriesEl.isVisible()) {
+			markEntriesCollisions(notices);
+		} else if(lectureBlocksEl.isVisible()) {
+			markLectureBlocksCollisions(notices);
+		}
+		return false;
+	}
+	
+	private boolean autoProlongate(List<AbsenceNotice> notices) {
+		return wizard && noticeWrapper.getAbsenceNotice() == null
+				&& notices.size() == 1
+				&& notices.get(0).getNoticeType() == noticeWrapper.getAbsenceNoticeType()
+				&& notices.get(0).getNoticeTarget() == AbsenceNoticeTarget.lectureblocks
+				&& dateMatches(notices.get(0)) && lectureBlocksEl.isVisible();
+	}
+	
+	private boolean dateMatches(AbsenceNotice notice) {
+		Dates dates = getDates();
+		return dates.getStartDate() != null && notice.getStartDate() != null && DateUtils.isSameDate(dates.getStartDate(), notice.getStartDate())
+				&& dates.getEndDate() != null && notice.getEndDate() != null && DateUtils.isSameDate(dates.getEndDate(), notice.getEndDate());	
 	}
 	
 	private void clearMarkColissions() {
