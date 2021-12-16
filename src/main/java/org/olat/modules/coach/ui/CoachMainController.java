@@ -235,8 +235,11 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		if(userSearchAllowed) {
 			return "Search";
 		}
-		if(gradingModule.isEnabled() && (gradingSec.isGrader() || gradingSec.isGradedResourcesManager())) {
-			return "Grading";
+		if(gradingModule.isEnabled() && gradingSec.isGrader()) {
+			return "Orders";
+		}
+		if(gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) {
+			return "Ordersadmin";
 		}
 		if (coachingSec.isUserRelationSource()) {
 			return userRelationRolesMap.keySet().stream().findFirst().get();
@@ -523,14 +526,14 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			ordersNode.setTitle(translate("orders.menu.title"));
 			ordersNode.setAltText(translate("orders.menu.title.alt"));
 			root.addChild(ordersNode);
-			
-			if (gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) {
-				GenericTreeNode ordersAdminNode = new GenericTreeNode();
-				ordersAdminNode.setUserObject("OrdersAdmin");
-				ordersAdminNode.setTitle(translate("orders.admin.menu.title"));
-				ordersAdminNode.setAltText(translate("orders.admin.menu.title.alt"));
-				ordersNode.addChild(ordersAdminNode);
-			}
+		}
+		
+		if (gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) {
+			GenericTreeNode ordersAdminNode = new GenericTreeNode();
+			ordersAdminNode.setUserObject("OrdersAdmin");
+			ordersAdminNode.setTitle(translate("orders.admin.menu.title"));
+			ordersAdminNode.setAltText(translate("orders.admin.menu.title.alt"));
+			root.addChild(ordersAdminNode);
 		}
 
 		if(userSearchAllowed) {

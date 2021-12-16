@@ -125,13 +125,13 @@ public class UserDetailsController extends BasicController implements Activateab
 		} else {
 			try {
 				segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-				efficiencyStatementLink = LinkFactory.createLink("details.statement", mainVC, this);
-				segmentView.addSegment(efficiencyStatementLink, selectSegment == null || selectSegment == Segment.efficiencyStatement);
-				
 				if (showAssessmentTool) {
 					assessmentLink = LinkFactory.createLink("details.assessment", mainVC, this);
 					segmentView.addSegment(assessmentLink, selectSegment == Segment.assessment);
 				}
+				
+				efficiencyStatementLink = LinkFactory.createLink("details.statement", mainVC, this);
+				segmentView.addSegment(efficiencyStatementLink, selectSegment == null || selectSegment == Segment.efficiencyStatement);
 				
 				if(lectureService.isRepositoryEntryLectureEnabled(entry)) {
 					lecturesLink = LinkFactory.createLink("details.lectures", mainVC, this);
@@ -142,6 +142,8 @@ public class UserDetailsController extends BasicController implements Activateab
 					doOpenAssessmentController(ureq);
 				} else if(lecturesLink != null && selectSegment == Segment.lectures) {
 					doOpenLecturesBlock(ureq);
+				} else if (assessmentLink != null) {
+					doOpenAssessmentController(ureq);
 				} else {
 					doOpenEfficiencyStatementController(ureq);
 				}
