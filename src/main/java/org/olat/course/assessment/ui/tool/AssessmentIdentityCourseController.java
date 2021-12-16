@@ -52,6 +52,8 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
@@ -129,8 +131,9 @@ public class AssessmentIdentityCourseController extends BasicController
 			listenTo(certificateCtrl);
 		}
 			
+		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		Boolean passedManually = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
-		if (passedManually || coachCourseEnv.isAdmin()) {
+		if (learningPath && (passedManually || coachCourseEnv.isAdmin())) {
 			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv);
 			identityAssessmentVC.put("passed", passedCtrl.getInitialComponent());
 			listenTo(passedCtrl);
