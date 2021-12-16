@@ -297,8 +297,7 @@
 		<w:pPr>
 			<w:keepNext />
 			<w:keepLines />
-			<w:spacing w:before="480" />
-			<w:spacing w:after="200" />
+			<w:spacing w:after="200" w:before="480" />
 			<w:outlineLvl w:val="0" />
 		</w:pPr>
 		<w:rPr>
@@ -323,8 +322,7 @@
 		<w:pPr>
 			<w:keepNext />
 			<w:keepLines />
-			<w:spacing w:before="200" />
-			<w:spacing w:after="150" />
+			<w:spacing w:after="150" w:before="200" />
 			<w:outlineLvl w:val="1" />
 		</w:pPr>
 		<w:rPr>
@@ -498,7 +496,7 @@
 			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
 			<w:i />
 			<w:iCs />
-			<w:color w:val="8A6D3B" w:themeColor="subtle1" />
+			<w:color w:val="8A6D3B" />
 			<w:sz w:val="20" />
 			<w:szCs w:val="20" />
 		</w:rPr>
@@ -512,7 +510,7 @@
 		<w:rPr>
 			<w:i />
 			<w:iCs />
-			<w:color w:val="8A6D3B" w:themeColor="subtle1" />
+			<w:color w:val="8A6D3B" />
 			<w:sz w:val="20" />
 			<w:szCs w:val="20" />
 		</w:rPr>
@@ -534,7 +532,7 @@
 			<w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:hAnsiTheme="majorHAnsi" w:cstheme="majorBidi" />
 			<w:i />
 			<w:iCs />
-			<w:color w:val="555555" w:themeColor="quote1" />
+			<w:color w:val="555555" />
 			<w:sz w:val="20" />
 			<w:szCs w:val="20" />
 		</w:rPr>
@@ -548,7 +546,7 @@
 		<w:rPr>
 			<w:i />
 			<w:iCs />
-			<w:color w:val="555555" w:themeColor="quote1" />
+			<w:color w:val="555555" />
 			<w:sz w:val="20" />
 			<w:szCs w:val="20" />
 		</w:rPr>
