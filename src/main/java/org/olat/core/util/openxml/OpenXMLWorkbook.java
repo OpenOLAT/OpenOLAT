@@ -150,16 +150,18 @@ public class OpenXMLWorkbook implements Closeable {
 	
 	private final void appendPrologue() {
 		try {
-			//_rels
-			zout.putNextEntry(new ZipEntry("_rels/.rels"));
-			appendShadowDocumentRelationships();
-			zout.closeEntry();
-			
 			//[Content_Types].xml
 			zout.putNextEntry(new ZipEntry("[Content_Types].xml"));
 			appendContentTypes();
 			zout.closeEntry();
-			
+
+			//_rels
+			addDirectory(zout, "_rels/");
+			zout.putNextEntry(new ZipEntry("_rels/.rels"));
+			appendShadowDocumentRelationships();
+			zout.closeEntry();
+
+			addDirectory(zout, "docProps/");
 			//docProps/app.xml
 			zout.putNextEntry(new ZipEntry("docProps/app.xml"));
 			appendDocPropsApp(zout);
@@ -191,6 +193,10 @@ public class OpenXMLWorkbook implements Closeable {
 		} catch (IOException e) {
 			log.error("", e);
 		}	
+	}
+	
+	private void addDirectory(ZipOutputStream out, String directory) throws IOException {
+		out.putNextEntry(new ZipEntry(directory));
 	}
 	
 	private void appendEpilogue() {
@@ -764,7 +770,7 @@ public class OpenXMLWorkbook implements Closeable {
 	private void appendFonts(List<Font> fonts, XMLStreamWriter writer) throws XMLStreamException {
 		writer.writeStartElement("fonts");
 		writer.writeAttribute("count", Integer.toString(fonts.size()));
-		writer.writeAttribute("x14ac:knownFonts", Integer.toString(fonts.size()));
+		writer.writeAttribute("x14ac:knownFonts", "1");
 		for (Font font: fonts) {
 			writer.writeStartElement("font");
 			appendTag("sz", "val", font.getSzVal(), writer);

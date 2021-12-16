@@ -188,4 +188,22 @@ public class OpenXMLUtils {
 			log.error("", e);
 		}
 	}
+	
+	public static final void writeTo(Document document, OutputStream out, boolean indent, boolean standalone) {
+		try {
+			// Use a Transformer for output
+			Transformer transformer = XMLFactories.newTransformerFactory().newTransformer();
+			if(indent) {
+				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			}
+			if(standalone) {
+				document.setXmlStandalone(true);
+				transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
+			}
+			transformer.transform(new DOMSource(document), new StreamResult(out));
+		} catch (TransformerFactoryConfigurationError | TransformerException e) {
+			log.error("", e);
+		}
+	}
 }
