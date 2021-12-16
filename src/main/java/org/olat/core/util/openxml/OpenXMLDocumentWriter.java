@@ -23,7 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.zip.ZipEntry;
@@ -62,6 +62,7 @@ public class OpenXMLDocumentWriter {
 	public static final String SCHEMA_DC = "http://purl.org/dc/elements/1.1/";
 	public static final String SCHEMA_RELATIONSHIPS = "http://schemas.openxmlformats.org/package/2006/relationships";
 	
+	public static final String CT_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 	public static final String CT_RELATIONSHIP = "application/vnd.openxmlformats-package.relationships+xml";
 	public static final String CT_EXT_PROPERTIES = "application/vnd.openxmlformats-officedocument.extended-properties+xml";
 	public static final String CT_CORE_PROPERTIES = "application/vnd.openxmlformats-package.core-properties+xml";
@@ -70,6 +71,9 @@ public class OpenXMLDocumentWriter {
 	public static final String CT_STYLES = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
 	public static final String CT_HEADER = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
 	public static final String CT_THEME = "application/vnd.openxmlformats-officedocument.theme+xml";
+	public static final String CT_FONT_TABLE = "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml";
+	public static final String CT_WEB_SETTINGS = "application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml";
+	public static final String CT_SETTINGS = "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml";
 	
 	private Locale locale;
 	
@@ -85,16 +89,13 @@ public class OpenXMLDocumentWriter {
 	throws IOException {
 		//flush header...
 		document.appendPageSettings();
-		
-		//_rels
-		out.putNextEntry(new ZipEntry("_rels/.rels"));
-		createShadowDocumentRelationships(out);
-		out.closeEntry();
-		
+
 		//[Content_Types].xml
 		out.putNextEntry(new ZipEntry("[Content_Types].xml"));
 		createContentTypes(document, out);
 		out.closeEntry();
+
+		addDirectory(out, "docProps/");
 		
 		//docProps/app.xml
 		out.putNextEntry(new ZipEntry("docProps/app.xml"));
@@ -105,29 +106,22 @@ public class OpenXMLDocumentWriter {
 		out.putNextEntry(new ZipEntry("docProps/core.xml"));
 		createDocPropsCore(out);
 		out.closeEntry();
+
+		addDirectory(out, "_rels/");
 		
-		//word/_rels/document.xml.rels
-		out.putNextEntry(new ZipEntry("word/_rels/document.xml.rels"));
-		createDocumentRelationships(out, document);
+		//_rels
+		out.putNextEntry(new ZipEntry("_rels/.rels"));
+		createShadowDocumentRelationships(out);
 		out.closeEntry();
+		
+		out.putNextEntry(new ZipEntry("word/"));
+
 		
 		//word/media
 		appendMedias(out, document);
-		
-		// word/theme/theme1.xml
-		out.putNextEntry(new ZipEntry("word/theme/theme1.xml"));
-		try(InputStream in = OpenXMLDocumentWriter.class.getResourceAsStream("_resources/theme1.xml")) {
-			IOUtils.copy(in, out);
-		} catch (IOException e) {
-			log.error("", e);
-		}
-		out.closeEntry();
-		
-		//word/numbering
-		ZipEntry numberingDocument = new ZipEntry("word/numbering.xml");
-		out.putNextEntry(numberingDocument);
-		appendNumbering(out, document);
-		out.closeEntry();
+
+		addResource(out, "word/fontTable.xml", "_resources/fontTable.xml");
+		addResource(out, "word/webSettings.xml", "_resources/webSettings.xml");
 		
 		//word/document.xml
 		ZipEntry wordDocument = new ZipEntry("word/document.xml");
@@ -139,14 +133,52 @@ public class OpenXMLDocumentWriter {
 		for(HeaderReference headerRef:document.getHeaders()) {
 			ZipEntry headerDocument = new ZipEntry("word/" + headerRef.getFilename());
 			out.putNextEntry(headerDocument);
-			IOUtils.write(headerRef.getHeader(), out, Charset.forName("UTF-8"));
+			IOUtils.write(headerRef.getHeader(), out, StandardCharsets.UTF_8);
 			out.closeEntry();
 		}
+		
+		//word/numbering
+		ZipEntry numberingDocument = new ZipEntry("word/numbering.xml");
+		out.putNextEntry(numberingDocument);
+		appendNumbering(out, document);
+		out.closeEntry();
+		
+		//word/settings.xml
+		ZipEntry settings = new ZipEntry("word/settings.xml");
+		out.putNextEntry(settings);
+		createSettings(out);
+		out.closeEntry();
 
 		//word/styles.xml
 		ZipEntry styles = new ZipEntry("word/styles.xml");
 		out.putNextEntry(styles);
 		appendPredefinedStyles(out, document.getStyles());
+		out.closeEntry();
+		
+		out.putNextEntry(new ZipEntry("word/theme/"));
+		out.closeEntry();
+		addResource(out, "word/theme/theme1.xml", "_resources/theme1.xml");
+		
+		out.putNextEntry(new ZipEntry("word/_rels/"));
+		
+		//word/_rels/document.xml.rels
+		out.putNextEntry(new ZipEntry("word/_rels/document.xml.rels"));
+		createDocumentRelationships(out, document);
+		out.closeEntry();
+	}
+	
+	private void addDirectory(ZipOutputStream out, String directory) throws IOException {
+		out.putNextEntry(new ZipEntry(directory));
+	}
+	
+	private void addResource(ZipOutputStream out, String entryName, String resource) throws IOException {
+		// word/theme/fontTable.xml
+		out.putNextEntry(new ZipEntry(entryName));
+		try(InputStream in = OpenXMLDocumentWriter.class.getResourceAsStream(resource)) {
+			IOUtils.copy(in, out);
+		} catch (IOException e) {
+			log.error("", e);
+		}
 		out.closeEntry();
 	}
 	
@@ -167,7 +199,7 @@ public class OpenXMLDocumentWriter {
 	private void appendNumbering(ZipOutputStream out, OpenXMLDocument document) {
 		try(InputStream in = OpenXMLDocumentWriter.class.getResourceAsStream("_resources/numbering.xml")) {
 			Collection<ListParagraph> numberingList = document.getNumbering();
-			if(numberingList != null && numberingList.size() > 0) {
+			if(numberingList != null && !numberingList.isEmpty()) {
 				Document numberingDoc = OpenXMLUtils.createDocument(in);
 				NodeList numberingElList = numberingDoc.getElementsByTagName("w:numbering");
 				Node numberingEl = numberingElList.item(0);
@@ -236,43 +268,49 @@ public class OpenXMLDocumentWriter {
 	 */
 	protected void createDocumentRelationships(ZipOutputStream out, OpenXMLDocument document) {
 		try {
-			XMLStreamWriter writer = OpenXMLUtils.createStreamWriter(out);
-			writer.writeStartDocument("UTF-8", "1.0");
-			writer.writeStartElement("Relationships");
-			writer.writeNamespace("", SCHEMA_RELATIONSHIPS);
-			
 			Document doc = OpenXMLUtils.createDocument();
+			doc.setXmlStandalone(true);
 			Element relationshipsEl = (Element)doc.appendChild(doc.createElement("Relationships"));
 			relationshipsEl.setAttribute("xmlns", SCHEMA_RELATIONSHIPS);
 
-			addRelationship("rId1", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
-					"styles.xml", writer);
-			addRelationship("rId2", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering",
-					"numbering.xml", writer);
-			
+			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles",
+					"styles.xml", doc, relationshipsEl);
+			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering",
+					"numbering.xml", doc, relationshipsEl);
+
 			if(document != null) {
 				for(DocReference docRef:document.getImages()) {
 					addRelationship(docRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image",
-							"media/" + docRef.getFilename(), writer);
+							"media/" + docRef.getFilename(), doc, relationshipsEl);
 				}
 				
 				for(HeaderReference headerRef:document.getHeaders()) {
 					addRelationship(headerRef.getId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header",
-							headerRef.getFilename(), writer);
+							headerRef.getFilename(), doc, relationshipsEl);
 				}
 			}
 			
 			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme",
-					"theme/theme1.xml", writer);
-
-
-			writer.writeEndElement();// end Relationships
-			writer.writeEndDocument();
-			writer.flush();
-			writer.close();
-		} catch (XMLStreamException e) {
+					"theme/theme1.xml", doc, relationshipsEl);
+			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings",
+					"webSettings.xml", doc, relationshipsEl);
+			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings",
+					"settings.xml", doc, relationshipsEl);
+			addRelationship(document.generateId(), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable",
+					"fontTable.xml", doc, relationshipsEl);
+			
+			OpenXMLUtils.writeTo(doc, out, true, true);
+		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	private final void addRelationship(String id, String type, String target, Document doc, Element relationshipsEl)
+	throws XMLStreamException {
+		Element relationshipEl = (Element)relationshipsEl.appendChild(doc.createElement("Relationship"));
+		relationshipEl.setAttribute("Id", id);
+		relationshipEl.setAttribute("Type", type);
+		relationshipEl.setAttribute("Target", target);
 	}
 	
 	/*
@@ -290,11 +328,11 @@ public class OpenXMLDocumentWriter {
 			writer.writeStartElement("Relationships");
 			writer.writeNamespace("", SCHEMA_RELATIONSHIPS);
 
-			addRelationship("rId1", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties",
-					"docProps/core.xml", writer);
-			addRelationship("rId2", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties",
+			addRelationship("rId3", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties",
 					"docProps/app.xml", writer);
-			addRelationship("rId3", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
+			addRelationship("rId2", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties",
+					"docProps/core.xml", writer);
+			addRelationship("rId1", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
 					"word/document.xml", writer);
 			
 			writer.writeEndElement();// end Relationships
@@ -327,12 +365,14 @@ public class OpenXMLDocumentWriter {
 	protected void createDocPropsCore(OutputStream out) {
 		try {
 			Document doc = OpenXMLUtils.createDocument();
-			Element propertiesEl = (Element)doc.appendChild(doc.createElement("cp:coreProperties"));
-			propertiesEl.setAttribute("xmlns:cp", SCHEMA_CORE_PROPERTIES);
+			Element propertiesEl = (Element)doc.appendChild(doc.createElement("coreProperties"));
+			propertiesEl.setAttribute("xmlns", SCHEMA_CORE_PROPERTIES);
 			propertiesEl.setAttribute("xmlns:dcterms", SCHEMA_DC_TERMS);
+			propertiesEl.setAttribute("xmlns:xsi", CT_XSI);
 			propertiesEl.setAttribute("xmlns:dc", SCHEMA_DC);
 			addDCProperty("creator", "OpenOLAT", propertiesEl, doc);
 			addCPProperty("lastModifiedBy", "OpenOLAT", propertiesEl, doc);
+			addDCTermsProperty("created", "dcterms:W3CDTF", "2021-12-15T09:41:13.1149381Z", propertiesEl, doc);
 			OpenXMLUtils.writeTo(doc, out, false);
 		} catch (DOMException e) {
 			log.error("", e);
@@ -340,12 +380,18 @@ public class OpenXMLDocumentWriter {
 	}
 	
 	private final void addCPProperty(String name, String value, Element propertiesEl, Document doc) {
-		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement("cp:" + name));
+		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement(name));
 		defaultEl.appendChild(doc.createTextNode(value));
 	}
 	
 	private final void addDCProperty(String name, String value, Element propertiesEl, Document doc) {
 		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement("dc:" + name));
+		defaultEl.appendChild(doc.createTextNode(value));
+	}
+	
+	private final void addDCTermsProperty(String name, String type, String value, Element propertiesEl, Document doc) {
+		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement("dcterms:" + name));
+		defaultEl.setAttribute("xsi:type", type);
 		defaultEl.appendChild(doc.createTextNode(value));
 	}
 	
@@ -360,10 +406,10 @@ public class OpenXMLDocumentWriter {
 	protected void createDocPropsApp(OutputStream out) {
 		try {
 			Document doc = OpenXMLUtils.createDocument();
-			Element propertiesEl = (Element)doc.appendChild(doc.createElement("properties:Properties"));
-			propertiesEl.setAttribute("xmlns:properties", SCHEMA_EXT_PROPERTIES);
-			addExtProperty("Application", "Microsoft Macintosh Word", propertiesEl, doc);
-			addExtProperty("AppVersion", "14.0000", propertiesEl, doc);
+			Element propertiesEl = (Element)doc.appendChild(doc.createElement("Properties"));
+			propertiesEl.setAttribute("xmlns", SCHEMA_EXT_PROPERTIES);
+			addExtProperty("Application", "Microsoft Office Word", propertiesEl, doc);
+			addExtProperty("AppVersion", "16.0000", propertiesEl, doc);
 			OpenXMLUtils.writeTo(doc, out, false);
 		} catch (DOMException e) {
 			log.error("", e);
@@ -371,8 +417,35 @@ public class OpenXMLDocumentWriter {
 	}
 	
 	private final void addExtProperty(String name, String value, Element propertiesEl, Document doc) {
-		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement("properties:" + name));
+		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement(name));
 		defaultEl.appendChild(doc.createTextNode(value));
+	}
+	
+	private void createSettings(OutputStream out) {
+		try {
+			Document doc = OpenXMLUtils.createDocument();
+			Element settingsEl = (Element)doc.appendChild(doc.createElement("w:settings"));
+			settingsEl.setAttribute("xmlns:mc", "http://schemas.openxmlformats.org/markup-compatibility/2006");
+			settingsEl.setAttribute("xmlns:r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+			settingsEl.setAttribute("xmlns:m", "http://schemas.openxmlformats.org/officeDocument/2006/math");
+			settingsEl.setAttribute("xmlns:o", "urn:schemas-microsoft-com:office:office");
+			settingsEl.setAttribute("xmlns:v", "urn:schemas-microsoft-com:vml");
+			settingsEl.setAttribute("xmlns:w10", "urn:schemas-microsoft-com:office:word");
+			settingsEl.setAttribute("xmlns:w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+			settingsEl.setAttribute("xmlns:w14", "http://schemas.microsoft.com/office/word/2010/wordml");
+			settingsEl.setAttribute("xmlns:w15", "http://schemas.microsoft.com/office/word/2012/wordml");
+			settingsEl.setAttribute("xmlns:w16cex", "http://schemas.microsoft.com/office/word/2018/wordml/cex");
+			settingsEl.setAttribute("xmlns:w16cid", "http://schemas.microsoft.com/office/word/2016/wordml/cid");
+			settingsEl.setAttribute("xmlns:w16", "http://schemas.microsoft.com/office/word/2018/wordml");
+			settingsEl.setAttribute("xmlns:w16sdtdh", "http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash");
+			settingsEl.setAttribute("xmlns:w16se", "http://schemas.microsoft.com/office/word/2015/wordml/symex");
+			settingsEl.setAttribute("xmlns:sl", "http://schemas.openxmlformats.org/schemaLibrary/2006/main");
+			settingsEl.setAttribute("mc:Ignorable", "w14 w15 w16se w16cid w16 w16cex w16sdtdh");
+
+			OpenXMLUtils.writeTo(doc, out, false);
+		} catch (DOMException e) {
+			log.error("", e);
+		}
 	}
 	
 /*
@@ -407,6 +480,9 @@ public class OpenXMLDocumentWriter {
 			createContentTypesOverride("/word/styles.xml", CT_STYLES, writer);
 			createContentTypesOverride("/word/numbering.xml", CT_NUMBERING, writer);
 			createContentTypesOverride("/word/theme/theme1.xml", CT_THEME, writer);
+			createContentTypesOverride("/word/fontTable.xml", CT_FONT_TABLE, writer);
+			createContentTypesOverride("/word/webSettings.xml", CT_WEB_SETTINGS, writer);
+			createContentTypesOverride("/word/settings.xml", CT_SETTINGS, writer);
 			
 			for(HeaderReference headerRef:document.getHeaders()) {
 				createContentTypesOverride("/word/" + headerRef.getFilename(), CT_HEADER, writer);

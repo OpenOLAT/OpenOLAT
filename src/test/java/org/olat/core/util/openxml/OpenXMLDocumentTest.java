@@ -47,7 +47,7 @@ public class OpenXMLDocumentTest {
 
 	@Test
 	public void writeDoc() throws Exception {
-		File file = File.createTempFile("worddoc", "_min.xlsx");
+		File file = File.createTempFile("worddoc", "_min.docx");
 		try(FileOutputStream fileOut = new FileOutputStream(file);
 			ZipOutputStream out = new ZipOutputStream(fileOut)) {
 			
