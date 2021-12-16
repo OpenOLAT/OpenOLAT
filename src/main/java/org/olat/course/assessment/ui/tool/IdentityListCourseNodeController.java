@@ -529,7 +529,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
 			}
 			if(Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility, new UserVisibilityCellRenderer()));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility, new UserVisibilityCellRenderer(false)));
 			}
 			if(Mode.none != assessmentConfig.getScoreMode()) {
 				if(Mode.setByNode == assessmentConfig.getScoreMode()) {

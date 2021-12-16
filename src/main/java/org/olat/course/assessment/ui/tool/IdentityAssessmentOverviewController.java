@@ -27,29 +27,41 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.messages.SimpleMessageController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
@@ -60,10 +72,13 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,6 +96,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IdentityAssessmentOverviewController extends FormBasicController implements Activateable2 {
 
 	private static final String CMD_SELECT_NODE = "cmd.select.node"; 
+	private static final String CMD_SCORE_DESC = "cmd.score.desc"; 
 	/** Event fired when a node has been selected, meaning when a row in the table has been selected **/
 	public static final Event EVENT_NODE_SELECTED = new Event("event.node.selected");
 
@@ -91,6 +107,11 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 
 	private FlexiTableElement tableEl;
 	private IdentityAssessmentOverviewTableModel tableModel;
+	private FormLink bulkVisibleButton;
+	private FormLink bulkHiddenButton;
+	
+	private CloseableCalloutWindowController ccwc;
+	private Controller scoreDescCtrl;
 
 	private boolean loadNodesFromCourse;
 	private final boolean followUserResultsVisibility;
@@ -98,9 +119,14 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
 	private boolean hasPassedOverridable;
+	private int counter = 0;
 	
 	@Autowired
+	protected DB dbInstance;
+	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	protected BaseSecurity securityManager;
 
 	/**
 	 * Constructor for the identity assessment overview controller to be used in the assessment tool or in the users
@@ -127,6 +153,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.hasPassedOverridable = hasPassedOverridable(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 
 		initForm(ureq);
+		initMultiSelectionTools();
 		loadModel();
 	}
 
@@ -167,7 +194,25 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		preloadedNodesList = assessmentCourseNodes;
 	
 		initForm(ureq);
+		initMultiSelectionTools();
 		loadModel();
+	}
+	
+	private void initMultiSelectionTools() {
+		if (!nodesSelectable) return;
+		
+		FormLayoutContainer emptyCont = FormLayoutContainer.createBareBoneFormLayout("empty", getTranslator());
+		emptyCont.setRootForm(mainForm);
+		
+		bulkVisibleButton = uifactory.addFormLink("bulk.visible", emptyCont, Link.BUTTON);
+		bulkVisibleButton.setElementCssClass("o_sel_assessment_bulk_visible");
+		bulkVisibleButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_visible");
+		tableEl.addBatchButton(bulkVisibleButton);
+		
+		bulkHiddenButton = uifactory.addFormLink("bulk.hidden", emptyCont, Link.BUTTON);
+		bulkHiddenButton.setElementCssClass("o_sel_assessment_bulk_hidden");
+		bulkHiddenButton.setIconLeftCSS("o_icon o_icon-fw o_icon_results_hidden");
+		tableEl.addBatchButton(bulkHiddenButton);
 	}
 	
 	public boolean isRoot(CourseNode node) {
@@ -259,11 +304,10 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		}));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.attempts));
 		if(!followUserResultsVisibility) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.userVisibility, new UserVisibilityCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.userVisibility, new UserVisibilityCellRenderer(true)));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.min, new ScoreCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.max, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.minMax, new ScoreMinMaxCellRenderer()));
 		if (hasPassedOverridable) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.passedOverriden, new PassedOverridenCellRenderer()));
 		}
@@ -285,7 +329,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 250, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setEmptyTableMessageKey("nodesoverview.emptylist");
-		tableEl.setBordered(true);
+		tableEl.setMultiSelect(nodesSelectable);
 		tableEl.setNumOfRowsEnabled(false);
 		
 		if (allowTableFiltering) {
@@ -308,10 +352,26 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, null, followUserResultsVisibility, discardEmptyNodes, true);
 		} else {
 			// use list from efficiency statement 
-			nodesTableList = preloadedNodesList;
+			nodesTableList = new ArrayList<>(preloadedNodesList);
 		}
+		nodesTableList.forEach(this::forgeScore);
 		tableModel.setObjects(nodesTableList);
 		tableEl.reset(true, true, true);
+	}
+	
+
+	
+	private void forgeScore(AssessmentNodeData row) {
+		Float score = row.getScore();
+		if (score == null) return;
+		
+		if (row.isIgnoreInCourseAssessment() || (row.getUserVisibility() != null && !row.getUserVisibility().booleanValue())) {
+			String linkText = translate("score.not.summed", new String[] {AssessmentHelper.getRoundedScore(score) });
+			linkText += " <i class='o_icon o_icon_info'> </i>";
+			FormLink formLink = uifactory.addFormLink("o_sd:" + counter++, CMD_SCORE_DESC, linkText, null, null, Link.NONTRANSLATED);
+			formLink.setUserObject(row);
+			row.setScoreDesc(formLink);
+		}
 	}
 
 	@Override
@@ -326,6 +386,27 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}	
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == scoreDescCtrl) {
+			if (event == FormEvent.DONE_EVENT) {
+				loadModel();
+			}
+			ccwc.deactivate();
+			cleanUp();
+		} else if (source == ccwc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(scoreDescCtrl);
+		removeAsListenerAndDispose(ccwc);
+		scoreDescCtrl = null;
+		ccwc = null;
 	}
 
 	@Override
@@ -340,7 +421,74 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 					fireEvent(ureq, EVENT_NODE_SELECTED);
 				}
 			}
+		} else if(bulkVisibleButton == source) {
+			doSetUserVisibility(true);
+		} else if(bulkHiddenButton == source) {
+			doSetUserVisibility(false);
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink) source;
+			if (CMD_SCORE_DESC.equals(link.getCmd())) {
+				doShowScoreDesc(ureq, link);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	private void doSetUserVisibility(boolean visible) {
+		Boolean visibility = Boolean.valueOf(visible);
+		
+		List<AssessmentNodeData> selectedRows = tableEl.getMultiSelectedIndex().stream()
+				.map(index -> tableModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+		
+		userCourseEnvironment.getScoreAccounting().evaluateAll(true);
+		RepositoryEntry repositoryEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		ICourse course = CourseFactory.loadCourse(repositoryEntry);
+		if (course == null) return;
+		
+		for (AssessmentNodeData row : selectedRows) {
+			doSetUserVisibility(course, row.getIdent(), visibility);
+		}
+		
+		loadModel();
+	}
+	
+	private void doSetUserVisibility(ICourse course, String subIdent, Boolean userVisibility) {
+		CourseNode courseNode = course.getRunStructure().getNode(subIdent);
+		if (courseNode == null || isRoot(courseNode)) return;
+		
+		ScoreEvaluation scoreEval = userCourseEnvironment.getScoreAccounting().evalCourseNode(courseNode);
+		if (userVisibility.equals(scoreEval.getUserVisible())) return; // nothing to change
+		
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), userVisibility,
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, userCourseEnvironment, getIdentity(),
+				false, Role.coach);
+		dbInstance.commitAndCloseSession();
+	}
+	
+	private void doShowScoreDesc(UserRequest ureq, FormLink link) {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(scoreDescCtrl);
+		
+		AssessmentNodeData nodeData = (AssessmentNodeData)link.getUserObject();
+		String text = "";
+		if (nodeData.isIgnoreInCourseAssessment()) {
+			text = translate("score.not.summed.ignore");
+		} else if (nodeData.getUserVisibility() != null && !nodeData.getUserVisibility()) {
+			text = translate("score.not.summed.hidden");
+		}
+		scoreDescCtrl = new SimpleMessageController(ureq, getWindowControl(), text, null);
+		listenTo(scoreDescCtrl);
+		
+		CalloutSettings settings = new CalloutSettings();
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), scoreDescCtrl.getInitialComponent(),
+				link.getFormDispatchId(), "", true, "", settings);
+		listenTo(ccwc);
+		ccwc.activate();
+	}
+	
 }

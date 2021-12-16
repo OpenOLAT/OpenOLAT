@@ -432,6 +432,7 @@ public class AssessmentHelper {
 						if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
 						}
+						assessmentNodeData.setIgnoreInCourseAssessment(assessmentConfig.ignoreInCourseAssessment());
 					}
 					// passed
 					if (Mode.none != assessmentConfig.getPassedMode()) {

@@ -19,12 +19,16 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
 
 /**
  * 
@@ -36,6 +40,28 @@ public class IdentityAssessmentOverviewSorter extends SortableFlexiTableModelDel
 	
 	public IdentityAssessmentOverviewSorter(SortKey orderBy, SortableFlexiTableDataModel<AssessmentNodeData> tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
+	}
+	
+	@Override
+	protected void sort(List<AssessmentNodeData> rows) {
+		int columnIndex = getColumnIndex();
+		NodeCols column = NodeCols.values()[columnIndex];
+		switch(column) {
+			case minMax: Collections.sort(rows, new MinMaxComparator()); break;
+			default: super.sort(rows); break;
+		}
+	}
+	
+	private class MinMaxComparator implements Comparator<AssessmentNodeData> {
+		@Override
+		public int compare(AssessmentNodeData o1, AssessmentNodeData o2) {
+			Float minScore1 = o1.getMinScore();
+			Float minScore2 = o2.getMaxScore();
+			if (minScore1 == null || minScore2 == null) {
+				return compareNullObjects(minScore1, minScore2);
+			}
+			return Float.compare(minScore1.floatValue(), minScore1.floatValue());
+		}
 	}
 
 }

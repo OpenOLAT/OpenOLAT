@@ -29,9 +29,21 @@ import org.olat.core.gui.translator.Translator;
  *
  */
 public class UserVisibilityCellRenderer extends LabelCellRenderer {
+	
+	private final boolean showText;
+	
+	public UserVisibilityCellRenderer(boolean showText) {
+		this.showText = showText;
+	}
 
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
+		if (showText && val instanceof Boolean) {
+			Boolean userVisibility = (Boolean) val;
+			return userVisibility.booleanValue()
+					? translator.translate("user.visibility.visible")
+					: translator.translate("user.visibility.hidden");
+		}
 		return null;
 	}
 

@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.model.AssessmentNodeData;
-import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -98,15 +97,10 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			case details: return nodeData.getShortTitle();
 			case attempts: return nodeData.getAttempts();
 			case userVisibility: return nodeData.getUserVisibility();
-			case score: return nodeData.getScore();
+			case score: return nodeData.getScoreDesc() != null? nodeData.getScoreDesc(): nodeData.getRoundedScore();
 			case passedOverriden: return nodeData.getPassedOverriden();
 			case passed: return nodeData.getPassed();
-			case min: return nodeData.getMinScore();
-			case max: {
-				if (nodeData.getRecursionLevel() == 0 || !STCourseNode.TYPE.equals(nodeData.getType())) {
-					return nodeData.getMaxScore();
-				}
-			}
+			case minMax: return nodeData;
 			case status: return nodeData.getAssessmentStatus();
 			case numOfAssessmentDocs: {
 				if(nodeData.getNumOfAssessmentDocs() <= 0) {
@@ -135,8 +129,7 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 		attempts("table.header.attempts", true),
 		userVisibility("table.header.userVisibility", true),
 		score("table.header.score", true),
-		min("table.header.min", true),
-		max("table.header.max", true),
+		minMax("table.header.min.max", true),
 		status("table.header.status", true),
 		passedOverriden("table.header.passed.overriden", true),
 		passed("table.header.passed", true),

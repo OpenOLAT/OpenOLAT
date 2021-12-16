@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
@@ -65,6 +66,8 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	
 	private Float score;
 	private String roundedScore;
+	private boolean ignoreInCourseAssessment;
+	private FormItem scoreDesc;
 	
 	private Float maxScore;
 	private Float minScore;
@@ -178,6 +181,22 @@ public class AssessmentNodeData implements IndentedCourseNode {
 
 	public void setRoundedScore(String roundedScore) {
 		this.roundedScore = roundedScore;
+	}
+
+	public boolean isIgnoreInCourseAssessment() {
+		return ignoreInCourseAssessment;
+	}
+
+	public void setIgnoreInCourseAssessment(boolean ignoreInCourseAssessment) {
+		this.ignoreInCourseAssessment = ignoreInCourseAssessment;
+	}
+
+	public FormItem getScoreDesc() {
+		return scoreDesc;
+	}
+
+	public void setScoreDesc(FormItem scoreDesc) {
+		this.scoreDesc = scoreDesc;
 	}
 
 	public Float getMaxScore() {
