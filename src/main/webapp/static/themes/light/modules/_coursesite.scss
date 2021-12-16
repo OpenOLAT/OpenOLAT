@@ -111,6 +111,9 @@
 					font-size: 85%;
 					color: $o-coursesite-meta-author-color;
 				}
+				.o_closed {
+					display: inline-block;
+				}
 				.o_lifecycle {
 					margin: 0.5em 0;
 					font-size: 85%;
@@ -142,6 +145,7 @@
 					
 					.o_taxonomy {
 						font-size: 82%;
+						display: inline-block;
 					}
 					@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
 						display: none;

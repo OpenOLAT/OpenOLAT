@@ -88,7 +88,6 @@
 		border-radius: $o-coursesite-sidecol-radius;
 		background: $o-coursesite-sidecol-bg;
 		padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
-		font-size: 80%;		
 		column-count: 1;
 	}
 	.o_subcolumn {
@@ -122,7 +121,7 @@
 			.o_sidecolumn {
 				flex-grow: 0;
 				flex-shrink: 0;
-				width: 280px;
+				width: 300px;
 				margin-top: 20px;
 				column-count: 1;
 			}
@@ -138,7 +137,7 @@
 			width: auto;
 		}
 		.o_bottom_container:not(.o_full_space) {
-			padding-right: (280px + 80px);
+			padding-right: (300px + 80px);
 		}
 	}
 
@@ -156,7 +155,7 @@
 	    margin: 2em 0 1em 0;
     }
     .o_tag {
-    	line-height: 2em;
+    	display: inline-block;
     }
     
     .o_license_info {
@@ -189,6 +188,7 @@
 .o_overview .o_closed {
 	padding: 5px 10px;
 	margin: 15px 15px 15px 0;
+	display: inline-block;
 }
 
 .o_ac_configuration {
