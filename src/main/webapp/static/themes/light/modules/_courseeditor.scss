@@ -5,13 +5,13 @@
 	}
 }
 
-.o_course_editor {
+.o_course_editor, .o_assessment_test_editor_and_composer {
 	.o_titled_wrapper {
 		display: flex;
 		.o_title {
 			margin-right: auto;
 		}
-		.o_node_cmds {
+		.o_title_cmds {
 			display: flex;
 			>div {
 				margin-left: 5px;

@@ -4,7 +4,7 @@
 	<div class="o_title">
 		<h2><i class="o_icon $courseNodeCss"> </i> $r.escapeHtml($courseNode.getLongTitle())</h2>
 	</div>
-	<div class="o_node_cmds">
+	<div class="o_title_cmds">
 		#if($r.available("command.deletenode") && $r.enabled("command.deletenode"))
 			<div>$r.render("command.deletenode")</div>
 			<div>$r.render("cmds")</div>

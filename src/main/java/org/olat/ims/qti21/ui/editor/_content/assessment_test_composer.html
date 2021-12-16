@@ -2,6 +2,18 @@
 	<div class="o_warning">$r.translate("warning.in.use")</div>
 #end
 <div class="o_assessment_test_editor_and_composer">
-	<h2><i class="$cssClass"> </i> $r.escapeHtml($title)#if($identifier && !${identifier.isEmpty()}) <small>$identifier</small>#end</h2>
+	<div class="o_titled_wrapper">
+		<div class="o_title">
+			<h2><i class="$cssClass"> </i> $r.escapeHtml($title)#if($identifier && !${identifier.isEmpty()}) <small>$identifier</small>#end</h2>
+		</div>
+		<div class="o_title_cmds">
+			<div>
+				#if($r.available("tools.change.delete"))
+					<div>$r.render("tools.change.delete")</div>
+				#end
+			</div>
+			<div>$r.render("cmds")</div>
+		</div>
+	</div>
 	<section>$r.render("content")</section>
 </div>

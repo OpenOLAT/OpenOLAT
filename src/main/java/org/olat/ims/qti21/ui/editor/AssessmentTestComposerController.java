@@ -40,6 +40,7 @@ import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -167,7 +168,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	
 	private MenuTree menuTree;
-	private Dropdown exportItemTools, addItemTools, changeItemTools;
+	private Dropdown addItemTools, changeItemDropDown;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink,
 			newKPrimLink, newMatchLink, newMatchDragAndDropLink, newMatchTrueFalseLink,
 			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink, newOrderLink,
@@ -334,41 +335,38 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		importFromTableLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(importFromTableLink);
 		
-		exportItemTools = new Dropdown("exportTools", "tools.export.header", false, getTranslator());
-		exportItemTools.setIconCSS("o_icon o_icon_export");
-		//export
-		exportToPoolLink = LinkFactory.createToolLink("export.pool", translate("tools.export.qpool"), this, "o_mi_qpool_export");
-		exportToPoolLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
-		exportToPoolLink.setDomReplacementWrapperRequired(false);
-		exportItemTools.addComponent(exportToPoolLink);
+		configurationOverviewLink = LinkFactory.createToolLink("configuration.overview", translate("configuration.overview"), this, "o_icon_description");
+		configurationOverviewLink.setDomReplacementWrapperRequired(false);
+		
 
+		mainVC = createVelocityContainer("assessment_test_composer");
 		//changes
-		changeItemTools = new Dropdown("changeTools", "change.elements", false, getTranslator());
-		changeItemTools.setIconCSS("o_icon o_icon-fw o_icon_customize");
-		changeItemTools.setVisible(!restrictedEdit);
-		changeItemTools.setElementCssClass("o_sel_qti_change_node");
+		deleteLink = LinkFactory.createButton("tools.change.delete", mainVC, this);
+		deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+		
+		changeItemDropDown = new Dropdown("changeTools", null, false, getTranslator());
+		changeItemDropDown.setElementCssClass("o_sel_qti_change_node");
+		changeItemDropDown.setCarretIconCSS("o_icon o_icon_commands");
+		changeItemDropDown.setButton(true);
+		changeItemDropDown.setEmbbeded(true);
+		changeItemDropDown.setOrientation(DropdownOrientation.right);
+		changeItemDropDown.setVisible(!restrictedEdit);
+		mainVC.put("cmds", changeItemDropDown);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		if(roles.isAdministrator() || roles.isSystemAdmin()) {
 			reloadInCacheLink = LinkFactory.createToolLink("replace.in.cache.pool", translate("tools.reload.from.files"), this, "o_icon_refresh");
 			reloadInCacheLink.setTooltip(translate("tools.reload.from.files.tooltip"));
-			reloadInCacheLink.setDomReplacementWrapperRequired(false);
-			changeItemTools.addComponent(reloadInCacheLink);
+			changeItemDropDown.addComponent(reloadInCacheLink);
 		}
 		
-		deleteLink = LinkFactory.createToolLink("tools.delete", translate("tools.change.delete"), this, "o_icon_delete_item");
-		deleteLink.setDomReplacementWrapperRequired(false);
-		changeItemTools.addComponent(deleteLink);
-
 		copyLink = LinkFactory.createToolLink("import.table", translate("tools.change.copy"), this, "o_icon_copy");
-		copyLink.setDomReplacementWrapperRequired(false);
-		changeItemTools.addComponent(copyLink);
+		changeItemDropDown.addComponent(copyLink);
 		
-		configurationOverviewLink = LinkFactory.createToolLink("configuration.overview", translate("configuration.overview"), this, "o_icon_description");
-		configurationOverviewLink.setDomReplacementWrapperRequired(false);
+		exportToPoolLink = LinkFactory.createToolLink("export.pool", translate("tools.export.qpool"), this, "o_icon_table");
+		changeItemDropDown.addComponent(exportToPoolLink);
 		
 		// main layout
-		mainVC = createVelocityContainer("assessment_test_composer");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainVC, "at" + testEntry.getKey());			
 		columnLayoutCtr.addCssClassToMain("o_editor");
 		listenTo(columnLayoutCtr);		
@@ -423,9 +421,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	@Override
 	public void initToolbar() {
-		toolbar.addTool(exportItemTools, Align.left);
 		toolbar.addTool(addItemTools, Align.left);
-		toolbar.addTool(changeItemTools, Align.left);
 		toolbar.addTool(configurationOverviewLink, Align.right);
 	}
 
@@ -1342,17 +1338,17 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		if(deleteLink != null) {
 			if(uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef) {
-				deleteLink.setEnabled(true);
+				deleteLink.setVisible(true);
 			} else if(uobject instanceof TestPart) {
 				TestPart testPart = (TestPart)uobject;
-				deleteLink.setEnabled(testPart.getParent().getTestParts().size() > 1);
+				deleteLink.setVisible(testPart.getParent().getTestParts().size() > 1);
 			} else {
-				deleteLink.setEnabled(false);
+				deleteLink.setVisible(false);
 			}
 		}
 		
 		if(copyLink != null) {
-			copyLink.setEnabled(uobject instanceof AssessmentItemRef);
+			copyLink.setVisible(uobject instanceof AssessmentItemRef);
 		}
 		
 		if(currentEditorCtrl != null) {
