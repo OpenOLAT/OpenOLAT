@@ -483,7 +483,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				CoachedIdentityRow row = tableModel.getObject(se.getIndex());
 				if("duedates".equals(cmd)) {
 					doEditDueDate(ureq, row);
-				} else if(StringHelper.containsNonWhitespace(cmd)) {
+				} else if("select".equals(cmd)) {
 					fireEvent(ureq, new SelectIdentityEvent(row.getIdentityKey()));	
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
