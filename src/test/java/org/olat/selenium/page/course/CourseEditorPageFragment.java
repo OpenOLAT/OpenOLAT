@@ -52,9 +52,6 @@ public class CourseEditorPageFragment {
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
 	public static final By chooseSurveyButton = By.className("o_sel_survey_choose_repofile");
 	
-	public static final By changeNodeToolsMenu = By.cssSelector("ul.o_sel_course_editor_change_node");
-	public static final By changeNodeToolsMenuCaret = By.cssSelector("a.o_sel_course_editor_change_node");
-	
 	public static final By tabNavTabsBy = By.cssSelector("ul.nav.nav-tabs");
 	
 	public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
@@ -275,9 +272,8 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment moveUnder(String targetNodeTitle) {
-		if(!browser.findElement(changeNodeToolsMenu).isDisplayed()) {
-			openChangeNodeToolsMenu();
-		}
+		openChangeNodeToolsMenu();
+		
 		By changeNodeLinkBy = By.cssSelector("a.o_sel_course_editor_move_node");
 		browser.findElement(changeNodeLinkBy).click();
 		OOGraphene.waitModalDialog(browser);
@@ -298,11 +294,7 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment deleteElement() {
-		if(!browser.findElement(changeNodeToolsMenu).isDisplayed()) {
-			openChangeNodeToolsMenu();
-		}
-		
-		By deleteNodeLinkBy = By.cssSelector("a.o_sel_course_editor_delete_node");
+		By deleteNodeLinkBy = By.xpath("//div[@class='o_title_cmds']//a[contains(@onclick,'command.deletenode')]");
 		browser.findElement(deleteNodeLinkBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
@@ -329,7 +321,9 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment openChangeNodeToolsMenu() {
+		By changeNodeToolsMenuCaret = By.cssSelector("div.o_title_cmds button.o_sel_course_editor_change_node");
 		browser.findElement(changeNodeToolsMenuCaret).click();
+		By changeNodeToolsMenu = By.cssSelector("ul.o_sel_course_editor_change_node");
 		OOGraphene.waitElement(changeNodeToolsMenu, browser);
 		return this;
 	}

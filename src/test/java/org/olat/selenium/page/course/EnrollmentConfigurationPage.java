@@ -112,7 +112,7 @@ public class EnrollmentConfigurationPage {
 		maxCountBox.clear();
 		maxCountBox.sendKeys(Integer.toString(maxEnrollmentCount));
 		OOGraphene.waitBusy(browser);
-		By saveBy = By.tagName("button");
+		By saveBy = By.cssSelector(".o_sel_course_en button.btn");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		By updatedMaxCountBy = By.cssSelector(".o_sel_enroll_max input[type='text'][value='" + maxEnrollmentCount + "']");

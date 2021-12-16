@@ -95,6 +95,7 @@ import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTARunController;
 import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -908,8 +909,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		notificationsManager.delete(subscriptionContext);
 	}
 	
-	public boolean isOptional(UserCourseEnvironment userCourseEnv) {
-		NodeAccessType nodeAccessType = NodeAccessType.of(userCourseEnv);
+	public boolean isOptional(CourseEnvironment coursEnv, UserCourseEnvironment userCourseEnv) {
+		NodeAccessType nodeAccessType = NodeAccessType.of(coursEnv);
 		updateModuleConfigDefaults(false, getParent(), nodeAccessType);
 		if (userCourseEnv != null && LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
 			AssessmentEvaluation evaluation = userCourseEnv.getScoreAccounting().evalCourseNode(this);

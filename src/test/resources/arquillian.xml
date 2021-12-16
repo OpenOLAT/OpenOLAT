@@ -24,8 +24,10 @@
 	<extension qualifier="webdriver">
 		<property name="browser">${webdriver.browser:chrome}</property>
 		<property name="dimensions">1024x800</property>
-		<!--
-		<property name="downloadBinaries">no</property>
+		<!---->
+		<property name="downloadBinaries">false</property>
+		<property name="chromeDriverBinary">/usr/local/bin/chromedriver</property>
+		<!-- 
 		<property name="chromeDriverBinary">target/drone/675a673c111fdcc9678d11df0e69b334/chromedriver</property>
 		<property name="firefoxDriverBinary">target/drone/0c6eedff7695dc0cc006407af33bd496/geckodriver</property>
 		-->

@@ -173,7 +173,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				stepPreferences.setAssignement(Boolean.TRUE);
 			}
 			
-			boolean optional = gtaNode.isOptional(userCourseEnv);
+			boolean optional = gtaNode.isOptional(courseEnv, userCourseEnv);
 			if(optional) {
 				mainVC.contextPut("assignmentOptional", Boolean.TRUE);
 			}
@@ -644,7 +644,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	 */
 	private boolean showSolutions(DueDate availableDate) {
 		boolean show = false;
-		boolean optional = gtaNode.isOptional(userCourseEnv);
+		boolean optional = gtaNode.isOptional(courseEnv, userCourseEnv);
 		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
 			File submitDirectory;
 			if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {

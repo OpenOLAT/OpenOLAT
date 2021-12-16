@@ -205,7 +205,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 			mainVC.put("contextualSubscription", contextualSubscriptionCtr.getInitialComponent());
 		}
 		
-		boolean optional = gtaNode.isOptional(userCourseEnv);
+		boolean optional = gtaNode.isOptional(courseEnv, userCourseEnv);
 		boolean assignment = config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT);
 		mainVC.contextPut("assignmentEnabled", assignment);
 		if(assignment) {
