@@ -91,7 +91,7 @@ public class SelectCourseNodesController extends StepFormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableMessageKey("table.empty");
 		tableEl.setSelection(true, true, true);
-		tableEl.setSelectAllEnable(true);	
+		tableEl.setSelectAllEnable(false);	
 	}
 	
 	private void loadModel() {
