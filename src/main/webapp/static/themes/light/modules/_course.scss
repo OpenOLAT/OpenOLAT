@@ -1074,9 +1074,10 @@ div.o_correction_navigation {
 /* in ".o_repo_details .o_lead" and ".o_coursetable .o_rendertype_custom" */
 .o_repo_details .o_lead .o_educational_type,
 .o_coursetable.o_rendertype_custom .o_educational_type {
-	margin-right: 0.25em; 
-	margin-top: 0.5em;
-	vertical-align: text-bottom;
+	margin-right: 0.5em; 
+	margin-top: auto;
+	margion-bottom: auto;
+	vertical-align: top;
    	& + .o_author {
 		display: inline-block;
 	}

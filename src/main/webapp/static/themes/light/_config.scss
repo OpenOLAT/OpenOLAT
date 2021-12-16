@@ -363,6 +363,12 @@ $o-coursesite-catalog-border 	: $o-coursesite-rowelem-border !default;
 $o-coursesite-meta-title-color	: $o-content-header-base-color !default;
 $o-coursesite-meta-author-color	: $state-success-text !default;
 $o-coursesite-meta-title-font-size	: ceil(($font-size-base * 2.6)) !default; /* same as h1 default size: 36px */
+$o-coursesite-meta-header-border 	: $panel-default-border !default;
+$o-coursesite-meta-header-border-width	: 1px !default; 
+$o-coursesite-sidecol-bg		: $panel-default-heading-bg !default;
+$o-coursesite-sidecol-border	: $panel-default-border !default;
+$o-coursesite-sidecol-radius	: $border-radius-base !default;
+$o-coursesite-sidecol-padding 	: $panel-body-padding !default;
 $o-coursesite-start-color		: $btn-primary-color !default;
 $o-coursesite-start-bg			: $btn-primary-bg !default;
 $o-coursesite-start-border		: darken($o-coursesite-start-bg, 5%) !default;

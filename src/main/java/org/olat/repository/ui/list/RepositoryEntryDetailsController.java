@@ -38,6 +38,7 @@ import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -127,7 +128,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * Initial date: 25.03.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
+ * 
  */
 public class RepositoryEntryDetailsController extends FormBasicController {
 
@@ -362,7 +363,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 
 			if(!guestOnly && memberRoles.contains(GroupRoles.participant.name())
 					&& repositoryService.isParticipantAllowedToLeave(entry)) {
-				leaveLink = uifactory.addFormLink("sign.out", "leave", translate("sign.out"), null, formLayout, Link.BUTTON_SMALL + Link.NONTRANSLATED);
+				leaveLink = uifactory.addFormLink("sign.out", "leave", translate("sign.out"), null, formLayout, Link.BUTTON_XSMALL + Link.NONTRANSLATED);
 				leaveLink.setElementCssClass("o_sign_out btn-danger");
 				leaveLink.setIconLeftCSS("o_icon o_icon_sign_out");
 			}
@@ -372,7 +373,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			List<PriceMethod> types = new ArrayList<>();
 			if(entry.isAllUsers() || entry.isGuests()) {
 				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
+				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 				startLink.setElementCssClass("o_start btn-block");
 				if(guestOnly) {
 					startLink.setVisible(entry.isGuests());
@@ -382,7 +383,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				AccessResult acResult = acService.isAccessible(entry, getIdentity(), isMember, false);
 				if(acResult.isAccessible()) {
 					String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
+					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setElementCssClass("o_start btn-block");
 				} else if (!acResult.getAvailableMethods().isEmpty()) {
 					for(OfferAccess access:acResult.getAvailableMethods()) {
@@ -395,21 +396,21 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 						types.add(new PriceMethod(price, type, displayName));
 					}
 					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
+					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setCustomEnabledLinkCSS("btn btn-success"); // custom style
 					startLink.setElementCssClass("o_book btn-block");
 					startLink.setVisible(!guestOnly);
 				} else {
 					// booking not available -> button not visible
 					String linkText = translate("book.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
+					startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 					startLink.setVisible(false);
 				}
 				accessI18n = translate("cif.status.".concat(entry.getEntryStatus().name()));
 			} else {
 				// visible only to members only
 				String linkText = translate("start.with.type", translate(entry.getOlatResource().getResourceableTypeName()));
-				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON_LARGE + Link.NONTRANSLATED);
+				startLink = uifactory.addFormLink("start", "start", linkText, null, layoutCont, Link.BUTTON + Link.NONTRANSLATED);
 				startLink.setElementCssClass("o_start btn-block");
 				startLink.setVisible(isMember);
 				accessI18n = translate("cif.access.membersonly");
@@ -530,13 +531,19 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 			// License
 			boolean licEnabled = licenseModule.isEnabled(licenseHandler);
 			if (licEnabled) {
-				layoutCont.contextPut("licSwitch", Boolean.TRUE);
-				License license = licenseService.loadOrCreateLicense(entry.getOlatResource());
-				layoutCont.contextPut("license", LicenseUIFactory.translate(license.getLicenseType(), getLocale()));
-				layoutCont.contextPut("licenseIconCss", LicenseUIFactory.getCssOrDefault(license.getLicenseType()));
-				String licensor = StringHelper.containsNonWhitespace(license.getLicensor())? license.getLicensor(): "";
-				layoutCont.contextPut("licensor", licensor);
-				layoutCont.contextPut("licenseText", LicenseUIFactory.getFormattedLicenseText(license));
+				License license = licenseService.loadOrCreateLicense(entry.getOlatResource());				
+				LicenseType licenseType = license.getLicenseType();
+				if (licenseType == null || "no.license".equals(licenseType.getName())) {
+					// dont' show the no-license
+					layoutCont.contextPut("licSwitch", Boolean.FALSE);					
+				} else {
+					layoutCont.contextPut("license", LicenseUIFactory.translate(licenseType, getLocale()));
+					layoutCont.contextPut("licenseIconCss", LicenseUIFactory.getCssOrDefault(licenseType));
+					String licensor = StringHelper.containsNonWhitespace(license.getLicensor())? license.getLicensor(): "";
+					layoutCont.contextPut("licensor", licensor);
+					layoutCont.contextPut("licenseText", LicenseUIFactory.getFormattedLicenseText(license));					
+					layoutCont.contextPut("licSwitch", Boolean.TRUE);					
+				}
 			} else {
 				layoutCont.contextPut("licSwitch", Boolean.FALSE);
 			}

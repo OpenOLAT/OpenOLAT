@@ -8,196 +8,191 @@
 #end
 /* ]]> */ 
 </script>
-	<div class="o_lead clearfix">					
-		<h1>
-			<i class="o_icon $cssClass o_icon-lg"></i>
-			$r.escapeHtml($v.displayname)
-			#if($v.getExternalRef())
-				<small>$r.escapeHtml($v.getExternalRef())</small>
-			#end
-		</h1>
-		
-		#if($educationalType)
-		<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
-			<span>$educationalType</span>
-		</span>
-		#end
-		
-		#if($v.authors && !$v.authors.empty)
-		<div class="o_author o_block">
-			<span class="text-muted">$r.translate("course.made.by")</span> 
-			$r.escapeHtml($v.authors)
-		</div>
-		#end
+	<div class="o_lead">					
 		#if($r.available("thumbnail"))
-		<div class="o_media #if(!$description || $description.length() == 0) o_desc_empty"#end ">
+		<div class="o_media o_flex_item_fix">
 			$r.render("thumbnail")
 		</div>
 		#end
-		#if($description && $description.length() > 0)
-		<div class="o_desc o_user_content_block">
-			$description
-		</div>
-		#end
-		
-		#if($r.available("start"))
-		<div class="o_start_wrapper">
-			<div class="o_start_inner">
-				$r.render("start")
+
+		<div class="o_meta">		
+			#if($v.getExternalRef())
+			<div class="o_ext_ref o_nowrap">
+				$r.escapeHtml($v.getExternalRef())
 			</div>
+			#end
+			<h2>
+				<i class="o_icon $cssClass o_icon-lg"></i>
+				$r.escapeHtml($v.displayname)
+			</h2>
+						
+			#if($educationalType)
+			<span title="$r.translateInAttribute("cif.educational.type")" class="o_educational_type">
+				<span>$educationalType</span>
+			</span>
+			#end
+			
+			#if($v.authors && !$v.authors.empty)
+			<div class="o_author">
+				<span class="text-muted">$r.translate("course.made.by")</span> 
+				$r.escapeHtml($v.authors)
+			</div>
+			#end
+			
+			#if($r.available("start"))
+			<div class="o_start_wrapper">
+				<div class="o_start_inner">
+					$r.render("start")
+				</div>
+			</div>
+			#end
 		</div>
-		#end
 		
 	</div>
 
 	## calculate is any metadata available. If not, render right column at center
-	#set ($hasMetaData = ($objectives || $requirements || $credits))	
+	#set ($hasText = ($description || $objectives || $requirements || $credits))	
 
-	<div class="row">
-		<div class="col-xs-12 #if($hasMetaData) col-sm-5 col-md-4 pull-right #end o_sidecolumn"><div class="row">		
-			<div class="#if($hasMetaData) col-xs-6 col-sm-12 #else col-sm-6 #end o_subcolumn">
-				<div class="o_overview">
-					<h3>$r.translate("details.overview")</h3>
-					#if($closed)
-						<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
+	<div class="o_column_container #if(!$hasText) o_full_space #end">
+		<div class="o_sidecolumn">		
+			<div class="o_overview o_subcolumn">
+				<h4>$r.translate("details.overview")</h4>
+				#if($closed)
+					<div class="o_warning o_closed"><i class="o_icon o_icon-lg o_CourseModule_icon_closed"> </i> $r.translate("close.ressource.warning")</div>
+				#end
+				#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
+				<div title="$r.translateInAttribute("cif.dates")">
+					<i class="o_icon o_icon-fw o_icon_lifecycle_date"> </i> 
+					#if(!$v.lifecycle.privateCycle)
+						#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $r.escapeHtml($v.lifecycle.softKey)
+						#else $r.escapeHtml($v.lifecycle.label) #end
+					#else
+						#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
+						#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
 					#end
-					#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
-					<div title="$r.translateInAttribute("cif.dates")">
-						<i class="o_icon o_icon_lifecycle_date"> </i> 
-						#if(!$v.lifecycle.privateCycle)
-							#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $r.escapeHtml($v.lifecycle.softKey)
-							#else $r.escapeHtml($v.lifecycle.label) #end
-						#else
-							#if($v.lifecycle.validFrom) $r.formatDate($v.lifecycle.validFrom) #end
-							#if($v.lifecycle.validTo) - $r.formatDate($v.lifecycle.validTo) #end
-						#end
-					</div>
-					#end
-					#if($v.location && !${v.location.isEmpty()})
-					<div title="$r.translateInAttribute("cif.location")">
-						<i class="o_icon o_icon_home"> </i> $r.escapeHtml($v.location)
-					</div>
-					#end
-					#if($v.expenditureOfWork && !$v.expenditureOfWork.empty)
-					<div title="$r.translateInAttribute("details.expenditureOfWork.desc")">
-						<i class="o_icon o_icon_expenditure"></i>  
-						$r.escapeHtml($v.expenditureOfWork)
-					</div>
-					#end
-					#if($v.mainLanguage)
-					<div title="$r.translateInAttribute("cif.mainLanguage")">
-						<i class="o_icon o_icon_language"></i> 
-						$r.escapeHtml($v.mainLanguage)
-					</div>
-					#end
-					#if($educationalType)
-					<div title="$r.translateInAttribute("cif.educational.type")">
-						<i class="o_icon o_icon_educational_type"></i> 
-						$educationalType
-					</div>
-					#end
-				</div>
-				
-				#if($r.available("rating") || $r.available("comments"))
-				<div class="o_social o_block">
-					<h4>$r.translate("ratings")</h4>
-					#if($r.available("rating")) $r.render("rating") #end
-					#if($r.available("comments")) $r.render("comments") #end
 				</div>
 				#end
-				
-				#if($categories && $categories.size() > 0)
-				<div class="o_categories o_block">
-					<h4>$r.translate("cif.categories")</h4>
-					<ul class="list-unstyled">
-					#foreach($category in $categories)
-						<li>$r.render($category)</li>
-					#end
-					</ul>
+				#if($v.location && !${v.location.isEmpty()})
+				<div title="$r.translateInAttribute("cif.location")">
+					<i class="o_icon o_icon-fw o_icon_location"> </i> $r.escapeHtml($v.location)
 				</div>
 				#end
-				
-				#if($ac)
-				<div class="o_bookings o_block">
-					<h4>$r.translate("details.orders")</h4>
-					<ul class="list-unstyled">
-					#foreach($ac_type in $ac)
-						<li>
-							<i class='o_icon $ac_type.type o_icon-fw'></i>  
-							$ac_type.displayName
-							#if($ac_type.price && $ac_type.price.length() > 0) ($ac_type.price)#end
-						</li>
-					#end
-					</ul>
+				#if($v.expenditureOfWork && !$v.expenditureOfWork.empty)
+				<div title="$r.translateInAttribute("details.expenditureOfWork.desc")">
+					<i class="o_icon o_icon-fw o_icon_expenditure"></i>  
+					$r.escapeHtml($v.expenditureOfWork)
 				</div>
-				#end	
+				#end
+				#if($v.mainLanguage)
+				<div title="$r.translateInAttribute("cif.mainLanguage")">
+					<i class="o_icon o_icon-fw o_icon_language"></i> 
+					$r.escapeHtml($v.mainLanguage)
+				</div>
+				#end
+			</div>	
+			#if($ac)
+			<div class="o_subcolumn o_bookings">
+				<h4>$r.translate("details.orders")</h4>
+				<ul class="list-unstyled">
+				#foreach($ac_type in $ac)
+					<li>
+						<i class='o_icon $ac_type.type o_icon-fw'></i>  
+						$ac_type.displayName
+						#if($ac_type.price && $ac_type.price.length() > 0) ($ac_type.price)#end
+					</li>
+				#end
+				</ul>
 			</div>
-
-			#if(!$guestOnly)
-			<div class="#if($hasMetaData) col-xs-6 col-sm-12 #else col-sm-6 #end o_subcolumn">
-				<div class="o_personal">
-					<h3>$r.translate("details.personal")</h3>
-					<table class="table"><tbody>
-						#if($passed || $failed)
-						<tr class="o_state #if($passed) o_passed #else o_failed #end">
-							<th>$r.translate("details.label.status")</th>
-							<td>
-							#if($passed)
-								<span class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.true")</span>
-							#elseif($failed)
-								<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.false")</span>
-							#end
-							</td>
-						</tr>
-						#end
-					
-						#if($score) 
-						<tr class="o_score">
-							<th>$r.translate("details.label.score")</th>
-							<td>$score</td> 
-						</tr> 
-						#end			
-		
-						#if($recentLaunch)
-						<tr class="o_recent">					
-							<th>$r.translate("cif.lastusage"):</th>
-							<td>$r.formatDateAndTime($recentLaunch)
-						</tr>
-						#end
-						#if($r.available("mark"))
-						<tr class="o_bookmark">					
-							<th>$r.translate("details.bookmark.label"):</th>
-							<td>$r.render("mark")</td>
-						</tr>
-						#end
-						#if($groups && $groups.size() > 0)
-						<tr class="o_groups">					
-							<th>$r.translate("cif.groups")</th>
-							<td>
-								<ul class="list-unstyled">
-								#foreach($group in $groups)
-									<li>$r.render($group)</li>
-								#end
-								</ul>
-							</td>
-						</tr>
-						#end
-						#if($r.available("sign.out"))
-						<tr class="o_signout">					
-							<th></th>
-							<td>$r.render("sign.out")</td>
-						</tr>
-						#end
-					</tbody>
-					</table>
-				</div>
+			#end	
+			
+			#if($r.available("rating") || $r.available("comments"))
+			<div class="o_subcolumn o_social">
+				<h4>$r.translate("ratings")</h4>
+				#if($r.available("rating")) $r.render("rating") #end
+				#if($r.available("comments")) $r.render("comments") #end
 			</div>
 			#end
+			#if($v.taxonomyLevels && !$v.taxonomyLevels.empty)
+			<div class="o_subcolumn o_taxonomy_levels">	
+				<h4>$r.translate("cif.taxonomy.levels")</h4>
+				#foreach($taxonomy in $v.taxonomyLevels)			
+				<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomy.taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
+					$taxonomy.taxonomyLevel.displayName
+				</span>
+				#end
+			</div>
+			#end							
+			#if($categories && $categories.size() > 0)
+			<div class="o_subcolumn o_categories">
+				<h4>$r.translate("cif.categories")</h4>
+				<ul class="list-unstyled">
+				#foreach($category in $categories)
+					<li>$r.render($category)</li>
+				#end
+				</ul>
+			</div>
+			#end				
+			
+			#if(!$guestOnly)
+			<div class="o_subcolumn o_personal">
+				<h4>$r.translate("details.personal")</h4>
+				#if($passed || $failed)
+				<div class="o_state #if($passed) o_passed #else o_failed #end">
+					<strong>$r.translate("details.label.status"):</strong>
+					#if($passed)
+						<span class="o_state o_passed"><i class="o_icon o_icon_passed"> </i> $r.translate("passed.true")</span>
+					#elseif($failed)
+						<span class="o_state o_failed"><i class="o_icon o_icon_failed"> </i> $r.translate("passed.false")</span>
+					#end
+				</div>
+				#end
+			
+				#if($score) 
+				<div class="o_score">
+					<strong>$r.translate("details.label.score"):</strong>
+					$score 
+				</div> 
+				#end			
 
-		</div></div>		
-
+				#if($recentLaunch)
+				<div class="o_recent">					
+					<strong>$r.translate("cif.lastusage"):</strong>
+					$r.formatDateAndTime($recentLaunch)
+				</div>
+				#end
+				#if($groups && $groups.size() > 0)
+				<div class="o_groups">					
+					<strong>$r.translate("cif.groups"):</strong>			
+					<ul class="list-unstyled">
+					#foreach($group in $groups)
+						<li>$r.render($group)</li>
+					#end
+					</ul>
+				</div>
+				#end
+				#if($r.available("mark"))
+				<div class="o_bookmark">					
+					$r.render("mark")
+				</div>
+				#end
+				#if($r.available("sign.out"))
+				<div class="o_signout">					
+					$r.render("sign.out")
+				</div>
+				#end
+			</div>
+			#end
+		</div>	
+			
 		## START LEFT COLUMN		
-		<div class="col-xs-12 #if($hasMetaData) col-sm-7 col-md-8 #end o_maincolumn">
+		<div class="o_maincolumn">
+			#if($description && $description.length() > 0)
+			<div class="o_desc o_user_content_block">
+				<h3>$r.translate("cif.description")</h3>
+				$description
+			</div>
+			#end
+		
 			#if($objectives)
 				<div class="o_objectives o_user_content_block clearfix">
 					<h3>$r.translate("cif.objectives")</h3>
@@ -216,189 +211,204 @@
 					$credits
 				</div>
 			#end
-			<div class="o_extlink clearfix o_block_large_bottom">
-				<h4>$r.translate("details.extlinkheader")</h4>
-				<div class="o_copy_code o_nowrap">
-					<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
-					<input type="text" value="$extlink" onclick="this.select()"/>
-					<script>
-					/* <![CDATA[ */
-						jQuery(function() {
-							o_QRCodePopup('o_extlink', '$extlink', 'right');
-						});
-					/* ]]> */
-					</script>
-				</div>
-				#if ($isGuestAllowed)
-				<div class="o_copy_code o_nowrap">
-					<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
-					<input type="text" value="${extlink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()"/>					
-					<script>
-					/* <![CDATA[ */
-						jQuery(function() {
-							o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=$r.getLanguageCode()', 'right');
-						});
-					/* ]]> */
-					</script>
-				</div>
-				#end
-			</div>
-						
-			
-			<div class="panel panel-default o_infopanel">
-				<div class="panel-heading" data-toggle="collapse" data-target="#collapseInfo">
-			    	<h3 class="panel-title">
-						$r.contextHelpWithWrapper("Technical Information on Resources and Usage")
-						<i id="collapseInfoToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
-						$r.translate("details.entryinfoheader")
-			    	</h3>
-				</div>
-				<div id="collapseInfo" class="panel-collapse collapse">
-					<table class="table table-condensed table-striped"><tbody>
-						<tr><th>$r.translate("cif.id")</th><td>$v.getKey()</td></tr>
-						#if ($roles.isAdministrator() || $roles.isLearnResourceManager())		
-						<tr><th>$r.translate("cif.ores_id")</th><td>$v.getOlatResource().getResourceableId()</td></tr>
-						<tr><th>$r.translate("cif.softkey")</th><td>$r.escapeHtml($v.getSoftkey())</td></tr>
-						#end
-						#if($v.getExternalId())
-						<tr><th>$r.translate("cif.externalid")</th><td>$r.escapeHtml($v.getExternalId())</td></tr>
-						#end
-						#if($v.getExternalRef())
-						<tr><th>$r.translate("cif.externalref")</th><td>$r.escapeHtml($v.getExternalRef())</td></tr>
-						#end
-						<tr><th>$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
-						<tr><th>$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
-						
-						#if ($isEntryAuthor || $roles.isAdministrator() || $roles.isAuthor() || $roles.isLearnResourceManager())
-						#if ($r.isNotEmpty($technicalType))
-							<tr><th>$r.translate("cif.technical.type")</th><td>$technicalType</td></tr>
-						#end
-						<tr><th>$r.translate("cif.access")</th><td>$accessI18n</td></tr>
-						<tr><th>$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
-						<tr>
-							<th>$r.translate("cif.owners")</th>
-							<td><ul class="list-unstyled">
-								#foreach($authorlinkname in $authorlinknames)
-									<li>$r.render($authorlinkname)</li>
-								#end
-							</ul></td>
-						</tr>
-						#end
-						#if($r.isNotEmpty($organisations))
-						<tr>
-							<th>$r.translate("cif.organisations")</th>
-							<td>$organisations</td>
-						</tr>
-						#end
-						#if($r.isNotEmpty($curriculums))
-						<tr>
-							<th>$r.translate("cif.curriculums")</th>
-							<td><ul class="list-unstyled">
-								#foreach($curriculum in $curriculums)
-									<li>$curriculum</li>
-								#end
-							</ul></td>
-						</tr>
-						#end
-						
-					</tbody></table>
-				</div>
-			</div>
-			<script>
-				/* <![CDATA[ */
-					jQuery('#collapseInfo').on('hide.bs.collapse', function () {
-							jQuery('#collapseInfoToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					})
-					jQuery('#collapseInfo').on('show.bs.collapse', function () {
-							jQuery('#collapseInfoToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					})
-				/* ]]> */
-			</script>
-
-			#if (($referenceLinks && $referenceLinks.size() > 0) || $licSwitch)
-			<div class="panel panel-default o_usagepanel">
-				<div class="panel-heading" data-toggle="collapse" data-target="#collapseUsage">
-			    	<h3 class="panel-title">
-						$r.contextHelpWithWrapper("Set up info page")
-						<i id="collapseUsageToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
-						$r.translate("details.referenceinfoheader")
-			    	</h3>
-				</div>
-				<div id="collapseUsage" class="panel-collapse collapse">
-					<table class="table table-condensed table-striped"><tbody>
-						#if ($licSwitch)
-							<tr><th>$r.translate("cif.license")</th><td>
-							#if ($licenseIconCss != "")
-								<i class="o_icon ${licenseIconCss}"> </i> 
-							#end
-							$license</td></tr>
-							<tr><th>$r.translate("cif.licensor")</th><td>$licensor</td></tr>
-							<tr><th>$r.translate("cif.license.text")</th><td>$licenseText</td></tr>
-						#end
-						#if ($referenceLinks && $referenceLinks.size() > 0)
-							<tr>
-								<th>$r.translate("details.referenceinfo")</th>
-								<td>$r.translate("details.referenceinfo.txt")
-									#foreach($referenceLink in $referenceLinks)
-										#if($foreach.count != 1), #end$r.render($referenceLink)
-									#end
-								</td>
-							</tr>
-							<tr><th>$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
-							<tr><th>$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>
-							<tr><th>$r.translate("cif.launched")</th><td>#if ($v.getStatistics().getLaunchCounter()) $v.getStatistics().getLaunchCounter() #else 0 #end</td></tr>
-							<tr><th>$r.translate("cif.downloaded")</th><td>#if ($v.getStatistics().getDowloadCounter()) $v.getStatistics().getDowloadCounter() #else 0 #end</td></tr>
-						#end
-					</tbody></table>
-				</div>
-			</div>
-			<script>
-				/* <![CDATA[ */
-					jQuery('#collapseUsage').on('hide.bs.collapse', function () {
-							jQuery('#collapseUsageToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					})
-					jQuery('#collapseUsage').on('show.bs.collapse', function () {
-							jQuery('#collapseUsageToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					})
-				/* ]]> */
-			</script>			
-			#end
-
-			#if ($v && $v.getManagedFlags().size() > 0)
-			<div class="panel panel-default o_managedpanel">
-				<div class="panel-heading" data-toggle="collapse" data-target="#collapseManaged">
-			    	<h3 class="panel-title">
-						<i id="collapseManagedToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
-						$r.translate("cif.managedflags")
-			    	</h3>
-				</div>
-				<div id="collapseManaged" class="panel-collapse collapse">
-					<div class="panel-body">
-						$r.translate("managed.resource.intro")
-					</div>
-					<div class="panel-body">
-						<ul>
-						#foreach ($flag in $v.getManagedFlags())
-							<li>$r.translate("managed.flags.course.${flag}")</li>
-						#end
-						</ul>
-					</div>
-				</div>
-			</div>
-			<script>
-				/* <![CDATA[ */
-					jQuery('#collapseManaged').on('hide.bs.collapse', function () {
-							jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					})
-					jQuery('#collapseManaged').on('show.bs.collapse', function () {
-							jQuery('#collapseManagedToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					})
-				/* ]]> */
-			</script>
-			#end
-
+		## END LEFT COLUMN				
 		</div>
-		## END LEFT COLUMN		
-		
 	</div>
-</div>
+
+	<div class="o_bottom_container #if(!$hasText) o_full_space #end">
+		#if ($licSwitch)
+		<div class="o_license_info">
+			#if ($licenseIconCss != "")
+				<i class="o_icon o_icon-2x ${licenseIconCss}"> </i> 
+			#end
+			<div class="o_license">
+				$license
+			</div>
+			<div class="o_licensor">
+				– $licensor
+			</div>
+			#if($licenseText)
+			<div class="o_license_text">
+				$licenseText
+			</div>
+			#end
+		</div>
+		#end
+
+	
+	
+		<div class="o_extlink clearfix o_block_large_bottom">
+			<h4>$r.translate("details.extlinkheader")</h4>
+			<div class="o_copy_code o_nowrap">
+				<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+				<input type="text" value="$extlink" onclick="this.select()"/>
+				<script>
+				/* <![CDATA[ */
+					jQuery(function() {
+						o_QRCodePopup('o_extlink', '$extlink', 'right');
+					});
+				/* ]]> */
+				</script>
+			</div>
+			#if ($isGuestAllowed)
+			<div class="o_copy_code o_nowrap">
+				<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+				<input type="text" value="${extlink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()"/>
+				<script>
+				/* <![CDATA[ */
+					jQuery(function() {
+						o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=$r.getLanguageCode()', 'right');
+					});
+				/* ]]> */
+				</script>
+			</div>
+			#end
+		</div>			
+
+		<div class="panel panel-default o_infopanel">
+			<div class="panel-heading" data-toggle="collapse" data-target="#collapseInfo">
+		    	<h3 class="panel-title">
+					$r.contextHelpWithWrapper("Technical Information on Resources and Usage")
+					<i id="collapseInfoToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
+					$r.translate("details.entryinfoheader")
+		    	</h3>
+			</div>
+			<div id="collapseInfo" class="panel-collapse collapse">
+				<table class="table table-condensed table-striped"><tbody>
+					<tr><th>$r.translate("cif.id")</th><td>$v.getKey()</td></tr>
+					#if ($roles.isAdministrator() || $roles.isLearnResourceManager())		
+					<tr><th>$r.translate("cif.ores_id")</th><td>$v.getOlatResource().getResourceableId()</td></tr>
+					<tr><th>$r.translate("cif.softkey")</th><td>$r.escapeHtml($v.getSoftkey())</td></tr>
+					#end
+					#if($v.getExternalId())
+					<tr><th>$r.translate("cif.externalid")</th><td>$r.escapeHtml($v.getExternalId())</td></tr>
+					#end
+					#if($v.getExternalRef())
+					<tr><th>$r.translate("cif.externalref")</th><td>$r.escapeHtml($v.getExternalRef())</td></tr>
+					#end
+					<tr><th>$r.translate("orderby.creationDate")</th><td>$r.formatDateAndTime($v.getCreationDate())</td></tr>
+					<tr><th>$r.translate("orderby.lastModified")</th><td>$r.formatDateAndTime($v.getLastModified())</td></tr>
+					
+					#if ($isEntryAuthor || $roles.isAdministrator() || $roles.isAuthor() || $roles.isLearnResourceManager())
+					#if ($r.isNotEmpty($technicalType))
+						<tr><th>$r.translate("cif.technical.type")</th><td>$technicalType</td></tr>
+					#end
+					<tr><th>$r.translate("cif.access")</th><td>$accessI18n</td></tr>
+					<tr><th>$r.translate("cif.initialAuthor")</th><td>$r.escapeHtml($v.getInitialAuthor())</td></tr>
+					<tr>
+						<th>$r.translate("cif.owners")</th>
+						<td><ul class="list-unstyled">
+							#foreach($authorlinkname in $authorlinknames)
+								<li>$r.render($authorlinkname)</li>
+							#end
+						</ul></td>
+					</tr>
+					#end
+					#if($r.isNotEmpty($organisations))
+					<tr>
+						<th>$r.translate("cif.organisations")</th>
+						<td>$organisations</td>
+					</tr>
+					#end
+					#if($r.isNotEmpty($curriculums))
+					<tr>
+						<th>$r.translate("cif.curriculums")</th>
+						<td><ul class="list-unstyled">
+							#foreach($curriculum in $curriculums)
+								<li>$curriculum</li>
+							#end
+						</ul></td>
+					</tr>
+					#end
+					
+				</tbody></table>
+			</div>
+		</div>			
+		<script>
+			/* <![CDATA[ */
+				jQuery('#collapseInfo').on('hide.bs.collapse', function () {
+						jQuery('#collapseInfoToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#collapseInfo').on('show.bs.collapse', function () {
+						jQuery('#collapseInfoToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				})
+			/* ]]> */
+		</script>
+
+
+		#if (($referenceLinks && $referenceLinks.size() > 0))
+		<div class="panel panel-default o_usagepanel">
+			<div class="panel-heading" data-toggle="collapse" data-target="#collapseUsage">
+		    	<h3 class="panel-title">
+					$r.contextHelpWithWrapper("Set up info page")
+					<i id="collapseUsageToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
+					$r.translate("details.referenceinfoheader")
+		    	</h3>
+			</div>
+			#if ($referenceLinks && $referenceLinks.size() > 0)
+			<div id="collapseUsage" class="panel-collapse collapse">
+				<table class="table table-condensed table-striped"><tbody>
+					<tr>
+						<th>$r.translate("details.referenceinfo")</th>
+						<td>$r.translate("details.referenceinfo.txt")
+							#foreach($referenceLink in $referenceLinks)
+								#if($foreach.count != 1), #end$r.render($referenceLink)
+							#end
+						</td>
+					</tr>
+					<tr><th>$r.translate("cif.lastusage")</th><td>$r.formatDateAndTime($v.getStatistics().getLastUsage())</td></tr>
+					<tr><th>$r.translate("cif.usedbycnt")</th><td>$numUsers</td></tr>
+					<tr><th>$r.translate("cif.launched")</th><td>#if ($v.getStatistics().getLaunchCounter()) $v.getStatistics().getLaunchCounter() #else 0 #end</td></tr>
+					<tr><th>$r.translate("cif.downloaded")</th><td>#if ($v.getStatistics().getDowloadCounter()) $v.getStatistics().getDowloadCounter() #else 0 #end</td></tr>
+				</tbody></table>
+			</div>
+			#end
+		</div>
+		<script>
+			/* <![CDATA[ */
+				jQuery('#collapseUsage').on('hide.bs.collapse', function () {
+						jQuery('#collapseUsageToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#collapseUsage').on('show.bs.collapse', function () {
+						jQuery('#collapseUsageToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				})
+			/* ]]> */
+		</script>			
+		#end
+
+		#if ($v && $v.getManagedFlags().size() > 0)
+		<div class="panel panel-default o_managedpanel">
+			<div class="panel-heading" data-toggle="collapse" data-target="#collapseManaged">
+		    	<h3 class="panel-title">
+					<i id="collapseManagedToggler" class="o_icon o_icon-fw o_icon_open_togglebox"> </i>
+					$r.translate("cif.managedflags")
+		    	</h3>
+			</div>
+			<div id="collapseManaged" class="panel-collapse collapse">
+				<div class="panel-body">
+					$r.translate("managed.resource.intro")
+				</div>
+				<div class="panel-body">
+					<ul>
+					#foreach ($flag in $v.getManagedFlags())
+						<li>$r.translate("managed.flags.course.${flag}")</li>
+					#end
+					</ul>
+				</div>
+			</div>
+		</div>
+		<script>
+			/* <![CDATA[ */
+				jQuery('#collapseManaged').on('hide.bs.collapse', function () {
+						jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#collapseManaged').on('show.bs.collapse', function () {
+						jQuery('#collapseManagedToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				})
+			/* ]]> */
+		</script>
+		#end
+	</div>
+
+</div>							
+	

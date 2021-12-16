@@ -2,55 +2,146 @@
 	position: relative;
 	
 	.o_lead {
-		@extend .jumbotron;
-		margin-bottom: 10px;
-		.o_author{
-			margin-top: 0.5em;
-			margin-bottom: 1em;
-			color: $o-coursesite-meta-author-color;
-		}
-		.o_media {
-			float: right;
-			margin-left: 2em;
-			margin-bottom: 2em;			
-			/* reset when no description is there to render left aligned */
-			&.o_desc_empty {
-				float: none;
-				margin-left: 0;
-				margin-bottom: 0;						
-			}
-		}		
+		display: flex;	
+		flex-wrap: nowrap;
+		justify-content: left;
+		width: 100%;
+		border-bottom: $o-coursesite-meta-header-border-width solid $o-coursesite-meta-header-border;
 		
-		h1 {
+		@media (max-width: $screen-xs-max) { 
+			display: block;				
+		}	
+		
+		.o_media  {
+			margin-right: 2em;
+			margin-bottom: 2em;
+			max-width: floor(570px * 0.75); //570x380
+			@media (min-width: $screen-sm-min) and (max-width: $screen-sm-max) { 
+				max-width: floor(570px * 0.5); //570x380			
+			}
+			@media (max-width: $screen-xs-max) { 
+				max-width: 100%;	
+				width: 100%;
+				.o_image, img, .o_video, video {
+					width: 100%;
+				}
+			}	
+		}		
+		.o_meta {
+			flex-grow: 1;
+			flex-shrink: 1;
+			width: 100%;
+			white-space: nowrap;
+			overflow-x: hidden;
+			text-overflow: ellipsis;		
+		}
+		
+		.o_ext_ref {
+			color: $text-muted;
+		}
+		h2 {
 			font-size: $o-coursesite-meta-title-font-size;
+			margin-top: 0;
+			white-space: normal;
 			i {
 				display: none;
 			}
 		}
+		
+		.o_educational_type {
+			margin-right: .5em;
+			margin-top: auto;
+			margin-bottom: auto;
+			line-height: normal;
+		}
+		
+		.o_author{
+			color: $o-coursesite-meta-author-color;
+			white-space: normal;
+		}
+	
+		.o_start_wrapper {
+			margin: 2em 0 2em 0;
+			.o_start_inner {
+				display: inline-block; 
+				@media (max-width: $screen-xs-max) { 
+					display: block;
+					width: 100%;
+				}
+			}
+		}		
+		.o_start, .o_book {
+			display: inline-block;  
+		}		
+	}
+
+	/* one-column default styles for mobile-first */
+	.o_column_container {
+		display: flex;
+		flex-direction: column;
+		margin-top: 20px;		
+		margin-bottom: 20px;		
+	}
+	.o_sidecolumn {
+		order: 2;
+		border: 1px solid $o-coursesite-sidecol-border;
+		border-radius: $o-coursesite-sidecol-radius;
+		background: $o-coursesite-sidecol-bg;
+		padding: 0 $o-coursesite-sidecol-padding $o-coursesite-sidecol-padding  $o-coursesite-sidecol-padding;
+		font-size: 80%;		
+		column-count: 1;
+	}
+	.o_subcolumn {
+		break-inside: avoid-column;
+		padding-top: 10px;
+	}
+	.o_maincolumn {
+		order: 1;
+	}
+	.o_bottom_container {
+		
 	}
 	
-	.o_overview {
-		i {
-			margin-right: 0.5em;		
+	/* two column style for mid and large screen */
+	@media (min-width: 500px) { 	
+		.o_sidecolumn {
+			column-count: 2;
 		}
-		div {
-			margin-bottom: 0.25em;
+		.subcolumn {
+			width: 45%;	
+		}
+	}
+	/* two column style for mid and large screen 	*/
+	@media (min-width: 800px) { 		
+		.o_column_container:not(.o_full_space) {
+			flex-direction: row;
+			flex-wrap: nowrap;
+			justify-content: left;
+			align-items: flex-start;
+			width: 100%;		
+			.o_sidecolumn {
+				flex-grow: 0;
+				flex-shrink: 0;
+				width: 280px;
+				margin-top: 20px;
+				column-count: 1;
+			}
+			.o_maincolumn {
+				flex-grow: 1;
+				flex-shrink: 1;
+				padding-right: 80px;
+			}
+		}
+	}
+	@media (min-width: $screen-md-min) { 	
+		.o_subcolumn {
+			width: auto;
+		}
+		.o_bottom_container:not(.o_full_space) {
+			padding-right: (280px + 80px);
 		}
 	}
 
-	.o_start_wrapper {
-		clear: both;
-		margin: 2em 0 -10px 0;
-		text-align: right;
-		.o_start_inner {
-			display: inline-block; 
-		}
-	}		
-	.o_start, .o_book {
-		max-width: 400px; 
-		display: inline-block; 
-	}
-	
 	.o_social {
 		@include clearfix();
 		.o_rating_wrapper {
@@ -61,37 +152,33 @@
 			margin-left: 1em;
 		}
 	}	
-	
-	@media (max-width: $screen-xs-max) { 
-		.o_lead {
-			p {
-				font-size: floor($jumbotron-font-size * 0.8);
-			}		
-			.o_media {
-				margin-left: 0;
-				float: none;
-				text-align: center;				
-			}
-		}
-		.o_start_wrapper {
-			text-align: center;
-			.o_start_inner {
-				display: block; 
-			}
-		}		
-		.o_start, .o_book {
-			max-width: 100%; 
-			display: block; 
-		}
-    }	
+    .o_signout {
+	    margin: 2em 0 1em 0;
+    }
+    .o_tag {
+    	line-height: 2em;
+    }
     
-    
-    // make two column layout switch to one column if very small
-	@media (max-width: floor($screen-xs-max * 0.8)) { 
-		.o_subcolumn {
-			width: 100%;
+    .o_license_info {
+    	margin: 2em 0 1em 0;
+    	.o_icon {
+    		float: left;
+    		margin-right: 0.5em;
+    	}
+    	.o_license,
+    	.o_licensor {
+    		font-weight: bold;
+    		font-size: 110%;
+    		line-height: 2em;
+    		vertical-align: text-bottom;
+    		display: inline-block;
+    	}
+		.o_license_text {
+			clear: both;
+			font-style: italic;
+			margin-top: 1em;
 		}
-	}
+    }
 }
 
 .o_meta .o_closed {
@@ -100,8 +187,8 @@
 }
 
 .o_overview .o_closed {
-	padding: 12px 15px;
-	margin: 15px 0;
+	padding: 5px 10px;
+	margin: 15px 15px 15px 0;
 }
 
 .o_ac_configuration {

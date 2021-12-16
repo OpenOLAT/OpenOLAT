@@ -123,7 +123,6 @@
 .o_flex_item_max, %o_flex_item_max {
 	flex-grow: 1;
 	flex-shrink: 1;
-	flex-wrap: nowrap;
 	width: 100%;
 	white-space: nowrap;
 	overflow: hidden;
@@ -348,15 +347,18 @@
 .o_copy_code, %o_copy_code {
   	font-family: $font-family-monospace;
   	padding: 2px 4px;
-  	font-size: 90%;
-  	color: $code-color;
- 	background-color: $code-bg;
+  	font-size: 85%;
+  	color: $pre-color;
+ 	background-color: $pre-bg;
   	border-radius: $border-radius-base;
   	
   	input,textarea {
   		border: 0;
   		width: 90%;
   		background: transparent;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		cursor: copy;
   	}
 }
 

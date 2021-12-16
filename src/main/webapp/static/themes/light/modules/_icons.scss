@@ -701,7 +701,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_identity_deleted:before { content: $fa-var-trash; }
 
 /* Access control icons */
-.o_ac_token_icon:before { content: $fa-var-key;}
+.o_ac_token_icon{ @include fa-icon-rotate(180deg, 1); &:before { content: $fa-var-key; }}
 .o_ac_free_icon:before { content: $fa-var-gift;}
 .o_ac_group_icon:before { content: $fa-var-group;}
 .o_ac_membersonly_icon:before { content: $fa-var-lock;}
