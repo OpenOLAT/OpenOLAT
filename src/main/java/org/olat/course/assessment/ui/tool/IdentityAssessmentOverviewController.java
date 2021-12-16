@@ -304,7 +304,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		}));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.attempts));
 		if(!followUserResultsVisibility) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.userVisibility, new UserVisibilityCellRenderer(true)));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.userVisibility, new UserVisibilityOverviewCellRenderer(true)));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.minMax, new ScoreMinMaxCellRenderer()));

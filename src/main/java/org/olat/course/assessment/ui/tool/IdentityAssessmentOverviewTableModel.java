@@ -96,7 +96,7 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			case node: return nodeData;// rendered using the indentedNodeRenderer
 			case details: return nodeData.getShortTitle();
 			case attempts: return nodeData.getAttempts();
-			case userVisibility: return nodeData.getUserVisibility();
+			case userVisibility: return nodeData;
 			case score: return nodeData.getScoreDesc() != null? nodeData.getScoreDesc(): nodeData.getRoundedScore();
 			case passedOverriden: return nodeData.getPassedOverriden();
 			case passed: return nodeData.getPassed();

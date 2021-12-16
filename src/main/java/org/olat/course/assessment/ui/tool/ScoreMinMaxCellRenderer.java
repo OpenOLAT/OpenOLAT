@@ -43,7 +43,7 @@ public class ScoreMinMaxCellRenderer implements FlexiCellRenderer {
 		if (cellValue instanceof AssessmentNodeData) {
 			AssessmentNodeData nodeData = (AssessmentNodeData)cellValue;
 			if (nodeData.getRecursionLevel() == 0 || !STCourseNode.TYPE.equals(nodeData.getType())) {
-				if (nodeData.getMinScore() != null && nodeData.getMaxScore() != null) {
+				if (nodeData.getMinScore() != null || nodeData.getMaxScore() != null) {
 					String min = nodeData.getMinScore() != null? AssessmentHelper.getRoundedScore(nodeData.getMinScore()): "-";
 					String max = nodeData.getMaxScore() != null? AssessmentHelper.getRoundedScore(nodeData.getMaxScore()): "-";
 					target.append(translator.translate("min.max", new String[] {min, max}));

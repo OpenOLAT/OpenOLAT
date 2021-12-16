@@ -38,8 +38,8 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
-		if (showText && val instanceof Boolean) {
-			Boolean userVisibility = (Boolean) val;
+		Boolean userVisibility = getUserVisibility(val);
+		if (showText && userVisibility != null) {
 			return userVisibility.booleanValue()
 					? translator.translate("user.visibility.visible")
 					: translator.translate("user.visibility.hidden");
@@ -49,8 +49,8 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 
 	@Override
 	protected String getIconCssClass(Object val) {
-		if (val instanceof Boolean) {
-			Boolean userVisibility = (Boolean) val;
+		Boolean userVisibility = getUserVisibility(val);
+		if (userVisibility != null) {
 			return userVisibility.booleanValue()? "o_icon_results_visible": "o_icon_results_hidden";
 		}
 		return null;
@@ -58,8 +58,8 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 
 	@Override
 	protected String getElementCssClass(Object val) {
-		if (val instanceof Boolean) {
-			Boolean userVisibility = (Boolean) val;
+		Boolean userVisibility = getUserVisibility(val);
+		if (userVisibility != null) {
 			return userVisibility.booleanValue()? "o_results_visible": "o_results_hidden";
 		}
 		return null;
@@ -67,8 +67,8 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 	
 	@Override
 	protected String getTitle(Object val, Translator translator) {
-		if (val instanceof Boolean) {
-			Boolean userVisibility = (Boolean) val;
+		Boolean userVisibility = getUserVisibility(val);
+		if (userVisibility != null) {
 			return userVisibility.booleanValue()
 					? translator.translate("user.visibility.visible.tooltip")
 					: translator.translate("user.visibility.hidden.tooltip");
@@ -78,11 +78,18 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 
 	@Override
 	protected String getExportValue(Object val, Translator translator) {
-		if (val instanceof Boolean) {
-			Boolean userVisibility = (Boolean) val;
+		Boolean userVisibility = getUserVisibility(val);
+		if (userVisibility != null) {
 			return userVisibility.booleanValue()
 					? translator.translate("yes")
 					: translator.translate("no");
+		}
+		return null;
+	}
+	
+	protected Boolean getUserVisibility(Object val) {
+		if (val instanceof Boolean) {
+			return (Boolean) val;
 		}
 		return null;
 	}
