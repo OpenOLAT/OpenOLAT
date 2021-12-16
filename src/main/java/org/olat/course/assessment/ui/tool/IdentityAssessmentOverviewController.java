@@ -330,6 +330,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		tableEl.setExportEnabled(true);
 		tableEl.setEmptyTableMessageKey("nodesoverview.emptylist");
 		tableEl.setMultiSelect(nodesSelectable);
+		tableEl.setSelectAllEnable(true);
 		tableEl.setNumOfRowsEnabled(false);
 		
 		if (allowTableFiltering) {
