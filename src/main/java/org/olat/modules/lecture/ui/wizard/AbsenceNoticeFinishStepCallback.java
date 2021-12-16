@@ -95,6 +95,23 @@ public class AbsenceNoticeFinishStepCallback implements StepRunnerCallback {
 			
 			String after = lectureService.toAuditXml(notice);
 			lectureService.auditLog(Action.createAbsenceNotice, null, after, null, notice, absentIdentity, ureq.getIdentity());
+		} else {
+			AbsenceNotice absenceNotice = lectureService.getAbsenceNotice(noticeWrapper.getAbsenceNotice());
+			String before = lectureService.toAuditXml(absenceNotice);
+			
+			absenceNotice.setNoticeType(noticeWrapper.getAbsenceNoticeType());
+			absenceNotice.setNoticeTarget(noticeWrapper.getAbsenceNoticeTarget());
+			absenceNotice.setStartDate(noticeWrapper.getStartDate());
+			absenceNotice.setEndDate(noticeWrapper.getEndDate());
+			absenceNotice.setAbsenceCategory(noticeWrapper.getAbsenceCategory());
+			absenceNotice.setAbsenceReason(noticeWrapper.getAbsenceReason());
+			absenceNotice.setAbsenceAuthorized(noticeWrapper.getAuthorized());
+			
+			lectureService.updateAbsenceNotice(absenceNotice, null,
+					noticeWrapper.getEntries(), noticeWrapper.getLectureBlocks(), ureq.getIdentity());
+			
+			String after = lectureService.toAuditXml(absenceNotice);
+			lectureService.auditLog(Action.updateAbsenceNotice, before, after, null, absenceNotice, noticeWrapper.getIdentity(), ureq.getIdentity());
 		}
 		
 		if(noticeWrapper.getTempUploadFolder() != null) {

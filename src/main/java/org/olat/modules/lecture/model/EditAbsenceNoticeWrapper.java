@@ -101,10 +101,6 @@ public class EditAbsenceNoticeWrapper {
 		return absenceNotice;
 	}
 
-	public void setAbsenceNotice(AbsenceNotice absenceNotice) {
-		this.absenceNotice = absenceNotice;
-	}
-
 	public AbsenceNoticeType getAbsenceNoticeType() {
 		return absenceNoticeType;
 	}
