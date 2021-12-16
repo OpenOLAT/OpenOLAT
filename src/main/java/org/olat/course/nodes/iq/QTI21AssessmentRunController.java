@@ -84,10 +84,12 @@ import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
@@ -251,7 +253,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	    // config : show score info
 		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		mainVC.contextPut("enableScoreInfo", Boolean.valueOf(enableScoreInfo));
-	   
+		
+		mainVC.contextPut("showPassed", getPassedType() != PassedType.none);
+		
 	    // configuration data
 		int maxAttempts = deliveryOptions.getMaxAttempts();
 		if(maxAttempts > 0) {
@@ -325,6 +329,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);
 				mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
+				
 				if(resultsVisible) {
 					if(assessmentConfig.hasComment()) {
 						StringBuilder comment = Formatter.stripTabsAndReturns(
@@ -859,6 +864,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			return assessmentTest.getTimeLimits().getMaximum().longValue();
 		}
 		return null;
+	}
+	
+	private PassedType getPassedType() {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		return deliveryOptions.getPassedType(cutValue);
 	}
 	
 	private QTI21DeliveryOptions getDeliveryOptions() {
