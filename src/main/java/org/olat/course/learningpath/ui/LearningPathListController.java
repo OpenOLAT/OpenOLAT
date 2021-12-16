@@ -59,7 +59,6 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
-import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.nodes.CourseNode;
@@ -105,8 +104,6 @@ public class LearningPathListController extends FormBasicController implements T
 	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private LearningPathService learningPathService;
 
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment userCourseEnv, boolean canEdit) {
@@ -365,8 +362,10 @@ public class LearningPathListController extends FormBasicController implements T
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(obligationEditCtrl);
 		removeAsListenerAndDispose(endDateEditCtrl);
 		removeAsListenerAndDispose(ccwc);
+		obligationEditCtrl = null;
 		endDateEditCtrl = null;
 		ccwc = null;
 	}

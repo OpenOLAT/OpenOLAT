@@ -45,7 +45,6 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
@@ -92,8 +91,6 @@ public class IdentityCertificatesController extends BasicController implements G
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
 	
 	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, RepositoryEntry courseEntry, Identity assessedIdentity) {
