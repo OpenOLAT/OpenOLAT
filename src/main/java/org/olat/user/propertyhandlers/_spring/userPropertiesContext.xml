@@ -359,14 +359,15 @@
 							</list>
 						</property>
 						<property name="adminViewOnlyProperties">
-							<set></set>
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyEmail" />
+							</set>
 						</property>
 						<property name="mandatoryProperties">
 							<set>
-								<ref bean="userPropertyUserNickName" />
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />
 							</set>
 						</property>
 					</bean>

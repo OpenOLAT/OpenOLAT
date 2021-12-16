@@ -263,8 +263,8 @@ public class TeacherRollCallController extends FormBasicController {
 			for(int i=0; i<numOfLectures; i++) {
 				String lecture = Integer.toString(i + 1);
 				DefaultFlexiColumnModel col = new DefaultFlexiColumnModel("table.header.lecture.".concat(lecture), i + CHECKBOX_OFFSET, true, "lecture.".concat(lecture));
-				col.setHeaderLabel(translate("table.header.lecture.number", new String[] { lecture }));
-				col.setHeaderTooltip(translate("table.header.lecture.number.tooltip", new String[] { lecture }));
+				col.setHeaderLabel(translate("table.header.lecture.number", lecture));
+				col.setHeaderTooltip(translate("table.header.lecture.number.tooltip", lecture));
 				col.setAlwaysVisible(true);
 				columnsModel.addFlexiColumnModel(col);
 			}
