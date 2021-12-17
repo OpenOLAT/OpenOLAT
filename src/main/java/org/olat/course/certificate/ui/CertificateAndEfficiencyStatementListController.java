@@ -599,7 +599,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
 		for(CertificateLight certificate:certificates) {
-			Long resourceKey = certificate.getKey();
+			Long resourceKey = certificate.getOlatResourceKey();
 			CertificateAndEfficiencyStatement wrapper = resourceKeyToStatments.get(resourceKey);
 			if(wrapper == null) {
 				wrapper = new CertificateAndEfficiencyStatement();

@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.ActionDele
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -39,6 +40,8 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel
  */
 public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCellRenderer implements ActionDelegateCellRenderer {
 	
+	private StaticFlexiCellRenderer delegateRenderer = new StaticFlexiCellRenderer("", "");
+	
 	public CertificateAndEfficiencyStatementRenderer() {
 		super();
 	}
@@ -49,6 +52,7 @@ public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCell
 	
 	public CertificateAndEfficiencyStatementRenderer(String action) {
 		super(action);
+		delegateRenderer.setAction(action);
 	}
 	
 	@Override
@@ -58,8 +62,12 @@ public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCell
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
 		
 		if(treeTableModel != null) {
-			if(isFlat(ftE)) {
-				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			if(isFlat(ftE)) {	
+				if (cellValue instanceof String) {
+					delegateRenderer.setLabel((String) cellValue);
+				}
+				
+				delegateRenderer.render(renderer, target, cellValue, row, source, ubu, translator);
 			} else {
 				Object tableRow = treeTableModel.getObject(row);
 				
