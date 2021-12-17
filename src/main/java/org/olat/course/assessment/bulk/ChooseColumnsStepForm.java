@@ -70,7 +70,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 	public ChooseColumnsStepForm(UserRequest ureq, WindowControl wControl, BulkAssessmentColumnSettings columnsSettings,
 			StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		setTranslator(Util.createPackageTranslator(getTranslator(), AssessedIdentityListController.class, getLocale()));
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.columnsSettings = columnsSettings;
 
 		@SuppressWarnings("unchecked")
