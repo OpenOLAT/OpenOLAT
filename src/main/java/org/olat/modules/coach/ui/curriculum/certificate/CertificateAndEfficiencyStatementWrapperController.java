@@ -153,7 +153,7 @@ public class CertificateAndEfficiencyStatementWrapperController extends BasicCon
 
         if (certificateListController == null) {
             WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(WITHOUT_CURRICULM), null);
-            certificateListController = new CertificateAndEfficiencyStatementListController(ureq, bwControl, mentee, false, false, false, false);
+            certificateListController = new CertificateAndEfficiencyStatementListController(ureq, bwControl, mentee, false, false, false, false, roleSecurityCallback);
             certificateListController.setBreadcrumbPanel(stackPanel);
             listenTo(certificateListController);
         }

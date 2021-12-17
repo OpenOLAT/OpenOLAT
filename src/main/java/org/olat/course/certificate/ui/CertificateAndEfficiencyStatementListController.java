@@ -87,6 +87,7 @@ import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
+import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -168,11 +169,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true, true);
+		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true, true, null);
 	}
 	
 	
-	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse) {
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse, Boolean canUploadCertificate) {
 		super(ureq, wControl, "cert_statement_list");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		this.canModify = canModify;
@@ -181,15 +182,19 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		this.canLaunchCourse = canLaunchCourse;
 		
 		// Upload certificates
-		Roles userRoles = ureq.getUserSession().getRoles();
-		if (getIdentity().equals(assessedIdentity)) {
-			canUploadExternalCertificate = certificatesModule.canUserUploadExternalCertificates();
-		} else if (userRoles.isUserManager()) {
-			canUploadExternalCertificate = certificatesModule.canUserManagerUploadExternalCertificates();
-		} else if (userRoles.isLineManager()) {
-			canUploadExternalCertificate = baseSecurityManager.getRoles(assessedIdentity).hasRole(userRoles.getOrganisations(), OrganisationRoles.user);			
-		} else if (userRoles.isAdministrator() || userRoles.isSystemAdmin()) {
-			canUploadExternalCertificate = true;
+		if (canUploadCertificate == null) {
+			Roles userRoles = ureq.getUserSession().getRoles();
+			if (getIdentity().equals(assessedIdentity)) {
+				canUploadExternalCertificate = certificatesModule.canUserUploadExternalCertificates();
+			} else if (userRoles.isUserManager()) {
+				canUploadExternalCertificate = certificatesModule.canUserManagerUploadExternalCertificates();
+			} else if (userRoles.isLineManager()) {
+				canUploadExternalCertificate = baseSecurityManager.getRoles(assessedIdentity).hasRole(userRoles.getOrganisations(), OrganisationRoles.user);			
+			} else if (userRoles.isAdministrator() || userRoles.isSystemAdmin()) {
+				canUploadExternalCertificate = true;
+			}
+		} else {
+			canUploadExternalCertificate = canUploadCertificate.booleanValue();
 		}
 
 		// Show heading
@@ -203,15 +208,15 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 
-	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse, boolean showHeading) {
-		this(ureq, wControl, assessedIdentity, linkToCoachingTool, canModify, canLaunchCourse);
+	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse, boolean showHeading, RoleSecurityCallback roleSecurityCallback) {
+		this(ureq, wControl, assessedIdentity, linkToCoachingTool, canModify, canLaunchCourse, roleSecurityCallback.canUploadExternalCertificate());
 
 		// Set visibility of heading
 		flc.contextPut("showHeading", showHeading);
 	}
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean withFieldSet) {
-		this(ureq, wControl, assessedIdentity, false, false, true);
+		this(ureq, wControl, assessedIdentity, false, false, true, null);
 		
 		// Show different header in user management
 		flc.contextPut("withFieldSet", withFieldSet);

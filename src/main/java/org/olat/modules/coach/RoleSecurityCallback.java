@@ -116,4 +116,11 @@ public interface RoleSecurityCallback {
 	 */
 	public boolean isAdministrativeUser();
 	
+	/**	
+	 * Is this user allowed to upload external certificates in the efficiency statement?
+	 * 
+	 * @return
+	 */
+	public boolean canUploadExternalCertificate();
+	
 }

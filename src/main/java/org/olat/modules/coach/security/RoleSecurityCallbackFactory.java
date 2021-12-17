@@ -26,6 +26,7 @@ import java.util.Set;
 import org.olat.basesecurity.RelationRoleToRight;
 import org.olat.basesecurity.RightProvider;
 import org.olat.course.certificate.CertificateEmailRightProvider;
+import org.olat.course.certificate.CertificateUploadExternalRightProvider;
 import org.olat.course.groupsandrights.ViewCourseCalendarRightProvider;
 import org.olat.course.groupsandrights.ViewEfficiencyStatementRightProvider;
 import org.olat.modules.coach.RoleSecurityCallback;
@@ -145,6 +146,11 @@ public class RoleSecurityCallbackFactory {
 		@Override
 		public boolean isAdministrativeUser() {
 			return roleRights.contains(AdministrativePropertiesRightProvider.RELATION_RIGHT);
+		}
+		
+		@Override
+		public boolean canUploadExternalCertificate() {
+			return roleRights.contains(CertificateUploadExternalRightProvider.RELATION_RIGHT);
 		}
 	}
 }

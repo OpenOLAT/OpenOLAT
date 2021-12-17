@@ -480,7 +480,7 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(ureq, translate(NLS_VIEW_EFF_STATEMENTS),  uureq -> {
 				boolean canModify = isAdminOf || isRolesManagerOf;
 				efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(),
-						identity, true, canModify, true);
+						identity, true, canModify, true, null);
 				listenTo(efficicencyCtrl);
 				BreadcrumbedStackedPanel efficiencyPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
 				efficiencyPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
