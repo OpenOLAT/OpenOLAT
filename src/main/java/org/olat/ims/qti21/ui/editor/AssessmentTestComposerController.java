@@ -335,6 +335,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		importFromTableLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(importFromTableLink);
 		
+		Roles roles = ureq.getUserSession().getRoles();
+		if(roles.isAdministrator() || roles.isSystemAdmin()) {
+			reloadInCacheLink = LinkFactory.createToolLink("replace.in.cache.pool", translate("tools.reload.from.files"), this, "o_icon_refresh");
+			reloadInCacheLink.setTooltip(translate("tools.reload.from.files.tooltip"));
+		}
+		
 		configurationOverviewLink = LinkFactory.createToolLink("configuration.overview", translate("configuration.overview"), this, "o_icon_description");
 		configurationOverviewLink.setDomReplacementWrapperRequired(false);
 		
@@ -352,13 +358,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		changeItemDropDown.setOrientation(DropdownOrientation.right);
 		changeItemDropDown.setVisible(!restrictedEdit);
 		mainVC.put("cmds", changeItemDropDown);
-		
-		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isAdministrator() || roles.isSystemAdmin()) {
-			reloadInCacheLink = LinkFactory.createToolLink("replace.in.cache.pool", translate("tools.reload.from.files"), this, "o_icon_refresh");
-			reloadInCacheLink.setTooltip(translate("tools.reload.from.files.tooltip"));
-			changeItemDropDown.addComponent(reloadInCacheLink);
-		}
 		
 		copyLink = LinkFactory.createToolLink("import.table", translate("tools.change.copy"), this, "o_icon_copy");
 		changeItemDropDown.addComponent(copyLink);
@@ -422,6 +421,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	@Override
 	public void initToolbar() {
 		toolbar.addTool(addItemTools, Align.left);
+		toolbar.addTool(reloadInCacheLink, Align.left);
 		toolbar.addTool(configurationOverviewLink, Align.right);
 	}
 
