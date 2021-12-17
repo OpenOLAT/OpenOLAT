@@ -21,9 +21,14 @@ package org.olat.modules.assessment.ui.component;
 
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.IconCssCellRenderer;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
 
 /**
@@ -38,6 +43,19 @@ public class PassedCellRenderer extends IconCssCellRenderer {
 	
 	public PassedCellRenderer(Locale locale) {
 		translator = Util.createPackageTranslator(AssessedIdentityListController.class, locale);
+	}
+	
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		Object tableRow = source.getFlexiTableElement().getTableDataModel().getObject(row);
+		
+		if (tableRow instanceof CertificateAndEfficiencyStatement) {
+			CertificateAndEfficiencyStatement certRow = (CertificateAndEfficiencyStatement) tableRow;
+			
+			if (certRow.isStatement()) {
+				super.render(renderer, target, cellValue, row, source, ubu, translator);
+			}
+		}
 	}
 
 	@Override

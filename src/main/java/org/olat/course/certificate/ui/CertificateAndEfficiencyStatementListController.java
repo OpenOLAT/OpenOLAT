@@ -90,7 +90,6 @@ import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
-import org.olat.modules.curriculum.CurriculumElementToTaxonomyLevel;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -300,21 +299,21 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			this.flc.contextPut("curriculumFilterButtons", curriculumFilterButtons.stream().map(FormLink::getName).collect(Collectors.toList()));
 		}
 		
-		treeRenderer = new CertificateAndEfficiencyStatementRenderer(false);
+		treeRenderer = new CertificateAndEfficiencyStatementRenderer(CMD_SHOW);
 		treeRenderer.setFlatBySearchAndFilter(true);
 		treeRenderer.setFlatBySort(true);
 		
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName, treeRenderer));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.curriculumElIdent));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion, new LearningProgressCompletionCellRenderer()));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new PassedCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));		
-		//tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
-		//		translate("table.header.show"), CMD_SHOW));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity, getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recertification, new DateFlexiCellRenderer(getLocale())));
+	
 		if (canLaunchCourse) {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.launchcourse",
 					translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
@@ -339,7 +338,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableEl = uifactory.addTableElement(getWindowControl(), "certificates", tableModel, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_sel_certificates_table");
 		tableEl.setEmptyTableSettings("table.statements.empty", null, "o_icon_certificate");
-		//tableEl.setRootCrumb(rootCrumb);
 	}
 	
 	private void loadModel() {
@@ -349,7 +347,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			} else if (currentFilter == CMD_ALL_EVIDENCE) {
 				loadModelFlat(false);
 			} else if (currentFilter.startsWith(CMD_CURRICULUM) && currentCurriculum != null) {
-				loadModelCurriculum(currentCurriculum);
+				loadModel(currentCurriculum);
 			} else {
 				loadModelFlat(false);
 			}
@@ -358,7 +356,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		}
 	}
 	
-	private void loadModelCurriculum(Curriculum curriculum) {
+	private void loadModel(Curriculum curriculum) {
 		// Activate tree
 		treeRenderer.setFlat(false);
 		
@@ -373,12 +371,20 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		// Load efficiency statements
 		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(assessedIdentity);
-		Map<Long, List<UserEfficiencyStatementLight>> olatResourceKeys = new HashMap<>();
+		
+		// Only one statement per repository entry!
+		Map<Long, UserEfficiencyStatementLight> olatResourceKeyToStatement = new HashMap<>();
+		
+		// Olat Resource key to Certificates
+		Map<Long, CertificateLight> olatResourceKeyToCertificate = certificatesManager.getLastCertificates(assessedIdentity).stream()
+				.filter(certificate -> !(certificate.getOlatResourceKey().equals(0l) || certificate.getOlatResourceKey().equals(-1l)))
+				.collect(Collectors.toMap(CertificateLight::getOlatResourceKey, Function.identity()));
 		
 		List<Long> courseEntryKeys = efficiencyStatementsList.stream()
 				.map(UserEfficiencyStatementLight::getCourseRepoKey)
 				.filter(key -> key != null)
 				.collect(Collectors.toList());
+		
 		Map<Long, AssessmentEntryScoring> courseEntryKeysToScoring = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(assessedIdentity, courseEntryKeys).stream()
 				.filter(ae -> ae.getCompletion() != null)
@@ -388,227 +394,163 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					));
 		
 		efficiencyStatementsList.forEach(statement -> {
-			if (!olatResourceKeys.containsKey(statement.getArchivedResourceKey())) {
-				olatResourceKeys.put(statement.getArchivedResourceKey(), new ArrayList<>());
-				
-			} 
-			
-			olatResourceKeys.get(statement.getArchivedResourceKey()).add(statement);
+			if (!olatResourceKeyToStatement.containsKey(statement.getArchivedResourceKey())) {
+				olatResourceKeyToStatement.put(statement.getArchivedResourceKey(), statement);
+			} 			
 		});
-				
 		
+		List<CertificateAndEfficiencyStatement> tableRows = new ArrayList<>();
 		
-		List<CertificateAndEfficiencyStatement> statements = new ArrayList<>();
-		Map<CurriculumElement, CertificateAndEfficiencyStatement> addedParents = new HashMap<>();
-		Set<UserEfficiencyStatementLight> scoresAdded = new HashSet<>();
-		
-		CertificateAndEfficiencyStatement curriculumRow = new CertificateAndEfficiencyStatement();
-		curriculumRow.setDisplayName(curriculum.getDisplayName());
-		
-		statements.add(curriculumRow);
 		
 		Roles userRoles = baseSecurityManager.getRoles(assessedIdentity);
 		List<CurriculumElementRepositoryEntryViews> curriculumElements = curriculumService.getCurriculumElements(assessedIdentity, userRoles, Collections.singletonList(curriculum));
-		curriculumElements.sort(new CurriculumElementRepositoryEntryViewsComparator());
-		
-		for (CurriculumElementRepositoryEntryViews element : curriculumElements) {			
-			// Collect all levels, which are allowed for grouping
-			List<TaxonomyLevel> taxonomyLevels = element.getCurriculumElement().getTaxonomyLevels().stream()
-					.filter(level -> { 
-						if (level.getTaxonomyLevel().getType() != null) {
-							return level.getTaxonomyLevel().getType().isAllowedAsSubject();
-						} else {
-							return false; 
-						}
-					})
-					.map(CurriculumElementToTaxonomyLevel::getTaxonomyLevel)
-					.collect(Collectors.toList());
-			
-			// Map all courses to taxonomy level and collect unmapped courses
-			Map<TaxonomyLevel, List<RepositoryEntryMyView>> mappedCourses = new HashMap<>();
-			List<RepositoryEntryMyView> unmappedCourses = new ArrayList<>();
-			
-			taxonomyLevels.forEach(level -> mappedCourses.put(level, new ArrayList<>()));
-			
-			boolean hasTaxonomyWithContent = false;
-			
-			for (RepositoryEntryMyView course : element.getEntries()) {
-				boolean mapped = false;
-				
-				for (CurriculumElementToTaxonomyLevel relation : element.getCurriculumElement().getTaxonomyLevels()) {
-					if (mappedCourses.containsKey(relation.getTaxonomyLevel())) {
-						mappedCourses.get(relation.getTaxonomyLevel()).add(course);
-						mapped = true;
-						hasTaxonomyWithContent = true;
-					}
-				}
-				
-				if (!mapped) {
-					unmappedCourses.add(course);
-				}
-			}
-			
-			// Load parent elements
-			List<CurriculumElement> parents = curriculumService.getCurriculumElementParentLine(element.getCurriculumElement());
-			parents.sort(new CurriculumElementComparator());
-			// Remove the last one (current element). It would be added twice otherwise
-			parents.remove(parents.size() - 1);
-			
-			CertificateAndEfficiencyStatement parentElementRow = addParents(parents, addedParents, statements, curriculumRow);
-			
-			CertificateAndEfficiencyStatement elementRow;
-			if (hasTaxonomyWithContent || unmappedCourses.size() > 1) {
-				elementRow = new CertificateAndEfficiencyStatement();
-				elementRow.setParent(parentElementRow);
-				elementRow.setDisplayName(element.getCurriculumElement().getDisplayName());
-				curriculumRow.setHasChildren(true);
-				
-				statements.add(elementRow);
-			} else {
-				elementRow = parentElementRow;
-			}
-			
-			for (TaxonomyLevel level : mappedCourses.keySet()) {
-				if (mappedCourses.get(level).isEmpty()) {
-					continue;
-				}
-				
-				CertificateAndEfficiencyStatement levelRow = new CertificateAndEfficiencyStatement();
-				levelRow.setParent(elementRow);
-				levelRow.setDisplayName(level.getDisplayName());
-				levelRow.setTaxonomy(true);
-				elementRow.setHasChildren(true);
-				
-				statements.add(levelRow);
-				
-				for (RepositoryEntryMyView course : mappedCourses.get(level)) {
-					if (!olatResourceKeys.containsKey(course.getOlatResource().getKey())) {
-						continue;
-					}
-					
-					// Only add course as separate Row, if more than one statement per course
-					CertificateAndEfficiencyStatement parent = levelRow;
-					if (olatResourceKeys.get(course.getOlatResource().getKey()).size() > 1) {
-						CertificateAndEfficiencyStatement courseRow = new CertificateAndEfficiencyStatement();
-						courseRow.setParent(levelRow);
-						courseRow.setDisplayName(course.getDisplayname());
-						levelRow.setHasChildren(true);
-						
-						statements.add(courseRow);
-						parent = courseRow;
-					}
-					
-					for (UserEfficiencyStatementLight statement : olatResourceKeys.get(course.getOlatResource().getKey())) {
-						CertificateAndEfficiencyStatement statementRow = new CertificateAndEfficiencyStatement();
-						statementRow.setParent(parent);
-						statementRow.setDisplayName(statement.getTitle());
-						statementRow.setPassed(statement.getPassed());
-						statementRow.setEfficiencyStatementKey(statement.getKey());
-						statementRow.setResourceKey(statement.getArchivedResourceKey());
-						statementRow.setLastModified(statement.getLastModified());
-						statementRow.setLastUserModified(statement.getLastUserModified());
-						
-						FormLink linkToStatemnt = uifactory.addFormLink(CMD_SHOW + statement.getKey(), null, Link.LINK + Link.NONTRANSLATED);
-						linkToStatemnt.setI18nKey(statement.getTitle());
-						linkToStatemnt.setUserObject(statementRow);
-						statementRow.setLinkToStatement(linkToStatemnt);
-						
-						AssessmentEntryScoring scoring = courseEntryKeysToScoring.get(statement.getCourseRepoKey());
-						if (scoring != null) {
-							statementRow.addToScore(scoring.getMaxScore() != null ? scoring.getMaxScore().floatValue() : null, 
-									scoring.getScore() != null ? scoring.getScore().floatValue() : null, scoring.getKey());
-							statementRow.setCompletion(scoring.getCompletion());
-							scoresAdded.add(statement);
-						}
-						
-						statements.add(statementRow);
-						
-						parent.setHasChildren(true);
-					}
-				}
-				
-				// Remove taxonomy group, if no entries are found
-				if (statements.get(statements.size() - 1).equals(levelRow)) {
-					statements.remove(statements.size() - 1);
-				}
-			}
-			
-			for (RepositoryEntryMyView course : unmappedCourses) {
-				if (!olatResourceKeys.containsKey(course.getOlatResource().getKey())) {
-					continue;
-				}
-				
-				// Only add course as separate Row, if more than one statement per course
-				CertificateAndEfficiencyStatement parent = elementRow;
-				
-				if (olatResourceKeys.get(course.getOlatResource().getKey()).size() > 1) {
-					CertificateAndEfficiencyStatement courseRow = new CertificateAndEfficiencyStatement();
-					courseRow.setParent(elementRow);
-					courseRow.setDisplayName(course.getDisplayname());
-					elementRow.setHasChildren(true);
-					
-					statements.add(courseRow);
-					parent = courseRow;
-				}
-				
-				for (UserEfficiencyStatementLight statement : olatResourceKeys.get(course.getOlatResource().getKey())) {
-					CertificateAndEfficiencyStatement statementRow = new CertificateAndEfficiencyStatement();
-					statementRow.setParent(parent);
-					statementRow.setDisplayName(statement.getTitle());
-					statementRow.setPassed(statement.getPassed());
-					statementRow.setEfficiencyStatementKey(statement.getKey());
-					statementRow.setResourceKey(statement.getArchivedResourceKey());
-					statementRow.setLastModified(statement.getLastModified());
-					statementRow.setLastUserModified(statement.getLastUserModified());
-					
-					FormLink linkToStatemnt = uifactory.addFormLink(CMD_SHOW + statement.getKey(), null, Link.LINK + Link.NONTRANSLATED);
-					linkToStatemnt.setI18nKey(statement.getTitle());
-					linkToStatemnt.setUserObject(statementRow);
-					statementRow.setLinkToStatement(linkToStatemnt);
+		Map<CurriculumElement, CertificateAndEfficiencyStatement> curriculumElToRows = new HashMap<>();
+		Map<CurriculumElement, Map<TaxonomyLevel, CertificateAndEfficiencyStatement>> taxonomyLevelToCurriculumElements = new HashMap<>();
 
-					AssessmentEntryScoring scoring = courseEntryKeysToScoring.get(statement.getCourseRepoKey());
-					if (scoring != null) {
-						statementRow.addToScore(scoring.getMaxScore() != null ? scoring.getMaxScore().floatValue() : null, 
-								scoring.getScore() != null ? scoring.getScore().floatValue() : null,
-								scoring.getKey());
-						statementRow.setCompletion(scoring.getCompletion());
-						scoresAdded.add(statement);
+		// Create row for every curriculum element
+		for(CurriculumElementRepositoryEntryViews element : curriculumElements) {
+			List<TaxonomyLevel> taxonomyLevels = curriculumService.getTaxonomy(element.getCurriculumElement());
+			CurriculumElement parent = element.getCurriculumElement().getParent();
+			
+			// Create row directly, if no taxonomy levels are assigned
+			if (taxonomyLevels.isEmpty()) {
+				CertificateAndEfficiencyStatement curriculumElementRow = forgeRow(element.getCurriculumElement());
+				curriculumElementRow.setParent(curriculumElToRows.get(parent));
+				curriculumElementRow.setIsCurriculumElement(true);
+				
+				tableRows.add(curriculumElementRow);
+				curriculumElToRows.put(element.getCurriculumElement(), curriculumElementRow);
+				
+				forgeStatementRows(element, curriculumElementRow, olatResourceKeyToStatement, olatResourceKeyToCertificate, tableRows);
+			} else {	
+				// Create first taxonomy level rows, if existent
+				Map<TaxonomyLevel, CertificateAndEfficiencyStatement> taxonomyLevelToRows = taxonomyLevelToCurriculumElements.get(parent);
+				
+				if (taxonomyLevelToRows == null) {
+					taxonomyLevelToRows = new HashMap<>();
+					taxonomyLevelToCurriculumElements.put(parent, taxonomyLevelToRows);
+				}
+				
+				for(TaxonomyLevel taxonomyLevel : taxonomyLevels) {
+					CertificateAndEfficiencyStatement taxonomyRow = taxonomyLevelToRows.get(taxonomyLevel);
+					
+					if (taxonomyRow == null) {
+						taxonomyRow = new CertificateAndEfficiencyStatement();
+						taxonomyRow.setDisplayName(taxonomyLevel.getDisplayName());
+						taxonomyRow.setTaxonomy(true);
+						taxonomyRow.setParentElement(parent);
+						taxonomyRow.setParent(curriculumElToRows.get(parent));
 					}
 					
-					statements.add(statementRow);
+					tableRows.add(taxonomyRow);
+					taxonomyLevelToRows.put(taxonomyLevel, taxonomyRow);					
 					
-					parent.setHasChildren(true);
+					// Create actual curriculum element row
+					CertificateAndEfficiencyStatement curriculumElementRow = forgeRow(element.getCurriculumElement());
+					curriculumElementRow.setParent(taxonomyRow);
+					curriculumElementRow.setIsCurriculumElement(true);
+					
+					tableRows.add(curriculumElementRow);
+					curriculumElToRows.put(element.getCurriculumElement(), curriculumElementRow);
+					
+					forgeStatementRows(element, curriculumElementRow, olatResourceKeyToStatement, olatResourceKeyToCertificate, tableRows);				
 				}
-			} 			
+			}
+		}		
+		
+		// Parent line
+		for(CertificateAndEfficiencyStatement row : tableRows) {
+			if(row.getParent() == null) {
+				if (row.getParentElement() != null) {
+					row.setParent(curriculumElToRows.get(row.getParentElement()));
+				} else if (row.getCurriculumElement() != null && row.getCurriculumElement().getParent() != null) {
+					row.setParent(curriculumElToRows.get(row.getCurriculumElement().getParent()));
+				}
+			}
 		}
 		
-		tableModel.setObjects(statements);
-		tableEl.setSortEnabled(false);
-		tableEl.reset(true, true, true);
+		// Remove all rows, which are not statements or do not contain any children which are statements
+		tableRows.removeIf(row -> !(row.hasStatementChildren() || row.isStatement()));
+		
+		// Add scores to elements and parents
+		for (CertificateAndEfficiencyStatement row : tableRows) {
+			if (row.getCourseRepoKey() == null) {
+				continue;
+			}
+			
+			AssessmentEntryScoring scoring = courseEntryKeysToScoring.get(row.getCourseRepoKey());
+			if (scoring != null) {
+				row.addToScore(scoring.getMaxScore() != null ? scoring.getMaxScore().floatValue() : null, 
+						scoring.getScore() != null ? scoring.getScore().floatValue() : null, scoring.getKey());
+				row.setCompletion(scoring.getCompletion());
+			}
+		}
+		
+		tableRows.sort(new CertificateAndEfficiencyStatementComparator(getLocale()));
+		
+		tableModel.setObjects(tableRows);
+		tableModel.openAll();
+		tableEl.setSortEnabled(true);
+		tableEl.reset();
 	}
 	
-	private CertificateAndEfficiencyStatement addParents(List<CurriculumElement> parents, Map<CurriculumElement, CertificateAndEfficiencyStatement> addedParents, List<CertificateAndEfficiencyStatement> statements, CertificateAndEfficiencyStatement returnValue) {
-		if (parents == null || parents.isEmpty()) {
-			return returnValue;
-		}
+	private void forgeStatementRows(CurriculumElementRepositoryEntryViews element, 
+			CertificateAndEfficiencyStatement parentRow, 
+			Map<Long, UserEfficiencyStatementLight> olatResourceKeyToStatement, 
+			Map<Long, CertificateLight> olatResourceKeyToCertificate,
+			List<CertificateAndEfficiencyStatement> tableRows) {
+		Set<UserEfficiencyStatementLight> efficiencyStatements = new HashSet<>();
 		
-		CurriculumElement parent = parents.get(0);
-		
-		if (!addedParents.containsKey(parent)) {
-			CertificateAndEfficiencyStatement parentRow = new CertificateAndEfficiencyStatement();
-			parentRow.setDisplayName(parent.getDisplayName());
-			parentRow.setParent(returnValue);
-
+		for (RepositoryEntryMyView repoEl : element.getEntries()) {
+			UserEfficiencyStatementLight efficiencyStatement = olatResourceKeyToStatement.get(repoEl.getOlatResource().getKey());
 			
-			statements.add(parentRow);
-			addedParents.put(parent, parentRow);
-			returnValue = parentRow;
-		} else {
-			returnValue = addedParents.get(parent);
+			if (efficiencyStatement != null) {
+				efficiencyStatements.add(efficiencyStatement);
+			}
 		}
 		
-		parents.remove(parent);
-		return addParents(parents, addedParents, statements, returnValue);
+		
+		// If more than one course entry, create entry rows
+		// Otherwise put information on curriculum element row
+		if (efficiencyStatements.size() > 1) {
+			for (UserEfficiencyStatementLight efficiencyStatement : efficiencyStatements) {
+				CertificateAndEfficiencyStatement statementRow = new CertificateAndEfficiencyStatement();
+				statementRow.setParent(parentRow);				
+				statementRow.setDisplayName(efficiencyStatement.getTitle());
+				statementRow.setPassed(efficiencyStatement.getPassed());
+				statementRow.setEfficiencyStatementKey(efficiencyStatement.getKey());
+				statementRow.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+				statementRow.setLastModified(efficiencyStatement.getLastModified());
+				statementRow.setLastUserModified(efficiencyStatement.getLastUserModified());
+				statementRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
+				statementRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getArchivedResourceKey()));
+				
+				statementRow.setStatement(true);
+				
+				tableRows.add(statementRow);
+			}
+		} else if (efficiencyStatements.size() == 1) {
+			for (UserEfficiencyStatementLight efficiencyStatement : efficiencyStatements) {
+				parentRow.setPassed(efficiencyStatement.getPassed());
+				parentRow.setEfficiencyStatementKey(efficiencyStatement.getKey());
+				parentRow.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+				parentRow.setLastModified(efficiencyStatement.getLastModified());
+				parentRow.setLastUserModified(efficiencyStatement.getLastUserModified());
+				parentRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
+				parentRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getArchivedResourceKey()));
+				
+				parentRow.setStatement(true);
+			}
+		}
+	}
+	
+	private CertificateAndEfficiencyStatement forgeRow(CurriculumElement curriculumElement) {
+		CertificateAndEfficiencyStatement statement = new CertificateAndEfficiencyStatement();
+		statement.setDisplayName(curriculumElement.getDisplayName());
+		statement.setCurriculumElement(curriculumElement);
+		statement.setCurriculum(curriculumElement.getCurriculum());
+		
+		return statement;
 	}
 	
 	private void loadModelFlat(boolean onlyFreeFloatingCourses) {
@@ -642,12 +584,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setLastUserModified(efficiencyStatement.getLastUserModified());
 			Double completion = courseEntryKeysToCompletion.get(efficiencyStatement.getCourseRepoKey());
 			wrapper.setCompletion(completion);
+			wrapper.setStatement(true);
 			statments.add(wrapper);
-			
-			FormLink linkToStatemnt = uifactory.addFormLink(CMD_SHOW + "_flat_" + efficiencyStatement.getKey(), null, Link.LINK + Link.NONTRANSLATED);
-			linkToStatemnt.setI18nKey(efficiencyStatement.getTitle());
-			linkToStatemnt.setUserObject(wrapper);
-			wrapper.setLinkToStatement(linkToStatemnt);
 			
 			resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
 		}
@@ -671,6 +609,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				wrapper.setResourceKey(resourceKey);
 			}
 			wrapper.setCertificate(certificate);
+			wrapper.setStatement(true);
 		}
 		
 		for(CertificateAndEfficiencyStatement statment:statments) {
@@ -742,10 +681,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				Curriculum curriculum = (Curriculum) source.getUserObject();
 				activateFilter(CMD_CURRICULUM + curriculum.getKey().toString());
 				currentCurriculum = curriculum;
-			} else if (sourceLink.getCmd().startsWith(CMD_SHOW)) {
-				if (sourceLink.getUserObject() instanceof CertificateAndEfficiencyStatement) {
-					doShowStatement(ureq, (CertificateAndEfficiencyStatement) sourceLink.getUserObject());
-				}
 			}
 			
 			loadModel();

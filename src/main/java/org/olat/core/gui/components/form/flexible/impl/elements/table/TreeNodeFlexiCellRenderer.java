@@ -106,7 +106,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			if(isFlat(ftE)) {
 				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 			} else {
-				renderIndented(renderer, target, cellValue, row, source, ubu, translator, false);
+				renderIndented(renderer, target, cellValue, row, source, ubu, translator, false, true);
 			}
 		} else {
 			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
@@ -144,7 +144,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	}
 	
 	protected void renderIndented(Renderer renderer, StringOutput target, Object cellValue, int row,
-			FlexiTableComponent source, URLBuilder ubu, Translator translator, boolean bold) {
+			FlexiTableComponent source, URLBuilder ubu, Translator translator, boolean bold, boolean withAction) {
 		FlexiTableElementImpl ftE = source.getFlexiTableElement();
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
 		
@@ -176,17 +176,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			target.append("'> </i></a>");
 		}
 		
-		if(action == null) {
-			if (bold) {
-				target.append("<b>");
-			}
-			
-			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
-			
-			if (bold) {
-				target.append("</b>");
-			}
-		} else {
+		if (withAction && action != null) {
 			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
 			String href = href(source, row);
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
@@ -200,10 +190,20 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			target.append("</a>");
 			
 			if (bold) {
-				target.append("<b>");
+				target.append("</b>");
 			}
 			
 			target.append("</div>");
+		} else {
+			if (bold) {
+				target.append("<b>");
+			}
+			
+			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			
+			if (bold) {
+				target.append("</b>");
+			}
 		}
 	}
 	

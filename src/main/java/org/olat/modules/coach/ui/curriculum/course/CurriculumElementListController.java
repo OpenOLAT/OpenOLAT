@@ -164,8 +164,10 @@ public class CurriculumElementListController extends FormBasicController impleme
 
     public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
                                            Identity assessedIdentity, List<CurriculumRef> curriculumRefList, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback) {
-        super(ureq, wControl, "curriculum_element_list", Util.createPackageTranslator(CurriculumListController.class, RepositoryService.class, ureq.getLocale()));
-        setTranslator(Util.createPackageTranslator(getTranslator(), AssessedIdentityListController.class, getLocale()));
+        super(ureq, wControl, "curriculum_element_list");
+        setTranslator(Util.createPackageTranslator(CurriculumListController.class, ureq.getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(), getTranslator()));
+        setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, ureq.getLocale(), getTranslator()));
         this.curriculumRefList = curriculumRefList;
         this.stackPanel = stackPanel;
         this.curriculumSecurityCallback = curriculumSecurityCallback;
