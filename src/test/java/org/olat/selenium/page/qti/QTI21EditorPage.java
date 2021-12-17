@@ -87,9 +87,7 @@ public class QTI21EditorPage {
 	}
 	
 	public QTI21EditorPage deleteNode() {
-		openChangeMenu();
-		
-		By deleteNodeBy = By.xpath("//ul[contains(@class,'o_sel_qti_change_node')]//a[contains(@onclick,'tools.delete')]");
+		By deleteNodeBy = By.xpath("//div[@class='o_title_cmds']//a[contains(@onclick,'tools.change.delete')]");
 		browser.findElement(deleteNodeBy).click();
 		OOGraphene.waitModalDialog(browser);
 		

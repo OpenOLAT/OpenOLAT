@@ -48,13 +48,14 @@ public class PassedCellRenderer extends IconCssCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		Object tableRow = source.getFlexiTableElement().getTableDataModel().getObject(row);
-		
 		if (tableRow instanceof CertificateAndEfficiencyStatement) {
 			CertificateAndEfficiencyStatement certRow = (CertificateAndEfficiencyStatement) tableRow;
 			
 			if (certRow.isStatement()) {
 				super.render(renderer, target, cellValue, row, source, ubu, translator);
 			}
+		} else {
+			super.render(renderer, target, cellValue, row, source, ubu, translator);
 		}
 	}
 
