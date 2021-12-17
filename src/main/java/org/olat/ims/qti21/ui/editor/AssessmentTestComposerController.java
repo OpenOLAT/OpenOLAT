@@ -349,6 +349,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		//changes
 		deleteLink = LinkFactory.createButton("tools.change.delete", mainVC, this);
 		deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+		deleteLink.setVisible(!restrictedEdit);
 		
 		changeItemDropDown = new Dropdown("changeTools", null, false, getTranslator());
 		changeItemDropDown.setElementCssClass("o_sel_qti_change_node");
@@ -356,10 +357,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		changeItemDropDown.setButton(true);
 		changeItemDropDown.setEmbbeded(true);
 		changeItemDropDown.setOrientation(DropdownOrientation.right);
-		changeItemDropDown.setVisible(!restrictedEdit);
 		mainVC.put("cmds", changeItemDropDown);
 		
 		copyLink = LinkFactory.createToolLink("import.table", translate("tools.change.copy"), this, "o_icon_copy");
+		copyLink.setVisible(!restrictedEdit);
 		changeItemDropDown.addComponent(copyLink);
 		
 		exportToPoolLink = LinkFactory.createToolLink("export.pool", translate("tools.export.qpool"), this, "o_icon_table");
@@ -1337,7 +1338,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		
 		if(deleteLink != null) {
-			if(uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef) {
+			if(restrictedEdit) {
+				deleteLink.setVisible(false);
+			} else if(uobject instanceof AssessmentSection || uobject instanceof AssessmentItemRef) {
 				deleteLink.setVisible(true);
 			} else if(uobject instanceof TestPart) {
 				TestPart testPart = (TestPart)uobject;
@@ -1348,7 +1351,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		
 		if(copyLink != null) {
-			copyLink.setVisible(uobject instanceof AssessmentItemRef);
+			if(restrictedEdit) {
+				deleteLink.setVisible(false);
+			} else {
+				copyLink.setVisible(uobject instanceof AssessmentItemRef);
+			}
 		}
 		
 		if(currentEditorCtrl != null) {
