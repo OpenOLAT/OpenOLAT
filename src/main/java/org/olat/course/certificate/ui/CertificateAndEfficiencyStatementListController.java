@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
@@ -443,12 +444,13 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 						taxonomyRow = new CertificateAndEfficiencyStatement();
 						taxonomyRow.setDisplayName(taxonomyLevel.getDisplayName());
 						taxonomyRow.setTaxonomy(true);
+						taxonomyRow.setTaxonomyLevel(taxonomyLevel);
 						taxonomyRow.setParentElement(parent);
 						taxonomyRow.setParent(curriculumElToRows.get(parent));
+						
+						tableRows.add(taxonomyRow);
+						taxonomyLevelToRows.put(taxonomyLevel, taxonomyRow);
 					}
-					
-					tableRows.add(taxonomyRow);
-					taxonomyLevelToRows.put(taxonomyLevel, taxonomyRow);					
 					
 					// Create actual curriculum element row
 					CertificateAndEfficiencyStatement curriculumElementRow = forgeRow(element.getCurriculumElement());
@@ -491,12 +493,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			}
 		}
 		
-		tableRows.sort(new CertificateAndEfficiencyStatementComparator(getLocale()));
+		tableRows.sort(new FlexiTreeNodeComparator());
 		
 		tableModel.setObjects(tableRows);
 		tableModel.openAll();
 		tableEl.setSortEnabled(true);
-		tableEl.reset();
+		tableEl.reset(true, true, true);
 	}
 	
 	private void forgeStatementRows(CurriculumElementRepositoryEntryViews element, 

@@ -408,7 +408,29 @@ public class CertificateAndEfficiencyStatementListModel
 
 		@Override
 		public String getCrump() {
-			return null;
+			String crump = "";
+			
+			if (parent != null) {
+				crump += "/";
+				crump += parent.getCrump();
+			}
+			
+			if (isTaxonomy) {
+				crump += "/";
+				crump += taxonomyLevel.getKey().toString();
+			}
+			
+			if (isCurriculumElement) {
+				crump += "/";
+				crump += curriculumElement.getKey().toString();
+			}
+			
+			if (isStatement) {
+				crump += "/";
+				crump += efficiencyStatementKey.toString();
+			}
+			
+			return crump;
 		}
 
 	}
