@@ -67,7 +67,7 @@
 		<apache.cxf>3.4.5</apache.cxf>
 		<apache.pdfbox>2.0.24</apache.pdfbox>
 		<apache.poi>5.1.0</apache.poi>
-		<apache.log4j>2.16.0</apache.log4j>
+		<apache.log4j>2.17.0</apache.log4j>
 		<org.slf4j>1.7.32</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
