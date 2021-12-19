@@ -112,12 +112,12 @@
 				#if($r.available("comments")) $r.render("comments") #end
 			</div>
 			#end
-			#if($v.taxonomyLevels && !$v.taxonomyLevels.empty)
+			#if($taxonomyLevels && !$taxonomyLevels.empty)
 			<div class="o_subcolumn o_taxonomy_levels">	
 				<h4>$r.translate("cif.taxonomy.levels")</h4>
-				#foreach($taxonomy in $v.taxonomyLevels)			
-				<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomy.taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
-					$taxonomy.taxonomyLevel.displayName
+				#foreach($taxonomyLevel in $taxonomyLevels)			
+				<span class="o_tag o_taxonomy" title="$r.escapeHtml($taxonomyLevel.materializedPathIdentifiersWithoutSlash)">
+					$taxonomyLevel.displayName
 				</span>
 				#end
 			</div>

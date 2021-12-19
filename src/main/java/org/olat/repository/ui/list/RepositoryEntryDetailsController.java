@@ -94,6 +94,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
@@ -306,6 +307,9 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 				}
 				layoutCont.contextPut("categories", categoriesLink);
 			}
+			// taxonomy levels
+			List<TaxonomyLevel> taxonomyLevels = repositoryService.getTaxonomy(entry);
+			layoutCont.contextPut("taxonomyLevels", taxonomyLevels);
 			
 			if(!guestOnly) {
 				boolean marked;
