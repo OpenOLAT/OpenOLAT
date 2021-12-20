@@ -32,6 +32,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 
 /**
@@ -40,7 +41,7 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel
  */
 public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCellRenderer implements ActionDelegateCellRenderer {
 	
-	private StaticFlexiCellRenderer delegateRenderer = new StaticFlexiCellRenderer("", "");
+	private final StaticFlexiCellRenderer delegateRenderer = new StaticFlexiCellRenderer("", "");
 	
 	public CertificateAndEfficiencyStatementRenderer() {
 		super();
@@ -64,9 +65,8 @@ public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCell
 		if(treeTableModel != null) {
 			if(isFlat(ftE)) {	
 				if (cellValue instanceof String) {
-					delegateRenderer.setLabel((String) cellValue);
+					delegateRenderer.setLabel(StringHelper.escapeHtml((String) cellValue));
 				}
-				
 				delegateRenderer.render(renderer, target, cellValue, row, source, ubu, translator);
 			} else {
 				Object tableRow = treeTableModel.getObject(row);
