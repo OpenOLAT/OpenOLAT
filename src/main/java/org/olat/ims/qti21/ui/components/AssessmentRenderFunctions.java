@@ -203,10 +203,12 @@ public class AssessmentRenderFunctions {
 			File myStore = CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).getSessionStorage(candidateSession);
 	        File submissionDir = new File(myStore, "submissions");
 	        File submittedFile = new File(submissionDir, fileValue.getFileName() + ".json");
-	        try(InputStream inStream = new FileInputStream(submittedFile)) {
-	        	encodedString = IOUtils.toString(inStream, StandardCharsets.UTF_8);
-	        } catch(Exception e) {
-	        	log.error("", e);
+	        if(submittedFile.exists()) {
+		        try(InputStream inStream = new FileInputStream(submittedFile)) {
+		        	encodedString = IOUtils.toString(inStream, StandardCharsets.UTF_8);
+		        } catch(Exception e) {
+		        	log.error("", e);
+		        }
 	        }
 		}
 		return encodedString;
