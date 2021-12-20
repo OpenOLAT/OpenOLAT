@@ -333,11 +333,19 @@ public class AppointmentsMailing {
 		}
 		String description = appointment.getTopic().getDescription();
 		if (StringHelper.containsNonWhitespace(description)) {
+			description = AppointmentsUIFactory.lineBreakToBr(description);
+			if (description.indexOf("<br") > 0) {
+				description = "<br>" + description;
+			}
 			sb.append(translator.translate("mail.description", new String[] { description }));
 			sb.append("<br>");
 		}
 		String details = appointment.getDetails();
 		if (StringHelper.containsNonWhitespace(details)) {
+			details = AppointmentsUIFactory.lineBreakToBr(details);
+			if (details.indexOf("<br") > 0) {
+				details = "<br>" + details;
+			}
 			sb.append(translator.translate("mail.details", new String[] { details }));
 			sb.append("<br>");
 		}
