@@ -20,14 +20,13 @@
 package org.olat.course.condition.interpreter;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LockResourceInfos;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -84,15 +83,16 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		if(chiefController == null) {
 			return ConditionInterpreter.INT_FALSE;
 		}
-		LockResourceInfos lockInfos = chiefController.getLockResourceInfos();
-		OLATResourceable lockedResource = lockInfos == null ? null : lockInfos.getLockResource();
+		
+		IdentityEnvironment ienv = getUserCourseEnv().getIdentityEnvironment();
+		Identity ident = ienv.getIdentity();
 
 		boolean open = false;
 		if(inStack != null && inStack.length == 2) {
 			String nodeId = (String) inStack[0];
-			open = isAssessmentModeActive(lockedResource) || isScoreUserVisible(nodeId);
+			open = isAssessmentModeActive(ident, nodeId) || isScoreUserVisible(nodeId);
 		} else {
-			open = isAssessmentModeActive(lockedResource);
+			open = isAssessmentModeActive(ident, null);
 		}
 		return open ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
 	}
@@ -167,14 +167,10 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		return Boolean.FALSE;
 	}
 	
-	private boolean isAssessmentModeActive(OLATResourceable lockedResource) {
-		Long resourceableId = getUserCourseEnv().getCourseEnvironment().getCourseResourceableId();
-		if(lockedResource != null && lockedResource.getResourceableId().equals(resourceableId)) {
-			RepositoryEntry entry = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			AssessmentModeManager assessmentModeMgr = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-			return assessmentModeMgr.isInAssessmentMode(entry, new Date());
-		}
-		return false;
+	private boolean isAssessmentModeActive(Identity identity, String nodeId) {
+		RepositoryEntry entry = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		AssessmentModeManager assessmentModeMgr = CoreSpringFactory.getImpl(AssessmentModeManager.class);
+		return assessmentModeMgr.isInAssessmentMode(entry, nodeId, identity);
 	}
 
 	@Override

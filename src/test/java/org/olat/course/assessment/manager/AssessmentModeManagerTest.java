@@ -34,6 +34,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Encoder;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentMode.Target;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
@@ -494,27 +496,36 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	public void isInAssessmentMode() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry entryReference = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-1");
+		repositoryEntryRelationDao.addRole(assessedIdentity, entry, GroupRoles.participant.name());
+		
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		mode.setStatus(Status.assessment);
 		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
 		//check
-		Date now = new Date();
-		boolean entryNow = assessmentModeMgr.isInAssessmentMode(entry, now);
+		boolean entryNow = assessmentModeMgr.isInAssessmentMode(entry, null, assessedIdentity);
 		Assert.assertTrue(entryNow);
 		
 		//no assessment for this course
-		boolean entryReferenceNow = assessmentModeMgr.isInAssessmentMode(entryReference, now);
+		boolean entryReferenceNow = assessmentModeMgr.isInAssessmentMode(entryReference, null, assessedIdentity);
 		Assert.assertFalse(entryReferenceNow);
+
+		// status changed
+		mode.setStatus(Status.followup);
+		mode = dbInstance.getCurrentEntityManager().merge(mode);
+		dbInstance.commitAndCloseSession();
+		boolean entryFollowUp = assessmentModeMgr.isInAssessmentMode(entry, null, assessedIdentity);
+		Assert.assertFalse(entryFollowUp);
 		
-		//out of assessment scope
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(now);
-		cal.add(Calendar.DATE, -1);
-		Date aDayBefore = cal.getTime();
-		boolean entryReferencePast = assessmentModeMgr.isInAssessmentMode(entryReference, aDayBefore);
-		Assert.assertFalse(entryReferencePast);
+		mode.setStatus(Status.end);
+		mode.setEndStatus(EndStatus.all);
+		mode = dbInstance.getCurrentEntityManager().merge(mode);
+		dbInstance.commitAndCloseSession();
+		boolean entryEnded = assessmentModeMgr.isInAssessmentMode(entry, null, assessedIdentity);
+		Assert.assertFalse(entryEnded);
 	}
 	
 	/**
@@ -523,45 +534,36 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	@Test
 	public void isInAssessmentMode_manual() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-2");
+		repositoryEntryRelationDao.addRole(assessedIdentity, entry, GroupRoles.participant.name());
+		
+		// leading time
 		AssessmentMode mode = createMinimalAssessmentmode(entry);
 		mode.setManualBeginEnd(true);
+		mode.setStatus(Status.leadtime);
 		mode = assessmentModeMgr.persist(mode);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(mode);
 		
-		//check
-		Date now = new Date();
-		boolean entryNow = assessmentModeMgr.isInAssessmentMode(entry, now);
+		// check
+		boolean entryNow = assessmentModeMgr.isInAssessmentMode(entry, null, assessedIdentity);
 		Assert.assertFalse(entryNow);
-	}
-
-	/**
-	 * Manual with leading time -> in assessment mode
-	 */
-	@Test
-	public void isInAssessmentMode_manualLeadingTime() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
-		mode.setName("Assessment to load");
-		Calendar cal = Calendar.getInstance();
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.add(Calendar.HOUR_OF_DAY, 1);
-		mode.setBegin(cal.getTime());
-		cal.add(Calendar.HOUR_OF_DAY, 2);
-		mode.setEnd(cal.getTime());
-		mode.setTargetAudience(Target.course);
-		mode.setManualBeginEnd(true);
-		mode.setLeadTime(120);
-		mode = assessmentModeMgr.persist(mode);
-		dbInstance.commitAndCloseSession();
 		
-		//check
-		Date now = new Date();
-		boolean entryNow = assessmentModeMgr.isInAssessmentMode(entry, now);
-		Assert.assertTrue(entryNow);
+		// changed status
+		mode.setStatus(Status.assessment);
+		mode = dbInstance.getCurrentEntityManager().merge(mode);
+		dbInstance.commitAndCloseSession();
+		boolean entryAssessment = assessmentModeMgr.isInAssessmentMode(entry, null, assessedIdentity);
+		Assert.assertTrue(entryAssessment);
+		
+		// changed status
+		mode.setStatus(Status.end);
+		mode.setEndStatus(EndStatus.all);
+		mode = dbInstance.getCurrentEntityManager().merge(mode);
+		dbInstance.commitAndCloseSession();
+		boolean entryEnded = assessmentModeMgr.isInAssessmentMode(entry, null, assessedIdentity);
+		Assert.assertFalse(entryEnded);
 	}
-	
 	
 	/**
 	 * Check an assessment linked to a group with one participant
