@@ -20,19 +20,16 @@
 package org.olat.repository.manager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -54,7 +51,6 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -82,7 +78,7 @@ public class CopyServiceImplTest extends OlatTestCase {
 	private CopyCourseContext context;
 		
 	@Autowired
-	private RepositoryManager repositoryManager;
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -104,18 +100,18 @@ public class CopyServiceImplTest extends OlatTestCase {
 	
 	@Before
 	public void createCourse() {
-		author = JunitTestHelper.createAndPersistIdentityAsRndUser("Author");
-		owner1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner1");
-		owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Owner2");
-		coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach1");
-		coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coach2");
+		author = JunitTestHelper.createAndPersistIdentityAsRndUser("Copy-author");
+		owner1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Copy-owner1");
+		owner2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Copy-owner2");
+		coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Copy-coach1");
+		coach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Copy-coach2");
 		
 		source = JunitTestHelper.deployCopyWizardCourse(author);
 		
-		IdentitiesAddEvent ownersAdded = new IdentitiesAddEvent(Arrays.asList(owner1, owner2));
-		repositoryManager.addOwners(author, ownersAdded, source, new MailPackage(false));
-		IdentitiesAddEvent coachesAdded = new IdentitiesAddEvent(Arrays.asList(coach1, coach2));
-		repositoryManager.addTutors(author, null, coachesAdded, source, new MailPackage(false));
+		repositoryEntryRelationDao.addRole(owner1, source, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(owner2, source, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(coach1, source, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(coach2, source, GroupRoles.coach.name());
 		
 		OLATResourceable sourceOres = source.getOlatResource();
 		ICourse sourceCourse = CourseFactory.openCourseEditSession(sourceOres.getResourceableId());
