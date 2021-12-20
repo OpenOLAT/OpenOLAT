@@ -154,10 +154,9 @@ public class FormConfigController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean replacePossible = formManager.isFormUpdateable(survey);
-		boolean hasRepoConfig = survey != null;
+		boolean formSelected = formEntry != null;
 		
-		if (hasRepoConfig && formEntry == null) {
-			hasRepoConfig = false;
+		if (survey != null && formEntry == null) {
 			showError("error.repo.entry.missing");
 		}
 		
@@ -166,11 +165,11 @@ public class FormConfigController extends FormBasicController {
 			evaluationFormLink.setI18nKey(displayname);
 			flc.setDirty(true);
 		}
-		evaluationFormNotChoosen.setVisible(!hasRepoConfig);
-		chooseLink.setVisible(!hasRepoConfig);
-		evaluationFormLink.setVisible(hasRepoConfig);
-		replaceLink.setVisible(hasRepoConfig && replacePossible);
-		editLink.setVisible(hasRepoConfig);
+		evaluationFormNotChoosen.setVisible(!formSelected);
+		chooseLink.setVisible(!formSelected);
+		evaluationFormLink.setVisible(formSelected);
+		replaceLink.setVisible(formSelected && replacePossible);
+		editLink.setVisible(formSelected);
 	}
 	
 	private void updateParticipationDeadlineUI() {
