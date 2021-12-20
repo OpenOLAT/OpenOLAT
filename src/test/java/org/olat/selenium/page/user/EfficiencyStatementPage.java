@@ -51,7 +51,7 @@ public class EfficiencyStatementPage {
 	}
 	
 	public EfficiencyStatementPage assertOnCertificate(String courseTitle) {
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]");
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td/a[contains(text(),'" + courseTitle + "')]]");
 		List<WebElement> certifiatesTable = browser.findElements(courseCertificateBy);
 		Assert.assertFalse(certifiatesTable.isEmpty());
 		
@@ -141,7 +141,7 @@ public class EfficiencyStatementPage {
 		if(courseTitle.length() > 25) {
 			courseTitle = courseTitle.substring(0, 25);
 		}
-		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td/a/span[contains(text(),'" + courseTitle + "')]]/td/a[contains(@onclick,'cmd.MEDIA')][i[contains(@class,'o_icon_eportfolio_add')]]");
+		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td/a[contains(text(),'" + courseTitle + "')]]/td/a[contains(@onclick,'cmd.MEDIA')][i[contains(@class,'o_icon_eportfolio_add')]]");
 		OOGraphene.waitElement(collectBy, browser);
 		OOGraphene.scrollTo(collectBy, browser);
 		browser.findElement(collectBy).click();
