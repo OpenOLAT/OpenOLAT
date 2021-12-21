@@ -74,11 +74,11 @@ public class HistoryTableDateModel extends DefaultTableDataModel<WikiPage> imple
 				return String.valueOf(page.getViewCount());
 			case 3:
 				long key = page.getModifyAuthor();
-				return userManager.getUserDisplayName(new Long(key));
+				return userManager.getUserDisplayName(Long.valueOf(key));
 			case 4:
 				int v = page.getVersion();
-				if(v == 0) return new String("");
-				return String.valueOf(v-1) + " " +trans.translate("to") + " " + String.valueOf(v);
+				if(v == 0) return "";
+				return String.valueOf(v-1) + " " +trans.translate("to") + " " + v;
 			case 5:
 				return page.getUpdateComment();
 			default:
