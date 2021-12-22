@@ -135,17 +135,21 @@ public abstract class AbstractDueDateRuleSPI implements IdentitiesProviderRuleSP
 			String nodeIdent = r.getLeftOperand();
 	
 			ICourse course = CourseFactory.loadCourse(entry);
-			CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
-			identities = evaluateRule(entry, courseNode, r);
-			
-			if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
-				List<Long> excludedIdentityKeys = assessmentService.getIdentityKeys(entry, courseNode.getIdent(), AssessmentObligation.EXCLUDED);
-				if (!excludedIdentityKeys.isEmpty()) {
-					identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
+			if (course != null) {
+				CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
+				if (courseNode != null) {
+					identities = evaluateRule(entry, courseNode, r);
+					
+					if(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
+						List<Long> excludedIdentityKeys = assessmentService.getIdentityKeys(entry, courseNode.getIdent(), AssessmentObligation.EXCLUDED);
+						if (!excludedIdentityKeys.isEmpty()) {
+							identities.removeIf(identity -> excludedIdentityKeys.contains(identity.getKey()));
+						}
+					}
 				}
 			}
 		}
-		return identities == null ? Collections.<Identity>emptyList() : identities;
+		return identities == null ? Collections.emptyList() : identities;
 	}
 	
 	public List<Identity> evaluateRule(RepositoryEntry entry, CourseNode courseNode, ReminderRuleImpl rule) {
@@ -156,7 +160,7 @@ public abstract class AbstractDueDateRuleSPI implements IdentitiesProviderRuleSP
 		} else if(DueDateConfig.isAbsolute(dueDateConfig) && isNear(dueDateConfig.getAbsoluteDate(), now(), rule)) {
 			identities = getPeopleToRemind(entry, courseNode);
 		}
-		return identities == null ? Collections.<Identity>emptyList() : identities;
+		return identities == null ? Collections.emptyList() : identities;
 	}
 
 	private List<Identity> getPeopleToRemindRelativeTo(RepositoryEntry entry, CourseNode courseNode,
