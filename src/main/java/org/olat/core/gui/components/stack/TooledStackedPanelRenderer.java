@@ -93,12 +93,10 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("'>").append(panel.getMessage()).append("</div>");
 		}
-		if(panel.getMessageComponent() != null) {
-			Component messageCmp = panel.getMessageComponent();
-			URLBuilder cubu = ubu.createCopyFor(messageCmp);
-			messageCmp.getHTMLRendererSingleton().render(renderer, sb, messageCmp, cubu, translator, renderResult, args);
-			messageCmp.setDirty(false);
-		}
+		
+		// always render it, as an empty container if necessary
+		Component messageCmp = panel.getMessagePanel();
+		renderer.render(messageCmp, sb, args);
 		
 		Component toRender = panel.getContent();
 		if(toRender != null) {

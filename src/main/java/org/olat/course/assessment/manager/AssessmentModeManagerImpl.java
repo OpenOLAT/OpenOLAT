@@ -452,8 +452,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date) {
-		return assessmentModeDao.isInAssessmentMode(entry, date);
+	public boolean isInAssessmentMode(RepositoryEntryRef entry, String subIdent, IdentityRef identity) {
+		return assessmentModeDao.isInAssessmentMode(entry, subIdent, identity);
 	}
 
 	@Override
