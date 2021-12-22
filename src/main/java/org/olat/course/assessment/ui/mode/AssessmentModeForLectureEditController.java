@@ -44,6 +44,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -74,6 +75,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentModeForLectureEditController extends FormBasicController {
 
+	private static final OLATResourceable ASSESSMENT_MODE_ORES = OresHelper.createOLATResourceableType(AssessmentMode.class);
+
 	private FormLink chooseElementsButton;
 	private TextElement nameEl;
 	private RichTextElement descriptionEl;
@@ -85,6 +88,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	
 	private List<String> elementKeys;
 	
+	private final RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
 	private final LectureBlock lectureBlock;
 	private final OLATResourceable courseOres;
@@ -103,9 +107,10 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	private AssessmentModeCoordinationService modeCoordinationService;
 	
 	public AssessmentModeForLectureEditController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, AssessmentMode assessmentMode) {
+			RepositoryEntry entry, AssessmentMode assessmentMode) {
 		super(ureq, wControl);
-		this.courseOres = OresHelper.clone(courseOres);
+		this.entry = entry;
+		courseOres = OresHelper.clone(entry.getOlatResource());
 		if(assessmentMode.getKey() == null) {
 			this.assessmentMode = assessmentMode;
 		} else {
@@ -381,6 +386,10 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
 		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		
+		ChangeAssessmentModeEvent changedEvent = new ChangeAssessmentModeEvent(assessmentMode, entry);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.fireEventToListenersOf(changedEvent, ASSESSMENT_MODE_ORES);
 	}
 
 	@Override

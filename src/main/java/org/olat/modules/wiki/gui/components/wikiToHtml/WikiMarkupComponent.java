@@ -92,9 +92,7 @@ public class WikiMarkupComponent extends AbstractComponent implements Disposable
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		String moduleUri = ureq.getModuleURI();
 		//FIXME:gs:a access string constants by NameSpaceHandler
@@ -121,9 +119,7 @@ public class WikiMarkupComponent extends AbstractComponent implements Disposable
 		setDirty(true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}

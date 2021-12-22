@@ -88,13 +88,13 @@ public class MediaFilesTableModel extends DefaultTableDataModel<MediaFileElement
 			case 1:
 				long identKey = entry.getCreatedBy();
 				if (identKey == 0) return "---";
-				return userManager.getUserDisplayName(new Long(identKey));
+				return userManager.getUserDisplayName(Long.valueOf(identKey));
 			case 2:
 				return formatter.formatDateAndTime(new Date(entry.getCreationDate()));
 			case 3:
 				long key = entry.getDeletedBy();
 				if (key == 0) return "---";
-				return userManager.getUserDisplayName(new Long(key));
+				return userManager.getUserDisplayName(Long.valueOf(key));
 			case 4:
 				long delDate = entry.getDeletionDate();
 				if (delDate == 0) return "---";
