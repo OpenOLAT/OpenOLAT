@@ -119,7 +119,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 		
 		if(modes.size() == 1) {
 			AssessmentMode mode = modes.get(0);
-			assessmemntModeMessageFormatting("assessment.mode.now",  modes, mainVC);
+			assessmemntModeMessageFormatting(mode, mainVC);
 			if(canStopAssessmentMode(mode)) {
 				String modeName = mode.getName();
 				String label = translate("assessment.tool.stop", new String[] { StringHelper.escapeHtml(modeName) });
@@ -133,7 +133,7 @@ public class StopAssessmentWarningController extends BasicController implements 
 				stopAssessmentMode.setUserObject(mode);
 			}
 		} else if(modes.size() > 1) {
-			assessmemntModeMessageFormatting("assessment.mode.several.now",  modes, mainVC);
+			assessmemntModeMessageFormatting(modes, mainVC);
 		} else if(stackPanel != null) {
 			stackPanel.removeMessageComponent();
 		}
@@ -230,10 +230,51 @@ public class StopAssessmentWarningController extends BasicController implements 
 		return false;
 	}
 	
-	private void assessmemntModeMessageFormatting(String i18nMessage, List<AssessmentMode> modes, VelocityContainer warn) {
+	private void assessmemntModeMessageFormatting(AssessmentMode mode, VelocityContainer warn) {
+		Formatter formatter = Formatter.getInstance(getLocale());
+		
+		Date begin = mode.getBeginWithLeadTime();
+		Date end = mode.getEnd();
+		String start;
+		String stop;
+		if(CalendarUtils.isSameDay(begin, end)) {
+			start = formatter.formatTimeShort(begin);
+			stop = formatter.formatTimeShort(end);
+		} else {
+			start = formatter.formatDateAndTime(begin);
+			stop = formatter.formatDateAndTime(end);
+		}
+		
+		String[] args = new String[] {
+				StringHelper.escapeHtml(mode.getName()),
+				start,
+				stop,
+				Integer.toString(mode.getFollowupTime())
+			};
+		
+		String i18nMessage;
+		if(mode.isManualBeginEnd() && mode.getFollowupTime() > 0) {
+			i18nMessage = "assessment.mode.now.manual.followup";
+		} else if(mode.isManualBeginEnd()) {
+			i18nMessage = "assessment.mode.now.manual";
+		} else if(mode.getFollowupTime() > 0) {
+			i18nMessage = "assessment.mode.now.auto.followup";
+		} else {
+			i18nMessage = "assessment.mode.now.auto";
+		}
+		String message = translate(i18nMessage, args);
+		warn.contextPut("message", message);
+	}
+		
+	private void assessmemntModeMessageFormatting(List<AssessmentMode> modes, VelocityContainer warn) {	
 		Date begin = getBeginOfModes(modes);
 		Date end = getEndOfModes(modes);
 		
+		long numOfManualModes = modes.stream()
+				.filter(AssessmentMode::isManualBeginEnd)
+				.count();
+		int followUp = getMaxFollowUp(modes);
+
 		String start;
 		String stop;
 		Formatter formatter = Formatter.getInstance(getLocale());
@@ -244,13 +285,44 @@ public class StopAssessmentWarningController extends BasicController implements 
 			start = formatter.formatDateAndTime(begin);
 			stop = formatter.formatDateAndTime(end);
 		}
-		warn.contextPut("message", translate(i18nMessage, new String[] { start, stop }));
+		String[] args = new String[] { "", start, stop, Integer.toString(followUp) };// mimic other args
+		
+		boolean fullManual = numOfManualModes == modes.size();
+		boolean mixed = numOfManualModes > 0 && numOfManualModes != modes.size();
+
+		String i18nMessage;
+		if(fullManual && followUp > 0) {
+			i18nMessage = "assessment.mode.several.now.manual.followup";
+		} else if(fullManual) {
+			i18nMessage = "assessment.mode.several.now.manual";
+		} else if(mixed && followUp > 0) {
+			i18nMessage = "assessment.mode.several.now.mixed.followup";
+		} else if(mixed) {
+			i18nMessage = "assessment.mode.several.now.mixed";
+		} else if(followUp > 0) {// full auto
+			i18nMessage = "assessment.mode.several.now.auto.followup";
+		} else {
+			i18nMessage = "assessment.mode.several.now.auto";
+		}
+
+		String message = translate(i18nMessage, args);
+		warn.contextPut("message", message);
+	}
+	
+	private int getMaxFollowUp(List<AssessmentMode> modes) {
+		int followUp = 0;
+		for(AssessmentMode mode:modes) {
+			if(mode.getFollowupTime() > followUp) {
+				followUp = mode.getFollowupTime();
+			}
+		}
+		return followUp;
 	}
 	
 	private Date getBeginOfModes(List<AssessmentMode> modes) {
 		Date start = null;
 		for(AssessmentMode mode:modes) {
-			Date begin = mode.getBegin();
+			Date begin = mode.getBeginWithLeadTime();
 			if(start == null || (begin != null && begin.before(start))) {
 				start = begin;
 			}
