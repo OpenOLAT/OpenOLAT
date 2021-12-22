@@ -48,6 +48,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumImpl;
@@ -1038,6 +1039,113 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, rootElements.size());
 		Assert.assertEquals(rootElement2, rootElements.get(0));
 		Assert.assertEquals(element1_1_3, rootElements.get(1));
+	}
+	
+	@Test
+	public void reorderCurriculumElementsChildren() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-order-1", "Curriculum for element to reorder", "Curriculum", null);
+		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-30-1", "30.1 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-30-1-1", "30.1.1 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_2 = curriculumElementDao.createCurriculumElement("Element-30-1-2", "30.1.2 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_3 = curriculumElementDao.createCurriculumElement("Element-30-1-3", "30.1.3 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_4 = curriculumElementDao.createCurriculumElement("Element-30-1-4", "30.1.4 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElement parentElement = curriculumElementDao.loadByKey(rootElement.getKey());
+		List<CurriculumElementRef> order = List.of(
+				new CurriculumElementRefImpl(element1_3.getKey()),
+				new CurriculumElementRefImpl(element1_2.getKey()),
+				new CurriculumElementRefImpl(element1_4.getKey()),
+				new CurriculumElementRefImpl(element1_1.getKey()));
+		curriculumElementDao.orderList(parentElement, order);
+		dbInstance.commitAndCloseSession();
+		
+		// check order by pos
+		CurriculumElement reloadedElement = curriculumElementDao.loadByKey(rootElement.getKey());
+		List<CurriculumElement> reorderedElements = curriculumElementDao.getChildren(reloadedElement);
+		Assert.assertEquals(element1_3, reorderedElements.get(0));
+		Assert.assertEquals(element1_2, reorderedElements.get(1));
+		Assert.assertEquals(element1_4, reorderedElements.get(2));
+		Assert.assertEquals(element1_1, reorderedElements.get(3));
+		dbInstance.commitAndCloseSession();
+		
+		// check list 
+		CurriculumElementImpl fullyLoadedElement = (CurriculumElementImpl)curriculumElementDao.loadByKey(rootElement.getKey());
+		Assert.assertEquals(element1_3, fullyLoadedElement.getChildren().get(0));
+		Assert.assertEquals(element1_2, fullyLoadedElement.getChildren().get(1));
+		Assert.assertEquals(element1_4, fullyLoadedElement.getChildren().get(2));
+		Assert.assertEquals(element1_1, fullyLoadedElement.getChildren().get(3));
+		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void reorderPartiallyCurriculumElementsChildren() {
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-order-1", "Curriculum for element to reorder", "Curriculum", null);
+		CurriculumElement rootElement = curriculumElementDao.createCurriculumElement("Element-30-1", "30.1 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_1 = curriculumElementDao.createCurriculumElement("Element-31-1-1", "31.1.1 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_2 = curriculumElementDao.createCurriculumElement("Element-31-1-2", "31.1.2 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_3 = curriculumElementDao.createCurriculumElement("Element-31-1-3", "31.1.3 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_4 = curriculumElementDao.createCurriculumElement("Element-31-1-4", "31.1.4 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_5 = curriculumElementDao.createCurriculumElement("Element-31-1-5", "31.1.5 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1_6 = curriculumElementDao.createCurriculumElement("Element-31-1-6", "31.1.6 Element",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElement parentElement = curriculumElementDao.loadByKey(rootElement.getKey());
+		List<CurriculumElementRef> order = List.of(
+				new CurriculumElementRefImpl(element1_4.getKey()),
+				new CurriculumElementRefImpl(element1_2.getKey()),
+				new CurriculumElementRefImpl(element1_6.getKey()),
+				new CurriculumElementRefImpl(element1_1.getKey()));
+		curriculumElementDao.orderList(parentElement, order);
+		dbInstance.commitAndCloseSession();
+		
+		// check order by pos
+		CurriculumElement reloadedElement = curriculumElementDao.loadByKey(rootElement.getKey());
+		List<CurriculumElement> reorderedElements = curriculumElementDao.getChildren(reloadedElement);
+		for(CurriculumElement reorderedElement:reorderedElements) {
+			System.out.println(reorderedElement.getDisplayName());
+		}
+		Assert.assertEquals(element1_4, reorderedElements.get(0));
+		Assert.assertEquals(element1_2, reorderedElements.get(1));
+		Assert.assertEquals(element1_6, reorderedElements.get(2));
+		Assert.assertEquals(element1_1, reorderedElements.get(3));
+		Assert.assertEquals(element1_3, reorderedElements.get(4));
+		Assert.assertEquals(element1_5, reorderedElements.get(5));
+		dbInstance.commitAndCloseSession();
+		
+		// check list 
+		CurriculumElementImpl fullyLoadedElement = (CurriculumElementImpl)curriculumElementDao.loadByKey(rootElement.getKey());
+		Assert.assertEquals(element1_4, fullyLoadedElement.getChildren().get(0));
+		Assert.assertEquals(element1_2, fullyLoadedElement.getChildren().get(1));
+		Assert.assertEquals(element1_6, fullyLoadedElement.getChildren().get(2));
+		Assert.assertEquals(element1_1, fullyLoadedElement.getChildren().get(3));
+		Assert.assertEquals(element1_3, fullyLoadedElement.getChildren().get(4));
+		Assert.assertEquals(element1_5, fullyLoadedElement.getChildren().get(5));
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test

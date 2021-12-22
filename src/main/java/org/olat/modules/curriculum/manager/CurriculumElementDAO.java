@@ -215,8 +215,22 @@ public class CurriculumElementDAO {
 			dbInstance.getCurrentEntityManager().merge(descendant);
 		}
 		return rootElement;
-	}	
+	}
 	
+	public CurriculumElement orderList(CurriculumElement parentElement, List<CurriculumElementRef> orderLists) {
+		final List<Long> elementKeys = orderLists.stream()
+				.map(CurriculumElementRef::getKey)
+				.collect(Collectors.toList());
+
+		List<CurriculumElement> children = ((CurriculumElementImpl)parentElement).getChildren();
+		if(children.isEmpty() || (elementKeys.size() <= 1 && children.size() == 1)) {
+			// nothing to do
+			return parentElement;
+		}
+		Collections.sort(children, new ReorderCurriculumElementComparator(elementKeys));
+		return update(parentElement);
+	}
+
 	public CurriculumElement move(CurriculumElement elementToMove, CurriculumElement newParentElement,
 			CurriculumElement siblingBefore, Curriculum targetCurriculum) {
 		CurriculumElement parentElement = elementToMove.getParent();
