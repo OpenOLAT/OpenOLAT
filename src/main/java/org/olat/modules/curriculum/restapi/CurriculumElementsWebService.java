@@ -48,10 +48,12 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
@@ -95,6 +97,8 @@ public class CurriculumElementsWebService {
 	private CurriculumService curriculumService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	
@@ -309,6 +313,52 @@ public class CurriculumElementsWebService {
 		if(element.getCurriculum() != null && !element.getCurriculum().getKey().equals(curriculum.getKey())) {
 			throw new WebApplicationException(Response.serverError().status(Status.CONFLICT).build());
 		}
+	}
+	
+	@POST
+	@Path("{curriculumElementKey}/reorder")
+	@Operation(summary = "Reorder the children of a curriculum element entity",
+		description = "Reorder the children of a curriculum element entity")
+	@ApiResponse(responseCode = "200", description = "")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response putReorderCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, CurriculumElementVO[] curriculumElement)
+	throws WebApplicationException {
+		return reorderCurriculumElement(curriculumElementKey, curriculumElement);
+	}
+	
+	@PUT
+	@Path("{curriculumElementKey}/reorder")
+	@Operation(summary = "Reorder the children of a curriculum element entity",
+		description = "Reorder the children of a curriculum element entity")
+	@ApiResponse(responseCode = "200", description = "")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "406", description = "application/xml, application/json")
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response postReorderCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, CurriculumElementVO[] curriculumElement)
+	throws WebApplicationException {
+		return reorderCurriculumElement(curriculumElementKey, curriculumElement);
+	}
+	
+	private Response reorderCurriculumElement(Long parentCurriculumElementKey, CurriculumElementVO[] curriculumElements) {
+		CurriculumElement parentCurriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(parentCurriculumElementKey));
+		if(parentCurriculumElement == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!parentCurriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		List<CurriculumElementRef> orderedList = new ArrayList<>();
+		for(CurriculumElementVO curriculumElement:curriculumElements) {
+			orderedList.add(new CurriculumElementRefImpl(curriculumElement.getKey()));
+		}
+		if(!orderedList.isEmpty()) {
+			curriculumElementDao.orderList(parentCurriculumElement, orderedList);
+			dbInstance.commitAndCloseSession();
+		}
+		return Response.ok().build();
 	}
 	
 	/**

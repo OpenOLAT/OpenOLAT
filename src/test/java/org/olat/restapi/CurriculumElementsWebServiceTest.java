@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -493,6 +494,53 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(savedElement.getManagedFlags());
 		Assert.assertEquals(1, savedElement.getManagedFlags().length);
 		Assert.assertEquals(CurriculumElementManagedFlag.displayName, savedElement.getManagedFlags()[0]);
+	}
+	
+	@Test
+	public void  reorderCurriculumElementChildren()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements-order", "REST ordered curriculum", "A curriculum", organisation);
+		CurriculumElement rootElement = curriculumService.createCurriculumElement("Element-35", "Element35",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		List<CurriculumElement> elements = new ArrayList<>();
+		for(int i=0; i<6; i++) {
+			CurriculumElement element = curriculumService.createCurriculumElement("Element-35-" + i, "Element 35-" + i,
+					CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+					CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+			elements.add(element);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		CurriculumElementVO[] orderArray = new CurriculumElementVO[] {
+				CurriculumElementVO.valueOf(elements.get(4)),
+				CurriculumElementVO.valueOf(elements.get(2)),
+				CurriculumElementVO.valueOf(elements.get(5)),
+				CurriculumElementVO.valueOf(elements.get(0)),
+				CurriculumElementVO.valueOf(elements.get(3)),
+				CurriculumElementVO.valueOf(elements.get(1))
+		};
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(rootElement.getKey().toString()).path("reorder").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(method, orderArray);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<CurriculumElement> orderedElements = curriculumElementDao.getChildren(rootElement);
+		Assert.assertEquals(elements.get(4), orderedElements.get(0));
+		Assert.assertEquals(elements.get(2), orderedElements.get(1));
+		Assert.assertEquals(elements.get(5), orderedElements.get(2));
+		Assert.assertEquals(elements.get(0), orderedElements.get(3));
+		Assert.assertEquals(elements.get(3), orderedElements.get(4));
+		Assert.assertEquals(elements.get(1), orderedElements.get(5));
 	}
 	
 	@Test

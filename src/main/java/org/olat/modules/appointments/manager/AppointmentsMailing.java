@@ -331,8 +331,14 @@ public class AppointmentsMailing {
 			sb.append(translator.translate("mail.end", new String[] { dateFormat.format(appointment.getEnd()) }));
 			sb.append("<br>");
 		}
+		String location = AppointmentsUIFactory.getDisplayLocation(translator, appointment);
+		if (StringHelper.containsNonWhitespace(location)) {
+			sb.append(translator.translate("mail.location", new String[] { location }));
+			sb.append("<br>");
+		}
 		String description = appointment.getTopic().getDescription();
 		if (StringHelper.containsNonWhitespace(description)) {
+			sb.append("<br>");
 			description = AppointmentsUIFactory.lineBreakToBr(description);
 			if (description.indexOf("<br") > 0) {
 				description = "<br>" + description;
@@ -342,16 +348,12 @@ public class AppointmentsMailing {
 		}
 		String details = appointment.getDetails();
 		if (StringHelper.containsNonWhitespace(details)) {
+			sb.append("<br>");
 			details = AppointmentsUIFactory.lineBreakToBr(details);
 			if (details.indexOf("<br") > 0) {
 				details = "<br>" + details;
 			}
 			sb.append(translator.translate("mail.details", new String[] { details }));
-			sb.append("<br>");
-		}
-		String location = AppointmentsUIFactory.getDisplayLocation(translator, appointment);
-		if (StringHelper.containsNonWhitespace(location)) {
-			sb.append(translator.translate("mail.location", new String[] { location }));
 			sb.append("<br>");
 		}
 	}
