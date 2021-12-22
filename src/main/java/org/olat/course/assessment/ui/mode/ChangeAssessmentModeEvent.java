@@ -19,8 +19,13 @@
  */
 package org.olat.course.assessment.ui.mode;
 
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
+import org.olat.course.assessment.AssessmentMode.Status;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -30,19 +35,46 @@ import org.olat.course.assessment.AssessmentMode;
  */
 public class ChangeAssessmentModeEvent extends MultiUserEvent {
 
+	public static final OLATResourceable ASSESSMENT_MODE_ORES = OresHelper.createOLATResourceableType(AssessmentMode.class);
+
 	private static final long serialVersionUID = -5428487290530968740L;
 
 	public static final String CHANGED = "assessment-mode-changed";
 	
+	private Long entryKey;
 	private Long assessmentModeKey;
+	private Status status;
+	private EndStatus endStatus;
 	
-	public ChangeAssessmentModeEvent(AssessmentMode assessmentMode) {
+	public ChangeAssessmentModeEvent(AssessmentMode assessmentMode, RepositoryEntry entry) {
 		super(CHANGED);
-		this.assessmentModeKey = assessmentMode.getKey();
+		entryKey = entry.getKey();
+		assessmentModeKey = assessmentMode.getKey();
+		status = assessmentMode.getStatus();
+		endStatus = assessmentMode.getEndStatus();
+	}
+	
+	public Long getEntryKey() {
+		return entryKey;
 	}
 	
 	public Long getAssessmentModeKey() {
 		return assessmentModeKey;
 	}
 
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	public EndStatus getEndStatus() {
+		return endStatus;
+	}
+
+	public void setEndStatus(EndStatus endStatus) {
+		this.endStatus = endStatus;
+	}
 }

@@ -176,10 +176,13 @@ public class AssessmentModeListController extends FormBasicController implements
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editCtrl == source) {
-			loadModel();
 			toolbarPanel.popUpToController(this);
 			removeAsListenerAndDispose(editCtrl);
 			editCtrl = null;
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadModel();
+				fireEvent(ureq, new AssessmentModeStatusEvent());
+			}
 		} else if(deleteDialogBox == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				@SuppressWarnings("unchecked")
@@ -267,7 +270,7 @@ public class AssessmentModeListController extends FormBasicController implements
 	private void doAdd(UserRequest ureq) {
 		removeAsListenerAndDispose(editCtrl);
 		AssessmentMode newMode = assessmentModeMgr.createAssessmentMode(entry);
-		editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), newMode);
+		editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, newMode);
 		listenTo(editCtrl);
 		toolbarPanel.pushController(translate("new.mode"), editCtrl);
 	}
@@ -276,6 +279,8 @@ public class AssessmentModeListController extends FormBasicController implements
 		StringBuilder sb = new StringBuilder();
 		boolean canDelete = true;
 		for(AssessmentMode mode:modeToDelete) {
+			if(mode == null) continue;
+			
 			if(sb.length() > 0) sb.append(", ");
 			sb.append(mode.getName());
 			
@@ -309,7 +314,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		AssessmentMode newMode = assessmentModeMgr.createAssessmentMode(modeToCopy);
 		newMode.setName(translate("copy.name", new String[] { modeToCopy.getName() }));
 		
-		AssessmentModeEditController modeEditCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), newMode);
+		AssessmentModeEditController modeEditCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, newMode);
 		modeEditCtrl.selectBusinessGroups(modeToCopy.getGroups());
 		modeEditCtrl.selectAreas(modeToCopy.getAreas());
 		modeEditCtrl.selectCurriculumElements(modeToCopy.getCurriculumElements());
@@ -329,9 +334,9 @@ public class AssessmentModeListController extends FormBasicController implements
 			loadModel();
 			return;
 		} else if(reloadedMode.getLectureBlock() != null) {
-			editCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
+			editCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), entry, mode);
 		} else {
-			editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
+			editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, mode);
 		}
 		listenTo(editCtrl);
 		

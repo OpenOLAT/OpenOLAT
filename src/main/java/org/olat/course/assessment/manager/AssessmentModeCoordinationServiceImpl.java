@@ -345,6 +345,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		if(mode.getStatus() == Status.assessment) {
 			sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
 					assessmentModeManager.getAssessedIdentityKeys(mode));
+		} else if(mode.getStatus() == Status.leadtime) {
+			sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
+					assessmentModeManager.getAssessedIdentityKeys(mode));
 		} else if(mode.getStatus() == Status.followup) {
 			// remind user with compensation for disadvantage
 			if(mode.getEndStatus() == EndStatus.withoutDisadvantage) {

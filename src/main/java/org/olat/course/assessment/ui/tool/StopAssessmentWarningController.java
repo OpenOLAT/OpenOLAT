@@ -36,17 +36,17 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeNotificationEvent;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -62,7 +62,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class StopAssessmentWarningController extends BasicController implements GenericEventListener {
 
-	private static final OLATResourceable ASSESSMENT_MODE_ORES = OresHelper.createOLATResourceableType(AssessmentMode.class);
 	
 	private Link stopAssessmentMode;
 	private final VelocityContainer mainVC;
@@ -93,12 +92,18 @@ public class StopAssessmentWarningController extends BasicController implements 
 		assessmentModeMessage(modes);
 		putInitialPanel(mainVC);
 		
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), ASSESSMENT_MODE_ORES);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 
 	@Override
 	protected void doDispose() {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ASSESSMENT_MODE_ORES);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 	
 	private void reloadAssessmentModeMessage() {
@@ -138,24 +143,52 @@ public class StopAssessmentWarningController extends BasicController implements 
 	public void event(Event event) {
 		if(event instanceof ChangeAssessmentModeEvent) {
 			processChangeAssessmentModeEvents((ChangeAssessmentModeEvent)event);
+		} else if(event instanceof AssessmentModeNotificationEvent) {
+			processChangeAssessmentModeEvents((AssessmentModeNotificationEvent)event);
+		}
+	}
+	
+	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {
+		try {
+			TransientAssessmentMode aMode = event.getAssessementMode();
+			processChangeAssessmentModeEvents(aMode.getModeKey(), aMode.getRepositoryEntryKey(), aMode.getStatus(), aMode.getEndStatus());
+		} catch (Exception e) {
+			logError("", e);
 		}
 	}
 	
 	private void processChangeAssessmentModeEvents(ChangeAssessmentModeEvent event) {
 		try {
-			Long assessmentModeKey = event.getAssessmentModeKey();
+			processChangeAssessmentModeEvents(event.getAssessmentModeKey(), event.getEntryKey(), event.getStatus(), event.getEndStatus());
+		} catch (Exception e) {
+			logError("", e);
+		}
+	}
+	
+	private void processChangeAssessmentModeEvents(Long assessmentModeKey, Long entryKey, Status status, EndStatus endStatus) {
+		try {
 			List<AssessmentMode> currentModes = assessmentModes;
-			if(currentModes != null && !currentModes.isEmpty()) {
-				for(AssessmentMode currentMode:currentModes) {
-					if(assessmentModeKey.equals(currentMode.getKey())) {
-						reloadAssessmentModeMessage();
-						break;
+			if(courseEntry.getKey().equals(entryKey)) {
+				if(currentModes != null && !currentModes.isEmpty()) {
+					for(AssessmentMode currentMode:currentModes) {
+						if(assessmentModeKey.equals(currentMode.getKey())) {
+							if(needReload(currentMode, status, endStatus)) {
+								reloadAssessmentModeMessage();
+							}
+							return;
+						}
 					}
-				}	
+				}
+				
+				reloadAssessmentModeMessage();
 			}
 		} catch (Exception e) {
 			logError("", e);
 		}
+	}
+	
+	private boolean needReload(AssessmentMode currentMode, Status status, EndStatus endStatus) {
+		return currentMode == null || currentMode.getStatus() != status || currentMode.getEndStatus() != endStatus;
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,19 +49,26 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentModeStatistics;
+import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.course.assessment.ui.mode.AssessmentModeHelper;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
+import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
 import org.olat.course.assessment.ui.mode.ModeStatusCellRenderer;
 import org.olat.course.assessment.ui.mode.TimeCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentModeOverviewListTableModel.ModeCols;
@@ -87,7 +95,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeOverviewListController extends FormBasicController implements FlexiTableComponentDelegate {
+public class AssessmentModeOverviewListController extends FormBasicController implements FlexiTableComponentDelegate, GenericEventListener {
+
+	private static final OLATResourceable ASSESSMENT_MODE_ORES = OresHelper.createOLATResourceableType(AssessmentMode.class);
 	
 	private FlexiTableElement tableEl;
 	private AssessmentModeOverviewListTableModel model;
@@ -116,6 +126,11 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 		this.assessmentCallback = assessmentCallback;
 		initForm(ureq);
 		loadModel();
+		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), ASSESSMENT_MODE_ORES);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
 	}
 	
 	public int getNumOfAssessmentModes() {
@@ -166,25 +181,27 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	}
 
 	public void loadModel() {
-		Date today = CalendarUtils.removeTime(new Date());
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, 5);
-		Date until = CalendarUtils.endOfDay(cal.getTime());
-		
-		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
-		searchParams.setStartDate(today);
-		searchParams.setEndDate(until);
-		
-		List<LectureBlock> lectures = lectureService.getLectureBlocks(courseEntry, getIdentity());
-		Set<Long> teachedLectures = lectures.stream().map(LectureBlock::getKey).collect(Collectors.toSet());
-
-		List<AssessmentMode> modes = asssessmentModeManager.getPlannedAssessmentMode(courseEntry, today, until);
-		List<AssessmentModeOverviewRow> rows = new ArrayList<>();
-		for(AssessmentMode mode:modes) {
-			rows.add(forgeRow(mode, today, teachedLectures));
+		synchronized(model) { 
+			Date today = CalendarUtils.removeTime(new Date());
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DATE, 5);
+			Date until = CalendarUtils.endOfDay(cal.getTime());
+			
+			LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+			searchParams.setStartDate(today);
+			searchParams.setEndDate(until);
+			
+			List<LectureBlock> lectures = lectureService.getLectureBlocks(courseEntry, getIdentity());
+			Set<Long> teachedLectures = lectures.stream().map(LectureBlock::getKey).collect(Collectors.toSet());
+	
+			List<AssessmentMode> modes = asssessmentModeManager.getPlannedAssessmentMode(courseEntry, today, until);
+			List<AssessmentModeOverviewRow> rows = new ArrayList<>();
+			for(AssessmentMode mode:modes) {
+				rows.add(forgeRow(mode, today, teachedLectures));
+			}
+			model.setObjects(rows);
+			tableEl.reset(true, true, true);
 		}
-		model.setObjects(rows);
-		tableEl.reset(true, true, true);
 	}
 	
 	private AssessmentModeOverviewRow forgeRow(AssessmentMode mode, Date today, Set<Long> teachedLectures) {
@@ -276,7 +293,51 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 
 	@Override
 	protected void doDispose() {
-		//
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, ASSESSMENT_MODE_ORES);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof ChangeAssessmentModeEvent) {
+			processChangeAssessmentModeEvents((ChangeAssessmentModeEvent)event);
+		} else if(event instanceof AssessmentModeNotificationEvent) {
+			processChangeAssessmentModeEvents((AssessmentModeNotificationEvent)event);
+		}
+	}
+	
+	private void processChangeAssessmentModeEvents(ChangeAssessmentModeEvent event) {
+		try {
+			List<AssessmentModeOverviewRow> rows = model.getObjects();
+			for(AssessmentModeOverviewRow row:rows) {
+				if(event.getAssessmentModeKey().equals(row.getAssessmentMode().getKey())) {
+					loadModel();
+				}	
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
+	}
+	
+	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {
+		try {
+			TransientAssessmentMode assessmentMode = event.getAssessementMode();
+			Long entryKey = assessmentMode.getRepositoryEntryKey();
+			if(courseEntry.getKey().equals(entryKey)) {
+				List<AssessmentModeOverviewRow> rows = model.getObjects();
+				for(AssessmentModeOverviewRow row:rows) {
+					if(assessmentMode.getModeKey().equals(row.getAssessmentMode().getKey())
+							&& (!Objects.equals(assessmentMode.getStatus(), row.getAssessmentMode().getStatus())
+									|| !Objects.equals(assessmentMode.getEndStatus(), row.getAssessmentMode().getEndStatus()))) {
+						loadModel();
+					}	
+				}
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
 	}
 
 	@Override
