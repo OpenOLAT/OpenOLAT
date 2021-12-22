@@ -175,7 +175,7 @@ public interface AssessmentModeManager {
 	 * @param date The date
 	 * @return true if the course is in assessment mode
 	 */
-	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date);
+	public boolean isInAssessmentMode(RepositoryEntryRef entry, String subIdent, IdentityRef identity);
 
 	
 	/**

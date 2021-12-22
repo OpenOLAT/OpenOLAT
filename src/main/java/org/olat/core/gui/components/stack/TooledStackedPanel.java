@@ -31,6 +31,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.panel.SimpleStackedPanel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -53,10 +55,10 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	
 	private String message;
 	private String messageCssClass;
-	private Component messageCmp;
 	private Component navigationCmp;
 	private Controller navigationBindController;
 	private final ToolBar toolBar;
+	private final SimpleStackedPanel messageCmp;
 	private final EnumMap<Align,ToolsSlot> toolsSlots;
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
@@ -71,6 +73,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 			toolsSlots.put(val, new ToolsSlot(val));
 		}
 		toolBar = new ToolBar(getDispatchID().concat("_tbar"));
+		messageCmp = new SimpleStackedPanel(getDispatchID().concat("_tmsg")) ;
 	}
 	
 	public ToolBar getToolBar() {
@@ -347,21 +350,27 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	public void setMessageCssClass(String messageCssClass) {
 		this.messageCssClass = messageCssClass;
 	}
+	
+	public boolean hasMessage() {
+		return messageCmp.getContent() != null;
+	}
 
-	public Component getMessageComponent() {
+	/**
+	 * 
+	 * @return The container of the message
+	 */
+	public StackedPanel getMessagePanel() {
 		return messageCmp;
 	}
 
-	public void setMessageComponent(Component messageCmp) {
-		if(this.messageCmp != messageCmp) {
-			this.messageCmp = messageCmp;
-			setDirty(true);
+	public void setMessageComponent(Component cmp) {
+		if(messageCmp.getContent() != messageCmp) {
+			messageCmp.setContent(cmp);
 		}
 	}
 	
 	public void removeMessageComponent() {
-		messageCmp = null;
-		setDirty(true);
+		messageCmp.setContent(null);
 	}
 	
 	public Component getNavigationComponent() {

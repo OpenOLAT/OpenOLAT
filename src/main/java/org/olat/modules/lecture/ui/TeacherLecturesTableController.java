@@ -422,7 +422,6 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		removeControllerListener(assessmentModeEditCtrl);
 		
 		RepositoryEntry entry = block.getEntry();
-		OLATResourceable courseOres = entry.getOlatResource();
 		RepositoryEntryLectureConfiguration lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		
 		int leadTime = ConfigurationHelper.getLeadTime(lectureConfig, lectureModule);
@@ -433,7 +432,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		if(newMode == null) {
 			newMode = assessmentModeMgr.createAssessmentMode(block, leadTime, followupTime, ipList, sebKey);
 		}
-		assessmentModeEditCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), courseOres, newMode);
+		assessmentModeEditCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), entry, newMode);
 		listenTo(assessmentModeEditCtrl);
 
 		toolbarPanel.pushController(block.getTitle(), assessmentModeEditCtrl);

@@ -65,6 +65,7 @@ import org.olat.core.gui.control.generic.dtabs.DTab;
 import org.olat.core.gui.control.generic.dtabs.DTabs;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -90,11 +91,14 @@ import org.olat.course.archiver.ArchiverMainController;
 import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.area.CourseAreasController;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.AssessmentModeNotificationEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallback;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallbackFactory;
+import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
 import org.olat.course.assessment.ui.tool.AssessmentToolController;
 import org.olat.course.assessment.ui.tool.StopAssessmentWarningController;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
@@ -189,6 +193,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private static final String CMD_START_GROUP_PREFIX = "cmd.group.start.ident.";
 	
 	private Delayed delayedClose;
+	private boolean listeningAssessmentMode;
 
 	//tools
 	private Link folderLink, coachFolderLink,
@@ -540,7 +545,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				listenTo(stopAssessmentCtrl);
 				toolbarPanel.setMessageComponent(stopAssessmentCtrl.getInitialComponent());
 			} else {
-				toolbarPanel.removeMessageComponent();
+				toolbarPanel.removeMessageComponent();	
 			}
 			
 			if (assessmentToolCtr != null) {
@@ -641,6 +646,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[assessmentToolv2:0]"));
 				assessmentLink.setElementCssClass("o_sel_course_assessment_tool");
 				tools.addComponent(assessmentLink);
+				
+				if(!listeningAssessmentMode) {
+					coordinatorManager.getCoordinator().getEventBus()
+						.registerFor(this, getIdentity(), ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
+					coordinatorManager.getCoordinator().getEventBus()
+						.registerFor(this, getIdentity(), AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+					listeningAssessmentMode = true;
+				}
 			}
 			
 			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
@@ -1136,6 +1149,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (courseModule.displayParticipantsCount()) {
 			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(new MultiUserEvent(LEFT), getOlatResourceable());
 		}
+		
+		if(listeningAssessmentMode) {
+			coordinatorManager.getCoordinator().getEventBus().deregisterFor(this, ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
+			coordinatorManager.getCoordinator().getEventBus().deregisterFor(this, AssessmentModeNotificationEvent.ASSESSMENT_MODE_NOTIFICATION);
+		}
 	}
 
 	@Override
@@ -1156,6 +1174,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				processEntryChangedEvent(repoEvent);
 			}
 		//All events are MultiUserEvent, check with command at the end
+		} else if(event instanceof ChangeAssessmentModeEvent) {
+			processChangeAssessmentModeEvents((ChangeAssessmentModeEvent)event);
+		} else if(event instanceof AssessmentModeNotificationEvent) {
+			processChangeAssessmentModeEvents((AssessmentModeNotificationEvent)event);
 		} else if (event instanceof MultiUserEvent) {
 			if (event.getCommand().equals(JOINED) || event.getCommand().equals(LEFT)) {
 				updateCurrentUserCount();
@@ -2743,6 +2765,32 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				loadRights();
 				initToolbar();
 			}
+		}
+	}
+	
+	private void processChangeAssessmentModeEvents(AssessmentModeNotificationEvent event) {
+		try {
+			// only show the warning box if an assessment mode is started
+			if(assessmentLink != null && !toolbarPanel.hasMessage()
+					&& getRepositoryEntry().getKey().equals(event.getAssessementMode().getRepositoryEntryKey())
+					&& (Status.leadtime == event.getAssessementMode().getStatus() || Status.assessment == event.getAssessementMode().getStatus())) {
+				setAssessmentModeMessage(new SyntheticUserRequest(getIdentity(), getLocale()));
+			}
+		} catch (Exception e) {
+			logError("", e);
+		}
+	}
+	
+	private void processChangeAssessmentModeEvents(ChangeAssessmentModeEvent event) {
+		try {
+			// only show the warning box if an assessment mode is started
+			if(assessmentLink != null && !toolbarPanel.hasMessage()
+					&& getRepositoryEntry().getKey().equals(event.getEntryKey())
+					&& (Status.leadtime == event.getStatus() || Status.assessment == event.getStatus())) {
+				setAssessmentModeMessage(new SyntheticUserRequest(getIdentity(), getLocale()));
+			}
+		} catch (Exception e) {
+			logError("", e);
 		}
 	}
 	

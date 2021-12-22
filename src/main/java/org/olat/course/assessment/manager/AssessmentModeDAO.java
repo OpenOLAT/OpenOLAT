@@ -44,6 +44,7 @@ import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.area.BGtoAreaRelationImpl;
+import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -205,26 +206,40 @@ public class AssessmentModeDAO {
 				.getResultList();
 	}
 	
-	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.set(Calendar.SECOND, 0);
-		
+	public boolean isInAssessmentMode(RepositoryEntryRef entry, String subIdent, IdentityRef identity) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select count(mode) from courseassessmentmode mode where ")
-		  .append(" mode.repositoryEntry.key=:repoKey and (")
-		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now ")
-		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
-		  .append(" or mode.statusString ").in(Status.leadtime, Status.assessment, Status.followup)
-		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage).append("))");
+		sb.append("select mode.key from courseassessmentmode mode")
+		  .append(" inner join mode.repositoryEntry entry")
+		  .append(" left join mode.groups as modeToGroup")
+		  .append(" left join mode.areas as modeToArea")
+		  .append(" left join mode.curriculumElements as modeToCurriculumElement")
+		  .where().append(" entry.key=:repoKey and (")
+		  .append(" mode.statusString ").in(Status.assessment)
+		  .append(" or (mode.statusString ").in(Status.end.name()).append(" and mode.endStatusString ").in(EndStatus.withoutDisadvantage)
+		  .append("  and exists (select compensation.key from dcompensation as compensation where")
+		  .append("   compensation.entry.key=entry.key and compensation.identity.key=:identityKey and compensation.status=:status");
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and compensation.subIdent=:subIdent");
+		}
+		sb.append("  )")
+		  .append("))")
+		  .and();
+		appendAssessmentModeToIdentity(sb);
 
-		List<Number> count = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
-				.setParameter("now", date)
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("repoKey", entry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("status", DisadvantageCompensationStatusEnum.active.name());
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+		List<Long> count = query
+				.setMaxResults(1)
+				.setFirstResult(0)
 				.getResultList();
-		return count != null && !count.isEmpty() && count.get(0).intValue() > 0;
+		return count != null && !count.isEmpty()
+				&& count.get(0) != null && count.get(0).longValue() > 0;
 	}
 	
 	public List<AssessmentMode> getCurrentAssessmentMode(RepositoryEntryRef entry, Date date) {
@@ -251,14 +266,30 @@ public class AssessmentModeDAO {
 	
 	
 	protected List<AssessmentMode> loadAssessmentModeFor(IdentityRef identity, List<AssessmentMode> currentModes) {
-		StringBuilder sb = new StringBuilder(1500);
+		QueryBuilder sb = new QueryBuilder(1500);
 		sb.append("select mode from courseassessmentmode mode ")
 		  .append(" inner join fetch mode.repositoryEntry entry")
 		  .append(" left join mode.groups as modeToGroup")
 		  .append(" left join mode.areas as modeToArea")
 		  .append(" left join mode.curriculumElements as modeToCurriculumElement")
-		  .append(" where mode.key in (:modeKeys)")
-		  .append("  and ((mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.groups.name()).append("')")
+		  .where().append(" mode.key in (:modeKeys)")
+		  .and();
+		appendAssessmentModeToIdentity(sb);
+		List<Long> modeKeys = new ArrayList<>(currentModes.size());
+		for(AssessmentMode mode:currentModes) {
+			modeKeys.add(mode.getKey());
+		}
+		List<AssessmentMode> modeList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentMode.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("modeKeys", modeKeys)
+				.getResultList();
+		//quicker than distinct
+		return new ArrayList<>(new HashSet<>(modeList));
+	}
+	
+	private final void appendAssessmentModeToIdentity(QueryBuilder sb) {
+		sb.append("  ((mode.targetAudienceString in ('").append(AssessmentMode.Target.courseAndGroups.name()).append("','").append(AssessmentMode.Target.groups.name()).append("')")
 		  .append("   and (exists (select businessGroup from businessgroup as businessGroup, bgroupmember as membership")
 		  .append("     where modeToGroup.businessGroup.key=businessGroup.key and membership.group.key=businessGroup.baseGroup.key and membership.identity.key=:identityKey")
 		  .append("     and (membership.role='").append(GroupRoles.participant.name()).append("' or ")
@@ -279,18 +310,6 @@ public class AssessmentModeDAO {
 		  .append("       (mode.applySettingsForCoach=true and curMembership.role='").append(GroupRoles.coach.name()).append("'))")
 		  .append("  ))")
 		  .append(" )");
-
-		List<Long> modeKeys = new ArrayList<>(currentModes.size());
-		for(AssessmentMode mode:currentModes) {
-			modeKeys.add(mode.getKey());
-		}
-		List<AssessmentMode> modeList = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), AssessmentMode.class)
-				.setParameter("identityKey", identity.getKey())
-				.setParameter("modeKeys", modeKeys)
-				.getResultList();
-		//quicker than distinct
-		return new ArrayList<>(new HashSet<>(modeList));
 	}
 	
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {

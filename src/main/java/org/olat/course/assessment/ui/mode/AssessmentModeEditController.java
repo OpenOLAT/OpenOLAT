@@ -76,6 +76,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,8 +90,6 @@ public class AssessmentModeEditController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	private static final String[] startModeKeys = new String[] { "automatic", "manual" };
-
-	private static final OLATResourceable ASSESSMENT_MODE_ORES = OresHelper.createOLATResourceableType(AssessmentMode.class);
 
 	private SingleSelection targetEl;
 	private SingleSelection startModeEl;
@@ -134,6 +133,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	private List<String> elementNames;
 	private String startElementKey;
 	
+	private RepositoryEntry entry;
 	private AssessmentMode assessmentMode;
 	private final OLATResourceable courseOres;
 	
@@ -151,9 +151,10 @@ public class AssessmentModeEditController extends FormBasicController {
 	private AssessmentModeCoordinationService modeCoordinationService;
 	
 	public AssessmentModeEditController(UserRequest ureq, WindowControl wControl,
-			OLATResourceable courseOres, AssessmentMode assessmentMode) {
+			RepositoryEntry entry, AssessmentMode assessmentMode) {
 		super(ureq, wControl);
-		this.courseOres = OresHelper.clone(courseOres);
+		this.entry = entry;
+		courseOres = OresHelper.clone(entry.getOlatResource());
 		if(assessmentMode.getKey() == null) {
 			this.assessmentMode = assessmentMode;
 		} else {
@@ -715,9 +716,9 @@ public class AssessmentModeEditController extends FormBasicController {
 		assessmentMode = assessmentModeMgr.merge(assessmentMode, forceStatus);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 		
-		ChangeAssessmentModeEvent changedEvent = new ChangeAssessmentModeEvent(assessmentMode);
+		ChangeAssessmentModeEvent changedEvent = new ChangeAssessmentModeEvent(assessmentMode, entry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.fireEventToListenersOf(changedEvent, ASSESSMENT_MODE_ORES);
+			.fireEventToListenersOf(changedEvent, ChangeAssessmentModeEvent.ASSESSMENT_MODE_ORES);
 	}
 	
 	private void updateCurriculumElementsRelations(Target target) {

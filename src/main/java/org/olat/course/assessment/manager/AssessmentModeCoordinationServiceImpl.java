@@ -60,6 +60,7 @@ import org.olat.modules.dcompensation.manager.DisadvantageCompensationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,6 +193,16 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 					// all assessment modes are checked, need only to catch the main event (not the course specific ones)
 					Long identityKey = mod.getAffectedIdentityKey();
 					sendEventAfterMembershipChange(identityKey);
+				}
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		} else if(event instanceof RepositoryEntryMembershipModifiedEvent) {
+			try {
+				RepositoryEntryMembershipModifiedEvent mod = (RepositoryEntryMembershipModifiedEvent)event;
+				if(RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(mod.getCommand())) {
+					// all assessment modes are checked, need only to catch the main event (not the course specific ones)
+					sendEventAfterMembershipChange(mod.getIdentityKey());
 				}
 			} catch (Exception e) {
 				log.error("", e);
@@ -333,6 +344,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		//what to do in manual mode
 		if(mode.getStatus() == Status.assessment) {
 			sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
+					assessmentModeManager.getAssessedIdentityKeys(mode));
+		} else if(mode.getStatus() == Status.leadtime) {
+			sendEvent(AssessmentModeNotificationEvent.LEADTIME, mode,
 					assessmentModeManager.getAssessedIdentityKeys(mode));
 		} else if(mode.getStatus() == Status.followup) {
 			// remind user with compensation for disadvantage
