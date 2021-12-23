@@ -202,6 +202,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		teaserImageSource = courseConfig.getTeaserImageSource();
 		teaserImageStyle = courseConfig.getTeaserImageStyle();
 		initForm(ureq);
+		updateMenuUI(false);
 		updateTeaserImageUI();
 		updateColorCategoryUI();
 		updateHeaderPreviewUI(ureq, false);
@@ -483,7 +484,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			logo.delete();
 			refreshLogoImage(ureq);
 		} else if (source == menuEl) {
-			updateMenuUI();
+			updateMenuUI(true);
 		} else if (source == teaserImageTypeEl) {
 			updateTeaserImageUI();
 			updateHeaderPreviewUI(ureq, true);
@@ -777,11 +778,13 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		styleFlc.contextPut("guiWrapper", guiWrapper);
 	}
 	
-	private void updateMenuUI() {
+	private void updateMenuUI(boolean dirty) {
 		boolean menuEnabled = menuEl.isSelected(0);
 		menuNodeIconsEl.setVisible(learningPath && menuEnabled);
 		menuPathEl.setVisible(learningPath && menuEnabled);
-		setDirty();
+		if (dirty) {
+			setDirty();
+		}
 	}
 	
 	private void updateTeaserImageUI() {
