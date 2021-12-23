@@ -221,12 +221,14 @@ public class StopAssessmentWarningController extends BasicController implements 
 	}
 
 	private boolean canStopAssessmentMode(AssessmentMode mode) {
-		if(assessmentCallback.canStartStopAllAssessments()) {
-			return assessmentModeCoordinationService.canStop(mode);
-		} else if(mode.getLectureBlock() != null) {
-			List<Identity> teachers = lectureService.getTeachers(mode.getLectureBlock());
-			return teachers.contains(getIdentity())
-					&& assessmentModeCoordinationService.canStop(mode);
+		if(mode.isManualBeginEnd()) {
+			if(assessmentCallback.canStartStopAllAssessments()) {
+				return assessmentModeCoordinationService.canStop(mode);
+			} else if(mode.getLectureBlock() != null) {
+				List<Identity> teachers = lectureService.getTeachers(mode.getLectureBlock());
+				return teachers.contains(getIdentity())
+						&& assessmentModeCoordinationService.canStop(mode);
+			}
 		}
 		return false;
 	}
