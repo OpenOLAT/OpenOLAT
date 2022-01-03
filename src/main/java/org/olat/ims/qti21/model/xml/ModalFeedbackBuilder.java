@@ -123,22 +123,22 @@ public class ModalFeedbackBuilder {
 	
 	public void extractConditions() {
 		ResponseCondition feedbackRule = findFeedbackResponseCondition(modalFeedback.getIdentifier(), QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
-		ResponseIf responseIf = feedbackRule.getResponseIf();
-		if(responseIf != null && responseIf.getExpressions() != null
-				&& responseIf.getExpressions().size() == 1
-				&& responseIf.getExpressions().get(0) instanceof And
-				&& responseIf.getResponseRules().size() == 1
-				&& responseIf.getResponseRules().get(0) instanceof SetOutcomeValue) {
-			And and = (And)responseIf.getExpression();
-			List<Expression> conditionElements = and.getExpressions();
-			List<ModalFeedbackCondition> extractedConditions = new ArrayList<>();
-			for(Expression conditionElement:conditionElements) {
-				ModalFeedbackCondition condition = extractCondition(conditionElement);
-				if(condition != null) {
-					extractedConditions.add(condition);
+		if(feedbackRule != null) {
+			ResponseIf responseIf = feedbackRule.getResponseIf();
+			if(responseIf != null && responseIf.getExpressions() != null
+					&& responseIf.getExpressions().size() == 1
+					&& responseIf.getExpressions().get(0) instanceof And
+					&& responseIf.getResponseRules().size() == 1
+					&& responseIf.getResponseRules().get(0) instanceof SetOutcomeValue) {
+				And and = (And)responseIf.getExpression();
+				List<Expression> conditionElements = and.getExpressions();
+				List<ModalFeedbackCondition> extractedConditions = new ArrayList<>();
+				for(Expression conditionElement:conditionElements) {
+					ModalFeedbackCondition condition = extractCondition(conditionElement);
+					if(condition != null) {
+						extractedConditions.add(condition);
+					}
 				}
-			}
-			if(extractedConditions != null) {
 				conditions = extractedConditions;
 			}
 		}
