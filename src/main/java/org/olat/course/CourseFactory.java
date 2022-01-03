@@ -114,6 +114,8 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.bc.CoachFolderFactory;
+import org.olat.course.nodes.bc.CourseDocumentsFactory;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
@@ -542,7 +544,20 @@ public class CourseFactory {
 				VFSContainer targetCourseContainer = targetCourse.getIsolatedCourseBaseContainer();
 				targetCourseContainer.copyContentOf(sourceCourseContainer, author);
 			}
-
+			
+			// copy coach and documents files
+			CourseConfig cc = sourceCourse.getCourseEnvironment().getCourseConfig();
+			if(cc.isCoachFolderEnabled() && !StringHelper.containsNonWhitespace(cc.getCoachFolderPath())) {
+				VFSContainer sourceContainer = CoachFolderFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
+				VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+				VFSManager.copyContent(sourceContainer, targetContainer);
+			}
+			if(cc.isDocumentsEnabled() && !StringHelper.containsNonWhitespace(cc.getDocumentsPath())) {
+				VFSContainer sourceContainer = CourseDocumentsFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
+				VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+				VFSManager.copyContent(sourceContainer, targetContainer);
+			}
+			
 			// copy folder nodes directories
 			VFSContainer sourceFoldernodesContainer = VFSManager
 					.olatRootContainer(BCCourseNode.getFoldernodesPathRelToFolderBase(sourceCourse.getCourseEnvironment()));

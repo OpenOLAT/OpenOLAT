@@ -20,11 +20,23 @@
 package org.olat.modules.lecture.ui.coach;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -32,16 +44,23 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
+import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.modules.lecture.ui.coach.LecturesMembersTableModel.MemberCols;
+import org.olat.modules.lecture.ui.component.PercentCellRenderer;
 import org.olat.modules.lecture.ui.event.SelectLectureIdentityEvent;
 import org.olat.modules.lecture.ui.event.SelectLectureRepositoryEntryEvent;
 import org.olat.modules.lecture.ui.profile.IdentityProfileController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,7 +76,6 @@ public class RepositoryEntriesSearchController extends BasicController {
 	
 	private final LecturesSecurityCallback secCallback;
 	
-	private IdentityProfileController profileCtrl;
 	private final RepositoryEntriesListController entriesSearchCtrl;
 	private ParticipantsSearchListController participantsSearchCtrl;
 	
@@ -108,35 +126,119 @@ public class RepositoryEntriesSearchController extends BasicController {
 		participantsSearchCtrl = new ParticipantsSearchListController(ureq, getWindowControl(), entry);
 		listenTo(participantsSearchCtrl);
 		panel.pushController(entry.getDisplayname(), participantsSearchCtrl);
-		participantsSearchCtrl.doSearch(ureq, null);
+		participantsSearchCtrl.doSearch(null);
 	}
 	
 	private void doSelectParticipant(UserRequest ureq, Long identityKey) {
 		Identity profiledIdentity = securityManager.loadIdentityByKey(identityKey);
-		profileCtrl = new IdentityProfileController(ureq, getWindowControl(), profiledIdentity, secCallback, false);
+		IdentityProfileController profileCtrl = new IdentityProfileController(ureq, getWindowControl(), profiledIdentity, secCallback, false);
 		listenTo(profileCtrl);
 		String fullname = userManager.getUserDisplayName(profiledIdentity);
 		panel.pushController(fullname, profileCtrl);
 	}
 	
-	private class ParticipantsSearchListController extends LecturesMembersSearchController {
+	private class ParticipantsSearchListController extends FormBasicController {
 		
+		private FlexiTableElement tableEl;
+		private LecturesMembersTableModel tableModel;
+
+		private final double defaultRate;
+		private final boolean rateEnabled;
 		private final RepositoryEntry restrictToEntry;
+		private RepositoryEntryLectureConfiguration lectureConfig;
+		private final List<UserPropertyHandler> userPropertyHandlers;
+
+		@Autowired
+		private UserManager userManager;
+		@Autowired
+		private LectureModule lectureModule;
+		@Autowired
+		private BaseSecurityModule securityModule;
 		
 		public ParticipantsSearchListController(UserRequest ureq, WindowControl wControl, RepositoryEntry restrictToEntry) {
-			super(ureq, wControl);
+			super(ureq, wControl, "participants_search", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
+			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+			
 			this.restrictToEntry = restrictToEntry;
+			lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(restrictToEntry);
+			rateEnabled = ConfigurationHelper.isRateEnabled(lectureConfig, lectureModule);
+			if(lectureConfig.isOverrideModuleDefault()) {
+				defaultRate = lectureConfig.getRequiredAttendanceRate() == null ?
+						lectureModule.getRequiredAttendanceRateDefault() : lectureConfig.getRequiredAttendanceRate().doubleValue();	
+			} else {
+				defaultRate = lectureModule.getRequiredAttendanceRateDefault();
+			}
+			
+			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+			userPropertyHandlers = userManager.getUserPropertyHandlersFor(LecturesMembersSearchController.USER_USAGE_IDENTIFIER, isAdministrativeUser);
+			
+			initForm(ureq);
 		}
 		
 		@Override
-		protected void doSearch(UserRequest ureq, String searchString) {
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+			
+			int colIndex = LecturesMembersSearchController.USER_PROPS_OFFSET;
+			for (int i = 0; i < userPropertyHandlers.size(); i++) {
+				UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
+				boolean visible = userManager.isMandatoryUserProperty(LecturesMembersSearchController.USER_USAGE_IDENTIFIER, userPropertyHandler);
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, "rollcall",
+						true, "userProp-" + colIndex));
+				colIndex++;
+			}
+			
+			if(rateEnabled) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.rate, new PercentCellRenderer()));
+			}
+			
+			tableModel = new LecturesMembersTableModel(columnsModel, getLocale());	
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 26, false, getTranslator(), formLayout);
+			tableEl.setSearchEnabled(true);
+		}
+	
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if(tableEl == source) {
+				if(event instanceof SelectionEvent) {
+					LecturesMemberRow row = tableModel.getObject(((SelectionEvent)event).getIndex());
+					fireEvent(ureq, new SelectLectureIdentityEvent(row.getIdentityKey()));
+				} else if(event instanceof FlexiTableSearchEvent) {
+					FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
+					doSearch(ftse.getSearch());
+				}
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
+		}
+
+		private void doSearch(String searchString) {
 			LecturesMemberSearchParameters searchParams = new LecturesMemberSearchParameters();
 			searchParams.setSearchString(searchString);
 			searchParams.setRepositoryEntry(restrictToEntry);
 			searchParams.setViewAs(getIdentity(), secCallback.viewAs());
 			List<Identity> participants = lectureService.searchParticipants(searchParams);
+			
+			List<LectureBlockStatistics> statistics = lectureService.getParticipantsLecturesStatistics(restrictToEntry);
+			Map<Long,LectureBlockStatistics> identityToStatistics = statistics.stream()
+					.collect(Collectors.toMap(LectureBlockStatistics::getIdentityKey, stats -> stats, (u, v) -> u));
+			
 			List<LecturesMemberRow> rows = participants.stream()
-					.map(id -> new LecturesMemberRow(id, userPropertyHandlers, getLocale())).collect(Collectors.toList());
+					.map(id -> {
+						double requiredRate = defaultRate;
+						Double attendanceRate = null;
+						LectureBlockStatistics idStatistics = identityToStatistics.get(id.getKey());
+						if(idStatistics != null) {
+							requiredRate = idStatistics.getRequiredRate();
+							attendanceRate = idStatistics.getAttendanceRate();
+						}
+						return new LecturesMemberRow(id, userPropertyHandlers, attendanceRate, requiredRate, getLocale());
+					}).collect(Collectors.toList());
+		
 			tableModel.setObjects(rows);
 			tableEl.reset(true, true, true);
 		}
