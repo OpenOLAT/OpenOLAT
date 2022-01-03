@@ -33,8 +33,26 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class LecturesMemberRow extends UserPropertiesRow {
+	
+	private final Double requiredRate;
+	private final Double attendanceRate;
 
 	public LecturesMemberRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		this(identity, userPropertyHandlers, null, null, locale);
+	}
+	
+	public LecturesMemberRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers,
+			Double attendanceRate, Double requiredRate, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
+		this.requiredRate = requiredRate;
+		this.attendanceRate = attendanceRate;
+	}
+
+	public Double getRequiredRate() {
+		return requiredRate;
+	}
+
+	public Double getAttendanceRate() {
+		return attendanceRate;
 	}
 }
