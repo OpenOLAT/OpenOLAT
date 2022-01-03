@@ -34,6 +34,7 @@ import org.olat.course.style.ColorCategory;
 import org.olat.course.style.Header;
 import org.olat.course.style.Header.Builder;
 import org.olat.course.style.TeaserImageStyle;
+import org.olat.modules.assessment.Overridable;
 
 /**
  * 
@@ -129,9 +130,9 @@ public class CourseStyleUIFactory {
 			if (startDate != null && startDate.after(new Date())) {
 				builder.withStartDateConfig(DueDateConfig.absolute(startDate));
 			}
-			Date currentEndDate = evaluation.getEndDate().getCurrent();
-			if (currentEndDate != null) {
-				builder.withEndDateConfig(DueDateConfig.absolute(currentEndDate));
+			Overridable<Date> endDate = evaluation.getEndDate();
+			if (endDate != null &&  endDate.getCurrent() != null) {
+				builder.withEndDateConfig(DueDateConfig.absolute(endDate.getCurrent()));
 			}
 		}
 	}
