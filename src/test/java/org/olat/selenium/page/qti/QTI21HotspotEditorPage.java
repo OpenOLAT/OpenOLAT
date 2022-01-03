@@ -59,10 +59,11 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		By correctCheckboxBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_correct_spots')]//label[contains(text(),'" + indexName+ "')]/input[@name='form.imd.correct.spots']");
 		WebElement correctCheckboxEl = browser.findElement(correctCheckboxBy);
 		OOGraphene.check(correctCheckboxEl, Boolean.valueOf(correct));
-		OOGraphene.waitBusy(browser);
 		if(correct) {
 			By setCorrectBy = By.xpath("//div[contains(@class,'o_qti_hotspot_correct')]/span[@class='o_qti_hotspot_label'][text()[contains(.,'" + indexName + "')]]");
-			OOGraphene.waitElement(setCorrectBy, browser);
+			OOGraphene.waitElementSlowly(setCorrectBy, 5, browser);
+		} else {
+			OOGraphene.waitBusy(browser);
 		}
 		return this;
 	}
@@ -75,9 +76,8 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21HotspotEditorPage addRectangle() {
 		By addRectBy = By.xpath("//a[contains(@class,'btn-default')][i[contains(@class,'o_icon_rectangle')]]");
 		browser.findElement(addRectBy).click();
-		OOGraphene.waitBusy(browser);
 		By rectangleBy = By.cssSelector("div.o_draw_rectangle");
-		OOGraphene.waitElement(rectangleBy, browser);
+		OOGraphene.waitElementSlowly(rectangleBy, 5, browser);
 		return this;
 	}
 	
@@ -102,8 +102,11 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 			.moveToElement(circleEl, (dim.getWidth() / 2) - 5, 0)// 0 0
 			.clickAndHold()
 			.moveByOffset(40, 0)
-			.release()
 			.build()
+			.perform();
+		
+		new Actions(browser)
+			.release()
 			.perform();
 		return this;
 	}
@@ -140,8 +143,11 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 			.moveToElement(element, 0, 0)
 			.clickAndHold()
 			.moveByOffset(xOffset, yOffset)
-			.release()
 			.build()
+			.perform();
+		
+		new Actions(browser)
+			.release()
 			.perform();
 		return this;
 	}
@@ -150,27 +156,24 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		By saveBy = By.cssSelector("div.o_sel_hotspots_save>button.btn.btn-primary");
 		OOGraphene.moveAndClick(saveBy, browser);
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitingLong();
 		// waits are needed for chrome on our test server
 		OOGraphene.waitTinymce(browser);
 		OOGraphene.scrollTop(browser);
-		OOGraphene.waitingLong();
 		return this;
 	}
 	
 	public QTI21HotspotScoreEditorPage selectScores() {
+		By tabLinkBy = By.xpath("//ul[contains(@class,'o_sel_assessment_item_config')]/li[2]/a");
+		By scorePanelBy = By.className("o_sel_assessment_item_options");
 		try {
-			By tabLinkBy = By.xpath("//ul[contains(@class,'o_sel_assessment_item_config')]/li[2]/a");
-			OOGraphene.waitElementSlowly(tabLinkBy, 5, browser);
+			OOGraphene.waitElement(tabLinkBy, browser);
 			browser.findElement(tabLinkBy).click();
-			OOGraphene.waitElement(By.className("o_sel_assessment_item_options"), browser);
+			OOGraphene.waitElementSlowly(scorePanelBy, 5, browser);
 		} catch (Exception e) {
 			try {
 				OOGraphene.waitingLong();
-				By tabLinkBy = By.xpath("//ul[contains(@class,'o_sel_assessment_item_config')]/li[2]/a");
-				OOGraphene.waitElementSlowly(tabLinkBy, 5, browser);
 				browser.findElement(tabLinkBy).click();
-				OOGraphene.waitElement(By.className("o_sel_assessment_item_options"), browser);
+				OOGraphene.waitElementSlowly(scorePanelBy, 5, browser);
 			} catch (Exception e1) {
 				OOGraphene.takeScreenshot("Select scores", browser);
 				throw e1;

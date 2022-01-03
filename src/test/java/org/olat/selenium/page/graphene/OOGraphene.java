@@ -42,8 +42,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -58,9 +57,8 @@ public class OOGraphene {
 	
 	private static final Logger log = Tracing.createLoggerFor(OOGraphene.class);
 
-	private static final Duration waitTinyDuration = Duration.ofSeconds(50);//seconds
-	private static final long driverTimeout = 60;//seconds
-	private static final long moveToPause = 100;//milliseconds
+	private static final Duration waitTinyDuration = Duration.ofSeconds(50);
+	private static final Duration driverTimeout = Duration.ofSeconds(60);
 	
 	private static final Duration polling = Duration.ofMillis(100);
 	private static final Duration poolingSlow = Duration.ofMillis(200);
@@ -172,6 +170,29 @@ public class OOGraphene {
 			.withTimeout(timeout)
 			.pollingEvery(polling)
 			.until(ExpectedConditions.elementToBeClickable(element));
+	}
+	
+	/**
+	 * Wait until the element has an opacity of 1 or null.
+	 * 
+	 * @param locator The location of the element
+	 * @param browser The web driver
+	 */
+	public static void waitElementFullOpacity(By locator, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout)
+			.pollingEvery(polling)
+			.until(new ExpectedCondition<Boolean>() {
+				@Override
+				public Boolean apply(WebDriver webDriver) {
+			        List<WebElement> elements = webDriver.findElements(locator);
+			        if(elements != null && elements.size() == 1) {
+			        	String opacity = elements.get(0).getCssValue("opacity");
+			        	return opacity == null || opacity.equals("1");
+			        }
+					return Boolean.FALSE;
+				}
+			});
 	}
 
 	/**
@@ -326,15 +347,8 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static void moveTo(By by, WebDriver browser) {
-		waitElement(by, browser);
-		WebElement el = browser.findElement(by);
-		if(browser instanceof FirefoxDriver) {
-			scrollTo(by, browser);
-		}
-		new Actions(browser)
-			.moveToElement(el)
-			.pause(moveToPause)
-			.perform();
+		waitElementPresence(by, 5, browser);
+		scrollTo(by, browser);
 	}
 	
 	/**
@@ -344,23 +358,6 @@ public class OOGraphene {
 	 */
 	public static void scrollTop(WebDriver browser) {
 		scrollTo(By.id("o_top"), browser);
-	}
-	
-	/**
-	 * The method doesn't wait for the element.
-	 * 
-	 * @param by The selector
-	 * @param browser The browser
-	 */
-	public static void moveTop(WebDriver browser) {
-		if(browser instanceof FirefoxDriver) {
-			scrollTop(browser);// Firefox doesn't implement moveToElement
-		}
-		WebElement el = browser.findElement(By.id("o_top"));
-		new Actions(browser)
-			.moveToElement(el)
-			.pause(moveToPause)
-			.perform();
 	}
 	
 	public static final void waitTinymce(WebDriver browser) {
