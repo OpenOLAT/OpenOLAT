@@ -53,7 +53,7 @@ import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
-import org.olat.course.run.scoring.NoEvaluationAccounting;
+import org.olat.course.run.scoring.CoursePreviewAccounting;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -95,7 +95,7 @@ public class PreviewRunController extends MainLayoutBasicController {
 		luTree.setScrollTopOnClick(true);
 
 		// build up the running structure for this user
-		ScoreAccounting noScoreAccounting = new NoEvaluationAccounting();
+		ScoreAccounting noScoreAccounting = new CoursePreviewAccounting();
 		uce = new UserCourseEnvironmentImpl(identEnv, cenv, noScoreAccounting);
 		navHandler = new NavigationHandler(uce, null, true);
 		
