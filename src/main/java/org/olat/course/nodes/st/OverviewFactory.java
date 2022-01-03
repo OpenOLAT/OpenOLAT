@@ -49,6 +49,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.style.ColorCategoryResolver;
 import org.olat.course.style.CourseStyleService;
 import org.olat.course.style.TeaserImageStyle;
+import org.olat.modules.assessment.Overridable;
 
 /**
  * 
@@ -132,9 +133,9 @@ public class OverviewFactory {
 				if (startDate != null && startDate.after(now)) {
 					builder.withStartDateConfig(DueDateConfig.absolute(startDate));
 				}
-				Date currentEndDate = evaluation.getEndDate().getCurrent();
-				if (currentEndDate != null) {
-					builder.withEndDateConfig(DueDateConfig.absolute(currentEndDate));
+				Overridable<Date> endDate = evaluation.getEndDate();
+				if (endDate != null && endDate.getCurrent() != null) {
+					builder.withEndDateConfig(DueDateConfig.absolute(endDate.getCurrent()));
 				}
 			}
 		} else if (learningPathService != null) {
