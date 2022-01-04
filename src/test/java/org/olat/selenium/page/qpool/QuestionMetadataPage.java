@@ -296,7 +296,7 @@ public class QuestionMetadataPage {
 		By saveBy = By.cssSelector("div." + panelClass + " div.panel-body div.o_sel_qpool_metadata_buttons button.btn.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.moveTop(browser);
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 

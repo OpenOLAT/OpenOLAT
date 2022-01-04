@@ -52,6 +52,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -65,6 +67,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -82,6 +85,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessmentForm;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -96,7 +100,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GroupAssessmentController extends FormBasicController {
 
-	private static final String[] userVisibilityKeys = new String[]{ "visible", "hidden" };
+	private static final String KEY_VISIBLE = "visible";
+	private static final String KEY_HIDDEN = "hidden";
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
 	
@@ -140,6 +145,7 @@ public class GroupAssessmentController extends FormBasicController {
 	public GroupAssessmentController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, GTACourseNode courseNode, BusinessGroup assessedGroup) {
 		super(ureq, wControl, "assessment_per_group");
+		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
 		this.gtaNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
@@ -213,8 +219,11 @@ public class GroupAssessmentController extends FormBasicController {
 		}
 		
 		if(withPassed || withScore || withComment || withDocs) {
-			String[] userVisibilityValues = new String[]{ translate("user.visibility.visible"), translate("user.visibility.hidden") };
-			userVisibilityEl = uifactory.addRadiosHorizontal("user.visibility", "user.visibility", groupGradingCont, userVisibilityKeys, userVisibilityValues);
+			SelectionValues visibilitySV = new SelectionValues();
+			visibilitySV.add(new SelectionValue(KEY_HIDDEN, translate("user.visibility.hidden"), translate("user.visibility.hidden.desc"), "o_icon o_icon_results_hidden", null, true));
+			visibilitySV.add(new SelectionValue(KEY_VISIBLE, translate("user.visibility.visible"), translate("user.visibility.visible.desc"), "o_icon o_icon_results_visible", null, true));
+			userVisibilityEl = uifactory.addCardSingleSelectHorizontal("user.visibility.release", groupGradingCont, visibilitySV.keys(),
+					visibilitySV.values(), visibilitySV.descriptions(), visibilitySV.icons());
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -341,9 +350,9 @@ public class GroupAssessmentController extends FormBasicController {
 		if(userVisibilityEl != null) {
 			userVisibilityEl.setVisible(true);
 			if(modelInfos.getUserVisible() == null || modelInfos.getUserVisible().booleanValue()) {
-				userVisibilityEl.select(userVisibilityKeys[0], true);
+				userVisibilityEl.select(KEY_VISIBLE, true);
 			} else {
-				userVisibilityEl.select(userVisibilityKeys[1], true);
+				userVisibilityEl.select(KEY_HIDDEN, true);
 			}
 		}
 		
@@ -677,7 +686,7 @@ public class GroupAssessmentController extends FormBasicController {
 	
 	private void applyChanges(boolean setAsDone) {
 		List<AssessmentRow> rows = model.getObjects();
-		boolean userVisible = userVisibilityEl.isOneSelected() && userVisibilityEl.isSelected(0);
+		boolean userVisible = userVisibilityEl.isOneSelected() && userVisibilityEl.isKeySelected(KEY_VISIBLE);
 		if(applyToAllEl.isAtLeastSelected(1)) {
 			applyChangesForTheWholeGroup(rows, setAsDone, userVisible);
 		} else {

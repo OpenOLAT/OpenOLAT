@@ -95,7 +95,7 @@ public class TinyPage {
 	
 	private void waitTinyDialogDisappears() {
 		By modalBy = By.xpath("//div[contains(@class,'mce-window-body')]");
-		new WebDriverWait(browser, 5)
+		new WebDriverWait(browser, Duration.ofSeconds(5))
 			.withTimeout(Duration.ofSeconds(5)).pollingEvery(Duration.ofMillis(200))
 			.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
 	}
