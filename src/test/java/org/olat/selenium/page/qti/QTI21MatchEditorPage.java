@@ -59,21 +59,24 @@ public class QTI21MatchEditorPage extends QTI21AssessmentItemEditorPage {
 		By answerBy = By.xpath("//td[contains(@class,'o_sel_match_" + source + "_" + target + "')]/input[contains(@id,'oo_')]");
 		WebElement matchEl = browser.findElement(answerBy);
 		OOGraphene.check(matchEl, correct);
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public QTI21MatchEditorPage addColumn() {
+		By columnsBy = By.xpath("//th[contains(@class,'o_sel_match_target_')]");
+		int numOfColumns = browser.findElements(columnsBy).size();
 		By saveBy = By.cssSelector("div.o_sel_match_save a.o_sel_match_add_column");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.moveAndClick(saveBy, browser);
+		OOGraphene.waitElement(By.cssSelector("th.o_sel_match_target_" + numOfColumns), browser);
 		return this;
 	}
 	
 	public QTI21MatchEditorPage addRow() {
+		By rowsBy = By.xpath("//th[contains(@class,'o_sel_match_source_')]");
+		int numOfRows = browser.findElements(rowsBy).size();
 		By saveBy = By.cssSelector("div.o_sel_match_save a.o_sel_match_add_row");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.moveAndClick(saveBy, browser);
+		OOGraphene.waitElement(By.cssSelector("th.o_sel_match_source_" + numOfRows), browser);
 		return this;
 	}
 	

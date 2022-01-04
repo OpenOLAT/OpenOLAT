@@ -186,24 +186,24 @@ public class QTI21Page {
 	
 	public QTI21Page answerHotspot(String shape) {
 		OOGraphene.waitElement(By.className("hotspotInteraction"), browser);
+		
+		By hotspotBy = By.xpath("//div[contains(@class,'hotspotInteraction')]/div/div/img");
+		OOGraphene.waitElementPresence(hotspotBy, 5, browser);
+		
 		By areaBy = By.xpath("//div[contains(@class,'hotspotInteraction')]//map/area[@shape='" + shape + "']");
-		List<WebElement> elements = browser.findElements(areaBy);
-		Assert.assertEquals("Hotspot of shape " + shape, 1, elements.size());
-		WebElement areaEl = elements.get(0);
-		if(browser instanceof FirefoxDriver) {
-			String coords = areaEl.getAttribute("coords");
-			By hotspotBy = By.xpath("//div[contains(@class,'hotspotInteraction')]/div/div/img");
-			OOGraphene.waitElementPresence(hotspotBy, 5, browser);
-			WebElement element = browser.findElement(hotspotBy);
-			Dimension dim = element.getSize();
-			Position pos = Position.valueOf(coords, dim);
-			new Actions(browser)
-				.moveToElement(element, pos.getX(), pos.getY())
-				.click()
-				.perform();
-		} else {
-			elements.get(0).click();
-		}
+		List<WebElement> areaEls = browser.findElements(areaBy);
+		Assert.assertEquals("Hotspot of shape " + shape, 1, areaEls.size());
+		String coords = areaEls.get(0).getAttribute("coords");
+		WebElement element = browser.findElement(hotspotBy);
+		Dimension dim = element.getSize();
+		Position pos = Position.valueOf(coords, dim);
+		new Actions(browser)
+			.moveToElement(element, pos.getX(), pos.getY())
+			.click()
+			.perform();
+		
+		OOGraphene.waitingALittleBit();// wait javascript are done
+
 		return this;
 	}
 	
@@ -340,12 +340,14 @@ public class QTI21Page {
 			.moveToElement(sourceEl, 30, 30)
 			.clickAndHold()
 			.moveToElement(targetEl, 30, 30)
+			.perform();
+		
+		new Actions(browser)
 			.release()
-			.build()
 			.perform();
 
 		By sourceDroppedBy = By.xpath("//ul[contains(@class,'o_match_dnd_target_drop_zone')]/li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
-		OOGraphene.waitElement(sourceDroppedBy, 5, browser);
+		OOGraphene.waitElement(sourceDroppedBy, browser);
 		return this;
 	}
 	
@@ -707,11 +709,7 @@ public class QTI21Page {
 	 */
 	public QTI21Page saveGraphicAnswer() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.moveAndClick(saveAnswerBy, browser);
-		} else {
-			browser.findElement(saveAnswerBy).click();
-		}
+		browser.findElement(saveAnswerBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

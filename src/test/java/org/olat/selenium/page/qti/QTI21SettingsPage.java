@@ -41,7 +41,7 @@ public class QTI21SettingsPage extends RepositorySettingsPage {
 		OOGraphene.waitElement(optionsSegmentBy, browser);
 		browser.findElement(optionsSegmentBy).click();
 		
-		By optionsConfigurationBy = By.cssSelector("fieldset.o_sel_qti_resource_options");
+		By optionsConfigurationBy = By.cssSelector("fieldset.o_sel_qti_resource_options div.o_sel_qti_show_results");
 		OOGraphene.waitElement(optionsConfigurationBy, browser);
 		
 		return new QTI21OptionsPage(browser);

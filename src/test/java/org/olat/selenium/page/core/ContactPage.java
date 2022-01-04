@@ -70,7 +70,7 @@ public class ContactPage {
 		By disabledBy = By.cssSelector("fieldset.o_sel_contact_form div.o_sel_contact_body div.o_disabled");
 		OOGraphene.waitElement(disabledBy, browser);
 		
-		OOGraphene.moveTop(browser);
+		OOGraphene.scrollTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}

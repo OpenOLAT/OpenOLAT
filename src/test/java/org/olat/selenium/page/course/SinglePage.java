@@ -101,7 +101,7 @@ public class SinglePage {
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElementDisappears(editorBy, 5, browser);
 		
-		OOGraphene.moveTop(browser);
+		OOGraphene.scrollTop(browser);
 		
 		return this;
 	}
