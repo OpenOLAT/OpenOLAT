@@ -107,9 +107,12 @@ import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.resource.OLATResource;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -652,6 +655,41 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			ICourse sourceCrourse, CopyCourseContext context) {
 		super.postCopy(envMapper, processType, course, sourceCrourse, context);
 		IQDueDateConfig.postCopy(getIdent(), getModuleConfiguration(), context);
+		
+		if (context != null) {
+			CopyType testCopyType = null;
+			
+			if (context.isCustomConfigsLoaded()) {
+				CopyCourseOverviewRow nodeSettings = context.getCourseNodesMap().get(getIdent());
+				
+				if (nodeSettings != null) {
+					testCopyType = nodeSettings.getResourceCopyType();
+				}
+			} else if (context.getTestCopyType() != null) {
+				testCopyType = context.getTestCopyType();
+			}
+			
+			if (testCopyType != null) {
+				if (testCopyType.equals(CopyType.reference)) {
+					// Reference the old test
+					// Current default, do nothing
+				} else if (testCopyType.equals(CopyType.copy)) {
+					// Copy the test
+					RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+					ModuleConfiguration sourceConfig = sourceCrourse.getEditorTreeModel().getCourseEditorNodeById(getIdent()).getCourseNode().getModuleConfiguration();
+					RepositoryEntry source = IQEditController.getIQReference(sourceConfig, false);
+					
+					if (source != null) {
+						RepositoryEntry copy = repositoryService.copy(source, context.getExecutingIdentity(), source.getDisplayname());
+						IQEditController.setIQReference(copy, getModuleConfiguration());
+					}
+					
+				} else if (testCopyType.equals(CopyType.ignore)) {
+					// Remove the configured test
+					IQEditController.removeIQReference(getModuleConfiguration());					
+				}
+			}
+		}
 	}
 	
 }

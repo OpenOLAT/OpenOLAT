@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -64,12 +65,16 @@ public class CopyCourseContext {
 	private boolean hasWiki;
 	private boolean hasBlog;
 	private boolean hasFolder;
+	private boolean hasTest;
 	private boolean hasTask;
 	private boolean hasDateDependantNodes;
 	private boolean hasLectureBlocks;
 	private boolean hasReminders;
 	private boolean hasDateDependantReminders;
 	private boolean hasAssessmentModes;
+	private boolean hasDocuments;
+	private boolean hasCoachDocuments;
+	private Entry<String, Entry<String, Date>> earliestDateWithNode;
 
 	// Metadata
 	private String displayName;
@@ -123,6 +128,7 @@ public class CopyCourseContext {
 	private CopyType folderCopyType;
 	private CopyType wikiCopyType;
 	private CopyType taskCopyType;
+	private CopyType testCopyType;
 	
 	// ReminderStep
 	private CopyType reminderCopyType;
@@ -139,6 +145,10 @@ public class CopyCourseContext {
 	private CopyType customLectureBlockCopyType;
 	private List<LectureBlockRow> lectureBlockRows;
 	
+	// Documents
+	private CopyType documentsCopyType;
+	private CopyType coachDocumentsCopyType;
+	
 	// Load config from module
 	public void loadFromWizardConfig(CopyCourseWizardModule wizardModule) {
 		setGroupCopyType(wizardModule.getGroupsCopyType());
@@ -147,6 +157,7 @@ public class CopyCourseContext {
 		setCatalogCopyType(wizardModule.getCatalogCopyType());
 		setDisclaimerCopyType(wizardModule.getDisclaimerCopyType());
 		
+		setTestCopyType(wizardModule.getTestCopyType());
 		setTaskCopyType(wizardModule.getTaskCopyType());
 		setBlogCopyType(wizardModule.getBlogCopyType());
 		setFolderCopyType(wizardModule.getFolderCopyType());
@@ -155,6 +166,8 @@ public class CopyCourseContext {
 		setReminderCopyType(wizardModule.getReminderCopyType());
 		setAssessmentModeCopyType(wizardModule.getAssessmentCopyType());
 		setLectureBlockCopyType(wizardModule.getLectureBlockCopyType());
+		setDocumentsCopyType(wizardModule.getDocumentsCopyType());
+		setCoachDocumentsCopyType(wizardModule.getCoachDocumentsCopyType());
 	}
 	
 	public Identity getExecutingIdentity() {
@@ -251,6 +264,14 @@ public class CopyCourseContext {
 		this.hasTask = hasTask;
 	}
 	
+	public boolean hasTest() {
+		return hasTest;
+	}
+	
+	public void setTest(boolean hasTest) {
+		this.hasTest = hasTest;
+	}
+	
 	public boolean hasWiki() {
 		return hasWiki;
 	}
@@ -306,6 +327,38 @@ public class CopyCourseContext {
 	public void setHasReminders(boolean hasReminders) {
 		this.hasReminders = hasReminders;
 	}	
+	
+	public boolean hasDocuments() {
+		return hasDocuments;
+	}
+	
+	public void setDocuments(boolean hasDocuments) {
+		this.hasDocuments = hasDocuments;
+	}
+	
+	public CopyType getDocumentsCopyType() {
+		return documentsCopyType;
+	}
+	
+	public void setDocumentsCopyType(CopyType documentsCopyType) {
+		this.documentsCopyType = documentsCopyType;
+	}
+	
+	public boolean hasCoachDocuments() {
+		return hasCoachDocuments;
+	}
+	
+	public void setCoachDocuments(boolean hasCoachDocuments) {
+		this.hasCoachDocuments = hasCoachDocuments;
+	}
+	
+	public CopyType getCoachDocumentsCopyType() {
+		return coachDocumentsCopyType;
+	}
+	
+	public void setCoachDocumentsCopyType(CopyType coachDocumentsCopyType) {
+		this.coachDocumentsCopyType = coachDocumentsCopyType;
+	}
 	
 	public boolean hasDateDependantReminders() {
 		return hasDateDependantReminders;
@@ -633,6 +686,14 @@ public class CopyCourseContext {
 		this.taskCopyType = taskCopyType;
 	}
 	
+	public CopyType getTestCopyType() {
+		return testCopyType;
+	}
+	
+	public void setTestCopyType(CopyType testCopyType) {
+		this.testCopyType = testCopyType;
+	}
+	
 	public CopyType getReminderCopyType() {
 		return reminderCopyType;
 	}
@@ -702,6 +763,14 @@ public class CopyCourseContext {
 	
 	public void setLectureBlockRows(List<LectureBlockRow> lectureBlockRows) {
 		this.lectureBlockRows = lectureBlockRows;
+	}
+	
+	public Entry<String, Entry<String, Date>> getEarliestDateWithNode() {
+		return earliestDateWithNode;
+	}
+	
+	public void setEarliestDateWithNode(Entry<String, Entry<String, Date>> earliestDateWithNode) {
+		this.earliestDateWithNode = earliestDateWithNode;
 	}
 	
 	

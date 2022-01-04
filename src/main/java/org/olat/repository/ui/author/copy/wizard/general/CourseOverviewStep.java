@@ -21,7 +21,10 @@ package org.olat.repository.ui.author.copy.wizard.general;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
@@ -30,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -42,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -62,13 +67,16 @@ import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeDatesListController;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.WikiCourseNode;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
@@ -120,6 +128,7 @@ public class CourseOverviewStep extends BasicStep {
 
 		private CopyCourseContext context;
 		
+		private FormLink shiftAllDates;
 		private FlexiTableElement tableEl;
 		private CopyCourseOverviewDataModel dataModel;
 		
@@ -159,7 +168,7 @@ public class CourseOverviewStep extends BasicStep {
 					row.setAssesssmentObligation(AssessmentObligation.valueOf(row.getObligationChooser().getSelectedKey()));
 				}
 				
-				if (row.getResourceCopyType() != null) {
+				if (row.getResourceChooser() != null) {
 					row.setResourceCopyType(CopyType.valueOf(row.getResourceChooser().getSelectedKey()));
 				}
 				
@@ -197,6 +206,9 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			shiftAllDates = uifactory.addFormLink("shif.all.dates", formLayout, Link.BUTTON);
+			shiftAllDates.setElementCssClass("pull-right");
+			
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			
 			IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
@@ -212,6 +224,8 @@ public class CourseOverviewStep extends BasicStep {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.startChooser));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.endChooser));
 			}
+			
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.earliestDate));
 			
 			if (context.hasNodeSpecificSettings()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.resourceChooser));
@@ -263,12 +277,15 @@ public class CourseOverviewStep extends BasicStep {
 			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"));
 			SelectionValue reference = new SelectionValue(CopyType.reference.name(), translate("options.reference"));
 			SelectionValue ignore = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"));
+			SelectionValue copy = new SelectionValue(CopyType.copy.name(), translate("options.copy"));
 			SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"));
 			SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"));
 			SelectionValue copyAssignmentAndSolution = new SelectionValue(CopyType.copy.name(), translate("options.copy.assignment.solution"));
 			SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"));
 			
 			SelectionValues copyModes = null;
+			
+			Entry<String, Entry<String, Date>> earliestDateWithNode = null;
 			
 			for (CopyCourseOverviewRow row : context.getCourseNodes()) {
 				if (row.getLearningPathConfigs() != null) {
@@ -353,6 +370,8 @@ public class CourseOverviewStep extends BasicStep {
 							copyModes = new SelectionValues(copyContent, ignoreContent);
 						} else if (row.getCourseNode() instanceof GTACourseNode) {
 							copyModes = new SelectionValues(copyAssignmentAndSolution, ignoreAssignmentAndSolution);
+						} else if (row.getCourseNode() instanceof IQTESTCourseNode) {
+							copyModes = new SelectionValues(reference, copy, ignore);
 						} else {
 							copyModes = new SelectionValues(reference, createNew, ignore);
 						}
@@ -362,7 +381,17 @@ public class CourseOverviewStep extends BasicStep {
 						row.setResourceChooser(resourceChooser);
 					}
 				}
+				
+				Entry<String, Date> earliestDate = getEarliestDateWithLabel(row.getCourseNode());
+				
+				if (earliestDate != null) {
+					if (earliestDateWithNode == null || earliestDate.getValue().before(earliestDateWithNode.getValue().getValue())) {
+						earliestDateWithNode = Map.entry(row.getShortTitle(), earliestDate);
+					}
+				}
 			}
+			
+			context.setEarliestDateWithNode(earliestDateWithNode);
 			
 			dataModel.setObjects(context.getCourseNodes());
 			tableEl.reset();
@@ -372,6 +401,7 @@ public class CourseOverviewStep extends BasicStep {
 			if (courseNode instanceof WikiCourseNode ||
 					courseNode instanceof BlogCourseNode ||
 					courseNode instanceof BCCourseNode ||
+					courseNode instanceof IQTESTCourseNode ||	
 					courseNode instanceof GTACourseNode) {
 				return true;
 			}
@@ -390,6 +420,8 @@ public class CourseOverviewStep extends BasicStep {
 				selectKey = getCopyType(context.getFolderCopyType());
 			} else if (courseNode instanceof GTACourseNode) {
 				selectKey = getCopyType(context.getTaskCopyType());
+			} else if (courseNode instanceof IQTESTCourseNode) {
+				selectKey = getCopyType(context.getTestCopyType());
 			}
 			
 			if (StringHelper.containsNonWhitespace(selectKey)) {
@@ -546,6 +578,52 @@ public class CourseOverviewStep extends BasicStep {
 		private void updateVisibility(CopyCourseOverviewRow row) {
 			boolean endChooserVisible = row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name());
 			row.getNewEndDateChooser().setVisible(endChooserVisible);
+		}
+		
+		private Entry<String, Date> getEarliestDateWithLabel(CourseNode courseNode) {
+			// If there are no dates, stop here
+			if (courseNode == null || !courseNode.hasDates()) {
+				return null;
+			}
+			
+			Map<String, Date> dates = new HashMap<String, Date>();
+			
+			// Load course node dependant dates
+			if (courseNode.getNodeSpecificDatesWithLabel().stream().map(Entry::getValue).anyMatch(DueDateConfig::isDueDate)) {
+				
+				for (Entry<String, DueDateConfig> innerDate : courseNode.getNodeSpecificDatesWithLabel()) {
+					DueDateConfig dueDateConfig = innerDate.getValue();
+					
+					if (DueDateConfig.isRelative(dueDateConfig)) {
+						// Don't do anything in this case yet
+					} else if(DueDateConfig.isAbsolute(dueDateConfig)) {
+						dates.put(innerDate.getKey(), dueDateConfig.getAbsoluteDate());
+					}
+				}
+			}
+			
+			// Load course node config
+			ModuleConfiguration config = courseNode.getModuleConfiguration();
+			
+			// Load potential highscore data
+			DueDateConfig startDateConfig = courseNode.getDueDateConfig(HighScoreEditController.CONFIG_KEY_DATESTART);
+			if (DueDateConfig.isDueDate(startDateConfig)) {
+				if (DueDateConfig.isRelative(startDateConfig)) {
+					// Do not do anything in this case yet
+				} else if (DueDateConfig.isAbsolute(startDateConfig)) {
+					dates.put("highscore.date.start", startDateConfig.getAbsoluteDate());
+				}
+			}
+			
+			Entry<String, Date> earliestDate = null;
+			
+			for (Entry<String, Date> entry : dates.entrySet()) {
+				if (earliestDate == null || entry.getValue().before(earliestDate.getValue())) {
+					earliestDate = entry;
+				}
+			}
+			
+			return earliestDate;
 		}
 		
 	}

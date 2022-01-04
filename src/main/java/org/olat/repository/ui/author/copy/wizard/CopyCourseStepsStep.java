@@ -98,10 +98,14 @@ public class CopyCourseStepsStep extends BasicStep {
 		private SingleSelection wikiSettingsEl;
 		private SingleSelection folderSettingsEl;
 		private SingleSelection taskSettingsEl;
+		private SingleSelection testSettingsEl;
 
 		private SingleSelection lectureBlockSettingsEl;
 		private SingleSelection reminderSettingsEl;
 		private SingleSelection assessmentModeSettingsEl;
+		
+		private SingleSelection documentsSettingsEl;
+		private SingleSelection coachDocumentsSettingsEl;
 		
 		private List<SingleSelection> allOptions;
 		private FormLink customizeAllLink;
@@ -152,6 +156,8 @@ public class CopyCourseStepsStep extends BasicStep {
 			SelectionValue customize = new SelectionValue(CopyType.custom.name(), translate("options.customize"), "o_primary", true);
 			SelectionValue createNew = new SelectionValue(CopyType.createNew.name(), translate("options.empty.resource"), "o_primary", true);
 			SelectionValue configureLater = new SelectionValue(CopyType.ignore.name(), translate("options.configure.later"), "o_primary", true);
+			SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"), "o_primary", true);
+			SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"), "o_primary", true);
 
 			// Members management
 			FormLayoutContainer memebersManagementLayout = FormLayoutContainer.createDefaultFormLayout_2_10("memebersManagementLayout", getTranslator());
@@ -190,6 +196,13 @@ public class CopyCourseStepsStep extends BasicStep {
 				nodeSettingsLayout.setFormTitle(translate("course.node.settings"));
 				formLayout.add(nodeSettingsLayout);
 
+				if (context.hasTest()) {
+					SelectionValues testSettings = new SelectionValues(reference, copy, configureLater);
+					testSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("tests", nodeSettingsLayout, testSettings);
+					testSettingsEl.addActionListener(FormEvent.ONCHANGE);
+					allOptions.add(testSettingsEl);
+				}
+				
 				if (context.hasTask()) {
 					SelectionValue copyAssignmentAndSolution = new SelectionValue(CopyType.copy.name(), translate("options.copy.assignment.solution"), "o_primary", true);
 					SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"), "o_primary", true);
@@ -201,8 +214,6 @@ public class CopyCourseStepsStep extends BasicStep {
 				}
 				
 				if (context.hasFolder()) {
-					SelectionValue copyContent = new SelectionValue(CopyType.copy.name(), translate("options.copy.content"), "o_primary", true);
-					SelectionValue ignoreContent = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.content"), "o_primary", true);
 					SelectionValues folderSettings = new SelectionValues(copyContent, ignoreContent);
 					folderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("folders", nodeSettingsLayout, folderSettings);
 					folderSettingsEl.setHelpTextKey("folders.help", null);
@@ -276,6 +287,22 @@ public class CopyCourseStepsStep extends BasicStep {
 				allOptions.add(assessmentModeSettingsEl);
 			}
 			
+			// Documents
+			if (context.hasDocuments()) {
+				SelectionValues documentModeSettings = new SelectionValues(copyContent, ignoreContent);
+				documentsSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("document.modes", additionalSettingsLayout, documentModeSettings);
+				documentsSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(documentsSettingsEl);
+			}
+			
+			// Coach Documents
+			if (context.hasCoachDocuments()) {
+				SelectionValues coachDocumentModeSettings = new SelectionValues(copyContent, ignoreContent);
+				coachDocumentsSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("coach.document.modes", additionalSettingsLayout, coachDocumentModeSettings);
+				coachDocumentsSettingsEl.addActionListener(FormEvent.ONCHANGE);
+				allOptions.add(coachDocumentsSettingsEl);
+			}
+			
 			additionalSettingsLayout.setVisible(false);
 			for (FormItem item : additionalSettingsLayout.getFormItems()) {
 				additionalSettingsLayout.setVisible(true);
@@ -303,6 +330,9 @@ public class CopyCourseStepsStep extends BasicStep {
 			if (taskSettingsEl != null) {
 				taskSettingsEl.select(wizardModule.getTaskCopyType().name(), true);
 			}
+			if (testSettingsEl != null) {
+				testSettingsEl.select(wizardModule.getTestCopyType().name(), true);
+			}
 			if (blogSettingsEl != null) {
 				blogSettingsEl.select(wizardModule.getBlogCopyType().name(), true);
 			}
@@ -329,6 +359,14 @@ public class CopyCourseStepsStep extends BasicStep {
 				assessmentModeSettingsEl.select(wizardModule.getAssessmentCopyType().name(), true);
 			}
 			
+			if (documentsSettingsEl != null) {
+				documentsSettingsEl.select(wizardModule.getDocumentsCopyType().name(), true);
+			}
+			
+			if (coachDocumentsSettingsEl != null) {
+				coachDocumentsSettingsEl.select(wizardModule.getCoachDocumentsCopyType().name(), true);
+			}
+			
 			saveStepConfig(ureq);
 		}
 		
@@ -352,6 +390,9 @@ public class CopyCourseStepsStep extends BasicStep {
 			if (taskSettingsEl != null) {
 				taskSettingsEl.select(context.getTaskCopyType().name(), true);
 			}
+			if (testSettingsEl != null) {
+				testSettingsEl.select(context.getTestCopyType().name(), true);
+			}
 			if (blogSettingsEl != null) {
 				blogSettingsEl.select(context.getBlogCopyType().name(), true);
 			}
@@ -370,6 +411,12 @@ public class CopyCourseStepsStep extends BasicStep {
 			}
 			if (assessmentModeSettingsEl != null) {
 				assessmentModeSettingsEl.select(context.getAssessmentModeCopyType().name(), true);
+			}
+			if (documentsSettingsEl != null) {
+				documentsSettingsEl.select(context.getDocumentsCopyType().name(), true);
+			}
+			if (coachDocumentsSettingsEl != null) {
+				coachDocumentsSettingsEl.select(context.getCoachDocumentsCopyType().name(), true);
 			}
 			
 			saveStepConfig(ureq);
@@ -426,6 +473,11 @@ public class CopyCourseStepsStep extends BasicStep {
 				context.setDisclaimerCopyType(context.getCopyType(disclaimerSettingsEl.getSelectedKey()));
 				steps.setEditDisclaimer(disclaimerSettingsEl.isKeySelected(CopyType.custom.name()));
 			}
+			
+			// Test settings
+			if (testSettingsEl != null) {
+				context.setTestCopyType(context.getCopyType(testSettingsEl.getSelectedKey()));
+			}
 
 			// Task settings
 			if (taskSettingsEl != null) {
@@ -463,6 +515,16 @@ public class CopyCourseStepsStep extends BasicStep {
 			if (assessmentModeSettingsEl != null) {
 				context.setAssessmentModeCopyType(context.getCopyType(assessmentModeSettingsEl.getSelectedKey()));
 				steps.setEditAssessmentModes(assessmentModeSettingsEl.isKeySelected(CopyType.custom.name()));
+			}
+			
+			// Document settings
+			if (documentsSettingsEl != null) {
+				context.setDocumentsCopyType(context.getCopyType(documentsSettingsEl.getSelectedKey()));
+			}
+			
+			// Document settings
+			if (coachDocumentsSettingsEl != null) {
+				context.setCoachDocumentsCopyType(context.getCopyType(coachDocumentsSettingsEl.getSelectedKey()));
 			}
 
 			setNextStep(OwnersStep.create(ureq, steps));

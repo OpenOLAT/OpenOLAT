@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -85,6 +88,17 @@ public class CopyCourseGeneralStep extends BasicStep {
 
 		private static final String CUSTOM_MODE = "wizard.mode.custom";
 		private static final String AUTOMATIC_MODE = "wizard.mode.automatic";
+		
+		private final Map<String, String> COPY_TYPE_TRANSLATION_KEYS_MAP = new HashMap<String, String>() {{ 
+			put("copy", "options.copy");
+			put("ignore", "options.ignore");
+			put("reference", "options.reference");
+			put("custom", "options.customize");
+			put("createNew", "options.empty.resource");
+			put("ignore.later", "options.configure.later");
+			put("copy.folder", "options.copy.content");
+			put("ignore.folder", "options.ignore.content");
+		}};
 		
 		private TextElement externalRefEl;
 		private TextElement displayNameEl;
@@ -186,6 +200,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			copyModeEl = uifactory.addCardSingleSelectHorizontal("wizard.mode", copyModeLayout, modes.keys(), modes.values(), modes.descriptions(), null);
 			copyModeEl.select(steps.isAdvancedMode() ? custom.getKey() : automatic.getKey(), true);
 			copyModeEl.addActionListener(FormEvent.ONCHANGE);
+			copyModeEl.setHelpText(getCopyTypeHelpText());
 		}
 		
 		@Override
@@ -246,6 +261,94 @@ public class CopyCourseGeneralStep extends BasicStep {
 			} else {
 				textElement.clearError();
 			}
+		}
+		
+		private String getCopyTypeHelpText() {			
+			String helpText = "";
+			
+			helpText += translate("copy.mode.help.intro");
+			
+			// Owner settings
+			if (context.hasOwners()) {
+				helpText += translateHelpTextItem("owners", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getOwnersCopyType().name()));				
+			}
+			
+			// Coach settings
+			if (context.hasCoaches()) {
+				helpText += translateHelpTextItem("coaches", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getCoachesCopyType().name()));
+			}
+			
+			// Group settings
+			if (context.hasGroups()) {
+				helpText += translateHelpTextItem("groups", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getGroupCopyType().name()));
+			}
+			
+			helpText += "<br>";
+			
+			if (context.hasTest()) {
+				helpText += translateHelpTextItem("tests", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getTestCopyType().name()));
+			}
+			
+			if (context.hasTask()) {
+				helpText += translateHelpTextItem("tasks", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getTaskCopyType().name()));
+			}
+			
+			if (context.hasFolder()) {
+				helpText += translateHelpTextItem("folders", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getFolderCopyType().name() + ".folder"));
+			}
+			
+			if (context.hasBlog()) {
+				helpText += translateHelpTextItem("blogs", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getBlogCopyType().name()));
+			}
+
+
+			if (context.hasWiki()) {
+				helpText += translateHelpTextItem("wikis", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getWikiCopyType().name()));
+			}
+			
+			helpText += "<br>";
+			
+			// Publication settings
+			if (context.hasCatalogEntry()) {
+				helpText += translateHelpTextItem("publication", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getCatalogCopyType().name()));
+			}
+	
+			// Disclaimer settings
+			if (context.hasDisclaimer()) {
+				helpText += translateHelpTextItem("disclaimer", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getDisclaimerCopyType().name()));
+			}
+	
+			// Reminder steps
+			if (context.hasReminders()) {
+				helpText += translateHelpTextItem("reminders", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getReminderCopyType().name()));
+			}
+			
+			// Lecture block steps
+			if (context.hasLectureBlocks()) {
+				helpText += translateHelpTextItem("lecture.blocks", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getLectureBlockCopyType().name()));
+			}
+						
+			// Assessment mode steps
+			if (context.hasAssessmentModes()) {
+				helpText += translateHelpTextItem("assessment.moodes", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getAssessmentModeCopyType().name()));
+			}
+			
+			// Documents
+			if (context.hasDocuments()) {
+				helpText += translateHelpTextItem("document.modes", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getDocumentsCopyType().name() + ".folder"));
+			}
+			
+			// Coach Documents
+			if (context.hasCoachDocuments()) {
+				helpText += translateHelpTextItem("coach.document.modes", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getCoachDocumentsCopyType().name() + ".folder"));
+			}
+			
+			return helpText;
+		}
+		
+		private String translateHelpTextItem(String descriptionKey, String valueKey) {
+			return  "<b>" + translate(descriptionKey) + "</b>" + 
+				    " - " + translate(valueKey) + "<br>";
 		}
 	}
  }
