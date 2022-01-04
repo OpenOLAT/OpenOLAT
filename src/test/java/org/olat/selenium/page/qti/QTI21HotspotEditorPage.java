@@ -80,8 +80,8 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		By addRectBy = By.xpath("//a[contains(@class,'btn-default')][i[contains(@class,'o_icon_rectangle')]]");
 		browser.findElement(addRectBy).click();
 		By rectangleBy = By.cssSelector("div.o_draw_rectangle");
-		OOGraphene.waitElementSlowly(rectangleBy, 5, browser);
-		return this;
+		OOGraphene.waitElementPresence(rectangleBy, 5, browser);
+		return moveToHotspotEditor();
 	}
 	
 	public QTI21HotspotEditorPage moveToHotspotEditor() {
