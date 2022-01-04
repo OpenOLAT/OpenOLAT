@@ -22,6 +22,7 @@
  * ========================================================
  */
 (function($) {
+	"use strict";
     $.fn.drawing = function(options) {
     	var draw = this.data("data-oo-drawing");
     	if(typeof draw === "undefined") {

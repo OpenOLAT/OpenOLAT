@@ -42,10 +42,13 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		super(browser);
 	}
 	
-	public QTI21HotspotEditorPage updloadBackground(File file) {
+	public QTI21HotspotEditorPage updloadBackground(File image) {
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
-		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.uploadFile(inputBy, image, browser);
 		OOGraphene.waitBusy(browser);
+		String name = image.getName().substring(0, image.getName().indexOf('.'));
+		By imageBy = By.xpath("//div[@class='o_filemeta'][text()[contains(.,'" + name + "')]]");
+		OOGraphene.waitElement(imageBy, browser);
 		return this;
 	}
 	
@@ -82,9 +85,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 	
 	public QTI21HotspotEditorPage moveToHotspotEditor() {
-		By editorBy = By.id("o_qti_hotspots_edit");
-		OOGraphene.waitElement(editorBy, browser);
-		OOGraphene.moveTo(editorBy, browser);
+		OOGraphene.moveTo(By.cssSelector("div.o_sel_assessment_item_correct_spots"), browser);
 		return this;
 	}
 	
@@ -99,10 +100,9 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		WebElement circleEl = browser.findElement(circleBy);
 		Dimension dim = circleEl.getSize();// 20 20
 		new Actions(browser)
-			.moveToElement(circleEl, (dim.getWidth() / 2) - 5, 0)// 0 0
+			.moveToElement(circleEl, (dim.getWidth() / 2) - 2, 0)// 0 0
 			.clickAndHold()
 			.moveByOffset(40, 0)
-			.build()
 			.perform();
 		
 		new Actions(browser)
@@ -143,7 +143,6 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 			.moveToElement(element, 0, 0)
 			.clickAndHold()
 			.moveByOffset(xOffset, yOffset)
-			.build()
 			.perform();
 		
 		new Actions(browser)
@@ -176,6 +175,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 				OOGraphene.waitElementSlowly(scorePanelBy, 5, browser);
 			} catch (Exception e1) {
 				OOGraphene.takeScreenshot("Select scores", browser);
+				OOGraphene.logs(browser);
 				throw e1;
 			}
 		}

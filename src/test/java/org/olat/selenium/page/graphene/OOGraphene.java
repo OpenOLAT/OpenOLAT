@@ -42,6 +42,9 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
@@ -57,7 +60,7 @@ public class OOGraphene {
 	
 	private static final Logger log = Tracing.createLoggerFor(OOGraphene.class);
 
-	private static final Duration waitTinyDuration = Duration.ofSeconds(50);
+	private static final Duration waitTinyDuration = Duration.ofSeconds(20);
 	private static final Duration driverTimeout = Duration.ofSeconds(60);
 	
 	private static final Duration polling = Duration.ofMillis(100);
@@ -299,8 +302,7 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			scrollTo(buttonBy, browser);// Firefox doesn't implement moveToElement
-			waitElement(buttonBy, browser);
+			scrollTo(buttonBy, browser);
 			browser.findElement(buttonBy).click();
 			OOGraphene.waitBusyAndScrollTop(browser);
 		} else {
@@ -379,14 +381,12 @@ public class OOGraphene {
 	}
 	
 	public static final void tinymce(String content, String containerCssSelector, WebDriver browser) {
+		waitTinymce(containerCssSelector, browser);
+		
 		By tinyIdBy = By.cssSelector(containerCssSelector + " div.o_richtext_mce");
-		waitElement(tinyIdBy, browser);
 		WebElement tinyIdEl = browser.findElement(tinyIdBy);
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
-
-		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
-			.pollingEvery(polling)
-			.until(new TinyMCELoadedByIdPredicate(tinyId));
+		waitTinymceById(tinyId, browser);
 		((JavascriptExecutor)browser).executeScript("tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
 	}
 	
@@ -398,15 +398,35 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static final void tinymceInsert(String content, String containerCssSelector, WebDriver browser) {
+		waitTinymce(containerCssSelector, browser);
+		
 		By tinyIdBy = By.cssSelector(containerCssSelector + " div.o_richtext_mce");
-		waitElement(tinyIdBy, browser);
 		WebElement tinyIdEl = browser.findElement(tinyIdBy);
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
+		waitTinymceById(tinyId, browser);
+		((JavascriptExecutor)browser).executeScript("tinymce.editors['" + tinyId + "'].insertContent('" + content + "')");
+	}
+	
+	/**
+	 * Wait until the iframe where the editing happens exists.
+	 * 
+	 * @param containerCssSelector The container of the textarea element
+	 * @param browser The browser
+	 */
+	private static final void waitTinymce(String containerCssSelector, WebDriver browser) {
+		waitElement(By.cssSelector(containerCssSelector + " div.o_richtext_mce div.mce-edit-area>iframe"), browser);
+	}
 
+	/**
+	 * Check that the TinyMCE editor with the specified id is initialized.
+	 * 
+	 * @param tinyId The id of the element
+	 * @param browser The browser
+	 */
+	private static final void waitTinymceById(String tinyId, WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
 			.pollingEvery(polling)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
-		((JavascriptExecutor)browser).executeScript("tinymce.editors['" + tinyId + "'].insertContent('" + content + "')");
 	}
 	
 	/**
@@ -795,5 +815,22 @@ public class OOGraphene {
 		File screenshotFile = new File(path, filename);
 		log.error("Write screenshot: {} {}", test, screenshotFile);
 		FileUtils.copyFileToFile(screenFile, screenshotFile, true);
+	}
+	
+	public static void logs(WebDriver browser) {
+		logs(browser, LogType.BROWSER);
+		logs(browser, LogType.DRIVER);
+	}
+	
+	public static void logs(WebDriver browser, String logType) {
+		try {
+			LogEntries logEntries = browser.manage().logs().get(logType);
+			for (LogEntry logEntry : logEntries) {
+				java.util.logging.Level level = logEntry.getLevel();
+				log.error("{} {}", level.getName(), logEntry.getMessage());
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 }
