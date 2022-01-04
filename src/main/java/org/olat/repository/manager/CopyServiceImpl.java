@@ -52,6 +52,8 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.nodes.bc.CoachFolderFactory;
+import org.olat.course.nodes.bc.CourseDocumentsFactory;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.wizard.CourseDisclaimerContext;
 import org.olat.group.BusinessGroup;
@@ -143,6 +145,8 @@ public class CopyServiceImpl implements CopyService {
 	public RepositoryEntry copyLearningPathCourse(CopyCourseContext context) {
 		RepositoryEntry sourceEntry = context.getSourceRepositoryEntry();
 		OLATResource sourceResource = sourceEntry.getOlatResource();
+		ICourse sourceCourse = CourseFactory.loadCourse(sourceResource);
+		
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		
 		// For easier handling, put all nodes into a map with their identifier
@@ -244,15 +248,15 @@ public class CopyServiceImpl implements CopyService {
 				target.getEducationalType());
 		
 		// Open course editing session
-		OLATResourceable courseOres = target.getOlatResource();
-		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
-		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig();
+		OLATResourceable targetCourseOres = target.getOlatResource();
+		ICourse targetCourse = CourseFactory.openCourseEditSession(targetCourseOres.getResourceableId());
+		CourseConfig targetCourseConfig = targetCourse.getCourseEnvironment().getCourseConfig();
 		
 		// Copy disclaimer
-		copyDisclaimer(context, courseConfig);
+		copyDisclaimer(context, targetCourseConfig);
 		
 		// Move dates
-		moveDates(context, course, sourceCourseNodesMap);
+		moveDates(context, targetCourse, sourceCourseNodesMap);
 		
 		// Copy lecture blocks
 		copyLectureBlocks(context, target);
@@ -260,10 +264,16 @@ public class CopyServiceImpl implements CopyService {
 		// Copy assessment modes
 		copyAssessmentModes(context, target);
 		
+		// Copy documents		
+		copyDocuments(context, sourceCourse, targetCourse);
+		
+		// Copy coach documents
+		copyCoachDocuments(context, sourceCourse, targetCourse);
+		
 		// Close edit session
-		CourseFactory.setCourseConfig(courseOres.getResourceableId(), courseConfig);
-		CourseFactory.saveCourse(courseOres.getResourceableId());
-		CourseFactory.closeCourseEditSession(courseOres.getResourceableId(), true);
+		CourseFactory.setCourseConfig(targetCourseOres.getResourceableId(), targetCourseConfig);
+		CourseFactory.saveCourse(targetCourseOres.getResourceableId());
+		CourseFactory.closeCourseEditSession(targetCourseOres.getResourceableId(), true);
 		
 		// Index new course
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, target.getKey());
@@ -742,6 +752,34 @@ public class CopyServiceImpl implements CopyService {
 			
 			assessmentModeManager.merge(copy, false);
 			
+		}
+	}
+	
+	private void copyDocuments(CopyCourseContext context, ICourse sourceCourse, ICourse targetCourse) {
+		if (context.getDocumentsCopyType() == null || context.getDocumentsCopyType().equals(CopyType.ignore)) {
+			return;
+		}
+		
+		CourseConfig cc = sourceCourse.getCourseEnvironment().getCourseConfig();
+		
+		if(cc.isDocumentsEnabled() && !StringHelper.containsNonWhitespace(cc.getDocumentsPath())) {
+			VFSContainer sourceContainer = CourseDocumentsFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
+			VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+			VFSManager.copyContent(sourceContainer, targetContainer);
+		}
+	}
+	
+	private void copyCoachDocuments(CopyCourseContext context, ICourse sourceCourse, ICourse targetCourse) {
+		if (context.getCoachDocumentsCopyType() == null || context.getCoachDocumentsCopyType().equals(CopyType.ignore)) {
+			return;
+		}
+		
+		CourseConfig cc = sourceCourse.getCourseEnvironment().getCourseConfig();
+		
+		if(cc.isCoachFolderEnabled() && !StringHelper.containsNonWhitespace(cc.getCoachFolderPath())) {
+			VFSContainer sourceContainer = CoachFolderFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
+			VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+			VFSManager.copyContent(sourceContainer, targetContainer);
 		}
 	}
 		

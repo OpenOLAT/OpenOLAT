@@ -99,6 +99,7 @@ public class CopyCourseOverviewDataModel extends DefaultFlexiTreeTableDataModel<
 			case endChooser: return row.getNewEndDateChooser();
 			case obligationChooser: return row.getObligationChooser();
 			case resourceChooser: return row.getResourceChooser();
+			case earliestDate: return row.getEarliestDateWithLabel();
 			default: return null;
 		}
 	}
@@ -129,7 +130,8 @@ public class CopyCourseOverviewDataModel extends DefaultFlexiTreeTableDataModel<
 		startChooser("table.header.start"),
 		endChooser("table.header.end"),
 		obligationChooser("table.header.obligation"),
-		resourceChooser("table.header.resource");
+		resourceChooser("table.header.resource"), 
+		earliestDate("table.heaeder.earliest.date");
 		
 		private final String i18nKey;
 		

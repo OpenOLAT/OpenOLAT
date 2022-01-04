@@ -59,6 +59,7 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.group.BusinessGroup;
@@ -160,6 +161,7 @@ public class CopyCourseWizardController extends BasicController {
 		forgeRows(courseNodes, rootNode, 0, null);
 		
 		copyContext.setCourseNodes(courseNodes);
+		copyContext.setTest(hasCourseNode(courseNodes, IQTESTCourseNode.class));
 		copyContext.setBlog(hasCourseNode(courseNodes, BlogCourseNode.class));
 		copyContext.setWiki(hasCourseNode(courseNodes, WikiCourseNode.class));
 		copyContext.setFolder(hasCourseNode(courseNodes, BCCourseNode.class));
@@ -175,6 +177,8 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.setHasOwners(hasOwners(sourceEntry));
 		copyContext.setHasDisclaimer(hasDisclaimer(course));
 		copyContext.setHasCatalogEntry(hasCatalogEntry(sourceEntry));
+		copyContext.setDocuments(hasDocuments(course));
+		copyContext.setCoachDocuments(hasCoachDocuments(course));
 		
         CopyCourseGeneralStep copyCourseStep = new CopyCourseGeneralStep(ureq, copySteps, copyContext);
         
@@ -427,6 +431,18 @@ public class CopyCourseWizardController extends BasicController {
 		List<Identity> coaches = securityManager.loadIdentityByKeys(identityKeys);
 		
 		return coaches;
+	}
+	
+	private boolean hasDocuments(ICourse course) {
+		CourseConfig config = course.getCourseEnvironment().getCourseConfig();
+		
+		return config.isDocumentsEnabled();
+	}
+	
+	private boolean hasCoachDocuments(ICourse course) {
+		CourseConfig config = course.getCourseEnvironment().getCourseConfig();
+		
+		return config.isCoachFolderEnabled();
 	}
 	
 	private class FinishCallback implements StepRunnerCallback {
