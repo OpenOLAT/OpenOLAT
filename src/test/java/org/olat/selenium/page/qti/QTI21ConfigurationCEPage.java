@@ -133,10 +133,12 @@ public class QTI21ConfigurationCEPage {
 			browser.findElement(untilAltBy).click();
 			
 			By todayBy = By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')]/a");
-			OOGraphene.waitElement(todayBy, browser);
+			OOGraphene.waitElementFullOpacity(todayBy, browser);
+			OOGraphene.waitingALittleLonger();// wait animation
 			
 			browser.findElement(todayBy).click();
 			OOGraphene.waitElementDisappears(todayBy, 5, browser);
+			OOGraphene.waitingALittleLonger();// wait animation
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Datetest", browser);
 			throw e;

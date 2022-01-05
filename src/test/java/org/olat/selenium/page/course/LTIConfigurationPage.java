@@ -77,7 +77,7 @@ public class LTIConfigurationPage {
 		By saveBy = By.cssSelector("fieldset.o_sel_lti_config_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.moveTop(browser);
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 

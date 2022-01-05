@@ -40,13 +40,14 @@ public class QTI21OptionsPage {
 	}
 	
 	public QTI21OptionsPage showResults(Boolean show, QTI21AssessmentResultsOptions options) {
-		By showResultsBy = By.cssSelector("div.o_sel_qti_show_results input[type='checkbox']");
-		WebElement showResultsEl = browser.findElement(showResultsBy);
-		OOGraphene.check(showResultsEl, show);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.moveTo(By.cssSelector("fieldset.o_sel_qti_resource_options div.o_sel_qti_show_results"), browser);
 		
+		By showResultsBy = By.cssSelector("div.o_sel_qti_show_results input[type='checkbox']");
+		WebElement showResultsEl2 = browser.findElement(showResultsBy);
+		OOGraphene.check(showResultsEl2, show);
+
 		By resultsLevelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox']");
-		OOGraphene.waitElement(resultsLevelBy, 5, browser);
+		OOGraphene.waitElement(resultsLevelBy, browser);
 
 		if(options.isMetadata()) {
 			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");

@@ -47,7 +47,12 @@ public class RepositoryCertificateSettingsPage {
 		}
 		WebElement checkEl = browser.findElement(by);
 		OOGraphene.check(checkEl, Boolean.TRUE);
-		OOGraphene.waitBusy(browser);
+		if(auto) {
+			By recertificationBy = By.cssSelector("fieldset.o_sel_certificate_settings input[name='recertification']");
+			OOGraphene.waitElement(recertificationBy, browser);
+		} else {
+			OOGraphene.waitBusy(browser);
+		}
 		return this;
 	}
 	
@@ -55,7 +60,9 @@ public class RepositoryCertificateSettingsPage {
 		By recertificationBy = By.cssSelector("fieldset.o_sel_certificate_settings input[type='checkbox'][name='recertification']");
 		WebElement checkEl = browser.findElement(recertificationBy);
 		OOGraphene.check(checkEl, Boolean.TRUE);
-		OOGraphene.waitBusy(browser);
+		
+		By timelapseBy = By.xpath("//fieldset[contains(@class,'o_sel_certificate_settings')]//select[@name='timelapse.unit_SELBOX']");
+		OOGraphene.waitElement(timelapseBy, browser);
 		return this;
 	}
 	

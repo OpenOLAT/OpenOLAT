@@ -1,7 +1,7 @@
 #if($restrictedEdit)
 	<div class="o_warning">$r.translate("warning.in.use")</div>
 #end
-<div class="o_assessment_test_editor_and_composer">
+<section class="o_assessment_test_editor_and_composer">
 	<div class="o_titled_wrapper">
 		<div class="o_title">
 			<h2><i class="$cssClass"> </i> $r.escapeHtml($title)#if($identifier && !${identifier.isEmpty()}) <small>$identifier</small>#end</h2>
@@ -15,5 +15,5 @@
 			<div>$r.render("cmds")</div>
 		</div>
 	</div>
-	<section>$r.render("content")</section>
-</div>
+	$r.render("content")
+</section>

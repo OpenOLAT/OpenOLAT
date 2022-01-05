@@ -75,6 +75,7 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.DownloadeableMediaResource;
@@ -948,6 +949,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		removeHistory(ureq);
 		if(userCourseEnv.isParticipant() && courseNode instanceof IQTESTCourseNode) {
 			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, null, Role.user);
+			
+			AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
+			AssessmentEntryStatus assessmentStatus = assessmentEvaluation.getAssessmentStatus();
+			if (assessmentStatus != null && assessmentStatus == AssessmentEntryStatus.inProgress && assessmentEvaluation.getAttempts() != null && assessmentEvaluation.getAttempts().intValue() < 2) {
+				assessmentEvaluation = new AssessmentEvaluation(assessmentEvaluation, AssessmentEntryStatus.notStarted);
+				courseAssessmentService.updateScoreEvaluation(courseNode, assessmentEvaluation, userCourseEnv, null, false, Role.user);
+			}
 		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
@@ -1026,8 +1034,16 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	@Override
 	public void updateOutcomes(Float score, Boolean pass, Date start, Double completion) {
 		if(courseNode instanceof IQTESTCourseNode) {
+			AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
+			AssessmentEntryStatus assessmentStatus = assessmentEvaluation.getAssessmentStatus();
+			if (assessmentStatus == null || assessmentStatus == AssessmentEntryStatus.notReady || assessmentStatus == AssessmentEntryStatus.notStarted) {
+				assessmentEvaluation = new AssessmentEvaluation(assessmentEvaluation, AssessmentEntryStatus.inProgress);
+				courseAssessmentService.updateScoreEvaluation(courseNode, assessmentEvaluation, userCourseEnv, null, false, Role.user);
+			}
+			
 			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, start, completion, AssessmentRunStatus.running,
 					Role.user);
+			
 			coordinatorManager.getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(),
 						start, completion, AssessmentRunStatus.running, getIdentity().getKey()),
