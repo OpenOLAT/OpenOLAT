@@ -133,7 +133,7 @@ public class QTI21ConfigurationCEPage {
 			browser.findElement(untilAltBy).click();
 			
 			By todayBy = By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')]/a");
-			OOGraphene.waitElementFullOpacity(todayBy, browser);
+			OOGraphene.waitElement(todayBy, browser);
 			OOGraphene.waitingALittleLonger();// wait animation
 			
 			browser.findElement(todayBy).click();
@@ -149,25 +149,13 @@ public class QTI21ConfigurationCEPage {
 		}
 		
 		By hourBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dch_o_')]");
-		WebElement hourEl = browser.findElement(hourBy);
-		hourEl.clear();
-		if(waitBusy) {
-			OOGraphene.waitBusy(browser);
-			hourEl = browser.findElement(hourBy);
-		}
-		hourEl.sendKeys(Integer.toString(hour));
+		browser.findElement(hourBy).sendKeys("\uE003\uE003" + Integer.toString(hour));
 		if(waitBusy) {
 			OOGraphene.waitBusy(browser);
 		}
 		
 		By minuteBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dcm_o_')]");
-		WebElement minuteEl = browser.findElement(minuteBy);
-		minuteEl.clear();
-		if(waitBusy) {
-			OOGraphene.waitBusy(browser);
-			minuteEl = browser.findElement(minuteBy);
-		}
-		minuteEl.sendKeys(Integer.toString(minutes));
+		browser.findElement(minuteBy).sendKeys("\uE003\uE003" + Integer.toString(minutes));
 		if(waitBusy) {
 			OOGraphene.waitBusy(browser);
 		}

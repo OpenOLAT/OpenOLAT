@@ -623,6 +623,7 @@ create table o_re_educational_type (
   r_identifier varchar2(128) not null,
   r_predefined number not null,
   r_css_class varchar(128),
+  r_preset_mycourses number default 0 not null,
   primary key (id)
 );
 
@@ -1472,7 +1473,7 @@ create table o_as_entry (
    fk_identity_passed_mod number(20),
    fk_identity_end_date_mod number(20),
    fk_identity_obligation_mod number(20),
-   fk_identity_passed_mod fk_identity_status_done(20),
+   fk_identity_status_done number(20),
    a_anon_identifier varchar2(128 char) default null,
    primary key (id),
    unique(fk_identity, fk_entry, a_subident)
@@ -3331,7 +3332,7 @@ create table o_livestream_launch (
    primary key (id)
 );
 create table o_livestream_url_template (
-   id bigserial,
+   id number(20) generated always as identity,
    creationdate timestamp not null,
    lastmodified timestamp not null,
    l_name varchar2(64) not null,

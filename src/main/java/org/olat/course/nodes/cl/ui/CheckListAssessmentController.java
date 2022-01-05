@@ -346,6 +346,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		
 		Map<Long, AssessmentObligation> identityKeyToObligation = learningPath
 				? assessmentService.loadAssessmentEntriesBySubIdent(cgm.getCourseEntry(), courseNode.getIdent()).stream()
+						.filter(ae -> ae != null && ae.getIdentity() != null)
 						.collect(Collectors.toMap(ae -> ae.getIdentity().getKey(), this::extractObligation))
 				: Collections.emptyMap();
 		

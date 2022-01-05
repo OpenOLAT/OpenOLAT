@@ -99,7 +99,7 @@ public class AssessmentModePage {
 	public AssessmentModePage save() {
 		By saveButtonBy = By.cssSelector(".o_sel_assessment_mode_edit_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_assessment_mode_list"), browser);
 		return this;
 	}
 	

@@ -36,5 +36,9 @@ public interface RepositoryEntryEducationalType {
 	public String getCssClass();
 	
 	public void setCssClass(String cssClass);
+	
+	public boolean isPresetMyCourses();
+
+	public void setPresetMyCourses(boolean presetMyCourse);
 
 }

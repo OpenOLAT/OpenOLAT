@@ -135,13 +135,11 @@ public class FolderPage {
 		
 		By inputBy = By.cssSelector("div.modal-dialog div.o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
-		OOGraphene.waitBusy(browser);
 		By uploadedBy = By.cssSelector("div.modal-dialog div.o_sel_file_uploaded");
-		OOGraphene.waitElement(uploadedBy, browser);
+		OOGraphene.waitElementSlowly(uploadedBy, 5, browser);
 		
 		By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
 		browser.findElement(saveButtonBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

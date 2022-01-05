@@ -709,14 +709,14 @@ public class QTI21Page {
 	 */
 	public QTI21Page saveGraphicAnswer() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
-		browser.findElement(saveAnswerBy).click();
+		OOGraphene.moveAndClick(saveAnswerBy, browser);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public QTI21Page saveAnswerMoveAndScrollTop() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
-		OOGraphene.click(saveAnswerBy, browser);
+		OOGraphene.moveAndClick(saveAnswerBy, browser);
 		OOGraphene.waitBusy(browser);
 		OOGraphene.scrollTop(browser);
 		return this;
@@ -736,8 +736,14 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page assertFeedback(String title) {
-		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(feedbackBy, 5, browser);
+		try {
+			By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
+			OOGraphene.waitElement(feedbackBy, 5, browser);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw e;
+		}
 		return this;
 	}
 	

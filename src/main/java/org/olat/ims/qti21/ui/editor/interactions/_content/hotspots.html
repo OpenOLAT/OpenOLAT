@@ -31,6 +31,10 @@ jQuery(function() {
 		e.stopPropagation();
 		$f.openFfXHREvent(false, false, true), 'delete-hotspot', jQuery(this).data('qti-hotspot'));
 	});
+	
+	#if($r.isTrue($focusOnEditor))
+		o_info.lastFormFocusEl = '${r.getCId()}_editor';
+	#end
 });
 </script>
 </div>

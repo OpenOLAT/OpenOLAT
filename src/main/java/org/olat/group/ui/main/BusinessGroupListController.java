@@ -367,6 +367,7 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		
 		FormLink accessLink = uifactory.addFormLink("open_" + item.getBusinessGroupKey(), action, i18nKey,
 				null, null, Link.LINK);
+		accessLink.setElementCssClass("o_sel_group_access");
 		if(action == null) {
 			accessLink.setEnabled(false);
 		}
