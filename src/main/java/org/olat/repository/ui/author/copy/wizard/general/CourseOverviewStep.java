@@ -69,6 +69,7 @@ import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -85,6 +86,7 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewDataModel.Cop
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
+import org.olat.repository.ui.author.copy.wizard.dates.MoveAllDatesController;
 import org.olat.repository.ui.author.copy.wizard.dates.MoveDateConfirmController;
 import org.olat.repository.ui.author.copy.wizard.dates.MoveDatesEvent;
 
@@ -137,6 +139,7 @@ public class CourseOverviewStep extends BasicStep {
 		private boolean askForDateMove = true;
 		
 		private CourseNodeDatesListController courseNodeDatesListController;
+		private MoveAllDatesController moveAllDatesController;
 		
 		private final DueDateConfigFormatter dueDateConfigFormatter;
 		
@@ -146,6 +149,9 @@ public class CourseOverviewStep extends BasicStep {
 			setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 			setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
+			setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
+			setTranslator(Util.createPackageTranslator(NodeRightsController.class, getLocale(), getTranslator()));
+			
 			this.dueDateConfigFormatter = DueDateConfigFormatter.create(getLocale());
 			
 			context = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
@@ -206,8 +212,9 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			shiftAllDates = uifactory.addFormLink("shif.all.dates", formLayout, Link.BUTTON);
+			shiftAllDates = uifactory.addFormLink("shift.all.dates", formLayout, Link.BUTTON);
 			shiftAllDates.setElementCssClass("pull-right");
+			shiftAllDates.setVisible(context.getDateDifference() == 0l);
 			
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			
@@ -382,7 +389,11 @@ public class CourseOverviewStep extends BasicStep {
 					}
 				}
 				
-				Entry<String, Date> earliestDate = getEarliestDateWithLabel(row.getCourseNode());
+				Entry<String, Date> earliestDate = getEarliestDateWithLabel(row);
+				
+				if (earliestDate != null) {
+					row.setEarliestDate(StringHelper.formatLocaleDate(earliestDate.getValue().getTime(), getLocale()), translate(earliestDate.getKey()));
+				}
 				
 				if (earliestDate != null) {
 					if (earliestDateWithNode == null || earliestDate.getValue().before(earliestDateWithNode.getValue().getValue())) {
@@ -392,6 +403,8 @@ public class CourseOverviewStep extends BasicStep {
 			}
 			
 			context.setEarliestDateWithNode(earliestDateWithNode);
+			
+			shiftAllDates.setVisible(earliestDateWithNode != null);
 			
 			dataModel.setObjects(context.getCourseNodes());
 			tableEl.reset();
@@ -457,9 +470,9 @@ public class CourseOverviewStep extends BasicStep {
 						courseNodeDatesListController.updateCourseNode(row.getCourseNode(), ureq);
 					}
 				}
-			}
-			
-			if (source instanceof SingleSelection) {
+			} else if (source == shiftAllDates) {
+				shiftAllDays(ureq);
+			} else if (source instanceof SingleSelection) {
 				SingleSelection sourceSelection = (SingleSelection) source;
 				
 				if (sourceSelection.getName().startsWith("obligation")) {
@@ -504,17 +517,25 @@ public class CourseOverviewStep extends BasicStep {
 				
 				cmc.deactivate();
 				cleanUp();
+			} else if (source == moveAllDatesController) {
+				if (event.equals(Event.DONE_EVENT)) {
+					shiftAllDates(ureq, dataModel, moveAllDatesController.getDateDifference());
+				}
+				
+				cleanUp();
 			} else if (source == cmc) {
 				cmc.deactivate();
 				cleanUp();
 			}
 		}
 		
-		private void cleanUp() {
+		private void cleanUp() {	
 			removeAsListenerAndDispose(moveDateConfirmController);
+			removeAsListenerAndDispose(moveAllDatesController);
 			removeAsListenerAndDispose(cmc);
 			
 			moveDateConfirmController = null;
+			moveAllDatesController = null;
 			cmc = null;
 		}
 		
@@ -538,6 +559,39 @@ public class CourseOverviewStep extends BasicStep {
 			cmc = new CloseableModalController(getWindowControl(), "close", moveDateConfirmController.getInitialComponent(), true, translate("dates.update.others"));
 			listenTo(cmc);
 			cmc.activate();
+		}
+		
+		private void shiftAllDays(UserRequest ureq) {
+			moveAllDatesController = new MoveAllDatesController(ureq, getWindowControl(), context);
+			listenTo(moveAllDatesController);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", moveAllDatesController.getInitialComponent(), true, translate("shift.all.dates"));
+			listenTo(cmc);
+			cmc.activate();
+		}
+		
+		private void shiftAllDates(UserRequest ureq, CopyCourseOverviewDataModel model, long dateDifference) {
+			for (CopyCourseOverviewRow row : model.getObjects()) {
+				DateChooser start = row.getNewStartDateChooser() instanceof DateChooser? (DateChooser)row.getNewStartDateChooser(): null;
+				DateChooser end = row.getNewEndDateChooser() instanceof DateChooser? (DateChooser)row.getNewEndDateChooser(): null;
+				
+				if (start != null && start.getDate() != null) {
+					Date startDate = start.getDate();
+					startDate.setTime(startDate.getTime() + dateDifference);
+					start.setDate(startDate);
+					start.setInitialDate(startDate);
+				}
+				
+				if (end != null && end.getDate() != null) {
+					Date endDate = end.getDate();
+					endDate.setTime(endDate.getTime() + dateDifference);
+					end.setDate(endDate);
+					end.setInitialDate(endDate);
+				}
+			}	
+			
+			saveDatesToContext(context, dataModel.getObjects());
+			courseNodeDatesListController.updateDates(ureq);
 		}
 		
 		private void moveAllDates(MoveDatesEvent moveDatesEvent, CopyCourseOverviewDataModel model) {
@@ -580,7 +634,9 @@ public class CourseOverviewStep extends BasicStep {
 			row.getNewEndDateChooser().setVisible(endChooserVisible);
 		}
 		
-		private Entry<String, Date> getEarliestDateWithLabel(CourseNode courseNode) {
+		private Entry<String, Date> getEarliestDateWithLabel(CopyCourseOverviewRow row) {
+			CourseNode courseNode = row.getCourseNode();
+			
 			// If there are no dates, stop here
 			if (courseNode == null || !courseNode.hasDates()) {
 				return null;
@@ -612,6 +668,40 @@ public class CourseOverviewStep extends BasicStep {
 					// Do not do anything in this case yet
 				} else if (DueDateConfig.isAbsolute(startDateConfig)) {
 					dates.put("highscore.date.start", startDateConfig.getAbsoluteDate());
+				}
+			}
+			
+			// Start date
+			DueDateConfig startConfig = row.getStart();
+			if (startConfig != null) {
+				if (DueDateConfig.isRelative(startConfig)) {
+					// Nothing to do yet
+				} else if (row.getLearningPathConfigs().isRelativeDates()) {
+					// Nothing to do yet
+				} else {
+					// Date startDate = calculateDate(startConfig.getAbsoluteDate(), context.getDateDifference());
+					Date startDate = startConfig.getAbsoluteDate();
+					
+					if (startDate != null) {
+						dates.put("table.header.start", startDate);
+					}
+				}
+			}
+			
+			// End date
+			DueDateConfig endDateConfig = row.getEnd();
+			if (endDateConfig != null) {
+				if (DueDateConfig.isRelative(endDateConfig)) {
+					// Nothing to do yet
+				} else if (row.getLearningPathConfigs().isRelativeDates()) {
+					// Nothing to do yet
+				} else {
+					// Date endDate = calculateDate(row.getEnd().getAbsoluteDate(), context.getDateDifference());
+					Date endDate = row.getEnd().getAbsoluteDate();
+					
+					if (endDate != null) {
+						dates.put("table.header.end", endDate);
+					}
 				}
 			}
 			

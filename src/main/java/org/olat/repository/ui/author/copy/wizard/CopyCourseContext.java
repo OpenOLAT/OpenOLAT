@@ -75,6 +75,8 @@ public class CopyCourseContext {
 	private boolean hasDocuments;
 	private boolean hasCoachDocuments;
 	private Entry<String, Entry<String, Date>> earliestDateWithNode;
+	private long dateDifferenceByEarliest = 0l;
+	private long dateDifferenceByEarliestCurrent = 0l;
 
 	// Metadata
 	private String displayName;
@@ -771,6 +773,22 @@ public class CopyCourseContext {
 	
 	public void setEarliestDateWithNode(Entry<String, Entry<String, Date>> earliestDateWithNode) {
 		this.earliestDateWithNode = earliestDateWithNode;
+	}
+	
+	public long getDateDifferenceByEarliest() {
+		return dateDifferenceByEarliest;
+	}
+	
+	public void setDateDifferenceByEarliest(long dateDifferenceByEarliest) {
+		this.dateDifferenceByEarliest = dateDifferenceByEarliest;
+	}
+	
+	public long getDateDifferenceByEarliestCurrent() {
+		return dateDifferenceByEarliestCurrent;
+	}
+	
+	public void setDateDifferenceByEarliestCurrent(long dateDifferenceByEarliestCurrent) {
+		this.dateDifferenceByEarliestCurrent = dateDifferenceByEarliestCurrent;
 	}
 	
 	

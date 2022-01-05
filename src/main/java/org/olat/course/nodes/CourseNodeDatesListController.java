@@ -90,6 +90,10 @@ public class CourseNodeDatesListController extends FormBasicController {
 		
 		long dateDifference = context.getDateDifference(courseNode.getIdent());
 		
+		if (dateDifference == 0l) {
+			dateDifference = context.getDateDifferenceByEarliestCurrent();
+		}
+		
 		// Load course node dependant dates
 		if (courseNode.getNodeSpecificDatesWithLabel().stream().map(Entry::getValue).anyMatch(DueDateConfig::isDueDate)) {
 			FormLayoutContainer courseNodeDatesLayout = FormLayoutContainer.createDefaultFormLayout("courseNodeDatesLayout", getTranslator());
