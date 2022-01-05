@@ -54,6 +54,7 @@ import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -826,6 +827,9 @@ public class VelocityRenderDecorator implements Closeable {
 		}
 		if(obj instanceof Boolean) {
 			return ((Boolean)obj).booleanValue();
+		}
+		if(obj instanceof ConsumableBoolean) {
+			return ((ConsumableBoolean)obj).isTrue();
 		}
 		return false;
 	}

@@ -139,11 +139,16 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		OOGraphene.waitElement(elementBy, browser);
 		OOGraphene.scrollTo(By.id("o_fiohotspot_layout_SELBOX"), browser);
 		WebElement element = browser.findElement(elementBy);
-		new Actions(browser)
-			.moveToElement(element, 0, 0)
-			.clickAndHold()
-			.moveByOffset(xOffset, yOffset)
-			.perform();
+		try {
+			new Actions(browser)
+				.moveToElement(element, 0, 0)
+				.clickAndHold()
+				.moveByOffset(xOffset, yOffset)
+				.perform();
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Move element", browser);
+			throw e;
+		}
 		
 		new Actions(browser)
 			.release()

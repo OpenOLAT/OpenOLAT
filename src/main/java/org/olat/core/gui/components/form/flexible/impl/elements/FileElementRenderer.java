@@ -147,8 +147,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 					   .append(" onchange=\"b_handleFileUploadFormChange(this, this.form.fake_").append(id).append(", this.form.upload)\"");
 				 }
 				 // Add pseudo focus marker on fake file chooser button
-				 sb.append(" onfocus=\"try{ this.form.fake_").append(id).append(".nextSibling.style.border = '1px dotted black'; } catch(e) {} \"")
-				   .append(" onblur=\"try { this.form.fake_").append(id).append(".nextSibling.style.border = '0'; } catch(e) {}\"");
+				 sb.append(" onblur=\"try { this.form.fake_").append(id).append(".nextSibling.style.border = '0'; } catch(e) {}\"");
 				 // Add select text (hover)
 				 sb.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");
 			}
@@ -179,14 +178,14 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 					String maxUpload = Formatter.formatBytes(fileElem.getMaxUploadSizeKB() * 1000);
 					sb.append(" (")
-					  .append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
+					  .append(trans.translate("file.element.select.maxsize", maxUpload))
 					  .append(")");
 				}
 				sb.append("</div>");	
 			} else if (fileElem.getMaxUploadSizeKB() != FileElement.UPLOAD_UNLIMITED) {
 				String maxUpload = Formatter.formatBytes(fileElem.getMaxUploadSizeKB() * 1000);
 				sb.append("<div class='help-block o_maxsize'>(")
-				.append(trans.translate("file.element.select.maxsize", new String[]{maxUpload}))
+				.append(trans.translate("file.element.select.maxsize", maxUpload))
 				.append(")</div>");	
 			}
 			

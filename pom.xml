@@ -106,7 +106,7 @@
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
 	    <test.env.webdriver.firefox.version>v0.30.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>96.0.4664.45</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.chrome.version>97.0.4692.71</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>

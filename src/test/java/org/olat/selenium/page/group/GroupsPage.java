@@ -104,24 +104,9 @@ public class GroupsPage {
 	 * @return
 	 */
 	public BookingPage bookGroup(String name) {
-		By rowBy = By.cssSelector("div.o_table_wrapper tr");
-		By colBy = By.cssSelector("td a");	
-		WebElement groupLink = null;
-		List<WebElement> rows = browser.findElements(rowBy);
-		for(WebElement row:rows) {
-			if(row.getText().contains(name)) {
-				// take the last link of the row
-				List<WebElement> links = row.findElements(colBy);
-				if(links.size() > 0) {
-					groupLink = links.get(links.size() - 1);
-				}
-			}
-		}
-		
-		Assert.assertNotNull(groupLink);
-		groupLink.click();
-		OOGraphene.waitBusy(browser);
-		
+		By accessBy = By.xpath("//div[contains(@class,'o_group_list')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td/a[contains(@class,'o_sel_group_access')]");
+		OOGraphene.waitElement(accessBy, browser);
+		browser.findElement(accessBy).click();
 		By tokenEntryBy = By.className("o_sel_accesscontrol_token_entry");
 		OOGraphene.waitElement(tokenEntryBy, browser);
 		return new BookingPage(browser);

@@ -57,6 +57,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -223,6 +224,7 @@ public class HotspotEditorController extends FormBasicController {
 		hotspotsCont.setRootForm(mainForm);
 		hotspotsCont.contextPut("mapperUri", backgroundMapperUri);
 		hotspotsCont.contextPut("restrictedEdit", restrictedEdit || readOnly);
+		hotspotsCont.contextPut("focusOnEditor", new ConsumableBoolean(false));
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] {
 				(Settings.isDebuging() ? "js/interactjs/interact.js" : "js/interactjs/interact.min.js"),		
 				"js/jquery/openolat/jquery.drawing.v2.js"
@@ -474,6 +476,8 @@ public class HotspotEditorController extends FormBasicController {
 		Identifier identifier = IdentifierGenerator.newNumberAsIdentifier("hc");
 		itemBuilder.createHotspotChoice(identifier, shape, coords);
 		rebuildWrappersAndCorrectSelection();
+
+		hotspotsCont.contextPut("focusOnEditor", new ConsumableBoolean(true));
 	}
 	
 	private void rebuildWrappersAndCorrectSelection() {
@@ -483,7 +487,7 @@ public class HotspotEditorController extends FormBasicController {
 		SelectionValues keyValues = new SelectionValues();
 		for(int i=0; i<choices.size(); i++) {
 			HotspotChoice choice = choices.get(i);
-			keyValues.add(SelectionValues.entry(choice.getIdentifier().toString(), translate("position.hotspot", new String[] { Integer.toString(i + 1) })));
+			keyValues.add(SelectionValues.entry(choice.getIdentifier().toString(), translate("position.hotspot", Integer.toString(i + 1))));
 			choiceWrappers.add(new HotspotWrapper(choice, itemBuilder));
 		}
 		correctHotspotsEl.setKeysAndValues(keyValues.keys(), keyValues.values());

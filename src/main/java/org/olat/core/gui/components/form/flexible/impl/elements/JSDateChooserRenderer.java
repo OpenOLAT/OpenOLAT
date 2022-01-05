@@ -267,8 +267,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		
 		dc.append("<input class='form-control o_date_ms' type='text' id='").append(id).append("'")
 	      .append(" name=\"").append(id).append("\" size='2'")
-		  .append(" maxlength='2' value='").append(time > 9 ? "" + time : "0" + time).append("'")
-		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), receiverId, te.getAction()))
+		  .append(" maxlength='4' value='").append(time > 9 ? "" + time : "0" + time).append("'")
+		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), receiverId, te.getAction(), false, null, id))
 		  .append(" />");
 		return dc;
 	}

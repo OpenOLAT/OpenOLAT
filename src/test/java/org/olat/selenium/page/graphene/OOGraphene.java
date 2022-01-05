@@ -617,10 +617,10 @@ public class OOGraphene {
 	}
 	
 	/**
-	 * Wait 0.5 second
+	 * Wait 750ms second
 	 */
 	public static final void waitingALittleLonger() {
-		waiting(500);
+		waiting(750);
 	}
 	
 	/**
