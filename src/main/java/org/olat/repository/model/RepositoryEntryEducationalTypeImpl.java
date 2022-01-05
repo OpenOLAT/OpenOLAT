@@ -65,6 +65,9 @@ public class RepositoryEntryEducationalTypeImpl implements RepositoryEntryEducat
 	private boolean predefined;
 	@Column(name="r_css_class", nullable=true, insertable=true, updatable=true)
 	private String cssClass;
+	
+	@Column(name="r_preset_mycourses", nullable=false, insertable=true, updatable=true)
+	private boolean presetMyCourses;
 
 	@Override
 	public Long getKey() {
@@ -120,6 +123,16 @@ public class RepositoryEntryEducationalTypeImpl implements RepositoryEntryEducat
 	@Override
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
+	}
+
+	@Override
+	public boolean isPresetMyCourses() {
+		return presetMyCourses;
+	}
+
+	@Override
+	public void setPresetMyCourses(boolean presetMyCourses) {
+		this.presetMyCourses = presetMyCourses;
 	}
 
 	@Override

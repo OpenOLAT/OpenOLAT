@@ -95,6 +95,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -123,15 +124,14 @@ public class RepositoryEntryListController extends FormBasicController
 
 	private final List<Link> filterLinks = new ArrayList<>();
 	private final List<Link> orderByLinks = new ArrayList<>();
+	private List<RepositoryEntryEducationalType> educationalTypes;
 	
 	private boolean withSearch;
 	private boolean withPresets;
 	private boolean withSavedSettings;
 	
 	private FlexiFiltersTab myTab;
-	private FlexiFiltersTab closedTab;
 	private FlexiFiltersTab bookmarkTab;
-	private FlexiFiltersTab searchTab;
 
 	private final String name;
 	private FlexiTableElement tableEl;
@@ -270,6 +270,7 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setRowRenderer(row, this);
 		
 		if(withPresets) {
+			educationalTypes = repositoryManager.getAllEducationalTypes();
 			initFiltersPresets();
 			initFiltersButtons();
 		} else {
@@ -324,14 +325,28 @@ public class RepositoryEntryListController extends FormBasicController
 		myTab.setElementCssClass("o_sel_mycourses_my");
 		tabs.add(myTab);
 		
-		closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Closed", translate("search.courses.closed"),
+		for(RepositoryEntryEducationalType educationalType:educationalTypes) {
+			if(educationalType.isPresetMyCourses()) {
+				String id = educationalType.getIdentifier().replace(".", "").replace("-", "").replace(" ", "");
+				String i18nKey = RepositoyUIFactory.getPresetI18nKey(educationalType);
+				String typeName = translate(i18nKey);
+				if(typeName.equals(i18nKey) || typeName.length() > 255) {
+					typeName = translate(RepositoyUIFactory.getI18nKey(educationalType));
+				}
+				FlexiFiltersTab typeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(id, typeName,
+						TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.EDUCATIONALTYPE, List.of(educationalType.getKey().toString()))));
+				tabs.add(typeTab);
+			}
+		}
+		
+		FlexiFiltersTab closedTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Closed", translate("search.courses.closed"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(FilterButton.STATUS, "closed"),
 						FlexiTableFilterValue.valueOf(FilterButton.OWNED, "owned")));
 		closedTab.setElementCssClass("o_sel_mycourses_closed");
 		tabs.add(closedTab);
 		
 		// search
-		searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
+		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.courses.student"), TabSelectionBehavior.clear);
 		searchTab.setElementCssClass("o_sel_mycourses_search");
 		searchTab.setPosition(FlexiFilterTabPosition.right);
 		searchTab.setFiltersExpanded(true);
@@ -393,8 +408,8 @@ public class RepositoryEntryListController extends FormBasicController
 		
 		// educational type
 		SelectionValues educationalTypeKV = new SelectionValues();
-		repositoryManager.getAllEducationalTypes()
-				.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
+		educationalTypes
+			.forEach(type -> educationalTypeKV.add(entry(type.getKey().toString(), translate(RepositoyUIFactory.getI18nKey(type)))));
 		educationalTypeKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("cif.educational.type"),
 				FilterButton.EDUCATIONALTYPE.name(), educationalTypeKV, true));

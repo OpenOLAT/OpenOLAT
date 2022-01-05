@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.admin;
 
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.repository.RepositoryEntryEducationalType;
 
 /**
@@ -32,6 +33,7 @@ public class EducationalTypeRow {
 	private final RepositoryEntryEducationalType educationalType;
 	private String translation;
 	private Long numberOfCourse;
+	private MultipleSelectionElement presetMyCoursesEl;
 
 	public EducationalTypeRow(RepositoryEntryEducationalType educationalType) {
 		this.educationalType = educationalType;
@@ -56,5 +58,12 @@ public class EducationalTypeRow {
 	public void setNumberOfCourse(Long numberOfCourse) {
 		this.numberOfCourse = numberOfCourse;
 	}
-	
+
+	public MultipleSelectionElement getPresetMyCoursesEl() {
+		return presetMyCoursesEl;
+	}
+
+	public void setPresetMyCoursesEl(MultipleSelectionElement presetMyCoursesEl) {
+		this.presetMyCoursesEl = presetMyCoursesEl;
+	}
 }

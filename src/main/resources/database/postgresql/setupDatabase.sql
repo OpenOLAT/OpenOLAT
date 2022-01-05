@@ -569,6 +569,7 @@ create table o_re_educational_type (
    r_identifier varchar(128) not null,
    r_predefined bool not null default false,
    r_css_class varchar(128),
+   r_preset_mycourses bool not null default false,
    primary key (id)
 );
 

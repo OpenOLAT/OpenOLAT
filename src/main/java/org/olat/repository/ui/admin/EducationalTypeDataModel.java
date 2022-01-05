@@ -65,6 +65,7 @@ implements SortableFlexiTableDataModel<EducationalTypeRow> {
 			case translaton: return row.getEducationalType();
 			case cssClass: return row.getEducationalType().getCssClass();
 			case numberOfCourses: return row.getNumberOfCourse();
+			case presetMyCourses: return row.getPresetMyCoursesEl();
 			case edit: return Boolean.TRUE;
 			case delete: return Boolean.valueOf(!row.getEducationalType().isPredefined());
 			default: return null;
@@ -76,6 +77,7 @@ implements SortableFlexiTableDataModel<EducationalTypeRow> {
 		translaton("educational.type.translation"),
 		cssClass("educational.type.css.class"),
 		numberOfCourses("educational.type.number.of.courses"),
+		presetMyCourses("educational.preset.mycourses"),
 		edit("educational.type.edit"),
 		delete("educational.type.delete");
 		

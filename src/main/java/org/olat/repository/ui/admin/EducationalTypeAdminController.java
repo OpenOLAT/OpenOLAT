@@ -29,9 +29,9 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -63,6 +63,8 @@ public class EducationalTypeAdminController extends FormBasicController {
 	
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
+	private static final String[] onKeys = new String[] { "on" };
+	private static final String[] onValues = new String[] { "" };
 	
 	private FormLink addEducationalTypeLink;
 	private FlexiTableElement tableEl;
@@ -73,7 +75,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 	private DialogBoxController deleteDialogCtrl;
 
 	public EducationalTypeAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, LAYOUT_BAREBONE);
+		super(ureq, wControl, "educational_types");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
 		initForm(ureq);
 		loadModel();
@@ -84,12 +86,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer topCont = FormLayoutContainer.createVerticalFormLayout("top", getTranslator());
-		topCont.setElementCssClass("o_button_group_right");
-		topCont.setRootForm(mainForm);
-		formLayout.add(topCont);
-		
-		addEducationalTypeLink = uifactory.addFormLink("educational.type.add", topCont, Link.BUTTON);
+		addEducationalTypeLink = uifactory.addFormLink("educational.type.add", formLayout, Link.BUTTON);
 		addEducationalTypeLink.setIconLeftCSS("o_icon o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -97,6 +94,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 		DefaultFlexiColumnModel transCol = new DefaultFlexiColumnModel(EducationalTypeCols.translaton, new EducationalTypeCellRenderer(getTranslator()));
 		columnsModel.addFlexiColumnModel(transCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.cssClass));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.presetMyCourses));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(EducationalTypeCols.numberOfCourses));
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel(EducationalTypeCols.edit.i18nHeaderKey(),
 				EducationalTypeCols.edit.ordinal(), CMD_EDIT,
@@ -109,7 +107,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 		
 		dataModel = new EducationalTypeDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
-		tableEl.setAndLoadPersistedPreferences(ureq, "re-educational-type");
+		tableEl.setAndLoadPersistedPreferences(ureq, "re-educational-type-v2");
 	}
 	
 	private void loadModel() {
@@ -123,6 +121,14 @@ public class EducationalTypeAdminController extends FormBasicController {
 			row.setTranslation(translation);
 			Long numberOfCourse = typeKeyToNumberOfEntries.get(type.getKey());
 			row.setNumberOfCourse(numberOfCourse);
+			
+			MultipleSelectionElement presetEl = uifactory.addCheckboxesHorizontal("preset_" + type.getKey(), null, flc, onKeys, onValues);
+			presetEl.setAjaxOnly(true);
+			presetEl.setDomReplacementWrapperRequired(false);
+			presetEl.setUserObject(row);
+			presetEl.select(onKeys[0], type.isPresetMyCourses());
+			row.setPresetMyCoursesEl(presetEl);
+			
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);
@@ -144,6 +150,8 @@ public class EducationalTypeAdminController extends FormBasicController {
 					doConfirmDeletion(ureq, row.getEducationalType());
 				}
 			}
+		} else if(source instanceof MultipleSelectionElement && source.getUserObject() instanceof EducationalTypeRow) {
+			doSetPresetMyCourses((MultipleSelectionElement)source);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -174,6 +182,13 @@ public class EducationalTypeAdminController extends FormBasicController {
 		editCtrl = null;
 		cmc = null;
 	}
+	
+	private void doSetPresetMyCourses(MultipleSelectionElement presetEl) {
+		EducationalTypeRow row = (EducationalTypeRow)presetEl.getUserObject();
+		RepositoryEntryEducationalType type = row.getEducationalType();
+		type.setPresetMyCourses(presetEl.isAtLeastSelected(1));
+		repositoryManager.updateEducationalType(type);
+	}
 
 	private void doAddEducationalType(UserRequest ureq) {
 		editCtrl = new EducationalTypeEditController(ureq, getWindowControl(), null);
@@ -187,6 +202,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 	}
 
 	private void doEditEducationalType(UserRequest ureq, RepositoryEntryEducationalType educationalType) {
+		educationalType = repositoryManager.getEducationalType(educationalType.getKey());
 		editCtrl = new EducationalTypeEditController(ureq, getWindowControl(), educationalType);
 		listenTo(editCtrl);
 		

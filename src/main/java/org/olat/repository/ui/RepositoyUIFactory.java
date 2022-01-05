@@ -164,6 +164,10 @@ public class RepositoyUIFactory {
 		return "educational.type.id." + type.getIdentifier();
 	}
 	
+	public static String getPresetI18nKey(RepositoryEntryEducationalType type) {
+		return "educational.type.id.preset." + type.getIdentifier();
+	}
+	
 	public static boolean validateTextElement(TextElement el, boolean mandatory, int maxLength) {
 		if (el != null) {
 			el.clearError();
