@@ -236,8 +236,10 @@ public class TeacherRollCallController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
 		if(immunoStatusEnabled) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.immunoStatus,
-					new ImmunityProofLevelCellRenderer(getTranslator())));
+			DefaultFlexiColumnModel immunoCol = new DefaultFlexiColumnModel(RollCols.immunoStatus,
+					new ImmunityProofLevelCellRenderer(getTranslator()));
+			immunoCol.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(immunoCol);
 		}
 
 		int colPos = USER_PROPS_OFFSET;
