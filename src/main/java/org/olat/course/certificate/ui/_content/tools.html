@@ -1,0 +1,9 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("startCourse"))
+		<li>$r.render("startCourse")</li>
+	#end
+
+	#if($r.available("deleteStatement"))
+		<li>$r.render("deleteStatement")</li>
+	#end
+</ul>

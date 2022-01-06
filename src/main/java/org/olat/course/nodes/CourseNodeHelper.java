@@ -20,6 +20,7 @@
 package org.olat.course.nodes;
 
 import org.olat.core.util.nodes.INode;
+import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.tree.CourseEditorTreeNode;
 
 /**
@@ -44,6 +45,8 @@ public class CourseNodeHelper {
 			return (CourseNode)node;
 		} else if (node instanceof CourseEditorTreeNode) {
 			return ((CourseEditorTreeNode)node).getCourseNode();
+		} else if (node instanceof CourseTreeNode) {
+			return ((CourseTreeNode)node).getCourseNode();
 		}
 		return null;
 	}

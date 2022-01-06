@@ -29,10 +29,12 @@ import org.olat.core.util.tree.Visitor;
 import org.olat.course.learningpath.evaluation.LinearAccessEvaluator;
 import org.olat.course.nodeaccess.NoAccessResolver;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeHelper;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -43,10 +45,12 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 public class LearningPathNoAccessResolver implements NoAccessResolver {
 
 	private final UserCourseEnvironment userCourseEnv;
+	private final INode rootNode;
 	private LearningPathNoAccessVisitor learningPathNoAccessVisitor;
 
-	public LearningPathNoAccessResolver(UserCourseEnvironment userCourseEnv) {
+	public LearningPathNoAccessResolver(UserCourseEnvironment userCourseEnv, INode rootNode) {
 		this.userCourseEnv = userCourseEnv;
+		this.rootNode = rootNode;
 	}
 
 	@Override
@@ -59,7 +63,7 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 	private LearningPathNoAccessVisitor getPreviousNodeInaccessibleVisitor() {
 		if (learningPathNoAccessVisitor == null) {
 			learningPathNoAccessVisitor = new LearningPathNoAccessVisitor(userCourseEnv.getScoreAccounting());
-			TreeVisitor tv = new TreeVisitor(learningPathNoAccessVisitor, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(), false);
+			TreeVisitor tv = new TreeVisitor(learningPathNoAccessVisitor, rootNode, false);
 			tv.visitAll();
 		}
 		return learningPathNoAccessVisitor;
@@ -70,7 +74,7 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 		private final ScoreAccounting scoreAccounting;
 		private final Map<String, NoAccess> inaccessibleNodeIdentToNoAccess = new HashMap<>();
 		private String linkNodeIdent;
-		private String lastAccessibleNodeIdent;
+		private String toDoNodeIdent;
 
 		public LearningPathNoAccessVisitor(ScoreAccounting scoreAccounting) {
 			this.scoreAccounting = scoreAccounting;
@@ -82,24 +86,26 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 
 		@Override
 		public void visit(INode node) {
-			if (node instanceof CourseNode) {
-				CourseNode courseNode = (CourseNode)node;
+			CourseNode courseNode = CourseNodeHelper.getCourseNode(node);
+			if (courseNode != null) {
 				AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
 				if (assessmentEvaluation != null) {
-					AssessmentEntryStatus assessmentStatus = assessmentEvaluation.getAssessmentStatus();
-					boolean hasAccess = LinearAccessEvaluator.hasAccess(assessmentStatus);
-					if (hasAccess) {
-						linkNodeIdent = null;
-						lastAccessibleNodeIdent = courseNode.getIdent();
-					} else {
-						if (linkNodeIdent == null && isStartInFuture(assessmentEvaluation)) {
-							linkNodeIdent = courseNode.getIdent();
-							inaccessibleNodeIdentToNoAccess.put(courseNode.getIdent(), NoAccessResolver.startDateInFuture(assessmentEvaluation.getStartDate()));
-						} else {
-							if (linkNodeIdent == null) {
-								linkNodeIdent = lastAccessibleNodeIdent;
+					if (!isFullyAssessed(assessmentEvaluation)) {
+						boolean hasAccess = LinearAccessEvaluator.hasAccess(assessmentEvaluation.getAssessmentStatus());
+						if (hasAccess) {
+							if (toDoNodeIdent == null && isMandatory(assessmentEvaluation) && !(courseNode instanceof STCourseNode)) {
+								toDoNodeIdent = courseNode.getIdent();
 							}
-							inaccessibleNodeIdentToNoAccess.put(courseNode.getIdent(), NoAccessResolver.previousNotDone(linkNodeIdent));
+						} else {
+							if (linkNodeIdent == null && isStartInFuture(assessmentEvaluation)) {
+								linkNodeIdent = courseNode.getIdent();
+								inaccessibleNodeIdentToNoAccess.put(courseNode.getIdent(), NoAccessResolver.startDateInFuture(assessmentEvaluation.getStartDate()));
+							} else {
+								if (linkNodeIdent == null) {
+									linkNodeIdent = toDoNodeIdent;
+								}
+								inaccessibleNodeIdentToNoAccess.put(courseNode.getIdent(), NoAccessResolver.previousNotDone(linkNodeIdent));
+							}
 						}
 					}
 				}
@@ -109,6 +115,14 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 		private boolean isStartInFuture(AssessmentEvaluation assessmentEvaluation) {
 			return assessmentEvaluation.getStartDate() != null && assessmentEvaluation.getStartDate().after(new Date());
 		}
-	}	
+		
+		private boolean isFullyAssessed(AssessmentEvaluation assessmentEvaluation) {
+			return assessmentEvaluation.getFullyAssessed() != null && assessmentEvaluation.getFullyAssessed().booleanValue();
+		}
+
+		private boolean isMandatory(AssessmentEvaluation assessmentEvaluation) {
+			return assessmentEvaluation.getObligation() == null || AssessmentObligation.mandatory == assessmentEvaluation.getObligation().getCurrent();
+		}	
+	}
 
 }

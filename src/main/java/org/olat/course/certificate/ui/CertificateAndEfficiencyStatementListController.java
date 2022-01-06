@@ -26,13 +26,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -49,12 +52,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -114,12 +121,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CertificateAndEfficiencyStatementListController extends FormBasicController implements BreadcrumbPanelAware, GenericEventListener, Activateable2 {
 	
 	private static final String CMD_SHOW = "cmd.show";
-	private static final String CMD_LAUNCH_COURSE = "cmd.launch.course";
-	private static final String CMD_DELETE = "cmd.delete";
+	private static final String CMD_LAUNCH_COURSE = "launch.course";
+	private static final String CMD_DELETE = "delete.statement";
 	private static final String CMD_MEDIA = "cmd.MEDIA";
 	private static final String CMD_INDIVIDUAL_COURSES = "cmd.individual.courses";
 	private static final String CMD_ALL_EVIDENCE = "cmd.all.evidence";
 	private static final String CMD_CURRICULUM = "cmd.filter.curriculum.";
+	private static final String CMD_TOOLS = "cmd.tools";
+	
+	private final AtomicInteger counter = new AtomicInteger();
 
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
@@ -140,6 +150,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private CollectArtefactController collectorCtrl;
 	private DialogBoxController confirmDeleteCtr;
 	private UploadExternalCertificateController uploadCertificateController;
+	private CloseableCalloutWindowController calloutCtrl;
 	
 	private final boolean canModify;
 	private final boolean linkToCoachingTool;
@@ -176,7 +187,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean linkToCoachingTool, boolean canModify, boolean canLaunchCourse, Boolean canUploadCertificate) {
 		super(ureq, wControl, "cert_statement_list");
+		
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
+		
 		this.canModify = canModify;
 		this.assessedIdentity = assessedIdentity;
 		this.linkToCoachingTool = linkToCoachingTool;
@@ -319,17 +334,6 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity, getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recertification, new DateFlexiCellRenderer(getLocale())));
-	
-		if (canLaunchCourse) {
-			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.launchcourse",
-					translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
-		}
-	
-		if(canModify) {
-			DefaultFlexiColumnModel deleteColumn = new DefaultFlexiColumnModel(Cols.deleteEfficiencyStatement.i18nHeaderKey(), Cols.deleteEfficiencyStatement.ordinal(), CMD_DELETE,
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.action.delete"), CMD_DELETE), null));
-			tableColumnModel.addFlexiColumnModel(deleteColumn);
-		}
 		
 		//artefact
 		if(assessedIdentity.equals(getIdentity())) {
@@ -338,6 +342,12 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 						new BooleanCellRenderer(new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer()), null));
 				tableColumnModel.addFlexiColumnModel(portfolioColumn);
 			}
+		}
+		
+		if (canLaunchCourse || canModify) {
+			StickyActionColumnModel toolsColumn = new StickyActionColumnModel(Cols.tools.i18nHeaderKey(), Cols.tools.ordinal());
+			toolsColumn.setExportable(false);
+			tableColumnModel.addFlexiColumnModel(toolsColumn);
 		}
 		
 		tableModel = new CertificateAndEfficiencyStatementListModel(tableColumnModel, getLocale());
@@ -495,6 +505,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		
 		tableRows.sort(new FlexiTreeNodeComparator());
 		
+		tableRows.forEach(row -> forgeToolsLinks(row));
+		
 		tableModel.setObjects(tableRows);
 		tableModel.openAll();
 		tableEl.setSortEnabled(true);
@@ -645,10 +657,21 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			statments.removeIf(statement -> coursesWithCurriculumKeys.contains(statement.getResourceKey()));
 		}
 		
+		statments.forEach(row -> forgeToolsLinks(row));
+		
 		tableModel.setObjects(statments);
 		tableModel.openAll();
 		tableEl.setSortEnabled(true);
 		tableEl.reset();
+	}
+	
+	private void forgeToolsLinks(CertificateAndEfficiencyStatement row) {
+		if (row.isStatement() && (canLaunchCourse || canModify)) {
+			FormLink toolsLink = uifactory.addFormLink(CMD_TOOLS + "_" + counter.incrementAndGet(), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
+		}
 	}
 
 	@Override
@@ -671,7 +694,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					doShowStatement(ureq, statement);
 				} else if(CMD_MEDIA.equals(cmd)) {
 					doCollectMedia(ureq, statement.getDisplayName(), statement.getEfficiencyStatementKey());
-				}
+				} 
 			}
 		} else if(coachingToolButton == source) {
 			doLaunchCoachingTool(ureq);
@@ -680,19 +703,40 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		} else if(source instanceof FormLink) {
 			FormLink sourceLink = (FormLink) source;
 			
-			if (sourceLink.getCmd().equals(CMD_INDIVIDUAL_COURSES)) {
-				activateFilter(CMD_INDIVIDUAL_COURSES);
-			} else if (sourceLink.getCmd().equals(CMD_ALL_EVIDENCE)) {
-				activateFilter(CMD_ALL_EVIDENCE);
-			} else if (sourceLink.getCmd().startsWith(CMD_CURRICULUM)) {
-				Curriculum curriculum = (Curriculum) source.getUserObject();
-				activateFilter(CMD_CURRICULUM + curriculum.getKey().toString());
-				currentCurriculum = curriculum;
+			if (sourceLink.getCmd().startsWith(CMD_TOOLS)) {
+				CertificateAndEfficiencyStatement row = (CertificateAndEfficiencyStatement)source.getUserObject();
+				doOpenTools(ureq, row, source);
+			} else {
+				if (sourceLink.getCmd().equals(CMD_INDIVIDUAL_COURSES)) {
+					activateFilter(CMD_INDIVIDUAL_COURSES);
+				} else if (sourceLink.getCmd().equals(CMD_ALL_EVIDENCE)) {
+					activateFilter(CMD_ALL_EVIDENCE);
+				} else if (sourceLink.getCmd().startsWith(CMD_CURRICULUM)) {
+					Curriculum curriculum = (Curriculum) source.getUserObject();
+					activateFilter(CMD_CURRICULUM + curriculum.getKey().toString());
+					currentCurriculum = curriculum;
+				} 
+				
+				loadModel();
 			}
-			
-			loadModel();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source instanceof Link) {
+			Link sourceLink = (Link) source;	
+			CertificateAndEfficiencyStatement statement = (CertificateAndEfficiencyStatement) sourceLink.getUserObject();
+			
+			if (sourceLink.getCommand().equals(CMD_LAUNCH_COURSE)) {
+				doLaunchCourse(ureq, statement.getResourceKey());
+			} else if (sourceLink.getCommand().equals(CMD_DELETE)) {
+				doConfirmDelete(ureq, statement);
+			}
+		}
+		
+		super.event(ureq, source, event);
 	}
 	
 	@Override
@@ -725,6 +769,33 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		uploadCertificateController = null;
 		collectorCtrl = null;
 		cmc = null;
+	}
+	
+	private void doOpenTools(UserRequest ureq, CertificateAndEfficiencyStatement row, FormItem link) {
+		removeAsListenerAndDispose(calloutCtrl);
+		
+		VelocityContainer toolsContainer = createVelocityContainer("tools");
+		
+		if (canLaunchCourse) {
+			Link startCourse = LinkFactory.createLink(CMD_LAUNCH_COURSE, getTranslator(), this);
+			startCourse.setUserObject(row);
+			startCourse.setIconLeftCSS("o_icon o_icon_fw o_course_icon");
+			
+			toolsContainer.put("startCourse", startCourse);
+		}
+		
+		if (canModify) {
+			Link deleteStatement = LinkFactory.createLink(CMD_DELETE, getTranslator(), this);
+			deleteStatement.setUserObject(row);
+			deleteStatement.setIconLeftCSS("o_icon o_icon_fw o_icon_delete_item");
+			
+			toolsContainer.put("deleteStatement", deleteStatement);
+		}
+			
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsContainer, link.getFormDispatchId(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private FormLink getFilterButton(String name) {

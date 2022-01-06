@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -103,6 +104,8 @@ public class CertificateAndEfficiencyStatementListModel
 			return true;
 		case artefact:
 			return statement.getEfficiencyStatementKey() != null;
+		case tools:
+			return statement.getToolsLink();
 		}
 		return null;
 	}
@@ -126,7 +129,8 @@ public class CertificateAndEfficiencyStatementListModel
 		certificate("table.header.certificate", true),
 		recertification("table.header.recertification", true), 
 		deleteEfficiencyStatement("table.action.delete", false),
-		artefact("table.header.artefact", false);
+		artefact("table.header.artefact", false),
+		tools("table.header.actions", false);
 
 		private final String i18n;
 		private final boolean sortable;
@@ -184,6 +188,8 @@ public class CertificateAndEfficiencyStatementListModel
 		private List<Long> addedToScoresIds = new ArrayList<>();
 		
 		private CertificateAndEfficiencyStatement parent;
+		
+		private FormLink toolsLink;
 
 		public String getDisplayName() {
 			return displayName;
@@ -404,6 +410,14 @@ public class CertificateAndEfficiencyStatementListModel
 			}
 			
 			return ident;
+		}
+		
+		public FormLink getToolsLink() {
+			return toolsLink;
+		}
+
+		public void setToolsLink(FormLink toolsLink) {
+			this.toolsLink = toolsLink;
 		}
 
 		@Override
