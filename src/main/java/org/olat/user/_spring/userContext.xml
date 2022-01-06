@@ -134,23 +134,6 @@
 			All logins are matched lower-case, i.e to match
 			both 'Admin5' and 'administrator' a regexp of '.*admin.*' would match
 			-->
-			<value>.*rektor.*</value>
-			<value>.*prof.*</value>
-			<value>.*assist.*</value>
-			<value>.*tutor.*</value>
-			<value>.*betreuer.*</value>
-			<value>.*root.*</value>
-			<value>.*support.*</value>
-			<value>.*universit.*</value>
-			<value>.*scheisse.*</value>
-			<value>.*fuck.*</value>
-			<value>.*shit.*</value>
-			<value>.*kacke.*</value>
-			<value>.*kotz.*</value>
-			<value>.*geil.*</value>
-			<value>.*bitch.*</value>
-			<value>.*schlampe.*</value>
-			<value>.*arsch.*</value>
 			<value>guest</value>
 			<value>master</value>
 			<value>elc</value>
