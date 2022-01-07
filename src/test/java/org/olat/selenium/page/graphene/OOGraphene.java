@@ -113,10 +113,15 @@ public class OOGraphene {
 	}
 	
 	public static void waitModalDialogDisappears(WebDriver browser) {
-		By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]");
-		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(timeout).pollingEvery(poolingSlow)
-			.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
+		try {
+			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]");
+			new WebDriverWait(browser, driverTimeout)
+				.withTimeout(timeout).pollingEvery(poolingSlow)
+				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("waitModalDialogDisappears", browser);
+			throw e;
+		}
 	}
 	
 	/**
@@ -649,13 +654,15 @@ public class OOGraphene {
 	 * @param browser
 	 */
 	public static final void waitBusyAndScrollTop(WebDriver browser) {
+		BusyScrollToPredicate predicate = new BusyScrollToPredicate();
 		try {
 			new WebDriverWait(browser, driverTimeout)
 				.pollingEvery(polling)
 				.withTimeout(timeout)
-				.until(new BusyScrollToPredicate());
+				.until(predicate);
 		} catch (Exception e) {
-			log.error("", e);
+			log.error("Predicate failed: {}", predicate.getY(), e);
+			OOGraphene.takeScreenshot("waitBusyAndScrollTop", browser);
 		}
 	}
 	

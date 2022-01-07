@@ -35,10 +35,11 @@ import org.openqa.selenium.WebDriver;
 public class BusyScrollToPredicate implements Function<WebDriver,Boolean> {
 	
 	private int count = 0;
+	private Number y;
 
 	@Override
 	public Boolean apply(WebDriver driver) {
-        Number y = (Number)((JavascriptExecutor)driver).executeScript("return (((typeof window.o_info === 'undefined') || window.o_info.linkbusy) ? -1 : window.pageYOffset);");
+        y = (Number)((JavascriptExecutor)driver).executeScript("return (((typeof window.o_info === 'undefined') || window.o_info.linkbusy) ? -1 : window.pageYOffset);");
         if(y.intValue() != 0) {
         	count = 0;
         } else if(y.intValue() == 0) {
@@ -46,4 +47,8 @@ public class BusyScrollToPredicate implements Function<WebDriver,Boolean> {
         }
         return count > 3;
     }
+	
+	public Number getY() {
+		return y;
+	}
 }

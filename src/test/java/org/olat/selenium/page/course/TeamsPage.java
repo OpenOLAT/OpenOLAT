@@ -86,9 +86,7 @@ public class TeamsPage {
 		browser.findElement(nameBy).sendKeys(name);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_teams_edit_meeting button.btn.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
-		
+		OOGraphene.moveAndClick(saveBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

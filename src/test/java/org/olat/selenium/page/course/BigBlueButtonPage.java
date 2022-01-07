@@ -128,8 +128,7 @@ public class BigBlueButtonPage {
 	
 	public BigBlueButtonPage saveMeeting() {
 		By saveBy = By.cssSelector("fieldset.o_sel_bbb_edit_meeting button.btn.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.moveAndClick(saveBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

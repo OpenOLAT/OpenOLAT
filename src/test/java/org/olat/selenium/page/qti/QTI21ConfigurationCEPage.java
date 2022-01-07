@@ -139,25 +139,27 @@ public class QTI21ConfigurationCEPage {
 			browser.findElement(todayBy).click();
 			OOGraphene.waitElementDisappears(todayBy, 5, browser);
 			OOGraphene.waitingALittleLonger();// wait animation
-		} catch (Exception e) {
+		
+			if(waitBusy) {
+				OOGraphene.waitBusy(browser);
+			}
+			
+			By hourBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dch_o_')]");
+			browser.findElement(hourBy).sendKeys("\uE003\uE003" + Integer.toString(hour));
+			if(waitBusy) {
+				OOGraphene.waitBusy(browser);
+				OOGraphene.waitingALittleLonger();
+			}
+			
+			By minuteBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dcm_o_')]");
+			browser.findElement(minuteBy).sendKeys("\uE003\uE003" + Integer.toString(minutes));
+			if(waitBusy) {
+				OOGraphene.waitBusy(browser);
+				OOGraphene.waitingALittleLonger();
+			}
+		} catch (Exception | Error e) {
 			OOGraphene.takeScreenshot("Datetest", browser);
 			throw e;
-		}
-		
-		if(waitBusy) {
-			OOGraphene.waitBusy(browser);
-		}
-		
-		By hourBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dch_o_')]");
-		browser.findElement(hourBy).sendKeys("\uE003\uE003" + Integer.toString(hour));
-		if(waitBusy) {
-			OOGraphene.waitBusy(browser);
-		}
-		
-		By minuteBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dcm_o_')]");
-		browser.findElement(minuteBy).sendKeys("\uE003\uE003" + Integer.toString(minutes));
-		if(waitBusy) {
-			OOGraphene.waitBusy(browser);
 		}
 		return this;
 	}
