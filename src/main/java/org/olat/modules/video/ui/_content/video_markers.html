@@ -1,6 +1,8 @@
+
 #foreach($marker in $markers)
 <div id="marker_${marker.id}" class="mejs__overlay o_video_marker" style="" #if($r.isTrue($dragMarkers)) draggable="true" #end><div class="clearfix">$r.xssScan($marker.text)</div></div>
 #set($markedFuncId = $r.replace(${marker.id}, "-", ""))
+$r.mathJax("marker_${marker.id}")
 <script>
 jQuery(function() {
 	
@@ -105,8 +107,6 @@ jQuery(function() {
 	#end
 	
 	_size${markedFuncId}Marker();
-	
-	setTimeout(function() { BFormatter.formatLatexFormulas('marker_${marker.id}'); }, 100);
 });
 </script>
 #end
