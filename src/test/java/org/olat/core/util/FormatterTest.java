@@ -141,7 +141,7 @@ public class FormatterTest {
 		String domId = UUID.randomUUID().toString();
 		String latextFormatterJs = Formatter.elementLatexFormattingScript(domId);
 		Assert.assertNotNull(latextFormatterJs);
-		Assert.assertTrue(latextFormatterJs.contains(domId));
+		Assert.assertTrue(latextFormatterJs.contains("o_info.latexit"));
 	}
 	
 	@Test
