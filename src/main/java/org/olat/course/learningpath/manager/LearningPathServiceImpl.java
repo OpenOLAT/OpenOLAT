@@ -215,7 +215,6 @@ public class LearningPathServiceImpl implements LearningPathService, GenericEven
 				ICourse course = CourseFactory.loadCourse(pe.getPublishedCourseResId());
 				if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
 					syncExceptionalObligations(pe.getPublishedCourseResId());
-					courseAssessmentService.evaluateAllAsync(pe.getPublishedCourseResId());
 				}
 			}
 		}

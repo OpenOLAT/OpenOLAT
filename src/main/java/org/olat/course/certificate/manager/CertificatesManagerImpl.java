@@ -706,6 +706,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 
 			dbInstance.getCurrentEntityManager().persist(certificate);
+			log.info(Tracing.M_AUDIT, "Certificate uploaded for {} in {}", identity, resource);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -746,6 +747,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			}
 
 			dbInstance.getCurrentEntityManager().persist(certificate);
+			log.info(Tracing.M_AUDIT, "Certificate uploaded for {} in resource {}", identity, resourceKey);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -848,6 +850,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		dbInstance.getCurrentEntityManager().persist(certificate);
 		dbInstance.commit();
+		log.info(Tracing.M_AUDIT, "Certificate generated for {} in {}", identity, resource);
 		
 		//send message
 		sendJmsCertificateFile(certificate, template, certificateInfos.getScore(), certificateInfos.getMaxScore(),
