@@ -48,26 +48,6 @@
 		        }
 			}
 			
-			function updatePreview() {
-				if(typeof MathJax === "undefined") {
-					o_mathjax(function() {
-						MathJax = window.MathJax;
-						updatePreview();
-					});
-				} else {
-					var tex = win.find('#latex')[0].value();
-				    var math = MathJax.Hub.getAllJax("mathpreviewFormula")[0];
-				    if(typeof math === "undefined") {
-				    	MathJax.Hub.Queue(function() {
-				    		jQuery("#mathpreviewFormula .math").text(tex);
-				    		MathJax.Hub.Typeset("#mathpreviewFormula");
-				    	});	
-				    } else {
-				    	MathJax.Hub.Queue(["Text", math, tex]);
-				    }
-				}
-			}
-			
 			function showDialog() {
 				win = ed.windowManager.open({
 					title: translator().translate('olatmatheditor.formulaTabTitle'),
@@ -83,12 +63,44 @@
 					    	   { type: 'label', text: translator().translate('olatmatheditor.latexGroupTitle') },
 					    	   { name: 'latex', type: 'textbox', multiline:true, flex:1, minHeight:120, onkeyup: updatePreview },
 					    	   { name: 'preview', type: 'panel', label: '', flex:1, minHeight:120,
-					    		 html:'<div id="mathpreviewFormula" style="width:100%; height=100%;"><div class="math"></div></div><div id="mathpreviewErrorMessage"></div>'
+					    		 html: '<iframe id="mathpreviewFormula" style="width: 100%; min-height: 50px;"></iframe>'
 							   }
 					    	]
 					   }],
 					onSubmit: insertLatex
 				});
+				
+				// add scripts to iframe
+				var iframe = document.getElementById("mathpreviewFormula");
+				var iframeWindow = iframe.contentWindow || iframe.contentDocument.document || iframe.contentDocument;
+				var iframeDocument = iframeWindow.document;
+				var iframeHead = iframeDocument.getElementsByTagName('head')[0];
+				var iframeBody = iframeDocument.getElementsByTagName('body')[0];
+				
+				function updatePreview() {
+					var MathJax = iframeWindow.MathJax;
+					var div = iframeBody.querySelector('div');
+					if (!div) {
+						div = iframeDocument.createElement('div');
+						div.classList.add("math");
+						iframeBody.appendChild(div);
+					}
+					
+					var tex = win.find('#latex')[0].value();
+					div.innerHTML = '$$' + tex + '$$';
+					if (MathJax && MathJax.startup) {
+						MathJax.startup.getComponents();
+						MathJax.typeset();
+					}
+				}
+				
+				var mathJaxUrl = ed.getParam("mathJaxUrl");
+				var node = iframeWindow.document.createElement('script');
+				node.src = mathJaxUrl + 'tex-mml-chtml.js';
+				node.type = 'text/javascript';
+				node.async = false;
+				node.charset = 'utf-8';
+				iframeHead.appendChild(node);
 				
 				var selectedNode = ed.selection.getNode();
 		        if ((selectedNode.nodeName.toLowerCase() == "img") && (selectedNode.className.indexOf("mceItemJSMath") >= 0)) {
@@ -198,7 +210,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.2.2"
+				version : "1.3.0"
 			};
 		}
 	});

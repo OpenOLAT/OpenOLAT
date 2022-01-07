@@ -63,12 +63,7 @@ var QtiWorksRendering = (function() {
 
         registerReadyCallback: function(callback) {
             jQuery(document).ready(function() {
-                if (typeof(MathJax) !== "undefined") {
-                    MathJax.Hub.Queue(callback);
-                }
-                else {
-                    callback();
-                }
+				callback();
             });
         },
 

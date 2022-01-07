@@ -38,6 +38,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -211,6 +212,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append(" dispId:\"").append(teC.getFormDispatchId()).append("\", eventIdField:\"").append(form.getEventFieldId())
 		  .append("\", csrf:\"").append(renderer.getCsrfToken()).append("\"},\n");
 		configurations.append("contextPath: \"").append(Settings.getServerContextPath()).append("\",\n");
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
+			configurations.append("mathJaxUrl: \"").append(WebappHelper.getMathJaxCdn()).append("\",\n");
+		}
 		if(te.getMaxLength() > 0) {
 			configurations.append("maxSize:").append(te.getMaxLength()).append("\n");
 		}

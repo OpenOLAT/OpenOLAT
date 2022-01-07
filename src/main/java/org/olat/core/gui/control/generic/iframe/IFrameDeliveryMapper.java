@@ -639,29 +639,29 @@ public class IFrameDeliveryMapper implements Mapper {
 		public void appendJsMath() {
 			append("<script>\n");
 			append("window.MathJax = {\n");
-			append(" extensions: [\"jsMath2jax.js\"],\n");
-			append(" messageStyle: 'none',\n");
-			append(" showProcessingMessages: false,\n");
-			append(" showMathMenu: false,\n");
-			append(" menuSettings: { },\n");
-			append(" jsMath2jax: {\n");
-			append("   preview: \"none\"\n");
+			append(" tex: {\n");
+			append("  inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]\n");
 			append(" },\n");
-			append(" tex2jax: {\n");
-			append("   ignoreClass: \"math\"\n");
-			append(" },\n");
-			append(" \"HTML-CSS\": {\n");
-			append("   EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100\n");
-			append(" },\n");
-			append(" \"fast-preview\": {\n");
-			append("   disabled: true\n");
+			append(" options: {\n");
+			append("  enableMenu: false,\n");
+			append("  renderActions: {\n");
+			append("   findScripts: [11, function (doc) {\n");
+			append("    for (var node of document.querySelectorAll('.math')) {\n");
+			append("     var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));\n");
+			append("     var text = document.createTextNode('');\n");
+			append("     node.parentNode.replaceChild(text, node);\n");
+			append("     math.start = {node: text, delim: '', n: 0};\n");
+			append("     math.end = {node: text, delim: '', n: 0};\n");
+			append("     doc.math.push(math);\n");
+			append("    }\n");
+			append("   }, '']\n");
+			append("  }\n");
 			append(" }\n");
-			append("};");
+			append("}");
 			append("</script>");
 			append("<script src=\"");
 			append(WebappHelper.getMathJaxCdn());
-			append("MathJax.js?config=");
-			append(WebappHelper.getMathJaxConfig());
+			append("tex-mml-chtml.js");
 			append("\"></script>\n");
 		}
 		

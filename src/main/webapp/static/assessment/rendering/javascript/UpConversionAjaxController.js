@@ -291,11 +291,12 @@ var UpConversionAjaxController = (function() {
 
         replaceContainerMathMLContent: function(containerQuery, mathmlString) {
             containerQuery.each(function() {
-                var mathJax = MathJax.Hub.getAllJax(this.id);
-                if (mathJax.length==1) {
-                    MathJax.Hub.Queue(["Text", mathJax[0], mathmlString]);
-                }
-                else {
+            	var mathJax = document.getElementById(this.id);
+                if (mathJax != null) {
+               		mathJax.innerHTML = mathmlString[0];
+               		mathJax.classList.add("tex2jax_process");
+                    MathJax.typeset();
+                } else {
                     throw new Error("Expected 1 MathJax element, but got " + mathJax.length);
                 }
             });

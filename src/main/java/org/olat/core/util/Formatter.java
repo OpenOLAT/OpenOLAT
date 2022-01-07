@@ -673,7 +673,7 @@ public class Formatter {
 	 */
 	public static String formatLatexFormulas(String htmlFragment) {
 		if (htmlFragment == null) return "";
-		// optimize, reduce jsmath calls on client
+		// optimize, reduce MathJax calls on client
 		if (new HtmlMathScanner().scan(htmlFragment)) {
 			// add math wrapper
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
@@ -693,13 +693,7 @@ public class Formatter {
 	 * @param domid Id of the DOM node containing the elements to render.
 	 */
 	public static String elementLatexFormattingScript(String domid) {
-		return String.format("%n"
-				+ "<script>%n"
-				+ "/* <![CDATA[ */%n"
-				+ " jQuery(function() {setTimeout(function() { BFormatter.formatLatexFormulas('%s');}, 100); }); %n"
-				+ "/* ]]> */%n"
-				+ "</script>",
-				domid);
+		return "<script>o_info.latexit=true;</script>";
 	}
 	
 	

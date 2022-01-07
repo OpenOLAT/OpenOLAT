@@ -7,32 +7,24 @@
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 
-<div class="mathEntryInteraction ${orientation}">
-	<div class="inputPanel">
+<div class="mathEntryInteraction form-${orientation} clearfix">
+	<div class="inputPanel col-sm-6">
 		$r.contextHelpWithWrapper("Other#math_entry-interaction")
 		##TODO qti size="{if (exists(@ma:expectedLength)) then @ma:expectedLength else '10'}""
-        <input id="qtiworks_id_mathEntryInput_${responseIdentifier}" name="qtiworks_response_${responseIdentifier}" type="text" size="10" #if($r.isItemSessionEnded()) disabled #end #if($asciiMathInput && !$asciiMathInput.isEmpty()) value="$asciiMathInput" #end />
+        <input id="qtiworks_id_mathEntryInput_${responseIdentifier}" name="qtiworks_response_${responseIdentifier}" class="form-control" type="text" size="35" #if($r.isItemSessionEnded()) disabled #end #if($asciiMathInput && !$asciiMathInput.isEmpty()) value="$asciiMathInput" #end />
 		$r.appendFlexiFormDirtyForCheckbox("qtiworks_id_mathEntryInput_${responseIdentifier}")
 	</div>
 
-	<div class="previewPanel">
+	<div class="previewPanel col-sm-6">
 		<div id="qtiworks_id_mathEntryMessages_${responseIdentifier}"></div>
-        <div id="qtiworks_id_mathEntryPreview_${responseIdentifier}">
+        <div id="qtiworks_id_mathEntryPreview_${responseIdentifier}" class="math">
           ## Keep this in 
           <math xmlns="http://www.w3.org/1998/Math/MathML"></math>
         </div>
 	</div>
 	<script>
-	jQuery(function() {
-		//because we use ajax to render the page
-		var math = document.getElementById("qtiworks_id_mathEntryPreview_${responseIdentifier}");
-		if(typeof window.MathJax === "undefined") {
-			o_mathjax();
-		} else {
-			MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
-		}
-	});
-	
+	o_info.latexit = true;
+
 	UpConversionAjaxController.setUpConversionServiceUrl('$r.contextPath()/math/verifyAsciiMath');
     UpConversionAjaxController.setDelay(300);
 	

@@ -205,23 +205,13 @@ var BLoader = {
  * 18.06.2009 gnaegi@frentix.com 
  */
 var BFormatter = {
-	// process element with given dom id using jsmath
+	// process element with given dom id using MathJax
 	formatLatexFormulas : function(domId) {
 		try {
-			if(typeof MathJax === "undefined") {
-				o_mathjax();//will render the whole page
-			} else if (MathJax && MathJax.isReady) {
-				jQuery(function() {
-					MathJax.Hub.Queue(function() {
-						if(jQuery('#' + domId + ' .MathJax').length == 0) {
-							MathJax.Hub.Typeset(domId)
-						}
-					});
-				})
-			} else { // not yet loaded (autoload), load first
-				setTimeout(function() {
-					BFormatter.formatLatexFormulas(domId);
-				}, 100);
+			if(typeof window.MathJax !== undefined && typeof window.MathJax.typeset !== undefined) {
+				MathJax.typeset();
+			} else {
+				o_mathjax();
 			}
 		} catch(e) {
 			if (window.console) console.log("error in BFormatter.formatLatexFormulas: ", e);
@@ -484,8 +474,6 @@ function b_AddOnDomReplacementFinishedCallback(funct) {
 	b_onDomReplacementFinished_callbacks.push(funct);
 }
 
-var b_changedDomEl=new Array();
-
 //same as above, but with a filter to prevent adding a funct. more than once
 //funct then has to be an array("identifier", funct) 
 // DEPRECATED: listen to event "oo.dom.replacement.after"
@@ -541,10 +529,9 @@ function o_ainvoke(r) {
 	if (cmdcnt > 0) {
 		// let everybody know dom replacement has started
 		jQuery(document).trigger("oo.dom.replacement.before");
-
-		b_changedDomEl = new Array();
 		
 		if (o_info.debug) { o_debug_trid++; }
+		
 		var cs = r["cmds"];
 		for (var i=0; i<cmdcnt; i++) {
 			var acmd = cs[i];
@@ -571,7 +558,7 @@ function o_ainvoke(r) {
 							var jsol = c1["jsol"]; // javascript on load
 							var hdr = c1["hdr"]; // header
 							if (o_info.debug) o_log("c2: redraw: "+c1["cname"]+ " ("+ciid+") "+c1["hfragsize"]+" bytes, listener(s): "+c1["clisteners"]);
-							//var con = jQuery(hfrag).find('script').remove(); //Strip scripts
+
 							var hdrco = hdr+"\n\n"+hfrag;
 							
 							var replaceElement = false;
@@ -640,7 +627,6 @@ function o_ainvoke(r) {
 										if(window.console) console.log(e);
 										if(window.console) console.log('Fragment',hdrco);
 									}
-									b_changedDomEl.push(newcId);
 								}
 								newc = null;
 
@@ -716,7 +702,20 @@ function o_ainvoke(r) {
 				}		
 			} else {
 				if (o_info.debug) o_log("could not find window??");
-			}		
+			}
+			
+			if(o_info.latexit) {
+				try {
+					if(window.MathJax !== undefined && window.MathJax.typeset !== undefined) {
+						window.MathJax.typeset();
+						o_info.latexit = false;
+					} else {
+						o_mathjax();
+					}
+				} catch(e) {
+					if (window.console) console.log("error MathJax: ", e);
+				}
+			}	
 		}
 
 		// BEGIN DEPRECATED DOM REPLACEMENT CALLBACK: new style below

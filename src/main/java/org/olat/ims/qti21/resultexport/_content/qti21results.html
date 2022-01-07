@@ -22,35 +22,44 @@
 	<script src='../../../js/jquery/qti/jquery.slider.js'></script>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 	<script>
-/* <![CDATA[ */ 
+var o_info = new Object();
+o_info.latexit = false;
 function setFlexiFormDirtyByListener(e){
+	//
+}
+function o_ffSetFocus() {
+	//
+}
+function o_animateRadialProgress() {
 	//
 }
 function o_mathjax() {
 	window.MathJax = {
-			extensions: ["jsMath2jax.js"],
-			messageStyle: 'none',
-			showProcessingMessages: false,
-			showMathMenu: false,
-			menuSettings: { },
-			jsMath2jax: {
-				preview: "none"
-			},
-			tex2jax: {
-				ignoreClass: "math"
-			},
-			"HTML-CSS": {
-			    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
-			},
-			"fast-preview": {
-				disabled: true
+		tex: {
+			inlineMath: [['$', '$'], ['\\(', '\\)']]
+		},
+		options: {
+			enableMenu: false,
+			renderActions: {
+				findScripts: [11, function (doc) {
+					for (var node of document.querySelectorAll('.math')) {
+						var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));
+						var text = document.createTextNode('');
+						node.parentNode.replaceChild(text, node);
+						math.start = {node: text, delim: '', n: 0};
+						math.end = {node: text, delim: '', n: 0};
+						doc.math.push(math);
+					}
+				}, '']
 			}
 		}
-	jQuery.ajax("${r.mathJaxCdnFullUrl()}MathJax.js?config=${r.mathJaxConfig()}", {
+	}
+	jQuery.ajax("${r.mathJaxCdnFullUrl()}tex-mml-chtml.js", {
 		cache: true,
 		dataType: "script",
-		crossDomain: true,
+		async: false,
 		success: function() {
+			//
 		}
 	});
 }
@@ -61,12 +70,11 @@ var BFormatter = {
 jQuery(function() {
 	if ((window.unsafeWindow == null ? window : unsafeWindow).MathJax == null) {
 		var count = jQuery('div.math,span.math,math,div.mathEntryInteraction').length;
-		if (count > 0) {
+		if (o_info.latexit || count > 0) {
 		    o_mathjax();
 		}
 	}
 });
-/* ]]> */
 	</script>
 </head>
 <body class="o_page_margins">

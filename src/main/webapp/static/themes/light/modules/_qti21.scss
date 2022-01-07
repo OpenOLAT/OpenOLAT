@@ -1162,22 +1162,17 @@ table.o_qti_item_kprim {
 	border: 1px solid #ddedfc;
 	background-color: #edf1f6;
 	background: linear-gradient(to top, #edf1f6 0%, #f6f9fb 100%);
-	border-radius: 0.4em;
-	padding: 1em;
-	margin: 0.5em 0;
-	
+	border-radius: $border-radius-base;
+	padding: 20px 0;
+
 	.inputPanel {
 		line-height: 1em;
 		text-align: left;
-		
-		input {
-			margin: 0;
-			padding: 0;
-		}
 	}
 	
 	.previewPanel {
 		text-align: center;
+		min-height: 120px;
 	}
 }
 

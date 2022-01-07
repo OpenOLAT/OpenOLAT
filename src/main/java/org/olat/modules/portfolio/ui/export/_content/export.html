@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html>
+<html lang="$r.getLanguageCode()">
 <head>
 	<title>$rootTitle</title>	
 	<link rel='stylesheet' href='$r.themeFullLink()' />
@@ -10,36 +10,36 @@
 	<script src='$r.staticFullLink("js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js")'></script>
 	<script src='$r.staticFullLink("js/jquery/sliderpips/jquery-ui-slider-pips.js")'></script>
 	<script src='$r.staticFullLink("js/jquery/openolat/jquery.statistics.radarchart.js")'></script>
-	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 	<script>
-/* <![CDATA[ */ 
 function setFlexiFormDirtyByListener(e){
 	//
 }
 function o_mathjax() {
-	jQuery.ajax("${r.mathJaxCdnFullUrl()}MathJax.js?config=TeX-AMS-MML_HTMLorMML", {
+	jQuery.ajax("${r.mathJaxCdnFullUrl()}tex-mml-chtml.js", {
 		cache: true,
 		dataType: "script",
 		success: function() {
-	    	MathJax.Hub.Config({
-				extensions: ["jsMath2jax.js"],
-				messageStyle: 'none',
-				showProcessingMessages: false,
-				showMathMenu: false,
-				menuSettings: { },
-				jsMath2jax: {
-					preview: "none"
+			window.MathJax = {
+				tex: {
+					inlineMath: [['$', '$'], ['\\(', '\\)']]
 				},
-				tex2jax: {
-					ignoreClass: "math"
-				},
-				"HTML-CSS": {
-				    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
-				},
-				"fast-preview": {
-					disabled: true
+				options: {
+					enableMenu: false,
+					renderActions: {
+						findScripts: [11, function (doc) {
+							for (var node of document.querySelectorAll('.math')) {
+								var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));
+								var text = document.createTextNode('');
+								node.parentNode.replaceChild(text, node);
+								math.start = {node: text, delim: '', n: 0};
+								math.end = {node: text, delim: '', n: 0};
+								doc.math.push(math);
+							}
+						}, '']
+					}
 				}
-			});
+			}
 		}
 	});
 }
@@ -61,8 +61,7 @@ jQuery(function() {
 		}
 	}
 });
-/* ]]> */
-	</script>
+</script>
 </head>
 <body class="o_page_margins o_offline_export $bodyCssClass">
 	<div id="o_main">
