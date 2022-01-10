@@ -948,11 +948,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		removeHistory(ureq);
 		if(userCourseEnv.isParticipant() && courseNode instanceof IQTESTCourseNode) {
-			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, null, Role.user);
-			
+			// Show that the user has done at least one run.
 			AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
+			AssessmentRunStatus runStatus = assessmentEvaluation.getAttempts() != null && assessmentEvaluation.getAttempts() > 0? AssessmentRunStatus.done: null;
+			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, runStatus, Role.user);
+			
 			AssessmentEntryStatus assessmentStatus = assessmentEvaluation.getAssessmentStatus();
-			if (assessmentStatus != null && assessmentStatus == AssessmentEntryStatus.inProgress && assessmentEvaluation.getAttempts() != null && assessmentEvaluation.getAttempts().intValue() < 2) {
+			if (assessmentStatus != null && assessmentStatus == AssessmentEntryStatus.inProgress && (assessmentEvaluation.getAttempts() == null || assessmentEvaluation.getAttempts().intValue() < 1)) {
 				assessmentEvaluation = new AssessmentEvaluation(assessmentEvaluation, AssessmentEntryStatus.notStarted);
 				courseAssessmentService.updateScoreEvaluation(courseNode, assessmentEvaluation, userCourseEnv, null, false, Role.user);
 			}
