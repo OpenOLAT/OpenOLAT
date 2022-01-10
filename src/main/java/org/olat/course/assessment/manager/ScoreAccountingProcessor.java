@@ -42,9 +42,11 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ScoreAccountingTriggerSearchParams;
+import org.olat.course.editor.PublishEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -93,7 +95,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
-	private CourseAssessmentService courseAassessmentService;
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
@@ -106,6 +108,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(CurriculumElement.class));
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(Organisation.class));
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(Identity.class));
+		CourseModule.registerForCourseType(this, null);
 	}
 
 	@Override
@@ -161,8 +164,12 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			if (StringHelper.containsNonWhitespace(upEvent.getOldValue())) {
 				tryProcessUserPropertyChanged(upEvent.getIdentityKey(), upEvent.getPropertyName(), upEvent.getOldValue());
 			}
+		} else if (event instanceof PublishEvent) {
+			PublishEvent pe = (PublishEvent) event;
+			if (pe.getState() == PublishEvent.PUBLISH && pe.isEventOnThisNode()) {
+				courseAssessmentService.evaluateAllAsync(pe.getPublishedCourseResId());
+			}
 		}
-		
 	}
 
 	private void tryProcessIdentityAddedToRepositoryEntry(Long identityKey, Long courseEntryKey) {
@@ -225,7 +232,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			List<Long> evalutedRepositoryEntryKeys, ObligationContext obligationContext) {
 		ScoreAccountingTriggerSearchParams searchParams = new ScoreAccountingTriggerSearchParams();
 		searchParams.setBusinessGroupRef(() -> groupKey);
-		List<RepositoryEntry> entries = courseAassessmentService.getTriggeredRepositoryEntries(searchParams);
+		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredRepositoryEntries(searchParams);
 		entries.removeIf(entry -> evalutedRepositoryEntryKeys.contains(entry.getKey()));
 		if (!entries.isEmpty()) {
 			for (RepositoryEntry entry : entries) {
@@ -304,7 +311,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			List<Long> evalutedRepositoryEntryKeys, ObligationContext obligationContext) {
 		ScoreAccountingTriggerSearchParams searchParams = new ScoreAccountingTriggerSearchParams();
 		searchParams.setCurriculumElementRef(() -> curriculumElementKey);
-		List<RepositoryEntry> entries = courseAassessmentService.getTriggeredRepositoryEntries(searchParams);
+		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredRepositoryEntries(searchParams);
 		entries.removeIf(entry -> evalutedRepositoryEntryKeys.contains(entry.getKey()));
 		if (!entries.isEmpty()) {
 			for (RepositoryEntry entry : entries) {
@@ -343,7 +350,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 	private void processProcessIdentityAddedToOrganisation(Long identityKey, Long organisationKey) {
 		ScoreAccountingTriggerSearchParams searchParams = new ScoreAccountingTriggerSearchParams();
 		searchParams.setOrganisationRef(() -> organisationKey);
-		List<RepositoryEntry> entries = courseAassessmentService.getTriggeredRepositoryEntries(searchParams);
+		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredRepositoryEntries(searchParams);
 		if (!entries.isEmpty()) {
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
 			ObligationContext obligationContext = new SingleUserObligationContext();
@@ -367,7 +374,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		ScoreAccountingTriggerSearchParams searchParams = new ScoreAccountingTriggerSearchParams();
 		searchParams.setUserPropertyName(propertyName);
 		searchParams.setUserPropertyValue(propertyValue);
-		List<RepositoryEntry> entries = courseAassessmentService.getTriggeredRepositoryEntries(searchParams);
+		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredRepositoryEntries(searchParams);
 		if (!entries.isEmpty()) {
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
 			ObligationContext obligationContext = new SingleUserObligationContext();

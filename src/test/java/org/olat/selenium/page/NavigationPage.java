@@ -106,7 +106,7 @@ public class NavigationPage {
 			navigate(myCoursesBy);
 			OOGraphene.waitElement(myCoursesAssertBy, browser);
 			return new MyCoursesPage(browser);
-		} catch (Exception e) {
+		} catch (Error | Exception e) {
 			OOGraphene.takeScreenshot("Open my courses", browser);
 			throw e;
 		}

@@ -139,7 +139,7 @@ public class FolderPage {
 		OOGraphene.waitElementSlowly(uploadedBy, 5, browser);
 		
 		By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
-		browser.findElement(saveButtonBy).click();
+		OOGraphene.moveAndClick(saveButtonBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

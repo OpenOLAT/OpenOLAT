@@ -21,9 +21,7 @@ package org.olat.selenium.page.user;
 
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -41,27 +39,12 @@ import org.openqa.selenium.WebElement;
  */
 public class UserToolsPage {
 	
-	private static final Logger log = Tracing.createLoggerFor(UserToolsPage.class);
-	
 	public static final By mySettingsClassName = By.className("o_sel_user_tools-mysettings");
 
 	private final WebDriver browser;
 	
 	public UserToolsPage(WebDriver browser) {
 		this.browser = browser;
-	}
-	
-	/**
-	 * Check if the user menu is displayed.
-	 * 
-	 * @return
-	 */
-	public UserToolsPage assertOnUserTools() {
-		By personnalToolsBy = By.className("o_sel_menu_tools");
-		List<WebElement> personnalTools = browser.findElements(personnalToolsBy);
-		Assert.assertEquals(1, personnalTools.size());
-		Assert.assertTrue(personnalTools.get(0).isDisplayed());
-		return this;
 	}
 	
 	/**
@@ -103,27 +86,23 @@ public class UserToolsPage {
 	 * @return The user menu page
 	 */
 	public UserToolsPage openUserToolsMenu() {
-		List<WebElement> mySettingsLinks = browser.findElements(mySettingsClassName);
-		if(mySettingsLinks.isEmpty() || !mySettingsLinks.get(0).isDisplayed()) {
-			By toolbarCaretBy = By.id("o_sel_navbar_my_menu_caret");
-			
-			List<WebElement> toolbarCaretLinks = browser.findElements(toolbarCaretBy);
-			Assert.assertFalse(toolbarCaretLinks.isEmpty());
-			WebElement toolbarCaretLink = toolbarCaretLinks.get(0);
-			Assert.assertNotNull(toolbarCaretLink);
-			try {
-				browser.findElement(toolbarCaretBy).click();
-			} catch (Exception e) {
-				log.error("", e);
-			}
+		By toolbarCaretBy = By.id("o_sel_navbar_my_menu_caret");
+		OOGraphene.waitElement(toolbarCaretBy, browser);
+		browser.findElement(toolbarCaretBy).click();
+		
+		try {
 			OOGraphene.waitNavBarTransition(browser);
-			try {
-				OOGraphene.waitElement(mySettingsClassName, browser);
-			} catch (Exception e) {
-				log.error("", e);
-			}
+			OOGraphene.waitElement(mySettingsClassName, browser);
+			
+			By personnalToolsBy = By.className("o_sel_menu_tools");
+			List<WebElement> personnalTools = browser.findElements(personnalToolsBy);
+			Assert.assertEquals(1, personnalTools.size());
+			Assert.assertTrue(personnalTools.get(0).isDisplayed());
+		} catch (Exception | Error e) {
+			OOGraphene.takeScreenshot("Assert user tool", browser);
+			throw e;
 		}
-		assertOnUserTools();
+		
 		return this;
 	}
 	
