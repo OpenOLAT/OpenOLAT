@@ -45,7 +45,7 @@ public class OLATUpgrade_16_1_2 extends OLATUpgrade {
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_16_1_2.class);
 	
 	private static final String VERSION = "OLAT_16.1.2";
-	private static final String INIT_ASSESSMENT_ENTRY_CONVENTIONAL_COURSES = "INIT ASESSMENT ENTRY CONVETIONAL COURSES";
+	private static final String INIT_ASSESSMENT_ENTRY_CONVENTIONAL_COURSES = "INIT ASESSMENT ENTRY CONVENTIONAL COURSES";
 	
 	@Autowired
 	private DB dbInstance;
@@ -113,10 +113,10 @@ public class OLATUpgrade_16_1_2 extends OLATUpgrade {
 
 		AtomicInteger migrationCounter = new AtomicInteger(0);
 		for (RepositoryEntry repositoryEntry : courseEntries) {
-			migrateCourseAssessmentEntries(repositoryEntry);
+			initializeCourseAssessmentEntries(repositoryEntry);
 			migrationCounter.incrementAndGet();
 			if(migrationCounter.get() % 100 == 0) {
-				log.info("Assessment entries: num. of courses migrated: {}", migrationCounter);
+				log.info("Assessment entries: num. of courses initialized: {}", migrationCounter);
 			}
 		}
 	}
@@ -136,21 +136,21 @@ public class OLATUpgrade_16_1_2 extends OLATUpgrade {
 				.getResultList();
 	}
 
-	private void migrateCourseAssessmentEntries(RepositoryEntry repositoryEntry) {
+	private void initializeCourseAssessmentEntries(RepositoryEntry repositoryEntry) {
 		try {
 			ICourse course = CourseFactory.loadCourse(repositoryEntry);
 			if (course != null) {
-				log.info("Assessment entries migration started: course {} ({}).",
+				log.info("Assessment entry initialisation started: course {} ({}).",
 						repositoryEntry.getKey(), repositoryEntry.getDisplayname());
-				courseAssessmentService.evaluateAll(course);
-				log.info("Assessment entries migrated: course {} ({}).",
+				courseAssessmentService.evaluateAll(course, false);
+				log.info("Assessment entries initialised: course {} ({}).",
 						repositoryEntry.getKey(), repositoryEntry.getDisplayname());
 			}
 		} catch (CorruptedCourseException cce) {
-			log.warn("CorruptedCourseException in migration of assessment entries of course {} ({})",
+			log.warn("CorruptedCourseException in initialisation of assessment entries of course {} ({})",
 					repositoryEntry.getKey(), repositoryEntry.getDisplayname());
 		} catch (Exception e) {
-			log.error("Error in migration of assessment entries of course {} ({}).", repositoryEntry.getKey(),
+			log.error("Error in initialisation of assessment entries of course {} ({}).", repositoryEntry.getKey(),
 					repositoryEntry.getDisplayname());
 			log.error("", e);
 		}

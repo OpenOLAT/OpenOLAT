@@ -461,11 +461,35 @@ public class OOGraphene {
 	 * @param browser The driver
 	 */
 	public static final void selectTab(String ulClass, Predicate<WebDriver> selectTab, boolean slowly, WebDriver browser) {
-		List<WebElement> tabLinks = browser.findElements(By.cssSelector("ul." + ulClass + ">li>a"));
+		OOGraphene.waitElement(By.cssSelector("ul." + ulClass), browser);
+		List<WebElement> tabLinks = browser.findElements(By.cssSelector("ul." + ulClass + ">li"));
 		int count = tabLinks.size();
+		
+		int activeIndex = 0;
+		for(int i=0; i<count;i++) {
+			String cssClass = tabLinks.get(i).getAttribute("class");
+			if(cssClass != null && cssClass.contains("active")) {
+				activeIndex = i;
+			}
+		}
+		
+		boolean found;
+		if(activeIndex == 0) {
+			found = selectTab(ulClass, selectTab, 0, count, slowly, browser);
+		} else {
+			found = selectTab(ulClass, selectTab, activeIndex, count, slowly, browser);
+			if(!found) {
+				found = selectTab(ulClass, selectTab, 0, activeIndex, slowly, browser);
+			}
+		}
+		Assert.assertTrue("Found the tab", found);
+	}
+	
+	public static final boolean selectTab(String ulClass, Predicate<WebDriver> selectTab, int start, int end, boolean slowly, WebDriver browser) {
 		boolean found = false;
+		
 		a_a:
-		for(int i=0; i<count; i++) {
+		for(int i=start; i<end; i++) {
 			By tabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "]/a");
 			WebElement tabEl = browser.findElement(tabLinkBy);
 			String tabClass = tabEl.getAttribute("onclick");
@@ -475,7 +499,6 @@ public class OOGraphene {
 				if(slowly) {
 					waitElementSlowly(activatedTabLinkBy, 10, browser);
 				} else {
-					waitBusy(browser);
 					waitElement(activatedTabLinkBy, browser);
 				}
 				
@@ -488,8 +511,8 @@ public class OOGraphene {
 				break a_a;
 			}
 		}
-
-		Assert.assertTrue("Found the tab", found);
+		
+		return found;
 	}
 	
 	/**

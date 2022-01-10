@@ -104,6 +104,11 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 	
 	@Override
+	public boolean isUpdateEvaluationOnPublish(NodeAccessType type) {
+		return getNodeAccessProvider(type).isUpdateEvaluationOnPublish();
+	}
+	
+	@Override
 	public void updateConfigDefaults(NodeAccessType type, CourseNode courseNode, boolean newNode, INode parent) {
 		getNodeAccessProvider(type).updateConfigDefaults(courseNode, newNode, parent);
 	}

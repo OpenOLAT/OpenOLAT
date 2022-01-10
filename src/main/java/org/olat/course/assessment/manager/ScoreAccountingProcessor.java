@@ -47,6 +47,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ScoreAccountingTriggerSearchParams;
 import org.olat.course.editor.PublishEvent;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -100,6 +102,8 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 	private AssessmentService assessmentService;
 	@Autowired
 	private CoordinatorManager coordinator;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	@PostConstruct
 	void initProviders() {
@@ -167,7 +171,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		} else if (event instanceof PublishEvent) {
 			PublishEvent pe = (PublishEvent) event;
 			if (pe.getState() == PublishEvent.PUBLISH && pe.isEventOnThisNode()) {
-				courseAssessmentService.evaluateAllAsync(pe.getPublishedCourseResId());
+				tryProcessPublish(pe);
 			}
 		}
 	}
@@ -411,6 +415,17 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		scoreAccounting.evaluateAll(true);
 		log.debug("Evaluated all assessment entries of {} in {}", identity, courseEntry);
 		dbInstance.commitAndCloseSession();
+	}
+	
+	private void tryProcessPublish(PublishEvent pe) {
+		try {
+			log.debug("Process publish of course {}", pe.getPublishedCourseResId());
+			ICourse course = CourseFactory.loadCourse(pe.getPublishedCourseResId());
+			boolean update = nodeAccessService.isUpdateEvaluationOnPublish(NodeAccessType.of(course));
+			courseAssessmentService.evaluateAllAsync(pe.getPublishedCourseResId(), update);
+		} catch (Exception e) {
+			log.warn("Error when processing publish of course {}", pe.getPublishedCourseResId());
+		}
 	}
 	
 }

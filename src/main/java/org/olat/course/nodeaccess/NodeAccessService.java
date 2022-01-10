@@ -59,6 +59,15 @@ public interface NodeAccessService {
 	public boolean isConditionExpressionSupported(NodeAccessType type);
 	
 	public boolean isScoreCalculatorSupported(NodeAccessType type);
+
+	/**
+	 * Returns whether the evaluation after the course has published has to update
+	 * the assessment entries or not.
+	 *
+	 * @param type
+	 * @return
+	 */
+	public boolean isUpdateEvaluationOnPublish(NodeAccessType type);
 	
 	/**
 	 * Update configs if a node is created or updated.

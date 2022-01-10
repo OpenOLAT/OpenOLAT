@@ -59,7 +59,8 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 
 	private static final Logger log = Tracing.createLoggerFor(ScoreAccountingEvaluateAllWorker.class);
 	
-	private Long courseResId;
+	private final Long courseResId;
+	private final boolean update;
 	
 	@Autowired
 	private DB dbInstance;
@@ -68,8 +69,9 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 	@Autowired
 	private RepositoryService repositoryService;
 
-	public ScoreAccountingEvaluateAllWorker(Long courseResId) {
+	public ScoreAccountingEvaluateAllWorker(Long courseResId, boolean update) {
 		this.courseResId = courseResId;
+		this.update = update;
 	}
 
 	@Override
@@ -121,7 +123,7 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.setObligationContext(obligationContext);
-		scoreAccounting.evaluateAll(true);
+		scoreAccounting.evaluateAll(update);
 		
 		AssessmentEvaluation rootAssessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);
 		Boolean currentPassed = rootAssessmentEvaluation.getPassed();

@@ -144,7 +144,7 @@ public class OLATUpgrade_15_pre_6_ae extends OLATUpgrade {
 				if (ConditionNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
 					Structure runStructure = course.getCourseEnvironment().getRunStructure();
 					if (runStructure != null) {
-						courseAssessmentService.evaluateAll(course);
+						courseAssessmentService.evaluateAll(course, true);
 						log.info("Assessment entry completions calculated: course {} ({}).",
 								repositoryEntry.getKey(), repositoryEntry.getDisplayname());
 					}

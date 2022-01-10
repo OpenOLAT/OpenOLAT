@@ -123,14 +123,15 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment setPassword(String password) {
 		By switchBy = By.cssSelector(".o_sel_course_password_condition_switch input[type='checkbox']");
 		browser.findElement(switchBy).click();
-		OOGraphene.waitBusy(browser);
-		
+
 		By passwordBy = By.cssSelector(".o_sel_course_password_condition_value input[type='text']");
+		OOGraphene.waitElement(passwordBy, browser);
 		browser.findElement(passwordBy).sendKeys(password);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_course_node_password_config button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 	
@@ -218,7 +219,6 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment assertOnNodeTitle() {
 		By shortTitleBy = By.className("o_sel_node_editor_shorttitle");
 		OOGraphene.waitElement(shortTitleBy, browser);
-
 		return this;
 	}
 	
@@ -246,8 +246,7 @@ public class CourseEditorPageFragment {
 		OOGraphene.scrollTo(saveButton, browser);
 		browser.findElement(saveButton).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitModalDialogDisappears(browser);
-
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 	

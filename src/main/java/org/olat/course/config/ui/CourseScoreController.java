@@ -124,7 +124,7 @@ public class CourseScoreController extends FormBasicController {
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		
 		if (scoreCalculatorSupported) {
-			courseAssessmentService.evaluateAll(course);
+			courseAssessmentService.evaluateAll(course, true);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
@@ -320,7 +320,7 @@ public class CourseScoreController extends FormBasicController {
 			}
 			if (are.isRecalculateAll()) {
 				ICourse course = CourseFactory.loadCourse(courseEntry);
-				courseAssessmentService.evaluateAll(course);
+				courseAssessmentService.evaluateAll(course, true);
 			}
 			
 			fireEvent(ureq, Event.CHANGED_EVENT);

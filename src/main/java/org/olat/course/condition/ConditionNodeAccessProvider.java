@@ -89,6 +89,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	public boolean isScoreCalculatorSupported() {
 		return true;
 	}
+	
+	@Override
+	public boolean isUpdateEvaluationOnPublish() {
+		return false;
+	}
 
 	@Override
 	public void updateConfigDefaults(CourseNode courseNode, boolean newNode, INode parent) {

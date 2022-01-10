@@ -47,6 +47,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	
 	public boolean isScoreCalculatorSupported();
 
+	public boolean isUpdateEvaluationOnPublish();
+
 	public void updateConfigDefaults(CourseNode courseNode, boolean newNode, INode parent);
 
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
