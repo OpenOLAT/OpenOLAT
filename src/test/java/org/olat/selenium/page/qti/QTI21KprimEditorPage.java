@@ -37,6 +37,18 @@ public class QTI21KprimEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 	
 	/**
+	 * Move the window to the 4 choices configuration.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21KprimEditorPage moveToChoices() {
+		OOGraphene.waitTinymce(browser);
+		OOGraphene.waitingALittleBit();// wait focus probably
+		OOGraphene.scrollTo(By.cssSelector("fieldset.o_kprim_choices_editor"), browser);
+		return this;
+	}
+	
+	/**
 	 * Set if the answer is correct or wrong.
 	 * 
 	 * @param position

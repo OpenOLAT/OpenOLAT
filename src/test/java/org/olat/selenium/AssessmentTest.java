@@ -661,10 +661,11 @@ public class AssessmentTest extends Deployments {
 			.assertOnCourseDetails("Struktur 1", true)
 			.assertOnCourseDetails("Test 1", true);
 		
-		//log out
-		new UserToolsPage(browser)
-			.logout();
+		OOGraphene.waitingALittleLonger();
 		
+		//log out
+		participantUserTools
+			.logout();
 		
 		// participant 2 log in and go directly to the second test
 		LoginPage participant2LoginPage = LoginPage.load(browser, deploymentUrl);

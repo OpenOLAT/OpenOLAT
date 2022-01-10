@@ -41,12 +41,14 @@ public class AssessmentCEConfigurationPage {
 	
 	public AssessmentCEConfigurationPage selectConfiguration() {
 		By configBy = By.className("o_sel_course_ms_score");
-		return selectTab(configBy);
+		OOGraphene.selectTab("o_node_config", configBy, browser);
+		return this;
 	}
 	
 	public AssessmentCEConfigurationPage selectConfigurationWithRubric() {
 		By configBy = By.className("o_sel_course_ms");
-		return selectTab(configBy);
+		OOGraphene.selectTab("o_node_config", configBy, browser);
+		return this;
 	}
 	
 	public AssessmentCEConfigurationPage setScoreAuto(float minVal, float maxVal, float cutVal) {
@@ -121,11 +123,6 @@ public class AssessmentCEConfigurationPage {
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
 		OOGraphene.scrollTop(browser);
-		return this;
-	}
-	
-	private AssessmentCEConfigurationPage selectTab(By tabBy) {
-		OOGraphene.selectTab("o_node_config", tabBy, browser);
 		return this;
 	}
 }

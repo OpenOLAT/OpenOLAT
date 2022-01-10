@@ -276,7 +276,7 @@ public class BinderPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_entry_form button.btn-primary");
-		OOGraphene.clickAndWait(submitBy, browser);
+		OOGraphene.moveAndClick(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

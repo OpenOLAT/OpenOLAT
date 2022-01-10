@@ -787,8 +787,8 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 		//add a kprim
 		QTI21KprimEditorPage kprimEditor = qtiEditor
-			.addKprim();
-		kprimEditor
+			.addKprim()
+			.moveToChoices()
 			.setAnswer(0, "Correct")
 			.setCorrect(0, true)
 			.setAnswer(1, "OkToo")
@@ -815,6 +815,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		// second kprim
 		kprimEditor = qtiEditor
 			.addKprim()
+			.moveToChoices()
 			.setAnswer(0, "OnlyRight")
 			.setCorrect(0, true)
 			.setAnswer(1, "NotRight")
