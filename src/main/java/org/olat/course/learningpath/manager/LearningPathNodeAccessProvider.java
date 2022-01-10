@@ -104,6 +104,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	public boolean isScoreCalculatorSupported() {
 		return false;
 	}
+	
+	@Override
+	public boolean isUpdateEvaluationOnPublish() {
+		return true;
+	}
 
 	@Override
 	public void updateConfigDefaults(CourseNode courseNode, boolean newNode, INode parent) {

@@ -154,7 +154,7 @@ public class OLATUpgrade_15_pre_0 extends OLATUpgrade {
 						String ident = rootNode.getIdent();
 						setRootEntryTrue(repositoryEntry, ident);
 						setRootEntryFalse(repositoryEntry, ident);
-						courseAssessmentService.evaluateAll(course);
+						courseAssessmentService.evaluateAll(course, true);
 						log.info("Assessment entries migrated: course {} ({}).",
 								repositoryEntry.getKey(), repositoryEntry.getDisplayname());
 					}

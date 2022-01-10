@@ -271,7 +271,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		}
 		if (are.isRecalculateAll()) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);
-			courseAssessmentService.evaluateAll(course);
+			courseAssessmentService.evaluateAll(course, true);
 		}
 	}
 

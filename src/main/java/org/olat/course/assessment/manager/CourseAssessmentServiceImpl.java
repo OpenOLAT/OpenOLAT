@@ -447,13 +447,13 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public void evaluateAll(ICourse course) {
-		new ScoreAccountingEvaluateAllWorker(course.getResourceableId()).run();
+	public void evaluateAll(ICourse course, boolean update) {
+		new ScoreAccountingEvaluateAllWorker(course.getResourceableId(), update).run();
 	}
 	
 	@Override
-	public void evaluateAllAsync(Long courseResId) {
-		ScoreAccountingEvaluateAllWorker worker = new ScoreAccountingEvaluateAllWorker(courseResId);
+	public void evaluateAllAsync(Long courseResId, boolean update) {
+		ScoreAccountingEvaluateAllWorker worker = new ScoreAccountingEvaluateAllWorker(courseResId, update);
 		taskExecutorManager.execute(worker);
 	}
 

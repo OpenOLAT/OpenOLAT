@@ -332,15 +332,17 @@ public interface CourseAssessmentService {
 	 * Recalculates all AssessmentEvaluation of all users in the course.
 	 *
 	 * @param course
+	 * @param update
 	 */
-	public void evaluateAll(ICourse course);
+	public void evaluateAll(ICourse course, boolean update);
 	
 	/**
 	 * Recalculates all AssessmentEvaluation of all users in the course asynchronously.
 	 *
 	 * @param courseResId
+	 * @param update 
 	 */
-	public void evaluateAllAsync(Long courseResId);
+	public void evaluateAllAsync(Long courseResId, boolean update);
 	
 	/**
 	 * Evaluates the all assessment entries of a repository entry / user when the
