@@ -33,8 +33,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -110,6 +113,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	private FormLink extraTimeButton;
 	private FormLink exportResultsButton;
+	private FormLink exportResultsWithPdfButton;
 	private FormLink statsButton;
 	private FormLink validateButton;
 	private FormLink correctionButton;
@@ -117,6 +121,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private FormLink resetButton;
 	
 	private FormLink bulkExportResultsButton;
+	private FormLink bulkExportResultsWithPdfButton;
 	private FormLink bulkStatsButton;
 	private FormLink bulkCorrectionButton;
 
@@ -129,6 +134,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	private boolean modelDirty = false;
 
+	@Autowired
+	private PdfModule pdfModule;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -225,12 +232,28 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			bulkStatsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
 			tableEl.addBatchButton(bulkStatsButton);
 
-			exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
+			boolean pdfEnabled = pdfModule.isEnabled();
+			exportResultsButton = uifactory.addFormLink("button.export", formLayout, pdfEnabled ? Link.LINK : Link.BUTTON);
 			exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+			if(pdfEnabled) {
+				exportResultsWithPdfButton = uifactory.addFormLink("button.export.pdf", formLayout, Link.LINK);
+				exportResultsWithPdfButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+				
+				DropdownItem exportResults = uifactory.addDropdownMenu("button.export.menu", null, formLayout, getTranslator());
+				exportResults.setOrientation(DropdownOrientation.normal);
+				exportResults.addElement(exportResultsButton);
+				exportResults.addElement(exportResultsWithPdfButton);
+			}
 			
 			bulkExportResultsButton = uifactory.addFormLink("bulk.export", "button.export", null, formLayout, Link.BUTTON);
 			bulkExportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 			tableEl.addBatchButton(bulkExportResultsButton);
+			
+			if(pdfModule.isEnabled()) {
+				bulkExportResultsWithPdfButton = uifactory.addFormLink("bulk.export.pdf", "button.export.pdf", null, formLayout, Link.BUTTON);
+				bulkExportResultsWithPdfButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+				tableEl.addBatchButton(bulkExportResultsWithPdfButton);
+			}
 		}
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
@@ -419,7 +442,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		if(fiSrc != bulkExportResultsButton && fiSrc != exportResultsButton) {
+		if(fiSrc != bulkExportResultsButton && fiSrc != bulkExportResultsWithPdfButton
+				&& fiSrc != exportResultsButton  && fiSrc != exportResultsWithPdfButton) {
 			super.propagateDirtinessToContainer(fiSrc, fe);
 		}
 	}
@@ -429,9 +453,13 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(extraTimeButton == source) {
 			doConfirmExtraTime(ureq);
 		} else if(exportResultsButton == source) {
-			doExportResults(ureq);
+			doExportResults(ureq, false);
+		} else if(exportResultsWithPdfButton == source) {
+			doExportResults(ureq, true);
 		} else if(bulkExportResultsButton == source) {
-			doBulkExportResults(ureq);
+			doBulkExportResults(ureq, false);
+		} else if(bulkExportResultsWithPdfButton == source) {
+			doBulkExportResults(ureq, true);
 		} else if(statsButton == source) {
 			doLaunchStatistics(ureq);
 		}  else if(bulkStatsButton == source) {
@@ -472,7 +500,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			return new QTI21IdentityListCourseNodeToolsController(ureq, getWindowControl(), stackPanel,
 					(IQTESTCourseNode)courseNode, assessedIdentity, coachCourseEnv);
 		}
-		return  new IdentityListCourseNodeToolsController(ureq, getWindowControl(),
+		return new IdentityListCourseNodeToolsController(ureq, getWindowControl(),
 				courseNode, assessedIdentity, coachCourseEnv);
 	}
 	
@@ -498,23 +526,24 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		return new Identities(identities, withNonParticipants);
 	}
 	
-	private void doExportResults(UserRequest ureq) {
+	private void doExportResults(UserRequest ureq, boolean withPdfs) {
 		Identities identities = getIdentities(true);
-		doExportResults(ureq, identities);
+		doExportResults(ureq, identities, withPdfs);
 	}
 
-	private void doBulkExportResults(UserRequest ureq) {
+	private void doBulkExportResults(UserRequest ureq, boolean withPdfs) {
 		List<Identity> identities = getSelectedIdentities(row -> true);
-		doExportResults(ureq, new Identities(identities, false));
+		doExportResults(ureq, new Identities(identities, false), withPdfs);
 	}
 	
-	private void doExportResults(UserRequest ureq, Identities identities) {
+	private void doExportResults(UserRequest ureq, Identities identities, boolean withPdfs) {
 		if (!identities.isEmpty()) {
 			MediaResource resource;
 			CourseEnvironment courseEnv = getCourseEnvironment();
 			if(isTestQTI21()) {
-				resource = new QTI21ResultsExportMediaResource(courseEnv, identities.getIdentities(), identities.isWithNonParticipants(),
-						(IQTESTCourseNode)courseNode, "", getLocale());
+				resource = new QTI21ResultsExportMediaResource(courseEnv, identities.getIdentities(),
+						identities.isWithNonParticipants(), withPdfs, (IQTESTCourseNode)courseNode, "",
+						getLocale(), getIdentity(), getWindowControl());
 			} else {
 				resource = new NotFoundMediaResource();
 			}

@@ -20,12 +20,15 @@
 package org.olat.course.nodes.iq;
 
 import java.io.File;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,23 +36,32 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
 import org.olat.ims.qti21.ui.ConfirmReopenAssessmentEntryController;
 import org.olat.ims.qti21.ui.QTI21ResetDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
+import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -80,6 +92,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private Link pullTestLink;
 	private Link reopenLink;
 	private Link deleteDataLink;
+	private Link exportPdfResultsLink;
 	private Link compensationExtraTimeLink;
 	private Link removeCompensationExtraTimeLink;
 	private TooledStackedPanel stackPanel;
@@ -101,6 +114,10 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private final boolean manualCorrections;
 	private AssessmentTestSession lastSession;
 	
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -150,10 +167,14 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	protected void initStatus() {
 		super.initStatus();
 
-		addSeparator();
-		
 		boolean hasTimeLimit = testCourseNode.hasQTI21TimeLimit(testEntry, courseEntry, getIdentity());
 		boolean lastSessionActive = (lastSession != null && lastSession.getFinishTime() == null);
+		
+		if(lastSession != null && !lastSessionActive && pdfModule.isEnabled()) {
+			exportPdfResultsLink = addLink("tool.export.pdf.results", "tool.export.pdf.results", "o_icon o_icon-fw o_icon_export");
+		}
+
+		addSeparator();
 		
 		if(lastSessionActive && hasTimeLimit) {
 			extraTimeLink = addLink("tool.extra.time", "tool.extra.time", "o_icon o_icon-fw o_icon_extra_time");
@@ -218,6 +239,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		} else if(reopenLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doConfirmReopenTest(ureq);
+		} else if(exportPdfResultsLink == source) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+			doExportResults(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -279,6 +303,52 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		extraTimeCtrl = null;
 		resetDataCtrl = null;
 		cmc = null;
+	}
+	
+	private void doExportResults(UserRequest ureq) {
+		final File fUnzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+		final URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
+
+		ControllerCreator creator = (uureq, wwControl) -> {
+			File submissionDir = qtiService.getSubmissionDirectory(lastSession);
+			String mapperUriForPdf = registerCacheableMapper(uureq, "QTI21DetailsResources::" + lastSession.getKey(),
+					new ResourcesMapper(assessmentObjectUri, fUnzippedDirRoot, submissionDir));
+			AssessmentTestSession candidateSession = qtiService.getAssessmentTestSession(lastSession.getKey());
+			AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, false,
+					candidateSession, fUnzippedDirRoot, mapperUriForPdf, null, QTI21AssessmentResultsOptions.allOptions(), false, true, false);
+			listenTo(printViewCtrl);
+			return printViewCtrl;
+		};
+		
+		String filename = generateDownloadName(lastSession);
+		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator, getWindowControl());
+		ureq.getDispatchResult().setResultingMediaResource(pdf);
+	}
+	
+	private String generateDownloadName(AssessmentTestSession session) {
+		String filename = "results_";
+		if(session.getAnonymousIdentifier() != null) {
+			filename += session.getAnonymousIdentifier();
+		} else {
+			filename += session.getIdentity().getUser().getFirstName()
+					+ "_" + session.getIdentity().getUser().getLastName();
+		}
+		
+		filename += "_" + courseEntry.getDisplayname();
+		
+		String subIdent = session.getSubIdent();
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			CourseNode node = course.getRunStructure().getNode(subIdent);
+			if(node != null) {
+				if(StringHelper.containsNonWhitespace(node.getShortTitle())) {
+					filename += "_" + node.getShortTitle();
+				} else {
+					filename += "_" + node.getLongTitle();
+				}
+			}
+		}
+		return filename;
 	}
 	
 	private void doCorrection(UserRequest ureq) {

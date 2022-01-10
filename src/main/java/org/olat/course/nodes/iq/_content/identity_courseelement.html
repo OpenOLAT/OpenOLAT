@@ -3,10 +3,17 @@
 #end
 <div class="o_button_group o_button_group_right">
 	#if($r.available("button.stats"))
-	$r.render("button.stats")
+		$r.render("button.stats")
 	#end
-	#if($r.available("button.export"))
-		$r.render("button.export")
+	#if($r.available("button.export.menu"))
+		$r.render("button.export.menu")
+	#else
+		#if($r.available("button.export"))
+			$r.render("button.export")
+		#end
+		#if($r.available("button.export.pdf"))
+			$r.render("button.export.pdf")
+		#end
 	#end
 	#if($r.available("retrieve.tests.title"))
 		$r.render("retrieve.tests.title")

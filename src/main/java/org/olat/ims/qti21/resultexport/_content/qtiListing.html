@@ -15,7 +15,7 @@
 	</script>
 </head>
 <body class="o_page_margins">
-	<h2>$title</h2>
+	<h2>$title </h2>
 	<a class='btn btn-default' href='../../index.html'><i class="o_icon o_icon_back o_icon-fw"> </i> $return</a>
 	<div id="o_main">
 		<table id='oneUser' class='table table-striped table-hover'>
@@ -58,20 +58,26 @@
 					<th scope="col">$t.translate("table.user.manualScore")</th>
 					<th scope="col">$t.translate("table.user.finalScore")</th>
 					<th scope="col">$t.translate("table.all.passed")</th>
-					<th scope="col">$t.translate("button.show")</th>					
+					<th scope="col">$t.translate("button.show")</th>
+					#if($hasPdfResults)
+						<th scope="col">$t.translate("button.pdf")</th>
+					#end
 				</tr>
 			</thead>
 			<tbody>
 				#foreach( $assessment in $assessments )
-				<tr onclick="window.open('$assessment.link','_blank');">
-					<td>$assessment.assessmentID</td>
-					<td>$assessment.assessmentDate</td>
-					<td>$assessment.duration</td>
-					<td>$assessment.score</td>
-					<td>$assessment.manualScore</td>
-					<td>$assessment.finalScore</td>
-					<td>$assessment.passed</td>	
-					<td><span class="btn btn-default btn-sm">$t.translate("button.show")</span></td>								
+				<tr>
+					<td onclick="window.open('$assessment.link','_blank');">$assessment.assessmentID</td>
+					<td onclick="window.open('$assessment.link','_blank');">$assessment.assessmentDate</td>
+					<td onclick="window.open('$assessment.link','_blank');">$assessment.duration</td>
+					<td onclick="window.open('$assessment.link','_blank');">$assessment.score</td>
+					<td onclick="window.open('$assessment.link','_blank');">$assessment.manualScore</td>
+					<td onclick="window.open('$assessment.link','_blank');">$assessment.finalScore</td>
+					<td onclick="window.open('$assessment.link','_blank');">$assessment.passed</td>
+					<td><button class="btn btn-default btn-sm" onclick="window.open('$assessment.link','_blank');">$t.translate("button.show")</button></td>
+					#if($hasPdfResults && ${assessment.hasLinkPdf()})
+						<td><button onclick="window.open('$assessment.linkPdf','_blank'); return false;" class="btn btn-default btn-sm">$t.translate("button.pdf")</button></td>
+					#end
 				</tr>
 				#end
 			</tbody>

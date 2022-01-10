@@ -21,6 +21,7 @@ package org.olat.ims.qti21.resultexport;
 
 import java.math.BigDecimal;
 
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 
 /**
@@ -34,13 +35,14 @@ public class ResultDetail {
 	private final String assessmentID;
 	private final String assessmentDate;
 	private final String duration;
-	private final BigDecimal score, manualScore;
+	private final BigDecimal score;
+	private final BigDecimal manualScore;
 	private final String passed;
 	private final String link;
-
+	private final String linkPdf;
 
 	public ResultDetail(String assessmentID, String assessmentDate, String duration,
-			BigDecimal score, BigDecimal manualScore, String passed, String link) {
+			BigDecimal score, BigDecimal manualScore, String passed, String link, String linkPdf) {
 		this.assessmentID = assessmentID;
 		this.assessmentDate = assessmentDate;
 		this.duration = duration;
@@ -48,10 +50,19 @@ public class ResultDetail {
 		this.manualScore = manualScore;
 		this.passed = passed;
 		this.link = link;
+		this.linkPdf = linkPdf;
 	}
 
 	public String getLink() {
 		return link;
+	}
+	
+	public String getLinkPdf() {
+		return linkPdf;
+	}
+	
+	public boolean hasLinkPdf() {
+		return StringHelper.containsNonWhitespace(linkPdf);
 	}
 
 	public String getAssessmentID() {

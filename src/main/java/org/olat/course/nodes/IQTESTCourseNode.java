@@ -490,7 +490,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
 				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
-				new QTI21ResultsExportMediaResource(courseEnv, identities, true, this, archivePath, locale).exportTestResults(exportStream);
+				boolean withPdfs = options.getDoer() != null && options.getWindowControl() != null && options.isWithPdfs();
+				new QTI21ResultsExportMediaResource(courseEnv, identities, true, withPdfs, this, archivePath, locale,
+						options.getDoer(), options.getWindowControl())
+					.exportTestResults(exportStream);
 				// excel results
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());

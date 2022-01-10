@@ -21,11 +21,13 @@ package org.olat.course.nodes;
 
 import java.util.List;
 
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.archiver.ExportFormat;
 import org.olat.group.BusinessGroup;
 
 /**
+ * The window control must be set if the export use the PDF service.
  * 
  * Initial date: 20.12.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -36,6 +38,14 @@ public class ArchiveOptions {
 	private BusinessGroup group;
 	private List<Identity> identities;
 	private ExportFormat exportFormat;
+	
+	private Identity doer;
+	private boolean withPdfs = false;
+	private WindowControl windowControl;
+	
+	public ArchiveOptions() {
+		//
+	}
 	
 	public BusinessGroup getGroup() {
 		return group;
@@ -59,5 +69,37 @@ public class ArchiveOptions {
 
 	public void setExportFormat(ExportFormat exportFormat) {
 		this.exportFormat = exportFormat;
+	}
+
+	/**
+	 * @return The window control
+	 */
+	public WindowControl getWindowControl() {
+		return windowControl;
+	}
+
+	/**
+	 * The window control is used by export which published a PDF.
+	 * 
+	 * @param windowControl The window control
+	 */
+	public void setWindowControl(WindowControl windowControl) {
+		this.windowControl = windowControl;
+	}
+
+	public boolean isWithPdfs() {
+		return withPdfs;
+	}
+
+	public void setWithPdfs(boolean withPdfs) {
+		this.withPdfs = withPdfs;
+	}
+
+	public Identity getDoer() {
+		return doer;
+	}
+
+	public void setDoer(Identity doer) {
+		this.doer = doer;
 	}
 }
