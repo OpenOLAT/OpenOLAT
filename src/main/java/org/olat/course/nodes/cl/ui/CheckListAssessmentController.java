@@ -344,11 +344,16 @@ public class CheckListAssessmentController extends FormBasicController implement
 		Map<Long,CheckListAssessmentRow> identityToView = boxList.stream()
 				.collect(Collectors.toMap(CheckListAssessmentRow::getIdentityKey, row -> row, (row1, row2) -> row1));
 		
-		Map<Long, AssessmentObligation> identityKeyToObligation = learningPath
-				? assessmentService.loadAssessmentEntriesBySubIdent(cgm.getCourseEntry(), courseNode.getIdent()).stream()
-						.filter(ae -> ae != null && ae.getIdentity() != null)
-						.collect(Collectors.toMap(ae -> ae.getIdentity().getKey(), this::extractObligation))
-				: Collections.emptyMap();
+		Map<Long, AssessmentObligation> identityKeyToObligation = new HashMap<>();
+		if(learningPath) {
+			List<AssessmentEntry> entries = assessmentService.loadAssessmentEntriesBySubIdent(cgm.getCourseEntry(), courseNode.getIdent());
+			for(AssessmentEntry ae:entries) {
+				AssessmentObligation ao = extractObligation(ae);
+				if(ao != null && ae.getIdentity() != null) {
+					identityKeyToObligation.put(ae.getIdentity().getKey(), ao);
+				}
+			}
+		}
 		
 		List<AssessedIdentity> identityList = checkboxManager
 				.getAssessedIdentities(courseEntry, getIdentity(), coachCourseEnv.isAdmin());

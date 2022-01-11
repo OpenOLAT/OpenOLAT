@@ -705,6 +705,7 @@ public class ImsQTI21Test extends Deployments {
 		configPage
 			.selectConfiguration()
 			.showScoreOnHomepage(true)
+			.assertShowResultsOptions()
 			.saveConfiguration();
 
 		//publish the course
@@ -1063,6 +1064,7 @@ public class ImsQTI21Test extends Deployments {
 		configPage
 			.selectConfiguration()
 			.showScoreOnHomepage(true)
+			.assertShowResultsOptions()
 			.saveConfiguration();
 
 		//publish the course
@@ -1189,12 +1191,16 @@ public class ImsQTI21Test extends Deployments {
 			.nodeTitle(testNodeTitle)
 			.selectTabLearnContent()
 			.chooseTest(qtiTestTitle);
-		OOGraphene.closeWarningBox(browser);//close the warning
+		
+		//SEL cannot wait and discard the warning box on the server, simply wait it disappears
+		OOGraphene.waitingTooLong();
+		OOGraphene.waitingTooLong();
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectConfiguration()
 			.showScoreOnHomepage(true)
+			.assertShowResultsOptions()
 			.saveConfiguration();
 
 		//publish the course
