@@ -80,9 +80,14 @@ public class NavigationPage {
 	}
 	
 	public AuthoringEnvPage openAuthoringEnvironment() {
-		navigate(authoringEnvTabBy);
-		OOGraphene.waitElement(By.className("o_sel_author_env"), browser);
-		return new AuthoringEnvPage(browser);
+		try {
+			navigate(authoringEnvTabBy);
+			OOGraphene.waitElement(By.className("o_sel_author_env"), browser);
+			return new AuthoringEnvPage(browser);
+		} catch (Error | Exception e) {
+			OOGraphene.takeScreenshot("Open authoring environment", browser);
+			throw e;
+		}
 	}
 	
 	public QuestionPoolPage openQuestionPool() {

@@ -60,6 +60,12 @@ public class QTI21ConfigurationCEPage {
 		return this;
 	}
 	
+	public QTI21ConfigurationCEPage assertShowResultsOptions() {
+		By optionsBy = By.cssSelector("div.o_sel_qti_show_results_options label>input[type='checkbox']");
+		OOGraphene.waitElement(optionsBy, browser);
+		return this;
+	}
+	
 	public QTI21ConfigurationCEPage showResultsOnHomepage(Boolean show, QTI21AssessmentResultsOptions options) {
 		By showResultsBy = By.cssSelector("div.o_sel_qti_show_results input[type='checkbox']");
 		WebElement showResultsEl = browser.findElement(showResultsBy);
@@ -117,6 +123,8 @@ public class QTI21ConfigurationCEPage {
 		browser.findElement(confirmBy).click();
 		OOGraphene.waitBusy(browser);
 		
+		OOGraphene.moveTo(By.cssSelector("div.o_qti_21_datetest_end"), browser);
+		
 		// set dates
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(start);
@@ -131,14 +139,14 @@ public class QTI21ConfigurationCEPage {
 			By untilAltBy = By.cssSelector("div." + fieldClass + " div.o_date_picker span.input-group-addon i");
 			OOGraphene.waitElement(untilAltBy, browser);
 			browser.findElement(untilAltBy).click();
+			OOGraphene.waitingALittleLonger();//SEL wait animation
 			
 			By todayBy = By.xpath("//div[@id='ui-datepicker-div']//td[contains(@class,'ui-datepicker-today')]/a");
 			OOGraphene.waitElement(todayBy, browser);
-			OOGraphene.waitingALittleLonger();// wait animation
 			
 			browser.findElement(todayBy).click();
 			OOGraphene.waitElementDisappears(todayBy, 5, browser);
-			OOGraphene.waitingALittleLonger();// wait animation
+			OOGraphene.waitingALittleLonger();//SEL wait animation
 		
 			if(waitBusy) {
 				OOGraphene.waitBusy(browser);

@@ -13,26 +13,11 @@
 	</div>
 	#end
 	#if($showCurriculumFilterButtons)
+	 <div class="o_curriculum_filter_nav">
 		#foreach($filterButton in $curriculumFilterButtons)
 			$r.render($filterButton)
 		#end
+	 </div>
 	#end
 	$r.render("certificates")
 </fieldset>
-
-<script>
-	var filterButtons = document.getElementsByClassName("o_curriculum_filter_button");
-	var maxWidth = 0;
-	
-	if (maxWidth == 0) {
-		for (const element of filterButtons) {
-			maxWidth = element.offsetWidth > maxWidth ? element.offsetWidth : maxWidth;
-		}
-		
-		maxWidth += 5;
-		
-		for (const element of filterButtons) {
-			element.style.width = maxWidth + "px";
-		}
-	}
-</script>

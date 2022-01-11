@@ -26,6 +26,7 @@
 	Full spec here: http://getbootstrap.com/customize/
 */
 @use "sass:math";
+@use "sass:color";
 
 /* bootstrap default is very white, use just a little bit more than just white */
 $btn-default-bg					: #fcfcfc !default;
@@ -548,7 +549,21 @@ $o-curriculum-style-course-title-bg				: $o-curriculum-l2-title-bg !default;
 $o-curriculum-style-course-title-padding		: $o-curriculum-l2-title-padding !default;
 $o-curriculum-style-course-lifecycle-bg			: $o-curriculum-l2-lifecycle-bg !default;
 $o-curriculum-style-course-lifecycle-padding	: $o-curriculum-l2-lifecycle-padding !default;
-
+/* Curriculum filter navigation */
+$o-curriculum-filter-bg							: rgb(120, 120, 120) !default;
+$o-curriculum-filter-color						: #fff !default;
+$o-curriculum-filter-border						: $o-curriculum-filter-bg !default;
+$o-curriculum-filter-radius						: $border-radius-base !important;
+$o-curriculum-filter-hover-bg					: darken($o-curriculum-filter-bg,10%) !default;
+$o-curriculum-filter-hover-border				: $o-curriculum-filter-hover-bg !default;
+$o-curriculum-filter-hover-color				: #fff !default;
+$o-curriculum-filter-active-bg					: color.adjust($brand-primary, $whiteness: 25%) !default;
+$o-curriculum-filter-active-border				: $brand-primary !default;
+$o-curriculum-filter-active-color				: #fff !default;
+@if color.blackness($o-curriculum-filter-active-bg) < 20 {
+	$o-curriculum-filter-active-color : $text-color;
+} 
+	
 /* Asssessment */
 $o-assessment-mode-today-bg						: $state-success-bg !default;
 $o-assessment-mode-today-border-color			: $state-success-text !default;

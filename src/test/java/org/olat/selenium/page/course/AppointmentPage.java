@@ -80,10 +80,11 @@ public class AppointmentPage {
 	public AppointmentPage setRecurringTopic(int firstDay, int lastDay, int startHour, int endHour, DayOfWeek day) {
 		By recurringBy = By.cssSelector("#o_coappointment_input_type input[name='appointment.input.type'][value='recurring']");
 		browser.findElement(recurringBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_app_topic_recurring_day"), browser);
 		
 		By firstBy = By.cssSelector("div.o_sel_app_topic_recurring_first span.input-group-addon i");
 		browser.findElement(firstBy).click();
+		OOGraphene.waitingALittleLonger();
 		OOGraphene.selectNextMonthInDatePicker(browser);
 		OOGraphene.selectDayInDatePicker(firstDay, browser);
 		
@@ -103,6 +104,7 @@ public class AppointmentPage {
 		
 		By lastBy = By.cssSelector("div.o_sel_app_topic_recurring_last span.input-group-addon i");
 		browser.findElement(lastBy).click();
+		OOGraphene.waitingALittleLonger();
 		OOGraphene.selectNextMonthInDatePicker(browser);
 		OOGraphene.selectDayInDatePicker(lastDay, browser);
 		
@@ -292,8 +294,13 @@ public class AppointmentPage {
 	 * @return Itself
 	 */
 	public AppointmentPage assertOnPlannedAppointmentByPosition(int posInList) {
-		By plannedBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')][" + posInList + "]/div[contains(@class,'o_ap_planned')]//div[contains(@class,'o_main_cont')]");
-		OOGraphene.waitElement(plannedBy, browser);
+		try {
+			By plannedBy = By.xpath("//div[contains(@class,'o_appointments')]/div/div[contains(@class,'o_table_row')][" + posInList + "]/div[contains(@class,'o_ap_planned')]//div[contains(@class,'o_main_cont')]");
+			OOGraphene.waitElement(plannedBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("App_pos_" + posInList + "_", browser);
+			throw e;
+		}
 		return this;
 	}
 	

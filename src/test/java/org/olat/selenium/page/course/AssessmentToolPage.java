@@ -195,10 +195,31 @@ public class AssessmentToolPage {
 		return this;
 	}
 	
-	public AssessmentToolPage assertStatusDone(UserVO user) {
+	/**
+	 * Wait slowly that the user has passed the test.
+	 * 
+	 * @param user The assessed user
+	 * @return Itself
+	 */
+	public AssessmentToolPage assertTablePassed(UserVO user) {
+		By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/i[contains(@class,'o_icon_passed')]");
+		OOGraphene.waitElementSlowly(doneBy, 10, browser);
+		return this;
+	}
+	
+	/**
+	 * The status done is off screen. It is important to wait first the passed status and
+	 * after call this assert. The assert will move the window right to see and wait the done
+	 * status.
+	 * 
+	 * @param user The assessed user
+	 * @return Itself
+	 */
+	public AssessmentToolPage assertTableStatusDone(UserVO user) {
 		try {
+			OOGraphene.moveTo(By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr/td[count(../td)-1]"), browser);
 			By doneBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div/i[contains(@class,'o_icon_status_done')]");
-			OOGraphene.waitElementSlowly(doneBy, 10, browser);
+			OOGraphene.waitElementPresenceSlowly(doneBy, 10, browser);
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("Status done", browser);
 			throw e;

@@ -355,6 +355,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, courseNode, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_sel_assessment_tool_table");
 		tableEl.setExportEnabled(true);
 		tableEl.setSearchEnabled(true);
 		tableEl.setMultiSelect(!coachCourseEnv.isCourseReadOnly());
