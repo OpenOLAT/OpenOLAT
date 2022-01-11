@@ -345,32 +345,60 @@ $o-curriculum-entry-bg							: #CCFFCC;
 	
 }
 
-.o_curriculum_filter_button {
-	display: inline-block;
-	box-sizing: border-box;
-	min-width: 80px;
-	height: 50px;
+.o_curriculum_filter_nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	@extend  %o_block_large_bottom;
+}
 
-	color: white;
-	font-weight: bold;
-	line-height: 50px;
-	text-align: right;
-	border-radius: $border-radius-base;
+.o_curriculum_filter_button {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+
+	width: 200px;
+	height: 50px;
+	@media (max-width: 439px) { 
+		flex-grow: 1;	
+		height: auto;
+	}
+
+	padding: 3px 5px;
+	border-width: 3px;
+	border-style: solid;
+	border-radius: $o-curriculum-filter-radius; 
 	
-	padding: 5px;
-	margin-right: 3px;
-	margin-bottom: 6px;
-	
-	background-color: rgb(125, 124, 128);
-	border: 3px solid rgb(125, 124, 128);
-	
+	background-color: $o-curriculum-filter-bg;
+	border-color: $o-curriculum-filter-border;
+	color: $o-curriculum-filter-color;
+		
 	&.active {
-		background-color: color.scale($brand-primary, $alpha: -35%);;
-		border: 3px solid $brand-primary;
+		background-color: $o-curriculum-filter-active-bg;
+		border-color: $o-curriculum-filter-active-border;
+		color: $o-curriculum-filter-active-color;
+		&:hover {
+			background-color: $o-curriculum-filter-active-bg;
+			border-color: $o-curriculum-filter-active-border;
+			color: $o-curriculum-filter-active-color;
+		}		
 	}
 	
 	&:hover {
 		text-decoration: none;
-		color: white;
+		background-color: $o-curriculum-filter-hover-bg;
+		border-color: $o-curriculum-filter-hover-border;
+		color: $o-curriculum-filter-hover-color;
+	}
+	
+	span {
+		/* Supported by all except IE: https://caniuse.com/?search=line-clamp */
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		line-height: 20px;
+		text-align: right;
 	}
 }
