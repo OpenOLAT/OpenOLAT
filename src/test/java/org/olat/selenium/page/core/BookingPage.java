@@ -141,7 +141,7 @@ public class BookingPage {
 	
 	public void save() {
 		By saveButtonBy = By.cssSelector("form button.btn-primary");
-		browser.findElement(saveButtonBy).click();
+		OOGraphene.moveAndClick(saveButtonBy, browser);
 		OOGraphene.waitBusy(browser);
 	}
 	
