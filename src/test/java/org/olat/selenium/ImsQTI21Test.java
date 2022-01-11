@@ -1137,7 +1137,8 @@ public class ImsQTI21Test extends Deployments {
 		
 		// author wait the status changes
 		assessmentTool
-			.assertStatusDone(participant)
+			.assertTablePassed(participant)
+			.assertTableStatusDone(participant)
 			.assertProgressEnded(participant);
 	}
 	

@@ -128,19 +128,25 @@ public class FolderPage {
 	}
 	
 	public FolderPage uploadFile(File file) {
-		By newFileBy = By.className("o_bc_upload");
-		OOGraphene.waitElement(newFileBy, browser);
-		browser.findElement(newFileBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		By inputBy = By.cssSelector("div.modal-dialog div.o_fileinput input[type='file']");
-		OOGraphene.uploadFile(inputBy, file, browser);
-		By uploadedBy = By.cssSelector("div.modal-dialog div.o_sel_file_uploaded");
-		OOGraphene.waitElementSlowly(uploadedBy, 5, browser);
-		
-		By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
-		OOGraphene.moveAndClick(saveButtonBy, browser);
-		OOGraphene.waitModalDialogDisappears(browser);
+		try {
+			By newFileBy = By.className("o_bc_upload");
+			OOGraphene.waitElement(newFileBy, browser);
+			browser.findElement(newFileBy).click();
+			OOGraphene.waitModalDialog(browser);
+			
+			By inputBy = By.cssSelector("div.modal-dialog div.o_fileinput input[type='file']");
+			OOGraphene.uploadFile(inputBy, file, browser);
+			By uploadedBy = By.cssSelector("div.modal-dialog div.o_sel_file_uploaded");
+			OOGraphene.waitElementSlowly(uploadedBy, 5, browser);
+			OOGraphene.waitingALittleBit();
+			
+			By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
+			OOGraphene.moveAndClick(saveButtonBy, browser);
+			OOGraphene.waitModalDialogDisappears(browser);
+		} catch (Error | Exception e) {
+			OOGraphene.takeScreenshot("uploadFile", browser);
+			throw e;
+		}
 		return this;
 	}
 	

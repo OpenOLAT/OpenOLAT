@@ -227,10 +227,35 @@ public class OOGraphene {
 	}
 	
 	/**
-	 * Wait until the element is visible.
+	 * Wait until the element is present in DOM but it doesn't mean the element is visible.
 	 * 
 	 * @param element The selector for the element
 	 * @param timeoutInSeconds The timeout in seconds
+	 * @param browser The web driver
+	 */
+	public static void waitElementPresence(By element, int timeoutInSeconds, WebDriver browser) {
+		waitElementPresence(element, Duration.ofSeconds(timeoutInSeconds), polling, browser);
+	}
+	
+	/**
+	 * Wait slowly until the element is present in DOM but it doesn't mean the element is visible.
+	 * 
+	 * @param element The selector for the element
+	 * @param timeoutInSeconds The timeout in seconds
+	 * @param browser The web driver
+	 */
+	public static void waitElementPresenceSlowly(By element, int timeoutInSeconds, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingSlower)
+			.until(ExpectedConditions.presenceOfElementLocated(element));
+	}
+	
+	/**
+	 * Wait until the element is present in DOM but it doesn't mean the element is visible.
+	 * 
+	 * @param element The selector for the element
+	 * @param timeoutInSeconds The timeout
+	 * @param pollingDuration The polling duration
 	 * @param browser The web driver
 	 */
 	public static void waitElement(By element, Duration timeoutDuration, Duration pollingDuration, WebDriver browser) {
@@ -246,9 +271,9 @@ public class OOGraphene {
 	 * @param timeoutInSeconds
 	 * @param browser
 	 */
-	public static void waitElementPresence(By element, int timeoutInSeconds, WebDriver browser) {
+	public static void waitElementPresence(By element, Duration timeout, Duration pollingDuration, WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(polling)
+			.withTimeout(timeout).pollingEvery(pollingDuration)
 			.until(ExpectedConditions.presenceOfElementLocated(element));
 	}
 	

@@ -22,7 +22,9 @@ package org.olat.selenium.page.qti;
 import java.io.File;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.graphene.Position;
@@ -42,6 +44,7 @@ import org.openqa.selenium.support.ui.Select;
  */
 public class QTI21Page {
 	
+	private static final Logger log = Tracing.createLoggerFor(QTI21Page.class);
 	private final By toolsMenu = By.cssSelector("ul.o_sel_repository_tools");
 	
 	private WebDriver browser;
@@ -740,8 +743,8 @@ public class QTI21Page {
 			By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
 			OOGraphene.waitElement(feedbackBy, 5, browser);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("assertFeedback: {}", title, e);
+			OOGraphene.takeScreenshot("assertFeedback", browser);
 			throw e;
 		}
 		return this;

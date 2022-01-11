@@ -42,7 +42,7 @@ public class LearnPathCourseElementEditorPage {
 		By triggerBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//div[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "']");
 		OOGraphene.waitElement(triggerBy, browser);
 		browser.findElement(triggerBy).click();
-		OOGraphene.waitingALittleLonger();
+		OOGraphene.waitingLong();//SEL wait focus jump
 		By checkedBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//div[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "'][@checked='checked']");
 		OOGraphene.waitElement(checkedBy, browser);
 		return this;

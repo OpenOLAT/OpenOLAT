@@ -21,7 +21,9 @@ package org.olat.selenium.page.group;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -36,6 +38,8 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class GroupsPage {
+	
+	private static final Logger log = Tracing.createLoggerFor(GroupsPage.class);
 	
 	private WebDriver browser;
 	
@@ -104,12 +108,18 @@ public class GroupsPage {
 	 * @return
 	 */
 	public BookingPage bookGroup(String name) {
-		By accessBy = By.xpath("//div[contains(@class,'o_group_list')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td/a[contains(@class,'o_sel_group_access')]");
-		OOGraphene.waitElement(accessBy, browser);
-		browser.findElement(accessBy).click();
-		By tokenEntryBy = By.className("o_sel_accesscontrol_token_entry");
-		OOGraphene.waitElement(tokenEntryBy, browser);
-		return new BookingPage(browser);
+		try {
+			By accessBy = By.xpath("//div[contains(@class,'o_group_list')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td/a[contains(@class,'o_sel_group_access')]");
+			OOGraphene.waitElement(accessBy, browser);
+			browser.findElement(accessBy).click();
+			By tokenEntryBy = By.className("o_sel_accesscontrol_token_entry");
+			OOGraphene.waitElement(tokenEntryBy, browser);
+			return new BookingPage(browser);
+		} catch (Exception e) {
+			log.error("Cannot book: {}", name, e);
+			OOGraphene.takeScreenshot("bookGroup", browser);
+			throw e;
+		}
 	}
 	
 	/**
