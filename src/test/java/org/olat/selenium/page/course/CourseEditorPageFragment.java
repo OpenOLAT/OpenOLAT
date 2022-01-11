@@ -121,7 +121,10 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment setPassword(String password) {
+		OOGraphene.scrollTo(By.cssSelector("fieldset.o_sel_course_node_password_config"), browser);
+		
 		By switchBy = By.cssSelector(".o_sel_course_password_condition_switch input[type='checkbox']");
+		OOGraphene.waitElement(switchBy, browser);
 		browser.findElement(switchBy).click();
 
 		By passwordBy = By.cssSelector(".o_sel_course_password_condition_value input[type='text']");
