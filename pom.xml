@@ -896,7 +896,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-resources-plugin</artifactId>
-						<version>2.4.3</version>
+						<version>3.2.0</version>
 						<executions>
 							<execution>
 								<id>copy-resources-4-mysqlunittests</id>
@@ -1085,7 +1085,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-resources-plugin</artifactId>
-						<version>2.4.3</version>
+						<version>3.2.0</version>
 						<executions>
 							<execution>
 								<id>copy-resources-4-postgresqlunittests</id>
@@ -1291,7 +1291,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-resources-plugin</artifactId>
-						<version>2.4.3</version>
+						<version>3.2.0</version>
 						<executions>
 							<execution>
 								<id>copy-resources-4-oracleunittests</id>
@@ -1582,7 +1582,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.2.2</version>
+					<version>3.3.2</version>
 					<configuration>
 						<!--
 						<attachClasses>true</attachClasses>
@@ -1690,7 +1690,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M2</version>
+					<version>3.0.0-M3</version>
 					<executions>
 						<execution>
 							<id>show-versions</id>
@@ -1838,7 +1838,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.1.1</version>
+			<version>3.1.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2328,7 +2328,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph-beta</artifactId>
-			<version>0.34.0-SNAPSHOT</version>
+			<version>0.36.0-SNAPSHOT</version>
 		</dependency>
 		<!-- Overwrite selenium dependency to okhttp v3 -->
 		<dependency>
@@ -2682,7 +2682,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.3.1</version>
+				<version>3.1.2</version>
 				<configuration>
 					<!-- disable checking of url's im pom's -->
 					<dependencyDetailsEnabled>false</dependencyDetailsEnabled>
