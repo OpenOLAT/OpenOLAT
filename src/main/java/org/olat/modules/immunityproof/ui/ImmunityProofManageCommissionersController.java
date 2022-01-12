@@ -145,7 +145,7 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove.commissioner", translate("remove.commissioner"), "remove.commissioner"));
 		
-		tableModel = new UserSearchFlexiTableModel(null, userPropertyHandlers, getLocale(), columnsModel);
+		tableModel = new UserSearchFlexiTableModel(new ArrayList<>(), userPropertyHandlers, getLocale(), columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "commissionersTable", tableModel, getTranslator(), formLayout);
 	}
 
@@ -294,9 +294,6 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
 		
         String subject = translator.translate("immunity.proof.commissioner." + (added ? "added":"removed") + ".mail.subject");
         String body = translator.translate("immunity.proof.commissioner." + (added ? "added":"removed") + ".mail.body", params);
-        
-        System.out.println("params" + params);
-        System.out.println("body" + body);
         String decoratedBody = mailManager.decorateMailBody(body, userLocale);
         String recipientAddress = user.getEmail();
         Address from;
@@ -314,7 +311,7 @@ public class ImmunityProofManageCommissionersController extends FormBasicControl
         MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, subject, decoratedBody, null, result);
         mailManager.sendMessage(msg, result);
         if (!result.isSuccessful()) {
-            log.error("Could not send COVID commissioner message to " + recipientAddress);
+            log.error("Could not send COVID commissioner message to {}", recipientAddress);
             return false;
         }
         

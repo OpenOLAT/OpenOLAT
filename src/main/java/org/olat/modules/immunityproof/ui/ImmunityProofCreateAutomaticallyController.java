@@ -184,7 +184,7 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 				QrCodeDetectedEvent qrCodeEvent = (QrCodeDetectedEvent) event;
 				context.setQrCode(qrCodeEvent.getQrCode());
 				
-				doCheckCertificate(ureq, context);
+				doCheckCertificate(context);
 			}
 
 			cleanUp();
@@ -234,8 +234,8 @@ public class ImmunityProofCreateAutomaticallyController extends FormBasicControl
 		cmc.activate();
 	}
 
-	private void doCheckCertificate(UserRequest ureq, ImmunityProofContext context) {
-		List<String> cmds = new ArrayList<String>();
+	private void doCheckCertificate(ImmunityProofContext context) {
+		List<String> cmds = new ArrayList<>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
 		cmds.add("--certs-file");

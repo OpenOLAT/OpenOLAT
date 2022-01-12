@@ -557,7 +557,7 @@ public class ImmunityProofConfigurationController extends FormBasicController {
     }
 
 	private boolean verifyScriptSetupSuccessfully() {
-		List<String> cmds = new ArrayList<String>();
+		List<String> cmds = new ArrayList<>();
 		cmds.add(immunityProofModule.getPythonDir());
 		cmds.add(immunityProofModule.getValidationScriptDir() + "/verify_ehc.py");
 		cmds.add("--certs-file");

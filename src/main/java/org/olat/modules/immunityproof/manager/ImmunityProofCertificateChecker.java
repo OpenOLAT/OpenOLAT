@@ -168,7 +168,6 @@ public class ImmunityProofCertificateChecker extends Thread {
 			timeFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss[+-]hh"));
 			timeFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss[+-]hhmm"));
 			timeFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss[+-]hh:mm"));
-			long daysToMs = 24l * 60 * 60 * 1000;
 
 			Date birthdate = null;
 			String firstName = "";

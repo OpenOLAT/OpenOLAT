@@ -45,13 +45,6 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 		this.columnModel = columnModel;
 	}
 	
-	/*
-	@Override
-	public int getColumnCount() {
-		return columnModel.getColumnCount();
-	}
-	*/
-	
 	@Override
 	public U getObject(int row) {
 		if(row >= 0 && row < rows.size()) {
@@ -73,11 +66,6 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 	public boolean isSelectable(int row) {
 		return true;
 	}
-
-	/*
-	@Override
-	public abstract DefaultFlexiTableDataModel<U> createCopyWithEmptyList();
-	*/
 	
 	@Override
 	public int getRowCount() {
