@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -44,6 +45,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.course.assessment.AssessmentHelper;
@@ -55,7 +57,6 @@ import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.wizard.AssessmentModeDefaults;
 import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
@@ -114,6 +115,7 @@ public class QTI21EditForm extends FormBasicController {
 	private MultipleSelectionElement testDateDependentEl;
 	private DueDateConfigFormItem testStartDateEl;
 	private DueDateConfigFormItem testEndDateEl;
+	private TextElement assessmentModeNameEl;
 	private SingleSelection assessmentModeEl;
 	private IntegerElement leadTimeEl;
 	private IntegerElement followupTimeEl;
@@ -139,7 +141,8 @@ public class QTI21EditForm extends FormBasicController {
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private final QTI21DeliveryOptions deliveryOptions;
 	private final boolean wizard;
-	private final AssessmentModeDefaults assessmentModeDefaults;
+	private final boolean reexam;
+	private final IQTESTCourseNodeContext assessmentModeDefaults;
 	
 	private DialogBoxController confirmTestDateCtrl;
 
@@ -164,6 +167,7 @@ public class QTI21EditForm extends FormBasicController {
 		this.needManualCorrection = needManualCorrection;
 		this.selfAssessment = selfAssessment;
 		this.wizard = false;
+		this.reexam = false;
 		this.assessmentModeDefaults = null;
 		initDateValues();
 		initRelativeToDateKV(courseEntry);
@@ -171,7 +175,8 @@ public class QTI21EditForm extends FormBasicController {
 	}
 
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, RepositoryEntry courseEntry,
-			IQTESTCourseNodeContext context, NodeAccessType nodeAccessType, boolean needManualCorrection, boolean selfAssessment) {
+			IQTESTCourseNodeContext context, NodeAccessType nodeAccessType, boolean needManualCorrection,
+			boolean selfAssessment, boolean reexam) {
 		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
 		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.courseNode = context.getCourseNode();
@@ -182,6 +187,7 @@ public class QTI21EditForm extends FormBasicController {
 		this.needManualCorrection = needManualCorrection;
 		this.selfAssessment = selfAssessment;
 		this.wizard = true;
+		this.reexam = reexam;
 		initDateValues();
 		initRelativeToDateKV(courseEntry);
 		initForm(ureq);
@@ -288,6 +294,15 @@ public class QTI21EditForm extends FormBasicController {
 			} else {
 				assessmentModeEl.select(ASSESSMENT_MODE_NONE, true);
 			}
+			
+			String assessmentModeName = assessmentModeDefaults.getName();
+			if (!StringHelper.containsNonWhitespace(assessmentModeName)) {
+				assessmentModeName = reexam
+						? translate("assessment.mode.name.reexam.default", assessmentModeDefaults.getLongTitle())
+						: translate("assessment.mode.name.exam.default", assessmentModeDefaults.getLongTitle());
+			}
+			assessmentModeNameEl = uifactory.addTextElement("assessment.mode.name", "assessment.mode.name", 255, assessmentModeName, formLayout);
+			assessmentModeNameEl.setMandatory(true);
 			
 			leadTimeEl = uifactory.addIntegerElement("assessment.mode.leadTime", assessmentModeDefaults.getLeadTime(), formLayout);
 			leadTimeEl.setDisplaySize(3);
@@ -452,10 +467,18 @@ public class QTI21EditForm extends FormBasicController {
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		validateDueDateConfig(testStartDateEl, testEndDateEl);
-		validateDueDateConfig(resultStartDateEl, resultEndDateEl);
-		validateDueDateConfig(resultFailedStartDateEl, resultFailedEndDateEl);
-		validateDueDateConfig(resultPassedStartDateEl, resultPassedEndDateEl);
+		allOk &= validateDueDateConfig(testStartDateEl, testEndDateEl);
+		allOk &= validateDueDateConfig(resultStartDateEl, resultEndDateEl);
+		allOk &= validateDueDateConfig(resultFailedStartDateEl, resultFailedEndDateEl);
+		allOk &= validateDueDateConfig(resultPassedStartDateEl, resultPassedEndDateEl);
+		
+		if (assessmentModeNameEl != null) {
+			assessmentModeNameEl.clearError();
+			if (assessmentModeNameEl.isVisible() && !StringHelper.containsNonWhitespace(assessmentModeNameEl.getValue())) {
+				assessmentModeNameEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 		
 		return allOk;
 	}
@@ -510,6 +533,7 @@ public class QTI21EditForm extends FormBasicController {
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
 			update();
+			updateAssessmentModeVisibility();
 		} else if(testStartDateEl == source) {
 			updateTestEndDate();
 		} else if(testDateDependentEl == source) {
@@ -536,16 +560,21 @@ public class QTI21EditForm extends FormBasicController {
 	private void updateAssessmentModeVisibility() {
 		if (assessmentModeEl != null) {
 			boolean testDateVisible = testDateDependentEl.isAtLeastSelected(1);
-			if (testDateVisible) {
+			boolean absoluteDates = !relativeDatesEl.isAtLeastSelected(1);
+			if (testDateVisible && absoluteDates) {
 				assessmentModeEl.setVisible(true);
 				boolean assessmentModeEnabled = assessmentModeEl.isOneSelected()
 						&& !assessmentModeEl.getSelectedKey().equals(ASSESSMENT_MODE_NONE);
+				assessmentModeNameEl.setVisible(assessmentModeEnabled);
 				leadTimeEl.setVisible(assessmentModeEnabled);
 				followupTimeEl.setVisible(assessmentModeEnabled);
+				testEndDateEl.setMandatory(true);
 			} else {
 				assessmentModeEl.setVisible(false);
+				assessmentModeNameEl.setVisible(false);
 				leadTimeEl.setVisible(false);
 				followupTimeEl.setVisible(false);
+				testEndDateEl.setMandatory(false);
 			}
 		}
 	}
@@ -788,6 +817,8 @@ public class QTI21EditForm extends FormBasicController {
 			boolean enabled = assessmentModeEl.isOneSelected()
 					&& !assessmentModeEl.getSelectedKey().equals(ASSESSMENT_MODE_NONE);
 			assessmentModeDefaults.setEnabled(enabled);
+			
+			assessmentModeDefaults.setName(assessmentModeNameEl.getValue());
 			
 			boolean autoBeginEnd = assessmentModeEl.isOneSelected()
 					&& assessmentModeEl.getSelectedKey().equals(ASSESSMENT_MODE_AUTO);

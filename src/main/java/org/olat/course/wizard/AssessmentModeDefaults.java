@@ -35,6 +35,8 @@ public interface AssessmentModeDefaults {
 	
 	public String getName();
 	
+	public void setName(String name);
+	
 	public Date getBegin();
 	
 	public void setBegin(Date begin);

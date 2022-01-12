@@ -56,7 +56,7 @@ public class IQTESTNodeController extends StepFormBasicController {
 	private final IQTESTCourseNodeContext context;
 
 	public IQTESTNodeController(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext,
-			String nodeContextKey, RepositoryEntry entry) {
+			String nodeContextKey, RepositoryEntry entry, boolean reexam) {
 		super(ureq, control, rootForm, runContext, LAYOUT_BAREBONE, null);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		
@@ -81,7 +81,7 @@ public class IQTESTNodeController extends StepFormBasicController {
 			IQEditController.setIQReference(testEntry, moduleConfig);
 			needManualCorrection = CoreSpringFactory.getImpl(QTI21Service.class).needManualCorrection(testEntry);
 		}
-		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, entry, context, nodeAccessType, needManualCorrection, false);
+		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, entry, context, nodeAccessType, needManualCorrection, false, reexam);
 		listenTo(qti21EditForm);
 		
 		initForm(ureq);

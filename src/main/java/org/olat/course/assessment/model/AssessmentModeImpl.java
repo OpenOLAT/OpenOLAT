@@ -284,6 +284,7 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 		this.leadTime = leadTime;
 	}
 
+	@Override
 	public Date getBeginWithLeadTime() {
 		return beginWithLeadTime;
 	}

@@ -41,6 +41,7 @@ public class IQTESTCourseNodeContext implements IQTESTCourseNodeDefaults, Assess
 	private CourseNode courseNode;
 	private ModuleConfiguration moduleConfig;
 	private boolean enabled = true;
+	private String name;
 	private Date begin;
 	private Date end;
 	private int leadTime;
@@ -117,9 +118,14 @@ public class IQTESTCourseNodeContext implements IQTESTCourseNodeDefaults, Assess
 
 	@Override
 	public String getName() {
-		return shortTitle;
+		return name;
 	}
 	
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	@Override
 	public Date getBegin() {
 		return begin;
