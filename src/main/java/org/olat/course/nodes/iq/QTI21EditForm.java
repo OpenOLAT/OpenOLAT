@@ -302,6 +302,7 @@ public class QTI21EditForm extends FormBasicController {
 						: translate("assessment.mode.name.exam.default", assessmentModeDefaults.getLongTitle());
 			}
 			assessmentModeNameEl = uifactory.addTextElement("assessment.mode.name", "assessment.mode.name", 255, assessmentModeName, formLayout);
+			assessmentModeNameEl.setMandatory(true);
 			
 			leadTimeEl = uifactory.addIntegerElement("assessment.mode.leadTime", assessmentModeDefaults.getLeadTime(), formLayout);
 			leadTimeEl.setDisplaySize(3);
@@ -470,6 +471,14 @@ public class QTI21EditForm extends FormBasicController {
 		allOk &= validateDueDateConfig(resultStartDateEl, resultEndDateEl);
 		allOk &= validateDueDateConfig(resultFailedStartDateEl, resultFailedEndDateEl);
 		allOk &= validateDueDateConfig(resultPassedStartDateEl, resultPassedEndDateEl);
+		
+		assessmentModeNameEl.clearError();
+		if (assessmentModeNameEl != null && assessmentModeNameEl.isVisible()) {
+			if (!StringHelper.containsNonWhitespace(assessmentModeNameEl.getValue())) {
+				assessmentModeNameEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
 		
 		return allOk;
 	}
