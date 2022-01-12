@@ -524,6 +524,7 @@ public class QTI21EditForm extends FormBasicController {
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
 			update();
+			updateAssessmentModeVisibility();
 		} else if(testStartDateEl == source) {
 			updateTestEndDate();
 		} else if(testDateDependentEl == source) {
@@ -550,18 +551,21 @@ public class QTI21EditForm extends FormBasicController {
 	private void updateAssessmentModeVisibility() {
 		if (assessmentModeEl != null) {
 			boolean testDateVisible = testDateDependentEl.isAtLeastSelected(1);
-			if (testDateVisible) {
+			boolean absoluteDates = !relativeDatesEl.isAtLeastSelected(1);
+			if (testDateVisible && absoluteDates) {
 				assessmentModeEl.setVisible(true);
 				boolean assessmentModeEnabled = assessmentModeEl.isOneSelected()
 						&& !assessmentModeEl.getSelectedKey().equals(ASSESSMENT_MODE_NONE);
 				assessmentModeNameEl.setVisible(assessmentModeEnabled);
 				leadTimeEl.setVisible(assessmentModeEnabled);
 				followupTimeEl.setVisible(assessmentModeEnabled);
+				testEndDateEl.setMandatory(true);
 			} else {
 				assessmentModeEl.setVisible(false);
 				assessmentModeNameEl.setVisible(false);
 				leadTimeEl.setVisible(false);
 				followupTimeEl.setVisible(false);
+				testEndDateEl.setMandatory(false);
 			}
 		}
 	}
