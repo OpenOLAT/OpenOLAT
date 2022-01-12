@@ -216,8 +216,8 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 		defaults.setEnabled(true);
-		String shortTitle = random();
-		defaults.setShortTitle(shortTitle);
+		String name = random();
+		defaults.setName(name);
 		Date begin = new GregorianCalendar(2020, 12, 10, 10, 0, 0).getTime();
 		defaults.setBegin(begin);
 		Date end = new GregorianCalendar(2020, 12, 10, 11, 15, 0).getTime();
@@ -235,7 +235,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		softly.assertThat(assessmentModes).hasSize(1);
 		if (!assessmentModes.isEmpty()) {
 			AssessmentMode assessmentMode = assessmentModes.get(0);
-			softly.assertThat(assessmentMode.getName()).isEqualTo(shortTitle);
+			softly.assertThat(assessmentMode.getName()).isEqualTo(name);
 			softly.assertThat(assessmentMode.getBegin()).isCloseTo(begin, 2000);
 			softly.assertThat(assessmentMode.getEnd()).isCloseTo(end, 2000);
 			softly.assertThat(assessmentMode.getLeadTime()).isEqualTo(3);
