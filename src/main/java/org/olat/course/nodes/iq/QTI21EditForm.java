@@ -466,10 +466,10 @@ public class QTI21EditForm extends FormBasicController {
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		validateDueDateConfig(testStartDateEl, testEndDateEl);
-		validateDueDateConfig(resultStartDateEl, resultEndDateEl);
-		validateDueDateConfig(resultFailedStartDateEl, resultFailedEndDateEl);
-		validateDueDateConfig(resultPassedStartDateEl, resultPassedEndDateEl);
+		allOk &= validateDueDateConfig(testStartDateEl, testEndDateEl);
+		allOk &= validateDueDateConfig(resultStartDateEl, resultEndDateEl);
+		allOk &= validateDueDateConfig(resultFailedStartDateEl, resultFailedEndDateEl);
+		allOk &= validateDueDateConfig(resultPassedStartDateEl, resultPassedEndDateEl);
 		
 		return allOk;
 	}
