@@ -472,9 +472,9 @@ public class QTI21EditForm extends FormBasicController {
 		allOk &= validateDueDateConfig(resultFailedStartDateEl, resultFailedEndDateEl);
 		allOk &= validateDueDateConfig(resultPassedStartDateEl, resultPassedEndDateEl);
 		
-		assessmentModeNameEl.clearError();
-		if (assessmentModeNameEl != null && assessmentModeNameEl.isVisible()) {
-			if (!StringHelper.containsNonWhitespace(assessmentModeNameEl.getValue())) {
+		if (assessmentModeNameEl != null) {
+			assessmentModeNameEl.clearError();
+			if (assessmentModeNameEl.isVisible() && !StringHelper.containsNonWhitespace(assessmentModeNameEl.getValue())) {
 				assessmentModeNameEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
