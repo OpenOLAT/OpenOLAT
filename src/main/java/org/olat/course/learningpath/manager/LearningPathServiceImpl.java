@@ -35,6 +35,7 @@ import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,8 @@ public class LearningPathServiceImpl implements LearningPathService {
 	
 	@Autowired
 	private LearningPathRegistry registry;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService respositoryService;
 
@@ -108,6 +111,7 @@ public class LearningPathServiceImpl implements LearningPathService {
 	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity) {
 		String displayname = courseEntry.getDisplayname() + " (copy)";
 		RepositoryEntry lpEntry = respositoryService.copy(courseEntry, identity, displayname);
+		lpEntry = repositoryManager.setTechnicalType(lpEntry, LearningPathNodeAccessProvider.TYPE);
 		
 		ICourse course = CourseFactory.loadCourse(lpEntry);
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());
