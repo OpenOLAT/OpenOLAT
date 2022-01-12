@@ -193,7 +193,12 @@ class SubmitDocumentsController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(openI18n, DocCols.mode.ordinal(), "open", new ModeCellRenderer("open")));
 		}
 		if(!readOnly) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.metadata", translate("table.header.metadata"), "metadata"));
+			if(externalEditor) {
+				DefaultFlexiColumnModel replaceCol = new DefaultFlexiColumnModel("table.header.replace.doc", translate("table.header.metadata"), "replace");
+				replaceCol.setIconHeader("o_icon o_icon_edit_metadata o_icon-lg");
+				replaceCol.setHeaderTooltip("table.header.replace.doc");
+				columnsModel.addFlexiColumnModel(replaceCol);
+			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.delete", translate("table.header.delete"), "delete"));
 		}
 		
@@ -416,7 +421,7 @@ class SubmitDocumentsController extends FormBasicController {
 					String filename = row.getFile().getName();
 					Mode mode = row.getMode();
 					doOpen(ureq, filename, mode);
-				} else if("metadata".equals(se.getCommand())) {
+				} else if("replace".equals(se.getCommand())) {
 					doReplaceDocument(ureq, row);
 				}
 			}
