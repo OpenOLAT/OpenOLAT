@@ -100,6 +100,13 @@ public class IQTESTNodeController extends StepFormBasicController {
 		
 		initForm(ureq);
 	}
+	
+	@Override
+	protected void doDispose() {
+		mainForm.removeSubFormListener(qti21EditForm);
+		mainForm.removeSubFormListener(this);
+        super.doDispose();
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {	

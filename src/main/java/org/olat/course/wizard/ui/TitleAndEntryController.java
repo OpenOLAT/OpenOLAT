@@ -77,6 +77,13 @@ public class TitleAndEntryController extends StepFormBasicController {
 	}
 	
 	@Override
+	protected void doDispose() {
+		mainForm.removeSubFormListener(referencableCtrl);
+		mainForm.removeSubFormListener(this);
+        super.doDispose();
+	}
+	
+	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle(i18nFormTitle);
 		
