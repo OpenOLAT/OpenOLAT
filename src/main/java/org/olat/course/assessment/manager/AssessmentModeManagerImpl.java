@@ -387,7 +387,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		return myModes == null ? Collections.<AssessmentMode>emptyList() : myModes;
 	}
 	
-	private boolean isDisadvantagedUser(AssessmentMode mode, IdentityRef identity) {
+	@Override
+	public boolean isDisadvantagedUser(AssessmentMode mode, IdentityRef identity) {
 		return disadvantageCompensationDao
 				.isActiveDisadvantagedUser(identity, mode.getRepositoryEntry(), mode.getElementAsList());
 	}

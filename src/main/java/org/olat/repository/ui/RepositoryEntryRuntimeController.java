@@ -64,6 +64,8 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentMode.EndStatus;
+import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.TransientAssessmentMode;
@@ -1205,7 +1207,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			runtimeController = new CorruptedCourseController(ureq, getWindowControl());
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
-		} else if(reSecurity.canLaunch()) {
+		} else if(reSecurity.canLaunch() && assessmentModeAllowed(ureq)) {
 			removeAsListenerAndDispose(runtimeController);
 			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity, assessmentMode);
 			listenTo(runtimeController);
@@ -1218,6 +1220,28 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		}
+	}
+	
+	protected boolean assessmentModeAllowed(UserRequest ureq) {
+		if(isAssessmentLock(ureq, re, reSecurity) || reSecurity.isEntryAdmin()) {
+			return true;
+		}
+
+		List<AssessmentMode> modes = assessmentModeMgr.getAssessmentModeFor(getIdentity());
+		if(modes == null || modes.isEmpty()) {
+			return true;
+		}
+		
+		for(AssessmentMode mode:modes) {
+			if(re.equals(mode.getRepositoryEntry()) &&
+					(mode.getStatus() == Status.assessment
+					|| (mode.getEndStatus() == EndStatus.withoutDisadvantage 
+						&& (mode.getStatus() == Status.followup || mode.getStatus() == Status.end)
+						&& assessmentModeMgr.isDisadvantagedUser(mode, getIdentity())))) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	protected void disposeRuntimeController() {
