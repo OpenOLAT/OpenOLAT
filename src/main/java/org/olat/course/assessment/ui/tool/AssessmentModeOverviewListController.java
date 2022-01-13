@@ -50,6 +50,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -400,6 +401,8 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			showWarning("warning.assessment.mode.already.deleted");
 		} else {
 			assessmentModeCoordinationService.startAssessment(mode);
+			getLogger().info(Tracing.M_AUDIT, "Start assessment mode : {} ({}) in course: {} ({})",
+					mode.getName(), mode.getKey(), courseEntry.getDisplayname(), courseEntry.getKey());
 		}
 		loadModel();
 	}

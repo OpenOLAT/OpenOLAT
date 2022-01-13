@@ -63,9 +63,10 @@ public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 		return assessedIdentityKeys;
 	}
 	
-	public boolean isModeOf(TransientAssessmentMode assessmentMode, Identity identity) {
-		if(assessmentMode != null && assessmentMode.getModeKey().equals(mode.getModeKey())) {
-			return true;
+	public boolean isModeOf(TransientAssessmentMode currentAssessmentMode, Identity identity) {
+		// if an assessment is running, only relevant if they are the same
+		if(currentAssessmentMode != null) {
+			return currentAssessmentMode.getModeKey().equals(mode.getModeKey());
 		}
 		return (assessedIdentityKeys != null && identity != null && assessedIdentityKeys.contains(identity.getKey()));
 	}
