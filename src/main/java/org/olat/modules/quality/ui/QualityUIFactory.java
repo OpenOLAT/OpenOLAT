@@ -43,6 +43,8 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationNameComparator;
@@ -193,19 +195,9 @@ public class QualityUIFactory {
 		for (int i = elements.size(); i-->0; ) {
 			CurriculumElement element = elements.get(i);
 			keys[i] = getCurriculumElementKey(element);
-			ArrayList<String> names = new ArrayList<>();
-			addParentCurriculumElementNames(names, element);
-			values[i] = String.join(FLAT_DELIMITER, names);
+			values[i] = getCurriculumElementName(element);
 		}
 		return new KeysValues(keys, values);
-	}
-	
-	public static void addParentCurriculumElementNames(List<String> names, CurriculumElement curriculumElement) {
-		names.add(curriculumElement.getDisplayName());
-		CurriculumElement parent = curriculumElement.getParent();
-		if (parent != null) {
-			addParentCurriculumElementNames(names, parent);
-		}
 	}
 
 	public static KeysValues getCurriculumElementKeysValues(CurriculumTreeModel curriculumTreeModel, CurriculumElement current) {
@@ -224,7 +216,7 @@ public class QualityUIFactory {
 		return new KeysValues(keys, values);
 	}
 
-	private static String getCurriculumElementValue(CurriculumElement element) {
+	public static String getCurriculumElementValue(CurriculumElement element) {
 		StringBuilder sb = computeIntendentionForCurriculumElement(element, new StringBuilder());
 		if (StringHelper.containsNonWhitespace(element.getIdentifier())) {
 			sb.append(element.getIdentifier()).append(": ");
@@ -233,7 +225,7 @@ public class QualityUIFactory {
 		return sb.toString();
 	}
 	
-	private static void curriculumElementTreeToList(List<CurriculumElement> elements, INode node) {
+	public static void curriculumElementTreeToList(List<CurriculumElement> elements, INode node) {
 		if (node instanceof GenericTreeNode) {
 			GenericTreeNode genericTreeNode = (GenericTreeNode) node;
 			Object userObject = genericTreeNode.getUserObject();
@@ -270,6 +262,29 @@ public class QualityUIFactory {
 			}
 		}
 		return null;
+	}
+	
+	public static String getCurriculumElementName(CurriculumElement element) {
+		boolean separator = false;
+		StringBuilder displayName = new StringBuilder();
+		if (StringHelper.containsNonWhitespace(element.getIdentifier())) {
+			displayName.append(element.getIdentifier());
+			separator = true;
+		}
+		if (StringHelper.containsNonWhitespace(element.getDisplayName())) {
+			if (separator) {
+				displayName.append(" | ");
+			}
+			displayName.append(element.getDisplayName());
+			separator = true;
+		}
+		if (element.getType() != null && StringHelper.containsNonWhitespace(element.getType().getDisplayName())) {
+			if (separator) {
+				displayName.append(" | ");
+			}
+			displayName.append(element.getType().getDisplayName());
+		}
+		return displayName.toString();
 	}
 	
 	public static KeysValues getCurriculumElementTypeKeysValues(List<CurriculumElementType> types) {
@@ -419,7 +434,7 @@ public class QualityUIFactory {
 	
 	public static List<OrganisationRef> getSelectedOrganisationRefs(MultipleSelectionElement organisationsEl) {
 		return organisationsEl.getSelectedKeys().stream()
-				.map(ref -> getOrganisationRef(ref))
+				.map(QualityUIFactory::getOrganisationRef)
 				.collect(Collectors.toList());
 	}
 	
@@ -551,6 +566,17 @@ public class QualityUIFactory {
 		sb.append("<ul>");
 		for (String value : values) {
 			sb.append("<li>").append(value.trim()).append("</li>");
+		}
+		sb.append("</ul>");
+		String value = sb.toString();
+		return value;
+	}
+	
+	public static String toHtmlList(SelectionValues selectionValues) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<ul>");
+		for (SelectionValue selectionValue : selectionValues.keyValues()) {
+			sb.append("<li>").append(selectionValue.getValue().trim()).append("</li>");
 		}
 		sb.append("</ul>");
 		String value = sb.toString();

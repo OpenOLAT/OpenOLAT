@@ -159,6 +159,14 @@ public interface AssessmentModeManager {
 	public List<AssessmentMode> getAssessmentModeFor(IdentityRef identity);
 	
 	/**
+	 * 
+	 * @param mode The assessment mode to check for
+	 * @param identity The assessed identity
+	 * @return true if the specified identity has a disadvantage for the mode
+	 */
+	public boolean isDisadvantagedUser(AssessmentMode mode, IdentityRef identity);
+	
+	/**
 	 * This return all modes between the begin date minus lead time and end time.
 	 * Or if the assessment modes are stopped but some users with disadvantage
 	 * compensations are still at work.

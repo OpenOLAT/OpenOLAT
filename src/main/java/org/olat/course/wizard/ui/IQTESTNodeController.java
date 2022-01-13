@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -42,6 +43,7 @@ import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.wizard.InfoMetadata;
 
 /**
  * 
@@ -56,14 +58,26 @@ public class IQTESTNodeController extends StepFormBasicController {
 	private final IQTESTCourseNodeContext context;
 
 	public IQTESTNodeController(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext,
-			String nodeContextKey, RepositoryEntry entry, boolean reexam) {
+			String nodeContextKey, String infoMetaContextkey, RepositoryEntry entry, boolean reexam) {
 		super(ureq, control, rootForm, runContext, LAYOUT_BAREBONE, null);
 		setTranslator(Util.createPackageTranslator(CourseWizardService.class, getLocale(), getTranslator()));
 		
+		context = (IQTESTCourseNodeContext)getOrCreateFromRunContext(nodeContextKey, IQTESTCourseNodeContext::new);
+		
+		String assessmentModeName = context.getName();
+		if (!StringHelper.containsNonWhitespace(assessmentModeName)) {
+			assessmentModeName = runContext.containsKey(infoMetaContextkey)
+					? ((InfoMetadata)runContext.get(infoMetaContextkey)).getDisplayName()
+					: entry.getDisplayname();
+			assessmentModeName = reexam
+					? translate("assessment.mode.name.reexam.default", assessmentModeName)
+					: translate("assessment.mode.name.exam.default", assessmentModeName);
+			context.setName(assessmentModeName);
+		}
+		
 		ICourse course = CourseFactory.loadCourse(entry);
 		NodeAccessType nodeAccessType = NodeAccessType.of(course);
-
-		context = (IQTESTCourseNodeContext)getOrCreateFromRunContext(nodeContextKey, IQTESTCourseNodeContext::new);
+		
 		ModuleConfiguration moduleConfig = context.getModuleConfig();
 		if (moduleConfig == null) {
 			CourseNode courseNode = CourseNodeFactory.getInstance().getCourseNodeConfiguration(IQTESTCourseNode.TYPE).getInstance();
@@ -81,7 +95,7 @@ public class IQTESTNodeController extends StepFormBasicController {
 			IQEditController.setIQReference(testEntry, moduleConfig);
 			needManualCorrection = CoreSpringFactory.getImpl(QTI21Service.class).needManualCorrection(testEntry);
 		}
-		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, entry, context, nodeAccessType, needManualCorrection, false, reexam);
+		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, entry, context, nodeAccessType, needManualCorrection, false);
 		listenTo(qti21EditForm);
 		
 		initForm(ureq);

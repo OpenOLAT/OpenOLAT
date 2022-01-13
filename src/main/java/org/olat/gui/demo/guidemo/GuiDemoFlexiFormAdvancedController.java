@@ -27,6 +27,7 @@ package org.olat.gui.demo.guidemo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -237,7 +238,11 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		checkboxesDropdown.select(keys[0], true);
 		checkboxesDropdown.setEnabled("book", false);
 		checkboxesDropdown.addActionListener(FormEvent.ONCLICK);
-
+		
+		AutoCompletionMultiSelection autoCompletionMultiSelection = uifactory.addAutoCompletionMultiSelection(
+				"automultiselect", "advanced_form.automultiselect", form, getWindowControl(), new NameSource());
+		autoCompletionMultiSelection.setSearchPlaceholder(translate("advanced_form.automultiselect.placeholder"));
+		
 		// Horizontal radio buttons. Choice between Yes or No.
 		horizontalRadioButtons = uifactory.addRadiosHorizontal("guidemo.form.radio2", form, yesOrNoKeys,
 				yesOrNoOptions);

@@ -46,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -346,7 +347,7 @@ public class AssessmentModeListController extends FormBasicController implements
 		}
 		listenTo(editCtrl);
 		
-		String title = translate("form.mode.title", new String[]{ mode.getName() });
+		String title = translate("form.mode.title", mode.getName());
 		toolbarPanel.pushController(title, editCtrl);
 	}
 	
@@ -359,6 +360,8 @@ public class AssessmentModeListController extends FormBasicController implements
 
 	private void doStart(UserRequest ureq, AssessmentMode mode) {
 		assessmentModeCoordinationService.startAssessment(mode);
+		getLogger().info(Tracing.M_AUDIT, "Start assessment mode : {} ({}) in course: {} ({})",
+				mode.getName(), mode.getKey(), entry.getDisplayname(), entry.getKey());
 		loadModel();
 		fireEvent(ureq, new AssessmentModeStatusEvent());
 	}

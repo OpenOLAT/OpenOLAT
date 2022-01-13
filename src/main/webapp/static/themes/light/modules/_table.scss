@@ -310,13 +310,40 @@
 	max-height: 300px;
 	overflow-y: scroll;
 	margin-right: -15px;
+	label.control-label {
+		color: grey;
+		font-weight: normal;
+		margin-top: 10px;
+		margin-bottom: 0px;
+	}
+	.checkbox label {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }
 
 a.o_filter_clear {
 	padding-left: 1em;
-
 }
 
+.input-group.o_autocompletion {
+	margin-bottom: 10px;
+	a {
+		color: grey;
+		opacity: .65;
+	}
+	.o_indicate_search {
+		border-right: 0px;
+	}
+	.o_quick_search {
+		border-right: 0px;
+		border-left: 0px;
+	}
+	.o_reset_search {
+		border-left: 0px;
+	}
+}
 
 .o_breadcrumb.o_table_flexi_breadcrumb ol.breadcrumb {
 	margin: 5px 0 0 0;

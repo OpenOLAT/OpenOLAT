@@ -19,21 +19,18 @@
  */
 package org.olat.course.learningpath.manager;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.Date;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.util.DateUtils;
-import org.olat.course.assessment.MappedScoreAccounting;
+import org.olat.course.learningpath.model.SequenceConfigImpl;
+import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.nodeaccess.NoAccessResolver.NoAccessReason;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -48,153 +45,155 @@ public class LearningPathNoAccessResolverTest {
 
 	@Test
 	public void shouldGetStartInFuture() {
-		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
-		
-		CourseNode root = new STCourseNode();
-		CourseNode child1 = new SPCourseNode();
-		root.addChild(child1);
-		scoreAccounting.put(child1, of(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		CourseNode child2 = new SPCourseNode();
-		root.addChild(child2);
-		scoreAccounting.put(child2, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture()));
-		CourseNode child3 = new SPCourseNode();
-		root.addChild(child3);
-		scoreAccounting.put(child3, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture()));
-		CourseNode child4 = new SPCourseNode();
-		root.addChild(child4);
-		scoreAccounting.put(child4, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		
-		UserCourseEnvironment userCourseEnv = mock(UserCourseEnvironment.class);
-		when(userCourseEnv.getScoreAccounting()).thenReturn(scoreAccounting);
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture()));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture()));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
 
-		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(userCourseEnv, root);
+		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sut.getNoAccessMessage(child1).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child2).getReason()).as("Child 2 has start in future").isEqualTo(NoAccessReason.startDateInFuture);
-		softly.assertThat(sut.getNoAccessMessage(child3).getReason()).as("Child 3 previous not done").isEqualTo(NoAccessReason.previousNotDone);
-		softly.assertThat(sut.getNoAccessMessage(child3).getGoToNodeIdent()).as("Child 3 is blocked by child 2").isEqualTo(child2.getIdent());
-		softly.assertThat(sut.getNoAccessMessage(child4).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
-		softly.assertThat(sut.getNoAccessMessage(child3).getGoToNodeIdent()).as("Child 4 is blocked by child 2").isEqualTo(child2.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child1.getCourseNode()).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child2.getCourseNode()).getReason()).as("Child 2 has start in future").isEqualTo(NoAccessReason.startDateInFuture);
+		softly.assertThat(sut.getNoAccessMessage(child3.getCourseNode()).getReason()).as("Child 3 has start in future").isEqualTo(NoAccessReason.startDateInFuture);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getGoToNodeIdent()).as("Child 4 is blocked by child 2").isEqualTo(child2.getIdent());
 		softly.assertAll();
 	}
 	
 	@Test
-	public void shouldGetLastAccessibleCourseNode() {
-		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
+	public void shouldGetFirstMandatoryNotFullyAssessedCourseNode_first() {
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
 		
-		CourseNode root = new STCourseNode();
-		CourseNode child1 = new SPCourseNode();
-		root.addChild(child1);
-		scoreAccounting.put(child1, of(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		CourseNode child2 = new SPCourseNode();
-		root.addChild(child2);
-		scoreAccounting.put(child2, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		CourseNode child3 = new SPCourseNode();
-		root.addChild(child3);
-		scoreAccounting.put(child3, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		CourseNode child4 = new SPCourseNode();
-		root.addChild(child4);
-		scoreAccounting.put(child4, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		CourseNode child5 = new SPCourseNode();
-		root.addChild(child5);
-		scoreAccounting.put(child5, of(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		CourseNode child6 = new SPCourseNode();
-		root.addChild(child6);
-		scoreAccounting.put(child6, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		
-		UserCourseEnvironment userCourseEnv = mock(UserCourseEnvironment.class);
-		when(userCourseEnv.getScoreAccounting()).thenReturn(scoreAccounting);
-
-		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(userCourseEnv, root);
+		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sut.getNoAccessMessage(child1).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child2).getReason()).as("Child 2 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child3).getReason()).as("Child 3 previous not done").isEqualTo(NoAccessReason.previousNotDone);
-		softly.assertThat(sut.getNoAccessMessage(child3).getGoToNodeIdent()).as("Child 3 is blocked by child 2").isEqualTo(child2.getIdent());
-		softly.assertThat(sut.getNoAccessMessage(child4).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
-		softly.assertThat(sut.getNoAccessMessage(child4).getGoToNodeIdent()).as("Child 4 is blocked by child 2").isEqualTo(child2.getIdent());
-		softly.assertThat(sut.getNoAccessMessage(child5).getReason()).as("Child 5 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child6).getReason()).as("Child 6 previous not done").isEqualTo(NoAccessReason.previousNotDone);
-		softly.assertThat(sut.getNoAccessMessage(child6).getGoToNodeIdent()).as("Child 6 is blocked by child 2").isEqualTo(child2.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child1.getCourseNode()).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child2.getCourseNode()).getReason()).as("Child 2 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child3.getCourseNode()).getReason()).as("Child 3 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child3.getCourseNode()).getGoToNodeIdent()).as("Child 3 is blocked by child 2").isEqualTo(child2.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getGoToNodeIdent()).as("Child 4 is blocked by child 2").isEqualTo(child2.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child5.getCourseNode()).getReason()).as("Child 5 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child6.getCourseNode()).getReason()).as("Child 6 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child6.getCourseNode()).getGoToNodeIdent()).as("Child 6 is blocked by child 2").isEqualTo(child2.getIdent());
 		softly.assertAll();
 	}
 	
 	@Test
-	public void shouldGetLastAccessibleNotFullyAssessedCourseNode() {
-		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
-		
-		CourseNode root = new STCourseNode();
-		CourseNode child1 = new SPCourseNode();
-		root.addChild(child1);
-		scoreAccounting.put(child1, of(AssessmentObligation.optional, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
-		CourseNode child2 = new SPCourseNode();
-		root.addChild(child2);
-		scoreAccounting.put(child2, of(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		CourseNode child3 = new SPCourseNode();
-		root.addChild(child3);
-		scoreAccounting.put(child3, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		CourseNode child4 = new SPCourseNode();
-		root.addChild(child4);
-		scoreAccounting.put(child4, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		CourseNode child5 = new SPCourseNode();
-		root.addChild(child5);
-		scoreAccounting.put(child5, of(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		CourseNode child6 = new SPCourseNode();
-		root.addChild(child6);
-		scoreAccounting.put(child6, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		
-		UserCourseEnvironment userCourseEnv = mock(UserCourseEnvironment.class);
-		when(userCourseEnv.getScoreAccounting()).thenReturn(scoreAccounting);
+	public void shouldGetFirstMandatoryNotFullyAssessedCourseNode_mandatory() {
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.optional, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
 
-		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(userCourseEnv, root);
+		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sut.getNoAccessMessage(child1).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child2).getReason()).as("Child 2 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child3).getReason()).as("Child 3 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child4).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
-		softly.assertThat(sut.getNoAccessMessage(child4).getGoToNodeIdent()).as("Child 4 is blocked by child 3").isEqualTo(child3.getIdent());
-		softly.assertThat(sut.getNoAccessMessage(child5).getReason()).as("Child 5 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child6).getReason()).as("Child 6 previous not done").isEqualTo(NoAccessReason.previousNotDone);
-		softly.assertThat(sut.getNoAccessMessage(child6).getGoToNodeIdent()).as("Child 6 is blocked by child 3").isEqualTo(child3.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child1.getCourseNode()).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child2.getCourseNode()).getReason()).as("Child 2 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child3.getCourseNode()).getReason()).as("Child 3 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getGoToNodeIdent()).as("Child 4 is blocked by child 3").isEqualTo(child3.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child5.getCourseNode()).getReason()).as("Child 5 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child6.getCourseNode()).getReason()).as("Child 6 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child6.getCourseNode()).getGoToNodeIdent()).as("Child 6 is blocked by child 3").isEqualTo(child3.getIdent());
 		softly.assertAll();
 	}
 	
 	@Test
-	public void shouldGetLastAccessibleNotExcludedCourseNode() {
-		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
-		
-		CourseNode root = new STCourseNode();
-		CourseNode child1 = new SPCourseNode();
-		root.addChild(child1);
-		scoreAccounting.put(child1, of(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
-		CourseNode child2 = new SPCourseNode();
-		root.addChild(child2);
-		scoreAccounting.put(child2, of(AssessmentObligation.excluded, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		CourseNode child3 = new SPCourseNode();
-		root.addChild(child3);
-		scoreAccounting.put(child3, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
-		CourseNode child4 = new SPCourseNode();
-		root.addChild(child4);
-		scoreAccounting.put(child4, of(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
-		
-		UserCourseEnvironment userCourseEnv = mock(UserCourseEnvironment.class);
-		when(userCourseEnv.getScoreAccounting()).thenReturn(scoreAccounting);
+	public void shouldGetFirstMandatoryNotFullyAssessedCourseNode_excluded() {
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.excluded, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
 
-		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(userCourseEnv, root);
+		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(sut.getNoAccessMessage(child1).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child2).getReason()).as("Child 2 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child3).getReason()).as("Child 3 is accessible").isEqualTo(NoAccessReason.unknown);
-		softly.assertThat(sut.getNoAccessMessage(child4).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
-		softly.assertThat(sut.getNoAccessMessage(child4).getGoToNodeIdent()).as("Child 4 is blocked by child 3").isEqualTo(child3.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child1.getCourseNode()).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child2.getCourseNode()).getReason()).as("Child 2 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child3.getCourseNode()).getReason()).as("Child 3 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getReason()).as("Child 4 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getGoToNodeIdent()).as("Child 4 is blocked by child 3").isEqualTo(child3.getIdent());
 		softly.assertAll();
 	}
 	
-	private AssessmentEvaluation of(AssessmentObligation obligation, Boolean fullyAssessed,
+	@Test
+	public void shouldGetLastAccessibleCourseNode_mix() {
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
+		LearningPathTreeNode child1 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child2 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
+		LearningPathTreeNode child3 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child4 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, inFuture()));
+		LearningPathTreeNode child5 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child6 = add(root, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		
+		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(sut.getNoAccessMessage(child1.getCourseNode()).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child2.getCourseNode()).getReason()).as("Child 2 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child3.getCourseNode()).getReason()).as("Child 3 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getReason()).as("Child 4 has start in future").isEqualTo(NoAccessReason.startDateInFuture);
+		softly.assertThat(sut.getNoAccessMessage(child5.getCourseNode()).getReason()).as("Child 5 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child6.getCourseNode()).getReason()).as("Child 6 previous not done").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child6.getCourseNode()).getGoToNodeIdent()).as("Child 6 is blocked by child 4").isEqualTo(child4.getIdent());
+		softly.assertAll();
+	}
+	@Test
+	public void shouldGetLastAccessibleCourseNode_not_sequention() {
+		LearningPathTreeNode root = add(null, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inReview, null));
+		LearningPathTreeNode child1 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.done, null));
+		LearningPathTreeNode child2 = add(root, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
+		LearningPathTreeNode child21 = add(child2, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
+		LearningPathTreeNode child22 = add(child2, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode child3 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
+		LearningPathTreeNode child4 = add(root, false, new STCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
+		LearningPathTreeNode child41 = add(child4, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.inProgress, null));
+		LearningPathTreeNode child42 = add(child4, true, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notReady, null));
+		LearningPathTreeNode child5 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.TRUE, AssessmentEntryStatus.notStarted, null));
+		LearningPathTreeNode child6 = add(root, false, new SPCourseNode(), ae(AssessmentObligation.mandatory, Boolean.FALSE, AssessmentEntryStatus.notStarted, null));
+		
+		LearningPathNoAccessResolver sut = new LearningPathNoAccessResolver(root);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(sut.getNoAccessMessage(child1.getCourseNode()).getReason()).as("Child 1 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child2.getCourseNode()).getReason()).as("Child 2 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child21.getCourseNode()).getReason()).as("Child 21 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child22.getCourseNode()).getReason()).as("Child 22 is accessible").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child22.getCourseNode()).getGoToNodeIdent()).as("Child 22 is blocked by child 21").isEqualTo(child21.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child3.getCourseNode()).getReason()).as("Child 3 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child4.getCourseNode()).getReason()).as("Child 4 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child41.getCourseNode()).getReason()).as("Child 41 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child42.getCourseNode()).getReason()).as("Child 42 is accessible").isEqualTo(NoAccessReason.previousNotDone);
+		softly.assertThat(sut.getNoAccessMessage(child42.getCourseNode()).getGoToNodeIdent()).as("Child 42 is blocked by child 41").isEqualTo(child41.getIdent());
+		softly.assertThat(sut.getNoAccessMessage(child5.getCourseNode()).getReason()).as("Child 5 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertThat(sut.getNoAccessMessage(child6.getCourseNode()).getReason()).as("Child 6 is accessible").isEqualTo(NoAccessReason.unknown);
+		softly.assertAll();
+	}
+	
+	private LearningPathTreeNode add(LearningPathTreeNode parent, boolean inSequence, CourseNode courseNode, AssessmentEvaluation ae) {
+		SequenceConfigImpl sequenceConfig = new SequenceConfigImpl(inSequence, false);
+		LearningPathTreeNode treeNode = new LearningPathTreeNode(courseNode, 0, sequenceConfig, ae, false);
+		if (parent != null) {
+			parent.addChild(treeNode);
+		}
+		return treeNode;
+	}
+	
+	private AssessmentEvaluation ae(AssessmentObligation obligation, Boolean fullyAssessed,
 			AssessmentEntryStatus status, Date startDate) {
 		return new AssessmentEvaluation(null, null, null, null, null, null, null, status, null, fullyAssessed, null,
 				null, null, null, null, null, null, 0, null, null, null, null, startDate, null,

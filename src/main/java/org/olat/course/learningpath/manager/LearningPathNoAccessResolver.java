@@ -27,13 +27,11 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.learningpath.evaluation.LinearAccessEvaluator;
+import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.nodeaccess.NoAccessResolver;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.CourseNodeHelper;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreAccounting;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -44,12 +42,10 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class LearningPathNoAccessResolver implements NoAccessResolver {
 
-	private final UserCourseEnvironment userCourseEnv;
 	private final INode rootNode;
 	private LearningPathNoAccessVisitor learningPathNoAccessVisitor;
 
-	public LearningPathNoAccessResolver(UserCourseEnvironment userCourseEnv, INode rootNode) {
-		this.userCourseEnv = userCourseEnv;
+	public LearningPathNoAccessResolver(INode rootNode) {
 		this.rootNode = rootNode;
 	}
 
@@ -62,7 +58,7 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 	
 	private LearningPathNoAccessVisitor getPreviousNodeInaccessibleVisitor() {
 		if (learningPathNoAccessVisitor == null) {
-			learningPathNoAccessVisitor = new LearningPathNoAccessVisitor(userCourseEnv.getScoreAccounting());
+			learningPathNoAccessVisitor = new LearningPathNoAccessVisitor();
 			TreeVisitor tv = new TreeVisitor(learningPathNoAccessVisitor, rootNode, false);
 			tv.visitAll();
 		}
@@ -71,14 +67,9 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 	
 	private class LearningPathNoAccessVisitor implements Visitor {
 		
-		private final ScoreAccounting scoreAccounting;
 		private final Map<String, NoAccess> inaccessibleNodeIdentToNoAccess = new HashMap<>();
 		private String linkNodeIdent;
 		private String toDoNodeIdent;
-
-		public LearningPathNoAccessVisitor(ScoreAccounting scoreAccounting) {
-			this.scoreAccounting = scoreAccounting;
-		}
 		
 		public NoAccess getNoAccess(String courseNodeIdent) {
 			return inaccessibleNodeIdentToNoAccess.get(courseNodeIdent);
@@ -86,25 +77,30 @@ public class LearningPathNoAccessResolver implements NoAccessResolver {
 
 		@Override
 		public void visit(INode node) {
-			CourseNode courseNode = CourseNodeHelper.getCourseNode(node);
-			if (courseNode != null) {
-				AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(courseNode);
+			if (node instanceof LearningPathTreeNode) {
+				LearningPathTreeNode lpTreeNode = (LearningPathTreeNode)node;
+				AssessmentEvaluation assessmentEvaluation = lpTreeNode.getAssessmentEvaluation();
 				if (assessmentEvaluation != null) {
-					if (!isFullyAssessed(assessmentEvaluation)) {
-						boolean hasAccess = LinearAccessEvaluator.hasAccess(assessmentEvaluation.getAssessmentStatus());
+					boolean hasAccess = LinearAccessEvaluator.hasAccess(assessmentEvaluation.getAssessmentStatus());
+					if (hasAccess && !lpTreeNode.getSequenceConfig().isInSequence()) {
+						linkNodeIdent = null;
+						toDoNodeIdent = null;
+					} else if (!isFullyAssessed(assessmentEvaluation)) {
 						if (hasAccess) {
-							if (toDoNodeIdent == null && isMandatory(assessmentEvaluation) && !(courseNode instanceof STCourseNode)) {
-								toDoNodeIdent = courseNode.getIdent();
+							if (toDoNodeIdent == null && isMandatory(assessmentEvaluation) && !(lpTreeNode.getCourseNode() instanceof STCourseNode)) {
+								toDoNodeIdent = lpTreeNode.getIdent();
 							}
 						} else {
-							if (linkNodeIdent == null && isStartInFuture(assessmentEvaluation)) {
-								linkNodeIdent = courseNode.getIdent();
-								inaccessibleNodeIdentToNoAccess.put(courseNode.getIdent(), NoAccessResolver.startDateInFuture(assessmentEvaluation.getStartDate()));
+							if (isStartInFuture(assessmentEvaluation)) {
+								if (linkNodeIdent == null) {
+									linkNodeIdent = lpTreeNode.getIdent();
+								}
+								inaccessibleNodeIdentToNoAccess.put(lpTreeNode.getIdent(), NoAccessResolver.startDateInFuture(assessmentEvaluation.getStartDate()));
 							} else {
 								if (linkNodeIdent == null) {
 									linkNodeIdent = toDoNodeIdent;
 								}
-								inaccessibleNodeIdentToNoAccess.put(courseNode.getIdent(), NoAccessResolver.previousNotDone(linkNodeIdent));
+								inaccessibleNodeIdentToNoAccess.put(lpTreeNode.getIdent(), NoAccessResolver.previousNotDone(linkNodeIdent));
 							}
 						}
 					}

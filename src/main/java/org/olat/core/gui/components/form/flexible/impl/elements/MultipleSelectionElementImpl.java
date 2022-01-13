@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ConsumableBoolean;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 
 /**
@@ -162,6 +163,18 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 			}
 		}
 		return selectedValues;
+	}
+	
+	@Override
+	public String getValue(String key) {
+		if (StringHelper.containsNonWhitespace(key)) {
+			for (int i = 0; i < keys.length; i++) {
+				if (keys[i].equals(key)) {
+					return values[i];
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override
