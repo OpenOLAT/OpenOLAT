@@ -140,7 +140,7 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 
 	@Override
 	public NoAccessResolver getNoAccessResolver(UserCourseEnvironment userCourseEnv) {
-		return new LearningPathNoAccessResolver(userCourseEnv, getCourseTreeModelBuilder(userCourseEnv).build().getRootNode());
+		return new LearningPathNoAccessResolver(getCourseTreeModelBuilder(userCourseEnv).build().getRootNode());
 	}
 
 	@Override
