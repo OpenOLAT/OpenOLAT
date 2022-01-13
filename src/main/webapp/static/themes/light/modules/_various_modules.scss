@@ -1107,6 +1107,21 @@ a.o_labeled_light {
 	top: unset;
 }
 
+ /* Multiselect autocompletion element */
+ .o_acms_button {
+ 	max-width: 100%;
+ 	width: 100%;
+ 	min-height: 34px;
+ 	display: flex;
+	span:not(i.o_icon) {
+ 		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+	i.o_icon {
+		margin: auto 0 auto auto;
+	}
+}
 
 /* disclaimer formatting */
 .o_disclaimer .o_disclaimer_content {

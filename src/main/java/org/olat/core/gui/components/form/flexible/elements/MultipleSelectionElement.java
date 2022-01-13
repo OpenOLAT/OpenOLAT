@@ -49,6 +49,8 @@ public interface MultipleSelectionElement extends SelectionElement {
 	
 	public List<String> getSelectedValues();
 	
+	public String getValue(String key);
+	
 	public void setKeysAndValues(String[] keys, String[] values);
 
 	/**

@@ -37,6 +37,8 @@ import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
+import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection;
+import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection.AutoCompletionSource;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -63,6 +65,7 @@ import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErro
 import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElementImpl.AddRemoveMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleterImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompletionMultiSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.DownloadLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
@@ -321,6 +324,19 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, mse);
 		formLayout.add(mse);
 		return mse;
+	}
+	
+	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name, 
+			FormItemContainer formLayout, WindowControl wControl, AutoCompletionSource source) {
+		return addAutoCompletionMultiSelection(name, name, formLayout, wControl, source);
+	}
+	
+	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name, String i18nLabel,
+			FormItemContainer formLayout, WindowControl wControl, AutoCompletionSource source) {
+		AutoCompletionMultiSelectionImpl acms = new AutoCompletionMultiSelectionImpl(wControl, name, source);
+		setLabelIfNotNull(i18nLabel, acms);
+		formLayout.add(acms);
+		return acms;
 	}
 
 	/**
