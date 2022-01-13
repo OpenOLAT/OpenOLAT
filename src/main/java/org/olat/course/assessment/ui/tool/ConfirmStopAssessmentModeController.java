@@ -35,6 +35,7 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
@@ -163,6 +164,7 @@ public class ConfirmStopAssessmentModeController extends FormBasicController {
 		boolean withDisadvantaged = withDisadvantagesEl == null || withDisadvantagesEl.isAtLeastSelected(1);
 		assessmentModeCoordinationService.stopAssessment(reloadedMode, pullTests, withDisadvantaged, getIdentity());
 		dbInstance.commit();
+		getLogger().info(Tracing.M_AUDIT, "Stop assessment mode : {} ({}) pull tests: {}, with disadvantaged: {}", reloadedMode.getName(), reloadedMode.getKey(), pullTests, withDisadvantaged);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

@@ -241,6 +241,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 					.merge(assessmentMode);
 		}
 		dbInstance.commit();
+		log.info(Tracing.M_AUDIT, "Update assessment mode: {} ({}) from {} to {} manual: {}",
+				reloadedMode.getName(), reloadedMode.getKey(), begin, end, reloadedMode.isManualBeginEnd());
 		if(reloadedMode.isManualBeginEnd()) {
 			reloadedMode = assessmentModeCoordinationService.syncManuallySetStatus(reloadedMode, forceStatus);
 		} else {
@@ -326,6 +328,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	@Override
 	public void delete(AssessmentMode assessmentMode) {
 		if(assessmentMode == null) return;// nothing to do
+		log.info(Tracing.M_AUDIT, "Delete assessment mode: {} ({})", assessmentMode.getName(), assessmentMode.getKey());
 		assessmentModeDao.delete(assessmentMode);
 	}
 	

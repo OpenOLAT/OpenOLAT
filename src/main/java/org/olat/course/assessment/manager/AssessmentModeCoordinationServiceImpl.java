@@ -224,6 +224,8 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				for(AssessmentMode mode:modes) {
 					if(mode.getStatus() == Status.assessment || mode.getStatus() == Status.followup) {
 						endAssessment(mode);
+						log.info(Tracing.M_AUDIT, "End assessment mode after repository entry status changes: {} ({}) entry: {} ({})",
+								mode.getName(), mode.getKey(), entry.getDisplayname(), entry.getKey());
 					}
 				}
 			} catch (Exception e) {
@@ -307,6 +309,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			sendEventForManualMode(mode, now);
 		} else {
 			if(mode.getBegin().compareTo(now) <= 0 && mode.getEnd().compareTo(now) > 0) {
+				if(mode.getStatus() != Status.assessment) {
+					log.info(Tracing.M_AUDIT, "Send start event: {} ({})", mode.getName(), mode.getKey());
+				}
 				mode = ensureStatusOfMode(mode, Status.assessment);
 				sendEvent(AssessmentModeNotificationEvent.START_ASSESSMENT, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
