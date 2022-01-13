@@ -141,7 +141,6 @@ public class QTI21EditForm extends FormBasicController {
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private final QTI21DeliveryOptions deliveryOptions;
 	private final boolean wizard;
-	private final boolean reexam;
 	private final IQTESTCourseNodeContext assessmentModeDefaults;
 	
 	private DialogBoxController confirmTestDateCtrl;
@@ -167,7 +166,6 @@ public class QTI21EditForm extends FormBasicController {
 		this.needManualCorrection = needManualCorrection;
 		this.selfAssessment = selfAssessment;
 		this.wizard = false;
-		this.reexam = false;
 		this.assessmentModeDefaults = null;
 		initDateValues();
 		initRelativeToDateKV(courseEntry);
@@ -176,7 +174,7 @@ public class QTI21EditForm extends FormBasicController {
 
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, RepositoryEntry courseEntry,
 			IQTESTCourseNodeContext context, NodeAccessType nodeAccessType, boolean needManualCorrection,
-			boolean selfAssessment, boolean reexam) {
+			boolean selfAssessment) {
 		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
 		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.courseNode = context.getCourseNode();
@@ -187,7 +185,6 @@ public class QTI21EditForm extends FormBasicController {
 		this.needManualCorrection = needManualCorrection;
 		this.selfAssessment = selfAssessment;
 		this.wizard = true;
-		this.reexam = reexam;
 		initDateValues();
 		initRelativeToDateKV(courseEntry);
 		initForm(ureq);
@@ -295,13 +292,7 @@ public class QTI21EditForm extends FormBasicController {
 				assessmentModeEl.select(ASSESSMENT_MODE_NONE, true);
 			}
 			
-			String assessmentModeName = assessmentModeDefaults.getName();
-			if (!StringHelper.containsNonWhitespace(assessmentModeName)) {
-				assessmentModeName = reexam
-						? translate("assessment.mode.name.reexam.default", assessmentModeDefaults.getLongTitle())
-						: translate("assessment.mode.name.exam.default", assessmentModeDefaults.getLongTitle());
-			}
-			assessmentModeNameEl = uifactory.addTextElement("assessment.mode.name", "assessment.mode.name", 255, assessmentModeName, formLayout);
+			assessmentModeNameEl = uifactory.addTextElement("assessment.mode.name", "assessment.mode.name", 255, assessmentModeDefaults.getName(), formLayout);
 			assessmentModeNameEl.setMandatory(true);
 			
 			leadTimeEl = uifactory.addIntegerElement("assessment.mode.leadTime", assessmentModeDefaults.getLeadTime(), formLayout);

@@ -32,6 +32,7 @@ import org.olat.course.wizard.CourseWizardCallback;
 import org.olat.course.wizard.CourseWizardService;
 import org.olat.course.wizard.ui.IQTESTNodeController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.wizard.ui.InfoMetadataController;
 
 /**
  * 
@@ -61,7 +62,7 @@ public class TestConfigStep extends BasicStep {
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
 		return new IQTESTNodeController(ureq, windowControl, form, stepsRunContext,
-				CourseWizardCallback.RUN_CONTEXT_TEST, entry, false);
+				CourseWizardCallback.RUN_CONTEXT_TEST, InfoMetadataController.RUN_CONTEXT_KEY, entry, false);
 	}
 
 }
