@@ -631,7 +631,9 @@ public class CourseOverviewStep extends BasicStep {
 		
 		private void updateVisibility(CopyCourseOverviewRow row) {
 			boolean endChooserVisible = row.getObligationChooser().getSelectedKey().equals(AssessmentObligation.mandatory.name());
-			row.getNewEndDateChooser().setVisible(endChooserVisible);
+			if(row.getNewEndDateChooser() != null) {
+				row.getNewEndDateChooser().setVisible(endChooserVisible);
+			}
 		}
 		
 		private Entry<String, Date> getEarliestDateWithLabel(CopyCourseOverviewRow row) {
