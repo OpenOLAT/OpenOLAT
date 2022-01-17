@@ -181,7 +181,9 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			log.debug("Process Identity {} added to RepositoryEntry {}", identityKey, courseEntryKey);
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
 			RepositoryEntry courseEntry = repositoryService.loadByKey(courseEntryKey);
-			evaluateAll(identity, courseEntry, false, null);
+			if (courseEntry != null && "CourseModule".equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+				evaluateAll(identity, courseEntry, false, null);
+			}
 		} catch (Exception e) {
 			log.warn("Error when processing Identity {} added to RepositoryEntry {}",
 					identityKey, courseEntryKey);
@@ -201,13 +203,15 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		if (!isParticipant(identityKey, groupKey)) return;
 	
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
-		RepositoryEntry repositoryEntry = repositoryService.loadByKey(entryKey);
+		RepositoryEntry courseEntry = repositoryService.loadByKey(entryKey);
 
-		List<Long> evalutedRepositoryEntryKeys = new ArrayList<>(1);
-		ObligationContext obligationContext = new SingleUserObligationContext();
-		evaluateAll(identity, repositoryEntry, false, obligationContext);
-		evalutedRepositoryEntryKeys.add(repositoryEntry.getKey());
-		processExceptionlObligationsGroup(identity, groupKey, evalutedRepositoryEntryKeys, obligationContext);
+		if (courseEntry != null && "CourseModule".equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+			List<Long> evalutedRepositoryEntryKeys = new ArrayList<>(1);
+			ObligationContext obligationContext = new SingleUserObligationContext();
+			evaluateAll(identity, courseEntry, false, obligationContext);
+			evalutedRepositoryEntryKeys.add(courseEntry.getKey());
+			processExceptionlObligationsGroup(identity, groupKey, evalutedRepositoryEntryKeys, obligationContext);
+		}
 	}
 
 	private boolean isParticipant(Long identityKey, Long groupKey) {
@@ -236,7 +240,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			List<Long> evalutedRepositoryEntryKeys, ObligationContext obligationContext) {
 		ScoreAccountingTriggerSearchParams searchParams = new ScoreAccountingTriggerSearchParams();
 		searchParams.setBusinessGroupRef(() -> groupKey);
-		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredRepositoryEntries(searchParams);
+		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredCourseEntries(searchParams);
 		entries.removeIf(entry -> evalutedRepositoryEntryKeys.contains(entry.getKey()));
 		if (!entries.isEmpty()) {
 			for (RepositoryEntry entry : entries) {
@@ -259,8 +263,10 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		List<Identity> participants = groupService.getMembers(group, GroupRoles.participant.name());
 		RepositoryEntry courseEntry = repositoryService.loadByKey(entryKey);
 		
-		for (Identity identity : participants) {
-			evaluateAll(identity, courseEntry, false, null);
+		if (courseEntry != null && "CourseModule".equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+			for (Identity identity : participants) {
+				evaluateAll(identity, courseEntry, false, null);
+			}
 		}
 	}
 	
@@ -315,7 +321,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			List<Long> evalutedRepositoryEntryKeys, ObligationContext obligationContext) {
 		ScoreAccountingTriggerSearchParams searchParams = new ScoreAccountingTriggerSearchParams();
 		searchParams.setCurriculumElementRef(() -> curriculumElementKey);
-		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredRepositoryEntries(searchParams);
+		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredCourseEntries(searchParams);
 		entries.removeIf(entry -> evalutedRepositoryEntryKeys.contains(entry.getKey()));
 		if (!entries.isEmpty()) {
 			for (RepositoryEntry entry : entries) {
@@ -336,9 +342,11 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 
 	private void processCurriculumElementAddedToRepositoryEntry(Long curriculumElementKey, Long entryKey) {
 		RepositoryEntry courseEntry = repositoryService.loadByKey(entryKey);
-		List<Identity> participants = curriculumService.getMembersIdentity(new CurriculumElementRefImpl(curriculumElementKey), CurriculumRoles.participant);
-		for (Identity identity : participants) {
-			evaluateAll(identity, courseEntry, false, null);
+		if (courseEntry != null && "CourseModule".equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+			List<Identity> participants = curriculumService.getMembersIdentity(new CurriculumElementRefImpl(curriculumElementKey), CurriculumRoles.participant);
+			for (Identity identity : participants) {
+				evaluateAll(identity, courseEntry, false, null);
+			}
 		}
 	}
 	
@@ -354,7 +362,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 	private void processProcessIdentityAddedToOrganisation(Long identityKey, Long organisationKey) {
 		ScoreAccountingTriggerSearchParams searchParams = new ScoreAccountingTriggerSearchParams();
 		searchParams.setOrganisationRef(() -> organisationKey);
-		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredRepositoryEntries(searchParams);
+		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredCourseEntries(searchParams);
 		if (!entries.isEmpty()) {
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
 			ObligationContext obligationContext = new SingleUserObligationContext();
@@ -378,7 +386,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		ScoreAccountingTriggerSearchParams searchParams = new ScoreAccountingTriggerSearchParams();
 		searchParams.setUserPropertyName(propertyName);
 		searchParams.setUserPropertyValue(propertyValue);
-		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredRepositoryEntries(searchParams);
+		List<RepositoryEntry> entries = courseAssessmentService.getTriggeredCourseEntries(searchParams);
 		if (!entries.isEmpty()) {
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
 			ObligationContext obligationContext = new SingleUserObligationContext();

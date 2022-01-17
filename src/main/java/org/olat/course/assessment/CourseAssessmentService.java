@@ -326,7 +326,7 @@ public interface CourseAssessmentService {
 	
 	public List<ScoreAccountingTrigger> getScoreAccountingTriggers(RepositoryEntryRef entryRef);
 
-	public List<RepositoryEntry> getTriggeredRepositoryEntries(ScoreAccountingTriggerSearchParams searchParams);
+	public List<RepositoryEntry> getTriggeredCourseEntries(ScoreAccountingTriggerSearchParams searchParams);
 	
 	/**
 	 * Recalculates all AssessmentEvaluation of all users in the course.
