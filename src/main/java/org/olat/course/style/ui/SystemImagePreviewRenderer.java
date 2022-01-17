@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.course.style.ColorCategory;
 
 /**
  * 
@@ -37,13 +38,17 @@ public class SystemImagePreviewRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof String) {
-			String url = (String)cellValue;
+		if (cellValue instanceof SystemImageRow) {
+			SystemImageRow systemImageRow = (SystemImageRow)cellValue;
 			
 			target.append("<div class=\"o_cn_styled o_system_image\">");
 			target.append("<div class=\"o_top\">");
 			target.append("<div class=\"o_image\">");
-			target.append("<img src=\"").append(url).append("\"&>");
+			target.append("<img src=\"").append(systemImageRow.getMapperUrl()).append("\"");
+			if (systemImageRow.isTransparent()) {
+				target.append(" class=\"").append(ColorCategory.CSS_NO_COLOR).append("\"");
+			}
+			target.append(">");
 			target.append("</div>");
 			target.append("</div>");
 			target.append("</div>");

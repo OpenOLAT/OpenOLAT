@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodeaccess.ui;
 
-import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyState;
@@ -30,6 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
@@ -116,10 +116,11 @@ public class NoAccessController extends BasicController {
 		
 		CourseConfig courseConfig = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
-		Mapper teaserImageMapper = courseStyleService.getTeaserImageMapper(course, courseNode);
+		VFSMediaMapper teaserImageMapper = courseStyleService.getTeaserImageMapper(course, courseNode);
 		if (teaserImageMapper != null) {
+			boolean teaserImageTransparent = courseStyleService.isImageTransparent(teaserImageMapper);
 			TeaserImageStyle teaserImageStyle = courseStyleService.getTeaserImageStyle(course, courseNode);
-			builder.withTeaserImage(teaserImageMapper, teaserImageStyle);
+			builder.withTeaserImage(teaserImageMapper, teaserImageTransparent, teaserImageStyle);
 		}
 		
 		ColorCategoryResolver colorCategoryResolver = courseStyleService.getColorCategoryResolver(null, courseConfig.getColorCategoryIdentifier());

@@ -30,6 +30,7 @@ public class SystemImageRow {
 	private String filename;
 	private String translation;
 	private String mapperUrl;
+	private boolean transparent;
 	
 	public String getFilename() {
 		return filename;
@@ -55,6 +56,12 @@ public class SystemImageRow {
 		this.mapperUrl = mapperUrl;
 	}
 
+	public boolean isTransparent() {
+		return transparent;
+	}
 
-	
+	public void setTransparent(boolean transparent) {
+		this.transparent = transparent;
+	}
+
 }

@@ -58,9 +58,8 @@ public class HeaderController extends BasicController implements ExpandableContr
 		if (header.getTeaserImageMapper() != null) {
 			String teaserImageUrl = registerCacheableMapper(ureq, "teaserimage-" + CodeHelper.getRAMUniqueID(), header.getTeaserImageMapper());
 			mainVC.contextPut("teaserImageUrl", teaserImageUrl);
+			mainVC.contextPut("teaserImageBgCss", getTeaserImageBgCss());
 			mainVC.contextPut("cover", TeaserImageStyle.cover == header.getTeaserImageStyle());
-			mainVC.contextPut("gradient", TeaserImageStyle.gradient == header.getTeaserImageStyle());
-			mainVC.contextPut("gradient", TeaserImageStyle.gradient == header.getTeaserImageStyle());
 		}
 		
 		putInitialPanel(mainVC);
@@ -79,6 +78,16 @@ public class HeaderController extends BasicController implements ExpandableContr
 	private String getHandlingRange() {
 		return CourseStyleUIFactory.formatHandlingRangeDate(getTranslator(), header.getStartDateConfig(),
 				header.getEndDateConfig(), header.getDuration());
+	}
+	
+	private String getTeaserImageBgCss() {
+		if (header.isTeaserImageTransparent()) {
+			if (StringHelper.containsNonWhitespace(header.getColorCategoryCss())) {
+				return header.getColorCategoryCss();
+			}
+			return ColorCategory.CSS_NO_COLOR;
+		}
+		return null;
 	}
 
 	@Override

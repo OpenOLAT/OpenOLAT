@@ -1,5 +1,5 @@
 <div class="o_cn_styled o_cn_header o_colcat_left #if($item.colorCategoryCss) $item.colorCategoryCss #end #if($r.isNotEmpty($teaserImageUrl)) o_$item.getTeaserImageStyle() #end">
-	<div class="o_top #if($item.colorCategoryCss) $item.colorCategoryCss #end" #if($cover) style="background-image:url($teaserImageUrl)" #end>
+	<div class="o_top #if($teaserImageBgCss) $teaserImageBgCss #end" #if($cover) style="background-image:url($teaserImageUrl)" #end>
 		<div class="o_text">
 			#if($r.isNotEmpty($item.title))
 				<div class="o_text_block">
@@ -25,7 +25,7 @@
 			#end
 		</div>
 		#if($r.isNotEmpty($teaserImageUrl) && !$cover)
-			<div class="o_image"><img class="$item.colorCategoryCss" src="$teaserImageUrl"></div>
+			<div class="o_image"><img #if($teaserImageBgCss) class="$teaserImageBgCss" #end src="$teaserImageUrl"></div>
 		#end
 	</div>
 	#if($expanded)

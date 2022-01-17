@@ -209,6 +209,14 @@
 			<expiration max-idle="3600000" interval="15000" />
 		</local-cache>
 		
+		<local-cache name="CourseStyleService-imageTransparency" simple-cache="true" statistics="true" statistics-available="true">
+			<encoding media-type="application/x-java-object"/>
+			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
+			<transaction mode="NONE" auto-commit="true" />
+			<memory max-count="10000" when-full="REMOVE" />
+			<expiration max-idle="900000" interval="15000" />
+		</local-cache>
+		
 		<local-cache name="ProjectBrokerManager-pb" simple-cache="true" statistics="true" statistics-available="true">
 			<encoding media-type="application/x-java-object"/>
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />

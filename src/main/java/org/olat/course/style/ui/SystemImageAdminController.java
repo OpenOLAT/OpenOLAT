@@ -190,6 +190,9 @@ public class SystemImageAdminController extends FormBasicController {
 			String mapperUrl = registerMapper(ureq, mapper);
 			row.setMapperUrl(mapperUrl);
 			
+			boolean transparent = courseStyleService.isImageTransparent(file);
+			row.setTransparent(transparent);
+			
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);
@@ -317,7 +320,8 @@ public class SystemImageAdminController extends FormBasicController {
 			File file = courseStyleService.getSystemTeaserImageFile(courseModule.getTeaserImageFilename());
 			if (file != null) {
 				Mapper mapper = new VFSMediaMapper(file);
-				builder.withTeaserImage(mapper, courseModule.getTeaserImageStyle());
+				boolean transparent = courseStyleService.isImageTransparent(file);
+				builder.withTeaserImage(mapper, transparent, courseModule.getTeaserImageStyle());
 			}
 		}
 		

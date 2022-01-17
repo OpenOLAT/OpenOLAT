@@ -19,16 +19,27 @@
  */
 package org.olat.course.style.manager;
 
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.image.ImageUtils;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.cache.CacheWrapper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.course.CourseModule;
@@ -66,6 +77,15 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	private ColorCategoryDAO colorCategoryDao;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
+	
+	private CacheWrapper<String, Boolean> imageTransparencyCache;
+	
+	@PostConstruct
+	public void initCache() {
+		imageTransparencyCache = coordinatorManager.getCoordinator().getCacher().getCache(CourseStyleService.class.getSimpleName(), "imageTransparency");
+	}
 	
 	@PostConstruct
 	public void initProvidedSystemImages() throws Exception {
@@ -84,7 +104,8 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	
 	@Override
 	public void storeSystemImage(File file, String filename) {
-		systemImageStorage.store(file, filename);
+		File storedFile = systemImageStorage.store(file, filename);
+		imageTransparencyCache.remove(getSystemImageCacheKey(storedFile));
 	}
 	
 	@Override
@@ -109,7 +130,15 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	
 	@Override
 	public void deleteSystemImage(String filename) {
-		systemImageStorage.delete(filename);
+		File file = systemImageStorage.load(filename);
+		if (file != null) {
+			imageTransparencyCache.remove(getSystemImageCacheKey(file));
+			systemImageStorage.delete(filename);
+		}
+	}
+	
+	private String getSystemImageCacheKey(File file) {
+		return file.getAbsolutePath();
 	}
 
 	@Override
@@ -121,6 +150,10 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 
 	@Override
 	public ImageSource storeImage(ICourse course, Identity savedBy, File file, String filename) {
+		VFSLeaf currentImage = getImage(course);
+		if (currentImage != null) {
+			imageTransparencyCache.remove(getCacheKey(currentImage));
+		}
 		return customImageStorage.store(course.getCourseBaseContainer(), savedBy, file, filename);
 	}
 	
@@ -131,11 +164,19 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	
 	@Override
 	public void deleteImage(ICourse course) {
+		VFSLeaf currentImage = getImage(course);
+		if (currentImage != null) {
+			imageTransparencyCache.remove(getCacheKey(currentImage));
+		}
 		customImageStorage.delete(course.getCourseBaseContainer());
 	}
 
 	@Override
 	public ImageSource storeImage(ICourse course, CourseNode courseNode, Identity savedBy, File file, String filename) {
+		VFSLeaf currentImage = getImage(course, courseNode);
+		if (currentImage != null) {
+			imageTransparencyCache.remove(getCacheKey(currentImage));
+		}
 		return customImageStorage.store(course.getCourseBaseContainer(), courseNode, savedBy, file, filename);
 	}
 
@@ -146,6 +187,10 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 
 	@Override
 	public void deleteImage(ICourse course, CourseNode courseNode) {
+		VFSLeaf currentImage = getImage(course, courseNode);
+		if (currentImage != null) {
+			imageTransparencyCache.remove(getCacheKey(currentImage));
+		}
 		customImageStorage.delete(course.getCourseBaseContainer(), courseNode);
 	}
 	
@@ -199,6 +244,69 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 			}
 		}
 		return mapper;
+	}
+	
+	@Override
+	public boolean isImageTransparent(VFSMediaMapper mapper) {
+		VFSLeaf vfsLeaf = mapper.getVfsLeaf();
+		if (vfsLeaf == null) return false;
+		
+		String cacheKey = getCacheKey(vfsLeaf);
+		if (cacheKey != null) {
+			// computeIfAbsent does not update infinispan hit/miss stats?!
+			Boolean transparency = imageTransparencyCache.get(cacheKey);
+			if (transparency == null) {
+				transparency = Boolean.valueOf(getTransparency(vfsLeaf));
+				imageTransparencyCache.put(cacheKey, transparency);
+			}
+			return transparency.booleanValue();
+		}
+		
+		return false;
+	}
+
+	private String getCacheKey(VFSLeaf vfsLeaf) {
+		VFSMetadata metaInfo = vfsLeaf.getMetaInfo();
+		
+		String cacheKey = null;
+		if (metaInfo == null) {
+			// System images are not part of bcroute and have not MetaInfo as a consequence.
+			if (vfsLeaf instanceof LocalImpl) {
+				File basefile = ((LocalImpl)vfsLeaf).getBasefile();
+				cacheKey = getSystemImageCacheKey(basefile);
+			}
+		} else {
+			cacheKey = metaInfo.getUuid();
+		}
+		return cacheKey;
+	}
+
+	private boolean getTransparency(VFSLeaf vfsLeaf) {
+		try (InputStream is = vfsLeaf.getInputStream()) {
+			BufferedImage image = ImageIO.read(is);
+			return getTransparency(image);
+		} catch (Exception e) {
+			log.warn("Transparency of image leaf not determined");
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean isImageTransparent(File file) {
+		try(InputStream in = new FileInputStream(file);
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
+			BufferedImage image = ImageIO.read(bis);
+			return getTransparency(image);
+		} catch (Exception e) {
+			log.warn("Transparency of image file not determined");
+		}
+		return false;
+	}
+
+	private boolean getTransparency(BufferedImage image) {
+		// As a first approach we only check if the image has a alpha channel, but not
+		// if the image really has at least one transparent pixel.
+		return ImageUtils.hasAlphaChannel(image)? true: false;
 	}
 	
 	@Override

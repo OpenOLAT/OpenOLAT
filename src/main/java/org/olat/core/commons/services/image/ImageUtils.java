@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.image;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,4 +87,26 @@ public class ImageUtils {
 			reader.dispose();
 		}
 	}
+
+	public static boolean hasAlphaChannel(BufferedImage image){
+		return image.getColorModel().hasAlpha();
+	}
+
+	// https://stackoverflow.com/questions/61671195/java-imageio-check-if-a-png-with-alpha-is-opaque
+	public static boolean hasTransparency(BufferedImage image){
+		for (int i = 0; i < image.getHeight(); i++) {
+			for (int j = 0; j < image.getWidth(); j++) {
+				if (isTransparent(image, j, i)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static boolean isTransparent(BufferedImage image, int x, int y) {
+		int pixel = image.getRGB(x,y);
+		return (pixel>>24) == 0x00;
+	}
+	
 }

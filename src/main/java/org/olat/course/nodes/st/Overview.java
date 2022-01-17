@@ -40,6 +40,7 @@ public class Overview {
 	private final String iconCss;
 	private final String teaserImageID;
 	private final Mapper teaserImageMapper;
+	private final boolean teaserImageTransparent;
 	private final TeaserImageStyle teaserImageStyle;
 	private final String colorCategoryCss;
 	private final NoAccess noAccessMessage;
@@ -56,6 +57,7 @@ public class Overview {
 		this.iconCss = builder.iconCss;
 		this.teaserImageID = builder.teaserImageID;
 		this.teaserImageMapper = builder.teaserImageMapper;
+		this.teaserImageTransparent = builder.teaserImageTransparent;
 		this.teaserImageStyle = builder.teaserImageStyle;
 		this.colorCategoryCss = builder.colorCategoryCss;
 		this.noAccessMessage = builder.noAccessMessage;
@@ -91,6 +93,10 @@ public class Overview {
 
 	public Mapper getTeaserImageMapper() {
 		return teaserImageMapper;
+	}
+
+	public boolean isTeaserImageTransparent() {
+		return teaserImageTransparent;
 	}
 
 	public TeaserImageStyle getTeaserImageStyle() {
@@ -133,6 +139,7 @@ public class Overview {
 		private String iconCss;
 		private String teaserImageID;
 		private Mapper teaserImageMapper;
+		private boolean teaserImageTransparent;
 		private TeaserImageStyle teaserImageStyle;
 		private String colorCategoryCss;
 		private NoAccess noAccessMessage;
@@ -174,8 +181,9 @@ public class Overview {
 			return this;
 		}
 
-		public Builder withTeaserImage(Mapper mapper, TeaserImageStyle style) {
+		public Builder withTeaserImage(Mapper mapper, boolean transparent, TeaserImageStyle style) {
 			this.teaserImageMapper = mapper;
+			this.teaserImageTransparent = transparent;
 			this.teaserImageStyle = style;
 			return this;
 		}

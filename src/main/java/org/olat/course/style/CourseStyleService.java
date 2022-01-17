@@ -86,6 +86,23 @@ public interface CourseStyleService {
 	public VFSMediaMapper getTeaserImageMapper(ICourse course, INode node);
 	
 	/**
+	 * Checks whether the image is transparent or not. The results are cached.
+	 * Use this method only with mappers created by this service!
+	 *
+	 * @param mapper
+	 * @return
+	 */
+	public boolean isImageTransparent(VFSMediaMapper mapper);
+	
+	/**
+	 * Checks whether the image is transparent or not. The results are not cached.
+	 *
+	 * @param mapper
+	 * @return
+	 */
+	public boolean isImageTransparent(File file);
+	
+	/**
 	 * Get the effective teaser image style.
 	 *
 	 * @param course

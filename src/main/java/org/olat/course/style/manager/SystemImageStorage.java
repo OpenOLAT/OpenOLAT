@@ -68,8 +68,10 @@ public class SystemImageStorage {
 		FileUtils.copyDirContentsToDir(providedDir, ROOT_PATH.toFile(), false, "");
 	}
 
-	public void store(File file, String filename) {
-		FileUtils.copyFileToFile(file, ROOT_PATH.resolve(filename).toFile(), false);
+	public File store(File file, String filename) {
+		File targetFile = ROOT_PATH.resolve(filename).toFile();
+		FileUtils.copyFileToFile(file, targetFile, false);
+		return targetFile;
 	}
 	
 	public File load(String filename) {

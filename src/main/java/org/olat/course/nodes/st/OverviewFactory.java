@@ -109,8 +109,9 @@ public class OverviewFactory {
 		
 		VFSMediaMapper mapper = courseStyleService.getTeaserImageMapper(course, courseNode);
 		if (mapper != null) {
+			boolean teaserImageTransparent = courseStyleService.isImageTransparent(mapper);
 			TeaserImageStyle teaserImageStyle = courseStyleService.getTeaserImageStyle(course, courseNode);
-			builder.withTeaserImage(mapper, teaserImageStyle);
+			builder.withTeaserImage(mapper, teaserImageTransparent, teaserImageStyle);
 			
 			// Same ID for the same image during one structure run view
 			String teaserImageID = mapperPrefix + mapper.getVfsLeaf().getRelPath() + mapper.getVfsLeaf().getName();

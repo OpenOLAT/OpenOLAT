@@ -1,5 +1,5 @@
 <div class="o_cn_styled o_cn_peekview o_colcat_top #if($item.colorCategoryCss) $item.colorCategoryCss #end #if($r.isNotEmpty($teaserImageUrl)) o_$item.getTeaserImageStyle() #end" data-nodeid="$item.nodeIdent">
-	<div class="o_top #if($item.colorCategoryCss) $item.colorCategoryCss #end" #if($cover) style="background-image:url($teaserImageUrl)" #end>
+	<div class="o_top #if($teaserImageBgCss) $teaserImageBgCss #end" #if($cover) style="background-image:url($teaserImageUrl)" #end>
 		<div class="o_text">
 			<div class="o_text_block">
 				<div>
@@ -30,7 +30,7 @@
 			</div>
 		</div>
 		#if($r.isNotEmpty($teaserImageUrl) && !$cover)
-			<div class="o_image"><img class="$item.colorCategoryCss" src="$teaserImageUrl"></div>
+			<div class="o_image"><img #if($teaserImageBgCss) class="$teaserImageBgCss" #end src="$teaserImageUrl"></div>
 		#end
 	</div>
 	#if($r.isNotEmpty($item.description))

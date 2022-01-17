@@ -866,11 +866,14 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		String colorCategoryCss = colorCategoryResolver.getCss(colorCategory);
 		builder.withColorCategoryCss(colorCategoryCss);
 		Mapper mapper = null;
+		Boolean transparent = false;
 		if (teaserImageUploadEl.isVisible()) {
 			if (teaserImageUploadEl.getUploadFile() != null) {
 				mapper = new VFSMediaMapper(teaserImageUploadEl.getUploadFile());
+				transparent = courseStyleService.isImageTransparent(teaserImageUploadEl.getUploadFile());
 			} else if (teaserImageUploadEl.getInitialFile() != null) {
 				mapper = new VFSMediaMapper(teaserImageUploadEl.getInitialFile());
+				transparent = courseStyleService.isImageTransparent(teaserImageUploadEl.getInitialFile());
 			}
 		} else if (teaserImageSystemEl.isVisible()) {
 			String selectedKey =  teaserImageSystemEl.isOneSelected()
@@ -879,10 +882,11 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 			File file = courseStyleService.getSystemTeaserImageFile(selectedKey);
 			if (file != null) {
 				mapper = new VFSMediaMapper(file);
+				transparent = courseStyleService.isImageTransparent(file);
 			}
 		}
 		if (mapper != null) {
-			builder.withTeaserImage(mapper, teaserImageStyle);
+			builder.withTeaserImage(mapper, transparent, teaserImageStyle);
 		}
 		
 		return builder.build();

@@ -521,7 +521,7 @@ public class NodeLayoutController extends FormBasicController {
 		String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass();
 		ColorCategory colorCategory = colorCategoryResolver.getColorCategory(colorCategoryIdentifier, editorTreeNode);
 		String colorCategoryCss = colorCategoryResolver.getCss(colorCategory);
-		Mapper mapper = createPreviewImageMapper();
+		PreviewMapper previewMapper = createPreviewImageMapper();
 		TeaserImageStyle previewStyle = getPreviewImageStyle();
 
 		org.olat.course.style.Header.Builder headerBuilder = Header.builder();
@@ -529,8 +529,8 @@ public class NodeLayoutController extends FormBasicController {
 		String displayOption = getDisplayOption();
 		CourseStyleUIFactory.addMetadata(headerBuilder, courseNode, displayOption, true);
 		headerBuilder.withColorCategoryCss(colorCategoryCss);
-		if (mapper != null) {
-			headerBuilder.withTeaserImage(mapper, previewStyle);
+		if (previewMapper != null) {
+			headerBuilder.withTeaserImage(previewMapper.getMapper(), previewMapper.isTransparent(), previewStyle);
 		}
 		Header header = headerBuilder.build();
 		
@@ -543,8 +543,8 @@ public class NodeLayoutController extends FormBasicController {
 			overviewBuilder.withSubTitle(CourseNodeHelper.getDifferentlyStartingShortTitle(courseNode));
 			overviewBuilder.withDescription(courseNode.getDescription());
 			overviewBuilder.withColorCategoryCss(colorCategoryCss);
-			if (mapper != null) {
-				overviewBuilder.withTeaserImage(mapper, previewStyle);
+			if (previewMapper != null) {
+				overviewBuilder.withTeaserImage(previewMapper.getMapper(), previewMapper.isTransparent(), previewStyle);
 			}
 			if (LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType())) {
 				CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
@@ -564,18 +564,22 @@ public class NodeLayoutController extends FormBasicController {
 		}
 	}
 
-	private Mapper createPreviewImageMapper() {
-		Mapper mapper = null;
+	private PreviewMapper createPreviewImageMapper() {
+		VFSMediaMapper mapper = null;
+		boolean transparent = false;
 		if (teaserImageUploadEl.isVisible()) {
 			if (teaserImageUploadEl.getUploadFile() != null) {
 				mapper = new VFSMediaMapper(teaserImageUploadEl.getUploadFile());
+				transparent = courseStyleService.isImageTransparent(teaserImageUploadEl.getUploadFile());
 			} else if (teaserImageUploadEl.getInitialFile() != null) {
 				mapper = new VFSMediaMapper(teaserImageUploadEl.getInitialFile());
+				transparent = courseStyleService.isImageTransparent(teaserImageUploadEl.getInitialFile());
 			}
 		} else if (teaserImageSystemEl.isVisible() && teaserImageSystemEl.isOneSelected()) {
 			File file = courseStyleService.getSystemTeaserImageFile(teaserImageSystemEl.getSelectedKey());
 			if (file != null) {
 				mapper = new VFSMediaMapper(file);
+				transparent = courseStyleService.isImageTransparent(file);
 			}
 		} else {
 			ImageSourceType type = teaserImageTypeEl.isOneSelected()
@@ -583,15 +587,18 @@ public class NodeLayoutController extends FormBasicController {
 					: ImageSourceType.DEFAULT_COURSE_NODE;
 			if (ImageSourceType.course == type) {
 				mapper = courseStyleService.getTeaserImageMapper(course);
+				transparent = courseStyleService.isImageTransparent(mapper);
 			} else if (ImageSourceType.inherited == type) {
 				if (editorTreeNode == null && editorTreeNode.getParent() != null) {
 					mapper = courseStyleService.getTeaserImageMapper(course, editorTreeNode.getParent());
+					transparent = courseStyleService.isImageTransparent(mapper);
 				} else {
 					mapper = courseStyleService.getTeaserImageMapper(course);
+					transparent = courseStyleService.isImageTransparent(mapper);
 				}
 			}
 		}
-		return mapper;
+		return mapper != null? new PreviewMapper(mapper, transparent): null;
 	}
 
 	private TeaserImageStyle getPreviewImageStyle() {
@@ -643,6 +650,26 @@ public class NodeLayoutController extends FormBasicController {
 			}
 		}
 		return false;
+	}
+	
+	private static class PreviewMapper {
+		
+		private final Mapper mapper;
+		private final boolean transparent;
+
+		public PreviewMapper(Mapper mapper, boolean transparent) {
+			this.transparent = transparent;
+			this.mapper = mapper;
+		}
+
+		public Mapper getMapper() {
+			return mapper;
+		}
+
+		public boolean isTransparent() {
+			return transparent;
+		}
+		
 	}
 
 

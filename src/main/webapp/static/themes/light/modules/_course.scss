@@ -90,7 +90,7 @@
 	.o_image > img,
 	&.o_cover > .o_top {
 		background-repeat: no-repeat;
-		background-color: $o-cn-style-image-bg;
+		&.o_colcat_nocolor { background-color: $o-cn-style-image-bg; }
 		&.o_colcat_dark_blue { background-color: $o-cn-style-cat-dark-blue-color; }
 		&.o_colcat_light_blue { background-color: $o-cn-style-cat-light-blue-color; }
 		&.o_colcat_purple { background-color: $o-cn-style-cat-purple-color; }

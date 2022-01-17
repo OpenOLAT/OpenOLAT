@@ -35,6 +35,7 @@ import org.olat.core.util.Util;
 import org.olat.course.learningpath.ui.LearningPathListController;
 import org.olat.course.nodeaccess.NoAccessResolver;
 import org.olat.course.nodeaccess.ui.NodeAccessSettingsController;
+import org.olat.course.style.ColorCategory;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.course.style.ui.CourseStyleUIFactory;
 import org.olat.modules.assessment.ui.AssessmentForm;
@@ -67,8 +68,8 @@ public class OverviewController extends BasicController {
 					: "teaserimage-" + CodeHelper.getRAMUniqueID();
 			String teaserImageUrl = registerCacheableMapper(ureq, mapperID, overview.getTeaserImageMapper());
 			mainVC.contextPut("teaserImageUrl", teaserImageUrl);
+			mainVC.contextPut("teaserImageBgCss", getTeaserImageBgCss(overview));
 			mainVC.contextPut("cover", TeaserImageStyle.cover == overview.getTeaserImageStyle());
-			mainVC.contextPut("gradient", TeaserImageStyle.gradient == overview.getTeaserImageStyle());
 		}
 		
 		nodeLink = LinkFactory.createLink("nodeLink", mainVC, this);
@@ -92,6 +93,16 @@ public class OverviewController extends BasicController {
 	private String getHandlingRange(Overview overview) {
 		return CourseStyleUIFactory.formatHandlingRangeDate(getTranslator(), overview.getStartDateConfig(),
 				overview.getEndDateConfig(), overview.getDuration());
+	}
+	
+	private String getTeaserImageBgCss(Overview overview) {
+		if (overview.isTeaserImageTransparent()) {
+			if (StringHelper.containsNonWhitespace(overview.getColorCategoryCss())) {
+				return overview.getColorCategoryCss();
+			}
+			return ColorCategory.CSS_NO_COLOR;
+		}
+		return null;
 	}
 
 	@Override

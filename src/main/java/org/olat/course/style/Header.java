@@ -37,6 +37,7 @@ public class Header {
 	private final String instructionalDesign;
 	private final String iconCss;
 	private final Mapper teaserImageMapper;
+	private final boolean teaserImageTransparent;
 	private final TeaserImageStyle teaserImageStyle;
 	private final String colorCategoryCss;
 	private final DueDateConfig startDateConfig;
@@ -51,6 +52,7 @@ public class Header {
 		this.instructionalDesign = builder.instructionalDesign;
 		this.iconCss = builder.iconCss;
 		this.teaserImageMapper = builder.teaserImageMapper;
+		this.teaserImageTransparent = builder.teaserImageTransparent;
 		this.teaserImageStyle = builder.teaserImageStyle;
 		this.colorCategoryCss = builder.colorCategoryCss;
 		this.startDateConfig = builder.startDateConfig;
@@ -86,6 +88,10 @@ public class Header {
 		return teaserImageMapper;
 	}
 
+	public boolean isTeaserImageTransparent() {
+		return teaserImageTransparent;
+	}
+
 	public TeaserImageStyle getTeaserImageStyle() {
 		return teaserImageStyle;
 	}
@@ -119,6 +125,7 @@ public class Header {
 		private String iconCss;
 		private Mapper teaserImageMapper;
 		private TeaserImageStyle teaserImageStyle;
+		private boolean teaserImageTransparent;
 		private String colorCategoryCss;
 		private DueDateConfig startDateConfig;
 		private DueDateConfig endDateConfig;
@@ -157,8 +164,9 @@ public class Header {
 			return this;
 		}
 
-		public Builder withTeaserImage(Mapper mapper, TeaserImageStyle style) {
+		public Builder withTeaserImage(Mapper mapper, boolean transparent, TeaserImageStyle style) {
 			this.teaserImageMapper = mapper;
+			this.teaserImageTransparent = transparent;
 			this.teaserImageStyle = style;
 			return this;
 		}

@@ -45,7 +45,7 @@ public class SystemImageDataModel extends DefaultFlexiTableDataModel<SystemImage
 
 	private Object getValueAt(SystemImageRow row, int col) {
 		switch(COLS[col]) {
-			case preview: return row.getMapperUrl();
+			case preview: return row;
 			case filename: return row.getFilename();
 			case translaton: return row.getTranslation();
 			case edit: return Boolean.TRUE;
