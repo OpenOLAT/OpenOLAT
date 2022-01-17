@@ -133,7 +133,9 @@ public class CourseMembershipProcessor implements GenericEventListener {
 		try {
 			Identity identity = securityManager.loadIdentityByKey(identityKey);
 			RepositoryEntry courseEntry = repositoryService.loadByKey(courseEntryKey);
-			evaluateAll(identity, courseEntry);
+			if (courseEntry != null && "CourseModule".equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+				evaluateAll(identity, courseEntry);
+			}
 		} catch (Exception e) {
 			log.error("Error when tried to evaluate all assessment entries of Identity {} in RepositoryEntry {}",
 					courseEntryKey, identityKey);
@@ -154,7 +156,7 @@ public class CourseMembershipProcessor implements GenericEventListener {
 	
 		Identity identity = securityManager.loadIdentityByKey(identityKey);
 		RepositoryEntry repositoryEntry = repositoryService.loadByKey(repositoryEntryKey);
-		if(repositoryEntry != null) {
+		if(repositoryEntry != null && "CourseModule".equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
 			evaluateAll(identity, repositoryEntry);
 		}
 	}
@@ -179,8 +181,10 @@ public class CourseMembershipProcessor implements GenericEventListener {
 		List<Identity> participants = groupService.getMembers(group, GroupRoles.participant.name());
 		RepositoryEntry courseEntry = repositoryService.loadByKey(entryKey);
 		
-		for (Identity identity : participants) {
-			evaluateAll(identity, courseEntry);
+		if (courseEntry != null && "CourseModule".equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+			for (Identity identity : participants) {
+				evaluateAll(identity, courseEntry);
+			}
 		}
 	}
 	
@@ -201,7 +205,9 @@ public class CourseMembershipProcessor implements GenericEventListener {
 					.getRepositoryEntries(new CurriculumElementRefImpl(curriculumElementKey));
 			
 			for (RepositoryEntry repositoryEntry : repositoryEntries) {
-				evaluateAll(identity, repositoryEntry);
+				if ("CourseModule".equals(repositoryEntry.getOlatResource().getResourceableTypeName())) {
+					evaluateAll(identity, repositoryEntry);
+				}
 			}
 		}
 	}
@@ -217,9 +223,11 @@ public class CourseMembershipProcessor implements GenericEventListener {
 
 	private void processCurriculumElementRepositoryAdded(Long curriculumElementKey, Long entryKey) {
 		RepositoryEntry courseEntry = repositoryService.loadByKey(entryKey);
-		List<Identity> participants = curriculumService.getMembersIdentity(new CurriculumElementRefImpl(curriculumElementKey), CurriculumRoles.participant);
-		for (Identity identity : participants) {
-			evaluateAll(identity, courseEntry);
+		if (courseEntry != null && "CourseModule".equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+			List<Identity> participants = curriculumService.getMembersIdentity(new CurriculumElementRefImpl(curriculumElementKey), CurriculumRoles.participant);
+			for (Identity identity : participants) {
+				evaluateAll(identity, courseEntry);
+			}
 		}
 	}
 
