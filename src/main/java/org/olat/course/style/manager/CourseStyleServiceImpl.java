@@ -248,8 +248,9 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	
 	@Override
 	public boolean isImageTransparent(VFSMediaMapper mapper) {
+		if (mapper == null || mapper.getVfsLeaf() == null) return false;
+		
 		VFSLeaf vfsLeaf = mapper.getVfsLeaf();
-		if (vfsLeaf == null) return false;
 		
 		String cacheKey = getCacheKey(vfsLeaf);
 		if (cacheKey != null) {
