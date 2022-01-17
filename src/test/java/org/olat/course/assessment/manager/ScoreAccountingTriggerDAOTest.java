@@ -27,6 +27,7 @@ import java.util.List;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.course.assessment.ScoreAccountingTrigger;
 import org.olat.course.assessment.ScoreAccountingTriggerData;
@@ -55,7 +56,8 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCreate() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		String subIdent = random();
 		ScoreAccountingTriggerData data = new ScoreAccountingTriggerData();
 		String identifier = random();
@@ -90,8 +92,9 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldLoadByRepositoryEntry() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(author);
 		ScoreAccountingTriggerData data1 = new ScoreAccountingTriggerData();
 		data1.setIdentifier(random());
 		ScoreAccountingTrigger triggerRefs1 = sut.create(entry, random(), data1);
@@ -112,9 +115,10 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadEntriesByBusinessGroup() {
-		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(author);
 		BusinessGroupRef businessGroupRef = () -> Long.valueOf(50);
 		BusinessGroupRef businessGroupRefOther = () -> Long.valueOf(51);
 		ScoreAccountingTriggerData data1 = new ScoreAccountingTriggerData();
@@ -142,9 +146,10 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldLoadEntriesByOrganisation() {
-		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(author);
 		OrganisationRef organisationRef = () -> Long.valueOf(44);
 		OrganisationRef organisationRefOther = () -> Long.valueOf(45);
 		ScoreAccountingTriggerData data1 = new ScoreAccountingTriggerData();
@@ -172,9 +177,10 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldLoadEntriesByCurriculumElement() {
-		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(author);
 		CurriculumElementRef curriculumElementRef = () -> Long.valueOf(60);
 		CurriculumElementRef curriculumElementRefOther = () -> Long.valueOf(61);
 		ScoreAccountingTriggerData data1 = new ScoreAccountingTriggerData();
@@ -202,9 +208,10 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadEntriesByUserPropertyName() {
-		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(author);
 		String userPropertyName = random();
 		String userPropertyNameOther = random();
 		ScoreAccountingTriggerData data1 = new ScoreAccountingTriggerData();
@@ -232,9 +239,10 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadEntriesByUserPropertyValue() {
-		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry1 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(author);
 		String userPropertyValue = random();
 		String userPropertyValueOther = random();
 		ScoreAccountingTriggerData data1 = new ScoreAccountingTriggerData();
@@ -262,7 +270,8 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldDelete() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
 		ScoreAccountingTriggerData data1 = new ScoreAccountingTriggerData();
 		data1.setIdentifier(random());
 		ScoreAccountingTrigger triggerRefs1 = sut.create(entry, random(), data1);
@@ -285,8 +294,9 @@ public class ScoreAccountingTriggerDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeleteByRepositoryEntry() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		RepositoryEntry entryOther = JunitTestHelper.deployBasicCourse(author);
 		ScoreAccountingTriggerData data1 = new ScoreAccountingTriggerData();
 		data1.setIdentifier(random());
 		sut.create(entry, random(), data1);

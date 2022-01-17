@@ -442,7 +442,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public List<RepositoryEntry> getTriggeredRepositoryEntries(ScoreAccountingTriggerSearchParams searchParams) {
+	public List<RepositoryEntry> getTriggeredCourseEntries(ScoreAccountingTriggerSearchParams searchParams) {
 		return scoreAccountingTriggerDAO.load(searchParams);
 	}
 

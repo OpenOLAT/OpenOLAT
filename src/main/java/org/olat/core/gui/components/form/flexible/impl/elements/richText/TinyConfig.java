@@ -209,6 +209,11 @@ public class TinyConfig {
 		return disableFeature("media").disableFeature("olatmovieviewer");
 	}
 	
+	public TinyConfig enableMathEditor() {
+		return enableFeature("olatmatheditor")
+				.endableButton("olatmatheditor");
+	}
+	
 	public TinyConfig disableMathEditor() {
 		return disableFeature("olatmatheditor");
 	}

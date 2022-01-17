@@ -80,6 +80,7 @@ public class ScoreAccountingTriggerDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select trigger.repositoryEntry");
 		sb.append("  from scoreaccountingtrigger trigger");
+		sb.and().append("trigger.repositoryEntry.olatResource.resName = 'CourseModule'");
 		if (searchParams.getBusinessGroupRef() != null) {
 			sb.and().append("trigger.businessGroupKey = :businessGroupKey");
 		}

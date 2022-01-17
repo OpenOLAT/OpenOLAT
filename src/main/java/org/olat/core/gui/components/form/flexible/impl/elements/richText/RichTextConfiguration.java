@@ -891,6 +891,10 @@ public class RichTextConfiguration implements Disposable {
 	public void enableCharCount() {
 		tinyConfig = tinyConfig.enableCharcount();
 	}
+	
+	public void enableMathEditor() {
+		tinyConfig = tinyConfig.enableMathEditor();
+	}
 
 	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);

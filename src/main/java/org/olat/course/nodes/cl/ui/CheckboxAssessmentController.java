@@ -297,7 +297,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 					points = defaultScore;
 				}
 			} else {
-				points = new Float(0f);
+				points = Float.valueOf(0f);
 			}
 			row.getScores()[currentCheckboxIndex] = points;
 		}
@@ -306,7 +306,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 	private Float getPointVal(CheckboxAssessmentRow row) {
 		String pointVal = row.getPointEl().getValue();
 		try {
-			return new Float(pointVal);
+			return Float.valueOf(pointVal);
 		} catch (NumberFormatException e) {
 			return null;
 		}
