@@ -234,10 +234,12 @@ public class CheckListConfigurationController extends FormBasicController {
 		String iu = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		tipUserEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.user", "config.tip.user", iu, 5, -1, formLayout,
 				getWindowControl());
+		tipUserEl.getEditorConfiguration().enableMathEditor();
 		
 		String ic = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_COACH);
 		tipCoachEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.coach", "config.tip.coach", ic, 5, -1, formLayout,
 				getWindowControl());
+		tipCoachEl.getEditorConfiguration().enableMathEditor();
 		
 		if(!wizard) {
 			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -271,8 +273,8 @@ public class CheckListConfigurationController extends FormBasicController {
 		Boolean sf = Boolean.valueOf(scoreGrantedEl.isSelected(0));
 		config.set(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, sf);
 		if (sf.booleanValue()) {
-			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, new Float(minPointsEl.getValue()));
-			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, new Float(maxPointsEl.getValue()));
+			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, Float.valueOf(minPointsEl.getValue()));
+			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, Float.valueOf(maxPointsEl.getValue()));
 		} else {
 			config.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 			config.remove(MSCourseNode.CONFIG_KEY_SCORE_MAX);
@@ -288,7 +290,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		if (pf.booleanValue()) {
 			String output = outputEl.getSelectedKey();
 			if("cutvalue".equals(output)) {
-				config.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, new Float(cutValueEl.getValue()));
+				config.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, Float.valueOf(cutValueEl.getValue()));
 			} else if("sum".equals(output)) {
 				config.set(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX, Boolean.TRUE);
 				int sumCutValue = Integer.parseInt(sumCheckboxEl.getSelectedKey());

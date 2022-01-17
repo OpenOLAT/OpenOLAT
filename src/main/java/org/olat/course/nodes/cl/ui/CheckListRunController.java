@@ -153,7 +153,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 					layoutCont.contextPut("afterDueDate", Boolean.TRUE);
 				}
 			}
-			layoutCont.contextPut("withScore", new Boolean(withScore));
+			layoutCont.contextPut("withScore", Boolean.valueOf(withScore));
 			
 			if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(),
@@ -424,7 +424,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		public String getDescription() {
-			return checkbox.getDescription();
+			return Formatter.formatLatexFormulas(checkbox.getDescription());
 		}
 		
 		public MultipleSelectionElement getCheckboxEl() {
