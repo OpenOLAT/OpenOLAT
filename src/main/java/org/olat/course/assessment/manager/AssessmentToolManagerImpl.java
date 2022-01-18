@@ -129,8 +129,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				sb.append("   and ae.repositoryEntry.key = :entryKey");
 				if(params.getSubIdent() != null) {
 					sb.append(" and ae.subIdent=:subIdent");
-				} else {
-					sb.append(" and ae.entryRoot = true");
 				}
 				TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString(), Long.class)
@@ -210,8 +208,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				  .append("   and ae.repositoryEntry.key = :repoEntryKey");
 				if(params.getSubIdent() != null) {
 					sf.append(" and ae.subIdent=:subIdent");
-				} else {
-					sf.append(" and ae.entryRoot = true");
 				}
 				sf.append("  )");
 			}
@@ -290,8 +286,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				if(params.getSubIdent() != null) {
 					sb.append(" and ae.subIdent=:subIdent");
 					needsSubIdent = true;
-				} else {
-					sb.append(" and ae.entryRoot = true");
 				}
 				sb.append("  )");
 			}
@@ -326,8 +320,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				if(params.getSubIdent() != null) {
 					sb.append(" and ae.subIdent=:subIdent");
 					needsSubIdent = true;
-				} else {
-					sb.append(" and ae.entryRoot = true");
 				}
 				sb.append("  )");
 			}
@@ -523,8 +515,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				  .append("   and ae.repositoryEntry.key = :repoEntryKey");
 				if(params.getSubIdent() != null) {
 					sb.append(" and ae.subIdent=:subIdent");
-				} else {
-					sb.append(" and ae.entryRoot = true");
 				}
 				sb.append("  )");
 			}

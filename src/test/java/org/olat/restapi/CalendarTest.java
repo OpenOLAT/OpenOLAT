@@ -429,7 +429,7 @@ public class CalendarTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void putCalendarEvents_notAuthorized() throws IOException, URISyntaxException {
+	public void putCalendarEvents_forbidden() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login(id2));
 		
@@ -450,7 +450,7 @@ public class CalendarTest extends OlatRestTestCase {
 		HttpPut putEventMethod = conn.createPut(eventUri, MediaType.APPLICATION_JSON, true);
 		conn.addJsonEntity(putEventMethod, event);
 		HttpResponse putEventResponse = conn.execute(putEventMethod);
-		assertEquals(401, putEventResponse.getStatusLine().getStatusCode());
+		assertEquals(403, putEventResponse.getStatusLine().getStatusCode());
 		EntityUtils.consume(putEventResponse.getEntity());
 
 		conn.shutdown();

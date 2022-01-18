@@ -1223,7 +1223,7 @@ public class CurriculumElementsWebService {
 				})
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The curriculum or curriculum element not found")
-	public Response getTaxonomyLevels(@PathParam("curriculumElementKey") Long curriculumElementKey,
+	public Response putTaxonomyLevels(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {

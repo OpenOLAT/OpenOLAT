@@ -307,7 +307,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			List<Long> groupKeys = config.getList(GTACourseNode.GTASK_GROUPS, Long.class);
 			List<Long> areaKeys = config.getList(GTACourseNode.GTASK_AREAS, Long.class);
 			if(groupKeys.isEmpty() && areaKeys.isEmpty()) {
-				addStatusErrorDescription("error.missing.group", GTAEditController.PANE_TAB_GRADING, sdList);
+				addStatusErrorDescription("error.missing.group", GTAEditController.PANE_TAB_WORKLOW, sdList);
 			}
 		}
 		
