@@ -72,7 +72,7 @@ public class CourseNodeToReviewSmallController extends CourseNodeToReviewAbstrac
 
 	@Override
 	protected String getTableEmptyI18nKey() {
-		return "review.open.emtpy";
+		return "review.open.empty";
 	}
 
 	@Override

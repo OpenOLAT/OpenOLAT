@@ -116,7 +116,7 @@ public class AssessmentToReviewSmallController extends FormBasicController {
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setExportEnabled(false);
 		tableEl.setCustomizeColumns(false);
-		tableEl.setEmptyTableSettings("review.open.emtpy", null, "o_icon_status_in_review");
+		tableEl.setEmptyTableSettings("review.open.empty", null, "o_icon_status_in_review");
 	}
 	
 	private void loadModel() {
