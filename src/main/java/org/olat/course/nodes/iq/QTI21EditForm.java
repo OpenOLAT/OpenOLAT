@@ -573,7 +573,6 @@ public class QTI21EditForm extends FormBasicController {
 	private void updateTestEndDate() {
 		if (testEndDateEl.isVisible() && testEndDateEl.getDueDateConfig() == NoDueDateConfig.NO_DUE_DATE_CONFIG) {
 			testEndDateEl.setDueDateConfig(testStartDateEl.getDueDateConfig());
-			testEndDateEl.setFocus(true);
 		}
 	}
 

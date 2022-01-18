@@ -122,7 +122,8 @@ public class QTI21ConfigurationCEPage {
 		OOGraphene.waitElement(confirmBy, browser);
 		browser.findElement(confirmBy).click();
 		OOGraphene.waitBusy(browser);
-		
+		OOGraphene.waitModalDialogDisappears(browser);
+		OOGraphene.waitingALittleLonger();
 		OOGraphene.moveTo(By.cssSelector("div.o_qti_21_datetest_end"), browser);
 		
 		// set dates
@@ -146,7 +147,7 @@ public class QTI21ConfigurationCEPage {
 			
 			browser.findElement(todayBy).click();
 			OOGraphene.waitElementDisappears(todayBy, 5, browser);
-			OOGraphene.waitingALittleLonger();//SEL wait animation
+			OOGraphene.waitingLong();//SEL wait animation
 		
 			if(waitBusy) {
 				OOGraphene.waitBusy(browser);
@@ -156,14 +157,14 @@ public class QTI21ConfigurationCEPage {
 			browser.findElement(hourBy).sendKeys("\uE003\uE003" + Integer.toString(hour));
 			if(waitBusy) {
 				OOGraphene.waitBusy(browser);
-				OOGraphene.waitingALittleLonger();
+				OOGraphene.waitingLong();
 			}
 			
 			By minuteBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dcm_o_')]");
 			browser.findElement(minuteBy).sendKeys("\uE003\uE003" + Integer.toString(minutes));
 			if(waitBusy) {
 				OOGraphene.waitBusy(browser);
-				OOGraphene.waitingALittleLonger();
+				OOGraphene.waitingLong();
 			}
 		} catch (Exception | Error e) {
 			OOGraphene.takeScreenshot("Datetest", browser);
