@@ -54,6 +54,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
@@ -62,6 +63,7 @@ import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -69,6 +71,7 @@ import org.olat.modules.assessment.ObligationOverridable;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,6 +85,7 @@ public class LearningPathListController extends FormBasicController implements T
 	
 	private static final String KEY_EXCLUDED_SHOW = "excluded.show";
 	private static final String KEY_EXCLUDED_HIDE = "excluded.hide";
+	private static final String CMD_RESET_FULLY_ASSESSED = "resetFullyAssessed";
 	private static final String CMD_END_DATE = "endDate";
 	private static final String CMD_OBLIGATION = "obligation";
 	
@@ -93,6 +97,7 @@ public class LearningPathListController extends FormBasicController implements T
 	private Link resetStatusLink;
 	
 	private CloseableCalloutWindowController ccwc;
+	private Controller fullyAssessedResetCtrl;
 	private Controller endDateEditCtrl;
 	private Controller obligationEditCtrl;
 	
@@ -108,6 +113,7 @@ public class LearningPathListController extends FormBasicController implements T
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment userCourseEnv, boolean canEdit) {
 		super(ureq, wControl, "identity_nodes");
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.userCourseEnv = userCourseEnv;
 		this.stackPanel = stackPanel;
 		this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -141,18 +147,15 @@ public class LearningPathListController extends FormBasicController implements T
 		intendedNodeRenderer.setIndentationEnabled(false);
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.node, nodeRenderer));
-		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer(getLocale(), true, false);
 		
 		// Progress icon
+		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer(getLocale(), true, false);
 		DefaultFlexiColumnModel progressModel = new DefaultFlexiColumnModel(LearningPathCols.progress, progressRenderer);
 		progressModel.setExportable(false);
 		columnsModel.addFlexiColumnModel(progressModel);
 		
 		// Progress text
-		LearningPathProgressRenderer learningProgressRenderer = new LearningPathProgressRenderer(getLocale(), false, true);
-		DefaultFlexiColumnModel learningProgressModel = new DefaultFlexiColumnModel(LearningPathCols.learningProgress);
-		learningProgressModel.setCellRenderer(learningProgressRenderer);
-		columnsModel.addFlexiColumnModel(learningProgressModel);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.learningProgress));
 		
 		// Status
 		FlexiCellRenderer statusRenderer = new AssessmentStatusCellRenderer(getTranslator(), false);
@@ -237,9 +240,39 @@ public class LearningPathListController extends FormBasicController implements T
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
 		LearningPathRow row = new LearningPathRow(treeNode);
 		row.setParent(parent);
+		forgeProgress(row);
 		forgeEndDate(row);
 		forgeObligation(row);
 		return row;
+	}
+
+	/**
+	 * Inspired by LearningProgressRenderer
+	 *
+	 * @param row
+	 */
+	private void forgeProgress(LearningPathRow row) {
+		if (Boolean.TRUE.equals(row.getFullyAssessed())) {
+			if (!canEdit || row.getCourseNode() instanceof STCourseNode) {
+				row.setProgressText(translate("fully.assessed"));
+			} else {
+				FormLink progressLink = uifactory.addFormLink("o_progress_" + counter.getAndIncrement(),
+						CMD_RESET_FULLY_ASSESSED, "fully.assessed", null);
+				progressLink.setUserObject(row.getLearningPathNode());
+				row.setProgressLink(progressLink);
+			}
+		} else if (AssessmentEntryStatus.notReady.equals(row.getStatus())) {
+			// render nothing
+		} else {
+			forgeProgressPercent(row);
+		}
+	}
+
+	private void forgeProgressPercent(LearningPathRow row) {
+		if (row.getLearningPathNode().getCompletion() != null) {
+			String progressPercent = String.valueOf(Math.round(row.getLearningPathNode().getCompletion() * 100d)) + "%";
+			row.setProgressText(progressPercent);
+		}
 	}
 
 	private void forgeEndDate(LearningPathRow row) {
@@ -332,7 +365,9 @@ public class LearningPathListController extends FormBasicController implements T
 			loadModel();
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink) source;
-			if (CMD_END_DATE.equals(link.getCmd())) {
+			if (CMD_RESET_FULLY_ASSESSED.equals(link.getCmd())) {
+				doResetFullyAssessed(ureq, link);
+			}else if (CMD_END_DATE.equals(link.getCmd())) {
 				doEditEndDate(ureq, link);
 			} else if (CMD_OBLIGATION.equals(link.getCmd())) {
 				doEditObligation(ureq, link);
@@ -343,7 +378,13 @@ public class LearningPathListController extends FormBasicController implements T
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == endDateEditCtrl) {
+		if (source == fullyAssessedResetCtrl) {
+			if (event == FormEvent.DONE_EVENT) {
+				loadModel();
+			}
+			ccwc.deactivate();
+			cleanUp();
+		} else if (source == endDateEditCtrl) {
 			if (event == FormEvent.DONE_EVENT) {
 				loadModel();
 			}
@@ -362,9 +403,11 @@ public class LearningPathListController extends FormBasicController implements T
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(fullyAssessedResetCtrl);
 		removeAsListenerAndDispose(obligationEditCtrl);
 		removeAsListenerAndDispose(endDateEditCtrl);
 		removeAsListenerAndDispose(ccwc);
+		fullyAssessedResetCtrl = null;
 		obligationEditCtrl = null;
 		endDateEditCtrl = null;
 		ccwc = null;
@@ -378,6 +421,21 @@ public class LearningPathListController extends FormBasicController implements T
 		super.event(ureq, source, event);
 	}
 	
+	private void doResetFullyAssessed(UserRequest ureq, FormLink link) {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(fullyAssessedResetCtrl);
+		
+		LearningPathTreeNode lpTreeNode = (LearningPathTreeNode)link.getUserObject();
+		fullyAssessedResetCtrl = new FullyAssessedResetController(ureq, getWindowControl(), userCourseEnv, lpTreeNode);
+		listenTo(fullyAssessedResetCtrl);
+		
+		CalloutSettings settings = new CalloutSettings();
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), fullyAssessedResetCtrl.getInitialComponent(),
+				link.getFormDispatchId(), "", true, "", settings);
+		listenTo(ccwc);
+		ccwc.activate();
+	}
+
 	private void doEditEndDate(UserRequest ureq, FormLink link) {
 		removeAsListenerAndDispose(ccwc);
 		removeAsListenerAndDispose(endDateEditCtrl);

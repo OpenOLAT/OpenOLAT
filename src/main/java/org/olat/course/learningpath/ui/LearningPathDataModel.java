@@ -59,7 +59,9 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 		switch(LearningPathCols.values()[col]) {
 			case learningPathStatus: return row.getLearningPathNode();
 			case progress: return row.getLearningPathNode();
-			case learningProgress: return row.getLearningPathNode();
+			case learningProgress: return row.getProgressLink() != null
+					? row.getProgressLink()
+					: row.getProgressText();
 			case node: return row;
 			case start: return row.getStartDate();
 			case end: return row.getEndDateFormItem() != null

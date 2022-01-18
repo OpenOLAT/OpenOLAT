@@ -192,7 +192,7 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 		updateFullyAssessed(courseNode, userCourseEnv, result);
 	}
 
-	void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, FullyAssessedResult result) {
+	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, FullyAssessedResult result) {
 		boolean participant = userCourseEnv.isParticipant();
 		if (participant && result.isEnabled()) {
 			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnv, result.isDone(),
