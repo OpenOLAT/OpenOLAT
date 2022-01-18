@@ -517,8 +517,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					|| getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.trash) {
 				toolbarPanel.setMessage(translate("course.deleted"));
 				toolbarPanel.setMessageCssClass("o_warning");
+			} else {
+				toolbarPanel.setMessage(null);
+				toolbarPanel.setMessageComponent(null);
 			}
-			
 		} else {
 			toolbarPanel.setMessage(null);
 			toolbarPanel.setMessageComponent(null);
