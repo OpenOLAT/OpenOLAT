@@ -103,7 +103,7 @@ public class CalWebService {
 		if(calendar == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if (!hasReadAccess(calendar)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<EventVO> events = new ArrayList<>();
@@ -132,7 +132,7 @@ public class CalWebService {
 		if(calendar == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if(!hasWriteAccess(calendar)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 
 		CalendarManager calendarManager = CoreSpringFactory.getImpl(CalendarManager.class);
@@ -217,7 +217,7 @@ public class CalWebService {
 		if(calendar == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		} else if(!hasWriteAccess(calendar)) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
+			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
 		
 		List<KalendarEvent> kalEventToAdd = new ArrayList<>();
