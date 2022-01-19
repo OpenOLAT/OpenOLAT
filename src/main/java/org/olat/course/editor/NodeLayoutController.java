@@ -584,7 +584,7 @@ public class NodeLayoutController extends FormBasicController {
 			if (ImageSourceType.course == type) {
 				mapper = courseStyleService.getTeaserImageMapper(course);
 			} else if (ImageSourceType.inherited == type) {
-				if (editorTreeNode == null && editorTreeNode.getParent() != null) {
+				if (editorTreeNode != null && editorTreeNode.getParent() != null) {
 					mapper = courseStyleService.getTeaserImageMapper(course, editorTreeNode.getParent());
 				} else {
 					mapper = courseStyleService.getTeaserImageMapper(course);
