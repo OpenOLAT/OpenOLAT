@@ -24,6 +24,7 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeFactory;
 
 /**
  * 
@@ -42,7 +43,7 @@ public class CourseNodeSelectionTreeModel extends GenericTreeModel {
 
 	private TreeNode buildTree(CourseNode courseNode) {
 		GenericTreeNode node = new GenericTreeNode(courseNode.getIdent(), courseNode.getShortTitle(), courseNode);
-		node.setIconCssClass(("o_icon o_" + courseNode.getType() + "_icon").intern());
+		node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType()).getIconCSSClass());
 		node.setAltText(courseNode.getLongTitle());
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode childNode = (CourseNode)courseNode.getChildAt(i);
