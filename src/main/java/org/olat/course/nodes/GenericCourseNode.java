@@ -82,6 +82,7 @@ import org.olat.course.noderight.model.NodeRightImpl;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
@@ -146,18 +147,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	public abstract TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			UserCourseEnvironment euce);
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(UserRequest,
-	 *      WindowControl, UserCourseEnvironment, CourseNodeSecurityCallback, String)
-	 * 
-	 *      ATTENTION: all course nodes must call
-	 *      updateModuleConfigDefaults(false) here
-	 */
 	@Override
 	public abstract NodeRunConstructionResult createNodeRunConstructionResult(
 			UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback,
-			String nodecmd);
+			String nodecmd, VisibilityFilter visibilityFilter);
 
 	protected String getDefaultTitleOption() {
 		return CourseNode.DISPLAY_OPTS_TITLE_DESCRIPTION_CONTENT;

@@ -42,6 +42,7 @@ import org.olat.course.nodes.card2brain.Card2BrainRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.card2brain.Card2BrainModule;
 import org.olat.repository.RepositoryEntry;
 
@@ -81,7 +82,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		Controller runCtrl;
 		if(userCourseEnv.isCourseReadOnly()) {
 			Translator trans = Util.createPackageTranslator(Card2BrainCourseNode.class, ureq.getLocale());
@@ -102,7 +103,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 		
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null).getRunController();
+		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null, null).getRunController();
 	}
 	
 	@Override

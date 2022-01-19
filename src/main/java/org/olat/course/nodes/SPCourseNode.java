@@ -60,6 +60,7 @@ import org.olat.course.nodes.sp.SPRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
@@ -99,7 +100,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		VFSContainer container = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 		SPRunController runController = new SPRunController(wControl, ureq, userCourseEnv, this, container);
 		return new NodeRunConstructionResult(runController);
@@ -123,7 +124,7 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null).getRunController();
+		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null, null).getRunController();
 	}
 
 	@Override

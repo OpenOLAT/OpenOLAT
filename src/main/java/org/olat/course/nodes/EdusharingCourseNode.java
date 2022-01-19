@@ -50,6 +50,7 @@ import org.olat.course.nodes.edusharing.ui.EdusharingRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edusharing.EdusharingException;
 import org.olat.modules.edusharing.EdusharingHtmlElement;
@@ -121,7 +122,7 @@ public class EdusharingCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		Controller controller = new EdusharingRunController(ureq, wControl, this);
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, userCourseEnv, this, ICON_CSS);
 		return new NodeRunConstructionResult(ctrl);

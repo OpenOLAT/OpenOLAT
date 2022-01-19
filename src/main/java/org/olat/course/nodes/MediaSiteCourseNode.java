@@ -39,6 +39,7 @@ import org.olat.course.nodes.mediasite.MediaSiteRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.mediasite.MediaSiteModule;
 import org.olat.modules.mediasite.ui.MediaSiteAdminController;
 import org.olat.repository.RepositoryEntry;
@@ -129,7 +130,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		Controller runCtrl;
 		
 		runCtrl = new MediaSiteRunController(ureq, wControl, this, userCourseEnv);
@@ -142,7 +143,7 @@ public class MediaSiteCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null).getRunController();
+		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null, null).getRunController();
 	}
 
 	@Override

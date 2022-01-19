@@ -58,6 +58,7 @@ import org.olat.course.nodes.st.OverviewFactory.CourseNodeFilter;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -89,7 +90,8 @@ public class STCourseNodeRunController extends BasicController {
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
-	public STCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, STCourseNode stCourseNode, ScoreEvaluation se) {
+	public STCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			STCourseNode stCourseNode, ScoreEvaluation se, VisibilityFilter visibilityFilter) {
 		super(ureq, wControl);
 		addLoggingResourceable(LoggingResourceable.wrap(stCourseNode));
 		this.userCourseEnv = userCourseEnv;
@@ -114,6 +116,7 @@ public class STCourseNodeRunController extends BasicController {
 
 		// Build up a overview of all visible children (direct children only, no grandchildren)
 		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+				.withFilter(visibilityFilter)
 				.build()
 				.getNodeById(stCourseNode.getIdent());
 		

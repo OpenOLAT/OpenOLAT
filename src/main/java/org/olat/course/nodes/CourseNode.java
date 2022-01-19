@@ -57,6 +57,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
@@ -199,15 +200,12 @@ public interface CourseNode extends INode, ShortName {
 	 * @param wControl The current window controller
 	 * @param userCourseEnv The course environment
 	 * @param nodeSecCallback The node evaluation
+	 * @param visibilityFilter 
 	 * @return The node run controller
-	 * 
-	 * ATTENTION:
-	 * udpateModuleConfigDefaults(false) should be called inside from the
-	 * courseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, nodeEval, nodecmd)
-	 * to set the course node specific configuration default values!
 	 */
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd);
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd,
+			VisibilityFilter visibilityFilter);
 
 	/**
 	 * Create a node edit controller for this node to configure node specific

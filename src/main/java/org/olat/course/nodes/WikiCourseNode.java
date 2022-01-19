@@ -77,6 +77,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.wiki.Wiki;
@@ -287,7 +288,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		if(nodeSecCallback.isAccessible()) {
 			WikiRunController wikiController = new WikiRunController(wControl, ureq, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
 			return wikiController.createNodeRunConstructionResult();

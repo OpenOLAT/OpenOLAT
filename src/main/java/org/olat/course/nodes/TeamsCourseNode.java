@@ -39,6 +39,7 @@ import org.olat.course.nodes.teams.TeamsPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
@@ -87,7 +88,7 @@ public class TeamsCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		// check if user is admin. / moderator of the virtual classroom
 		boolean admin = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 		boolean moderator = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
