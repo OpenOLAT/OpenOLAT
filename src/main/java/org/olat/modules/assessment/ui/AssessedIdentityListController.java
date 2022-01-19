@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -216,6 +217,14 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.passed.label"),
 				AssessedIdentityListState.FILTER_PASSED, passedValues, true));
 		
+		if(assessmentCallback.canAssessNonMembers()) {
+			SelectionValues memebersValues = new SelectionValues();
+			memebersValues.add(SelectionValues.entry("membersOnly", translate("filter.members")));
+			memebersValues.add(SelectionValues.entry("nonMembersOnly", translate("filter.other.users")));
+			filters.add(new FlexiTableSingleSelectionFilter(translate("filter.members.label"),
+					AssessedIdentityListState.FILTER_MEMBERS, memebersValues, true));
+		}
+		
 		if(assessmentCallback.canAssessBusinessGoupMembers()) {
 			List<BusinessGroup> coachedGroups;
 			if(assessmentCallback.isAdmin()) {
@@ -237,6 +246,9 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 
 		tableEl.setFilters(true, filters, false, true);
+		if(assessmentCallback.canAssessNonMembers()) {
+			tableEl.setFiltersValues(null, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_MEMBERS, "membersOnly")));
+		}
 	}
 	
 	public class AToolsOptions extends AssessmentToolOptions {
@@ -274,6 +286,16 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				params.setPassed(passed);
 			} else {
 				params.setPassed(null);
+			}
+		}
+		
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_MEMBERS);
+		if(membersFilter != null) {
+			String filterValue = ((FlexiTableExtendedFilter)membersFilter).getValue();
+			if("membersOnly".equals(filterValue)) {
+				params.setMemebersOnly(true);
+			} else if("nonMembersOnly".equals(filterValue)) {
+				params.setNonMemebersOnly(true);
 			}
 		}
 		
