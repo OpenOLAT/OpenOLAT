@@ -227,7 +227,7 @@ public class NavigationHandler implements Disposable {
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 				CourseNode parent = internCourseNode.getParent() instanceof CourseNode? (CourseNode)internCourseNode.getParent(): null;
 				internCourseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv));
-				nrcr = internCourseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, internNode, nodecmd);
+				nrcr = internCourseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, internNode, nodecmd, filter);
 				// remember as instance variable for next click
 				subtreemodelListener = nrcr.getSubTreeListener();
 				subTreeModel = (GenericTreeModel)nrcr.getSubTreeModel();
@@ -393,7 +393,7 @@ public class NavigationHandler implements Disposable {
 					}
 					
 					courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv));
-					ncr = courseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, newCalledTreeNode, nodecmd);
+					ncr = courseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, newCalledTreeNode, nodecmd, filter);
 
 					// remember as instance variable for next click
 					ControllerEventListener subtreemodelListener = ncr.getSubTreeListener();

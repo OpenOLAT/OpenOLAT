@@ -45,6 +45,7 @@ import org.olat.course.nodes.vitero.ViteroPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.ui.ViteroBookingsRunController;
 import org.olat.repository.RepositoryEntry;
@@ -91,7 +92,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd, VisibilityFilter visibilityFilter) {
 		Controller runCtr;
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {

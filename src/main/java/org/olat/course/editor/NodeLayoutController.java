@@ -589,7 +589,7 @@ public class NodeLayoutController extends FormBasicController {
 				mapper = courseStyleService.getTeaserImageMapper(course);
 				transparent = courseStyleService.isImageTransparent(mapper);
 			} else if (ImageSourceType.inherited == type) {
-				if (editorTreeNode == null && editorTreeNode.getParent() != null) {
+				if (editorTreeNode != null && editorTreeNode.getParent() != null) {
 					mapper = courseStyleService.getTeaserImageMapper(course, editorTreeNode.getParent());
 					transparent = courseStyleService.isImageTransparent(mapper);
 				} else {

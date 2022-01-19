@@ -79,6 +79,7 @@ import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
@@ -153,7 +154,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd,
+			VisibilityFilter visibilityFilter) {
 		Controller cont;
 		
 		String displayType = getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE);
@@ -198,7 +200,9 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			// evaluate the score accounting for this node. this uses the score accountings local
 			// cache hash map to reduce unnecessary calculations
 			ScoreEvaluation se = userCourseEnv.getScoreAccounting().evalCourseNode(this);
-			cont = TitledWrapperHelper.getWrapper(ureq, wControl, new STCourseNodeRunController(ureq, wControl, userCourseEnv, this, se), userCourseEnv, this, ICON_CSS_CLASS);
+			cont = TitledWrapperHelper.getWrapper(ureq, wControl,
+					new STCourseNodeRunController(ureq, wControl, userCourseEnv, this, se, visibilityFilter),
+					userCourseEnv, this, ICON_CSS_CLASS);
 		}
 
 		// access the current calculated score, if there is one, so that it can be
@@ -224,7 +228,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null).getRunController();
+		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null, null).getRunController();
 	}
 	
 	@Override
