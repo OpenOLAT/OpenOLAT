@@ -424,7 +424,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		public String getDescription() {
-			return Formatter.formatLatexFormulas(checkbox.getDescription());
+			String desc = StringHelper.xssScan(checkbox.getDescription());
+			return Formatter.formatLatexFormulas(desc);
 		}
 		
 		public MultipleSelectionElement getCheckboxEl() {

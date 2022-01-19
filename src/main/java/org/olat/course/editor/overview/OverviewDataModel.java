@@ -67,6 +67,9 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 			case shortTitle: return CourseNodeHelper.getCustomShortTitle(row.getCourseNode());
 			case longTitle: return row.getCourseNode().getLongTitle();
 			case description: return row.getCourseNode().getDescription();
+			case objectives: return row.getCourseNode().getObjectives();
+			case instruction: return row.getCourseNode().getInstruction();
+			case instructionalDesign: return row.getCourseNode().getInstructionalDesign();
 			case display: return row.getTranslatedDisplayOption();
 			case duration: return row.getDuration();
 			case obligation: return row.getTranslatedObligation();
@@ -110,6 +113,9 @@ public class OverviewDataModel extends DefaultFlexiTreeTableDataModel<OverviewRo
 		shortTitle("table.header.short.title"),
 		longTitle("table.header.long.title"),
 		description("table.header.description"),
+		objectives("table.header.objectives"),
+		instruction("table.header.instruction"),
+		instructionalDesign("table.header.instructional.design"),
 		display("table.header.display"),
 		duration("table.header.duration"),
 		obligation("table.header.obligation"),

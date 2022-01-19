@@ -52,14 +52,17 @@ public class CheckListCoachRunController extends BasicController implements Acti
 	
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
+	private static final String ORES_TYPE_PREVIEW = "Preview";
 	
-	private Link participantsLink;
+	private final Link participantsLink;
+	private final Link previewLink;
 	private Link remindersLink;
 	
-	private VelocityContainer mainVC;
-	private SegmentViewComponent segmentView;
+	private final VelocityContainer mainVC;
+	private final SegmentViewComponent segmentView;
 	
 	private Controller participantsCtrl;
+	private CheckListRunController previewCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
 
 	private final UserCourseEnvironment userCourseEnv;
@@ -80,6 +83,10 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		// Participants
 		participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
 		segmentView.addSegment(participantsLink, true);
+		
+		// Preview
+		previewLink = LinkFactory.createLink("segment.preview", mainVC, this);
+		segmentView.addSegment(previewLink, false);
 		
 		// Reminders
 		if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
@@ -110,6 +117,9 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
 			doOpenReminders(ureq);
 			segmentView.select(remindersLink);
+		} else if(ORES_TYPE_PREVIEW.equalsIgnoreCase(type)) {
+			doOpenPreview(ureq);
+			segmentView.select(previewLink);
 		}
 	}
 	
@@ -124,6 +134,8 @@ public class CheckListCoachRunController extends BasicController implements Acti
 					doOpenParticipants(ureq);
 				} else if (clickedLink == remindersLink) {
 					doOpenReminders(ureq);
+				} else if (clickedLink == previewLink) {
+					doOpenPreview(ureq);
 				}
 			}
 		}
@@ -138,11 +150,19 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
 	}
 	
+	private void doOpenPreview(UserRequest ureq) {
+		removeAsListenerAndDispose(previewCtrl);
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PREVIEW), null);
+		previewCtrl = new CheckListRunController(ureq, swControl, userCourseEnv, ores, courseNode);
+		listenTo(previewCtrl);
+		mainVC.put("segmentCmp", previewCtrl.getInitialComponent());
+	}
+	
 	private void doOpenReminders(UserRequest ureq) {
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
 		}
 	}
-
 }

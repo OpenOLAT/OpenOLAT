@@ -1,3 +1,4 @@
+<div class="o_cl_run">
 #if($hasScoreField || $hasPassedField)
 	<div class="panel panel-default o_personal">
 	  	<div class="panel-heading">
@@ -206,7 +207,7 @@
 					#end
 				</h4>
 				#if($checkbox.description)
-					<div class="o_cl_desc">$r.xssScan($checkbox.description)</div>
+					<div class="o_cl_desc">$checkbox.description</div>
 				#end
 				#if(${checkbox.hasDownload()})
 					<div class="o_cl_file">$r.render($checkbox.downloadName)</div>
@@ -214,4 +215,5 @@
 			</div>
 		</div>
 	#end
+</div>
 </div>

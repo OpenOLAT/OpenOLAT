@@ -690,7 +690,7 @@ public class CSVToAssessmentItemConverter {
 	}
 	
 	private void processChoice(String[] parts) {
-		if(currentItem == null || parts.length < 2) {
+		if(currentItem == null || parts.length < 2 || isEmpty(parts)) {
 			return;
 		}
 		
@@ -713,6 +713,17 @@ public class CSVToAssessmentItemConverter {
 		} catch (NumberFormatException e) {
 			log.warn("Cannot parse point for: {} / {}", parts[0], parts[1], e);
 		}
+	}
+	
+	private boolean isEmpty(String[] parts) {
+		if(parts != null && parts.length > 0) {
+			for(int i=parts.length; i-->0; ) {
+				if(StringHelper.containsNonWhitespace(parts[i])) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	private void processChoiceSmc(String[] parts, SimpleChoiceAssessmentItemBuilder choiceBuilder) {
@@ -852,6 +863,10 @@ public class CSVToAssessmentItemConverter {
 	}
 	
 	private void processChoiceKprim(String[] parts, KPrimAssessmentItemBuilder kprimBuilder) {
+		if(kprimPosition >= 4) {
+			return;
+		}
+		
 		String firstPart = parts[0].toLowerCase();
 		String answer = parts[1];
 		
@@ -862,6 +877,7 @@ public class CSVToAssessmentItemConverter {
 			correctIncorrectIdentifier = QTI21Constants.WRONG_IDENTIFIER;
 		}
 		List<SimpleAssociableChoice> choices = kprimBuilder.getKprimChoices();
+		
 		SimpleAssociableChoice choice = choices.get(kprimPosition);
 		
 		P choiceText = AssessmentItemFactory.getParagraph(choice, answer);
