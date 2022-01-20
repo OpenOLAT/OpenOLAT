@@ -44,5 +44,14 @@ public interface DueDateConfigFormItem extends FormItem, FormItemCollection {
 	public DueDateConfig getDueDateConfig();
 	
 	public void setDueDateConfig(DueDateConfig dueDateConfig);
+	
+	/**
+	 * Fine grain control of the action event, especially the onchange
+	 * event on the hours and minutes fields of the date chooser.
+	 * 
+	 * @param action The action
+	 * @param dateOnly true if the hour/minute fields of the date chooser doesn't send onchange events.
+	 */
+	public void addActionListener(int action, boolean dateOnly);
 
 }

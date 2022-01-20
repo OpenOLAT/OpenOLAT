@@ -55,6 +55,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	private SelectionValues relativeToDates;
 	private boolean relative;
 	private DueDateConfig initialDueDateConfig;
+	private boolean actionDateOnly;
 	
 	private TextElementImpl numOfDaysEl;
 	private SingleSelection realtiveToDateEl;
@@ -110,10 +111,27 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 			absoluteDateEl.setValidDateCheck("form.error.date");
 			absoluteDateEl.setRootForm(getRootForm());
 			absoluteDateEl.setDateChooserTimeEnabled(true);
-			absoluteDateEl.addActionListener(FormEvent.ONCHANGE);
+			absoluteDateEl.addActionListener(getAction(), actionDateOnly);
 		}
 	}
 	
+	@Override
+	public void addActionListener(int action) {
+		super.addActionListener(action);
+		if(absoluteDateEl != null) {
+			absoluteDateEl.addActionListener(action);
+		}
+	}
+	
+	@Override
+	public void addActionListener(int action, boolean dateOnly) {
+		super.addActionListener(action);
+		this.actionDateOnly = dateOnly;
+		if(absoluteDateEl != null) {
+			absoluteDateEl.addActionListener(action);
+		}
+	}
+
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
 		super.validate(validationResults);

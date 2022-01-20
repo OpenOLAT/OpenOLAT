@@ -154,18 +154,14 @@ public class QTI21ConfigurationCEPage {
 			}
 			
 			By hourBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dch_o_')]");
-			browser.findElement(hourBy).sendKeys("\uE003\uE003" + Integer.toString(hour));
-			if(waitBusy) {
-				OOGraphene.waitBusy(browser);
-				OOGraphene.waitingLong();
-			}
-			
+			WebElement hourEl = browser.findElement(hourBy);
+			hourEl.clear();
+			hourEl.sendKeys(Integer.toString(hour));
+
 			By minuteBy = By.xpath("//div[contains(@class,'" + fieldClass + "')]//div[contains(@class,'o_first_ms')]/input[contains(@id,'o_dcm_o_')]");
-			browser.findElement(minuteBy).sendKeys("\uE003\uE003" + Integer.toString(minutes));
-			if(waitBusy) {
-				OOGraphene.waitBusy(browser);
-				OOGraphene.waitingLong();
-			}
+			WebElement minuteEl = browser.findElement(minuteBy);
+			minuteEl.clear();
+			minuteEl.sendKeys(Integer.toString(minutes));
 		} catch (Exception | Error e) {
 			OOGraphene.takeScreenshot("Datetest", browser);
 			throw e;
