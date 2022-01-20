@@ -279,13 +279,18 @@ public class TeamsEditMeetingsController extends FormBasicController {
 		if(guardModalController(editMeetingCtlr)) return;
 		
 		meeting = teamsService.getMeeting(meeting);
-		editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), meeting);
-		listenTo(editMeetingCtlr);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
-				true, translate("edit.meeting"));
-		cmc.activate();
-		listenTo(cmc);
+		if(meeting == null) {
+			showWarning("warning.no.meeting");
+			loadModel();
+		} else {
+			editMeetingCtlr = new EditTeamsMeetingController(ureq, getWindowControl(), meeting);
+			listenTo(editMeetingCtlr);
+			
+			cmc = new CloseableModalController(getWindowControl(), "close", editMeetingCtlr.getInitialComponent(),
+					true, translate("edit.meeting"));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 	
 	private void doAddDailyRecurringMeeting(UserRequest ureq) {
