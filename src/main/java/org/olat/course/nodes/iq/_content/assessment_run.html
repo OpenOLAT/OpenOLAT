@@ -150,7 +150,7 @@
 	  		<h4 class="panel-title">
 				#if ($showResults && $r.available("command.hideResults"))
 					$r.render("command.hideResults")
-				#elseif($showResults && $r.available("command.showResults"))
+				#elseif($showResultsVisible && $r.available("command.showResults"))
 					$r.render("command.showResults")
 				#else
 					$r.translate("showResults.title")
