@@ -31,7 +31,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -51,15 +50,13 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="otemporarykey")
 @Table(name="o_temporarykey")
-@NamedQueries({
-	@NamedQuery(name="loadTemporaryKeyByRegAction", query="select r from otemporarykey r where r.regAction=:action"),
-	@NamedQuery(name="loadTemporaryKeyByRegKey", query="select r from otemporarykey r where r.registrationKey=:regkey"),
-	@NamedQuery(name="loadTemporaryKeyByEmailAddress", query="select r from otemporarykey r where r.emailAddress=:email"),
-	@NamedQuery(name="loadTemporaryKeyByIdentity", query="select r from otemporarykey r where r.identityKey=:identityKey and action=:action"),
-	@NamedQuery(name="loadAll", query="select r from otemporarykey r"),
-	@NamedQuery(name="deleteTemporaryKeyByIdentityAndAction", query="delete from otemporarykey r where r.identityKey=:identityKey and action=:action"),
-	@NamedQuery(name="deleteTemporaryKeyByIdentity", query="delete from otemporarykey r where r.identityKey=:identityKey")
-})
+@NamedQuery(name="loadTemporaryKeyByRegAction", query="select r from otemporarykey r where r.regAction=:action")
+@NamedQuery(name="loadTemporaryKeyByRegKey", query="select r from otemporarykey r where r.registrationKey=:regkey")
+@NamedQuery(name="loadTemporaryKeyByEmailAddress", query="select r from otemporarykey r where lower(r.emailAddress)=:email")
+@NamedQuery(name="loadTemporaryKeyByIdentity", query="select r from otemporarykey r where r.identityKey=:identityKey and action=:action")
+@NamedQuery(name="loadAll", query="select r from otemporarykey r")
+@NamedQuery(name="deleteTemporaryKeyByIdentityAndAction", query="delete from otemporarykey r where r.identityKey=:identityKey and action=:action")
+@NamedQuery(name="deleteTemporaryKeyByIdentity", query="delete from otemporarykey r where r.identityKey=:identityKey")
 public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 
 	private static final long serialVersionUID = 2617181963956081372L;
