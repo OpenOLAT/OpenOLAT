@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.3.1'
+				version : '1.3.2'
 			};
 		},
 
@@ -167,12 +167,6 @@
 				icon : 'hottext',
 				stateSelector: ['span[data-qti=hottext]'],
 				onclick: createHottext
-			});
-			
-			ed.addButton('editgap', {
-				title: 'edit',
-				icon: 'edit',
-				onclick: showDialog
 			});
 			
 			ed.addMenuItem('olatqtifibtext', {
@@ -472,6 +466,10 @@
 				jQuery("span[data-qti-response-identifier='" + responseIdentifier+ "']", ed.getBody()).each(function(index, el) {
 					textEntryEvent(jQuery(el));
 				});
+			});
+			
+			ed.addCommand('qtiCancelTextEntry', function (ui, value) {
+				ed.setDirty(true);
 			});
 
 			// Load Content CSS upon initialization

@@ -64,12 +64,15 @@ public class AssessmentForm extends FormBasicController {
 	private TextElement score;
 	private IntegerElement attempts;
 	private SingleSelection passed;
-	private TextElement userComment, coachComment;
+	private TextElement userComment;
+	private TextElement coachComment;
 	private FormLink reopenLink;
 	private FormLink intermediateSaveLink;
 	private FormLink saveAndDoneButton;
 
-	private Double min, max, cut;
+	private Double min;
+	private Double max;
+	private Double cut;
 	private Identity assessedIdentity;
 	private AssessmentEntry assessmentEntry;
 	private RepositoryEntry testEntry;
@@ -101,7 +104,7 @@ public class AssessmentForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("form.title", null);
+		setFormTitle("assessment.edit.title", null);
 		formLayout.setElementCssClass("o_sel_assessment_form");
 
 		if (assessableElement.hasAttemptsConfigured()) {

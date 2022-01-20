@@ -90,6 +90,34 @@ public class GTATaskRevisionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createTaskRevisionNullDate() {
+		// course with task course element
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-rev-user-1nd");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-rev-user-2nd");
+		
+		RepositoryEntry re = GTAManagerTest.deployGTACourse();
+		GTACourseNode node = GTAManagerTest.getGTACourseNode(re);
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		// participant select a task
+		File taskFile = new File("task.txt");
+		AssignmentResponse response = gtaManager.selectTask(participant, tasks, null, node, taskFile);
+		Task task = response.getTask();
+		Assert.assertNotNull(task);
+		
+		// coach create the revision
+		TaskRevisionImpl rev = (TaskRevisionImpl)taskRevisionDao.createTaskRevision(task, TaskProcess.revision.name(), 1, "Hello null data", coach, null);
+		dbInstance.commit();
+		
+		// check
+		Assert.assertNotNull(rev);
+		Assert.assertNotNull(rev.getKey());
+		Assert.assertNull(rev.getDate());
+		Assert.assertEquals(task, rev.getTask());
+	}
+	
+	@Test
 	public void getTaskRevision() {
 		// course with task course element
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-rev-user-3");

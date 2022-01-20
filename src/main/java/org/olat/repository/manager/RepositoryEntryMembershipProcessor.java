@@ -21,21 +21,29 @@ package org.olat.repository.manager;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.fullWebApp.NotificationEvent;
 import org.olat.core.commons.fullWebApp.NotificationsCenter;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.control.Event;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryRefImpl;
 import org.olat.resource.OLATResource;
@@ -55,14 +63,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepositoryEntryMembershipProcessor implements InitializingBean, GenericEventListener {
 	
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryMembershipProcessor.class);
+	
 	@Autowired
 	private ACService acService;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
-	private NotificationsManager notificationsManager;
+	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
@@ -79,6 +95,8 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 				processIdentityRemoved(e.getRepositoryEntryKey(), e.getIdentityKey());
 			} else if(RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADD_PENDING.equals(e.getCommand())) {
 				sendNotificationsToIdentities(e.getIdentityKey());
+			} else if (RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(e.getCommand())) {
+				processIdentityAddedToRepositoryEntry(e.getIdentityKey(), e.getRepositoryEntryKey());
 			}
 		}
 	}
@@ -103,6 +121,21 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 		if(remainingRoles.isEmpty()) {
 			OLATResource resource = repositoryManager.lookupRepositoryEntryResource(repoKey);
 			notificationsManager.unsubscribeAllForIdentityAndResId(identity, resource.getResourceableId());
+		}
+	}
+	
+	private void processIdentityAddedToRepositoryEntry(Long identityKey, Long courseEntryKey) {
+		try {
+			log.debug("Process Identity {} added to RepositoryEntry {}", identityKey, courseEntryKey);
+			RepositoryEntry entry = repositoryService.loadByKey(courseEntryKey);
+			if (entry != null && (ImsQTI21Resource.TYPE_NAME.equals(entry.getOlatResource().getResourceableTypeName())
+							|| BinderTemplateResource.TYPE_NAME.equals(entry.getOlatResource().getResourceableTypeName()))) {
+				Identity identity = securityManager.loadIdentityByKey(identityKey);
+				assessmentService.getOrCreateAssessmentEntry(identity, null, entry, null, Boolean.TRUE, entry);
+			}
+		} catch (Exception e) {
+			log.warn("Error when processing Identity {} added to RepositoryEntry {}",
+					identityKey, courseEntryKey);
 		}
 	}
 }

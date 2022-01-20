@@ -43,6 +43,7 @@ import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.persistence.TemporalType;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
@@ -418,12 +419,12 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 				.executeUpdate();
 	}
 	
-	public void deleteInvalidTemporaryKeys() {
+	public int deleteInvalidTemporaryKeys() {
 		String query = "delete from otemporarykey tk where tk.validUntil < :validUntil";
 		
-		dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(query) 
-				.setParameter("validUntil", new Date())
+				.setParameter("validUntil", new Date(), TemporalType.TIMESTAMP)
 				.executeUpdate();
 	}
 	
@@ -438,7 +439,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	public TemporaryKey loadTemporaryKeyByEmail(String email) {
 		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadTemporaryKeyByEmailAddress", TemporaryKey.class)
-				.setParameter("email", email)
+				.setParameter("email", email.toLowerCase())
 				.getResultList();
 		if (tks.size() == 1) {
 			return tks.get(0);

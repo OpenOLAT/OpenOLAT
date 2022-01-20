@@ -8,7 +8,7 @@
 			<table class="table">
 			<tbody>
 				<tr class="o_attempts">
-					<th>$r.translate("attempts.yourattempts")</th>
+					<th scope="row">$r.translate("attempts.yourattempts")</th>
 					<td>
 						$attempts
 						#if ($attemptsConfig && $attemptsConfig > 0)
@@ -17,7 +17,7 @@
 					</td> 
 				</tr>
 				<tr class="o_score">
-					<th>$r.translate("score.yourscore")</th>
+					<th scope="row">$r.translate("score.yourscore")</th>
 					<td>
 						#if($inReview)
 							<span id="o_score_in_review" class="o_in_review">
@@ -40,7 +40,7 @@
 				</tr>
 				#if($showPassed)
 					<tr class="o_state #if(!$resultsVisible || $inReview)) #elseif ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-						<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
+						<th scope="row">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
 						<td>
 							#if($inReview)
 								<span id="o_passed_in_review" class="o_in_review">
@@ -66,7 +66,7 @@
 				#end
 				#if($r.available("digital.signature.download.link"))
 				<tr>
-					<th>$r.translate("digital.signature.download")</th>
+					<th scope="row">$r.translate("digital.signature.download")</th>
 					<td>$r.render("digital.signature.download.link")
 					#if($r.isNotNull($signatureIssueDate)) $r.translate("digital.signature.download.date", $signatureIssueDate)#end</td>
 				</tr>
@@ -87,14 +87,14 @@
 	  		</div>
 		</div></div>
 		<script>
-				jQuery('#collapseComment').on('hide.bs.collapse', function () {
-					jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					$r.backgroundCommand("hide","panel","comment")
-				})
-				jQuery('#collapseComment').on('show.bs.collapse', function () {
-					jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","comment")
-				})
+		jQuery('#collapseComment').on('hide.bs.collapse', function () {
+			jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			$r.backgroundCommand("hide","panel","comment")
+		})
+		jQuery('#collapseComment').on('show.bs.collapse', function () {
+			jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show","panel","comment")
+		})
 		</script>
 		#end
 		
@@ -115,14 +115,14 @@
 	  		</div></div>
 		</div>
 		<script>
-				jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
-					jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-					$r.backgroundCommand("hide","panel","assessmentDocuments")
-				})
-				jQuery('#collapseAssessmentDocuments').on('show.bs.collapse', function () {
-					jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","assessmentDocuments")
-				})
+		jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
+			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			$r.backgroundCommand("hide","panel","assessmentDocuments")
+		})
+		jQuery('#collapseAssessmentDocuments').on('show.bs.collapse', function () {
+			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show","panel","assessmentDocuments")
+		})
 		</script>
 		#end
 	#else
@@ -150,7 +150,7 @@
 	  		<h4 class="panel-title">
 				#if ($showResults && $r.available("command.hideResults"))
 					$r.render("command.hideResults")
-				#elseif($showResults && $r.available("command.showResults"))
+				#elseif($showResultsVisible && $r.available("command.showResults"))
 					$r.render("command.showResults")
 				#else
 					$r.translate("showResults.title")

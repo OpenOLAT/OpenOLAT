@@ -31,6 +31,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.user.UserPropertiesConfig;
 
 /**
@@ -108,6 +109,8 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 
 	@Override
 	public UserPropertyHandler getPropertyHandler(String handlerName) {
+		if(!StringHelper.containsNonWhitespace(handlerName)) return null;
+		
 		UserPropertyHandler handler = userPropertyNameLookupMap.get(handlerName);
 		if (handler == null && log.isDebugEnabled()) {
 			log.debug("UserPropertyHander for handlerName::{} not found, check your configuration.", handlerName);

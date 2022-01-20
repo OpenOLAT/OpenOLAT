@@ -67,6 +67,7 @@ import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.model.IdentifierGenerator;
+import org.olat.ims.qti21.model.InMemoryOutcomeListener;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
@@ -328,6 +329,10 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 				return new LayoutMain3ColsController(uureq, wwControl, contentCtr);
 			}
 			boolean authorMode = reSecurity.isEntryAdmin();
+			if(authorMode) {
+				return new AssessmentTestDisplayController(uureq, wwControl, new InMemoryOutcomeListener(), entry, entry, null,
+						deliveryOptions, overrideOptions, false, authorMode, true);
+			}
 			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
 			return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null,
