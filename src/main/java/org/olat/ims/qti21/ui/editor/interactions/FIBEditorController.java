@@ -135,6 +135,8 @@ public class FIBEditorController extends FormBasicController {
 				String solution = textEntrySettingsCtrl.getSolution();
 				String responseIdentifier = textEntrySettingsCtrl.getResponseIdentifier().toString();
 				feedbackToTextElement(responseIdentifier, solution);
+			} else if(event == Event.CANCELLED_EVENT) {
+				cancelFeedbackToTextElement();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -144,6 +146,8 @@ public class FIBEditorController extends FormBasicController {
 				String solution = val == null ? "" : Double.toString(val);
 				String responseIdentifier = numericalEntrySettingsCtrl.getResponseIdentifier().toString();
 				feedbackToTextElement(responseIdentifier, solution);
+			} else if(event == Event.CANCELLED_EVENT) {
+				cancelFeedbackToTextElement();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -159,6 +163,18 @@ public class FIBEditorController extends FormBasicController {
 			jo.put("responseIdentifier", responseIdentifier);
 			jo.put("data-qti-solution", solution);
 			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiUpdateTextEntry', false, " + jo.toString() + "); } catch(e){if(window.console) console.log(e) }");
+			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+		} catch (JSONException e) {
+			logError("", e);
+		}
+	}
+	
+	/**
+	 * This helps TinyMCE to deselect the current tool.
+	 */
+	private void cancelFeedbackToTextElement() {
+		try {
+			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiCancelTextEntry'); } catch(e){if(window.console) console.log(e) }");
 			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 		} catch (JSONException e) {
 			logError("", e);
