@@ -633,6 +633,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		if(settings.getCopyType() == CopyType.copy) {
 			copyFiles((GTACourseNode)sourceCourseNode, sourceCourse, this, course);
 		}
+
+		getModuleConfiguration().remove(GTACourseNode.GTASK_GROUPS);
+		getModuleConfiguration().remove(GTACourseNode.GTASK_AREAS);
 	}
 	
 	/**

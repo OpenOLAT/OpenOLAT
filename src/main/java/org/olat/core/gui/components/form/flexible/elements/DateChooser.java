@@ -150,5 +150,14 @@ public interface DateChooser extends TextElement {
 	 * @param enable
 	 */
 	public void setButtonsEnabled(boolean enable);
+	
+	/**
+	 * Fine grain control of the action event, especially the onchange
+	 * event on the hours and minutes fields.
+	 * 
+	 * @param action The action
+	 * @param dateOnly true if the hour/minute fields doesn't send onchange events.
+	 */
+	public void addActionListener(int action, boolean dateOnly);
 
 }

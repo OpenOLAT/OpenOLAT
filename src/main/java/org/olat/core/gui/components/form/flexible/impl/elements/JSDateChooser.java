@@ -70,6 +70,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private boolean sameDay;
 	private boolean secondDate;
 	private boolean buttonsEnabled = true;
+	private boolean actionDateOnly;
 	private int minute;
 	private int hour;
 	private int secondMinute;
@@ -408,6 +409,16 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		dateComponent.setEnabled(isEnabled);
 	}
 	
+	public boolean isActionDateOnly() {
+		return actionDateOnly;
+	}
+
+	@Override
+	public void addActionListener(int action, boolean dateOnly) {
+		super.addActionListener(action);
+		this.actionDateOnly = dateOnly;
+	}
+
 	@Override
 	public String getExampleDateString(){
 		return formatDate(new Date(System.currentTimeMillis()));

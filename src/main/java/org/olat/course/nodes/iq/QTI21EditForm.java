@@ -264,7 +264,7 @@ public class QTI21EditForm extends FormBasicController {
 				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_START_TEST_DATE));
 		testStartDateEl.setLabel("qti.form.date.start", null);
 		testStartDateEl.setElementCssClass("o_qti_21_datetest_start");
-		testStartDateEl.addActionListener(FormEvent.ONCHANGE);
+		testStartDateEl.addActionListener(FormEvent.ONCHANGE, true);
 		testStartDateEl.setMandatory(true);
 		formLayout.add(testStartDateEl);
 	
