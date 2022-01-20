@@ -29,6 +29,7 @@ With regard to licensing and copyright please refer to the file [LICENSE](LICENS
 ## Ressources 
 
 * [Installation](https://www.openolat.com/fileadmin/adminwiki/_START_.html)
+* [Installation and Deployment Version 14.x](Deployment.md)
 * [About OpenOlat](https://www.openolat.com)
 * [Mailing list](https://groups.google.com/forum/#!forum/openolat)
 * [Issue management in Jira](https://jira.openolat.org/)
