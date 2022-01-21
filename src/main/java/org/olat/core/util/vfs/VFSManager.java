@@ -226,8 +226,14 @@ public class VFSManager {
 	public static VFSContainer resolveOrCreateContainerFromPath(VFSContainer baseContainer, String relContainerPath) {		
 		VFSContainer resultContainer = baseContainer;
 		if (!VFSConstants.YES.equals(baseContainer.canWrite())) {
-			log.error("Could not create relPath::" + relContainerPath + ", base container::" + getRealPath(baseContainer) + " not writable");
-			resultContainer = null;
+			VFSItem resolvedPath = baseContainer.resolve(relContainerPath.trim());
+			if(resolvedPath instanceof VFSContainer) {
+				resultContainer = (VFSContainer)resolvedPath;
+			} else {
+				log.error("Could not create relPath::{}, base container::{} not writable",
+						relContainerPath, getRealPath(baseContainer));
+				resultContainer = null;
+			}
 		} else if (StringHelper.containsNonWhitespace(relContainerPath)){
 			// Try to resolve given rel path from current container
 			VFSItem resolvedPath = baseContainer.resolve(relContainerPath.trim());
@@ -241,7 +247,8 @@ public class VFSManager {
 						if (resolvedPath == null) {
 							resultContainer = resultContainer.createChildContainer(segment);
 							if (resultContainer == null) {
-								log.error("Could not create container with name::" + segment + " in relPath::" + relContainerPath + " in base container::" + getRealPath(baseContainer));
+								log.error("Could not create container with name::{} in relPath::{} in base container::{}",
+										segment, relContainerPath, getRealPath(baseContainer));
 								break;
 							}						
 						} else {
@@ -249,7 +256,8 @@ public class VFSManager {
 								resultContainer = (VFSContainer) resolvedPath;							
 							} else {
 								resultContainer = null;
-								log.error("Could not create container with name::" + segment + " in relPath::" + relContainerPath + ", a file with this name exists (but not a directory) in base container::" + getRealPath(baseContainer));
+								log.error("Could not create container with name::{} in relPath::{}, a file with this name exists (but not a directory) in base container::{}",
+										segment, relContainerPath, getRealPath(baseContainer));
 								break;
 							}
 						}
@@ -261,7 +269,8 @@ public class VFSManager {
 					resultContainer = (VFSContainer) resolvedPath;
 				} else {
 					resultContainer = null;
-					log.error("Could not create relPath::" + relContainerPath + ", a file with this name exists (but not a directory) in base container::" + getRealPath(baseContainer));
+					log.error("Could not create relPath::{}, a file with this name exists (but not a directory) in base container::{}",
+							relContainerPath, getRealPath(baseContainer));
 				}
 				
 			}
