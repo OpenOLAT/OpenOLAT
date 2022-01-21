@@ -373,6 +373,10 @@ public abstract class AssessmentItemBuilder {
 		outcomeDeclarations.clear();
 		
 		ResponseProcessing responseProcessing = assessmentItem.getResponseProcessing();
+		if(responseProcessing == null) {
+			responseProcessing = new ResponseProcessing(assessmentItem);
+			assessmentItem.setResponseProcessing(responseProcessing);
+		}
 		List<ResponseRule> responseRules = responseProcessing.getResponseRules();
 		responseRules.clear();
 		
