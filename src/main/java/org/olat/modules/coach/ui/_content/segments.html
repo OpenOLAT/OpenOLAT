@@ -1,4 +1,8 @@
 $r.render("segments")
 <div class="o_segments_content clearfix">
+#if($r.exists("segmentCmp"))
 	$r.render("segmentCmp")
+#else
+	$r.render("emptyStateCmp")
+#end
 </div>
