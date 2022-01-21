@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
@@ -94,6 +95,9 @@ public class OrdersOverviewController extends BasicController implements Activat
 		if(gradningSec.canGrade() && !coachingSec.isCoach()) {
 			doOpenGradingAssignments(ureq);
 			segmentView.select(gradingAssignmentsLink);
+		}
+		if (mainVC.contextGet("segmentCmp") == null) {
+			EmptyStateFactory.create("emptyStateCmp", mainVC, this);
 		}
 		
 		putInitialPanel(mainVC);
