@@ -74,6 +74,7 @@
 		<io.undertow>2.2.14.Final</io.undertow>
 		<jackson.version>2.13.1</jackson.version>
 		<org.mysql.version>8.0.28</org.mysql.version>
+		<swagger.ui.version>4.2.1</swagger.ui.version>
 		<org.postgresql.version>42.3.1</org.postgresql.version>
 		<org.infinispan.version>13.0.5.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
@@ -448,7 +449,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>4.2.1</version>
+				    <version>${swagger.ui.version}</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -642,7 +643,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.36.2</version>
+				    <version>${swagger.ui.version}</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
