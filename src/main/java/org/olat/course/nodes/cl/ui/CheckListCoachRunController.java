@@ -154,7 +154,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		removeAsListenerAndDispose(previewCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PREVIEW), null);
-		previewCtrl = new CheckListRunController(ureq, swControl, userCourseEnv, ores, courseNode);
+		previewCtrl = new CheckListRunController(ureq, swControl, userCourseEnv, ores, courseNode, true);
 		listenTo(previewCtrl);
 		mainVC.put("segmentCmp", previewCtrl.getInitialComponent());
 	}

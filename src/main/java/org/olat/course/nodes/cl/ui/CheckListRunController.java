@@ -86,7 +86,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CheckListRunController extends FormBasicController implements ControllerEventListener, Activateable2 {
 	
 	private final Date dueDate;
-	private final boolean withScore, withPassed;
+	private final boolean withScore;
+	private final boolean withPassed;
+	private final boolean preview;
 	private final Boolean closeAfterDueDate;
 	private final CheckboxList checkboxList;
 	
@@ -110,9 +112,10 @@ public class CheckListRunController extends FormBasicController implements Contr
 	 * @param courseNode
 	 */
 	public CheckListRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			OLATResourceable courseOres, CheckListCourseNode courseNode) {
+			OLATResourceable courseOres, CheckListCourseNode courseNode, boolean preview) {
 		super(ureq, wControl, "run", Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
+		this.preview = preview;
 		this.courseNode = courseNode;
 		this.courseOres = courseOres;
 		this.userCourseEnv = userCourseEnv;
@@ -157,14 +160,19 @@ public class CheckListRunController extends FormBasicController implements Contr
 			
 			if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(),
-						userCourseEnv, courseNode, this.mainForm);
+						userCourseEnv, courseNode, mainForm);
 				if (highScoreCtr.isViewHighscore()) {
 					Component highScoreComponent = highScoreCtr.getInitialComponent();
 					layoutCont.put("highScore", highScoreComponent);							
 				}
 			}
 			
-			List<DBCheck> checks = checkboxManager.loadCheck(getIdentity(), courseOres, courseNode.getIdent());
+			List<DBCheck> checks;
+			if(preview) {
+				checks = new ArrayList<>();
+			} else {
+				checks = checkboxManager.loadCheck(getIdentity(), courseOres, courseNode.getIdent());
+			}
 			Map<String, DBCheck> uuidToCheckMap = new HashMap<>();
 			for(DBCheck check:checks) {
 				uuidToCheckMap.put(check.getCheckbox().getCheckboxId(), check);
@@ -206,7 +214,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 	
 	private void exposeUserDataToVC(UserRequest ureq, FormLayoutContainer layoutCont) {
 		AssessmentEntry scoreEval = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-		if(scoreEval == null) {
+		if(scoreEval == null || preview) {
 			layoutCont.contextPut("score", null);
 			layoutCont.contextPut("hasPassedValue", Boolean.FALSE);
 			layoutCont.contextPut("passed", null);
@@ -240,7 +248,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-		String userLog = am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
+		String userLog = preview ? "" : am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
 		layoutCont.contextPut("log", StringHelper.escapeHtml(userLog));
 	}
 	
@@ -311,6 +319,13 @@ public class CheckListRunController extends FormBasicController implements Contr
 	}
 	
 	private boolean doCheck(UserRequest ureq, CheckboxWrapper wrapper, boolean checked) {
+		if(preview) {
+			return false;
+		}
+		return doPersistCheck(ureq, wrapper, checked);
+	}
+	
+	private boolean doPersistCheck(UserRequest ureq, CheckboxWrapper wrapper, boolean checked) {
 		DBCheckbox theOne;
 		if(wrapper.getDbCheckbox() == null) {
 			String uuid = wrapper.getCheckbox().getCheckboxId();

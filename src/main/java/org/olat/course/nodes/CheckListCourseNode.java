@@ -151,7 +151,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 		} else if(userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
 			ctrl = new CheckListCoachRunController(ureq, wControl, userCourseEnv, ores, this);
 		} else {
-			ctrl = new CheckListRunController(ureq, wControl, userCourseEnv, ores, this);
+			ctrl = new CheckListRunController(ureq, wControl, userCourseEnv, ores, this, false);
 		}
 
 		Controller cont = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, userCourseEnv, this, ICON_CSS_CLASS);
