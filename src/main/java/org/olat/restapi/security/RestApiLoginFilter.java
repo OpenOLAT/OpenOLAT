@@ -20,8 +20,11 @@
 package org.olat.restapi.security;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -37,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
@@ -119,7 +123,9 @@ public class RestApiLoginFilter implements Filter {
 				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(httpRequest);
 
 				UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(httpRequest);
-				if(uress != null && uress.isAuthenticated()) {
+				if("/restapi/api-docs/".equals(httpRequest.getRequestURI())) {
+					sendSwaggerUI(httpResponse);
+				} else if(uress != null && uress.isAuthenticated()) {
 					//use the available session
 					followSession(httpRequest, httpResponse, chain);
 				} else {
@@ -157,6 +163,29 @@ public class RestApiLoginFilter implements Filter {
 			}
 		} else {
 			throw new ServletException("Only accept HTTP Request");
+		}
+	}
+	
+	/**
+	 * Send a customized version of the Swagger UI with the URL of
+	 * the Open API JSON description of the REST API.
+	 * 
+	 * @param response The HTTP servlet response
+	 */
+	private void sendSwaggerUI(HttpServletResponse response) {
+		try(InputStream in = RestApiLoginFilter.class.getResourceAsStream("_content/swagger_index.html");
+				OutputStream out=response.getOutputStream()) {
+			
+			String index = IOUtils.toString(in, StandardCharsets.UTF_8);
+			String openApiUrl = Settings.createServerURI() + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
+			index = index.replace("${openolat.openapi.url}", openApiUrl);
+			byte[] indexBytes = index.getBytes(StandardCharsets.UTF_8);
+
+			response.setContentType("text/html;charset=utf-8");
+			response.setContentLengthLong(indexBytes.length);
+			out.write(indexBytes);
+		} catch(Exception e) {
+			log.error("", e);
 		}
 	}
 
