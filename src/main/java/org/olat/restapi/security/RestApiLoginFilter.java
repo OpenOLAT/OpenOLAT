@@ -123,7 +123,7 @@ public class RestApiLoginFilter implements Filter {
 				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(httpRequest);
 
 				UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(httpRequest);
-				if("/restapi/api-docs/".equals(httpRequest.getRequestURI())) {
+				if(isApiDocIndex(httpRequest)) {
 					sendSwaggerUI(httpResponse);
 				} else if(uress != null && uress.isAuthenticated()) {
 					//use the available session
@@ -177,7 +177,7 @@ public class RestApiLoginFilter implements Filter {
 				OutputStream out=response.getOutputStream()) {
 			
 			String index = IOUtils.toString(in, StandardCharsets.UTF_8);
-			String openApiUrl = Settings.createServerURI() + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
+			String openApiUrl = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
 			index = index.replace("${openolat.openapi.url}", openApiUrl);
 			byte[] indexBytes = index.getBytes(StandardCharsets.UTF_8);
 
@@ -455,6 +455,11 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return requestURI;
 	}
+	
+	private boolean isApiDocIndex(HttpServletRequest request) {
+		String index = WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT + "/api-docs/";
+		return index.equalsIgnoreCase(request.getRequestURI());
+	}
 
 	private String getLoginUrl() {
 		if(LOGIN_URL == null && isWebappHelperInitiated()) {
@@ -463,6 +468,8 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return LOGIN_URL;
 	}
+	
+
 
 	private List<String> getAlwaysEnabledURIs() {
 		if(alwaysEnabledUrls == null && isWebappHelperInitiated() ) {
