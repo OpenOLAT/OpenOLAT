@@ -31,6 +31,8 @@ public interface PageEditorProvider extends PageProvider {
 	
 	public List<PageElementHandler> getCreateHandlers();
 	
+	public int indexOf(PageElement element);
+	
 	public PageElement appendPageElement(PageElement element);
 	
 	public PageElement appendPageElementAt(PageElement element, int index);

@@ -269,6 +269,12 @@ public class EvaluationFormEditorController extends BasicController implements T
 		}
 
 		@Override
+		public int indexOf(PageElement element) {
+			List<? extends PageElement> elements = form.getElements();
+			return elements.indexOf(element);
+		}
+
+		@Override
 		public PageElement appendPageElement(PageElement element) {
 			if(element instanceof AbstractElement) {
 				form.addElement((AbstractElement)element);
