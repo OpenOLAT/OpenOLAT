@@ -265,10 +265,10 @@ public class CopyServiceImpl implements CopyService {
 		copyAssessmentModes(context, target);
 		
 		// Copy documents		
-		copyDocuments(context, sourceCourse, targetCourse);
+		copyDocuments(context, targetCourse);
 		
 		// Copy coach documents
-		copyCoachDocuments(context, sourceCourse, targetCourse);
+		copyCoachDocuments(context, targetCourse);
 		
 		// Close edit session
 		CourseFactory.setCourseConfig(targetCourseOres.getResourceableId(), targetCourseConfig);
@@ -755,31 +755,45 @@ public class CopyServiceImpl implements CopyService {
 		}
 	}
 	
-	private void copyDocuments(CopyCourseContext context, ICourse sourceCourse, ICourse targetCourse) {
-		if (context.getDocumentsCopyType() == null || context.getDocumentsCopyType().equals(CopyType.ignore)) {
+	private void copyDocuments(CopyCourseContext context, ICourse targetCourse) {
+		if (context.getDocumentsCopyType() == null || context.getDocumentsCopyType().equals(CopyType.copy)) {
+			// This is done in the CourseFactory.copyCourse
+			// If the folder should be ignored, they need to be deleted in this step because they were already copied
 			return;
 		}
 		
-		CourseConfig cc = sourceCourse.getCourseEnvironment().getCourseConfig();
+		CourseConfig cc = targetCourse.getCourseEnvironment().getCourseConfig();
 		
 		if(cc.isDocumentsEnabled() && !StringHelper.containsNonWhitespace(cc.getDocumentsPath())) {
-			VFSContainer sourceContainer = CourseDocumentsFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
 			VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
-			VFSManager.copyContent(sourceContainer, targetContainer);
+			
+			if (targetContainer != null) {
+				targetContainer.delete();
+			}
+			
+			cc.setDocumentsEnabled(false);
+			cc.setDocumentPath(null);
 		}
 	}
 	
-	private void copyCoachDocuments(CopyCourseContext context, ICourse sourceCourse, ICourse targetCourse) {
-		if (context.getCoachDocumentsCopyType() == null || context.getCoachDocumentsCopyType().equals(CopyType.ignore)) {
+	private void copyCoachDocuments(CopyCourseContext context, ICourse targetCourse) {
+		if (context.getCoachDocumentsCopyType() == null || context.getCoachDocumentsCopyType().equals(CopyType.copy)) {
+			// This is done in the CourseFactory.copyCourse
+			// If the folder should be ignored, they need to be deleted in this step because they were already copied
 			return;
 		}
 		
-		CourseConfig cc = sourceCourse.getCourseEnvironment().getCourseConfig();
+		CourseConfig cc = targetCourse.getCourseEnvironment().getCourseConfig();
 		
 		if(cc.isCoachFolderEnabled() && !StringHelper.containsNonWhitespace(cc.getCoachFolderPath())) {
-			VFSContainer sourceContainer = CoachFolderFactory.getFileContainer(sourceCourse.getCourseBaseContainer());
-			VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
-			VFSManager.copyContent(sourceContainer, targetContainer);
+			VFSContainer sourceContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+			
+			if (sourceContainer != null) {
+				sourceContainer.delete();				
+			}
+			
+			cc.setCoachFolderEnabled(false);
+			cc.setCoachFolderPath(null);
 		}
 	}
 		
