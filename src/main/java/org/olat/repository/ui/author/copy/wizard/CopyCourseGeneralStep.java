@@ -98,6 +98,8 @@ public class CopyCourseGeneralStep extends BasicStep {
 			put("ignore.later", "options.configure.later");
 			put("copy.folder", "options.copy.content");
 			put("ignore.folder", "options.ignore.content");
+			put("copy.task", "options.copy.assignment.solution");
+			put("ignore.task", "options.ignore.assignment.solution");
 		}};
 		
 		private TextElement externalRefEl;
@@ -290,7 +292,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			}
 			
 			if (context.hasTask()) {
-				helpText += translateHelpTextItem("tasks", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getTaskCopyType().name()));
+				helpText += translateHelpTextItem("tasks", COPY_TYPE_TRANSLATION_KEYS_MAP.get(context.getTaskCopyType().name() + ".task"));
 			}
 			
 			if (context.hasFolder()) {
