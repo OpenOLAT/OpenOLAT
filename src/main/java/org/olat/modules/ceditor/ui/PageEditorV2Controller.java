@@ -379,13 +379,19 @@ public class PageEditorV2Controller extends BasicController {
 			if(parentLineIndex == 0 && ancestors.size() >= 2) {
 				Component parent = ancestors.get(parentLineIndex + 1);
 				if(parent == editorCmp) {
-					int index = editorCmp.indexOfRootComponent(referenceFragment);
-					if(target == PageElementTarget.below) {
-						index = index + 1;
+					// components are hierarchically build, elements are flat
+					int indexCmp = editorCmp.indexOfRootComponent(referenceFragment);
+					int indexEl = provider.indexOf(referenceFragment.getElement());
+					if(indexEl < 0) {
+						indexEl = indexCmp;
 					}
-					element = provider.appendPageElementAt(element, index);
+					if(target == PageElementTarget.below) {
+						indexCmp = indexCmp + 1;
+						indexEl = indexEl + 1;
+					}
+					element = provider.appendPageElementAt(element, indexEl);
 					fragment = createFragmentComponent(ureq, element);
-					editorCmp.addRootComponent(index, fragment);	
+					editorCmp.addRootComponent(indexCmp, fragment);	
 				} else if(parent instanceof ContentEditorContainerComponent) {
 					ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
 					element = provider.appendPageElement(element);
