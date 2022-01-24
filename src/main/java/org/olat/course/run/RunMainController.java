@@ -221,25 +221,27 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		String treeCssClass = nodeAccessService.getCourseTreeCssClass(course.getCourseConfig());
 		luTree.setElementCssClass("o_course_menu " + treeCssClass);
 		contentP = new Panel("building_block_content");
-
-		// Legacy pagination in header
-		topPaginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
-		if (topPaginationCtrl != null) {
-			listenTo(topPaginationCtrl);
-			// Regulat pagination at bottom of course content
-			bottomPaginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
-			if (bottomPaginationCtrl != null) {
-				bottomPaginationCtrl.enableLargeStyleRendering();
-				listenTo(bottomPaginationCtrl);
-			}
-		}
-
+		
 		// build up the running structure for this user
 		// get all group memberships for this course
 		uce = loadUserCourseEnvironment(ureq, reSecurity);
-
+		
 		// build score now
 		uce.getScoreAccounting().evaluateAll(true);
+		
+		// Legacy pagination in header
+		topPaginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
+		if (topPaginationCtrl != null) {
+			topPaginationCtrl.setConfirmVisible(uce.isCourseReadOnly());
+			listenTo(topPaginationCtrl);
+			// Regular pagination at bottom of course content
+			bottomPaginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
+			if (bottomPaginationCtrl != null) {
+				bottomPaginationCtrl.enableLargeStyleRendering();
+				bottomPaginationCtrl.setConfirmVisible(uce.isCourseReadOnly());
+				listenTo(bottomPaginationCtrl);
+			}
+		}
 		
 		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
 			Status assessmentStatus = assessmentMode.getStatus();

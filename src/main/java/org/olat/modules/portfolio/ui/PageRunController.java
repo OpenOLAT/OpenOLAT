@@ -885,6 +885,12 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		@Override
+		public int indexOf(PageElement element) {
+			List<PagePart> elements = portfolioService.getPageParts(page);
+			return elements.indexOf(element);
+		}
+
+		@Override
 		public PageElement appendPageElement(PageElement element) {
 			PagePart part = null;
 			if(element instanceof PagePart) {
