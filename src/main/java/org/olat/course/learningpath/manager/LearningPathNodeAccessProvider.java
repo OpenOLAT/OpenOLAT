@@ -147,7 +147,8 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnNodeVisited();
 		boolean participant = userCourseEnv.isParticipant();
-		if (participant && result.isEnabled()) {
+		boolean readOnly = userCourseEnv.isCourseReadOnly();
+		if (participant && !readOnly && result.isEnabled()) {
 			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnv, result.isDone(),
 					result.isFullyAssessed());
 			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnv,
