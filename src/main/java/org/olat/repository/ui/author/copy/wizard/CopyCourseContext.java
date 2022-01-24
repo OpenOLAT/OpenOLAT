@@ -283,7 +283,7 @@ public class CopyCourseContext {
 	}
 	
 	public boolean hasNodeSpecificSettings() {
-		return hasFolder || hasWiki || hasBlog || hasTask;
+		return hasFolder || hasWiki || hasBlog || hasTask || hasTest;
 	}
 	
 	public RepositoryEntryLifecycle getRepositoryLifeCycle() {
