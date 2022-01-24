@@ -182,7 +182,7 @@ public class FormConfigController extends FormBasicController {
 		if (source == chooseLink || source == replaceLink) {
 			doChooseEvaluationForm(ureq);
 		} else if (source == editLink) {
-			doEditevaluationForm(ureq);
+			doEditEvaluationForm(ureq);
 		} else if (source == evaluationFormLink) {
 			doPreviewEvaluationForm(ureq);
 		} else if(relativeDatesEl == source) {
@@ -233,12 +233,11 @@ public class FormConfigController extends FormBasicController {
 		}
 	}
 
-	private void doEditevaluationForm(UserRequest ureq) {
-		RepositoryEntry re = survey.getFormEntry();
-		if (re == null) {
+	private void doEditEvaluationForm(UserRequest ureq) {
+		if (formEntry == null) {
 			showError("error.repo.entry.missing");
 		} else {
-			String bPath = "[RepositoryEntry:" + re.getKey() + "][Editor:0]";
+			String bPath = "[RepositoryEntry:" + formEntry.getKey() + "][Editor:0]";
 			NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
 		}
 	}
