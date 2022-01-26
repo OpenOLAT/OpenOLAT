@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.3.2'
+				version : '1.3.3'
 			};
 		},
 
@@ -38,7 +38,9 @@
 			var $ = ed.$, selection = ed.selection;
 			var cachedTrans, cachedCoreTrans;
 			var cachedHelp;
-			var lastSelectedGap, lastSelectedHottext;
+			var lastSelectedGap;
+			var lastSelectedHottext;
+			var lastResponseIdentifierCounter = 0;
 			
 			// Load the OLAT translator.
 			function translator() {	
@@ -72,6 +74,7 @@
 
 			function showDialog(e, gapType) {
 				var ffxhrevent = ed.getParam("ffxhrevent");
+				
 				if(typeof lastSelectedGap != 'undefined') {
 					var textEntryEl = jQuery(lastSelectedGap).closest("span[data-qti='textentryinteraction']");
 					var responseIdentifier = textEntryEl.attr('data-qti-response-identifier');
@@ -92,8 +95,16 @@
 							}	
 						}
 				    });
+				    
+				    var nextCounter = (counter + 1);
+				    if(nextCounter < lastResponseIdentifierCounter) {
+				    	nextCounter = lastResponseIdentifierCounter + 1;
+				    	lastResponseIdentifierCounter = nextCounter;
+				    } else if(nextCounter > lastResponseIdentifierCounter) {
+						lastResponseIdentifierCounter = nextCounter;
+				    }
 					
-					var responseIdentifier = "RESPONSE_" + (counter + 1);
+					var responseIdentifier = "RESPONSE_" + nextCounter;
 					if(typeof newSelectedText === "undefined" || newSelectedText.length == 0) {
 						if(gapType === "float") {
 							newSelectedText = "42.0";
@@ -112,10 +123,12 @@
 				ed.setDirty(true);
 			}
 			
+			function s4() {
+				return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+			}
+			
 			function guid() {
-				function s4() {
-				    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-				}
+				
 				return s4() + s4() + s4() + s4() + s4() + s4() + s4();
 			}
 			
@@ -498,6 +511,14 @@
 						node = nodes[i];
 						if (node.name == 'textentryinteraction') {
 							var responseIdentifier = node.attr('responseidentifier');
+							
+							if(responseIdentifier.lastIndexOf("RESPONSE_", 0) == 0) {
+								var id = parseInt(responseIdentifier.substring(9, responseIdentifier.length));
+								if(id > lastResponseIdentifierCounter) {
+									lastResponseIdentifierCounter = id;
+								}
+							}
+	
 							var gapType = node.attr('openolattype');
 							var solution = node.attr('data-qti-solution');
 							if(typeof solution === "undefined") {
