@@ -72,10 +72,6 @@ public class CoursePaginationController extends FormBasicController {
 		nextButton.setAriaLabel(translate("command.next"));
 	}
 	
-	public void setConfirmVisible(boolean visible) {
-		confirmButton.setVisible(visible);
-	}
-	
 	public void enableLargeStyleRendering() {
 		this.largeStyle =  true;		
 		

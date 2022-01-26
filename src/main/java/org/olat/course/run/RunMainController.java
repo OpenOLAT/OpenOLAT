@@ -232,13 +232,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		// Legacy pagination in header
 		topPaginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
 		if (topPaginationCtrl != null) {
-			topPaginationCtrl.setConfirmVisible(uce.isCourseReadOnly());
 			listenTo(topPaginationCtrl);
 			// Regular pagination at bottom of course content
 			bottomPaginationCtrl = nodeAccessService.getCoursePaginationController(ureq, getWindowControl(), NodeAccessType.of(course));
 			if (bottomPaginationCtrl != null) {
 				bottomPaginationCtrl.enableLargeStyleRendering();
-				bottomPaginationCtrl.setConfirmVisible(uce.isCourseReadOnly());
 				listenTo(bottomPaginationCtrl);
 			}
 		}
@@ -682,7 +680,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				if (treeNode != null) {
 					boolean confirmationEnabled = nodeAccessService.isAssessmentConfirmationEnabled(calledCourseNode, getUce());
 					AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(calledCourseNode);
-					confirmVisible = confirmationEnabled && treeNode.isAccessible();
+					confirmVisible = confirmationEnabled && !uce.isCourseReadOnly() && treeNode.isAccessible();
 					showDone = !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
 				}
 			}
