@@ -443,6 +443,43 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		Assert.assertEquals(defGroup, groups.get(0));
 	}
 	
+	/**
+	 * Check if setting several times the group leads to problems.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void addRepositoryEntryDefaultGroupToLectureBlockMultipleTimes()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1-multi");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("participants").path("repositoryentry").build();
+		
+		for(int i=0; i<5; i++) {
+			HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+			HttpResponse response = conn.execute(method);
+			// check the response
+			Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+			EntityUtils.consume(response.getEntity());
+		}
+		
+		//check the database
+		List<Group> groups = lectureService.getLectureBlockToGroups(block);
+		Assert.assertNotNull(groups);
+		Assert.assertEquals(1, groups.size());
+		Group defGroup = repositoryService.getDefaultGroup(entry);
+		Assert.assertEquals(defGroup, groups.get(0));
+	}
+	
 	@Test
 	public void removeRepositoryEntryDefaultGroupToLectureBlock()
 	throws IOException, URISyntaxException {
