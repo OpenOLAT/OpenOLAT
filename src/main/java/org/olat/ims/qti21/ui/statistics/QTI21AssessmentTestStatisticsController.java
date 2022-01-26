@@ -74,7 +74,8 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
-	private final Link printLink, downloadRawLink;
+	private final Link printLink;
+	private final Link downloadRawLink;
 	
 	private UserFilterController filterCtrl;
 	

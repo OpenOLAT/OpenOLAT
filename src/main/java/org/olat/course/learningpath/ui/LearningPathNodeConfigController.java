@@ -140,7 +140,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		this.course = CourseFactory.loadCourse(courseEntry);
 		this.courseNode = courseNode;
 		CourseEditorTreeNode editorTreeNode = course.getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
-		this.learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
+		CourseEditorTreeNode parent = editorTreeNode != null? (CourseEditorTreeNode)editorTreeNode.getParent(): null;
+		this.learningPathConfigs = learningPathService.getConfigs(courseNode, parent);
 		this.editConfigs = editConfigs;
 		this.relativeToDates = dueDateService.getCourseRelativeToDateTypes(courseEntry);
 		this.selectedObligation = learningPathConfigs.getObligation() != null
