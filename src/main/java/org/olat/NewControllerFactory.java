@@ -248,7 +248,7 @@ public class NewControllerFactory {
 	
 					Controller launchC = typeHandler.createController(ces, ureq, bwControl);
 					if (launchC != null) {
-						dt = dts.createDTab(context.getTabResource(), re, launchC, context.getName());
+						dt = dts.createDTab(ureq, context.getTabResource(), re, launchC, context.getName());
 						if (dt == null) {
 							launched = false;
 						} else if(dts.addDTab(ureq, dt)) {

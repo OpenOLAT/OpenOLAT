@@ -555,6 +555,7 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
 	org.olat.core.util.DateUtilsTest.class,
 	org.olat.core.util.tree.TreeHelperTest.class,
+	org.olat.core.util.resource.OresHelperTest.class,
 	org.olat.course.learningpath.evaluation.ConfigEndDateEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.ConfigStartDateEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.DefaultLearningPathStatusEvaluatorTest.class,

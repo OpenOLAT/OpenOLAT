@@ -217,14 +217,8 @@ public class OresHelper {
 		String aType = a.getResourceableTypeName();
 		Long bKey = b.getResourceableId();
 		String bType = b.getResourceableTypeName();
-		
-		boolean same = ( bType.equals(aType) &&
-						( 
-							(aKey != null && aKey.equals(bKey)) 
-							|| (aKey == null && bKey == null)
-						)
-					);
-		return same;
+		return bType != null && bType.equals(aType)
+				&& ((aKey != null && aKey.equals(bKey)) || (aKey == null && bKey == null));
 	}
 
 	public static OLATResourceable createOLATResourceableTypeWithoutCheck(String type) {
