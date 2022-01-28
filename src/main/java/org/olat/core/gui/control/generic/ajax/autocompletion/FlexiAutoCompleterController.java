@@ -42,6 +42,7 @@ import org.olat.core.gui.components.htmlheader.jscss.CustomJSFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.JSCommand;
 
 /**
  * 
@@ -172,6 +173,26 @@ public class FlexiAutoCompleterController extends FormBasicController {
 		String fetchUri = registerMapper(ureq, mapper);
 		layoutCont.contextPut("mapuri", fetchUri + "/autocomplete.json");
 	}
+	
+	/**
+	 * Set a message that is displayed as a grayed-out message in the input field
+	 * when the field is empty.
+	 * 
+	 * @param placeholder
+	 */
+	public void setPlaceholderMessage(String placeholder) {
+		this.flc.contextPut("placeholder", placeholder);
+	}
+	
+	/**
+	 * Delete the current value in the input field and replace it with an empty
+	 * string
+	 */
+	public void resetAutocompleter() {
+		JSCommand resetCmd = new JSCommand("jQuery('#o_so_autocomplete_input" + this.flc.getFormDispatchId()  +"').val('');");
+		getWindowControl().getWindowBackOffice().sendCommandTo(resetCmd);
+	}
+
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
