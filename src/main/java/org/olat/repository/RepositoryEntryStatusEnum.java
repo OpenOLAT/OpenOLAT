@@ -114,6 +114,13 @@ public enum RepositoryEntryStatusEnum {
 		};
 	}
 	
+	public static RepositoryEntryStatusEnum[] deleted() {
+		return new RepositoryEntryStatusEnum[] {
+				RepositoryEntryStatusEnum.deleted,
+				RepositoryEntryStatusEnum.trash
+		};
+	}
+	
 	public static boolean isInArray(RepositoryEntryStatusEnum val, RepositoryEntryStatusEnum[] array) {
 		for(int i=array.length; i-->0; ) {
 			if(val == array[i]) {
