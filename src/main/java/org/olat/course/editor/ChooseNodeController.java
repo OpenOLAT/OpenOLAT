@@ -41,7 +41,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.CourseNodeGroup;
-import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -134,31 +133,7 @@ public class ChooseNodeController extends BasicController {
 	
 	private void doCreateNode(String type) {
 		ICourse course = CourseFactory.getCourseEditSession(courseOres.getResourceableId());
-		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
-		CourseEditorTreeNode selectedNode = null;
-		int pos = 0;
-		if(editorTreeModel.getRootNode().equals(currentNode)) {
-			//root, add as last child
-			pos = currentNode.getChildCount();
-			selectedNode = currentNode;
-		} else {
-			selectedNode = (CourseEditorTreeNode)currentNode.getParent();
-			pos = currentNode.getPosition() + 1;
-		}
-		
-		// user chose a position to insert a new node
-		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
-		createdNode = newNodeConfig.getInstance();
-		createdNode.updateModuleConfigDefaults(true, selectedNode, NodeAccessType.of(course));
-
-		// Set some default values
-		String title = newNodeConfig.getLinkText(getLocale());
-		createdNode.setLongTitle(title);
-		createdNode.setNoAccessExplanation(translate("form.noAccessExplanation.default"));
-		
-		// Add node
-		editorTreeModel.insertCourseNodeAt(createdNode, selectedNode.getCourseNode(), pos);
-		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		createdNode = CourseEditorHelper.createAndInsertNewNode(type, course, currentNode, getTranslator());
 	}
 	
 	public static class CourseNodeTypesGroup {

@@ -21,11 +21,19 @@ package org.olat.course.editor;
 
 import java.util.Locale;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.course.tree.CourseEditorTreeNode;
 
 public class CourseEditorHelper {
 	
@@ -78,4 +86,44 @@ public class CourseEditorHelper {
 	}
 
 
+	/**
+	 * Helper method to create a new course node and attach it to the editor model
+	 * 
+	 * @param newNodeType The type of the new course node
+	 * @param course      The current course
+	 * @param currentNode The currently selected node in the editor. The newly
+	 *                    created node will be a sibling of this node
+	 * @param translator
+	 * @return The new created course node
+	 */
+	protected static CourseNode createAndInsertNewNode(String newNodeType, ICourse course, CourseEditorTreeNode currentNode, Translator translator) {
+		CourseEditorTreeModel editorTreeModel = course.getEditorTreeModel();
+		CourseEditorTreeNode selectedNode = null;
+		int pos = 0;
+		if(editorTreeModel.getRootNode().equals(currentNode)) {
+			//root, add as last child
+			pos = currentNode.getChildCount();
+			selectedNode = currentNode;
+		} else {
+			selectedNode = (CourseEditorTreeNode)currentNode.getParent();
+			pos = currentNode.getPosition() + 1;
+		}
+		
+		// user chose a position to insert a new node
+		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(newNodeType);
+		CourseNode createdNode = newNodeConfig.getInstance();
+		createdNode.updateModuleConfigDefaults(true, selectedNode, NodeAccessType.of(course));
+
+		// Set some default values
+		String title = newNodeConfig.getLinkText(translator.getLocale());
+		createdNode.setLongTitle(title);
+		createdNode.setNoAccessExplanation(translator.translate("form.noAccessExplanation.default"));
+		
+		// Add node
+		editorTreeModel.insertCourseNodeAt(createdNode, selectedNode.getCourseNode(), pos);
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		return createdNode;
+	}
+
+	
 }

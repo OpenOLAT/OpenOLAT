@@ -134,4 +134,10 @@
 	}
 }
 
+/* Quick-add input field only on large screen */
+@media (max-width: $screen-md-max) {
+	.o_quick_add {
+		display: none !important;	
+	}
+}
 

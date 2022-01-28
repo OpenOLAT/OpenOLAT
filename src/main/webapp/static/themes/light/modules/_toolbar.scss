@@ -178,6 +178,37 @@
 			vertical-align: top;
 			color: $o-chelp-color;
 		}
+		
+		/* Auto completer element: small by default and enlarged when in focus */
+		.o_form_auto_completer {
+			.form-control {
+				width: 100px;
+				padding: 3px 6px;			
+				position: relative;
+				top: -0.5em;		
+				/* make it lager when in focus */
+				 -webkit-transition: all 0.7s ease 0s;
+				 -moz-transition: all 0.7s ease 0s;
+				 -o-transition: all 0.7s ease 0s;
+				 transition: all 0.7s ease 0s;
+				&:focus {
+					width: 200px;
+				}
+			}
+			.tt-menu {
+				width: 200px;
+				text-align: left;
+				margin-top: -6px;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.form-control, .tt-suggestion {
+				font-size: $font-size-small;
+				line-height: $line-height-small;
+			}			
+		}
 	}
 	
 	.o_tool_next, .o_tool_previous {

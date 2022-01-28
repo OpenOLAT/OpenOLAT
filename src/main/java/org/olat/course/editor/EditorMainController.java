@@ -57,6 +57,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
+import org.olat.core.gui.control.generic.ajax.autocompletion.AutoCompleterController;
+import org.olat.core.gui.control.generic.ajax.autocompletion.EntriesChosenEvent;
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
@@ -181,6 +185,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private QuickPublishController quickPublishCtr;
 	private NodeStatusController nodeStatusCtr;
 	private StepsMainRunController importNodesCtrl;
+	private AutoCompleterController quickAddCtr;
 	
 	private LockResult lockEntry;
 	
@@ -350,6 +355,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				}
 				menuTree.setSelectedNodeId(nodeIdent);
 				updateViewForSelectedNodeId(ureq, nodeIdent);
+				
+				// quick-add feature for power-users
+				initQuickAdd(ureq, course);
 			}
 		} catch (RuntimeException e) {
 			log.warn(RELEASE_LOCK_AT_CATCH_EXCEPTION+" [in <init>]", e);		
@@ -361,11 +369,59 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	@Override
 	public void initToolbar() {
 		stackPanel.addTool(createNodeLink, Align.left);
+		stackPanel.addTool(quickAddCtr.getInitialComponent(), Align.left, false, "o_tool o_quick_add");
 		stackPanel.addTool(importNodesLink, Align.left);
 		stackPanel.addTool(statusLink, Align.right);
 		stackPanel.addTool(overviewLink, Align.right);
 		stackPanel.addTool(previewLink, Align.right);
 		stackPanel.addTool(publishLink, Align.right);
+	}
+	
+	/**
+	 * The quick-add feature is a auto-completer drop-down to add a new course
+	 * element by entering the course element name. 
+	 * 
+	 * @param ureq
+	 * @param course
+	 */
+	private void initQuickAdd(UserRequest ureq, ICourse course) {
+		CourseNodeFactory cnf = CourseNodeFactory.getInstance();
+		
+		List<CourseNodeConfiguration> courseNodeConfigs = new ArrayList<CourseNodeConfiguration>();
+		cnf.getRegisteredCourseNodeAliases().stream().forEach(e -> {
+	    	  CourseNodeConfiguration cnConfig =  cnf.getCourseNodeConfiguration(e);
+	    	  if (cnConfig.isEnabled()) {
+	    		  courseNodeConfigs.add(cnConfig);		    		  
+	    	  }		    	  	
+		});
+		// Search in all enabled course element in the users language and also in EN as
+		// a fallback
+		ListProvider listProvider = new ListProvider() {			
+			@Override
+			public void getResult(String searchValue, ListReceiver receiver) {
+				courseNodeConfigs.stream().forEach(cnConfig -> {
+					String saveSearchValue = StringHelper.escapeHtml(searchValue).toLowerCase();
+					String alias = cnConfig.getAlias();
+					String name = cnConfig.getLinkText(getLocale());						
+					String nameEN = cnConfig.getLinkText(Locale.ENGLISH);						
+					System.out.println(name);
+					if (alias.toLowerCase().contains(saveSearchValue) 
+							|| name.toLowerCase().contains(saveSearchValue)
+							|| nameEN.toLowerCase().contains(saveSearchValue)) {
+						receiver.addEntry(alias, alias, name, cnConfig.getIconCSSClass());														
+					}
+				});
+			}
+			
+			@Override
+			public int getMaxEntries() {
+				return courseNodeConfigs.size();
+			}
+		};
+		quickAddCtr = new AutoCompleterController(ureq, getWindowControl(), listProvider, translate("quickadd.notfound"), false, 10, 2, null);
+		quickAddCtr.setPlaceholderMessage(translate("quickadd.placeholder"));
+		quickAddCtr.setEmptyAsReset(true);
+		listenTo(quickAddCtr);
 	}
 
 	@Override
@@ -768,6 +824,13 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				doOpenNode(ureq, se.getCourseNode());
 				cleanUp();
 			}
+		} else if (source == quickAddCtr) {
+			if (event instanceof EntriesChosenEvent) {
+				EntriesChosenEvent ece = (EntriesChosenEvent)event;
+				String type = (ece.getEntries().size() > 0 ? ece.getEntries().get(0) : "st");
+				doQuickAdd(ureq, type);
+			}
+			
 		}
     } catch (RuntimeException e) {
 			log.warn("{} [in event(UserRequest,Controller,Event)]", RELEASE_LOCK_AT_CATCH_EXCEPTION, e);			
@@ -898,6 +961,16 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				true, translate("pbl.quick.title"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doQuickAdd(UserRequest ureq, String type) {
+		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
+		TreeNode tn = menuTree.getSelectedNode();
+		CourseEditorTreeNode cetn = tn == null ? null : cetm.getCourseEditorNodeById(tn.getIdent());
+		CourseNode newNode = CourseEditorHelper.createAndInsertNewNode(type, course, cetn, getTranslator());
+		doPostInsert(ureq, newNode);
+		showInfo("quickadd.success", newNode.getShortName());
+		quickAddCtr.resetAutocompleter();
 	}
 	
 	private void doDelete(ICourse course, String ident) {
