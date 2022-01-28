@@ -793,7 +793,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		} else if(settingsCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				//
+				refreshRepositoryEntry(repositoryService.loadByKey(re.getKey()));
 			} else if(event == Event.CLOSE_EVENT) {
 				doClose(ureq);
 			} else if(event instanceof ReloadSettingsEvent) {

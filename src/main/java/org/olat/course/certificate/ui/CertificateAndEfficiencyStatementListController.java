@@ -709,15 +709,16 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			} else {
 				if (sourceLink.getCmd().equals(CMD_INDIVIDUAL_COURSES)) {
 					activateFilter(CMD_INDIVIDUAL_COURSES);
+					loadModel();
 				} else if (sourceLink.getCmd().equals(CMD_ALL_EVIDENCE)) {
 					activateFilter(CMD_ALL_EVIDENCE);
+					loadModel();
 				} else if (sourceLink.getCmd().startsWith(CMD_CURRICULUM)) {
 					Curriculum curriculum = (Curriculum) source.getUserObject();
 					activateFilter(CMD_CURRICULUM + curriculum.getKey().toString());
 					currentCurriculum = curriculum;
-				} 
-				
-				loadModel();
+					loadModel();
+				} 				
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
