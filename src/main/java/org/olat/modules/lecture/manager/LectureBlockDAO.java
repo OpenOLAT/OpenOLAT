@@ -66,6 +66,7 @@ import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -616,6 +617,8 @@ public class LectureBlockDAO {
 		
 		if(searchParams.getEntry() != null) {
 			sb.and().append(" block.entry.key=:repoEntryKey");
+		} else {
+			sb.and().append(" entry.status not ").in(RepositoryEntryStatusEnum.deleted());
 		}
 		
 		if(searchParams.getLectureBlocks() != null && !searchParams.getLectureBlocks().isEmpty()) {
@@ -757,16 +760,17 @@ public class LectureBlockDAO {
 	}
 	
 	public List<LectureBlock> getRollCallAsTeacher(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select block from lectureblock block")
 		  .append(" inner join block.teacherGroup teacherGroup")
 		  .append(" inner join teacherGroup.members teachers")
 		  .append(" inner join fetch block.entry entry")
-		  .append(" where teachers.identity.key=:identityKey")
-		  .append(" and block.startDate<=:now and block.endDate>=:now")
-		  .append(" and block.statusString not in ('").append(LectureBlockStatus.cancelled.name()).append("','").append(LectureBlockStatus.done.name()).append("')")
-		  .append(" and block.rollCallStatusString not in ('").append(LectureRollCallStatus.closed.name()).append("','").append(LectureRollCallStatus.autoclosed.name()).append("')")
-		  .append(" and exists (select config.key from lectureentryconfig config")
+		  .where().append(" teachers.identity.key=:identityKey")
+		  .and().append(" entry.status not ").in(RepositoryEntryStatusEnum.deleted())
+		  .and().append(" block.startDate<=:now and block.endDate>=:now")
+		  .and().append(" block.statusString not in ('").append(LectureBlockStatus.cancelled.name()).append("','").append(LectureBlockStatus.done.name()).append("')")
+		  .and().append(" block.rollCallStatusString not in ('").append(LectureRollCallStatus.closed.name()).append("','").append(LectureRollCallStatus.autoclosed.name()).append("')")
+		  .and().append(" exists (select config.key from lectureentryconfig config")
 		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
 		  .append(" )");
 		
