@@ -113,6 +113,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		mode.setRepositoryEntry(entry);
 		mode.setStatus(Status.none);
 		mode.setManualBeginEnd(true);
+		mode.setSafeExamBrowserConfigDownload(true);
 		return mode;
 	}
 	
@@ -137,6 +138,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		mode.setSafeExamBrowser(seb);
 		if(seb) {
 			mode.setSafeExamBrowserKey(sebKeys);
+			mode.setSafeExamBrowserConfigDownload(true);
 		}
 		mode.setRepositoryEntry(lectureBlock.getEntry());
 		mode.setLectureBlock(lectureBlock);
@@ -170,6 +172,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		if(assessmentMode.isSafeExamBrowser()) {
 			mode.setSafeExamBrowserKey(assessmentMode.getSafeExamBrowserKey());
 			mode.setSafeExamBrowserHint(assessmentMode.getSafeExamBrowserHint());
+			mode.setSafeExamBrowserConfiguration(assessmentMode.getSafeExamBrowserConfiguration());
+			mode.setSafeExamBrowserConfigDownload(assessmentMode.isSafeExamBrowserConfigDownload());
 		}
 		
 		mode.setStatus(Status.none);
@@ -540,37 +544,48 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
-	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys) {
+	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys, String configurationKey) {
 		boolean safe = false;
 		if(StringHelper.containsNonWhitespace(safeExamBrowserKeys)) {
 			String safeExamHash = request.getHeader("x-safeexambrowser-requesthash");
 			String url = request.getRequestURL().toString();
 			for(StringTokenizer tokenizer = new StringTokenizer(safeExamBrowserKeys); tokenizer.hasMoreTokens() && !safe; ) {
 				String safeExamBrowserKey = tokenizer.nextToken();
-				String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
-				if(safeExamHash != null && safeExamHash.equals(hash)) {
-					safe = true;
-				}
-
-				if(!safe && url.endsWith("/")) {
-					String strippedUrl = url.substring(0, url.length() - 1);
-					String strippedHash = Encoder.sha256Exam(strippedUrl + safeExamBrowserKey);
-					if(safeExamHash != null && safeExamHash.equals(strippedHash)) {
-						safe = true;
-					}
-				}
-				
-				if(safeExamHash == null) {
-					log.warn("Failed safeexambrowser request hash is null for URL: {} and key: {}", url, safeExamBrowserKey);
-				} else {
-					if(!safe) {
-						log.warn("Failed safeexambrowser check: {} (Header) {} (Calculated) for URL: {}", safeExamHash, hash, url);
-					}
-					log.debug("safeexambrowser {} : {} (Header) {} (Calculated) for URL: {} and key: {}", (safeExamHash.equals(hash) ? "Success" : "Failed") , safeExamHash, hash, url, safeExamBrowserKey);
-				}
+				safe = isSafeExam(safeExamHash, safeExamBrowserKey, url);
 			}
+		} else if(StringHelper.containsNonWhitespace(configurationKey)) {
+			String safeExamHash = request.getHeader("x-safeexambrowser-configkeyhash");
+			String url = request.getRequestURL().toString();
+			safe = isSafeExam(safeExamHash, configurationKey, url);
 		} else {
 			safe = true;
+		}
+		return safe;
+	}
+	
+	private boolean isSafeExam(String safeExamHash, String safeExamBrowserKey, String url) {
+		boolean safe = false;
+		
+		String hash = Encoder.sha256Exam(url + safeExamBrowserKey);
+		if(safeExamHash != null && safeExamHash.equals(hash)) {
+			safe = true;
+		}
+
+		if(!safe && url.endsWith("/")) {
+			String strippedUrl = url.substring(0, url.length() - 1);
+			String strippedHash = Encoder.sha256Exam(strippedUrl + safeExamBrowserKey);
+			if(safeExamHash != null && safeExamHash.equals(strippedHash)) {
+				safe = true;
+			}
+		}
+		
+		if(safeExamHash == null) {
+			log.warn("Failed safeexambrowser request hash is null for URL: {} and key: {}", url, safeExamBrowserKey);
+		} else {
+			if(!safe) {
+				log.warn("Failed safeexambrowser check: {} (Header) {} (Calculated) for URL: {}", safeExamHash, hash, url);
+			}
+			log.debug("safeexambrowser {} : {} (Header) {} (Calculated) for URL: {} and key: {}", (safeExamHash.equals(hash) ? "Success" : "Failed") , safeExamHash, hash, url, safeExamBrowserKey);
 		}
 		return safe;
 	}

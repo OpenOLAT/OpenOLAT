@@ -43,11 +43,13 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
+import org.olat.course.assessment.manager.SafeExamBrowserConfigurationSerializer;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.repository.RepositoryEntry;
@@ -147,6 +149,15 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	private boolean safeExamBrowser;
 	@Column(name="a_safeexambrowserkey", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserKey;
+	@Column(name="a_safeexambrowserconfig_xml", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserConfigXml;
+	@Column(name="a_safeexambrowserconfig_plist", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserConfigPlist;
+	@Column(name="a_safeexambrowserconfig_pkey", nullable=true, insertable=true, updatable=true)
+	private String safeExamBrowserConfigPlistKey;
+	@Column(name="a_safeexambrowserconfig_dload", nullable=true, insertable=true, updatable=true)
+	private boolean safeExamBrowserConfigDownload;
+	
 	@Column(name="a_safeexambrowserhint", nullable=true, insertable=true, updatable=true)
 	private String safeExamBrowserHint;
 	
@@ -449,6 +460,68 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@Override
 	public void setSafeExamBrowserKey(String safeExamBrowserKey) {
 		this.safeExamBrowserKey = safeExamBrowserKey;
+	}
+
+	@Override
+	public SafeExamBrowserConfiguration getSafeExamBrowserConfiguration() {
+		if(StringHelper.containsNonWhitespace(safeExamBrowserConfigXml)) {
+			return SafeExamBrowserConfigurationSerializer.fromXml(safeExamBrowserConfigXml);
+		}
+		return null;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfiguration(SafeExamBrowserConfiguration configuration) {
+		if(configuration == null) {
+			setSafeExamBrowserConfigXml(null);
+			setSafeExamBrowserConfigPList(null);
+			setSafeExamBrowserConfigPListKey(null);
+		} else {
+			String xml = SafeExamBrowserConfigurationSerializer.toXml(configuration);
+			setSafeExamBrowserConfigXml(xml);
+			String plist = SafeExamBrowserConfigurationSerializer.toPList(configuration);
+			setSafeExamBrowserConfigPList(plist);
+			String json = SafeExamBrowserConfigurationSerializer.toJson(configuration);
+			if(json != null) {
+				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
+			}
+		}
+	}
+
+	public String getSafeExamBrowserConfigXml() {
+		return safeExamBrowserConfigXml;
+	}
+
+	public void setSafeExamBrowserConfigXml(String safeExamBrowserConfigXml) {
+		this.safeExamBrowserConfigXml = safeExamBrowserConfigXml;
+	}
+
+	@Override
+	public String getSafeExamBrowserConfigPList() {
+		return safeExamBrowserConfigPlist;
+	}
+
+	public void setSafeExamBrowserConfigPList(String config) {
+		this.safeExamBrowserConfigPlist = config;
+	}
+
+	@Override
+	public String getSafeExamBrowserConfigPListKey() {
+		return safeExamBrowserConfigPlistKey;
+	}
+
+	public void setSafeExamBrowserConfigPListKey(String key) {
+		this.safeExamBrowserConfigPlistKey = key;
+	}
+
+	@Override
+	public boolean isSafeExamBrowserConfigDownload() {
+		return safeExamBrowserConfigDownload;
+	}
+
+	@Override
+	public void setSafeExamBrowserConfigDownload(boolean safeExamBrowserConfigDownload) {
+		this.safeExamBrowserConfigDownload = safeExamBrowserConfigDownload;
 	}
 
 	@Override

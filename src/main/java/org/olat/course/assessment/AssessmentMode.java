@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntry;
 
@@ -127,6 +128,18 @@ public interface AssessmentMode extends ModifiedInfo, CreateInfo {
 	public String getSafeExamBrowserKey();
 
 	public void setSafeExamBrowserKey(String safeExamBrowserKey);
+	
+	public SafeExamBrowserConfiguration getSafeExamBrowserConfiguration();
+	
+	public void setSafeExamBrowserConfiguration(SafeExamBrowserConfiguration configuration);
+	
+	public String getSafeExamBrowserConfigPList();
+
+	public String getSafeExamBrowserConfigPListKey();
+	
+	public boolean isSafeExamBrowserConfigDownload();
+
+	public void setSafeExamBrowserConfigDownload(boolean safeExamBrowserConfigDownload);
 
 	public String getSafeExamBrowserHint();
 

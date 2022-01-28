@@ -46,6 +46,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -142,6 +144,13 @@ public class AssessmentModeListController extends FormBasicController implements
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("stop", Cols.stop.ordinal(), "stop",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("stop"), "stop"), null)));
 		}
+		
+		DefaultFlexiColumnModel configSebCol = new DefaultFlexiColumnModel("table.header.config.seb", Cols.configSeb.ordinal(), "configSeb",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer("", "configSeb", null, "o_icon-fw o_icon_download", translate("table.header.config.seb.hint")), null));
+		configSebCol.setHeaderTooltip(translate("table.header.config.seb.hint"));
+		configSebCol.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(configSebCol);
+		
 		if(secCallback.canEditAssessmentMode()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("copy", translate("copy"), "copy"));
@@ -263,6 +272,8 @@ public class AssessmentModeListController extends FormBasicController implements
 					doConfirmStart(ureq, row);
 				} else if("stop".equals(cmd)) {
 					doConfirmStop(ureq, row);
+				} else if("configSeb".equals(cmd)) {
+					doDownloadConfigSeb(ureq, row);
 				}
 			}
 		}
@@ -319,12 +330,12 @@ public class AssessmentModeListController extends FormBasicController implements
 	private void doCopy(UserRequest ureq, AssessmentMode mode) {
 		AssessmentMode modeToCopy = assessmentModeMgr.getAssessmentModeById(mode.getKey());
 		AssessmentMode newMode = assessmentModeMgr.createAssessmentMode(modeToCopy);
-		newMode.setName(translate("copy.name", new String[] { modeToCopy.getName() }));
+		newMode.setName(translate("copy.name", modeToCopy.getName()));
 		
 		AssessmentModeEditController modeEditCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry, newMode);
-		modeEditCtrl.selectBusinessGroups(modeToCopy.getGroups());
-		modeEditCtrl.selectAreas(modeToCopy.getAreas());
-		modeEditCtrl.selectCurriculumElements(modeToCopy.getCurriculumElements());
+		modeEditCtrl.setBusinessGroups(modeToCopy.getGroups());
+		modeEditCtrl.setAreas(modeToCopy.getAreas());
+		modeEditCtrl.setCurriculumElements(modeToCopy.getCurriculumElements());
 		
 		listenTo(modeEditCtrl);
 		toolbarPanel.pushController(newMode.getName(), modeEditCtrl);
@@ -382,5 +393,15 @@ public class AssessmentModeListController extends FormBasicController implements
 			cmc.activate();
 			listenTo(cmc);
 		}
+	}
+	
+	private void doDownloadConfigSeb(UserRequest ureq, AssessmentMode mode) {
+		MediaResource resource;
+		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
+			resource = new SafeExamBrowserConfigurationMediaResource(mode.getSafeExamBrowserConfigPList());
+		} else {
+			resource = new NotFoundMediaResource();
+		}
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 }

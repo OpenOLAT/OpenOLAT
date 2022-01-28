@@ -29,6 +29,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.countdown.CountDownComponent;
+import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
@@ -39,6 +40,8 @@ import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -50,6 +53,7 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeNotificationEvent;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -74,6 +78,8 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	
 	private final ResourceGuards guards = new ResourceGuards();
 	
+	@Autowired
+	private AssessmentModule assessmentModule;
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
@@ -188,13 +194,25 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			}
 			allowed &= ipInRange;
 		}
-		if(mode.getSafeExamBrowserKey() != null) {
-			boolean safeExamCheck = assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), mode.getSafeExamBrowserKey());
+		if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserKey())) {
+			boolean safeExamCheck = assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), mode.getSafeExamBrowserKey(), null);
 			if(!safeExamCheck) {
 				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
 				sb.append(translate("error.safe.exam"));
 				sb.append("</h4>");
-				sb.append(translate("error.safe.exam.desc"));
+				sb.append(translate("error.safe.exam.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
+			}
+			allowed &= safeExamCheck;
+		} else if(StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList())) {
+			boolean safeExamCheck = assessmentModeMgr.isSafelyAllowed(ureq.getHttpReq(), null, mode.getSafeExamBrowserConfigPListKey());
+			if(!safeExamCheck) {
+				sb.append("<h4><i class='o_icon o_icon_warn o_icon-fw'>&nbsp;</i>");
+				sb.append(translate("error.safe.exam"));
+				sb.append("</h4>");
+				sb.append(translate("error.safe.exam.desc", assessmentModule.getSafeExamBrowserDownloadUrl()));
+				
+				guard.getDownloadSEBButton().setVisible(true);
+				guard.getDownloadSEBConfigurationButton().setVisible(mode.isSafeExamBrowserConfigDownload());
 			}
 			allowed &= safeExamCheck;
 		}
@@ -325,16 +343,28 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		continueButton.setCustomEnabledLinkCSS("btn btn-primary");
 		continueButton.setCustomDisabledLinkCSS("o_disabled btn btn-default");
 		
+		Link downloadSEBConfigurationButton = LinkFactory.createCustomLink("download-seb-config-" + id, "download.seb.config", "download.seb.config", Link.BUTTON, mainVC, this);
+		downloadSEBConfigurationButton.setVisible(false);
+		
+		String sebUrl = assessmentModule.getSafeExamBrowserDownloadUrl();
+		ExternalLink downloadSEBLink = LinkFactory.createExternalLink("download.seb-" + id, translate("download.seb"), sebUrl);
+		downloadSEBLink.setName(translate("download.seb"));
+		downloadSEBLink.setTooltip(translate("download.seb"));
+		downloadSEBLink.setElementCssClass("btn btn-default");
+		
 		CountDownComponent countDown = new CountDownComponent("count-" + id, mode.getBegin(), getTranslator());
 		countDown.setI18nKey("current.mode.in");
 		
-		ResourceGuard guard = new ResourceGuard(mode.getModeKey(), goButton, continueButton, countDown);
+		ResourceGuard guard = new ResourceGuard(mode.getModeKey(), goButton, continueButton, downloadSEBLink, downloadSEBConfigurationButton, countDown);
 		mainVC.put(goButton.getComponentName(), goButton);
 		mainVC.put(continueButton.getComponentName(), continueButton);
 		mainVC.put(countDown.getComponentName(), countDown);
+		mainVC.put(downloadSEBConfigurationButton.getComponentName(), downloadSEBConfigurationButton);
+		mainVC.put(downloadSEBLink.getComponentName(), downloadSEBLink);
 		
 		goButton.setUserObject(guard);
 		continueButton.setUserObject(guard);
+		downloadSEBConfigurationButton.setUserObject(guard);
 		return guard;
 	}
 
@@ -375,12 +405,16 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source instanceof Link) {
 			Link link = (Link)source;
-			if("go".equals(link.getCommand())) {
+			String cmd = link.getCommand();
+			if("go".equals(cmd)) {
 				ResourceGuard guard = (ResourceGuard)link.getUserObject();
 				launchAssessmentMode(ureq, guard.getReference());
-			} else if("continue".equals(link.getCommand()) || "continue-main".equals(link.getCommand())) {
+			} else if("continue".equals(cmd) || "continue-main".equals(cmd)) {
 				ResourceGuard guard = (ResourceGuard)link.getUserObject();
 				continueAfterAssessmentMode(ureq, guard);
+			} else if("download.seb.config".equals(cmd)) {
+				ResourceGuard guard = (ResourceGuard)link.getUserObject();
+				downloadSebConfiguration(ureq, guard);
 			}
 		}
 	}
@@ -435,18 +469,31 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		assessmentModeCoordinationService.start(getIdentity(), mode);
 	}
 	
+	private void downloadSebConfiguration(UserRequest ureq, ResourceGuard guard) {
+		MediaResource resource;
+		if(guard != null && StringHelper.containsNonWhitespace(guard.getSafeExamBrowserConfigPList())) {
+			resource = new SafeExamBrowserConfigurationMediaResource(guard.getSafeExamBrowserConfigPList());
+		} else {
+			resource = new NotFoundMediaResource();
+		}
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
 	public static final class ResourceGuard {
 
 		private String status;
 		private String errors;
 		private final Link goButton;
 		private final Link continueButton;
+		private final ExternalLink downloadSEBButton;
+		private final Link downloadSEBConfigurationButton;
 		
 		private final Long modeKey;
 		private String name;
 		private String displayName;
 		private String description;
 		private String safeExamBrowserHint;
+		private String safeExamBrowserConfigPList;
 		
 		private String begin;
 		private String end;
@@ -457,11 +504,14 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 		
 		private CountDownComponent countDown;
 		
-		public ResourceGuard(Long modeKey, Link goButton, Link continueButton, CountDownComponent countDown) {
+		public ResourceGuard(Long modeKey, Link goButton, Link continueButton,
+				ExternalLink downloadSEBButton, Link downloadSEBConfigurationButton, CountDownComponent countDown) {
 			this.modeKey = modeKey;
 			this.goButton = goButton;
 			this.countDown = countDown;
 			this.continueButton = continueButton;
+			this.downloadSEBButton = downloadSEBButton;
+			this.downloadSEBConfigurationButton = downloadSEBConfigurationButton;
 		}
 		
 		public void sync(String newStatus, String newErrors, TransientAssessmentMode mode, Locale locale) {
@@ -473,6 +523,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			displayName = mode.getDisplayName();
 			description = mode.getDescription();
 			safeExamBrowserHint = mode.getSafeExamBrowserHint();
+			safeExamBrowserConfigPList = mode.getSafeExamBrowserConfigPList();
 			
 			Formatter f = Formatter.getInstance(locale);
 			begin = f.formatDateAndTime(mode.getBegin());
@@ -511,6 +562,10 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			return safeExamBrowserHint;
 		}
 		
+		public String getSafeExamBrowserConfigPList() {
+			return safeExamBrowserConfigPList;
+		}
+
 		public String getDisplayName() {
 			return displayName;
 		}
@@ -555,6 +610,14 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 			return continueButton;
 		}
 		
+		public ExternalLink getDownloadSEBButton() {
+			return downloadSEBButton;
+		}
+
+		public Link getDownloadSEBConfigurationButton() {
+			return downloadSEBConfigurationButton;
+		}
+
 		public CountDownComponent getCountDown() {
 			return countDown;
 		}

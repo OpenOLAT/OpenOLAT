@@ -299,6 +299,8 @@ public class AssessmentTest extends Deployments {
 			.createAssessmentMode()
 			.editAssessment(assessmentName, begin, end, true)
 			.save()
+			.clickToolbarBack()
+			.assertAssessmentModeList()
 			.start(assessmentName)
 			.confirmStart();
 

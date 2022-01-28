@@ -63,6 +63,9 @@ public class TransientAssessmentMode implements Serializable {
 	private String ipList;
 	private String safeExamBrowserKey;
 	private String safeExamBrowserHint;
+	private String safeExamBrowserConfigPList;
+	private String safeExamBrowserConfigPListKey;
+	private boolean safeExamBrowserConfigDownload;
 	
 	public TransientAssessmentMode(AssessmentMode mode) {
 		displayName = mode.getRepositoryEntry().getDisplayname();
@@ -94,6 +97,9 @@ public class TransientAssessmentMode implements Serializable {
 		if(mode.isSafeExamBrowser()) {
 			safeExamBrowserKey = mode.getSafeExamBrowserKey();
 			safeExamBrowserHint = mode.getSafeExamBrowserHint();
+			safeExamBrowserConfigPList = mode.getSafeExamBrowserConfigPList();
+			safeExamBrowserConfigPListKey = mode.getSafeExamBrowserConfigPListKey();
+			safeExamBrowserConfigDownload = mode.isSafeExamBrowserConfigDownload();
 		}
 	}
 	
@@ -183,6 +189,18 @@ public class TransientAssessmentMode implements Serializable {
 
 	public String getSafeExamBrowserHint() {
 		return safeExamBrowserHint;
+	}
+
+	public String getSafeExamBrowserConfigPList() {
+		return safeExamBrowserConfigPList;
+	}
+
+	public String getSafeExamBrowserConfigPListKey() {
+		return safeExamBrowserConfigPListKey;
+	}
+	
+	public boolean isSafeExamBrowserConfigDownload() {
+		return safeExamBrowserConfigDownload;
 	}
 
 	public String getStartElementKey() {

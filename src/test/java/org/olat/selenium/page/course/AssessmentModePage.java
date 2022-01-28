@@ -83,8 +83,11 @@ public class AssessmentModePage {
 		By startBy = By.cssSelector("div.o_sel_assessment_mode_start_mode select");
 		WebElement startEl = browser.findElement(startBy);
 		new Select(startEl).selectByValue(manual ? "manual" : "automatic");
-		//audience course
-		
+
+		return this;
+	}
+	
+	public AssessmentModePage audienceCourse() {
 		By audienceBy = By.xpath("//div[contains(@class,'o_sel_assessment_mode_audience')]//input[@value='course']");
 		OOGraphene.waitElement(audienceBy, browser);
 		browser.findElement(audienceBy).click();
@@ -99,6 +102,16 @@ public class AssessmentModePage {
 	public AssessmentModePage save() {
 		By saveButtonBy = By.cssSelector(".o_sel_assessment_mode_edit_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public AssessmentModePage clickToolbarBack() {
+		OOGraphene.clickBreadcrumbBack(browser);
+		return this;
+	}
+	
+	public AssessmentModePage assertAssessmentModeList() {
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_assessment_mode_list"), browser);
 		return this;
 	}

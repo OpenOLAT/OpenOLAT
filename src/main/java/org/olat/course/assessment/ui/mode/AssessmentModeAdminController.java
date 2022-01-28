@@ -21,10 +21,18 @@ package org.olat.course.assessment.ui.mode;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -35,27 +43,79 @@ import org.olat.core.gui.control.controller.BasicController;
 public class AssessmentModeAdminController extends BasicController {
 	
 	private final VelocityContainer mainVC;
+	private final Link settingsLink;
+	private final Link assessmentModesLink;
+	private final Link safeExamBrowserLink;
+	private final SegmentViewComponent segmentView;
 	
-	private final AssessmentModeAdminListController modeListCtrl;
-	private final AssessmentModeAdminSettingsController settingsCtrl;
+	private AssessmentModeAdminListController modeListCtrl;
+	private AssessmentModeAdminSettingsController settingsCtrl;
+	private SafeExamBrowserAdminController safeExamBrowserCtrl;
 	
 	public AssessmentModeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		settingsCtrl = new AssessmentModeAdminSettingsController(ureq, wControl);
-		listenTo(settingsCtrl);
-		
-		modeListCtrl = new AssessmentModeAdminListController(ureq, wControl);
-		listenTo(modeListCtrl);
-		
 		mainVC = createVelocityContainer("admin");
-		mainVC.put("settings", settingsCtrl.getInitialComponent());
-		mainVC.put("list", modeListCtrl.getInitialComponent());
+
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setReselect(true);
+
+		settingsLink = LinkFactory.createLink("admin.assessment.mode.settings", mainVC, this);
+		segmentView.addSegment(settingsLink, true);
+		doOpenSettings(ureq);
+		assessmentModesLink = LinkFactory.createLink("admin.assessment.mode.list", mainVC, this);
+		segmentView.addSegment(assessmentModesLink, false);
+		safeExamBrowserLink = LinkFactory.createLink("admin.assessment.mode.seb", mainVC, this);
+		segmentView.addSegment(safeExamBrowserLink, false);
+
 		putInitialPanel(mainVC);
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == settingsLink) {
+					doOpenSettings(ureq);
+				} else if (clickedLink == assessmentModesLink) {
+					doOpenAssessmentModes(ureq);
+				} else if(clickedLink == safeExamBrowserLink) {
+					doOpenSafeExamBrowserConfiguration(ureq);
+				}
+			}
+		}
+	}
+
+	private void doOpenSettings(UserRequest ureq) {
+		removeControllerListener(settingsCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Settings", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		settingsCtrl = new AssessmentModeAdminSettingsController(ureq, bwControl);
+		listenTo(settingsCtrl);
+		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenAssessmentModes(UserRequest ureq) {
+		removeControllerListener(modeListCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("AssessmentModes", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		modeListCtrl = new AssessmentModeAdminListController(ureq, bwControl);
+		listenTo(modeListCtrl);
+		mainVC.put("segmentCmp", modeListCtrl.getInitialComponent());
+	}
+	
+	private void doOpenSafeExamBrowserConfiguration(UserRequest ureq) {
+		removeControllerListener(safeExamBrowserCtrl);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("SafeExamBrowser", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+		safeExamBrowserCtrl = new SafeExamBrowserAdminController(ureq, bwControl);
+		listenTo(safeExamBrowserCtrl);
+		mainVC.put("segmentCmp", safeExamBrowserCtrl.getInitialComponent());
 	}
 }

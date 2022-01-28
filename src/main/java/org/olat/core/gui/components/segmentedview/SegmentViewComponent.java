@@ -157,8 +157,10 @@ public class SegmentViewComponent extends AbstractComponent  {
 	public void addSegment(int position, Link link, boolean selected) {
 		if(selected) {
 			link.setCustomEnabledLinkCSS("btn btn-primary");
+			link.setCustomDisabledLinkCSS("btn btn-primary");
 		} else {
 			link.setCustomEnabledLinkCSS("btn btn-default");
+			link.setCustomDisabledLinkCSS("btn btn-default");
 		}
 		if(position >= 0 && position < segments.size()) {
 			segments.add(position, link);

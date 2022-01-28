@@ -90,9 +90,13 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 			case stop: return canStop(mode);
 			case endChooser: return getDateChooser(mode, col);
 			case beginChooser: return getDateChooser(mode, col);
-			
+			case configSeb: return Boolean.valueOf(hasSafeExamBrowserConfiguration(mode));
 			default: return "ERROR";
 		}
+	}
+	
+	private boolean hasSafeExamBrowserConfiguration(AssessmentMode mode) {
+		return mode.isSafeExamBrowser() && StringHelper.containsNonWhitespace(mode.getSafeExamBrowserConfigPList());
 	}
 	
 	private DateChooser getDateChooser(AssessmentMode mode, int col) {
@@ -204,7 +208,8 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 		start(""),
 		stop(""),
 		beginChooser("table.header.begin"),
-		endChooser("table.header.end");
+		endChooser("table.header.end"),
+		configSeb("table.header.config.seb");
 		
 		private final String i18nKey;
 		

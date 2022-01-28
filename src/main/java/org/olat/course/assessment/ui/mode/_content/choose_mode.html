@@ -34,6 +34,17 @@
 		<div class="o_button_group">$r.render($mode.continue.componentName)</div>
 	#else
 		<div class="o_error">$mode.errors</div>
+		#if($r.visible($mode.downloadSEBButton.componentName) || $r.visible($mode.downloadSEBConfigurationButton.componentName))
+			<div class="o_button_group">
+			#if($r.visible($mode.downloadSEBButton.componentName))
+				$r.render($mode.downloadSEBButton.componentName)
+			#end
+		
+			#if($r.visible($mode.downloadSEBConfigurationButton.componentName))
+				$r.render($mode.downloadSEBConfigurationButton.componentName)
+			#end
+			</div>
+		#end
 	#end
 #end
 

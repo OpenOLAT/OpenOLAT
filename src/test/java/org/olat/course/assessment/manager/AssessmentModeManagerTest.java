@@ -1362,7 +1362,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		request.addHeader("x-safeexambrowser-requesthash", hash);
 		request.setRequestURI("");
 		
-		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
+		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey, null);
 		Assert.assertTrue(allowed);
 	}
 	
@@ -1383,7 +1383,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		request.addHeader("x-safeexambrowser-requesthash", hash);
 		request.setRequestURI("/");
 		
-		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
+		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey, null);
 		Assert.assertTrue(allowed);
 	}
 	
@@ -1399,7 +1399,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		request.addHeader("x-safeexambrowser-requesthash", hash);
 		request.setRequestURI("/unauthorized/url");
 		
-		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
+		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey, null);
 		Assert.assertFalse(allowed);
 	}
 	
@@ -1412,7 +1412,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		request.setScheme("http");
 		request.setRequestURI("/unauthorized/url");
 		
-		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey);
+		boolean allowed = assessmentModeMgr.isSafelyAllowed(request, safeExamBrowserKey, null);
 		Assert.assertFalse(allowed);
 	}
 

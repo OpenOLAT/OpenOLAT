@@ -239,7 +239,10 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegat
 				target.append("<i class=\"o_icon ").append(iconLeftCSS).append("\">&nbsp;</i>");
 			}
 			if(labelDelegate == null) {
-				target.append(getLabel());
+				String label = getLabel();
+				if(label != null) {
+					target.append(label);
+				}
 			} else {
 				labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
 			}

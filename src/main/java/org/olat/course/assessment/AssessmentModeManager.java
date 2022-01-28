@@ -221,6 +221,6 @@ public interface AssessmentModeManager {
 	 * @param safeExamBrowserKey The key
 	 * @return true if the request is allowed based on the specified key
 	 */
-	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys);
+	public boolean isSafelyAllowed(HttpServletRequest request, String safeExamBrowserKeys, String configurationKey);
 
 }
