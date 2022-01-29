@@ -15,7 +15,7 @@ A sophisticated modular toolkit provides course authors with a wide range of did
 3. [Community](#being-a-community-member)
 4. [Developers](#developers)
     * [Setting up OpenOlat in Eclipse](#setting-up-openolat-in-eclipse-and-postgresql)
-    * [Alternative databases](#alternative-databases)
+    * [Alternative databases](#alternate-databases)
     * [Compress javascript and CSS](#compress-javascript-and-css)
     * [Themes](#themes)
     * [REST API](#rest-api)
@@ -66,23 +66,20 @@ clone the repository. Right click to clone the repository into your workspace.
 In Eclipse, use `Import -> Git -> Projects from Git (with smart import)` and import 
 the local OpenOlat clone created in the previous step.
 
-3. Disable validators:  
-Right-click on the project and open the project properties. Then search for 
-`Validation`. Enable the project specific settings and disable all XML, XSLT, HTML and JPA validators. 
-Right-click on the project and select `Validate`.
+3. Disable validators:
+   - Right-click on the project and open the project properties. Then search for `Validation`. Enable the project specific settings and disable all XML, XSLT, HTML and JPA validators. 
+   - Right-click on the project and select `Validate`.
 
 4. Create the OpenOlat configuration:  
 Copy the `olat.local.properties.sample` in the project root folder to `src/main/java/olat.local.properties`, adjust
-the file to match your setup. See the comments in the file header for more configuration
-options. 
+the file to match your setup. See the comments in the file header for more configuration options. 
 
 5. Refresh the project
 
-6. Setup the dependecies and compile  
-Right-click on the project and run `Maven -> Update Project`. 
-Make sure the project compiled without errors. Warnings are ok. If the project did not
-compile, you have to fix the problems before you proceed. See [Troubleshooting](#troubleshooting)
-section below.
+6. Setup the dependencies and compile
+   - When running the first time, right-click the project and select `Maven -> Select Maven Profiles...`. Make sure `tomcat` and  `postgresqlunittests` are selected.
+   - Right-click on the project and run `Maven -> Update Project`. 
+   - Make sure the project compiled without errors. Warnings are ok. If the project did not compile, you have to fix the problems before you proceed. See [Troubleshooting](#troubleshooting) section below.
       
 #### 2. Setting up the PostgreSQL database
 
@@ -286,8 +283,7 @@ To read the OpenOlat REST API documentation:
 * Make sure the following ports are not in use (Selenium, Tomcat )
   `14444 / 8080 / 8009 / 8089`
 
-* MySQL: Make sure you have a MySQL database version 5.6 with the InnoDB as default engine
-  or PostgreSQL 9.4 or newer. The server must be at localhost.
+* Make sure you have PostgreSQL 9.4 or newer. The server must be at localhost. For other databases see [Alternative databases](#alternate-databases)
 
 * Make sure maven has enough memory. E.g execute the following:
 
@@ -304,50 +300,55 @@ ls -la `printenv TMPDIR`
 
 #### Setup (necessary only once)
 
-Setup database users and tables in the pom.xml. The default settings are:
+Setup database users and tables in the pom.xml. The default settings for PostgreSQL are:
 
 ```xml
 <test.env.db.name>olattest</test.env.db.name>
-<test.env.db.user>olat</test.env.db.user>
-<test.env.db.pass>olat</test.env.db.pass>
+<test.env.db.postgresql.user>postgres</test.env.db.postgresql.user>
+<test.env.db.postgresql.pass>postgres</test.env.db.postgresql.pass>
 ```
 
 You can override them with -D in the command line.
 
-You need an empty database named `olat`. The maven command will create and drop
+You need an empty database named `olattest`. The maven command will create and drop
 databases automatically but need an existing database to do that. Here we will
-explain it with MySQL.
+explain it with PostgreSQL.
 
-Setup first an user for the database
 
-```sql
-CREATE USER 'olat'@'localhost' IDENTIFIED BY 'olat';
-```
-
-Create the database:
+Create user `postgres` and a database `olattest`
 
 ```sql
-CREATE DATABASE IF NOT EXISTS olat;
-GRANT ALL PRIVILEGES ON olat.* TO 'olat' IDENTIFIED BY 'olat';
-UPDATE mysql.user SET HOST='localhost' WHERE USER='olat' AND HOST='%';
-FLUSH PRIVILEGES;
+CREATE USER postgres WITH PASSWORD 'postgres';
+CREATE DATABASE olattest;
+GRANT ALL PRIVILEGES on DATABASE olattest to postgres;
 ```
 
-Create the real test database, it will set once the permissions:
+Write the OpenOlat database schema to the test database:
 
 ```sql
-CREATE DATABASE IF NOT EXISTS olattest;
-GRANT ALL PRIVILEGES ON olattest.* TO 'olat' IDENTIFIED BY 'olat';
-FLUSH PRIVILEGES;
+\c olattest postgres;
+\i src/main/resources/database/postgresql/setupDatabase.sql
 ```
 
-Initialize the database
+When using MySQL or Oracle make sure you are using the right db user as configured in 
+the pom.xml or override them in the test properties file. 
 
-```bash
-mysql -u olat -p olattest < src/main/resources/database/mysql/setupDatabase.sql
+
+#### Execute JUnit tests in Eclipse
+
+Open the class `org.olat.test.AllTestsJunit4org.olat.test.AllTestsJunit4`. 
+
+Righ-click on the class `Run as -> Run configuration`. Add your database configuration as VM parameters, e.g. 
+
+```sql
+-Ddb.name=olattest
+-Ddb.user=postgres
+-Ddb.pass=postgres
 ```
+Run the tests
 
-#### Execute JUnit tests
+
+#### Execute JUnit tests on the command line
 
 The JUnit tests load the framework to execute (execution time ca. 10m)
 
@@ -357,7 +358,7 @@ The JUnit tests load the framework to execute (execution time ca. 10m)
 mvn clean test -Dwith-postgresql -Ptomcat
 ```
 
-with the options:
+with the options (only required if you don't use the standard settigns from above):
 
 ```bash
 -Dtest.env.db.postgresql.user=postgres
@@ -414,6 +415,12 @@ Setup the schema with setupDatabase.sql for Oracle and run the tests:
 ```bash
 mvn clean test -Dwith-oracle -Dtest.env.db.oracle.pass=olat00002 -Dtest=org.olat.test.AllTestsJunit4 -Ptomcat
 ```
+
+#### Problems with JUnit tests
+Don't forget to update the test database schema whenever something changes. The DB-alter files are not automatically applied to the test database. 
+
+If you encounter strange failures, it is recommended to drop the database and re-initialize it from scratch. This is also the recommended behavior 
+when the test get slower over time. 
 
 
 #### Execute Selenium functional tests
