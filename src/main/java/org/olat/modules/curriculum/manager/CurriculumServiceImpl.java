@@ -989,11 +989,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					}
 				}
 				CurriculumElementMembership membership = membershipMap.get(element.getKey());
-				if (membership != null) {
-					CurriculumElementRepositoryEntryViews view = new CurriculumElementRepositoryEntryViews(element, elementViews, membership);
-					elements.add(view);
-					elementKeyMap.put(element.getKey(), view);
-				}
+				CurriculumElementRepositoryEntryViews view = new CurriculumElementRepositoryEntryViews(element, elementViews, membership);
+				elements.add(view);
+				elementKeyMap.put(element.getKey(), view);
 			}
 
 			// calculate parents
