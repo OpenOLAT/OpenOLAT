@@ -627,7 +627,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		CurriculumElement element = curriculumService
 				.getCurriculumElement(new CurriculumElementRefImpl(row.getCurriculumElementKey()));
-		List<CurriculumElementWithViewsRow> rows = tableModel.getObjects();
+		List<CurriculumElementWithViewsRow> rows = tableModel.getAllRows();
 		
 		Set<Long> entryKeys = new HashSet<>();
 		for(CurriculumElementWithView elementWithView:rows) {
