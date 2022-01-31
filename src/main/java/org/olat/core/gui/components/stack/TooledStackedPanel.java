@@ -362,6 +362,10 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	public StackedPanel getMessagePanel() {
 		return messageCmp;
 	}
+	
+	public Component getMessageComponent() {
+		return messageCmp.getContent();
+	}
 
 	public void setMessageComponent(Component cmp) {
 		if(messageCmp.getContent() != messageCmp) {
