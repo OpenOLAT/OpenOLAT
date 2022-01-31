@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AccountingEvaluators;
@@ -316,6 +317,9 @@ public interface CourseAssessmentService {
 	 */
 	public AssessmentCourseNodeController getCourseNodeRunController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, UserCourseEnvironment coachCourseEnv);
+	
+	public AssessmentCourseNodeOverviewController getCourseNodeOverviewController(UserRequest ureq,
+			WindowControl wControl, CourseNode courseNode, UserCourseEnvironment coachCourseEnv);
 	
 	public ScoreAccountingTrigger createScoreAccountingTrigger(RepositoryEntry entry, String subIdent,
 			ScoreAccountingTriggerData data);

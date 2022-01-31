@@ -1,36 +1,14 @@
 $r.contextHelpWithWrapper("Using Course Tools#_bewertungswerkzeug")
 <h2><i class="o_icon o_icon_assessment_tool"> </i>  $r.translate("assessment.tool.overview")</h2>
-<p class="o_info">$r.translate("index.introduction")</p>
-<div class="row o_block">
-	<div class="col-sm-6">
-		<h4>$r.translate("assessment.tool.assessable.items")</h4>
-		<ul class="list-unstyled">
-		#if($r.available("assessed.identities"))
-			<li>$r.render("assessed.identities")</li>
-		#end
-		</ul>
-	</div>
-	<div class="col-sm-6">
-		<h4>$r.translate("assessment.tool.quick.links")</h4>
-		<ul class="list-unstyled">
-		#if($r.available("passed.identities"))
-			<li>$r.render("passed.identities")</li>
-		#end
-		#if($r.available("failed.identities"))
-			<li>$r.render("failed.identities")</li>
-		#end
-		</ul>
-	</div>
-</div>
 <div class="row">
-	<div class="col-sm-6">
-		#if($r.available("toReview"))
-			$r.render("toReview")
-		#end
-	</div>
 	<div class="col-sm-6">
 		#if($r.available("statistics"))
 			$r.render("statistics")
+		#end
+	</div>
+	<div class="col-sm-6">
+		#if($r.available("toReview"))
+			$r.render("toReview")
 		#end
 	</div>
 </div>

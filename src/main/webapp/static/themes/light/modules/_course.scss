@@ -501,12 +501,12 @@
 	color: $o-course-state-failed-color;
 	font-weight: bold;
 	a:hover {
-	    color: darken($o-course-state-unknown-color, 10%);
+	    color: darken($o-course-state-failed-color, 10%);
 	}				
 	th {
 		color: $text-color		
 	}
-}		
+}
 .o_unknown {
 	color: $state-warning-text;
 	font-weight: bold;
@@ -519,7 +519,66 @@
 }		
 .o_noinfo {
 	color: $text-muted;
-}		
+}
+.o_assessment_stats {
+	.o_overview {
+		display: flex;
+		flex-wrap: wrap;
+		>div {
+			padding: 10px;
+		}
+		.o_overview_members {
+			min-width: 50%;
+			margin-right: 1em;
+		}
+		.o_overview_passed {
+			display: flex;
+			.o_passed_chart {
+				&.radial-progress {
+					width: 62px;
+					height: 62px;
+					padding: 2px;
+					margin: unset;
+					.o_passed_slice {
+						stroke: $o-course-state-passed-color;
+					}
+					.o_failed_slice {
+						stroke: $o-course-state-failed-color;
+					}
+				}
+			}
+			ul {
+				margin-left: 5px;
+			}
+		}
+	}
+
+	.o_passed_progress {
+		display: flex;
+		flex-wrap: wrap;
+		
+		.progress {
+			width: 100px;
+			.o_passed_progress_bar {
+				background-color: $o-course-state-passed-color;
+			}
+			.o_failed_progress_bar {
+				background-color: $o-course-state-failed-color;
+			}	
+		}
+		
+		.o_values {
+			margin-left: 1em;
+			flex-shrink: 0;
+		}	
+	}
+}
+#o_assessment_tool_main {
+	.o_chelp_wrapper {
+		margin-bottom: 0;
+	}
+}
+
 
 .o_labeled_light {
 	&.o_results_visible {

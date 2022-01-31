@@ -2109,9 +2109,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			removeCustomCSS();
 			AssessmentToolController ctrl = new AssessmentToolController(ureq, swControl, toolbarPanel, getRepositoryEntry(), getUserCourseEnvironment(), createAssessmentToolSecurityCallback());
-			ctrl.activate(ureq, null, null);
 			assessmentToolCtr = pushController(ureq, translate("command.openassessment"), ctrl);
 			listenTo(assessmentToolCtr);
+			OLATResourceable overviewRes = OresHelper.createOLATResourceableType("Overview");
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(overviewRes);
+			ctrl.activate(ureq, entries, null);
 			currentToolCtr = assessmentToolCtr;
 			setActiveTool(assessmentLink);
 			ctrl.initToolbar();

@@ -19,22 +19,16 @@
  */
 package org.olat.modules.assessment.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 
@@ -44,19 +38,11 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentOverviewController extends BasicController implements Activateable2 {
-		
-	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
-	protected static final Event SELECT_PASSED_EVENT = new Event("assessment-tool-select-passed");
-	protected static final Event SELECT_FAILED_EVENT = new Event("assessment-tool-select-failed");
+public class AssessmentOverviewController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final AssessmentToReviewSmallController toReviewCtrl;
-	private final AssessmentStatisticsSmallController statisticsCtrl;
-	
-	private final Link passedLink;
-	private final Link failedLink;
-	private final Link assessedIdentitiesLink;
+	private final AssessmentStatsController statisticCtrl;
 		
 	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, AssessmentToolSecurityCallback assessmentCallback) {
@@ -68,41 +54,21 @@ public class AssessmentOverviewController extends BasicController implements Act
 		listenTo(toReviewCtrl);
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
 		
-		statisticsCtrl = new AssessmentStatisticsSmallController(ureq, getWindowControl(), testEntry, assessmentCallback);
-		listenTo(statisticsCtrl);
-		mainVC.put("statistics", statisticsCtrl.getInitialComponent());
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
+		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params);
+		statisticCtrl.setExpanded(true);
+		listenTo(statisticCtrl);
+		mainVC.put("statistics", statisticCtrl.getInitialComponent());
 		
-		int numOfParticipants = statisticsCtrl.getMemberStatistics().getNumOfParticipants();
-		int numOfOtherUsers = statisticsCtrl.getMemberStatistics().getNumOfOtherUsers();
-		String[] args = new String[]{ Integer.toString(numOfParticipants), Integer.toString(numOfOtherUsers) };
-		String assessedIdentitiesText = numOfOtherUsers > 0
-				? translate("assessment.tool.num.assessed.participants.others", args)
-				: translate("assessment.tool.num.assessed.participants", args);
-		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-		assessedIdentitiesLink.setCustomDisplayText(assessedIdentitiesText);
-		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user o_icon-fw");
-		
-		int numOfPassed = statisticsCtrl.getNumOfPassed();
-		passedLink = LinkFactory.createLink("passed.identities", "passed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-		passedLink.setCustomDisplayText(translate("assessment.tool.numOfPassed", new String[]{ Integer.toString(numOfPassed) }));
-		passedLink.setIconLeftCSS("o_passed o_icon o_icon_passed o_icon-fw");
-
-		int numOfFailed = statisticsCtrl.getNumOfFailed();
-		failedLink = LinkFactory.createLink("failed.identities", "failed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-		failedLink.setCustomDisplayText(translate("assessment.tool.numOfFailed", new String[]{ Integer.toString(numOfFailed) }));
-		failedLink.setIconLeftCSS("o_failed o_icon o_icon_failed o_icon-fw");
-
 		putInitialPanel(mainVC);
 	}
 
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
-	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(toReviewCtrl == source) {
+		if (statisticCtrl == source) {
+			fireEvent(ureq, event);
+		} else if (toReviewCtrl == source) {
 			if(event instanceof UserSelectionEvent) {
 				fireEvent(ureq, event);
 			}
@@ -112,12 +78,6 @@ public class AssessmentOverviewController extends BasicController implements Act
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(assessedIdentitiesLink == source) {
-			fireEvent(ureq, SELECT_USERS_EVENT);
-		} else if(passedLink == source) {
-			fireEvent(ureq, SELECT_PASSED_EVENT);
-		} else if(failedLink == source) {
-			fireEvent(ureq, SELECT_FAILED_EVENT);
-		}
+		//
 	}
 }

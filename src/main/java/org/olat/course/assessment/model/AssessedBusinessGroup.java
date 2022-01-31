@@ -32,20 +32,22 @@ public class AssessedBusinessGroup implements BusinessGroupRef {
 	private final Long key;
 	private final String name;
 	
-	private int numOfParticipants;
-	private int numOfPassed;
-	private int numOfFailed;
-	private double averageScore;
-	private boolean hasScore;
+	private final int numOfParticipants;
+	private final int numOfPassed;
+	private final int numOfFailed;
+	private final int numOfUndefined;
+	private final double averageScore;
+	private final boolean hasScore;
 	
 	public AssessedBusinessGroup(Long key, String name, double averageScore, boolean hasScore,
-			int numOfPassed, int numOfFailed, int numOfParticipants) {
+			int numOfPassed, int numOfFailed, int numOfUndefined, int numOfParticipants) {
 		this.key = key;
 		this.name = name;
 		this.hasScore = hasScore;
 		this.averageScore = averageScore;
 		this.numOfPassed = numOfPassed;
 		this.numOfFailed = numOfFailed;
+		this.numOfUndefined = numOfUndefined;
 		this.numOfParticipants = numOfParticipants;
 		
 	}
@@ -75,6 +77,10 @@ public class AssessedBusinessGroup implements BusinessGroupRef {
 		return numOfFailed;
 	}
 	
+	public int getNumOfUndefined() {
+		return numOfUndefined;
+	}
+
 	public boolean isHasScore() {
 		return hasScore;
 	}

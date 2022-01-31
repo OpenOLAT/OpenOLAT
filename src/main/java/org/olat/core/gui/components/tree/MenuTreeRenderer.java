@@ -160,11 +160,12 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		if (lastTreeNode) {
 			target.append(" o_last_node");
 		}
-		if(selected) {
-			target.append(" active");
-		} else if (curSel == curRoot) {
-			// add css class to identify parents of active element
-			target.append(" active_parent");			
+		if (tree.isHighlightSelection()) {
+			if (selected) {
+				target.append(" active");
+			} else if (curSel == curRoot) {
+				target.append(" active_parent");
+			}
 		}
 		if (hasChildren && renderChildren) {
 			// add css class to identify opened elements
@@ -176,8 +177,10 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		if(tree.isDragEnabled() || tree.isDropEnabled()) {
 			target.append(" o_dnd_item");
 		}
-		if(selected) {
-			target.append(" active");
+		if (tree.isHighlightSelection()) {
+			if(selected) {
+				target.append(" active");
+			}
 		}
 		target.append("'>");
 		
@@ -302,13 +305,12 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		
 		target.append("<span class='o_tree_link o_tree_l").append(level);
 		
-		// add icon css class
-		if (selected) {
-			// add css class to identify active element
-			target.append(" active");			
-		} else if (curSel == curRoot) {
-			// add css class to identify parents of active element
-			target.append(" active_parent");			
+		if (tree.isHighlightSelection()) {
+			if (selected) {
+				target.append(" active");
+			} else if (curSel == curRoot) {
+				target.append(" active_parent");
+			}
 		}
 		
 		boolean insertionSource = (tree.getTreeModel() instanceof InsertionTreeModel

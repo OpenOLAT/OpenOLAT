@@ -41,6 +41,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
+import org.olat.course.assessment.ui.tool.AssessmentEventToState;
 import org.olat.course.assessment.ui.tool.AssessmentModeOverviewListController;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -57,18 +59,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class IQTESTCoachRunController extends BasicController implements Activateable2 {
 	
+	private static final String ORES_TYPE_OVERVIEW = "Overview";
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
 	private static final String ORES_TYPE_ASSESSMENT_MODE = "AssessmentMode";
 	private static final String ORES_TYPE_PREVIEW = "Preview";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
-	
+
+	private Link overviewLink;
 	private Link participantsLink;
 	private Link assessmentModeLink;
 	private Link previewLink;
 	private Link remindersLink;
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
-	
+
+	private AssessmentCourseNodeOverviewController overviewCtrl;
+	private AssessmentEventToState assessmentEventToState;	
 	private TooledStackedPanel participantsPanel;
 	private AssessmentCourseNodeController participantsCtrl;
 	private AssessmentModeOverviewListController assessmentModeCtrl;
@@ -92,6 +98,14 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		mainVC = createVelocityContainer("segments");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
+		overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv);
+		listenTo(overviewCtrl);
+		assessmentEventToState = new AssessmentEventToState(overviewCtrl);
+		
+		overviewLink = LinkFactory.createLink("segment.overview", mainVC, this);
+		segmentView.addSegment(overviewLink, true);
+		
 		//Participants
 		participantsPanel = new TooledStackedPanel("participantsPanel", getTranslator(), this);
 		participantsPanel.setToolbarAutoEnabled(false);
@@ -99,7 +113,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		participantsPanel.setShowCloseLink(true, false);
 		participantsPanel.setCssClass("o_segment_toolbar o_block_top");
 		
-		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
+		swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
 		participantsCtrl = courseAssessmentService.getCourseNodeRunController(ureq, swControl, participantsPanel, 
 				courseNode, userCourseEnv);
 		listenTo(participantsCtrl);
@@ -107,7 +121,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		participantsPanel.pushController(translate("segment.participants"), participantsCtrl);
 		
 		participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
-		segmentView.addSegment(participantsLink, true);
+		segmentView.addSegment(participantsLink, false);
 		
 		// Assessment tool
 		swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ASSESSMENT_MODE), null);
@@ -133,7 +147,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			}
 		}
 		
-		doOpenParticipants(ureq);
+		doOpenOverview();
 		
 		putInitialPanel(mainVC);
 	}
@@ -143,24 +157,24 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		if(entries == null || entries.isEmpty()) return;
 
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
+		if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
+			doOpenOverview();
+		} else if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
 			doOpenParticipants(ureq);
-			segmentView.select(participantsLink);
 		} else if(ORES_TYPE_ASSESSMENT_MODE.equalsIgnoreCase(type) && assessmentModeLink != null) {
 			doOpenAssessmentMode(ureq);
-			segmentView.select(assessmentModeLink);
 		} else if(ORES_TYPE_PREVIEW.equalsIgnoreCase(type)) {
 			doOpenPreview(ureq);
-			segmentView.select(previewLink);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type)) {
 			doOpenReminders(ureq);
-			segmentView.select(remindersLink);
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(assessmentModeCtrl == source) {
+		if (assessmentEventToState.handlesEvent(source, event)) {
+			doOpenParticipants(ureq).activate(ureq, null, assessmentEventToState.getState(event));
+		} else if(assessmentModeCtrl == source) {
 			if(event instanceof CourseNodeEvent) {
 				CourseNodeEvent cne = (CourseNodeEvent)event;
 				fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, cne.getIdent()));
@@ -176,7 +190,9 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 				SegmentViewEvent sve = (SegmentViewEvent)event;
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == participantsLink) {
+				if (clickedLink == overviewLink) {
+					doOpenOverview();
+				} else if (clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if (clickedLink == assessmentModeLink) {
 					doOpenAssessmentMode(ureq);
@@ -188,18 +204,26 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 			}
 		}
 	}
+
+	private void doOpenOverview() {
+		overviewCtrl.reload();
+		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
+		segmentView.select(overviewLink);
+	}
 	
-	private void doOpenParticipants(UserRequest ureq) {
+	private Activateable2 doOpenParticipants(UserRequest ureq) {
 		participantsCtrl.reload(ureq);
 		addToHistory(ureq, participantsCtrl);
 		mainVC.put("segmentCmp", participantsPanel);
-		addToHistory(ureq, participantsCtrl);
+		segmentView.select(participantsLink);
+		return participantsCtrl;
 	}
 	
 	private void doOpenAssessmentMode(UserRequest ureq) {
 		if (assessmentModeLink != null) {
 			assessmentModeCtrl.loadModel();
 			mainVC.put("segmentCmp", assessmentModeCtrl.getInitialComponent());
+			segmentView.select(assessmentModeLink);
 			addToHistory(ureq, assessmentModeCtrl);
 		}
 	}
@@ -211,6 +235,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		previewCtrl = new QTI21AssessmentRunController(ureq, swControl, userCourseEnv, courseNode);
 		listenTo(previewCtrl);
 		mainVC.put("segmentCmp", previewCtrl.getInitialComponent());
+		segmentView.select(previewLink);
 		addToHistory(ureq, previewCtrl);
 	}
 	
@@ -218,6 +243,7 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
+			segmentView.select(remindersLink);
 		}
 	}
 	

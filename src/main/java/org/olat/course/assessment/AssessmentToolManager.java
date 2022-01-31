@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.model.AssessedBusinessGroup;
+import org.olat.course.assessment.model.AssessedCurriculumElement;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -44,14 +46,6 @@ public interface AssessmentToolManager {
 	public AssessmentStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params);
 	
 	/**
-	 * Return the number of 
-	 * @param coach
-	 * @param params
-	 * @return
-	 */
-	public int getNumberOfAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
-	
-	/**
 	 * Return the number of participants to the course
 	 * 
 	 * @param coach
@@ -60,6 +54,9 @@ public interface AssessmentToolManager {
 	 */
 	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params);
 	
+	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params);
+	
+	public List<AssessedCurriculumElement> getCurriculumElementStatistics(Identity coach, SearchAssessedIdentityParams params);
 	
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	

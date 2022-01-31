@@ -45,7 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CourseNodeToReleaseSmallController extends CourseNodeToReviewAbstractSmallController {
 	
 	private static final Supplier<AssessedIdentityListState> IDENTITY_FILTER = 
-			() -> new AssessedIdentityListState(null, null, null, null, null, IdentityListCourseNodeController.TO_RELEASE_TAB_ID, true);
+			() -> new AssessedIdentityListState(null, null, null, null, null, null, IdentityListCourseNodeController.TO_RELEASE_TAB_ID, true);
 	
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;

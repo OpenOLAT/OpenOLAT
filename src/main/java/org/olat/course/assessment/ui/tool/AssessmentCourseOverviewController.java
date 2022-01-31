@@ -24,8 +24,6 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -35,15 +33,17 @@ import org.olat.core.gui.control.generic.messages.MessagePanelController;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.assessment.ui.AssessmentStatisticsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,21 +56,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentCourseOverviewController extends BasicController {
 	
-	protected static final Event SELECT_USERS_EVENT = new Event("assessment-tool-select-users");
-	protected static final Event SELECT_NODES_EVENT = new Event("assessment-tool-select-nodes");
-	protected static final Event SELECT_PASSED_EVENT = new Event("assessment-tool-select-passed");
-	protected static final Event SELECT_FAILED_EVENT = new Event("assessment-tool-select-failed");
-	
 	private final VelocityContainer mainVC;
+	private final AssessmentStatisticsController statisticCtrl;
 	private final CourseNodeToReviewSmallController toReviewCtrl;
 	private final Controller toReleaseCtrl;
 	private final AssessmentModeOverviewListController assessmentModeListCtrl;
-	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
-
-	private Link passedLink;
-	private Link failedLink;
-	private Link assessedIdentitiesLink;
-	private Link assessableCoureNodesLink;
 
 	@Autowired
 	private CertificatesManager certificatesManager;
@@ -109,6 +99,14 @@ public class AssessmentCourseOverviewController extends BasicController {
 			mainVC.put("certificationSubscription", certificateSubscriptionCtrl.getInitialComponent());
 		}
 		
+		String rootNodeIdent = course.getRunStructure().getRootNode().getIdent();
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNodeIdent, null, assessmentCallback);
+		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
+		
+		statisticCtrl = new AssessmentStatisticsController(ureq, getWindowControl(), courseEntry, assessmentCallback, params);
+		listenTo(statisticCtrl);
+		mainVC.put("statistic", statisticCtrl.getInitialComponent());
+		
 		toReviewCtrl = new CourseNodeToReviewSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(toReviewCtrl);
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
@@ -121,38 +119,6 @@ public class AssessmentCourseOverviewController extends BasicController {
 		}
 		listenTo(toReleaseCtrl);
 		mainVC.put("toRelease", toReleaseCtrl.getInitialComponent());
-		
-		statisticsCtrl = new AssessmentCourseStatisticsSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
-		listenTo(statisticsCtrl);
-		mainVC.put("statistics", statisticsCtrl.getInitialComponent());
-		
-		int numOfParticipants = statisticsCtrl.getMemberStatistics().getNumOfParticipants();
-		int numOfOtherUsers = statisticsCtrl.getMemberStatistics().getNumOfOtherUsers();
-		String[] args = new String[]{ Integer.toString(numOfParticipants), Integer.toString(numOfOtherUsers) };
-		String assessedIdentitiesText = numOfOtherUsers > 0
-				? translate("assessment.tool.num.assessed.participants.others", args)
-				: translate("assessment.tool.num.assessed.participants", args);
-		assessedIdentitiesLink = LinkFactory.createLink("assessed.identities", "assessed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-		assessedIdentitiesLink.setCustomDisplayText(assessedIdentitiesText);
-		assessedIdentitiesLink.setElementCssClass("o_sel_assessment_tool_assessed_users");
-		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon_user o_icon-fw");
-		
-		int numOfPassed = statisticsCtrl.getNumOfPassed();
-		passedLink = LinkFactory.createLink("passed.identities", "passed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-		passedLink.setCustomDisplayText(translate("assessment.tool.numOfPassed", new String[]{ Integer.toString(numOfPassed) }));
-		passedLink.setIconLeftCSS("o_passed o_icon o_icon_passed o_icon-fw");
-
-		int numOfFailed = statisticsCtrl.getNumOfFailed();
-		failedLink = LinkFactory.createLink("failed.identities", "failed.identities", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-		failedLink.setCustomDisplayText(translate("assessment.tool.numOfFailed", new String[]{ Integer.toString(numOfFailed) }));
-		failedLink.setIconLeftCSS("o_failed o_icon o_icon_failed o_icon-fw");
-		
-		int numOfAssessableCourseNodes = hasAssessableNodes ?
-				AssessmentHelper.countAssessableNodes(course.getRunStructure().getRootNode()) : 0;
-		assessableCoureNodesLink = LinkFactory.createLink("assessable.nodes", "assessable.nodes", getTranslator(), mainVC, this, Link.NONTRANSLATED);
-		assessableCoureNodesLink.setCustomDisplayText(translate("assessment.tool.numOfAssessableCourseNodes", new String[]{ Integer.toString(numOfAssessableCourseNodes) }));
-		assessableCoureNodesLink.setElementCssClass("o_sel_assessment_tool_assessable_course_nodes");
-		assessableCoureNodesLink.setIconLeftCSS("o_icon o_ms_icon o_icon-fw");
 		
 		assessmentModeListCtrl = new AssessmentModeOverviewListController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(assessmentModeListCtrl);
@@ -182,20 +148,14 @@ public class AssessmentCourseOverviewController extends BasicController {
 			if(event instanceof CourseNodeEvent || event instanceof AssessmentModeStatusEvent) {
 				fireEvent(ureq, event);
 			}
+		} else if (statisticCtrl == source) {
+			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(assessedIdentitiesLink == source) {
-			fireEvent(ureq, SELECT_USERS_EVENT);
-		} else if(passedLink == source) {
-			fireEvent(ureq, SELECT_PASSED_EVENT);
-		} else if(failedLink == source) {
-			fireEvent(ureq, SELECT_FAILED_EVENT);
-		} else if(assessableCoureNodesLink == source) {
-			fireEvent(ureq, SELECT_NODES_EVENT);
-		}
+		//
 	}
 }

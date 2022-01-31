@@ -21,7 +21,6 @@ package org.olat.modules.portfolio.ui.model;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.assessment.ui.AssessableResource;
 import org.olat.modules.assessment.ui.AssessedIdentityListController;
@@ -42,7 +41,7 @@ public class AssessableBinderResource extends AssessableResource {
 	}
 
 	@Override
-	public Controller createIdentityList(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public AssessedIdentityListController createIdentityList(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry entry, AssessmentToolSecurityCallback assessmentCallback) {
 		return new AssessedIdentityListController(ureq, wControl, stackPanel,
 				entry, this, assessmentCallback);

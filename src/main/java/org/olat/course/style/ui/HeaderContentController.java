@@ -130,7 +130,7 @@ public class HeaderContentController extends BasicController
 		if (header != null && CourseStyleUIFactory.hasValues(header)) {
 			headerCtrl = new HeaderController(ureq, getWindowControl(), header);
 			listenTo(headerCtrl);
-			collapseCtrl.setCollapsibleController(headerCtrl);
+			collapseCtrl.setExpandableController(headerCtrl);
 			mainVC.put("header", collapseCtrl.getInitialComponent());
 		} else {
 			mainVC.remove("header");

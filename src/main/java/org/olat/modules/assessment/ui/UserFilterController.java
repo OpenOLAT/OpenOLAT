@@ -41,7 +41,7 @@ import org.olat.modules.assessment.ui.event.UserFilterEvent;
  */
 public class UserFilterController extends FormBasicController {
 
-	private static final String OTHER_USER = "otherUsers";
+	private static final String OTHER_USER = "other.users";
 	private static final String ANONYMOUS = "anonymousUsers";
 	
 	private MultipleSelectionElement restrictionEl;

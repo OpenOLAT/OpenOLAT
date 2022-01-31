@@ -34,6 +34,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.evaluation.LearningPathEvaluatorBuilder;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -130,6 +131,18 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		return new IQIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
 				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
+	}
+	
+	@Override
+	public boolean hasCustomOverviewController() {
+		return true;
+	}
+
+	@Override
+	public AssessmentCourseNodeOverviewController getCustomOverviewController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment coachCourseEnv, CourseNode courseNode,
+			AssessmentToolSecurityCallback assessmentCallback) {
+		return new IQTESTAssessmentCourseNodeStatsController(ureq, wControl, coachCourseEnv, courseNode, assessmentCallback);
 	}
 
 }

@@ -72,7 +72,7 @@ public class ExpandController extends BasicController {
 		}
 	}
 	
-	public void setCollapsibleController(ExpandableController newCtrl) {
+	public void setExpandableController(ExpandableController newCtrl) {
 		removeAsListenerAndDispose(expandableCtrl);
 		expandableCtrl = newCtrl;
 		

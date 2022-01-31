@@ -122,6 +122,7 @@ public class MenuTree extends AbstractComponent {
 	private boolean dropSiblingEnabled = false;
 	private boolean expandSelectedNode = true;
 	private boolean rootVisible = true;
+	private boolean highlightSelection = true;
 	private boolean unselectNodes;
 	private boolean showInsertTool;
 	private boolean multiSelect;
@@ -595,6 +596,20 @@ public class MenuTree extends AbstractComponent {
 		this.rootVisible = rootVisible;
 	}
 
+	public boolean isHighlightSelection() {
+		return highlightSelection;
+	}
+
+	/**
+	 * Enable / Disable if the selected nodes should be visually highlighted.
+	 *
+	 * @param highlightSelection
+	 */
+	public void setHighlightSelection(boolean highlightSelection) {
+		this.highlightSelection = highlightSelection;
+		setDirty(true);
+	}
+
 	/**
 	 * @param nodeForum
 	 */
@@ -607,6 +622,7 @@ public class MenuTree extends AbstractComponent {
 		}
 	}
 
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}

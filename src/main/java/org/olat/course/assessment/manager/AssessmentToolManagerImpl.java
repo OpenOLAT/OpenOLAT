@@ -47,6 +47,8 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CoachingAssessmentEntry;
 import org.olat.course.assessment.CoachingAssessmentSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.model.AssessedBusinessGroup;
+import org.olat.course.assessment.model.AssessedCurriculumElement;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.CoachingAssessmentEntryImpl;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -74,16 +76,6 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 
 	@Autowired
 	private DB dbInstance;
-
-	@Override
-	public int getNumberOfAssessedIdentities(Identity coach, SearchAssessedIdentityParams params) {
-		if (params.isAdmin() && params.isNonMembers() && params.isNonMemebersOnly() && (params.hasBusinessGroupKeys() || params.hasCurriculumElementKeys())) {
-			return 0;
-		}
-		
-		TypedQuery<Long> participantsQuery = createAssessedParticipants(coach, params, Long.class);
-		return participantsQuery.getResultList().size();
-	}
 
 	@Override
 	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params) {
@@ -170,12 +162,11 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	
 	@Override
 	public AssessmentStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params) {
-		RepositoryEntry courseEntry = params.getEntry();
-
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select avg(aentry.score) as scoreAverage, ")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
+		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
 		  //.append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("') or aentry.passed is null) then 1 else 0 end) as numOfNotAttempted,")
 		  //.append(" sum(aentry.key) as numOfStatements,")
 		  .append(" v.key as repoKey")
@@ -222,7 +213,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 
 		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
 			.createQuery(sf.toString(), Object[].class)
-			.setParameter("repoEntryKey", courseEntry.getKey());
+			.setParameter("repoEntryKey", params.getEntry().getKey());
 		if(!params.isAdmin()) {
 			stats.setParameter("identityKey", coach.getKey());
 		}
@@ -243,12 +234,153 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			Double averageScore = (Double)result[0];
 			Long numOfPassed = (Long)result[1];
 			Long numOfFailed = (Long)result[2];
+			Long numOfUndefined = (Long)result[3];
 			
 			entry.setAverageScore(averageScore);
 			entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
 			entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
+			entry.setCountUndefined(numOfUndefined == null ? 0 : numOfUndefined.intValue());
+			entry.setCountTotal(entry.getCountPassed() + entry.getCountFailed() + entry.getCountUndefined());
 		}
 		return entry;
+	}
+	
+
+
+	@Override
+	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		QueryBuilder sf = new QueryBuilder();
+		sf.append("select bgi.key, bgi.name, baseGroup.key,")
+		  .append(" avg(aentry.score) as scoreAverage,")
+		  .append(" sum(case when aentry.score is not null then 1 else 0 end) as numOfScore,")
+		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
+		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
+		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
+		  .append(" count(aentry.key) as numOfParticipants")
+		  .append(" from businessgroup as bgi")
+		  .append(" inner join bgi.baseGroup as baseGroup")
+		  .append(" inner join repoentrytogroup as rel on (rel.group.key=bgi.baseGroup.key and rel.entry.key=:repoEntryKey)")
+		  .append(" left join baseGroup.members as bmember on (bmember.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" left join assessmententry as aentry on (bmember.identity.key=aentry.identity.key and rel.entry.key = aentry.repositoryEntry.key)");
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			sf.append(" and (");
+			if (params.getAssessmentObligations().contains(AssessmentObligation.mandatory)) {
+				sf.append("aentry.obligation is null or ");
+			}
+			sf.append(" aentry.obligation in (:assessmentObligations))");
+		}
+
+		if(!params.isAdmin()) {
+			sf.and().append(" bgi.key in (:groupKeys)");
+		}
+		if(params.getSubIdent() != null) {
+			sf.and().append(" aentry.subIdent=:subIdent");
+		}
+		if(params.getReferenceEntry() != null) {
+			sf.and().append(" aentry.referenceEntry.key=:referenceKey");
+		}
+		sf.append(" group by bgi.key, bgi.name, baseGroup.key");
+
+		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
+				.createQuery(sf.toString(), Object[].class)
+				.setParameter("repoEntryKey", params.getEntry().getKey());
+		if(!params.isAdmin()) {
+			stats.setParameter("groupKeys", params.getBusinessGroupKeys());
+		}
+		if(params.getSubIdent() != null) {
+			stats.setParameter("subIdent", params.getSubIdent());
+		}
+		if(params.getReferenceEntry() != null) {
+			stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
+		}
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			stats.setParameter("assessmentObligations", params.getAssessmentObligations());
+		}
+		
+		List<Object[]> results = stats.getResultList();
+		List<AssessedBusinessGroup> rows = new ArrayList<>(results.size());
+		
+		for(Object[] result:results) {
+			Long key = (Long)result[0];
+			String name = (String)result[1];
+			double averageScore = result[3] == null ? 0.0d : ((Number)result[3]).doubleValue();
+			int numOfScores = result[4] == null ? 0 : ((Number)result[4]).intValue();
+			int numOfPassed = result[5] == null ? 0 : ((Number)result[5]).intValue();
+			int numOfFailed = result[6] == null ? 0  : ((Number)result[6]).intValue();
+			int numOfUndefined = result[7] == null ? 0 : ((Number)result[7]).intValue();
+			int numOfParticipants = result[8] == null ? 0 : ((Number)result[8]).intValue();
+			rows.add(new AssessedBusinessGroup(key, name, averageScore, numOfScores > 0,
+					numOfPassed, numOfFailed, numOfUndefined, numOfParticipants));
+		}
+		return rows;
+	}
+	
+	@Override
+	public List<AssessedCurriculumElement> getCurriculumElementStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		QueryBuilder sf = new QueryBuilder();
+		sf.append("select ce.key, ce.displayName, baseGroup.key,")
+		  .append(" avg(aentry.score) as scoreAverage,")
+		  .append(" sum(case when aentry.score is not null then 1 else 0 end) as numOfScore,")
+		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
+		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
+		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
+		  .append(" count(aentry.key) as numOfParticipants")
+		  .append(" from curriculumelement as ce")
+		  .append(" inner join ce.group as baseGroup")
+		  .append(" inner join repoentrytogroup as rel on (rel.group.key=ce.group.key and rel.entry.key=:repoEntryKey)")
+		  .append(" left join baseGroup.members as bmember on (bmember.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" left join assessmententry as aentry on (bmember.identity.key=aentry.identity.key and rel.entry.key = aentry.repositoryEntry.key)");
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			sf.append(" and (");
+			if (params.getAssessmentObligations().contains(AssessmentObligation.mandatory)) {
+				sf.append("aentry.obligation is null or ");
+			}
+			sf.append(" aentry.obligation in (:assessmentObligations))");
+		}
+
+		if(!params.isAdmin()) {
+			sf.and().append(" ce.key in (:curriculumElementKeys)");
+		}
+		if(params.getSubIdent() != null) {
+			sf.and().append(" aentry.subIdent=:subIdent");
+		}
+		if(params.getReferenceEntry() != null) {
+			sf.and().append(" aentry.referenceEntry.key=:referenceKey");
+		}
+		sf.append(" group by ce.key, ce.displayName, baseGroup.key");
+
+		TypedQuery<Object[]> stats = dbInstance.getCurrentEntityManager()
+				.createQuery(sf.toString(), Object[].class)
+				.setParameter("repoEntryKey", params.getEntry().getKey());
+		if(!params.isAdmin()) {
+			stats.setParameter("curriculumElementKeys", params.getCurriculumElementKeys());
+		}
+		if(params.getSubIdent() != null) {
+			stats.setParameter("subIdent", params.getSubIdent());
+		}
+		if(params.getReferenceEntry() != null) {
+			stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
+		}
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			stats.setParameter("assessmentObligations", params.getAssessmentObligations());
+		}
+		
+		List<Object[]> results = stats.getResultList();
+		List<AssessedCurriculumElement> rows = new ArrayList<>(results.size());
+		
+		for(Object[] result:results) {
+			Long key = (Long)result[0];
+			String name = (String)result[1];
+			double averageScore = result[3] == null ? 0.0d : ((Number)result[3]).doubleValue();
+			int numOfScores = result[4] == null ? 0 : ((Number)result[4]).intValue();
+			int numOfPassed = result[5] == null ? 0 : ((Number)result[5]).intValue();
+			int numOfFailed = result[6] == null ? 0  : ((Number)result[6]).intValue();
+			int numOfUndefined = result[7] == null ? 0 : ((Number)result[7]).intValue();
+			int numOfParticipants = result[8] == null ? 0 : ((Number)result[8]).intValue();
+			rows.add(new AssessedCurriculumElement(key, name, averageScore, numOfScores > 0,
+					numOfPassed, numOfFailed, numOfUndefined, numOfParticipants));
+		}
+		return rows;
 	}
 
 	@Override

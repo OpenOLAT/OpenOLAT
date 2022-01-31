@@ -81,6 +81,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	
 	private QTICourseNode courseNode;
 	private final QTI21StatisticResourceResult resourceResult;
+	private final boolean withDiagramm;
 	
 	@Autowired
 	private QTI21StatisticsManager qtiStatisticsManager;
@@ -88,10 +89,11 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private CourseAssessmentService courseAssessmentService;
 
 	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QTI21StatisticResourceResult resourceResult, boolean withFilter, boolean printMode) {
+			QTI21StatisticResourceResult resourceResult, boolean withFilter, boolean printMode, boolean withDiagramm) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.resourceResult = resourceResult;
+		this.withDiagramm = withDiagramm;
 		courseNode = resourceResult.getTestCourseNode();
 
 		mainVC = createVelocityContainer("statistics_assessment_test");
@@ -146,9 +148,11 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 
 	private void updateData() {
 		StatisticAssessment stats = resourceResult.getQTIStatisticAssessment();
-		initScoreHistogram(stats);
-		initScoreStatisticPerItem(stats.getNumOfParticipants());
-		initDurationHistogram(stats);
+		if (withDiagramm) {
+			initScoreHistogram(stats);
+			initScoreStatisticPerItem(stats.getNumOfParticipants());
+			initDurationHistogram(stats);
+		}
 		initCourseNodeInformation(stats);
 	}
 	
@@ -271,9 +275,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	}
 	
 	private void printPages(UserRequest ureq) {
-		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
-			return new QTI21PrintController(lureq, lwControl, resourceResult);				
-		};
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> new QTI21PrintController(lureq, lwControl, resourceResult);
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}

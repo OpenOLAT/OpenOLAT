@@ -25,6 +25,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeProvider;
@@ -75,5 +76,16 @@ public interface AssessmentHandler extends CourseNodeProvider {
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle);
+
+	public default boolean hasCustomOverviewController() {
+		return false;
+	}
+
+	@SuppressWarnings("unused")
+	public default AssessmentCourseNodeOverviewController getCustomOverviewController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment coachCourseEnv, CourseNode courseNode,
+			AssessmentToolSecurityCallback assessmentCallback) {
+		return null;
+	}
 
 }

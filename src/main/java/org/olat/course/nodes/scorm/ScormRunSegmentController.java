@@ -40,6 +40,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
+import org.olat.course.assessment.ui.tool.AssessmentEventToState;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -54,10 +56,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ScormRunSegmentController extends BasicController implements Activateable2 {
 	
 	private static final String ORES_TYPE_CONTENT = "Content";
+	private static final String ORES_TYPE_OVERVIEW = "Overview";
 	private static final String ORES_TYPE_PARTICIPANTS = "Participants";
 	private static final String ORES_TYPE_REMINDERS = "Reminders";
 	
 	private Link contentLink;
+	private Link overviewLink;
 	private Link participantsLink;
 	private Link remindersLink;
 	
@@ -65,6 +69,8 @@ public class ScormRunSegmentController extends BasicController implements Activa
 	private SegmentViewComponent segmentView;
 
 	private Controller contentCtrl;
+	private AssessmentCourseNodeOverviewController overviewCtrl;
+	private AssessmentEventToState assessmentEventToState;
 	private TooledStackedPanel participantsPanel;
 	private AssessmentCourseNodeController participantsCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
@@ -91,13 +97,20 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		// Participants
 		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
 			if (courseAssessmentService.getAssessmentConfig(courseNode).isEditable()) {
+				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
+				overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv);
+				listenTo(overviewCtrl);
+				assessmentEventToState = new AssessmentEventToState(overviewCtrl);
+				
+				overviewLink = LinkFactory.createLink("segment.overview", mainVC, this);
+				segmentView.addSegment(overviewLink, false);
 				participantsPanel = new TooledStackedPanel("participantsPanel", getTranslator(), this);
 				participantsPanel.setToolbarAutoEnabled(false);
 				participantsPanel.setToolbarEnabled(false);
 				participantsPanel.setShowCloseLink(true, false);
 				participantsPanel.setCssClass("o_segment_toolbar o_block_top");
 				
-				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
+				swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_PARTICIPANTS), null);
 				participantsCtrl = courseAssessmentService.getCourseNodeRunController(ureq, swControl, participantsPanel, 
 						courseNode, userCourseEnv);
 				listenTo(participantsCtrl);
@@ -134,14 +147,13 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(ORES_TYPE_CONTENT.equalsIgnoreCase(type)) {
 			doOpenContent(ureq);
-			segmentView.select(contentLink);
+		} else if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
+			doOpenOverview();
 		} else if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type) && participantsLink != null) {
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			doOpenParticipants(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
-			segmentView.select(participantsLink);
 		} else if(ORES_TYPE_REMINDERS.equalsIgnoreCase(type) && remindersLink != null) {
 			doOpenReminders(ureq);
-			segmentView.select(remindersLink);
 		}
 	}
 
@@ -154,6 +166,8 @@ public class ScormRunSegmentController extends BasicController implements Activa
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == contentLink) {
 					doOpenContent(ureq);
+				} else if (clickedLink == overviewLink) {
+					doOpenOverview();
 				} else if (clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				} else if (clickedLink == remindersLink) {
@@ -161,6 +175,14 @@ public class ScormRunSegmentController extends BasicController implements Activa
 				}
 			}
 		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (assessmentEventToState != null && assessmentEventToState.handlesEvent(source, event)) {
+			doOpenParticipants(ureq).activate(ureq, null, assessmentEventToState.getState(event));
+		}
+		super.event(ureq, source, event);
 	}
 	
 	public void doOpenContent(UserRequest ureq) {
@@ -171,8 +193,18 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		contentCtrl = new ScormRunController(courseNode.getModuleConfiguration(), ureq, userCourseEnv, swControl, courseNode, false);
 		listenTo(contentCtrl);
 		mainVC.put("segmentCmp", contentCtrl.getInitialComponent());
+		segmentView.select(contentLink);
 		if (segmentView.getSegments().size() > 1) {
 			mainVC.contextPut("cssClass", "o_block_top");
+		}
+	}
+	
+	private void doOpenOverview() {
+		mainVC.contextRemove("cssClass");
+		if (overviewLink != null) {
+			overviewCtrl.reload();
+			mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
+			segmentView.select(overviewLink);
 		}
 	}
 	
@@ -182,6 +214,7 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		addToHistory(ureq, participantsCtrl);
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", participantsPanel);
+			segmentView.select(participantsLink);
 		}
 		return participantsCtrl;
 	}
@@ -191,6 +224,7 @@ public class ScormRunSegmentController extends BasicController implements Activa
 		if (remindersLink != null) {
 			remindersCtrl.reload(ureq);
 			mainVC.put("segmentCmp", remindersCtrl.getInitialComponent());
+			segmentView.select(remindersLink);
 		}
 	}
 

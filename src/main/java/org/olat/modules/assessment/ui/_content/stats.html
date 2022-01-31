@@ -1,0 +1,52 @@
+<div class="panel panel-default o_expandable_panel o_assessment_stats">
+	<div class="panel-heading">
+		<h4 class="panel-title"><i class="o_icon o_icon_user"> </i> $r.translate("participants")</h4>
+	</div>
+	<div class="o_overview">
+		<div class="o_overview_members">
+			<ul class="list-unstyled">
+				#if($r.available("assessed.identities"))
+					<li>$r.render("assessed.identities")</li>
+				#end
+				#if($r.available("groups"))
+					<li>$r.render("groups")</li>
+				#end
+				#if($r.available("curriculum.elements"))
+					<li>$r.render("curriculum.elements")</li>
+				#end
+			</ul>
+		</div>
+		<div class="o_overview_passed">
+			$r.render("passed.chart")
+			<ul class="list-unstyled">
+				#if($r.available("num.passed"))
+					<li>$r.render("num.passed")</li>
+				#end
+				#if($r.available("num.failed"))
+					<li>$r.render("num.failed")</li>
+				#end
+				#if($r.available("num.undefined"))
+					<li>$r.render("num.undefined")</li>
+				#end
+			</ul>
+		</div>
+	</div>
+	
+	#if($expanded)
+		$r.render("launches")
+		#if($r.visible("groupList"))
+			$r.render("groupList")
+		#end
+		#if($r.visible("curriculumElementList"))
+			$r.render("curriculumElementList")
+		#end
+		<div class="o_block"></div>
+		<script>
+			/* <![CDATA[ */ 
+			jQuery(function() {
+				BFormatter.alignTableColumns(jQuery('.o_assessment_stats .o_group_list table'));
+			});
+			/* ]]> */
+		</script>
+	#end
+</div>

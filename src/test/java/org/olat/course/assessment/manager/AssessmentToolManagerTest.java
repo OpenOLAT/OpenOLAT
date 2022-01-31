@@ -40,6 +40,8 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CoachingAssessmentEntry;
 import org.olat.course.assessment.CoachingAssessmentSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.model.AssessedBusinessGroup;
+import org.olat.course.assessment.model.AssessedCurriculumElement;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.core.CourseElement;
@@ -57,6 +59,14 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLearningProgress;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -79,6 +89,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
 	private CourseElementDAO couurseElementDao;
+	@Autowired
+	private CurriculumService curriculumService;
 	@Autowired
 	private BaseSecurityManager securityManager;
 	@Autowired
@@ -105,6 +117,9 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-2");
 		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-3");
 		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-4");
+		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-5");
+		Identity assessedIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-6");
+		Identity assessedIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-7");
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-1");
 
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -120,7 +135,23 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(assessedIdentity1, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(assessedIdentity2, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(assessedIdentity3, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity5, group1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(coach, group1, GroupRoles.coach.name());
+		
+		Curriculum curriculum = curriculumService.createCurriculum(random(), random(), random(), null);
+		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addRepositoryEntry(curriculumElement1, entry, false);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement(random(), random(),
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		curriculumService.addRepositoryEntry(curriculumElement2, entry, false);
+		
+		curriculumService.addMember(curriculumElement1, assessedIdentity6, CurriculumRoles.participant);
+		curriculumService.addMember(curriculumElement2, assessedIdentity7, CurriculumRoles.participant);
+		curriculumService.addMember(curriculumElement1, coach, CurriculumRoles.coach);
+		
 		dbInstance.commitAndCloseSession();
 		
 		// some datas
@@ -140,6 +171,19 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae4.setScore(BigDecimal.valueOf(9.0));
 		ae4.setPassed(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(ae4);
+		AssessmentEntry ae5 = assessmentEntryDao.createAssessmentEntry(assessedIdentity5, null, entry, subIdent, null, refEntry);
+		ae5.setScore(BigDecimal.valueOf(9.0));
+		ae5.setPassed(Boolean.TRUE);
+		ae5.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
+		assessmentEntryDao.updateAssessmentEntry(ae5);
+		AssessmentEntry ae6 = assessmentEntryDao.createAssessmentEntry(assessedIdentity6, null, entry, subIdent, null, refEntry);
+		ae6.setScore(BigDecimal.valueOf(4.0));
+		ae6.setPassed(Boolean.TRUE);
+		assessmentEntryDao.updateAssessmentEntry(ae6);
+		AssessmentEntry ae7 = assessmentEntryDao.createAssessmentEntry(assessedIdentity7, null, entry, subIdent, null, refEntry);
+		ae7.setScore(BigDecimal.valueOf(9.0));
+		ae7.setPassed(Boolean.TRUE);
+		assessmentEntryDao.updateAssessmentEntry(ae7);
 		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
@@ -147,21 +191,18 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		List<BusinessGroup> coachedGroups = Collections.singletonList(group1);
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(false, false, false, true, false, coachedGroups);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
+		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 
 		// statistics
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(coach, params);
 		Assert.assertEquals(4.0d, statistics.getAverageScore().doubleValue(), 0.0001);
 		Assert.assertEquals(1, statistics.getCountFailed());
-		Assert.assertEquals(1, statistics.getCountPassed());
+		Assert.assertEquals(2, statistics.getCountPassed());
 
 		//check assessed identities list
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(coach, params);
 		Assert.assertNotNull(assessedIdentities);
-		Assert.assertEquals(2, assessedIdentities.size());
-		
-		//number of assessed identities
-		int numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(coach, params);
-		Assert.assertEquals(2, numOfAssessedIdentities);
+		Assert.assertEquals(4, assessedIdentities.size());
 		
 		//check only the queries
 		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params);
@@ -174,15 +215,26 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// separate check with more options in the search parameters
 		// add by group key 
 		params.setBusinessGroupKeys(Collections.singletonList(group1.getKey()));
+		params.setCurriculumElementKeys(Collections.singletonList(curriculumElement1.getKey()));
 
 		//check assessed identities list
 		List<Identity> assessedIdentitiesAlt = assessmentToolManager.getAssessedIdentities(coach, params);
 		Assert.assertNotNull(assessedIdentitiesAlt);
-		Assert.assertEquals(2, assessedIdentitiesAlt.size());
+		Assert.assertEquals(4, assessedIdentitiesAlt.size());
 		
-		//number of assessed identities
-		int numOfAssessedIdentitiesAlt = assessmentToolManager.getNumberOfAssessedIdentities(coach, params);
-		Assert.assertEquals(2, numOfAssessedIdentitiesAlt);
+		// assessed groups
+		List<AssessedBusinessGroup> assessedGroups = assessmentToolManager.getBusinessGroupStatistics(coach, params);
+		Assert.assertNotNull(assessedGroups);
+		Assert.assertEquals(1, assessedGroups.size());
+		Assert.assertEquals(2, assessedGroups.get(0).getNumOfParticipants());
+		Assert.assertEquals(1, assessedGroups.get(0).getNumOfPassed());
+		
+		// assessed curriculum elements
+		List<AssessedCurriculumElement> curriculumElementStatistics = assessmentToolManager.getCurriculumElementStatistics(coach, params);
+		Assert.assertNotNull(curriculumElementStatistics);
+		Assert.assertEquals(1, curriculumElementStatistics.size());
+		Assert.assertEquals(1, curriculumElementStatistics.get(0).getNumOfParticipants());
+		Assert.assertEquals(1, assessedGroups.get(0).getNumOfPassed());
 		
 		List<AssessmentEntry> assessmentEntriesAlt = assessmentToolManager.getAssessmentEntries(coach, params, AssessmentEntryStatus.notStarted);
 		Assert.assertNotNull(assessmentEntriesAlt);
@@ -203,6 +255,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Identity assessedExtIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-9");
 		Identity assessedExtIdentity6 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-10");
 		Identity assessedExtIdentity7 = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-ext-11");
+		Identity assessedIdentity8 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity9 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("ast-coach-9");
 
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -251,6 +305,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae7.setScore(BigDecimal.valueOf(5.0));
 		ae7.setPassed(Boolean.TRUE);
 		assessmentEntryDao.updateAssessmentEntry(ae7);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity8, null, entry, subIdent, null, refEntry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity9, null, entry, subIdent, null, refEntry);
 		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
@@ -261,17 +317,15 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		//check assessed identities list
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
 		Assert.assertNotNull(assessedIdentities);
-		Assert.assertEquals(7, assessedIdentities.size());
-		
-		//number of assessed identities
-		int numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(admin, params);
-		Assert.assertEquals(7, numOfAssessedIdentities);
+		Assert.assertEquals(9, assessedIdentities.size());
 		
 		// statistics
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(admin, params);
 		Assert.assertEquals(5.28571d, statistics.getAverageScore().doubleValue(), 0.0001);
+		Assert.assertEquals(9, statistics.getCountTotal());
 		Assert.assertEquals(1, statistics.getCountFailed());
 		Assert.assertEquals(6, statistics.getCountPassed());
+		Assert.assertEquals(2, statistics.getCountUndefined());
 		
 		//check only the queries as the statistics need the course infos
 		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(admin, params);

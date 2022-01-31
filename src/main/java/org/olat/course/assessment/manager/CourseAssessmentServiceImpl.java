@@ -51,6 +51,8 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeStatsController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
@@ -389,6 +391,16 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		AssessmentToolSecurityCallback assessmentCallback = createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		return getIdentityListController(ureq, wControl, stackPanel, courseNode, courseEntry, coachCourseEnv,
 				new AssessmentToolContainer(), assessmentCallback, false);
+	}
+	
+	@Override
+	public AssessmentCourseNodeOverviewController getCourseNodeOverviewController(UserRequest ureq,
+			WindowControl wControl, CourseNode courseNode, UserCourseEnvironment coachCourseEnv) {
+		AssessmentToolSecurityCallback assessmentCallback = createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
+		if (getAssessmentHandler(courseNode).hasCustomOverviewController()) {
+			return getAssessmentHandler(courseNode).getCustomOverviewController(ureq, wControl, coachCourseEnv, courseNode, assessmentCallback);
+		}
+		return new AssessmentCourseNodeStatsController(ureq, wControl, coachCourseEnv, courseNode, assessmentCallback);
 	}
 
 	private AssessmentToolSecurityCallback createCourseNodeRunSecurityCallback(UserRequest ureq, UserCourseEnvironment userCourseEnv) {

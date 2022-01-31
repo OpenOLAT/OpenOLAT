@@ -345,7 +345,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	}
 	
 	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, boolean printMode) {
-		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, stackPanel, this, withFilter, printMode);
+		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, stackPanel, this, withFilter, printMode, true);
 		if(courseNode != null) {
 			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
 					.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());

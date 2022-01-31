@@ -19,7 +19,6 @@
  */
 package org.olat.modules.assessment.ui;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,6 +39,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.ui.tool.AssessmentEventToState;
 import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
 
@@ -55,11 +55,12 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private final AssessableResource element;
 	private final AssessmentToolContainer toolContainer;
 	private final AssessmentToolSecurityCallback assessmentCallback;
+	private final AssessmentEventToState assessmentEventToState;
 	
 	private Link usersLink;
 	private final TooledStackedPanel stackPanel;
 	
-	private Controller currentCtl;
+	private AssessedIdentityListController currentCtl;
 	private AssessmentOverviewController overviewCtrl;
 	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -76,6 +77,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		overviewCtrl = new AssessmentOverviewController(ureq, getWindowControl(), testEntry, assessmentCallback);
 		listenTo(overviewCtrl);
 		putInitialPanel(overviewCtrl.getInitialComponent());
+		assessmentEventToState = new AssessmentEventToState(overviewCtrl);
 	}
 	
 	public void initToolbar() {
@@ -87,54 +89,46 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.size() == 0) {
-			//
+			return;
+		}
+		
+		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if ("Users".equalsIgnoreCase(resName)) {
+			doSelectUsersView(ureq);
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == usersLink) {
-			doSelectUsersView(ureq, "Users", null);
+			doSelectUsersView(ureq);
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(overviewCtrl == source) {
-			if(event == AssessmentOverviewController.SELECT_USERS_EVENT) {
-				doSelectUsersView(ureq, "Users", null);
-			} else if(event == AssessmentOverviewController.SELECT_PASSED_EVENT) {
-				doSelectUsersView(ureq, "Passed", new AssessedIdentityListState(null, Collections.singletonList("passed"), null, null, null, "Passed", false));
-			} else if(event == AssessmentOverviewController.SELECT_FAILED_EVENT) {
-				doSelectUsersView(ureq, "NotPassed", new AssessedIdentityListState(null, Collections.singletonList("failed"), null, null, null, "Failed", false));
-			} else if (event instanceof UserSelectionEvent) {
-				UserSelectionEvent use = (UserSelectionEvent)event;
-				OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
-				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
-				Controller userViewCtrl = doSelectUsersView(ureq, "Users", null);
-				if(userViewCtrl instanceof Activateable2) {
-					((Activateable2)userViewCtrl).activate(ureq, entries, null);
-				}
-			}
+		if (assessmentEventToState != null && assessmentEventToState.handlesEvent(source, event)) {
+			doSelectUsersView(ureq).activate(ureq, null, assessmentEventToState.getState(event));
+		} else if (event instanceof UserSelectionEvent) {
+			UserSelectionEvent use = (UserSelectionEvent)event;
+			OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
+			doSelectUsersView(ureq).activate(ureq, entries, null);
 		}
 		super.event(ureq, source, event);
 	}
 	
-	private Controller doSelectUsersView(UserRequest ureq, String resName, AssessedIdentityListState state) {
+	private Activateable2 doSelectUsersView(UserRequest ureq) {
 		if(currentCtl != null) {
 			stackPanel.popController(currentCtl);
 		}
 		
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, 0l);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Users", 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
-		Controller treeCtrl = element.createIdentityList(ureq, bwControl, stackPanel, testEntry, assessmentCallback);
-		listenTo(treeCtrl);
-		stackPanel.pushController(translate("users"), treeCtrl);
-		currentCtl = treeCtrl;
-		if(treeCtrl instanceof Activateable2) {
-			((Activateable2)treeCtrl).activate(ureq, null, state);
-		}
+		currentCtl = element.createIdentityList(ureq, bwControl, stackPanel, testEntry, assessmentCallback);
+		listenTo(currentCtl);
+		stackPanel.pushController(translate("users"), currentCtl);
 		return currentCtl;
 	}
 }

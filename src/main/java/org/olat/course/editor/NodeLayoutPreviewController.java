@@ -80,7 +80,7 @@ public class NodeLayoutPreviewController extends BasicController {
 		if (header != null && CourseStyleUIFactory.hasValues(header)) {
 			headerCtrl = new HeaderController(ureq, getWindowControl(), header);
 			listenTo(headerCtrl);
-			collapseCtrl.setCollapsibleController(headerCtrl);
+			collapseCtrl.setExpandableController(headerCtrl);
 			tabPane.replaceTab(0, collapseCtrl);
 		} else {
 			tabPane.replaceTab(0, emptyHeaderCmp);

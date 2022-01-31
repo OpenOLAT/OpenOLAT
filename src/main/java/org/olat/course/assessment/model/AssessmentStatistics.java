@@ -27,10 +27,20 @@ package org.olat.course.assessment.model;
  */
 public class AssessmentStatistics {
 
+	private int countTotal;
 	private int countPassed;
 	private int countFailed;
+	private int countUndefined;
 	private Double averageScore;
 	
+	public int getCountTotal() {
+		return countTotal;
+	}
+
+	public void setCountTotal(int countTotal) {
+		this.countTotal = countTotal;
+	}
+
 	public int getCountPassed() {
 		return countPassed;
 	}
@@ -47,6 +57,14 @@ public class AssessmentStatistics {
 		this.countFailed = countFailed;
 	}
 	
+	public int getCountUndefined() {
+		return countUndefined;
+	}
+
+	public void setCountUndefined(int countUndefined) {
+		this.countUndefined = countUndefined;
+	}
+
 	public Double getAverageScore() {
 		return averageScore;
 	}

@@ -31,6 +31,7 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeStatsController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.evaluation.LearningPathEvaluatorBuilder;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -107,6 +108,18 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
+		return null;
+	}
+
+	@Override
+	public boolean hasCustomOverviewController() {
+		return false;
+	}
+
+	@Override
+	public AssessmentCourseNodeStatsController getCustomOverviewController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment coachCourseEnv, CourseNode courseNode,
+			AssessmentToolSecurityCallback assessmentCallback) {
 		return null;
 	}
 

@@ -795,6 +795,9 @@ div.o_reminder_custom_email {
 	&.o_unexpandable {
 		margin-bottom: 0.5em;
 	}
+	.o_expandable_panel {
+		margin-bottom: 0;
+	}
 }
 
 .o_expand.o_button_group {
