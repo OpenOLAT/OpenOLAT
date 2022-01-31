@@ -223,7 +223,6 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			// TODO Date warning
 			dateWarning = FormLayoutContainer.createCustomFormLayout("date_warning", getTranslator(), velocity_root + "/date_warning.html");
 			dateWarning.setVisible(false);
 			formLayout.add(dateWarning);
@@ -687,7 +686,7 @@ public class CourseOverviewStep extends BasicStep {
 			CourseNode courseNode = row.getCourseNode();
 			
 			// If there are no dates, stop here
-			if (courseNode == null || !courseNode.hasDates()) {
+			if (courseNode == null) {
 				return null;
 			}
 			

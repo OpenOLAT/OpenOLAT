@@ -119,7 +119,7 @@ public class MoveAllDatesController extends FormBasicController {
 			context.setDateDifferenceByEarliestCurrent(dateDifference);
 			context.setDateDifferenceByEarliest(newEarliestDateEl.getDateDifference());
 		} else {
-			long difference = Long.valueOf(moveAmountEl.getIntValue() * 86400000);
+			long difference = moveAmountEl.getIntValue() * 86400000L;
 			dateDifference = difference - context.getDateDifferenceByEarliest();
 			context.setDateDifferenceByEarliestCurrent(dateDifference);
 			context.setDateDifferenceByEarliest(difference);
