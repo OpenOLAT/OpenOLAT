@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.TimerTask;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -56,14 +57,14 @@ public class PullTestSessionsTask extends TimerTask implements Serializable {
 
 	private static final long serialVersionUID = 3863367666724686544L;
 	
-	private Long coachkKey;
+	private Long coachKey;
 	private Long courseEntryKey;
 	private List<Long> testSessionKeys;
 	
-	public PullTestSessionsTask(Long courseEntryKey, List<Long> testSessionKeys, Long coachkKey) {
+	public PullTestSessionsTask(Long courseEntryKey, List<Long> testSessionKeys, Long coachKey) {
 		this.courseEntryKey = courseEntryKey;
 		this.testSessionKeys = testSessionKeys;
-		this.coachkKey = coachkKey;
+		this.coachKey = coachKey;
 	}
 
 	@Override
@@ -86,6 +87,7 @@ public class PullTestSessionsTask extends TimerTask implements Serializable {
 	
 	private void pullSession(ICourse course, Long testSessionKey) {
 		QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		AssessmentTestSession session = qtiService.getAssessmentTestSession(testSessionKey);
 		if(session == null || session.isCancelled() || session.isExploded()
 				|| session.getFinishTime() != null || session.getTerminationTime() != null) {
@@ -97,22 +99,33 @@ public class PullTestSessionsTask extends TimerTask implements Serializable {
 		if(node instanceof IQTESTCourseNode) {
 			Object identifier = identity == null ? session.getAnonymousIdentifier() : identity.getKey();
 			log.info(Tracing.M_AUDIT, "Retrieve test session async: {} (assessed identity={}) retrieved by coach {}",
-					session.getKey(), identifier, coachkKey);
+					session.getKey(), identifier, coachKey);
 
 			IQTESTCourseNode courseNode = (IQTESTCourseNode)node;
 			String language = null;
 			if(identity != null) {
 				language = identity.getUser().getPreferences().getLanguage();
 			}
+			
+			Identity actor = null;
+			if(coachKey != null) {
+				actor = securityManager.loadIdentityByKey(coachKey);
+			}
+			
 			Locale locale = CoreSpringFactory.getImpl(I18nManager.class).getLocaleOrDefault(language);
 			DigitalSignatureOptions signatureOptions = courseNode.getSignatureOptions(session, locale);
-			session = qtiService.pullSession(session, signatureOptions, identity);
+			session = qtiService.pullSession(session, signatureOptions, actor);
 
 			RepositoryEntry courseEntry = session.getRepositoryEntry();
 			CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(session.getIdentity(), courseEnv);
-			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, identity, Role.coach);
+			
+			if(actor != null) {
+				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, actor, Role.coach);
+			} else {
+				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, null, Role.auto);
+			}
 		}
 	}
 }
