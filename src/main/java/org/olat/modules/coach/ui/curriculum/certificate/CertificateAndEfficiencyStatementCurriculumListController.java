@@ -215,7 +215,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
 		}
 
         initForm(ureq);
-        loadModel(ureq);
+        loadModel();
     }
 
     @Override
@@ -344,7 +344,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         return null;
     }
 
-    private void loadModel(UserRequest ureq) {
+    private void loadModel() {
         // Load efficiency statements
         Map<Long, CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement> resourceKeyToStatments = new HashMap<>();
         List<CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement> statements = new ArrayList<>();
@@ -411,7 +411,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         Set<Long> alreadyAdded = new HashSet<>();
 
         // Load Curricula
-        Roles roles = ureq.getUserSession().getRoles();
+		Roles roles = securityManager.getRoles(assessedIdentity);
         List<CurriculumTreeWithViewsRow> allRows = new ArrayList<>();
         List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumList);
         Map<Curriculum, List<CurriculumElementRepositoryEntryViews>> elementsMap = elementsWithViewsForAll.stream().collect(Collectors.groupingBy(row -> row.getCurriculumElement().getCurriculum(), Collectors.toList()));
@@ -734,7 +734,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
     protected void event(UserRequest ureq, Controller source, Event event) {
     	if(uploadCertificateController == source) {
 			if (event == Event.DONE_EVENT) {
-				loadModel(ureq);
+				loadModel();
 				tableEl.reset();
 			}
 			

@@ -515,7 +515,14 @@ public interface CurriculumService {
 	 */
 	public List<CurriculumElement> filterElementsWithoutManagerRole(List<CurriculumElement> elements, Roles roles);
 	
-	
+	/**
+	 * Returns only the curriculum where the specified identity is a member.
+	 * 
+	 * @param identity The member of the curriculum
+	 * @param roles The roles
+	 * @param curriculum The curriculum
+	 * @return A list of views
+	 */
 	public List<CurriculumElementRepositoryEntryViews> getCurriculumElements(Identity identity, Roles roles, List<? extends CurriculumRef> curriculum);
 	
 

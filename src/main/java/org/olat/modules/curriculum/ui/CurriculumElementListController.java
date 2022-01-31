@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -142,6 +143,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
@@ -163,7 +166,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		
 		initForm(ureq);
-		loadModel(ureq);
+		loadModel();
 	}
 	
 	public CurriculumRef getCurriculum() {
@@ -267,8 +270,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 		return null;
 	}
 
-	private void loadModel(UserRequest ureq) {
-		Roles roles = ureq.getUserSession().getRoles();
+	private void loadModel() {
+		Roles roles = securityManager.getRoles(assessedIdentity);
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
 		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumList);
 		
