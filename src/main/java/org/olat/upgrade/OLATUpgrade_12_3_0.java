@@ -60,6 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.security.ForbiddenClassException;
 
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
@@ -285,7 +286,7 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 					for(DialogElement element:elements) {
 						createDialogElement(element, entry, category);
 					}
-				} catch (ConversionException e) {
+				} catch (ConversionException | ForbiddenClassException e) {
 					log.error("Cannot read following dialog element of course: " + entry.getKey() + " with property: " + property.getKey(), e);
 				} catch (Exception e) {
 					log.error("Error converting following dialog element of course: " + entry.getKey() + " with property: " + property.getKey(), e);

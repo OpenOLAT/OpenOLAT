@@ -26,7 +26,7 @@ import java.net.URL;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.security.ForbiddenClassException;
 
 /**
  * 
@@ -52,14 +52,14 @@ public class XStreamHelperTest {
 		Assert.assertNotNull(obj);
 	}
 
-	@Test(expected = ConversionException.class)
+	@Test(expected = ForbiddenClassException.class)
 	public void readXmlMapNotAllowed() throws URISyntaxException {
 		URL url = XStreamHelperTest.class.getResource("xstream_map_alien.xml");
 		File file = new File(url.toURI());
 		XStreamHelper.createXStreamInstance().fromXML(file);
 	}
 	
-	@Test(expected = ConversionException.class)
+	@Test(expected = ForbiddenClassException.class)
 	public void readXmlMapDbObjectsNotAllowed() throws URISyntaxException {
 		URL url = XStreamHelperTest.class.getResource("xstream_map_alien.xml");
 		File file = new File(url.toURI());
