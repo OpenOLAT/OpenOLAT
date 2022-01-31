@@ -66,10 +66,17 @@ public class AssessmentModule extends AbstractSpringModule {
 	private static final String SEB_BLOCKEDURLEXPRESSIONS = "safe.exam.browser.blocked.url.expressions";
 	private static final String SEB_BLOCKEDURLREGEX = "safe.exam.browser.blocked.url.regex";
 	private static final String SEB_HINT = "safe.exam.browser.hint";
+	private static final String SEB_ALLOWWLAN = "safe.exam.browser.allow.wlan";
+	private static final String SEB_ALLOWAUDIOCAPTURE = "safe.exam.browser.allow.audio.capture";
+	private static final String SEB_ALLOWVIDEOCAPTURE = "safe.exam.browser.allow.video.capture";
+	private static final String SEB_VIEWMODE = "safe.exam.browser.view.mode";
+	
 	
 	@Value("${assessment.mode:enabled}")
 	private String assessmentModeEnabled;
 	
+	@Value("${safe.exam.browser.view.mode:0}")
+	private int safeExamBrowserViewMode;
 	@Value("${safe.exam.browser.show.task.bar:true}")
 	private String safeExamBrowserShowTaskBar;
 	@Value("${safe.exam.browser.show.reload.button:true}")
@@ -94,6 +101,12 @@ public class AssessmentModule extends AbstractSpringModule {
 	private String safeExamBrowserAllowZoomInOut;
 	@Value("${safe.exam.browser.allow.text.search:true}")
 	private String safeExamBrowserAllowTextSearch;
+	@Value("${safe.exam.browser.allow.wlan:true}")
+	private String safeExamBrowserAllowWlan;
+	@Value("${safe.exam.browser.allow.audio.capture:true}")
+	private String safeExamBrowserAllowAudioCapture;
+	@Value("${safe.exam.browser.allow.video.capture:true}")
+	private String safeExamBrowserAllowVideoCapture;
 
 	@Value("${safe.exam.browser.url.filter:true}")
 	private String safeExamBrowserUrlFilter;
@@ -136,6 +149,9 @@ public class AssessmentModule extends AbstractSpringModule {
 			assessmentModeEnabled = enabledObj;
 		}
 		
+		String safeExamBrowserViewModeObj = getStringPropertyValue(SEB_VIEWMODE, Integer.toString(safeExamBrowserViewMode));
+		safeExamBrowserViewMode = Integer.parseInt(safeExamBrowserViewModeObj);
+		
 		safeExamBrowserShowTaskBar = getStringPropertyValue(SEB_SHOWTASKBAR, safeExamBrowserShowTaskBar);
 		safeExamBrowserShowReloadButton = getStringPropertyValue(SEB_SHOWRELOADBUTTON, safeExamBrowserShowReloadButton);
 		safeExamBrowserShowTime = getStringPropertyValue(SEB_SHOWTIME, safeExamBrowserShowTime);
@@ -146,6 +162,10 @@ public class AssessmentModule extends AbstractSpringModule {
 		safeExamBrowserAudioControlEnabled = getStringPropertyValue(SEB_AUDIOCONTROLENABLED, safeExamBrowserAudioControlEnabled);
 		safeExamBrowserAudioMute = getStringPropertyValue(SEB_AUDIOMUTE, safeExamBrowserAudioMute);
 		safeExamBrowserAllowSpellCheck = getStringPropertyValue(SEB_ALLOWSPELLCHECK, safeExamBrowserAllowSpellCheck);
+		safeExamBrowserAllowWlan = getStringPropertyValue(SEB_ALLOWWLAN, safeExamBrowserAllowWlan);
+		safeExamBrowserAllowAudioCapture = getStringPropertyValue(SEB_ALLOWAUDIOCAPTURE, safeExamBrowserAllowAudioCapture);
+		safeExamBrowserAllowVideoCapture = getStringPropertyValue(SEB_ALLOWVIDEOCAPTURE, safeExamBrowserAllowVideoCapture);
+
 		safeExamBrowserBrowserWindowAllowReload = getStringPropertyValue(SEB_BROWSERWINDOWALLOWRELOAD, safeExamBrowserBrowserWindowAllowReload);
 		
 		safeExamBrowserAllowZoomInOut = getStringPropertyValue(SEB_ALLOWZOOMINOUT, safeExamBrowserAllowZoomInOut);
@@ -177,16 +197,20 @@ public class AssessmentModule extends AbstractSpringModule {
 	public SafeExamBrowserConfiguration getSafeExamBrowserConfigurationDefaultConfiguration() {
 		SafeExamBrowserConfiguration config = new SafeExamBrowserConfiguration();
 		config.setStartUrl(Settings.getServerContextPathURI());
+		config.setBrowserViewMode(getSafeExamBrowserViewMode());
 		config.setShowTaskBar(isSafeExamBrowserShowTaskBar());
 		config.setBrowserWindowAllowReload(isSafeExamBrowserBrowserWindowAllowReload());
 		config.setShowTimeClock(isSafeExamBrowserShowTime());
 		config.setShowKeyboardLayout(isSafeExamBrowserShowInputLanguage());
+		config.setAllowWlan(isSafeExamBrowserAllowWlan());
 		config.setAllowQuit(this.isSafeExamBrowserAllowQuit());
 		config.setQuitURLConfirm(isSafeExamBrowserQuitURLConfirm());
 		
 		config.setAudioControlEnabled(isSafeExamBrowserAudioControlEnabled());
 		config.setAudioMute(isSafeExamBrowserAudioMute());
 		
+		config.setAllowAudioCapture(isSafeExamBrowserAllowAudioCapture());
+		config.setAllowVideoCapture(isSafeExamBrowserAllowVideoCapture());
 		config.setAllowSpellCheck(isSafeExamBrowserAllowSpellCheck());
 		config.setAllowZoomInOut(isSafeExamBrowserAllowZoomInOut());
 		config.setAllowTextSearch(isSafeExamBrowserAllowTextSearch());
@@ -273,6 +297,42 @@ public class AssessmentModule extends AbstractSpringModule {
 	public void setSafeExamBrowserAudioMute(boolean audioMute) {
 		safeExamBrowserAudioMute = audioMute ? "true" : "false";
 		setStringProperty(SEB_AUDIOMUTE, safeExamBrowserAudioMute, true);
+	}
+	
+	public int getSafeExamBrowserViewMode() {
+		return safeExamBrowserViewMode;
+	}
+
+	public void setSafeExamBrowserViewMode(int viewMode) {
+		this.safeExamBrowserViewMode = viewMode;
+		setStringProperty(SEB_VIEWMODE, Integer.toString(viewMode), true);
+	}
+
+	public boolean isSafeExamBrowserAllowWlan() {
+		return "true".equals(safeExamBrowserAllowWlan);
+	}
+
+	public void setSafeExamBrowserAllowWlan(boolean allowWlan) {
+		safeExamBrowserAllowWlan = allowWlan ? "true" : "false";
+		setStringProperty(SEB_ALLOWWLAN, safeExamBrowserAllowWlan, true);
+	}
+
+	public boolean isSafeExamBrowserAllowAudioCapture() {
+		return "true".equals(safeExamBrowserAllowAudioCapture);
+	}
+
+	public void setSafeExamBrowserAllowAudioCapture(boolean allowAudioCapture) {
+		safeExamBrowserAllowAudioCapture = allowAudioCapture ? "true" : "false";
+		setStringProperty(SEB_ALLOWAUDIOCAPTURE, safeExamBrowserAllowAudioCapture, true);
+	}
+
+	public boolean isSafeExamBrowserAllowVideoCapture() {
+		return "true".equals(safeExamBrowserAllowVideoCapture);
+	}
+
+	public void setSafeExamBrowserAllowVideoCapture(boolean allowVideoCapture) {
+		safeExamBrowserAllowVideoCapture = allowVideoCapture ? "true" : "false";
+		setStringProperty(SEB_ALLOWVIDEOCAPTURE, safeExamBrowserAllowVideoCapture, true);
 	}
 
 	public boolean isSafeExamBrowserAllowSpellCheck() {

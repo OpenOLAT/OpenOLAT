@@ -27,6 +27,11 @@ package org.olat.course.assessment.model;
  */
 public class SafeExamBrowserConfiguration {
 	
+	public static final int BROWSERVIEWMODE_WINDOW = 0;
+	public static final int BROWSERVIEWMODE_FULLSCREEN = 1;
+	public static final int BROWSERVIEWMODE_TOUCH = 2;
+	
+	
 	private String startUrl;
 	
 	private boolean allowQuit= true;
@@ -42,6 +47,9 @@ public class SafeExamBrowserConfiguration {
 	private boolean allowSpellCheck;
 	private boolean allowZoomInOut;
 	private boolean allowTextSearch;
+	private boolean allowAudioCapture;
+	private boolean allowVideoCapture;
+	private boolean allowWlan;
 	
 	private boolean urlFilter;
 	private boolean urlContentFilter;
@@ -49,6 +57,8 @@ public class SafeExamBrowserConfiguration {
 	private String allowedUrlRegex;
 	private String blockedUrlExpressions;
 	private String blockedUrlRegex;
+	
+	private int browserViewMode;
 
 	public String getStartUrl() {
 		return startUrl;
@@ -138,6 +148,22 @@ public class SafeExamBrowserConfiguration {
 		this.audioMute = audioMute;
 	}
 
+	public boolean isAllowAudioCapture() {
+		return allowAudioCapture;
+	}
+
+	public void setAllowAudioCapture(boolean allowAudioCapture) {
+		this.allowAudioCapture = allowAudioCapture;
+	}
+
+	public boolean isAllowVideoCapture() {
+		return allowVideoCapture;
+	}
+
+	public void setAllowVideoCapture(boolean allowVideoCapture) {
+		this.allowVideoCapture = allowVideoCapture;
+	}
+
 	public boolean isAllowSpellCheck() {
 		return allowSpellCheck;
 	}
@@ -160,6 +186,22 @@ public class SafeExamBrowserConfiguration {
 	
 	public void setAllowTextSearch(boolean allowTextSearch) {
 		this.allowTextSearch = allowTextSearch;
+	}
+
+	public boolean isAllowWlan() {
+		return allowWlan;
+	}
+
+	public void setAllowWlan(boolean allowWlan) {
+		this.allowWlan = allowWlan;
+	}
+
+	public int getBrowserViewMode() {
+		return browserViewMode;
+	}
+
+	public void setBrowserViewMode(int browserViewMode) {
+		this.browserViewMode = browserViewMode;
 	}
 
 	public boolean isUrlFilter() {

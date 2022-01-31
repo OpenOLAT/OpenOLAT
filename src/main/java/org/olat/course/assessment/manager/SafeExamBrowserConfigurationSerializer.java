@@ -58,7 +58,6 @@ public class SafeExamBrowserConfigurationSerializer {
 		try {
 			PList plist = new PList();
 			plist.add("showTaskBar", configuration.isShowTaskBar());
-			// allowWlan
 			plist.add("showReloadButton", configuration.isShowReloadButton());
 			plist.add("showTime", configuration.isShowTimeClock());
 			plist.add("showInputLanguage", configuration.isShowKeyboardLayout());
@@ -66,11 +65,15 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.add("quitURLConfirm", configuration.isQuitURLConfirm());
 			plist.add("audioControlEnabled", configuration.isAudioControlEnabled());
 			plist.add("audioMute", configuration.isAudioMute());
+			plist.add("allowAudioCapture", configuration.isAllowAudioCapture());
+			plist.add("allowVideoCapture", configuration.isAllowVideoCapture());
+			plist.add("allowWlan", configuration.isAllowWlan());
 			plist.add("allowSpellCheck", configuration.isAllowSpellCheck());
 			plist.add("browserWindowAllowReload", configuration.isBrowserWindowAllowReload());
 			if(StringHelper.containsNonWhitespace(configuration.getPasswordToExit())) {
 				plist.add("hashedQuitPassword", Encoder.sha256Exam(configuration.getPasswordToExit()));
 			}
+			plist.add("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
 			plist.add("URLFilterEnable", configuration.isUrlFilter());
 			plist.add("URLFilterEnableContentFilter", configuration.isUrlContentFilter());
 			
@@ -107,11 +110,15 @@ public class SafeExamBrowserConfigurationSerializer {
 	public static String toJson(SafeExamBrowserConfiguration configuration) {
 		try {
 			JsonObject plist = new JsonObject();
+			plist.addProperty("allowAudioCapture", configuration.isAllowAudioCapture());
 			plist.addProperty("allowPreferencesWindow", false);
 			plist.addProperty("allowQuit", configuration.isAllowQuit());
 			plist.addProperty("allowSpellCheck", configuration.isAllowSpellCheck());
+			plist.addProperty("allowVideoCapture", configuration.isAllowVideoCapture());
+			plist.addProperty("allowWlan", configuration.isAllowWlan());
 			plist.addProperty("audioControlEnabled", configuration.isAudioControlEnabled());
 			plist.addProperty("audioMute", configuration.isAudioMute());
+			plist.addProperty("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
 			plist.addProperty("browserWindowAllowReload", configuration.isBrowserWindowAllowReload());
 			plist.addProperty("examSessionClearCookiesOnStart", false);
 			if(StringHelper.containsNonWhitespace(configuration.getPasswordToExit())) {

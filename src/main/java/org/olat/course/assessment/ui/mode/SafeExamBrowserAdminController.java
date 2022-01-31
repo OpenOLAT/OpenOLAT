@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,15 +46,19 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 	private SingleSelection allowToExitEl;
 	private SingleSelection askUserToConfirmQuitEl;
 	private SingleSelection enableReloadInExamEl;
+	private SingleSelection browserViewModeEl;
 	private SingleSelection showTaskBarEl;
 	private SingleSelection showReloadButtonEl;
 	private SingleSelection showTimeEl;
 	private SingleSelection showInputLanguageEl;
+	private SingleSelection allowWlanEl;
 	private SingleSelection audioControlEnabledEl;
 	private SingleSelection audioMuteEl;
 	private SingleSelection allowSpellCheckEl;
 	private SingleSelection allowZoomEl;
 	private SingleSelection allowTextSearchEl;
+	private SingleSelection allowAudioCaptureEl;
+	private SingleSelection allowVideoCaptureEl;
 	
 	private SingleSelection urlFilterEl;
 	private SingleSelection urlContentFilterEl;
@@ -98,6 +103,17 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 				trueFalseValues.keys(), trueFalseValues.values());
 		enableReloadInExamEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserBrowserWindowAllowReload()), true);
 		
+		SelectionValues viewModeValues = new SelectionValues();
+		viewModeValues.add(SelectionValues.entry(Integer.toString(SafeExamBrowserConfiguration.BROWSERVIEWMODE_WINDOW),
+				translate("mode.safeexambrowser.browser.view.mode.window")));
+		viewModeValues.add(SelectionValues.entry(Integer.toString(SafeExamBrowserConfiguration.BROWSERVIEWMODE_FULLSCREEN),
+				translate("mode.safeexambrowser.browser.view.mode.fullscreen")));
+		viewModeValues.add(SelectionValues.entry(Integer.toString(SafeExamBrowserConfiguration.BROWSERVIEWMODE_TOUCH),
+				translate("mode.safeexambrowser.browser.view.mode.touch")));
+		browserViewModeEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.browser.view.mode", formLayout,
+				viewModeValues.keys(), viewModeValues.values());
+		browserViewModeEl.select(Integer.toString(assessmentModule.getSafeExamBrowserViewMode()), true);
+		
 		showTaskBarEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.tasklist", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		showTaskBarEl.addActionListener(FormEvent.ONCHANGE);
@@ -115,6 +131,10 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 				trueFalseValues.keys(), trueFalseValues.values());
 		showInputLanguageEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserShowInputLanguage()), true);
 		
+		allowWlanEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.wlan", formLayout,
+				trueFalseValues.keys(), trueFalseValues.values());
+		allowWlanEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserAllowWlan()), true);
+		
 		audioControlEnabledEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.audio", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		audioControlEnabledEl.addActionListener(FormEvent.ONCHANGE);
@@ -123,6 +143,14 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		audioMuteEl  = uifactory.addRadiosHorizontal("mode.safeexambrowser.audio.mute", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		audioMuteEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserAudioMute()), true);
+		
+		allowAudioCaptureEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.audio.capture", formLayout,
+				trueFalseValues.keys(), trueFalseValues.values());
+		allowAudioCaptureEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserAllowAudioCapture()), true);
+		
+		allowVideoCaptureEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.video.capture", formLayout,
+				trueFalseValues.keys(), trueFalseValues.values());
+		allowVideoCaptureEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserAllowVideoCapture()), true);
 		
 		allowSpellCheckEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.spellchecking", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
@@ -180,6 +208,7 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		showReloadButtonEl.setVisible(showTaskBar);
 		showTimeEl.setVisible(showTaskBar);
 		showInputLanguageEl.setVisible(showTaskBar);
+		allowWlanEl.setVisible(showTaskBar);
 	}
 	
 	private String trueFalseKey(boolean val) {
@@ -188,6 +217,7 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		assessmentModule.setSafeExamBrowserViewMode(Integer.parseInt(browserViewModeEl.getSelectedKey()));
 		
 		boolean showTaskBar = showTaskBarEl.isOneSelected() && showTaskBarEl.isKeySelected("true");
 		assessmentModule.setSafeExamBrowserShowTaskBar(showTaskBar);
@@ -195,10 +225,12 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 			assessmentModule.setSafeExamBrowserShowReloadButton(showReloadButtonEl.isOneSelected() && showReloadButtonEl.isKeySelected("true"));
 			assessmentModule.setSafeExamBrowserShowTime(showTimeEl.isOneSelected() && showTimeEl.isKeySelected("true"));
 			assessmentModule.setSafeExamBrowserShowInputLanguage(showInputLanguageEl.isOneSelected() && showInputLanguageEl.isKeySelected("true"));
+			assessmentModule.setSafeExamBrowserAllowWlan(allowWlanEl.isOneSelected() && allowWlanEl.isKeySelected("true"));
 		} else {
 			assessmentModule.setSafeExamBrowserShowReloadButton(true);
 			assessmentModule.setSafeExamBrowserShowTime(true);
 			assessmentModule.setSafeExamBrowserShowInputLanguage(true);
+			assessmentModule.setSafeExamBrowserAllowWlan(true);
 		}
 		
 		assessmentModule.setSafeExamBrowserAllowQuit(allowToExitEl.isOneSelected() && allowToExitEl.isKeySelected("true"));
@@ -211,7 +243,9 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 		} else {
 			assessmentModule.setSafeExamBrowserAudioMute(true);
 		}
-		
+		assessmentModule.setSafeExamBrowserAllowAudioCapture(allowAudioCaptureEl.isOneSelected() && allowAudioCaptureEl.isKeySelected("true"));
+		assessmentModule.setSafeExamBrowserAllowVideoCapture(allowVideoCaptureEl.isOneSelected() && allowVideoCaptureEl.isKeySelected("true"));
+
 		assessmentModule.setSafeExamBrowserAllowSpellCheck(allowSpellCheckEl.isOneSelected() && allowSpellCheckEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserAllowZoomInOut(allowZoomEl.isOneSelected() && allowZoomEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserAllowTextSearch(allowTextSearchEl.isOneSelected() && allowTextSearchEl.isKeySelected("true"));

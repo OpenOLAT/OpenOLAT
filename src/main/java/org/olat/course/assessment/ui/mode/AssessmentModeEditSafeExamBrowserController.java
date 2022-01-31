@@ -72,12 +72,16 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 	private TextElement passwordToQuitEl;
 	private SingleSelection enableReloadInExamEl;
 	private SingleSelection showSebTaskListEl;
+	private SingleSelection browserViewModeEl;
 	private SingleSelection showTimeClockEl;
 	private SingleSelection showReloadButtonEl;
 	private SingleSelection showKeyboardLayoutEl;
 	private SingleSelection showAudioOptionsEl;
 	private SingleSelection audioMuteEl;
 	
+	private SingleSelection allowAudioCaptureEl;
+	private SingleSelection allowVideoCaptureEl;
+	private SingleSelection allowWlanEl;
 	private SingleSelection allowSpellCheckEl;
 	private SingleSelection allowZoomEl;
 	private SingleSelection allowTextSearchEl;
@@ -219,6 +223,18 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		enableReloadInExamEl.setEnabled(editable);
 		enableReloadInExamEl.select(trueFalseKey(sebConfig.isBrowserWindowAllowReload()), true);
 		
+		SelectionValues viewModeValues = new SelectionValues();
+		viewModeValues.add(SelectionValues.entry(Integer.toString(SafeExamBrowserConfiguration.BROWSERVIEWMODE_WINDOW),
+				translate("mode.safeexambrowser.browser.view.mode.window")));
+		viewModeValues.add(SelectionValues.entry(Integer.toString(SafeExamBrowserConfiguration.BROWSERVIEWMODE_FULLSCREEN),
+				translate("mode.safeexambrowser.browser.view.mode.fullscreen")));
+		viewModeValues.add(SelectionValues.entry(Integer.toString(SafeExamBrowserConfiguration.BROWSERVIEWMODE_TOUCH),
+				translate("mode.safeexambrowser.browser.view.mode.touch")));
+		browserViewModeEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.browser.view.mode", formLayout,
+				viewModeValues.keys(), viewModeValues.values());
+		browserViewModeEl.setEnabled(editable);
+		browserViewModeEl.select(Integer.toString(sebConfig.getBrowserViewMode() < 0 ? 0 : sebConfig.getBrowserViewMode()), true);
+		
 		showSebTaskListEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.tasklist", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		showSebTaskListEl.addActionListener(FormEvent.ONCHANGE);
@@ -246,10 +262,25 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		showAudioOptionsEl.setEnabled(editable);
 		showAudioOptionsEl.select(trueFalseKey(sebConfig.isAudioControlEnabled()), true);
 		
-		audioMuteEl  = uifactory.addRadiosHorizontal("mode.safeexambrowser.audio.mute", formLayout,
+		allowWlanEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.wlan", formLayout,
+				trueFalseValues.keys(), trueFalseValues.values());
+		allowWlanEl.setEnabled(editable);
+		allowWlanEl.select(trueFalseKey(sebConfig.isAllowWlan()), true);
+		
+		audioMuteEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.audio.mute", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		audioMuteEl.setEnabled(editable);
 		audioMuteEl.select(trueFalseKey(sebConfig.isAudioMute()), true);
+		
+		allowAudioCaptureEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.audio.capture", formLayout,
+				trueFalseValues.keys(), trueFalseValues.values());
+		allowAudioCaptureEl.setEnabled(editable);
+		allowAudioCaptureEl.select(trueFalseKey(sebConfig.isAllowAudioCapture()), true);
+		
+		allowVideoCaptureEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.video.capture", formLayout,
+				trueFalseValues.keys(), trueFalseValues.values());
+		allowVideoCaptureEl.setEnabled(editable);
+		allowVideoCaptureEl.select(trueFalseKey(sebConfig.isAllowVideoCapture()), true);
 		
 		allowSpellCheckEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.spellchecking", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
@@ -321,6 +352,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		downloadConfigEl.setVisible(enabled && inConfig);
 		
 		// In configuration
+		browserViewModeEl.setVisible(enabled && inConfig);
 		quitUrlConfirmEl.setVisible(enabled && inConfig);
 		allowToExitEl.setVisible(enabled && inConfig);
 		passwordToQuitEl.setVisible(enabled && inConfig && allowExit);
@@ -330,9 +362,13 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		showTimeClockEl.setVisible(enabled && inConfig && taskBar);
 		showKeyboardLayoutEl.setVisible(enabled && inConfig && taskBar);
 		showReloadButtonEl.setVisible(enabled && inConfig && taskBar);
+		allowWlanEl.setVisible(enabled && inConfig && taskBar);
 		
 		showAudioOptionsEl.setVisible(enabled && inConfig);
 		audioMuteEl.setVisible(enabled && inConfig && audioControl);
+		
+		allowAudioCaptureEl.setVisible(enabled && inConfig);
+		allowVideoCaptureEl.setVisible(enabled && inConfig);
 		allowSpellCheckEl.setVisible(enabled && inConfig);
 		allowZoomEl.setVisible(enabled && inConfig);
 		allowTextSearchEl.setVisible(enabled && inConfig);
@@ -377,10 +413,12 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 			configuration.setShowTimeClock(showTimeClockEl.isKeySelected("true"));
 			configuration.setShowKeyboardLayout(showKeyboardLayoutEl.isKeySelected("true"));
 			configuration.setShowReloadButton(showReloadButtonEl.isKeySelected("true"));
+			configuration.setAllowWlan(allowWlanEl.isKeySelected("true"));
 		} else {
 			configuration.setShowTimeClock(true);
 			configuration.setShowKeyboardLayout(true);
 			configuration.setShowReloadButton(true);
+			configuration.setAllowWlan(false);
 		}
 		
 		boolean audioControl = showAudioOptionsEl.isKeySelected("true");
@@ -390,7 +428,10 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		} else {
 			configuration.setAudioMute(true);
 		}
+		configuration.setBrowserViewMode(Integer.parseInt(browserViewModeEl.getSelectedKey()));
 		
+		configuration.setAllowAudioCapture(allowAudioCaptureEl.isKeySelected("true"));
+		configuration.setAllowVideoCapture(allowVideoCaptureEl.isKeySelected("true"));
 		configuration.setAllowSpellCheck(allowSpellCheckEl.isKeySelected("true"));
 		configuration.setAllowZoomInOut(allowZoomEl.isKeySelected("true"));
 		configuration.setAllowTextSearch(allowTextSearchEl.isKeySelected("true"));
