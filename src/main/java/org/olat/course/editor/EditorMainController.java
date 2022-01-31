@@ -88,6 +88,9 @@ import org.olat.core.util.coordinate.LockRemovedEvent;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
+import org.olat.core.util.filter.Filter;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.filter.impl.SimpleHTMLTagsFilter;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
@@ -104,6 +107,7 @@ import org.olat.course.editor.importnodes.ImportCourseNodesFinishStepCallback;
 import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -214,7 +218,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	
 	@Autowired
 	private AssessmentModeManager assessmentModeMgr;
-	
+
+	@Autowired
+	private NodeAccessService nodeAccessService;
+
 	public EditorMainController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar, ICourse course, CourseNode selectedNode) {
 		super(ureq,wControl);
 		this.ores = OresHelper.clone(course);
@@ -389,21 +396,23 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		
 		List<CourseNodeConfiguration> courseNodeConfigs = new ArrayList<CourseNodeConfiguration>();
 		cnf.getRegisteredCourseNodeAliases().stream().forEach(e -> {
-	    	  CourseNodeConfiguration cnConfig =  cnf.getCourseNodeConfiguration(e);
-	    	  if (cnConfig.isEnabled()) {
-	    		  courseNodeConfigs.add(cnConfig);		    		  
-	    	  }		    	  	
+			CourseNodeConfiguration cnConfig =  cnf.getCourseNodeConfiguration(e);
+	    	boolean supportedNodeAccessType = nodeAccessService.isSupported(NodeAccessType.of(course), cnConfig.getAlias());
+			if(cnConfig.isEnabled() && !cnConfig.isDeprecated() && supportedNodeAccessType) {
+				courseNodeConfigs.add(cnConfig);		    		  
+			}
 		});
 		// Search in all enabled course element in the users language and also in EN as
 		// a fallback
+		Filter tagsFilter = FilterFactory.getHtmlTagsFilter();
 		ListProvider listProvider = new ListProvider() {			
 			@Override
 			public void getResult(String searchValue, ListReceiver receiver) {
 				courseNodeConfigs.stream().forEach(cnConfig -> {
 					String saveSearchValue = StringHelper.escapeHtml(searchValue).toLowerCase();
 					String alias = cnConfig.getAlias();
-					String name = cnConfig.getLinkText(getLocale());						
-					String nameEN = cnConfig.getLinkText(Locale.ENGLISH);						
+					String name = tagsFilter.filter(cnConfig.getLinkText(getLocale()));						
+					String nameEN = tagsFilter.filter(cnConfig.getLinkText(Locale.ENGLISH));						
 					System.out.println(name);
 					if (alias.toLowerCase().contains(saveSearchValue) 
 							|| name.toLowerCase().contains(saveSearchValue)
