@@ -20,12 +20,15 @@
 package org.olat.repository.ui.author.copy.wizard.general;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -69,6 +72,10 @@ import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.noderight.NodeRight;
+import org.olat.course.noderight.NodeRightGrant;
+import org.olat.course.noderight.NodeRightType;
+import org.olat.course.noderight.manager.NodeRightServiceImpl;
 import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BlogCourseNode;
@@ -86,6 +93,8 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewDataModel.Cop
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseSteps;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
+import org.olat.repository.ui.author.copy.wizard.DateWithLabel;
+import org.olat.repository.ui.author.copy.wizard.DateWithLabelRenderer;
 import org.olat.repository.ui.author.copy.wizard.dates.MoveAllDatesController;
 import org.olat.repository.ui.author.copy.wizard.dates.MoveDateConfirmController;
 import org.olat.repository.ui.author.copy.wizard.dates.MoveDatesEvent;
@@ -130,6 +139,7 @@ public class CourseOverviewStep extends BasicStep {
 
 		private CopyCourseContext context;
 		
+		private FormLayoutContainer dateWarning;
 		private FormLink shiftAllDates;
 		private FlexiTableElement tableEl;
 		private CopyCourseOverviewDataModel dataModel;
@@ -212,6 +222,11 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			// TODO Date warning
+			dateWarning = FormLayoutContainer.createCustomFormLayout("date_warning", getTranslator(), velocity_root + "/date_warning.html");
+			dateWarning.setVisible(false);
+			formLayout.add(dateWarning);
+			
 			shiftAllDates = uifactory.addFormLink("shift.all.dates", formLayout, Link.BUTTON);
 			shiftAllDates.setElementCssClass("pull-right");
 			shiftAllDates.setVisible(context.getDateDifference() == 0l);
@@ -232,7 +247,7 @@ public class CourseOverviewStep extends BasicStep {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.endChooser));
 			}
 			
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.earliestDate));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.earliestDate, new DateWithLabelRenderer(getLocale())));
 			
 			if (context.hasNodeSpecificSettings()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CopyCourseOverviewCols.resourceChooser));
@@ -292,7 +307,7 @@ public class CourseOverviewStep extends BasicStep {
 			
 			SelectionValues copyModes = null;
 			
-			Entry<String, Entry<String, Date>> earliestDateWithNode = null;
+			DateWithLabel earliestDateInCourse = null;
 			
 			for (CopyCourseOverviewRow row : context.getCourseNodes()) {
 				if (row.getLearningPathConfigs() != null) {
@@ -389,22 +404,24 @@ public class CourseOverviewStep extends BasicStep {
 					}
 				}
 				
-				Entry<String, Date> earliestDate = getEarliestDateWithLabel(row);
+				DateWithLabel earliestCourseNodeDate = getEarliestDateWithLabel(row);
 				
-				if (earliestDate != null) {
-					row.setEarliestDate(StringHelper.formatLocaleDate(earliestDate.getValue().getTime(), getLocale()), translate(earliestDate.getKey()));
-				}
+				row.setEarliestDate(earliestCourseNodeDate);
 				
-				if (earliestDate != null) {
-					if (earliestDateWithNode == null || earliestDate.getValue().before(earliestDateWithNode.getValue().getValue())) {
-						earliestDateWithNode = Map.entry(row.getShortTitle(), earliestDate);
+				if (earliestCourseNodeDate != null) {
+					if (earliestCourseNodeDate.needsTranslation() &&  StringHelper.containsNonWhitespace(earliestCourseNodeDate.getLabel())) {
+						earliestCourseNodeDate.setLabel(translate(earliestCourseNodeDate.getLabel()));
+					}
+					
+					if (earliestDateInCourse == null || earliestCourseNodeDate.getDate().before(earliestDateInCourse.getDate())) {
+						earliestDateInCourse = earliestCourseNodeDate;
 					}
 				}
 			}
 			
-			context.setEarliestDateWithNode(earliestDateWithNode);
+			context.setEarliestDateWithNode(earliestDateInCourse);
 			
-			shiftAllDates.setVisible(earliestDateWithNode != null);
+			shiftAllDates.setVisible(earliestDateInCourse != null);
 			
 			dataModel.setObjects(context.getCourseNodes());
 			tableEl.reset();
@@ -489,6 +506,16 @@ public class CourseOverviewStep extends BasicStep {
 					if (hasInitialDate && askForDateMove) {
 						doAskForDateMove(ureq, sourceDateChooser);
 					} else {
+						if (sourceDateChooser.getUserObject() instanceof CopyCourseOverviewRow) {
+							CopyCourseOverviewRow row = (CopyCourseOverviewRow) sourceDateChooser.getUserObject();
+							DateWithLabel earliestDate = row.getEarliestDateWithLabel();
+							
+							if (earliestDate != null) {
+								long time = earliestDate.getDate().getTime();
+								earliestDate.getDate().setTime(time + sourceDateChooser.getDateDifference());
+							}
+						}
+						
 						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
 					
@@ -588,6 +615,13 @@ public class CourseOverviewStep extends BasicStep {
 					end.setDate(endDate);
 					end.setInitialDate(endDate);
 				}
+				
+				DateWithLabel earliestDate = row.getEarliestDateWithLabel();
+				
+				if (earliestDate != null) {
+					long time = earliestDate.getDate().getTime();
+					earliestDate.getDate().setTime(time + dateDifference);
+				}
 			}	
 			
 			saveDatesToContext(context, dataModel.getObjects());
@@ -624,6 +658,13 @@ public class CourseOverviewStep extends BasicStep {
 						end.setInitialDate(endDate);
 					}
 				}
+				
+				DateWithLabel earliestDate = row.getEarliestDateWithLabel();
+				
+				if (earliestDate != null) {
+					long time = earliestDate.getDate().getTime();
+					earliestDate.getDate().setTime(time + difference);
+				}
 			}
 			
 			dateChooser.setInitialDate(dateChooser.getDate());
@@ -636,7 +677,7 @@ public class CourseOverviewStep extends BasicStep {
 			}
 		}
 		
-		private Entry<String, Date> getEarliestDateWithLabel(CopyCourseOverviewRow row) {
+		private DateWithLabel getEarliestDateWithLabel(CopyCourseOverviewRow row) {
 			CourseNode courseNode = row.getCourseNode();
 			
 			// If there are no dates, stop here
@@ -644,7 +685,7 @@ public class CourseOverviewStep extends BasicStep {
 				return null;
 			}
 			
-			Map<String, Date> dates = new HashMap<String, Date>();
+			List<DateWithLabel> dates = new ArrayList<>();
 			
 			// Load course node dependant dates
 			if (courseNode.getNodeSpecificDatesWithLabel().stream().map(Entry::getValue).anyMatch(DueDateConfig::isDueDate)) {
@@ -655,7 +696,7 @@ public class CourseOverviewStep extends BasicStep {
 					if (DueDateConfig.isRelative(dueDateConfig)) {
 						// Don't do anything in this case yet
 					} else if(DueDateConfig.isAbsolute(dueDateConfig)) {
-						dates.put(innerDate.getKey(), dueDateConfig.getAbsoluteDate());
+						dates.add(new DateWithLabel(dueDateConfig.getAbsoluteDate(), innerDate.getKey(), courseNode.getShortName()));
 					}
 				}
 			}
@@ -669,9 +710,75 @@ public class CourseOverviewStep extends BasicStep {
 				if (DueDateConfig.isRelative(startDateConfig)) {
 					// Do not do anything in this case yet
 				} else if (DueDateConfig.isAbsolute(startDateConfig)) {
-					dates.put("highscore.date.start", startDateConfig.getAbsoluteDate());
+					dates.add(new DateWithLabel(startDateConfig.getAbsoluteDate(), "highscore.date.start", courseNode.getShortName()));
 				}
 			}
+			
+			// User rights
+			List<NodeRightType> nodeRightTypes = courseNode.getNodeRightTypes();
+			Map<String, Object> potentialNodeRights = config.getConfigEntries(NodeRightServiceImpl.KEY_PREFIX);
+			
+			// Create map for easier handling
+			Map<String, NodeRightType> nodeRightTypesMap = nodeRightTypes.stream().collect(Collectors.toMap(NodeRightType::getIdentifier, Function.identity()));
+			Map<NodeRightType, List<NodeRightGrant>> nodeRightGrants = new HashMap<>();
+			
+			for (Map.Entry<String, Object> entry : potentialNodeRights.entrySet()) {
+				if (!(entry.getValue() instanceof NodeRight)) {
+					continue;
+				}
+				
+				NodeRight nodeRight = (NodeRight) entry.getValue();
+				
+				
+				if (nodeRight.getGrants() != null) {
+					for (NodeRightGrant grant : nodeRight.getGrants()) {
+						// Remove any rights associated with an identity or group, they won't be copied
+						if (grant.getBusinessGroupRef() != null || grant.getIdentityRef() != null) {
+							continue;
+						}
+						
+						// If the right does not include any date, don't list it
+						boolean hasDate = grant.getStart() != null || grant.getEnd() != null;
+						if (!hasDate) {
+							continue;
+						}
+						
+						// Put the grant into the map
+						NodeRightType type = nodeRightTypesMap.get(nodeRight.getTypeIdentifier());
+						
+						if (type != null) {
+							List<NodeRightGrant> grants = nodeRightGrants.get(type);
+							
+							if (grants == null) {
+								grants = new ArrayList<>();
+							}
+							
+							grants.add(grant);
+							
+	 						nodeRightGrants.put(type, grants);
+						}
+					}
+				}
+			}
+			
+			for (NodeRightType type : nodeRightGrants.keySet()) {
+				for (NodeRightGrant grant : nodeRightGrants.get(type)) {
+					String rightRole = grant.getRole() != null ? translate("role." + grant.getRole().name().toLowerCase()) : "";
+					String rightTitle = type.getTranslatorBaseClass() != null ? Util.createPackageTranslator(type.getTranslatorBaseClass(), getLocale()).translate(type.getI18nKey()) : type.getIdentifier();
+					
+					String label = rightTitle + (StringHelper.containsNonWhitespace(rightRole) ? " - " + rightRole : "");
+					
+					Date start = grant.getStart();
+					if (start != null) {
+						start = new Date(start.getTime());
+					}
+					
+					DateWithLabel userRightDate = new DateWithLabel(start, label, courseNode.getShortTitle());
+					userRightDate.setNeedsTranslation(false);
+					dates.add(userRightDate);
+				}
+			}
+			
 			
 			// Start date
 			DueDateConfig startConfig = row.getStart();
@@ -685,7 +792,7 @@ public class CourseOverviewStep extends BasicStep {
 					Date startDate = startConfig.getAbsoluteDate();
 					
 					if (startDate != null) {
-						dates.put("table.header.start", startDate);
+						dates.add(new DateWithLabel(startDate, "table.header.start", courseNode.getShortName()));
 					}
 				}
 			}
@@ -702,17 +809,19 @@ public class CourseOverviewStep extends BasicStep {
 					Date endDate = row.getEnd().getAbsoluteDate();
 					
 					if (endDate != null) {
-						dates.put("table.header.end", endDate);
+						dates.add(new DateWithLabel(endDate, "table.header.end", courseNode.getShortName()));
 					}
 				}
 			}
 			
-			Entry<String, Date> earliestDate = null;
+			DateWithLabel earliestDate = dates.stream()
+					.min(Comparator.comparing(DateWithLabel::getDate))
+					.orElse(null);
 			
-			for (Entry<String, Date> entry : dates.entrySet()) {
-				if (earliestDate == null || entry.getValue().before(earliestDate.getValue())) {
-					earliestDate = entry;
-				}
+			// Add date difference from first copy step (execution period)
+			if (earliestDate != null) {
+				long dateTime = earliestDate.getDate().getTime();
+				earliestDate.getDate().setTime(dateTime + context.getDateDifference()); 
 			}
 			
 			return earliestDate;

@@ -148,6 +148,7 @@ public class CopyCourseWizardController extends BasicController {
         
         copyContext = new CopyCourseContext();
         copyContext.setExecutingIdentity(getIdentity());
+        copyContext.setExecutingLocale(getLocale());
         copyContext.setSourceRepositoryEntry(repositoryEntry);
         copyContext.setCourse(course);
 		copyContext.setLearningPath(LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType()));

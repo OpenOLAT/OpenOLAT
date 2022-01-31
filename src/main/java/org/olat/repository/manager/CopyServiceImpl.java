@@ -42,6 +42,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -145,7 +146,9 @@ public class CopyServiceImpl implements CopyService {
 	public RepositoryEntry copyLearningPathCourse(CopyCourseContext context) {
 		RepositoryEntry sourceEntry = context.getSourceRepositoryEntry();
 		OLATResource sourceResource = sourceEntry.getOlatResource();
-		ICourse sourceCourse = CourseFactory.loadCourse(sourceResource);
+		// The source course is necessary to compare settings to the original
+		// At the moment it is not necessary to do so
+		//ICourse sourceCourse = CourseFactory.loadCourse(sourceResource);
 		
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		
@@ -768,11 +771,15 @@ public class CopyServiceImpl implements CopyService {
 			VFSContainer targetContainer = CourseDocumentsFactory.getFileContainer(targetCourse.getCourseBaseContainer());
 			
 			if (targetContainer != null) {
-				targetContainer.delete();
+				for (VFSItem item : targetContainer.getItems()) {
+					item.delete();
+				}
 			}
 			
-			cc.setDocumentsEnabled(false);
-			cc.setDocumentPath(null);
+			// As specified, the container and path itself should remain, only the content should be deleted
+			
+			//cc.setDocumentsEnabled(false);
+			//cc.setDocumentPath(null);
 		}
 	}
 	
@@ -786,14 +793,18 @@ public class CopyServiceImpl implements CopyService {
 		CourseConfig cc = targetCourse.getCourseEnvironment().getCourseConfig();
 		
 		if(cc.isCoachFolderEnabled() && !StringHelper.containsNonWhitespace(cc.getCoachFolderPath())) {
-			VFSContainer sourceContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
+			VFSContainer targetContainer = CoachFolderFactory.getFileContainer(targetCourse.getCourseBaseContainer());
 			
-			if (sourceContainer != null) {
-				sourceContainer.delete();				
+			if (targetContainer != null) {
+				for (VFSItem item : targetContainer.getItems()) {
+					item.delete();
+				}
 			}
 			
-			cc.setCoachFolderEnabled(false);
-			cc.setCoachFolderPath(null);
+			// As specified, the container and path itself should remain, only the content should be deleted
+			
+			//cc.setCoachFolderEnabled(false);
+			//cc.setCoachFolderPath(null);
 		}
 	}
 		

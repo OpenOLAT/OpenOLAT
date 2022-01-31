@@ -22,8 +22,8 @@ package org.olat.repository.ui.author.copy.wizard;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,6 +53,7 @@ public class CopyCourseContext {
 	
 	// Executing identity
 	private Identity executingIdentity;
+	private Locale executingLocale;
 	
 	// Repository entry and course
 	private RepositoryHandlerFactory handlerFactory;
@@ -74,7 +75,7 @@ public class CopyCourseContext {
 	private boolean hasAssessmentModes;
 	private boolean hasDocuments;
 	private boolean hasCoachDocuments;
-	private Entry<String, Entry<String, Date>> earliestDateWithNode;
+	private DateWithLabel earliestDateWithNode;
 	private long dateDifferenceByEarliest = 0l;
 	private long dateDifferenceByEarliestCurrent = 0l;
 
@@ -178,6 +179,14 @@ public class CopyCourseContext {
 	
 	public void setExecutingIdentity(Identity executingIdentity) {
 		this.executingIdentity = executingIdentity;
+	}
+	
+	public Locale getExecutingLocale() {
+		return executingLocale;
+	}
+	
+	public void setExecutingLocale(Locale executingLocale) {
+		this.executingLocale = executingLocale;
 	}
 	
 	public RepositoryHandlerFactory getHandlerFactory() {
@@ -767,11 +776,11 @@ public class CopyCourseContext {
 		this.lectureBlockRows = lectureBlockRows;
 	}
 	
-	public Entry<String, Entry<String, Date>> getEarliestDateWithNode() {
+	public DateWithLabel getEarliestDateWithNode() {
 		return earliestDateWithNode;
 	}
 	
-	public void setEarliestDateWithNode(Entry<String, Entry<String, Date>> earliestDateWithNode) {
+	public void setEarliestDateWithNode(DateWithLabel earliestDateWithNode) {
 		this.earliestDateWithNode = earliestDateWithNode;
 	}
 	

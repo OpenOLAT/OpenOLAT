@@ -216,7 +216,7 @@ public class CopyCourseStepsStep extends BasicStep {
 				if (context.hasFolder()) {
 					SelectionValues folderSettings = new SelectionValues(copyContent, ignoreContent);
 					folderSettingsEl = uifactory.addButtonGroupSingleSelectHorizontal("folders", nodeSettingsLayout, folderSettings);
-					folderSettingsEl.setHelpTextKey("folders.help", null);
+					//folderSettingsEl.setHelpTextKey("folders.help", null);
 					folderSettingsEl.addActionListener(FormEvent.ONCHANGE);
 					allOptions.add(folderSettingsEl);
 					

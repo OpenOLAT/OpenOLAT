@@ -684,7 +684,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 					RepositoryEntry source = IQEditController.getIQReference(sourceConfig, false);
 					
 					if (source != null) {
-						RepositoryEntry copy = repositoryService.copy(source, context.getExecutingIdentity(), source.getDisplayname());
+						Translator translator = Util.createPackageTranslator(RepositoryService.class, context.getExecutingLocale()); 
+						
+						RepositoryEntry copy = repositoryService.copy(source, context.getExecutingIdentity(), source.getDisplayname() + " " + translator.translate("copy.suffix"));
 						IQEditController.setIQReference(copy, getModuleConfiguration());
 					}
 					

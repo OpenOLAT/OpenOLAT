@@ -86,13 +86,13 @@ public class MoveAllDatesController extends FormBasicController {
 		shiftModeEl.select(DATE, true);
 		shiftModeEl.addActionListener(FormEvent.ONCHANGE);
 		
-		String earliestDate = StringHelper.formatLocaleDate(context.getEarliestDateWithNode().getValue().getValue().getTime(), getLocale());
+		String earliestDate = StringHelper.formatLocaleDate(context.getEarliestDateWithNode().getDate().getTime(), getLocale());
 		earliestDate += " - ";
-		earliestDate += context.getEarliestDateWithNode().getKey() + " (" + translate(context.getEarliestDateWithNode().getValue().getKey()) + ")";
+		earliestDate += context.getEarliestDateWithNode().getCourseNodeIdentifier() + " (" + context.getEarliestDateWithNode().getLabel() + ")";
 		
 		earliestDateTextEl = uifactory.addStaticTextElement("shift.earliest", earliestDate, formLayout);
 		
-		newEarliestDateEl = uifactory.addDateChooser("shift.new.date", context.getEarliestDateWithNode().getValue().getValue(), formLayout);
+		newEarliestDateEl = uifactory.addDateChooser("shift.new.date", context.getEarliestDateWithNode().getDate(), formLayout);
 		newEarliestDateEl.setInitialDate(newEarliestDateEl.getDate());
 		
 		moveAmountEl = uifactory.addIntegerElement("dates.shift.days.label", 0, formLayout);
