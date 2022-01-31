@@ -78,6 +78,7 @@ public class CopyCourseContext {
 	private DateWithLabel earliestDateWithNode;
 	private long dateDifferenceByEarliest = 0l;
 	private long dateDifferenceByEarliestCurrent = 0l;
+	private int daysShifted = 0; // Used in the shift all dates by days dialogue
 
 	// Metadata
 	private String displayName;
@@ -401,6 +402,14 @@ public class CopyCourseContext {
 	
 	public void setDateDifference(long dateDifference) {
 		this.dateDifference = dateDifference;
+	}
+	
+	public int getDaysShifted() {
+		return daysShifted;
+	}
+	
+	public void setDaysShifted(int daysShifted) {
+		this.daysShifted = daysShifted;
 	}
 
 	public String getAuthors() {
