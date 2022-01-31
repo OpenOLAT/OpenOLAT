@@ -90,7 +90,6 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.core.util.filter.impl.SimpleHTMLTagsFilter;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.core.util.resource.OresHelper;
@@ -413,7 +412,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					String alias = cnConfig.getAlias();
 					String name = tagsFilter.filter(cnConfig.getLinkText(getLocale()));						
 					String nameEN = tagsFilter.filter(cnConfig.getLinkText(Locale.ENGLISH));						
-					System.out.println(name);
 					if (alias.toLowerCase().contains(saveSearchValue) 
 							|| name.toLowerCase().contains(saveSearchValue)
 							|| nameEN.toLowerCase().contains(saveSearchValue)) {
