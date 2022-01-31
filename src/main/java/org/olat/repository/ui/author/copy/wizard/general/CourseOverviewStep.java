@@ -168,6 +168,7 @@ public class CourseOverviewStep extends BasicStep {
 			courseNodeDatesListController = new CourseNodeDatesListController(ureq, wControl, context);
 			
 			initForm(ureq);
+			checkDatesAreInPast();
 		}
 
 		@Override
@@ -521,8 +522,11 @@ public class CourseOverviewStep extends BasicStep {
 					
 					saveDatesToContext(context, dataModel.getObjects());
 					courseNodeDatesListController.updateDates(ureq);
+					checkDatesAreInPast();
 				}
 			}
+			
+			checkDatesAreInPast();
 		}
 		
 		@Override
@@ -554,6 +558,8 @@ public class CourseOverviewStep extends BasicStep {
 				cmc.deactivate();
 				cleanUp();
 			}
+			
+			checkDatesAreInPast();
 		}
 		
 		private void cleanUp() {	
@@ -825,6 +831,23 @@ public class CourseOverviewStep extends BasicStep {
 			}
 			
 			return earliestDate;
+		}
+		
+		private void checkDatesAreInPast() {
+			boolean datesInPast = false;
+			
+			for (CopyCourseOverviewRow row : dataModel.getObjects()) {
+				Date currentDate = new Date();
+				
+				if (row.getEarliestDateWithLabel() != null) {
+					if (row.getEarliestDateWithLabel().getDate().before(currentDate)) {
+						datesInPast = true;
+						break;
+					}
+				}
+			}
+		
+			dateWarning.setVisible(datesInPast);
 		}
 		
 	}
