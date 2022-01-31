@@ -523,14 +523,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					|| getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.trash) {
 				toolbarPanel.setMessage(translate("course.deleted"));
 				toolbarPanel.setMessageCssClass("o_warning");
-			} else {
+			} else if(!isAssessmentModeMessageSet()) {
 				toolbarPanel.setMessage(null);
 				toolbarPanel.setMessageComponent(null);
 			}
-		} else {
+		} else if(!isAssessmentModeMessageSet()) {
 			toolbarPanel.setMessage(null);
 			toolbarPanel.setMessageComponent(null);
 		}
+	}
+	
+	/**
+	 * Is the message in toolbar set with the assessment mode controller?
+	 * 
+	 * @return true if the message in toolbar is about assessment mode.
+	 */
+	private boolean isAssessmentModeMessageSet() {
+		return stopAssessmentCtrl != null && stopAssessmentCtrl.getInitialComponent() == toolbarPanel.getMessageComponent();
 	}
 	
 	private void setAssessmentModeMessage(UserRequest ureq) {

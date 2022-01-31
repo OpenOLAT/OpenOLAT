@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.security.ForbiddenClassException;
 
 /**
  * 
@@ -114,11 +115,11 @@ public class HistoryManager {
 			String pathHomePage = FolderConfig.getCanonicalRoot() + FolderConfig.getUserHomePage(identity);
 			resumeXml = new File(pathHomePage, "resume.xml");
 			return readHistory(resumeXml);
-		} catch(ConversionException e) {
-			log.warn("Cannot read resume file: " + resumeXml, e);
+		} catch(ConversionException | ForbiddenClassException e) {
+			log.warn("Cannot read resume file: {}", resumeXml, e);
 			return null;
 		} catch (Exception e) {
-			log.error("Cannot read resume file: " + resumeXml, e);
+			log.error("Cannot read resume file: {}", resumeXml, e);
 			return null;
 		}
 	}
@@ -141,7 +142,7 @@ public class HistoryManager {
 					BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
 				return (HistoryPoint)historyReadStream.fromXML(bis);
 			} catch(IOException e) {
-				log.error("Cannot read this file: " + resumeXml, e);
+				log.error("Cannot read this file: {}", resumeXml, e);
 				throw e;
 			}
 		}
