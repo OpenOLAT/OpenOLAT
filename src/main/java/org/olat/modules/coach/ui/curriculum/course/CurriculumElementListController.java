@@ -178,7 +178,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 
         initForm(ureq);
-        loadModel(ureq);
+        loadModel();
     }
 
     @Override
@@ -294,8 +294,8 @@ public class CurriculumElementListController extends FormBasicController impleme
         return null;
     }
 
-    private void loadModel(UserRequest ureq) {
-        Roles roles = ureq.getUserSession().getRoles();
+    private void loadModel() {
+    	Roles roles = securityManager.getRoles(assessedIdentity);
         List<CourseCurriculumTreeWithViewsRow> allRows = new ArrayList<>();
         List<CurriculumElementRepositoryEntryViews> elementsWithViewsForAll = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumRefList);
         Map<Curriculum, List<CurriculumElementRepositoryEntryViews>> elementsMap = elementsWithViewsForAll.stream().collect(Collectors.groupingBy(row -> row.getCurriculumElement().getCurriculum(), Collectors.toList()));

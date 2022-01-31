@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1010,7 +1011,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 					}
 				}
 			}
+			
+			// trim part of the tree without member flag
+			for(Iterator<CurriculumElementRepositoryEntryViews> it=elements.iterator(); it.hasNext(); ) {
+				if(!it.next().isCurriculumMember()) {
+					it.remove();
+				}
+			}
 		}
+		
 		return elements;
 	}
 

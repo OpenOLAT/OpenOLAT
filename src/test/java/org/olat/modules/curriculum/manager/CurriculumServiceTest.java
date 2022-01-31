@@ -126,6 +126,44 @@ public class CurriculumServiceTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getCurriculumElementsMore() {
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-2b", "Curriculum 2b", "Curriculum", null);
+		CurriculumElement rootElement = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
+				CurriculumElementStatus.active, null, null, rootElement, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-auth");
+		RepositoryEntry publishedEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		RepositoryEntry reviewedEntry = JunitTestHelper.createRandomRepositoryEntry(author);
+		dbInstance.commit();
+		
+		publishedEntry = repositoryManager.setAccess(publishedEntry, RepositoryEntryStatusEnum.published, false, false);
+		reviewedEntry = repositoryManager.setAccess(reviewedEntry, RepositoryEntryStatusEnum.review, false, false);
+		// add the course and a participant to the curriculum
+		curriculumService.addRepositoryEntry(element1, publishedEntry, false);
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-el-re-part");
+		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+
+		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
+		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		Assert.assertNotNull(myElements);
+		Assert.assertEquals(2, myElements.size());
+		
+		CurriculumElement firstElement = myElements.get(0).getCurriculumElement();
+		CurriculumElement secondElement = myElements.get(0).getCurriculumElement();
+		Assert.assertTrue(firstElement.equals(element1) || firstElement.equals(rootElement));
+		Assert.assertTrue(secondElement.equals(element1) || secondElement.equals(rootElement));
+		// Element 2 ist not in the output
+		Assert.assertFalse(firstElement.equals(element2) || secondElement.equals(element2));
+	}
+	
+	@Test
 	public void deleteCurriculum() {
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-3", "Curriculum 3", "Curriculum", null);
 		CurriculumElement element1 = curriculumService.createCurriculumElement("Element-for-rel", "Element for relation",
@@ -145,8 +183,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
-		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(2, myElements.size());
 		
@@ -182,8 +219,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
-		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(2, myElements.size());
 		
@@ -225,8 +261,7 @@ public class CurriculumServiceTest extends OlatTestCase {
 		curriculumService.addMember(element1, participant, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 
-		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
-		List<CurriculumElementRepositoryEntryViews> myElements = curriculumService.getCurriculumElements(participant, Roles.userRoles(), curriculumList);
+		List<CurriculumElement> myElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.values());
 		Assert.assertNotNull(myElements);
 		Assert.assertEquals(3, myElements.size());
 		
