@@ -47,6 +47,16 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	public DefaultFlexiTreeTableDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
+	
+	/**
+	 * Returns a copy of the list of all rows, visible or not,
+	 * collapsed or not.
+	 * 
+	 * @return The list of all rows
+	 */
+	public List<U> getAllRows() {
+		return new ArrayList<>(backupRows);
+	}
 
 	@Override
 	public int getIndentation(int row) {
