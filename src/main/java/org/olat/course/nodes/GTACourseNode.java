@@ -1004,7 +1004,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 							GTASK_SUBMIT_DEADLINE_RELATIVE, GTASK_SUBMIT_DEADLINE_RELATIVE_TO)
 					: DueDateConfig.noDueDateConfig();
 		} else if (GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER.equals(key)) {
-			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SOLUTIONS)
+			return getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION)
 					? DueDateConfig.ofCourseNode(this, GTASK_RELATIVE_DATES, GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER,
 								GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO)
 					: DueDateConfig.noDueDateConfig();
