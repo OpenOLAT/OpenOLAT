@@ -293,7 +293,9 @@ public class CoursePageFragment {
 		browser.findElement(assessmentToolBy).click();
 		OOGraphene.waitBusy(browser);
 
-		WebElement main = browser.findElement(By.id("o_assessment_tool_main"));
+		By assessmentTool = By.id("o_assessment_tool_main");
+		OOGraphene.waitElement(assessmentTool, browser);
+		WebElement main = browser.findElement(assessmentTool);
 		Assert.assertTrue(main.isDisplayed());
 		return new AssessmentToolPage(browser);
 	}

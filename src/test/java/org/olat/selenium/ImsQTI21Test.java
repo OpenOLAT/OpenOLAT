@@ -1086,10 +1086,7 @@ public class ImsQTI21Test extends Deployments {
 		AssessmentToolPage assessmentTool = courseRuntime
 			.assessmentTool();
 		assessmentTool
-			.courseElements()
-		// test cockpit
 			.selectElementsCourseNode(testNodeTitle);
-		
 		
 		//a user search the content package
 		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
@@ -1256,7 +1253,6 @@ public class ImsQTI21Test extends Deployments {
 		AssessmentToolPage assessmentTool = courseRuntime
 			.assessmentTool();
 		assessmentTool
-			.courseElements()
 			.selectElementsCourseNode(testNodeTitle);
 		// correction
 		QTI21CorrectionPage correction = new QTI21CorrectionPage(browser);
