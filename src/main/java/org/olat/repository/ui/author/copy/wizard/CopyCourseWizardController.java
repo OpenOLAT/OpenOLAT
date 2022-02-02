@@ -38,6 +38,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
@@ -437,13 +438,13 @@ public class CopyCourseWizardController extends BasicController {
 	private boolean hasDocuments(ICourse course) {
 		CourseConfig config = course.getCourseEnvironment().getCourseConfig();
 		
-		return config.isDocumentsEnabled();
+		return config.isDocumentsEnabled() && !StringHelper.containsNonWhitespace(config.getDocumentsPath());
 	}
 	
 	private boolean hasCoachDocuments(ICourse course) {
 		CourseConfig config = course.getCourseEnvironment().getCourseConfig();
 		
-		return config.isCoachFolderEnabled();
+		return config.isCoachFolderEnabled() && !StringHelper.containsNonWhitespace(config.getCoachFolderPath());
 	}
 	
 	private class FinishCallback implements StepRunnerCallback {
