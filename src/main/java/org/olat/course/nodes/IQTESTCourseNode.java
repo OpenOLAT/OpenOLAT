@@ -37,6 +37,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -45,6 +46,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
@@ -60,6 +62,7 @@ import org.olat.course.duedate.DueDateService;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
@@ -79,6 +82,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
@@ -101,9 +105,12 @@ import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -585,6 +592,56 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts().intValue() == 0;
 		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, null, null, null, 1.0d, AssessmentRunStatus.done, testSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);
+	}
+	
+	@Override
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
+		//Reset the AssessmentEntry and invalidate the test sessions if the referenced test has changed.
+		Long testEntryKey = getReferencedRepositoryEntry().getKey();
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		DB dbInstance = CoreSpringFactory.getImpl(DB.class);
+		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		GradingService gradingService = CoreSpringFactory.getImpl(GradingService.class);
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			if (!testEntryKey.equals(assessmentEntry.getReferenceEntry().getKey())) {
+				// Invalidate test sessions
+				List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(courseEntry, getIdent(), assessmentEntry.getIdentity(), true);
+				for (AssessmentTestSession session : sessions) {
+					if (!session.isCancelled()) {
+						session.setCancelled(true);
+						session = qtiService.updateAssessmentTestSession(session);
+						deactivateGradingAssignment(gradingService, assessmentEntry, session);
+					}
+				}
+				
+				// Reset assessment entry
+				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null,
+						null, 0.0d, AssessmentRunStatus.notStarted, null);
+				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
+				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+				courseAssessmentService.updateScoreEvaluation(this, scoreEval, uce, publisher, false, Role.coach);
+				courseAssessmentService.updateCurrentCompletion(this, uce, null, null, AssessmentRunStatus.notStarted, Role.coach);
+				dbInstance.commitAndCloseSession();
+			}
+		}
+	}
+
+	private void deactivateGradingAssignment(GradingService gradingService, AssessmentEntry assessmentEntry,
+			AssessmentTestSession session) {
+		if (gradingService.isGradingEnabled(session.getTestEntry(), null)) {
+			GradingAssignment assignment = gradingService.getGradingAssignment(session.getTestEntry(), assessmentEntry);
+			if (assignment != null && session.getKey().equals(assessmentEntry.getAssessmentId())) {
+				GradingAssignmentStatus assignmentStatus = assignment.getAssignmentStatus();
+				if (assignmentStatus == GradingAssignmentStatus.assigned
+						|| assignmentStatus == GradingAssignmentStatus.inProcess
+						|| assignmentStatus == GradingAssignmentStatus.done) {
+					gradingService.deactivateAssignment(assignment);
+				}
+			}
+		}
 	}
 
 	/**
