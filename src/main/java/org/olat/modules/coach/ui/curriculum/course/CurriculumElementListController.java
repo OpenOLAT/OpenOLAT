@@ -183,7 +183,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 
     @Override
     public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-
+    	//
     }
 
     @Override
@@ -198,11 +198,6 @@ public class CurriculumElementListController extends FormBasicController impleme
         DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.identifier, "select");
         elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
         columnsModel.addFlexiColumnModel(elementIdentifierCol);
-
-        // Name column
-        // columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
-        // Info site column
-        // columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
 
         if (roleSecurityCallback.canViewCourseProgressAndStatus()) {
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.completion));
@@ -303,6 +298,7 @@ public class CurriculumElementListController extends FormBasicController impleme
         for (Curriculum curriculum : curriculumList) {
             CourseCurriculumTreeWithViewsRow curriculumRow = new CourseCurriculumTreeWithViewsRow(curriculum);
             List<CurriculumElementRepositoryEntryViews> elementsWithViews = elementsMap.get(curriculum);
+
             if (elementsWithViews != null && !elementsWithViews.isEmpty()) {
                 List<CourseCurriculumTreeWithViewsRow> rows = new ArrayList<>();
 
@@ -366,34 +362,33 @@ public class CurriculumElementListController extends FormBasicController impleme
                     }
                 });
 
-                Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
-
                 removeByPermissions(rows);
-
                 forgeCurriculumCompletions(rows);
-
-
                 addRoot(rows, curriculumRow);
-
+               
                 allRows.add(curriculumRow);
                 allRows.addAll(rows);
             }
         }
-
+        
         Roles assessedRoles = securityManager.getRoles(assessedIdentity);
         SearchMyRepositoryEntryViewParams params = new SearchMyRepositoryEntryViewParams(assessedIdentity, assessedRoles);
         params.setMembershipMandatory(true);
         List<RepositoryEntryMyView> courses = repositoryService.searchMyView(params, 0, 0);
+       
         // Filter for entries which are already in a curriculum
+        Set<Long> curriculumEntriesKeys = allRows.stream()
+        		.filter(row -> row.getRepositoryEntryKey() != null)
+        		.map(CourseCurriculumTreeWithViewsRow::getRepositoryEntryKey)
+        		.collect(Collectors.toSet());
+        
+        List<RepositoryEntryMyView> foreignCourses = courses.stream()
+                .filter(course -> !curriculumEntriesKeys.contains(course.getKey()))
+				.collect(Collectors.toList());
 
-        if (!courses.isEmpty()) {
+        if (!foreignCourses.isEmpty()) {
             CourseCurriculumTreeWithViewsRow foreignEntryParent = new CourseCurriculumTreeWithViewsRow(translate("curriculum.foreign.entries"));
             allRows.add(foreignEntryParent);
-
-            List<RepositoryEntryMyView> foreignCourses = courses.stream()
-                    .filter(course -> allRows.stream()
-                            .noneMatch(row -> course.getKey().equals(row.getRepositoryEntryKey()))
-                    ).collect(Collectors.toList());
 
             foreignCourses.forEach(course -> {
                 CourseCurriculumTreeWithViewsRow row = new CourseCurriculumTreeWithViewsRow(course);
@@ -404,7 +399,8 @@ public class CurriculumElementListController extends FormBasicController impleme
                 allRows.add(row);
             });
         }
-
+        
+        Collections.sort(allRows, new CurriculumElementViewsRowComparator(getLocale()));
 
         tableModel.setObjects(allRows);
         tableEl.reset(true, true, true);
