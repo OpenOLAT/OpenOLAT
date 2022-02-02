@@ -30,7 +30,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementRow;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -95,7 +95,7 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 	private ProgressBarItem completionItem;
 
 	private EfficiencyStatementEntry efficiencyStatementEntry;
-	private CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement certificateAndEfficiencyStatement;
+	private CertificateAndEfficiencyStatementRow certificateAndEfficiencyStatement;
 	private boolean hasStatement;
 	
 	public CurriculumTreeWithViewsRow(Curriculum curriculum, CurriculumElement element, CurriculumElementMembership curriculumMembership, int myEntryCount) {
@@ -167,7 +167,7 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 		setKey(true);
 	}
 
-	public CurriculumTreeWithViewsRow(CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement statement) {
+	public CurriculumTreeWithViewsRow(CertificateAndEfficiencyStatementRow statement) {
 		this.certificateAndEfficiencyStatement = statement;
 
 		setShortenedDescription(statement.getDisplayName());
@@ -183,7 +183,7 @@ public class CurriculumTreeWithViewsRow implements CurriculumTreeWithView, Flexi
 	}
 
 	public CurriculumTreeWithViewsRow(Curriculum curriculum, CurriculumElement element, CurriculumElementMembership curriculumMembership,
-									  RepositoryEntryMyView repositoryEntryView, boolean alone) {
+			RepositoryEntryMyView repositoryEntryView, boolean alone) {
 		this.element = element;
 		elementType = element == null ? null : element.getType();
 		this.curriculumMembership = curriculumMembership;

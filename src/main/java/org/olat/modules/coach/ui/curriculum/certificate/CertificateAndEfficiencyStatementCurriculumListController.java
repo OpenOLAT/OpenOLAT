@@ -88,7 +88,7 @@ import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
-import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementRow;
 import org.olat.course.certificate.ui.UploadExternalCertificateController;
 import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentEntryScoring;
@@ -185,7 +185,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
     private CertificatesModule certificatesModule;
 
     public CertificateAndEfficiencyStatementCurriculumListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-                                                                     Identity assessedIdentity, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback) {
+    		Identity assessedIdentity, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback) {
         super(ureq, wControl, "curriculum_element_list");
         setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
         setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
@@ -346,8 +346,8 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
 
     private void loadModel() {
         // Load efficiency statements
-        Map<Long, CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement> resourceKeyToStatments = new HashMap<>();
-        List<CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement> statements = new ArrayList<>();
+        Map<Long, CertificateAndEfficiencyStatementRow> resourceKeyToStatments = new HashMap<>();
+        List<CertificateAndEfficiencyStatementRow> statements = new ArrayList<>();
         List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(assessedIdentity);
 
         List<Long> courseEntryKeys = efficiencyStatementsList.stream()
@@ -363,7 +363,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
                 ));
 
         for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {
-            CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement wrapper = new CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement();
+            CertificateAndEfficiencyStatementRow wrapper = new CertificateAndEfficiencyStatementRow();
             wrapper.setDisplayName(efficiencyStatement.getShortTitle());
             wrapper.setPassed(efficiencyStatement.getPassed());
             wrapper.setScore(efficiencyStatement.getScore());
@@ -380,9 +380,9 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
         for(CertificateLight certificate:certificates) {
             Long resourceKey = certificate.getOlatResourceKey();
-            CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement wrapper = resourceKeyToStatments.get(resourceKey);
+            CertificateAndEfficiencyStatementRow wrapper = resourceKeyToStatments.get(resourceKey);
             if(wrapper == null) {
-                wrapper = new CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement();
+                wrapper = new CertificateAndEfficiencyStatementRow();
                 wrapper.setDisplayName(certificate.getCourseTitle());
                 resourceKeyToStatments.put(resourceKey, wrapper);
                 statements.add(wrapper);
@@ -398,7 +398,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
             wrapper.setCertificate(certificate);
         }
 
-        for(CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement statment:statements) {
+        for(CertificateAndEfficiencyStatementRow statment:statements) {
             if(!StringHelper.containsNonWhitespace(statment.getDisplayName()) && statment.getResourceKey() != null) {
                 String displayName = repositoryManager.lookupDisplayNameByResourceKey(statment.getResourceKey());
                 statment.setDisplayName(displayName);
@@ -406,7 +406,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
         }
 
         // Set of Olat resources with statements
-        Set<Long> statementEntries = statements.stream().map(CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement::getResourceKey).collect(Collectors.toSet());
+        Set<Long> statementEntries = statements.stream().map(CertificateAndEfficiencyStatementRow::getResourceKey).collect(Collectors.toSet());
         // Set of entries, which will be added in the next step
         Set<Long> alreadyAdded = new HashSet<>();
 
@@ -535,7 +535,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
             }
 
             orphanCertificates.forEach(orphan -> {
-                CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement statement = statements.stream().filter(certStatement -> certStatement.getResourceKey().equals(orphan)).findFirst().get();
+            	CertificateAndEfficiencyStatementRow statement = statements.stream().filter(certStatement -> certStatement.getResourceKey().equals(orphan)).findFirst().get();
                 CurriculumTreeWithViewsRow row = new CurriculumTreeWithViewsRow(statement);
                 row.setParent(foreignEntryParent);
                 row.setHasStatement(true);
