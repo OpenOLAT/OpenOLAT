@@ -612,16 +612,23 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			showWarning("warning.bulk.done");
 		} else if(courseAssessmentService.getAssessmentConfig(gtaNode).isAssessable()) {
 			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseGroupManager().getCourseEntry());
+			
+			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			TaskList taskList = gtaManager.getTaskList(entry, gtaNode);
+			if(taskList == null) {
+				taskList = gtaManager.createIfNotExists(entry, gtaNode);
+			}
+			
 			for(CoachedIdentityRow row:rows) {
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
-				doSetStatus(assessedIdentity, AssessmentEntryStatus.done, gtaNode, course);
+				doSetStatus(assessedIdentity, AssessmentEntryStatus.done, gtaNode, taskList, course);
 				dbInstance.commitAndCloseSession();
 			}
 			updateModel(ureq);
 		}
 	}
 	
-	private void doSetStatus(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode cNode, ICourse course) {
+	private void doSetStatus(Identity assessedIdentity, AssessmentEntryStatus status, CourseNode cNode, TaskList taskList, ICourse course) {
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
@@ -635,6 +642,13 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(cNode, doneEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
+		
+		Task assignedTask = gtaManager.getTask(assessedIdentity, taskList);
+		if(assignedTask == null) {
+			gtaManager.createTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
+		} else {
+			gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode, false, getIdentity(), Role.coach);
+		}
 	}
 	
 	private void doSetUserVisibility(UserRequest ureq, boolean visible) {
