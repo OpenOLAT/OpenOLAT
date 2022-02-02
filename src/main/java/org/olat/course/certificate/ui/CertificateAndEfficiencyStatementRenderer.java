@@ -33,7 +33,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 
 /**
  * Initial date: 23.11.2021<br>
@@ -71,8 +70,8 @@ public class CertificateAndEfficiencyStatementRenderer extends TreeNodeFlexiCell
 			} else {
 				Object tableRow = treeTableModel.getObject(row);
 				
-				if (tableRow instanceof CertificateAndEfficiencyStatement) {
-					CertificateAndEfficiencyStatement certRow = (CertificateAndEfficiencyStatement) tableRow;
+				if (tableRow instanceof CertificateAndEfficiencyStatementRow) {
+					CertificateAndEfficiencyStatementRow certRow = (CertificateAndEfficiencyStatementRow) tableRow;
 					
 					if (certRow.isTaxonomy()) {
 						renderIndented(renderer, target, cellValue, row, source, ubu, translator, true, false);
