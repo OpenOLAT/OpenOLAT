@@ -98,12 +98,12 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 	public CourseCurriculumTreeWithViewsRow(Curriculum curriculum, CurriculumElement element, CurriculumElementMembership curriculumMembership, int myEntryCount) {
 		this.element = element;
 		elementType = element.getType();
+		parentKey = element.getParent() == null ? null : element.getParent().getKey();
 		this.curriculumMembership = curriculumMembership;
 		curriculumMember = curriculumMembership != null && curriculumMembership.hasMembership();
 		singleEntry = false;
 		elementEntryCount = myEntryCount;
 		this.curriculum = curriculum;
-		setParentKey();
 		setShortenedDescription(element.getDescription());
 	
 		// calculate level of current curr element based on parent chain
@@ -218,12 +218,17 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 			return element.getDisplayName();
 		} else if (curriculum != null) {
 			return curriculum.getDisplayName();
-		} else
+		}
 		return null;
 	}
 
 	public boolean isCurriculum() {
-		return curriculum != null && element == null && repositoryEntry == null && parentKey == null;
+		return curriculum != null && element == null && repositoryEntry == null;
+	}
+	
+	public boolean isRepresentationOnly() {
+		return StringHelper.containsNonWhitespace(representationalName)
+				&& curriculum == null && element == null && repositoryEntry == null;
 	}
 	
 	public boolean isCurriculumElementOnly() {
@@ -359,14 +364,6 @@ public class CourseCurriculumTreeWithViewsRow implements CurriculumElementWithVi
 			}
 		} else {
 			shortenedDescription = "";
-		}
-	}
-
-	private void setParentKey() {
-		if (element != null && element.getParent() != null) {
-			parentKey = element.getParent().getKey();
-		} else if (curriculum != null) {
-			parentKey = curriculum.getKey();
 		}
 	}
 	

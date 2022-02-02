@@ -69,7 +69,9 @@ public class CourseListWrapperController extends BasicController implements Acti
     @Autowired
     private CurriculumModule curriculumModule;
 
-    public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee, CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback, List<CurriculumRef> curriculumRefs, StudentStatEntry statEntry) {
+    public CourseListWrapperController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity mentee,
+    		CurriculumSecurityCallback curriculumSecurityCallback, RoleSecurityCallback roleSecurityCallback,
+    		List<CurriculumRef> curriculumRefs, StudentStatEntry statEntry) {
         super(ureq, wControl);
 
         this.stackPanel = stackPanel;
