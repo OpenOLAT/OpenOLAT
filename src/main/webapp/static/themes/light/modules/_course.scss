@@ -524,14 +524,15 @@
 	.o_overview {
 		display: flex;
 		flex-wrap: wrap;
+		justify-content: space-between;
 		>div {
 			padding: 10px;
 		}
 		.o_overview_members {
-			min-width: 50%;
-			margin-right: 1em;
+			flex: 1 1 40%;
 		}
 		.o_overview_passed {
+			flex: 3 0 auto;
 			display: flex;
 			.o_passed_chart {
 				&.radial-progress {
