@@ -236,18 +236,16 @@ public class BinderPage {
 		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_section_form");
-		OOGraphene.waitElement(popupBy, 5, browser);
+		OOGraphene.waitElement(popupBy, browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_pf_edit_section_title input[type='text']");
-		WebElement nameEl = browser.findElement(nameBy);
-		nameEl.sendKeys(title);
+		browser.findElement(nameBy).sendKeys(title);
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_section_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(submitBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -283,26 +281,25 @@ public class BinderPage {
 	
 	public BinderPage createAssignmentForSection(String sectionTitle, String title, String summary, String content) {
 		By newAssignmentBy = By.xpath("//div[contains(@class,'o_portfolio_section')][h3[text()[contains(.,'" + sectionTitle + "')]]]//a[contains(@class,'o_sel_pf_new_assignment')]");
+		OOGraphene.waitElement(newAssignmentBy, browser);
 		List<WebElement> newAssignmentButtons = browser.findElements(newAssignmentBy);
 		Assert.assertEquals(1, newAssignmentButtons.size());
 		newAssignmentButtons.get(0).click();
 		
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_assignment_form");
-		OOGraphene.waitElement(popupBy, 5, browser);
+		OOGraphene.waitElement(popupBy, browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_pf_edit_assignment_title input[type='text']");
-		WebElement nameEl = browser.findElement(nameBy);
-		nameEl.sendKeys(title);
+		browser.findElement(nameBy).sendKeys(title);
 		OOGraphene.tinymce(summary, ".o_sel_pf_edit_assignment_summary", browser);
 		OOGraphene.tinymce(content, ".o_sel_pf_edit_assignment_content", browser);
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_assignment_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(submitBy).click();
+		OOGraphene.waitTopModalDialogDisappears(browser);
 		return this;
 	}
 	
