@@ -846,6 +846,17 @@ tr.choiceinteraction {
 	}
 }
 
+/* Choices horizontal right */
+.choiceInteraction.choiceright div.o_qti_item_choice_option_flow {
+	.radio label {
+		padding-left: 0;
+	}
+	.radio input {
+		margin-left: 0;
+		position: relative;
+	}
+}
+
 .choiceInteraction.choiceright table tr td.choiceInteraction {
 	background-color: $o-qti-choice-tablelayout-bg;
 	border-bottom: 3px solid white;
@@ -1760,6 +1771,8 @@ div.o_qti_statistics {
 	
 	.choiceinteraction input[type="radio"][disabled],
 	.choiceinteraction input[type="checkbox"][disabled],
+	.o_qti_item_choice_option_flow input[type="radio"][disabled],
+	.o_qti_item_choice_option_flow input[type="checkbox"][disabled],
 	.matchInteraction input[type="radio"][disabled],
 	.matchInteraction input[type="checkbox"][disabled],
 	.hottextInteraction .hottext input[type="radio"][disabled],
@@ -1768,6 +1781,7 @@ div.o_qti_statistics {
 	}
 	
 	.choiceinteraction input + i,
+	.o_qti_item_choice_option_flow input + i,
 	.matchInteraction input + i,
 	.hottextInteraction .hottext input + i {
 		display: inline;
