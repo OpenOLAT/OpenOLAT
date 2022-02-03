@@ -111,12 +111,12 @@ public class FIFOMap<T,U> {
 		return new LinkedHashMap<>(lhm);
 	}
 	
-	public void clear() {
+	public synchronized void clear() {
 		lhm.clear();
 	}
 	
 	@Override
-	public String toString() {
+	public synchronized String toString() {
 		return "FIFOMap:" + lhm.size() + ": " + lhm.keySet().toString() + ", super:" + super.toString();
 	}
 
