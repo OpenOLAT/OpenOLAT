@@ -469,17 +469,17 @@ public class GTAWorkflowEditController extends FormBasicController {
 		
 		boolean assignment = taskAssignmentEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_ASSIGNMENT, assignment);
-		DueDateConfig dueDateConfig = assignment? assignmentDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
-		config.setIntValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, dueDateConfig.getNumOfDays());
-		config.setStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO, dueDateConfig.getRelativeToType());
-		config.setDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE, dueDateConfig.getAbsoluteDate());
+		DueDateConfig assignmentDueDateConfig = assignment? assignmentDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		config.setIntValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, assignmentDueDateConfig.getNumOfDays());
+		config.setStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO, assignmentDueDateConfig.getRelativeToType());
+		config.setDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE, assignmentDueDateConfig.getAbsoluteDate());
 		
 		boolean turningIn = submissionEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMIT, turningIn);
-		dueDateConfig = turningIn? submissionDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
-		config.setIntValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, dueDateConfig.getNumOfDays());
-		config.setStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO, dueDateConfig.getRelativeToType());
-		config.setDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE, dueDateConfig.getAbsoluteDate());
+		DueDateConfig submissionDueDateConfig = turningIn? submissionDeadlineEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		config.setIntValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, submissionDueDateConfig.getNumOfDays());
+		config.setStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO, submissionDueDateConfig.getRelativeToType());
+		config.setDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE, submissionDueDateConfig.getAbsoluteDate());
 
 		boolean review = reviewEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, review);
@@ -491,10 +491,10 @@ public class GTAWorkflowEditController extends FormBasicController {
 		
 		boolean sample = sampleEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION, sample);
-		dueDateConfig = turningIn? solutionVisibleAfterEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
-		config.setIntValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, dueDateConfig.getNumOfDays());
-		config.setStringValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO, dueDateConfig.getRelativeToType());
-		config.setDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, dueDateConfig.getAbsoluteDate());
+		DueDateConfig sampleDueDateConfig = sample ? solutionVisibleAfterEl.getDueDateConfig(): DueDateConfig.noDueDateConfig();
+		config.setIntValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, sampleDueDateConfig.getNumOfDays());
+		config.setStringValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO, sampleDueDateConfig.getRelativeToType());
+		config.setDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, sampleDueDateConfig.getAbsoluteDate());
 		config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, solutionVisibleToAllEl.isSelected(0));
 
 		config.setBooleanEntry(GTACourseNode.GTASK_GRADING, gradingEl.isAtLeastSelected(1));
