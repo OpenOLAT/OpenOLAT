@@ -53,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -519,7 +520,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		filterCtrl.addControllerListener(this);
 
 		filtersCallout = new CloseableCalloutWindowController(ureq, wControl, filterCtrl.getInitialComponent(),
-				button.getFormDispatchId(), "", true, "", new CalloutSettings(false));
+				button.getFormDispatchId(), "", true, "", new CalloutSettings(false, CalloutOrientation.bottom, true));
 		filtersCallout.addControllerListener(this);
 		filtersCallout.activate();
 	}

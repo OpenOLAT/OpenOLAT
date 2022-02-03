@@ -82,6 +82,7 @@ import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.resource.OLATResource;
 import org.olat.user.HomePageConfig;
 import org.olat.user.HomePageDisplayController;
@@ -325,7 +326,8 @@ public class PFCoachController extends FormBasicController {
 				? courseEnv.getCourseGroupManager().getAllCurriculumElements() : userCourseEnv.getCoachedCurriculumElements();
 		if(!coachedElements.isEmpty()) {
 			for(CurriculumElement coachedElement: coachedElements) {
-				groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), coachedElement.getDisplayName(),
+				String displayName = CurriculumHelper.getLabel(coachedElement, getTranslator());
+				groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), displayName,
 						null, "o_icon o_icon_curriculum_element", null, true));
 			}
 		}

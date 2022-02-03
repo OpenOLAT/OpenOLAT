@@ -145,6 +145,8 @@ public class CurriculumRepositoryEntryRelationDAO {
 		  .append(" inner join el.group as bGroup")
 		  .append(" inner join bGroup.members as memberships")
 		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
+		  .append(" inner join fetch el.curriculum as curriculum")
+		  .append(" left join fetch el.parent as parentEl")
 		  .append(" where rel.entry.key=:repoKey")
 		  .append("   and memberships.identity.key=:identityKey");
 		if (roles != null && !roles.isEmpty()) {
