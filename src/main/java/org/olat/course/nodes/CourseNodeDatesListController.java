@@ -91,7 +91,7 @@ public class CourseNodeDatesListController extends FormBasicController {
 		long dateDifference = context.getDateDifference(courseNode.getIdent());
 		
 		if (dateDifference == 0l) {
-			dateDifference = context.getDateDifferenceByEarliestCurrent();
+			dateDifference = context.getDateDifference();
 		}
 		
 		// Load course node dependant dates

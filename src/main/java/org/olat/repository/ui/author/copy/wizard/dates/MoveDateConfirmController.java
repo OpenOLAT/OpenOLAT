@@ -56,8 +56,8 @@ public class MoveDateConfirmController extends FormBasicController {
 	private Date initialDate;
 	private Date newDate;
 	
-	private FormLink dontApplyToAllLink;
 	private FormLink applyToAllAfterCurrentDateLink;
+	private FormLink applyToAllLink;
 	
 	public MoveDateConfirmController(UserRequest ureq, WindowControl wControl, DateChooser sourceDateChooser) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -90,22 +90,22 @@ public class MoveDateConfirmController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonLayout);
-		uifactory.addFormSubmitButton("dates.update.all", buttonLayout);
+		uifactory.addFormSubmitButton("dates.update.none", buttonLayout);
 		applyToAllAfterCurrentDateLink = uifactory.addFormLink("dates.update.after.current", buttonLayout, Link.BUTTON);
 		applyToAllAfterCurrentDateLink.setI18nKey("dates.update.after.current", new String[] { dateArguments[0] });
-		dontApplyToAllLink = uifactory.addFormLink("dates.update.none", buttonLayout, Link.BUTTON);
+		applyToAllLink = uifactory.addFormLink("dates.update.all", buttonLayout, Link.BUTTON);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		MoveDatesEvent event = new MoveDatesEvent(sourceDateChooser, true, dontAskAgainEl.isKeySelected(REMEMBER_ME), false);
-		fireEvent(ureq, event);
+		MoveDatesEvent moveDatesEvent = new MoveDatesEvent(sourceDateChooser, false, dontAskAgainEl.isKeySelected(REMEMBER_ME), false);
+		fireEvent(ureq, moveDatesEvent);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == dontApplyToAllLink) {
-			MoveDatesEvent moveDatesEvent = new MoveDatesEvent(sourceDateChooser, false, dontAskAgainEl.isKeySelected(REMEMBER_ME), false);
+		if (source == applyToAllLink) {
+			MoveDatesEvent moveDatesEvent = new MoveDatesEvent(sourceDateChooser, true, dontAskAgainEl.isKeySelected(REMEMBER_ME), false);
 			fireEvent(ureq, moveDatesEvent);
 		} else if (source == applyToAllAfterCurrentDateLink) {
 			MoveDatesEvent moveDatesEvent = new MoveDatesEvent(sourceDateChooser, true, dontAskAgainEl.isKeySelected(REMEMBER_ME), true);

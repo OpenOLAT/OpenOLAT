@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author.copy.wizard.general;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -64,6 +66,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.IndentedNodeRenderer;
@@ -88,6 +91,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
+import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.ExecutionType;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewDataModel;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewDataModel.CopyCourseOverviewCols;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseOverviewRow;
@@ -168,7 +172,7 @@ public class CourseOverviewStep extends BasicStep {
 			courseNodeDatesListController = new CourseNodeDatesListController(ureq, wControl, context);
 			
 			initForm(ureq);
-			checkDatesAreInPast();
+			updateDateWarningUI();
 		}
 
 		@Override
@@ -229,7 +233,7 @@ public class CourseOverviewStep extends BasicStep {
 			
 			shiftAllDates = uifactory.addFormLink("shift.all.dates", formLayout, Link.BUTTON);
 			shiftAllDates.setElementCssClass("pull-right");
-			shiftAllDates.setVisible(context.getDateDifference() == 0l);
+			shiftAllDates.setVisible(ExecutionType.beginAndEnd != context.getExecutionType());
 			
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			
@@ -306,8 +310,6 @@ public class CourseOverviewStep extends BasicStep {
 			SelectionValue ignoreAssignmentAndSolution = new SelectionValue(CopyType.ignore.name(), translate("options.ignore.assignment.solution"));
 			
 			SelectionValues copyModes = null;
-			
-			DateWithLabel earliestDateInCourse = null;
 			
 			for (CopyCourseOverviewRow row : context.getCourseNodes()) {
 				if (row.getLearningPathConfigs() != null) {
@@ -412,16 +414,8 @@ public class CourseOverviewStep extends BasicStep {
 					if (earliestCourseNodeDate.needsTranslation() &&  StringHelper.containsNonWhitespace(earliestCourseNodeDate.getLabel())) {
 						earliestCourseNodeDate.setLabel(translate(earliestCourseNodeDate.getLabel()));
 					}
-					
-					if (earliestDateInCourse == null || earliestCourseNodeDate.getDate().before(earliestDateInCourse.getDate())) {
-						earliestDateInCourse = earliestCourseNodeDate;
-					}
 				}
 			}
-			
-			context.setEarliestDateWithNode(earliestDateInCourse);
-			
-			shiftAllDates.setVisible(earliestDateInCourse != null);
 			
 			dataModel.setObjects(context.getCourseNodes());
 			tableEl.reset();
@@ -508,12 +502,7 @@ public class CourseOverviewStep extends BasicStep {
 					} else {
 						if (sourceDateChooser.getUserObject() instanceof CopyCourseOverviewRow) {
 							CopyCourseOverviewRow row = (CopyCourseOverviewRow) sourceDateChooser.getUserObject();
-							DateWithLabel earliestDate = row.getEarliestDateWithLabel();
-							
-							if (earliestDate != null) {
-								long time = earliestDate.getDate().getTime();
-								earliestDate.getDate().setTime(time + sourceDateChooser.getDateDifference());
-							}
+							shiftDate(row, sourceDateChooser);
 						}
 						
 						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
@@ -521,11 +510,11 @@ public class CourseOverviewStep extends BasicStep {
 					
 					saveDatesToContext(context, dataModel.getObjects());
 					courseNodeDatesListController.updateDates(ureq);
-					checkDatesAreInPast();
+					updateDateWarningUI();
 				}
 			}
 			
-			checkDatesAreInPast();
+			updateDateWarningUI();
 		}
 		
 		@Override
@@ -537,7 +526,10 @@ public class CourseOverviewStep extends BasicStep {
 					if (moveDatesEvent.isMoveDates()) {
 						// Move other dates
 						moveAllDates(moveDatesEvent, dataModel);					
-					} 
+					} else {
+						CopyCourseOverviewRow row = (CopyCourseOverviewRow) moveDatesEvent.getDateChooser().getUserObject();
+						shiftDate(row, moveDatesEvent.getDateChooser());
+					}
 					
 					askForDateMove = !moveDatesEvent.isRememberChoice();
 				}
@@ -549,7 +541,7 @@ public class CourseOverviewStep extends BasicStep {
 				cleanUp();
 			} else if (source == moveAllDatesController) {
 				if (event.equals(Event.DONE_EVENT)) {
-					shiftAllDates(ureq, dataModel, moveAllDatesController.getDateDifference());
+					shiftAllDates(ureq, dataModel, moveAllDatesController.getCurrentDateDifference());
 				}
 				
 				cleanUp();
@@ -558,7 +550,7 @@ public class CourseOverviewStep extends BasicStep {
 				cleanUp();
 			}
 			
-			checkDatesAreInPast();
+			updateDateWarningUI();
 		}
 		
 		private void cleanUp() {	
@@ -594,7 +586,7 @@ public class CourseOverviewStep extends BasicStep {
 		}
 		
 		private void shiftAllDays(UserRequest ureq) {
-			moveAllDatesController = new MoveAllDatesController(ureq, getWindowControl(), context);
+			moveAllDatesController = new MoveAllDatesController(ureq, getWindowControl(), context, getEarliestDate());
 			listenTo(moveAllDatesController);
 			
 			cmc = new CloseableModalController(getWindowControl(), "close", moveAllDatesController.getInitialComponent(), true, translate("shift.all.dates"));
@@ -602,31 +594,51 @@ public class CourseOverviewStep extends BasicStep {
 			cmc.activate();
 		}
 		
-		private void shiftAllDates(UserRequest ureq, CopyCourseOverviewDataModel model, long dateDifference) {
+		private DateWithLabel getEarliestDate() {
+			DateWithLabel earliestDate = null;
+			for (CopyCourseOverviewRow row : context.getCourseNodes()) {
+				DateWithLabel rowEarliestDate = row.getEarliestDateWithLabel();
+				if (earliestDate == null || (rowEarliestDate != null && rowEarliestDate.getDate().before(earliestDate.getDate()))) {
+					earliestDate = rowEarliestDate;
+				}
+			}
+			return earliestDate;
+		}
+		
+		private void shiftDate(CopyCourseOverviewRow row, DateChooser dateChooser) {
+			long difference = dateChooser.getDateDifference();
+			dateChooser.setInitialDate(dateChooser.getDate());
+			shiftEarliestDate(row, difference);
+		}
+
+		private void shiftEarliestDate(CopyCourseOverviewRow row, long difference) {
+			DateWithLabel earliestDate = row.getEarliestDateWithLabel();
+			if (earliestDate != null) {
+				long time = earliestDate.getDate().getTime();
+				earliestDate.getDate().setTime(time + difference);
+			}
+		}
+		
+		private void shiftAllDates(UserRequest ureq, CopyCourseOverviewDataModel model, long difference) {
 			for (CopyCourseOverviewRow row : model.getObjects()) {
 				DateChooser start = row.getNewStartDateChooser() instanceof DateChooser? (DateChooser)row.getNewStartDateChooser(): null;
 				DateChooser end = row.getNewEndDateChooser() instanceof DateChooser? (DateChooser)row.getNewEndDateChooser(): null;
 				
 				if (start != null && start.getDate() != null) {
 					Date startDate = start.getDate();
-					startDate.setTime(startDate.getTime() + dateDifference);
+					startDate.setTime(startDate.getTime() + difference);
 					start.setDate(startDate);
 					start.setInitialDate(startDate);
 				}
 				
 				if (end != null && end.getDate() != null) {
 					Date endDate = end.getDate();
-					endDate.setTime(endDate.getTime() + dateDifference);
+					endDate.setTime(endDate.getTime() + difference);
 					end.setDate(endDate);
 					end.setInitialDate(endDate);
 				}
 				
-				DateWithLabel earliestDate = row.getEarliestDateWithLabel();
-				
-				if (earliestDate != null) {
-					long time = earliestDate.getDate().getTime();
-					earliestDate.getDate().setTime(time + dateDifference);
-				}
+				shiftEarliestDate(row, difference);
 			}	
 			
 			saveDatesToContext(context, dataModel.getObjects());
@@ -664,12 +676,7 @@ public class CourseOverviewStep extends BasicStep {
 					}
 				}
 				
-				DateWithLabel earliestDate = row.getEarliestDateWithLabel();
-				
-				if (earliestDate != null) {
-					long time = earliestDate.getDate().getTime();
-					earliestDate.getDate().setTime(time + difference);
-				}
+				shiftEarliestDate(row, difference);
 			}
 			
 			dateChooser.setInitialDate(dateChooser.getDate());
@@ -823,29 +830,26 @@ public class CourseOverviewStep extends BasicStep {
 					.min(Comparator.comparing(DateWithLabel::getDate))
 					.orElse(null);
 			
-			// Add date difference from first copy step (execution period)
 			if (earliestDate != null) {
 				long dateTime = earliestDate.getDate().getTime();
-				earliestDate.getDate().setTime(dateTime + context.getDateDifference()); 
+				long dateDifference = context.getDateDifference(courseNode.getIdent());
+				if (dateDifference == 0l) {
+					dateDifference = context.getDateDifference();
+				}
+				earliestDate.getDate().setTime(dateTime + dateDifference);
 			}
 			
 			return earliestDate;
 		}
 		
-		private void checkDatesAreInPast() {
-			boolean datesInPast = false;
-			
-			for (CopyCourseOverviewRow row : dataModel.getObjects()) {
-				Date currentDate = new Date();
-				
-				if (row.getEarliestDateWithLabel() != null) {
-					if (row.getEarliestDateWithLabel().getDate().before(currentDate)) {
-						datesInPast = true;
-						break;
-					}
-				}
-			}
-		
+		private void updateDateWarningUI() {
+			LocalDate today = LocalDate.now();
+			boolean datesInPast = dataModel.getObjects().stream()
+					.map(CopyCourseOverviewRow::getEarliestDateWithLabel)
+					.filter(Objects::nonNull)
+					.map(DateWithLabel::getDate)
+					.filter(Objects::nonNull)
+					.anyMatch(date -> today.isAfter(DateUtils.toLocalDate(date)));
 			dateWarning.setVisible(datesInPast);
 		}
 		

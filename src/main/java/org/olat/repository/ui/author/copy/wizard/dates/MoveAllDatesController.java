@@ -25,7 +25,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -34,6 +33,7 @@ import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.editor.EditorMainController;
@@ -42,6 +42,7 @@ import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseStepsStep;
+import org.olat.repository.ui.author.copy.wizard.DateWithLabel;
 
 /**
  * Initial date: 04.01.2022<br>
@@ -53,24 +54,22 @@ public class MoveAllDatesController extends FormBasicController {
 	private static final String DAYS = "days";
 	
 	private SingleSelection shiftModeEl;
-	private StaticTextElement earliestDateTextEl;
 	private DateChooser newEarliestDateEl;
 	private IntegerElement moveAmountEl;
 	
-	private long dateDifference = 0l;
+	private final CopyCourseContext context;
+	private final DateWithLabel earliestDate;
+	private long currentDateDifference;
 	
-	private CopyCourseContext context;
-	
-	public MoveAllDatesController(UserRequest ureq, WindowControl wControl, CopyCourseContext context) {
+	public MoveAllDatesController(UserRequest ureq, WindowControl wControl, CopyCourseContext context, DateWithLabel earliestDate) {
 		super(ureq, wControl);
-		
 		setTranslator(Util.createPackageTranslator(CopyCourseStepsStep.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(EditorMainController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(LearningPathNodeConfigController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(CourseNode.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(NodeRightsController.class, getLocale(), getTranslator()));
-		
 		this.context = context;
+		this.earliestDate = earliestDate;
 		
 		initForm(ureq);
 		switchMode();
@@ -86,13 +85,13 @@ public class MoveAllDatesController extends FormBasicController {
 		shiftModeEl.select(DATE, true);
 		shiftModeEl.addActionListener(FormEvent.ONCHANGE);
 		
-		String earliestDate = StringHelper.formatLocaleDate(context.getEarliestDateWithNode().getDate().getTime(), getLocale());
-		earliestDate += " - ";
-		earliestDate += context.getEarliestDateWithNode().getCourseNodeIdentifier() + " (" + context.getEarliestDateWithNode().getLabel() + ")";
+		String earliestDateText = StringHelper.formatLocaleDate(earliestDate.getDate().getTime(), getLocale());
+		earliestDateText += " - ";
+		earliestDateText += earliestDate.getCourseNodeIdentifier() + " (" + earliestDate.getLabel() + ")";
 		
-		earliestDateTextEl = uifactory.addStaticTextElement("shift.earliest", earliestDate, formLayout);
+		uifactory.addStaticTextElement("shift.earliest", earliestDateText, formLayout);
 		
-		newEarliestDateEl = uifactory.addDateChooser("shift.new.date", context.getEarliestDateWithNode().getDate(), formLayout);
+		newEarliestDateEl = uifactory.addDateChooser("shift.new.date", earliestDate.getDate(), formLayout);
 		newEarliestDateEl.setInitialDate(newEarliestDateEl.getDate());
 		
 		moveAmountEl = uifactory.addIntegerElement("dates.shift.days.label", 0, formLayout);
@@ -115,16 +114,12 @@ public class MoveAllDatesController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (shiftModeEl.getSelectedKey().equals(DATE)) {
-			dateDifference = newEarliestDateEl.getDateDifference() - context.getDateDifferenceByEarliest();
-			context.setDateDifferenceByEarliestCurrent(dateDifference);
-			context.setDateDifferenceByEarliest(newEarliestDateEl.getDateDifference());
+			long countDays = DateUtils.countDays(earliestDate.getDate(), newEarliestDateEl.getDate());
+			currentDateDifference = 86400000L * countDays;
 		} else {
-			context.setDaysShifted(moveAmountEl.getIntValue() + context.getDaysShifted());
-			long difference = moveAmountEl.getIntValue() * 86400000L;
-			dateDifference = difference;
-			context.setDateDifferenceByEarliestCurrent(difference - context.getDateDifferenceByEarliest());
-			context.setDateDifferenceByEarliest(difference);
+			currentDateDifference = 86400000L * moveAmountEl.getIntValue();
 		}
+		context.setDateDifference(context.getDateDifference() + currentDateDifference);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -143,9 +138,9 @@ public class MoveAllDatesController extends FormBasicController {
 			moveAmountEl.setVisible(true);
 		}
 	}
-	
-	public long getDateDifference() {
-		return dateDifference;
-	}
 
+	public long getCurrentDateDifference() {
+		return currentDateDifference;
+	}
+	
 }

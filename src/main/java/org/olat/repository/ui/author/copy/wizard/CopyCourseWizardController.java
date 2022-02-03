@@ -451,11 +451,6 @@ public class CopyCourseWizardController extends BasicController {
 		@Override
 		public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 			CopyCourseContext copyContext = (CopyCourseContext) runContext.get(CopyCourseContext.CONTEXT_KEY);
-			
-			if (copyContext.getDateDifference() == 0l) {
-				copyContext.setDateDifference(copyContext.getDateDifferenceByEarliest());
-			}
-			
 			copyEntry = copyService.copyLearningPathCourse(copyContext);
 			
 			return StepsMainRunController.DONE_MODIFIED;

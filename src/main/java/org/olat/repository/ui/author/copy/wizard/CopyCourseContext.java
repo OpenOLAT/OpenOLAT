@@ -75,10 +75,6 @@ public class CopyCourseContext {
 	private boolean hasAssessmentModes;
 	private boolean hasDocuments;
 	private boolean hasCoachDocuments;
-	private DateWithLabel earliestDateWithNode;
-	private long dateDifferenceByEarliest = 0l;
-	private long dateDifferenceByEarliestCurrent = 0l;
-	private int daysShifted = 0; // Used in the shift all dates by days dialogue
 
 	// Metadata
 	private String displayName;
@@ -402,14 +398,6 @@ public class CopyCourseContext {
 	
 	public void setDateDifference(long dateDifference) {
 		this.dateDifference = dateDifference;
-	}
-	
-	public int getDaysShifted() {
-		return daysShifted;
-	}
-	
-	public void setDaysShifted(int daysShifted) {
-		this.daysShifted = daysShifted;
 	}
 
 	public String getAuthors() {
@@ -784,31 +772,6 @@ public class CopyCourseContext {
 	public void setLectureBlockRows(List<LectureBlockRow> lectureBlockRows) {
 		this.lectureBlockRows = lectureBlockRows;
 	}
-	
-	public DateWithLabel getEarliestDateWithNode() {
-		return earliestDateWithNode;
-	}
-	
-	public void setEarliestDateWithNode(DateWithLabel earliestDateWithNode) {
-		this.earliestDateWithNode = earliestDateWithNode;
-	}
-	
-	public long getDateDifferenceByEarliest() {
-		return dateDifferenceByEarliest;
-	}
-	
-	public void setDateDifferenceByEarliest(long dateDifferenceByEarliest) {
-		this.dateDifferenceByEarliest = dateDifferenceByEarliest;
-	}
-	
-	public long getDateDifferenceByEarliestCurrent() {
-		return dateDifferenceByEarliestCurrent;
-	}
-	
-	public void setDateDifferenceByEarliestCurrent(long dateDifferenceByEarliestCurrent) {
-		this.dateDifferenceByEarliestCurrent = dateDifferenceByEarliestCurrent;
-	}
-	
 	
 	
 	// Helpers

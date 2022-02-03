@@ -19,6 +19,7 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Locale;
 
@@ -28,6 +29,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -35,25 +37,30 @@ import org.olat.core.util.StringHelper;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
 public class DateWithLabelRenderer extends DateFlexiCellRenderer {
+	
+	private final LocalDate today;
 
 	public DateWithLabelRenderer(Locale locale) {
 		super(locale);
-		
+		today = LocalDate.now();
 	}
 	
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue != null && cellValue instanceof DateWithLabel) {
+		if (cellValue instanceof DateWithLabel) {
 			Date date = ((DateWithLabel) cellValue).getDate();
 			String label = ((DateWithLabel) cellValue).getLabel();
 			
 			if (date != null) {
+				if (today.isAfter(DateUtils.toLocalDate(date))) {
+					target.append("<i class=\"o_icon o_icon_lg o_icon_warn\"></i> ");
+				}
 				super.render(renderer, target, date, row, source, ubu, translator);
 			}
 			
 			if (StringHelper.containsNonWhitespace(label)) {
-				target.append(" - ").append(((DateWithLabel) cellValue).getLabel());
+				target.append(" - ").append(label);
 			}
 		}
 		

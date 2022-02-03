@@ -177,7 +177,7 @@ public class AssessmentModesStep extends BasicStep {
 					
 					Date begin = new Date(mode.getBegin().getTime() + context.getDateDifference());
 					DateChooser beginDateChooser = uifactory.addDateChooser("begin_date_" + counter, begin, tableItems);
-					beginDateChooser.setInitialDate(mode.getBegin());
+					beginDateChooser.setInitialDate(begin);
 					beginDateChooser.setDateChooserTimeEnabled(true);
 					beginDateChooser.addActionListener(FormEvent.ONCHANGE);
 					
