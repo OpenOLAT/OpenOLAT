@@ -238,7 +238,7 @@ public class EntryPage {
 	 */
 	private void confirm() {
 		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
-		OOGraphene.waitElement(confirmButtonBy, 5, browser);
+		OOGraphene.waitElement(confirmButtonBy, browser);
 		OOGraphene.waitBusyAndScrollTop(browser);
 		browser.findElement(confirmButtonBy).click();
 		OOGraphene.waitBusy(browser);

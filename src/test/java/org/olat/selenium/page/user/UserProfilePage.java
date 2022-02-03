@@ -106,8 +106,8 @@ public class UserProfilePage {
 	
 	public UserProfilePage saveProfilAndConfirmEmail() {
 		By saveBy = By.cssSelector(".o_user_profile_form button.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.click(saveBy, browser);
+		OOGraphene.scrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		browser.findElement(yesBy).click();
