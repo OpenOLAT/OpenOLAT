@@ -91,11 +91,17 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private SingleSelection optionalEl;
 	private FormLink chooseGroupButton;
 	private FormLink chooseAreaButton;
-	private StaticTextElement groupListEl, areaListEl;
+	private StaticTextElement groupListEl;
+	private StaticTextElement areaListEl;
 	private DueDateConfigFormItem assignmentDeadlineEl;
 	private DueDateConfigFormItem submissionDeadlineEl;
 	private DueDateConfigFormItem solutionVisibleAfterEl;
-	private MultipleSelectionElement relativeDatesEl, taskAssignmentEl, reviewEl, revisionEl, sampleEl, gradingEl;
+	private MultipleSelectionElement relativeDatesEl;
+	private MultipleSelectionElement taskAssignmentEl;
+	private MultipleSelectionElement reviewEl;
+	private MultipleSelectionElement revisionEl;
+	private MultipleSelectionElement sampleEl;
+	private MultipleSelectionElement gradingEl;
 	private MultipleSelectionElement submissionEl;
 	private FormLayoutContainer stepsCont;
 	private SingleSelection solutionVisibleToAllEl;
@@ -264,6 +270,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		assignmentDeadlineEl = DueDateConfigFormItem.create("assignment.deadline", getRelativeToDates(true),
 				useRelativeDates, gtaNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE));
 		assignmentDeadlineEl.setLabel("assignment.deadline", null);
+		assignmentDeadlineEl.setVisible(assignement);
 		stepsCont.add(assignmentDeadlineEl);
 		
 		uifactory.addSpacerElement("s2", stepsCont, true);
@@ -278,6 +285,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		submissionDeadlineEl = DueDateConfigFormItem.create("submit.deadline", getRelativeToDates(false), useRelativeDates,
 				gtaNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE));
 		submissionDeadlineEl.setLabel("submit.deadline", null);
+		submissionDeadlineEl.setVisible(submit);
 		stepsCont.add(submissionDeadlineEl);
 		
 		uifactory.addSpacerElement("s3", stepsCont, true);
@@ -310,6 +318,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		solutionVisibleAfterEl = DueDateConfigFormItem.create("sample.solution.visible.after", getRelativeToDates(false),
 				useRelativeDates, solutionVisibleAfterConfig);
 		solutionVisibleAfterEl.setLabel("sample.solution.visible.after", null);
+		solutionVisibleAfterEl.setVisible(sample);
 		stepsCont.add(solutionVisibleAfterEl);
 		
 		boolean solutionVisibleRelToAll = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
