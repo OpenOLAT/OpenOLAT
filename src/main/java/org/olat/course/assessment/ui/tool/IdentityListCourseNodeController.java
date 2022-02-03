@@ -129,6 +129,7 @@ import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
@@ -498,7 +499,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			
 			if(!coachedCurriculumElements.isEmpty()) {
 				for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
-					String name = StringHelper.escapeHtml(coachedCurriculumElement.getDisplayName());
+					String name = CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator());
 					groupValues.add(new SelectionValue("curriculumelement-" + coachedCurriculumElement.getKey(), name, null,
 							"o_icon o_icon_curriculum_element", null, true));
 				}

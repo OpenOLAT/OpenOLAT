@@ -29,14 +29,14 @@
 	<div class="form-group o_qti_item_choice_option_flow">
 		<div #if($r.isSingleChoice($interaction)) class="radio" #else class="check" #end ><label for="oo_$r.toString($simpleChoice.identifier)">
 		#if($r.classContains($interaction,"choiceright"))
-	 		<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span></label>
+	 		<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
 		#end
 			<input id="oo_$r.toString($simpleChoice.identifier)" name="qtiworks_response_${responseIdentifier}" value="$r.toString($simpleChoice.identifier)" #if($r.isSingleChoice($interaction)) type="radio" #else type="checkbox" #end #if($r.isItemSessionEnded()) disabled #end #if($r.valueContains($r.getResponseValue($interaction.responseIdentifier), $simpleChoice.identifier)) checked #end /><i> </i>
 			$r.appendFlexiFormDirtyForCheckbox("oo_$r.toString($simpleChoice.identifier)")
 	 	#if(!$r.classContains($interaction,"choiceright"))
-	 		<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span></label>
+	 		<span>$r.renderFlowStatics($simpleChoice.getFlowStatics())</span>
 	 	#end
-	 	</div>
+	 	</label></div>
 	 </div>
 	#end
 #else	

@@ -28,27 +28,33 @@ package org.olat.core.gui.control.generic.closablewrapper;
 public class CalloutSettings {
 	
 	private final boolean arrow;
+	private final boolean wider;
 	private final CalloutOrientation orientation;
 	
 	public CalloutSettings() {
-		this(true, CalloutOrientation.bottom);
+		this(true, CalloutOrientation.bottom, false);
 	}
 	
 	public CalloutSettings(CalloutOrientation orientation) {
-		this(true, orientation);
+		this(true, orientation, false);
 	}
 	
 	public CalloutSettings(boolean arrow) {
-		this(arrow, CalloutOrientation.bottom);
+		this(arrow, CalloutOrientation.bottom, false);
 	}
 	
-	public CalloutSettings(boolean arrow, CalloutOrientation orientation) {
+	public CalloutSettings(boolean arrow, CalloutOrientation orientation, boolean wider ) {
 		this.orientation = orientation;
 		this.arrow = arrow;
+		this.wider = wider;
 	}
 	
 	public boolean isArrow() {
 		return arrow;
+	}
+	
+	public boolean isWider() {
+		return wider;
 	}
 
 	public CalloutOrientation getOrientation() {

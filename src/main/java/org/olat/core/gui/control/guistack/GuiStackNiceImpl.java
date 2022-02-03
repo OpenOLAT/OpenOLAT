@@ -199,9 +199,11 @@ public class GuiStackNiceImpl implements GuiStack {
 		inset.contextPut("zindexextwindows", zindex+50);
 		if(settings != null) {
 			inset.contextPut("arrow", settings.isArrow());
+			inset.contextPut("wider", settings.isWider());
 			inset.contextPut("orientation", settings.getOrientation().name());
 		} else {
 			inset.contextPut("arrow", Boolean.TRUE);
+			inset.contextPut("wider", Boolean.FALSE);
 			inset.contextPut("orientation", CalloutOrientation.bottom.name());
 		}
 		modalPanel.pushContent(inset);

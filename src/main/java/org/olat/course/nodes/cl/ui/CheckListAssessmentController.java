@@ -99,6 +99,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -316,7 +317,8 @@ public class CheckListAssessmentController extends FormBasicController implement
 				: coachCourseEnv.getCoachedCurriculumElements();
 		if(!coachedElements.isEmpty()) {
 			for(CurriculumElement coachedElement: coachedElements) {
-				groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), coachedElement.getDisplayName(),
+				String name = CurriculumHelper.getLabel(coachedElement, getTranslator());
+				groupValues.add(new SelectionValue(CURRICULUM_EL_PREFIX + coachedElement.getKey(), name,
 						null, "o_icon o_icon_curriculum_element", null, true));
 			}
 		}
