@@ -144,6 +144,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		
 		launchTableModel = new LaunchTableModel(launchColumnsModel);
 		launchTableEl = uifactory.addTableElement(getWindowControl(), "launches", launchTableModel, 20, false, getTranslator(), formLayout);
+		launchTableEl.setElementCssClass("o_launch_list");
 		launchTableEl.setNumOfRowsEnabled(false);
 		launchTableEl.setExportEnabled(false);
 		launchTableEl.setCustomizeColumns(false);

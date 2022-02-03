@@ -43,8 +43,32 @@
 		<div class="o_block"></div>
 		<script>
 			/* <![CDATA[ */ 
-			jQuery(function() {
-				BFormatter.alignTableColumns(jQuery('.o_assessment_stats .o_group_list table'));
+			## Inspired by BFormatter.alignTableColumns()
+			## Column name has no/variable width.
+			## Column #members is as long as it's header cell.
+			## Column passed is as long as the smallest cell (without header cell).
+			var cellWidthsMembers = 0;
+			var cellWidthsPassed = 1000;
+			## Calculate the 'best' columns width
+			jQuery('.o_assessment_stats .o_group_list table').each(function() {
+				for(i = 0; i < jQuery(this)[0].rows.length; i++){	## rows
+					var cellWithMembers = jQuery(this)[0].rows[i].cells[1].clientWidth;
+					if(cellWidthsMembers < cellWithMembers) {
+						cellWidthsMembers = cellWithMembers;
+					}
+					var cellWithPassed = jQuery(this)[0].rows[i].cells[2].clientWidth;
+					if(cellWidthsPassed > cellWithPassed) {
+						cellWidthsPassed = cellWithPassed;
+					}
+				}	
+			});
+			## Apply the calculated width to the columns.
+			jQuery('.o_assessment_stats .o_group_list table').each(function() {
+				jQuery(this)[0].rows[0].cells[1].style.width = cellWidthsMembers+'px';
+				jQuery(this)[0].rows[0].cells[2].style.width = cellWidthsPassed+'px';
+			});
+			jQuery('.o_assessment_stats .o_launch_list table').each(function() {
+				jQuery(this)[0].rows[0].cells[1].style.width = cellWidthsPassed+'px';
 			});
 			/* ]]> */
 		</script>
