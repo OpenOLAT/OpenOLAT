@@ -504,6 +504,7 @@ public class CurriculumElementDAO {
 		  .append(" inner join fetch curEl.curriculum cur")
 		  .append(" inner join fetch cur.group baseGroup")
 		  .append(" inner join fetch curEl.group bGroup")
+		  .append(" left join fetch curEl.type elType")
 		  .append(" left join fetch cur.organisation organis")
 		  .append(" left join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
 		  .append(" left join repositoryentry as v on (rel.entry.key=v.key)")
