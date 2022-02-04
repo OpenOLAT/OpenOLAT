@@ -67,9 +67,11 @@
 				jQuery(this)[0].rows[0].cells[1].style.width = cellWidthsMembers+'px';
 				jQuery(this)[0].rows[0].cells[2].style.width = cellWidthsPassed+'px';
 			});
-			jQuery('.o_assessment_stats .o_launch_list table').each(function() {
-				jQuery(this)[0].rows[0].cells[1].style.width = cellWidthsPassed+'px';
-			});
+			if (cellWidthsPassed < 1000) {
+				jQuery('.o_assessment_stats .o_launch_list table').each(function() {
+					jQuery(this)[0].rows[0].cells[1].style.width = cellWidthsPassed+'px';
+				});
+			}
 			/* ]]> */
 		</script>
 	#end

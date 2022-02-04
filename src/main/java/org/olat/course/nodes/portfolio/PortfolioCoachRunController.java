@@ -109,7 +109,7 @@ public class PortfolioCoachRunController extends BasicController implements Acti
 		// Participants
 		if (courseAssessmentService.getAssessmentConfig(courseNode).isEditable()) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
-			overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv);
+			overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false);
 			listenTo(overviewCtrl);
 			assessmentEventToState = new AssessmentEventToState(overviewCtrl);
 			

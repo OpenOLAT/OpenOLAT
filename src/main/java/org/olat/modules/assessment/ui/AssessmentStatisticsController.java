@@ -50,7 +50,7 @@ public class AssessmentStatisticsController extends BasicController {
 		listenTo(expandCtrl);
 		mainVC.put("expand", expandCtrl.getInitialComponent());
 		
-		statsCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params);
+		statsCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, false);
 		listenTo(statsCtrl);
 		expandCtrl.setExpandableController(statsCtrl);
 		

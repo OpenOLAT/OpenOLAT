@@ -291,7 +291,7 @@ public class AssessmentHelper {
 		GenericTreeNode node = new GenericTreeNode();
 		node.setTitle(rootNode.getShortTitle());
 		node.setUserObject(rootNode);
-		node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(rootNode.getType()).getIconCSSClass());
+		node.setIconCssClass("o_CourseModule_icon");
 		gtm.setRootNode(node);
 		
 		List<GenericTreeNode> children = addAssessableNodesToList(rootNode);

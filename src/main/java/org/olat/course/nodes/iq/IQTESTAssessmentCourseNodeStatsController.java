@@ -53,8 +53,9 @@ public class IQTESTAssessmentCourseNodeStatsController extends AssessmentCourseN
 	private RepositoryService repositoryService;
 
 	public IQTESTAssessmentCourseNodeStatsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNode courseNode, AssessmentToolSecurityCallback assessmentCallback) {
-		super(ureq, wControl, userCourseEnv, courseNode, assessmentCallback);
+			UserCourseEnvironment userCourseEnv, CourseNode courseNode,
+			AssessmentToolSecurityCallback assessmentCallback, boolean readOnly) {
+		super(ureq, wControl, userCourseEnv, courseNode, assessmentCallback, readOnly);
 	}
 
 	@Override

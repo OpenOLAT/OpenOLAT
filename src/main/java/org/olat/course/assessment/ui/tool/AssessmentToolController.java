@@ -154,9 +154,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				PopEvent pe = (PopEvent) event;
 				if (pe.isClose()) {
 					stackPanel.popUpToRootController(ureq);
-				} else if (pe.getController() != null && pe.getController() == courseTreeCtrl) {
-					removeAsListenerAndDispose(courseTreeCtrl);
-					courseTreeCtrl = null;
+				} else if (pe.getController() != null && (pe.getController() == courseTreeCtrl || pe.getController() == bulkAssessmentOverviewCtrl)) {
+					cleanUp();
 					doTreeView(ureq).activate(ureq, null, null);
 					initToolbar();
 				}
@@ -221,6 +220,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 
 	private void doBulkAssessmentView(UserRequest ureq) {
+		stackPanel.popUpToController(this);
 		boolean canChangeUserVisibility = coachUserEnv.isAdmin()
 				|| coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration()
 						.getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);

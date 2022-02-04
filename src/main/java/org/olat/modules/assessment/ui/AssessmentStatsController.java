@@ -92,6 +92,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final SearchAssessedIdentityParams params;
+	private final boolean readOnly;
 	
 	private AssessmentStatistics statistics;
 	private AssessmentMembersStatistics memberStatistics;
@@ -102,11 +103,12 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	private AssessmentToolManager assessmentToolManager;
 
 	public AssessmentStatsController(UserRequest ureq, WindowControl wControl,
-			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params) {
+			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params, boolean readOnly) {
 		super(ureq, wControl, "stats");
 		this.assessmentCallback = assessmentCallback;
 		this.params = params;
-		
+		this.readOnly = readOnly;
+
 		initForm(ureq);
 		reload();
 	}
@@ -116,21 +118,27 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		assessedIdentitiesLink = uifactory.addFormLink("assessed.identities", "assessed.identities", null, null, formLayout, Link.NONTRANSLATED);
 		assessedIdentitiesLink.setElementCssClass("o_sel_assessment_tool_assessed_users");
 		assessedIdentitiesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
+		assessedIdentitiesLink.setEnabled(!readOnly);
 		
 		groupsLink = uifactory.addFormLink("groups", "groups", null, null, formLayout, Link.NONTRANSLATED);
 		groupsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+		groupsLink.setEnabled(!readOnly);
 		
 		curriculumElementLink = uifactory.addFormLink("curriculum.elements", "curriculum.elements", null, null, formLayout, Link.NONTRANSLATED);
 		curriculumElementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_element");
+		curriculumElementLink.setEnabled(!readOnly);
 		
 		passedLink = uifactory.addFormLink("num.passed", "num.passed", null, null, formLayout, Link.NONTRANSLATED);
 		passedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed o_passed");
+		passedLink.setEnabled(!readOnly);
 		
 		failedLink = uifactory.addFormLink("num.failed", "num.failed", null, null, formLayout, Link.NONTRANSLATED);
 		failedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_failed o_failed");
+		failedLink.setEnabled(!readOnly);
 		
 		undefinedLink = uifactory.addFormLink("num.undefined", "num.undefined", null, null, formLayout, Link.NONTRANSLATED);
 		undefinedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed_undefined o_noinfo");
+		undefinedLink.setEnabled(!readOnly);
 		
 		passedChart = new PassedChart("passed.chart");
 		passedChart.setDomReplacementWrapperRequired(false);
@@ -218,6 +226,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		int numOfPassedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountPassed() / statistics.getCountTotal()) : 0;
 		String numOfPassedText = translate("assessment.tool.num.passed", Integer.toString(statistics.getCountPassed()), Integer.toString(numOfPassedPercent));
 		passedLink.setI18nKey(numOfPassedText);
+		groupsLink.setEnabled(!readOnly);
 		
 		int numOfFailedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountFailed() / statistics.getCountTotal()) : 0;
 		String numOfFailedText = translate("assessment.tool.num.failed", Integer.toString(statistics.getCountFailed()), Integer.toString(numOfFailedPercent));
@@ -241,11 +250,12 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		String participantsLinkText = translate("assessment.tool.num.participants", Integer.toString(memberStatistics.getNumOfParticipants()));
 		FormLink participantsLink = uifactory.addFormLink("num.participants", CMD_MEMBERS, null, null, null, Link.NONTRANSLATED);
 		participantsLink.setI18nKey(participantsLinkText);
+		participantsLink.setEnabled(!readOnly);
 		participantRow.setAssessedIdentitiesLink(participantsLink);
 		
 		rows.add(participantRow);
 		
-		if(assessmentCallback.canAssessNonMembers()) {
+		if (assessmentCallback.canAssessNonMembers() && memberStatistics.getNumOfOtherUsers() > 0) {
 			LaunchRow otherUsersRow = new LaunchRow();
 			
 			otherUsersRow.setNumIdentities(memberStatistics.getNumOfOtherUsers());
@@ -254,6 +264,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			String otherUsersText = translate("assessment.tool.num.other.users", Integer.toString(memberStatistics.getNumOfOtherUsers()));
 			FormLink otherUsersLink = uifactory.addFormLink("num.other.users", CMD_NON_MEMBERS, null, null, null, Link.NONTRANSLATED);
 			otherUsersLink.setI18nKey(otherUsersText);
+			otherUsersLink.setEnabled(!readOnly);
 			otherUsersRow.setAssessedIdentitiesLink(otherUsersLink);
 			
 			rows.add(otherUsersRow);
@@ -284,6 +295,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			FormLink link = uifactory.addFormLink("group_" + assessedBusinessGroup.getKey(), CMD_GROUP, null, null, null, Link.NONTRANSLATED);
 			link.setI18nKey(assessedBusinessGroup.getName());
 			link.setUserObject(assessedBusinessGroup.getKey());
+			link.setEnabled(!readOnly);
 			row.setGroupLink(link);
 			
 			rows.add(row);
@@ -313,6 +325,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			FormLink link = uifactory.addFormLink("ce_" + assessedCurriculumElement.getKey(), CMD_CURRICULUM_ELEMENT, null, null, null, Link.NONTRANSLATED);
 			link.setI18nKey(assessedCurriculumElement.getName());
 			link.setUserObject(assessedCurriculumElement.getKey());
+			link.setEnabled(!readOnly);
 			row.setGroupLink(link);
 			
 			rows.add(row);

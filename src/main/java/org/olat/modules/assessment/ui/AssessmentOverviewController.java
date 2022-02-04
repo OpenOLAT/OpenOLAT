@@ -55,7 +55,7 @@ public class AssessmentOverviewController extends BasicController {
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
 		
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
-		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params);
+		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, false);
 		statisticCtrl.setExpanded(true);
 		listenTo(statisticCtrl);
 		mainVC.put("statistics", statisticCtrl.getInitialComponent());

@@ -38,6 +38,8 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Membership;
@@ -56,12 +58,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTARunController extends BasicController implements Activateable2 {
 	
 	private GTAParticipantController runCtrl;
+	private AssessmentCourseNodeOverviewController overviewCtrl;
 	private GTACoachSelectionController coachCtrl;
 	private GTACoachSelectionController markedCtrl;
 	private GTACoachManagementController manageCtrl;
 	private CourseNodeReminderRunController remindersCtrl;
 
 	private Link runLink;
+	private Link overviewLink;
 	private Link coachLink;
 	private Link markedLink;
 	private Link manageLink;
@@ -74,6 +78,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GTARunController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, UserCourseEnvironment userCourseEnv) {
@@ -88,17 +94,23 @@ public class GTARunController extends BasicController implements Activateable2 {
 			mainVC = createVelocityContainer("run_segments");
 
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+			overviewLink = LinkFactory.createLink("run.overview", mainVC, this);
+			segmentView.addSegment(overviewLink, true);
 			markedLink = LinkFactory.createLink("run.coach.marked", mainVC, this);
 			segmentView.addSegment(markedLink, false);
 			coachLink = LinkFactory.createLink("run.coach.all", mainVC, this);
-			segmentView.addSegment(coachLink, true);
+			segmentView.addSegment(coachLink, false);
 			if(isManagementTabAvalaible(config)) {
 				manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
 				segmentView.addSegment(manageLink, false);
 			}
 			
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Overview"), null);
+			overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, gtaNode, userCourseEnv, true);
+			listenTo(overviewCtrl);
+			
 			if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {
-				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Reminders"), null);
+				swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Reminders"), null);
 				remindersCtrl = new CourseNodeReminderRunController(ureq, swControl, entry, gtaNode.getReminderProvider(false));
 				listenTo(remindersCtrl);
 				if (remindersCtrl.hasDataOrActions()) {
@@ -107,7 +119,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 				}
 			}
 			
-			doOpenSelectionList(ureq);
+			doOpenOverview();
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(membership.isParticipant() && userCourseEnv.isParticipant()) {
@@ -133,7 +145,14 @@ public class GTARunController extends BasicController implements Activateable2 {
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("coach".equalsIgnoreCase(type)) {
+		if("overview".equalsIgnoreCase(type)) {
+			if(overviewLink != null || overviewCtrl != null) {
+				doOpenOverview();
+				if(segmentView != null) {
+					segmentView.select(overviewLink);
+				}
+			}
+		} if("coach".equalsIgnoreCase(type)) {
 			if(coachLink != null || coachCtrl != null) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doOpenCoach(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
@@ -203,6 +222,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == runLink) {
 					doOpenRun(ureq);
+				} else if (clickedLink == overviewLink) {
+					doOpenOverview();
 				} else if (clickedLink == coachLink) {
 					doOpenCoach(ureq);
 				} else if (clickedLink == markedLink) {
@@ -216,22 +237,6 @@ public class GTARunController extends BasicController implements Activateable2 {
 		}
 	}
 	
-	private void doOpenSelectionList(UserRequest ureq) {
-		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		boolean hasMarks = gtaManager.hasMarks(entry, gtaNode, getIdentity());
-		if (hasMarks) {
-			doOpenMarked(ureq);
-			if(segmentView != null) {
-				segmentView.select(markedLink);
-			}
-		} else {
-			doOpenCoach(ureq);
-			if(segmentView != null) {
-				segmentView.select(coachLink);
-			}
-		}
-	}
-	
 	private Activateable2 doOpenRun(UserRequest ureq) {
 		if(runCtrl == null) {
 			createRun(ureq);
@@ -241,6 +246,12 @@ public class GTARunController extends BasicController implements Activateable2 {
 			mainVC.put("segmentCmp", runCtrl.getInitialComponent());
 		}
 		return runCtrl;
+	}
+	
+	private void doOpenOverview() {
+		overviewCtrl.reload();
+		mainVC.put("segmentCmp", overviewCtrl.getInitialComponent());
+		segmentView.select(overviewLink);
 	}
 
 	private Activateable2 doOpenMarked(UserRequest ureq) {

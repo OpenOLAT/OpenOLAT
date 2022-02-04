@@ -1,0 +1,15 @@
+#if($r.available("segments"))
+	<h2><i class="o_icon $courseNodeIcon"> </i> $courseNodeTitle</h2>
+	<div class="clearfix">
+		$r.render("segments")
+			
+		#if($r.available("segmentCmp"))
+			<div class="o_block_top">
+				$r.render("segmentCmp")
+			</div>
+		#end
+	</div>
+#end
+#if($r.available("overview"))
+	$r.render("overview")
+#end

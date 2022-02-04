@@ -319,7 +319,7 @@ public interface CourseAssessmentService {
 			TooledStackedPanel stackPanel, CourseNode courseNode, UserCourseEnvironment coachCourseEnv);
 	
 	public AssessmentCourseNodeOverviewController getCourseNodeOverviewController(UserRequest ureq,
-			WindowControl wControl, CourseNode courseNode, UserCourseEnvironment coachCourseEnv);
+			WindowControl wControl, CourseNode courseNode, UserCourseEnvironment coachCourseEnv, boolean readOnly);
 	
 	public ScoreAccountingTrigger createScoreAccountingTrigger(RepositoryEntry entry, String subIdent,
 			ScoreAccountingTriggerData data);

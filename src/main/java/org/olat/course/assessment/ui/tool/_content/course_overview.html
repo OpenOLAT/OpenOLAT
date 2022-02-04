@@ -10,6 +10,9 @@
 		#end
 	</div>
 	<div class="col-sm-6">
+		#if($r.available("assessmentModes"))
+			$r.render("assessmentModes")
+		#end
 		#if($r.available("toReview"))
 			$r.render("toReview")
 		#end
@@ -38,9 +41,6 @@
 		</table>
 	</div>
 	<div class="col-sm-6">
-	#if($r.available("assessmentModes"))
-		$r.render("assessmentModes")
-	#end
 	</div>
 	#end
 </div>
