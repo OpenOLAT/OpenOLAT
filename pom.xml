@@ -74,7 +74,7 @@
 		<io.undertow>2.2.14.Final</io.undertow>
 		<jackson.version>2.13.1</jackson.version>
 		<org.mysql.version>8.0.28</org.mysql.version>
-		<swagger.ui.version>4.4.1</swagger.ui.version>
+		<swagger.ui.version>4.4.1-1</swagger.ui.version>
 		<org.postgresql.version>42.3.2</org.postgresql.version>
 		<org.infinispan.version>13.0.6.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
@@ -2340,7 +2340,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.11.0</version>
+			<version>1.11.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
