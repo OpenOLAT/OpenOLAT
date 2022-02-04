@@ -106,7 +106,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 			
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Overview"), null);
-			overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, gtaNode, userCourseEnv, true);
+			overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, gtaNode, userCourseEnv, false, true);
 			listenTo(overviewCtrl);
 			
 			if (userCourseEnv.isAdmin() && !userCourseEnv.isCourseReadOnly()) {

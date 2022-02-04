@@ -294,7 +294,9 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("NodeOverview", Long.valueOf(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, getWindowControl());
-		courseNodeOverviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, bwControl, courseNode, coachCourseEnv, false);
+		boolean courseInfoLaunch = rootCourseNodeIdent.equals(courseNode.getIdent());
+		courseNodeOverviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, bwControl, courseNode,
+				coachCourseEnv, courseInfoLaunch, false);
 		listenTo(courseNodeOverviewCtrl);
 		assessmentEventToState = new AssessmentEventToState(courseNodeOverviewCtrl);
 		addToHistory(ureq, courseNodeOverviewCtrl);

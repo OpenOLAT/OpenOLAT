@@ -50,7 +50,7 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 	protected final AssessmentToolSecurityCallback assessmentCallback;
 
 	public AssessmentCourseNodeStatsController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			CourseNode courseNode, AssessmentToolSecurityCallback assessmentCallback, boolean readOnly) {
+			CourseNode courseNode, AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
@@ -65,7 +65,7 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 				courseNode.getReferencedRepositoryEntry(), assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
-		assessmentStatsCtrl = new AssessmentStatsController(ureq, wControl, assessmentCallback, params, readOnly);
+		assessmentStatsCtrl = new AssessmentStatsController(ureq, wControl, assessmentCallback, params, courseInfoLaunch, readOnly);
 		assessmentStatsCtrl.setExpanded(true);
 		listenTo(assessmentStatsCtrl);
 		mainVC.put("stats", assessmentStatsCtrl.getInitialComponent());

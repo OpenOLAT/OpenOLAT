@@ -50,9 +50,10 @@ public interface AssessmentToolManager {
 	 * 
 	 * @param coach
 	 * @param params
+	 * @param courseInfoLaunch get the launch infos from the course infos or the assessment entry
 	 * @return
 	 */
-	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params);
+	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params, boolean courseInfoLaunch);
 	
 	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params);
 	

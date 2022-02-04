@@ -119,7 +119,7 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentCourseNodeStatsController getCustomOverviewController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, CourseNode courseNode,
-			AssessmentToolSecurityCallback assessmentCallback, boolean readOnly) {
+			AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
 		return null;
 	}
 

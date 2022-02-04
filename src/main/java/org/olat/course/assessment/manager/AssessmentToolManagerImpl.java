@@ -78,7 +78,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	private DB dbInstance;
 
 	@Override
-	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params) {
+	public AssessmentMembersStatistics getNumberOfParticipants(Identity coach, SearchAssessedIdentityParams params, boolean courseInfoLaunch) {
 		RepositoryEntry courseEntry = params.getEntry();
 		
 		int othersLoggedIn = 0;
@@ -86,13 +86,32 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		int numOfParticipants = 0;
 		int participantLoggedIn = 0;
 		
+		List<Long> launchedKeys;
 		StringBuilder sb = new StringBuilder();
-		sb.append("select infos.identity.key from usercourseinfos as infos")
-		  .append(" inner join infos.resource as infosResource on (infosResource.key=:resourceKey)");
-		List<Long> launchedKeys = dbInstance.getCurrentEntityManager()
-			.createQuery(sb.toString(), Long.class)
-			.setParameter("resourceKey", courseEntry.getOlatResource().getKey())
-			.getResultList();
+		if (courseInfoLaunch) {
+			sb.append("select infos.identity.key from usercourseinfos as infos")
+			  .append(" inner join infos.resource as infosResource on (infosResource.key=:resourceKey)");
+			launchedKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("resourceKey", courseEntry.getOlatResource().getKey())
+				.getResultList();
+		} else {
+			sb.append("select ae.identity.key");
+			sb.append("  from assessmententry ae");
+			sb.append(" where ae.identity.key is not null"); // exclude anonymous 
+			sb.append("   and ae.repositoryEntry.key = :entryKey");
+			sb.append("   and ae.firstVisit is not null");
+			if(params.getSubIdent() != null) {
+				sb.append(" and ae.subIdent=:subIdent");
+			}
+			TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Long.class)
+					.setParameter("entryKey", params.getEntry().getKey());
+			if (params.getSubIdent() != null) {
+				query.setParameter("subIdent", params.getSubIdent());
+			}
+			launchedKeys = query.getResultList();
+		}
 		
 		if(params.isAdmin()) {
 			sb = new StringBuilder();

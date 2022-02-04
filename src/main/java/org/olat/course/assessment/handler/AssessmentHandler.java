@@ -84,7 +84,7 @@ public interface AssessmentHandler extends CourseNodeProvider {
 	@SuppressWarnings("unused")
 	public default AssessmentCourseNodeOverviewController getCustomOverviewController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, CourseNode courseNode,
-			AssessmentToolSecurityCallback assessmentCallback, boolean readOnly) {
+			AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
 		return null;
 	}
 

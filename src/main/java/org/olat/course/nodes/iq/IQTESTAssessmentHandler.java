@@ -141,8 +141,9 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentCourseNodeOverviewController getCustomOverviewController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, CourseNode courseNode,
-			AssessmentToolSecurityCallback assessmentCallback, boolean readOnly) {
-		return new IQTESTAssessmentCourseNodeStatsController(ureq, wControl, coachCourseEnv, courseNode, assessmentCallback, readOnly);
+			AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
+		return new IQTESTAssessmentCourseNodeStatsController(ureq, wControl, coachCourseEnv, courseNode,
+				assessmentCallback, courseInfoLaunch, readOnly);
 	}
 
 }

@@ -105,7 +105,7 @@ public class LTIRunSegmentController extends BasicController implements Activate
 		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
 			if (courseAssessmentService.getAssessmentConfig(courseNode).isEditable()) {
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
-				overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false);
+				overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false, false);
 				listenTo(overviewCtrl);
 				assessmentEventToState = new AssessmentEventToState(overviewCtrl);
 				

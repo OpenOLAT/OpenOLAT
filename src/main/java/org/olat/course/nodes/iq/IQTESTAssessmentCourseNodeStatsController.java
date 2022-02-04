@@ -54,8 +54,8 @@ public class IQTESTAssessmentCourseNodeStatsController extends AssessmentCourseN
 
 	public IQTESTAssessmentCourseNodeStatsController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNode courseNode,
-			AssessmentToolSecurityCallback assessmentCallback, boolean readOnly) {
-		super(ureq, wControl, userCourseEnv, courseNode, assessmentCallback, readOnly);
+			AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
+		super(ureq, wControl, userCourseEnv, courseNode, assessmentCallback, courseInfoLaunch, readOnly);
 	}
 
 	@Override

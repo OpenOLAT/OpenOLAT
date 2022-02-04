@@ -205,7 +205,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(4, assessedIdentities.size());
 		
 		//check only the queries
-		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params);
+		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params, true);
 		Assert.assertNotNull(participantStatistics);
 
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, AssessmentEntryStatus.notStarted);
@@ -328,7 +328,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, statistics.getCountUndefined());
 		
 		//check only the queries as the statistics need the course infos
-		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(admin, params);
+		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(admin, params, true);
 		Assert.assertNotNull(participantStatistics);
 	}
 	
@@ -392,7 +392,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 
-		AssessmentMembersStatistics statisticsAsAdmin = assessmentToolManager.getNumberOfParticipants(admin, params);
+		AssessmentMembersStatistics statisticsAsAdmin = assessmentToolManager.getNumberOfParticipants(admin, params, true);
 		Assert.assertNotNull(statisticsAsAdmin);
 		Assert.assertEquals(3, statisticsAsAdmin.getNumOfOtherUsers());
 		Assert.assertEquals(4, statisticsAsAdmin.getNumOfParticipants());

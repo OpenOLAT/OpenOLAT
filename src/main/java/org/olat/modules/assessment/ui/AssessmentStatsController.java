@@ -92,6 +92,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final SearchAssessedIdentityParams params;
+	private final boolean courseInfoLaunch;
 	private final boolean readOnly;
 	
 	private AssessmentStatistics statistics;
@@ -103,10 +104,12 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	private AssessmentToolManager assessmentToolManager;
 
 	public AssessmentStatsController(UserRequest ureq, WindowControl wControl,
-			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params, boolean readOnly) {
+			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params,
+			boolean courseInfoLaunch, boolean readOnly) {
 		super(ureq, wControl, "stats");
 		this.assessmentCallback = assessmentCallback;
 		this.params = params;
+		this.courseInfoLaunch = courseInfoLaunch;
 		this.readOnly = readOnly;
 
 		initForm(ureq);
@@ -188,7 +191,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	
 	public void reload() {
 		statistics = assessmentToolManager.getStatistics(getIdentity(), params);
-		memberStatistics = assessmentToolManager.getNumberOfParticipants(getIdentity(), params);
+		memberStatistics = assessmentToolManager.getNumberOfParticipants(getIdentity(), params, courseInfoLaunch);
 		businessGroupStatistics = assessmentToolManager.getBusinessGroupStatistics(getIdentity(), params);
 		curriculumElementStatistics = assessmentToolManager.getCurriculumElementStatistics(getIdentity(), params);
 		
@@ -226,7 +229,6 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		int numOfPassedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountPassed() / statistics.getCountTotal()) : 0;
 		String numOfPassedText = translate("assessment.tool.num.passed", Integer.toString(statistics.getCountPassed()), Integer.toString(numOfPassedPercent));
 		passedLink.setI18nKey(numOfPassedText);
-		groupsLink.setEnabled(!readOnly);
 		
 		int numOfFailedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountFailed() / statistics.getCountTotal()) : 0;
 		String numOfFailedText = translate("assessment.tool.num.failed", Integer.toString(statistics.getCountFailed()), Integer.toString(numOfFailedPercent));

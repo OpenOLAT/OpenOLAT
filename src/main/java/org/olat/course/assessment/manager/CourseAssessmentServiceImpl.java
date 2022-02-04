@@ -395,13 +395,15 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	
 	@Override
 	public AssessmentCourseNodeOverviewController getCourseNodeOverviewController(UserRequest ureq,
-			WindowControl wControl, CourseNode courseNode, UserCourseEnvironment coachCourseEnv, boolean readOnly) {
+			WindowControl wControl, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			boolean courseInfoLaunch, boolean readOnly) {
 		AssessmentToolSecurityCallback assessmentCallback = createCourseNodeRunSecurityCallback(ureq, coachCourseEnv);
 		if (getAssessmentHandler(courseNode).hasCustomOverviewController()) {
 			return getAssessmentHandler(courseNode).getCustomOverviewController(ureq, wControl, coachCourseEnv,
-					courseNode, assessmentCallback, readOnly);
+					courseNode, assessmentCallback, courseInfoLaunch, readOnly);
 		}
-		return new AssessmentCourseNodeStatsController(ureq, wControl, coachCourseEnv, courseNode, assessmentCallback, readOnly);
+		return new AssessmentCourseNodeStatsController(ureq, wControl, coachCourseEnv, courseNode, assessmentCallback,
+				courseInfoLaunch, readOnly);
 	}
 
 	private AssessmentToolSecurityCallback createCourseNodeRunSecurityCallback(UserRequest ureq, UserCourseEnvironment userCourseEnv) {

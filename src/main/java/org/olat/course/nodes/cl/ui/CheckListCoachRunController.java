@@ -91,7 +91,7 @@ public class CheckListCoachRunController extends BasicController implements Acti
 		
 		// Overview
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_OVERVIEW), null);
-		overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, true);
+		overviewCtrl = courseAssessmentService.getCourseNodeOverviewController(ureq, swControl, courseNode, userCourseEnv, false, true);
 		listenTo(overviewCtrl);
 		
 		overviewLink = LinkFactory.createLink("segment.overview", mainVC, this);
