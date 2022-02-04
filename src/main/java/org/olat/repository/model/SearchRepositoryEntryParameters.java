@@ -51,6 +51,7 @@ public class SearchRepositoryEntryParameters {
 	private List<Long> repositoryEntryKeys;
 	private CatalogEntry parentEntry;
 	private IdentityRef asParticipant;
+	private List<Long> resIds;
 	
 	public SearchRepositoryEntryParameters() {
 		//
@@ -201,5 +202,13 @@ public class SearchRepositoryEntryParameters {
 
 	public void setAsParticipant(IdentityRef asParticipant) {
 		this.asParticipant = asParticipant;
+	}
+
+	public List<Long> getResIds() {
+		return resIds;
+	}
+
+	public void setResIds(List<Long> resIds) {
+		this.resIds = resIds;
 	}
 }
