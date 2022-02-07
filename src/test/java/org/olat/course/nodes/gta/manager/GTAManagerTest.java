@@ -922,6 +922,96 @@ public class GTAManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createTask() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-100");
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		//create task
+		Task task = gtaManager.createTask("New task", tasks, TaskProcess.submit, null, participant, node);
+		dbInstance.commitAndCloseSession();
+		// Persists
+		task = gtaManager.persistTask(task);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(task);
+		Assert.assertNotNull(task.getCreationDate());
+		Assert.assertNotNull(task.getLastModified());
+		Assert.assertEquals("New task", task.getTaskName());
+		Assert.assertEquals(TaskProcess.submit, task.getTaskStatus());
+		Assert.assertEquals(participant, task.getIdentity());
+	}
+	
+	@Test
+	public void createTaskTwice() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-101");
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		// Create task
+		Task task = gtaManager.createAndPersistTask("Double task", tasks, TaskProcess.submit, null, participant, node);
+		dbInstance.commitAndCloseSession();
+
+		// Check
+		Assert.assertNotNull(task);
+		Assert.assertNotNull(task.getKey());
+		Assert.assertEquals("Double task", task.getTaskName());
+		Assert.assertEquals(TaskProcess.submit, task.getTaskStatus());
+		Assert.assertEquals(participant, task.getIdentity());
+		
+		// Try to create the task twice
+		Task secondTask = gtaManager.createTask(null, tasks, null, null, participant, node);
+
+		Assert.assertEquals(task, secondTask);
+		Assert.assertEquals("Double task", secondTask.getTaskName());
+		Assert.assertEquals(TaskProcess.submit, secondTask.getTaskStatus());
+	}
+	
+	@Test
+	public void createTaskRepeat() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-101");
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		// Create task
+		Task task = gtaManager.createAndPersistTask("Double task", tasks, TaskProcess.submit, null, participant, node);
+		dbInstance.commitAndCloseSession();
+
+		// Check
+		Assert.assertEquals("Double task", task.getTaskName());
+		Assert.assertEquals(TaskProcess.submit, task.getTaskStatus());
+
+		// Try to create the task twice
+		// But go back in process is forbidden
+		Task secondTask = gtaManager.createAndPersistTask("Replace", tasks, TaskProcess.assignment, null, participant, node);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertEquals(task, secondTask);
+		Assert.assertEquals("Double task", secondTask.getTaskName());
+		Assert.assertEquals(TaskProcess.submit, secondTask.getTaskStatus());
+		
+		// Simulate grading (coach grades the task)
+		Task gradedTask = gtaManager.createAndPersistTask(null, tasks, TaskProcess.graded, null, participant, node);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertEquals(task, gradedTask);
+		Assert.assertEquals("Double task", gradedTask.getTaskName());
+		Assert.assertEquals(TaskProcess.graded, gradedTask.getTaskStatus());
+	}
+	
+	@Test
 	public void createTaskRevisionDate() {
 		//prepare
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-20");
