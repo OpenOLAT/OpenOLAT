@@ -1,7 +1,11 @@
 <div class="o_warning">
-	<strong>$r.infos1</strong><br>$infos2<br>$r.render("download")<br>$infos3
+	<p>$infos1<br>
+	$r.translate("confirmation.change.warning.add.1")<br>
+	$r.translate("confirmation.change.warning.2")</p>
+	<div class="o_block">$r.render("download")</div>
+	<p>$infos3</p>
 </div>
 <div class="o_button_group">
 	$r.render("cancel")
-	$r.render("ok")
+	$r.render("reset.replace.file")
 </div>

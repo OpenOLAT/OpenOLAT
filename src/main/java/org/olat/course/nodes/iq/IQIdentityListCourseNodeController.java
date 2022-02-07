@@ -563,7 +563,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				.filter(row -> row.getAssessmentStatus() == AssessmentEntryStatus.done)
 				.filter(row -> selectedIdentityKeys == null || selectedIdentityKeys.contains(row.getIdentityKey()))
 				.count();
-		if(correctionCtrl.getNumberOfAssessedIdentities() == 0) {
+		if(correctionCtrl.getNumOfAssessmentTestSessions() == 0) {
 			showWarning("grade.nobody");
 		} else if(numOfAssessmentEntriesDone > 0) {
 			doReopenForCorrection(ureq, correctionCtrl, numOfAssessmentEntriesDone);

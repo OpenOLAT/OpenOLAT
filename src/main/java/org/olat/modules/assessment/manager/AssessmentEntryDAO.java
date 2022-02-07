@@ -317,7 +317,7 @@ public class AssessmentEntryDAO {
 	/**
 	 * Load all assessment entries for the specific assessed repository entry with
 	 * the specific sub identifier (it is mandatory). The anonym users are excluded
-	 * by the query.
+	 * by the query. Reference entry is fetched if exists.
 	 * 
 	 * @param entry The entry (mandatory)
 	 * @param subIdent The subIdent (mandatory)
@@ -326,8 +326,9 @@ public class AssessmentEntryDAO {
 	public List<AssessmentEntry> loadAssessmentEntryBySubIdent(RepositoryEntryRef entry, String subIdent) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data from assessmententry data ")
-		   .append(" inner join fetch data.identity ident") 
+		   .append(" inner join fetch data.identity ident")
 		   .append(" inner join fetch ident.user identuser")
+		   .append(" left join fetch data.referenceEntry referenceEntry")
 		   .append(" where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent");
 
 		return dbInstance.getCurrentEntityManager()

@@ -20,6 +20,7 @@
 package org.olat.course.nodes.iq;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -312,9 +313,10 @@ public class IQConfigurationController extends BasicController {
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			
 			int numOfAssessedIdentities = 0;
+			Set<Identity> assessedIdentities = new HashSet<>(); 
 			if(currentEntry != null) {
 				List<AssessmentTestSession> assessmentTestSessions = qti21service.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), currentEntry);
-				Set<Identity> assessedIdentities = new HashSet<>(); 
+				
 				for(AssessmentTestSession assessmentTestSession:assessmentTestSessions) {
 					if(StringHelper.containsNonWhitespace(assessmentTestSession.getAnonymousIdentifier())) {
 						numOfAssessedIdentities++;
@@ -327,9 +329,11 @@ public class IQConfigurationController extends BasicController {
 			
 			if(numOfAssessedIdentities > 0) {
 				confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(),
-						course, (QTICourseNode)courseNode, newEntry, currentEntry, numOfAssessedIdentities);
+						course, (QTICourseNode)courseNode, newEntry, currentEntry,
+						new ArrayList<>(assessedIdentities), numOfAssessedIdentities);
 				listenTo(confirmChangeResourceCtrl);
-				cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent());
+				String title = translate("replace.entry");
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent(), title);
 				listenTo(cmc);
 				cmc.activate();
 			} else {
