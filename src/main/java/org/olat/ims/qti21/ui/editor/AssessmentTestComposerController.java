@@ -939,9 +939,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	}
 	
 	private TreeNode doOpenFirstItem() {
-		TreeNode node = menuTree.getTreeModel().getRootNode();
-		if(node.getChildCount() > 0) {
-			return doOpenFirstItem((TreeNode)node.getChildAt(0));
+		TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+		TreeNode node = null;
+		if(rootNode.getChildCount() > 0) {
+			node = doOpenFirstItem((TreeNode)rootNode.getChildAt(0));
+		}
+		if(node == null && rootNode.getChildCount() > 0) {
+			node = (TreeNode)rootNode.getChildAt(0);
+			menuTree.setSelectedNode(node);
+			menuTree.open(node);
 		}
 		return node;
 	}
@@ -953,7 +959,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			return node;
 		}
 		if(node.getChildCount() > 0) {
-			return doOpenFirstItem((TreeNode)node.getChildAt(0));
+			for(int i=0; i<node.getChildCount(); i++) {
+				TreeNode tNode = doOpenFirstItem((TreeNode)node.getChildAt(i));
+				if(tNode != null) {
+					return tNode;
+				}
+			}
 		}
 		return null;
 	}
