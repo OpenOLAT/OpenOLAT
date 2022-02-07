@@ -131,8 +131,10 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		mainVC = createVelocityContainer("tree_main");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		courseNodeOverviewLink = LinkFactory.createLink("segment.overview", mainVC, this);
+		courseNodeOverviewLink.setElementCssClass("o_sel_assessment_tool_node_overview");
 		segmentView.addSegment(courseNodeOverviewLink, true);
 		participantsLink = LinkFactory.createLink("segment.participants", mainVC, this);
+		participantsLink.setElementCssClass("o_sel_assessment_tool_node_participants");
 		segmentView.addSegment(participantsLink, false);
 		
 		LayoutMain3ColsController columLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuCont, mainVC, "course" + course.getResourceableId());

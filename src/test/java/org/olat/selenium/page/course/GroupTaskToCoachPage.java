@@ -46,26 +46,47 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage selectBusinessGroupToCoach(String name) {
-		By tableRowBy = By.cssSelector(".table tr");
-		By selectLinkBy = By.xpath("//td//a[contains(@onclick,'select')]");
-		
-		List<WebElement> rows = browser.findElements(tableRowBy);
-		WebElement selectLinkEl = null;
-		for(WebElement row:rows) {
-			if(row.getText().contains(name)) {
-				selectLinkEl = row.findElement(selectLinkBy);
-			}
-		}
-		Assert.assertNotNull(selectLinkEl);
-		selectLinkEl.click();
-		OOGraphene.waitBusy(browser);
+		By selectBy = By.xpath("//table[contains(@class,'table')]//tr[td[contains(@class,'o_dnd_label')][text()[contains(.,'" + name + "')]]]/td/a[contains(@onclick,'select')]");
+		OOGraphene.waitElement(selectBy, browser);
+		browser.findElement(selectBy).click();
+		By processBy = By.cssSelector("div.o_process");
+		OOGraphene.waitElement(processBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Select the segment with the list of assessed groups.
+	 * 
+	 * @return Itself
+	 */
+	public GroupTaskToCoachPage selectGroupsToCoach() {
+		By identitiesListSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_course_gta_coaching");
+		OOGraphene.waitElement(identitiesListSegmentBy, browser);
+		browser.findElement(identitiesListSegmentBy).click();
+		By groupsListBy = By.cssSelector("div.o_table_flexi.o_sel_course_gta_coached_groups");
+		OOGraphene.waitElement(groupsListBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Select the segment with the list of assessed identities.
+	 * 
+	 * @return Itself
+	 */
+	public GroupTaskToCoachPage selectIdentitiesToCoach() {
+		By identitiesListSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_course_gta_coaching");
+		OOGraphene.waitElement(identitiesListSegmentBy, browser);
+		browser.findElement(identitiesListSegmentBy).click();
+		By identitiesListBy = By.cssSelector("div.o_table_flexi.o_sel_course_gta_coached_participants");
+		OOGraphene.waitElement(identitiesListBy, browser);
 		return this;
 	}
 	
 	public GroupTaskToCoachPage selectIdentityToCoach(UserVO user) {
 		By selectLinkBy = By.xpath("//table[contains(@class,'table')]//td//a[contains(@onclick,'firstName')][contains(text(),'" + user.getFirstName() + "')]");
 		browser.findElement(selectLinkBy).click();
-		OOGraphene.waitBusy(browser);
+		By processBy = By.cssSelector("div.o_process");
+		OOGraphene.waitElement(processBy, browser);
 		return this;
 	}
 	

@@ -43,7 +43,7 @@ public abstract class GTACoachedListController extends FormBasicController {
 	protected final GTACourseNode gtaNode;
 	protected final CourseEnvironment courseEnv;
 	
-	public GTACoachedListController(UserRequest ureq, WindowControl wControl,
+	protected GTACoachedListController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl, "coach_list");
 		this.gtaNode = gtaNode;

@@ -1142,7 +1142,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		if(courseNode.getParent() == null) {
 			currentIdentityCtrl = new AssessmentIdentityCourseController(ureq, bwControl, stackPanel,
-					courseEntry, coachCourseEnv, assessedIdentity, showTitle);
+					courseEntry, coachCourseEnv, assessedIdentity, true);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
 					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, showTitle);
@@ -1160,8 +1160,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	private void doSetUserVisibility(UserRequest ureq, boolean visible) {
-		RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		ICourse course = CourseFactory.loadCourse(courseEntry);
+		RepositoryEntry cEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		ICourse course = CourseFactory.loadCourse(cEntry);
 		Boolean visibility = Boolean.valueOf(visible);
 		
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();

@@ -992,6 +992,7 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(gtaNodeTitle);
 		GroupTaskToCoachPage groupToCoach = new GroupTaskToCoachPage(browser);
 		groupToCoach
+			.selectGroupsToCoach()
 			.selectBusinessGroupToCoach("Group to task - 1")
 			.assertSubmittedDocument("my_solution.html")
 			.assertSubmittedDocument("submit_1.txt")
@@ -1148,6 +1149,7 @@ public class AssessmentTest extends Deployments {
 		URL correctionUrl = JunitTestHelper.class.getResource("file_resources/correction_1.txt");
 		File correctionFile = new File(correctionUrl.toURI());
 		participantToCoach
+			.selectIdentitiesToCoach()
 			.selectIdentityToCoach(ryomou)
 			.assertSubmittedDocument("personal_solution.html")
 			.assertSubmittedDocument("submit_2.txt")
@@ -1169,6 +1171,7 @@ public class AssessmentTest extends Deployments {
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
 		participantToCoach
+			.selectIdentitiesToCoach()
 			.selectIdentityToCoach(ryomou)
 			.assertRevision("submit_3.txt")
 			.closeRevisions()
@@ -1309,6 +1312,7 @@ public class AssessmentTest extends Deployments {
 		URL correctionUrl = JunitTestHelper.class.getResource("file_resources/correction_1.txt");
 		File correctionFile = new File(correctionUrl.toURI());
 		participantToCoach
+			.selectIdentitiesToCoach()
 			.selectIdentityToCoach(ryomou)
 			.assertSubmittedDocument("personal_solution.html")
 			.assertSubmittedDocument("submit_2.txt")
@@ -1330,6 +1334,7 @@ public class AssessmentTest extends Deployments {
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
 		participantToCoach
+			.selectIdentitiesToCoach()
 			.selectIdentityToCoach(ryomou)
 			.assertRevision("submit_3.txt")
 			.closeRevisions()
@@ -1478,6 +1483,7 @@ public class AssessmentTest extends Deployments {
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		participantToCoach
+			.selectIdentitiesToCoach()
 			.selectIdentityToCoach(ryomou)
 			.assertSubmittedDocument("personal_solution.html")
 			.assertSubmittedDocument("submit_2.txt")
@@ -1757,6 +1763,7 @@ public class AssessmentTest extends Deployments {
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		
 		participantToCoach
+			.selectIdentitiesToCoach()
 			.selectIdentityToCoach(ryomou)
 			.assertSubmittedDocument("submit_2.txt")
 			.reviewed()
@@ -1861,6 +1868,7 @@ public class AssessmentTest extends Deployments {
 		File correctionFile = new File(correctionUrl.toURI());
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		participantToCoach
+			.selectIdentitiesToCoach()
 			.selectIdentityToCoach(ryomou)
 			.uploadCorrection(correctionFile)
 			.reviewed()
@@ -1985,6 +1993,7 @@ public class AssessmentTest extends Deployments {
 		File correctionFile = new File(correctionUrl.toURI());
 		GroupTaskToCoachPage participantToCoach = new GroupTaskToCoachPage(browser);
 		participantToCoach
+			.selectIdentitiesToCoach()
 			.selectIdentityToCoach(ryomou)
 			.openRevisionsStep()
 			.uploadCorrection(correctionFile)

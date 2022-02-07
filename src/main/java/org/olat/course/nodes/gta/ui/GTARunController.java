@@ -95,13 +95,17 @@ public class GTARunController extends BasicController implements Activateable2 {
 
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 			overviewLink = LinkFactory.createLink("run.overview", mainVC, this);
+			overviewLink.setElementCssClass("o_sel_course_gta_overview");
 			segmentView.addSegment(overviewLink, true);
 			markedLink = LinkFactory.createLink("run.coach.marked", mainVC, this);
+			markedLink.setElementCssClass("o_sel_course_gta_favorit");
 			segmentView.addSegment(markedLink, false);
 			coachLink = LinkFactory.createLink("run.coach.all", mainVC, this);
+			coachLink.setElementCssClass("o_sel_course_gta_coaching");
 			segmentView.addSegment(coachLink, false);
 			if(isManagementTabAvalaible(config)) {
 				manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
+				manageLink.setElementCssClass("o_sel_course_gta_management");
 				segmentView.addSegment(manageLink, false);
 			}
 			

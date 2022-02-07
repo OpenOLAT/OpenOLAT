@@ -254,7 +254,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 		tableModel = new CoachParticipantsTableModel(getLocale(), columnsModel);
 
-		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 24, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_sel_course_gta_coached_participants");
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
@@ -566,7 +567,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		listenTo(editDueDatesCtrl);
 		
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
-		String title = translate("duedates.user", new String[] { fullname });
+		String title = translate("duedates.user", fullname);
 		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();

@@ -112,7 +112,22 @@ public class AssessmentToolPage {
 		By elementBy = By.xpath("//div[contains(@class,'o_tree')]//ul//li[div/span/a/span[@class='o_tree_item'][contains(text(),'" + nodeTitle + "')]]/div/span/a[contains(@onclick,'nidle')]");
 		OOGraphene.waitElement(elementBy, browser);
 		browser.findElement(elementBy).click();
-		OOGraphene.waitBusy(browser);
+		By statsBy = By.cssSelector("div.panel.o_assessment_stats");
+		OOGraphene.waitElement(statsBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Select the list of identities to assess.
+	 * 
+	 * @return Itself
+	 */
+	public AssessmentToolPage selectIdentitiesList() {
+		By identitiesListSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_assessment_tool_node_participants");
+		OOGraphene.waitElement(identitiesListSegmentBy, browser);
+		browser.findElement(identitiesListSegmentBy).click();
+		By identitiesListBy = By.cssSelector("div.o_table_flexi.o_sel_assessment_tool_table");
+		OOGraphene.waitElement(identitiesListBy, browser);
 		return this;
 	}
 	

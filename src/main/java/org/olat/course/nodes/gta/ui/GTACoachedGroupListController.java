@@ -125,6 +125,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		tableModel = new CoachGroupsTableModel(columnsModel);
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_sel_course_gta_coached_groups");
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-groups-v2");
 	}
