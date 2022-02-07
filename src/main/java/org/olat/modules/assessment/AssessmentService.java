@@ -78,6 +78,15 @@ public interface AssessmentService {
 	
 	public void resetAllOverridenRootPassed(RepositoryEntry entry);
 	
+	/**
+	 * Load all assessment entries for the specific assessed repository entry with
+	 * the specific mandatory sub identifier. The anonymous users are excluded
+	 * by the query. Identity and reference entry are fetched if exists.
+	 * 
+	 * @param entry The course entry
+	 * @param subIdent The sub-identifier (ex. course node identifier)
+	 * @return Assessment entries
+	 */
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntry entry, String subIdent);
 	
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdentWithStatus(RepositoryEntry entry, String subIdent, AssessmentEntryStatus status, boolean excludeZeroScore);

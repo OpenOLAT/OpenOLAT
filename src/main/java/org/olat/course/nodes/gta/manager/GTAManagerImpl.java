@@ -1258,30 +1258,53 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	public Task createAndPersistTask(String taskName, TaskList taskList, TaskProcess status,
 			BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode) {
 		Task task = createTask(taskName, taskList, status, assessedGroup, assessedIdentity, cNode);
-		dbInstance.getCurrentEntityManager().persist(task);
+		if(task.getKey() == null) {
+			dbInstance.getCurrentEntityManager().persist(task);
+		} else {
+			task = dbInstance.getCurrentEntityManager().merge(task);
+		}
 		return task;
 	}
 
 	@Override
 	public TaskImpl createTask(String taskName, TaskList taskList, TaskProcess status, BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode) {
-		TaskImpl task = new TaskImpl();
-		Date creationDate = new Date();
-		task.setCreationDate(creationDate);
-		task.setLastModified(creationDate);
-		task.setTaskList(taskList);
-		task.setTaskName(taskName);
-		task.setTaskStatus(status);//assignment is ok -> go to submit step
-		task.setRevisionLoop(0);
-		
-		if(status == TaskProcess.graded) {
-			task.setGraduationDate(new Date());
+		TaskImpl task = null;
+		if(assessedIdentity != null) {
+			task = (TaskImpl)getTask(assessedIdentity, taskList);
+		} else if(assessedGroup != null) {
+			task = (TaskImpl)getTask(assessedGroup, taskList);
 		}
 		
-		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			task.setBusinessGroup(assessedGroup);
-		} else {
-			task.setIdentity(assessedIdentity);
+		if(task == null) {
+			task = new TaskImpl();
+			Date creationDate = new Date();
+			task.setCreationDate(creationDate);
+			task.setLastModified(creationDate);
+			task.setTaskList(taskList);
+			task.setTaskName(taskName);
+
+			if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+				task.setBusinessGroup(assessedGroup);
+			} else {
+				task.setIdentity(assessedIdentity);
+			}
+		} else if (StringHelper.containsNonWhitespace(taskName) && !StringHelper.containsNonWhitespace(task.getTaskName())) {
+			task.setLastModified(new Date());
+			task.setTaskName(taskName);
 		}
+		
+		// only override the status if there is no status or the new status is a step further. Back is not allowed here
+		if((status != null && task.getStatus() == null)
+				|| (status != null && task.getStatus() != null && status.ordinal() > task.getTaskStatus().ordinal())) {
+				
+			task.setTaskStatus(status);//assignment is ok -> go to submit step
+			task.setRevisionLoop(0);
+			
+			if(status == TaskProcess.graded) {
+				task.setGraduationDate(new Date());
+			}
+		}
+	
 		return task;
 	}
 

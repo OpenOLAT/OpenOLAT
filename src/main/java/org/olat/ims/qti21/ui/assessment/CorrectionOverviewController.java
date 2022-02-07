@@ -48,6 +48,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.group.BusinessGroupService;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.modules.assessment.AssessmentToolOptions;
@@ -128,6 +129,11 @@ public class CorrectionOverviewController extends BasicController implements Too
 	@Override
 	public void initTools() {
 		stackPanel.addTool(segmentButtonsCmp, Align.segment, true);
+	}
+	
+	public int getNumOfAssessmentTestSessions() {
+		Map<Identity, AssessmentTestSession> sessions = model.getLastSessions();
+		return sessions == null ? 0 : sessions.size();
 	}
 
 	public int getNumberOfAssessedIdentities() {

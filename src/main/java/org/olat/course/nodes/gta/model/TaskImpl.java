@@ -29,7 +29,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -58,12 +57,10 @@ import org.olat.group.BusinessGroupImpl;
 
 @Entity(name="gtatask")
 @Table(name="o_gta_task")
-@NamedQueries({
-	@NamedQuery(name="countTaskByNameAndTaskList", query="select count(task) from gtatask task where task.taskList.key=:taskListKey and task.taskName=:taskName"),
-	@NamedQuery(name="tasksByTaskList", query="select task.taskName from gtatask task where task.taskList.key=:taskListKey"),
-	@NamedQuery(name="isTaskInProcess", query="select count(task) from gtatask task inner join task.taskList tasklist where task.taskName=:taskName and tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent"),
-	@NamedQuery(name="isTasksInProcess", query="select count(task) from gtatask task inner join task.taskList tasklist where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent")
-})
+@NamedQuery(name="countTaskByNameAndTaskList", query="select count(task) from gtatask task where task.taskList.key=:taskListKey and task.taskName=:taskName")
+@NamedQuery(name="tasksByTaskList", query="select task.taskName from gtatask task where task.taskList.key=:taskListKey")
+@NamedQuery(name="isTaskInProcess", query="select count(task) from gtatask task inner join task.taskList tasklist where task.taskName=:taskName and tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent")
+@NamedQuery(name="isTasksInProcess", query="select count(task) from gtatask task inner join task.taskList tasklist where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent")
 public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 
 	private static final long serialVersionUID = 4202873369981813454L;
