@@ -20,7 +20,6 @@
 package org.olat.core.util.mail.ui;
 
 import java.util.Locale;
-import java.util.UUID;
 
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -46,6 +45,8 @@ import org.olat.core.util.mail.ui.MailDataModel.ContextPair;
  */
 public class MailContextCellRenderer implements CustomCellRenderer {
 	
+	private int count = 0;
+	
 	private final Translator translator;
 	private VelocityContainer container;
 	private final Controller listeningController;
@@ -64,7 +65,7 @@ public class MailContextCellRenderer implements CustomCellRenderer {
 				StringHelper.escapeHtml(sb, context.getName());
 			} else {
 				String contextName = StringHelper.escapeHtml(context.getName());
-				Link link = LinkFactory.createLink("bp_" + UUID.randomUUID().toString(), container, listeningController);
+				Link link = LinkFactory.createLink("bp_" + (count++), container, listeningController);
 				link.setCustomDisplayText(contextName);
 				link.setUserObject(context.getBusinessPath());
 					

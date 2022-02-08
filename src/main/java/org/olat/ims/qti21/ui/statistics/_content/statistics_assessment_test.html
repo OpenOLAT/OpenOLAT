@@ -7,37 +7,51 @@
 <div class="o_qti_statistics">
 <div class="panel panel-default">
 	<div class="panel-heading"><h4>$r.translate("fig.title")</h4></div>	  	
-	<table class="table"><tbody>
-		<tr><th>$r.translate("fig.courseId")</th>
-			<td>#if($r.isNotEmpty($courseId))$courseId#end</td>
-			<th>#if($type == "survey") $r.translate("fig.surveyId") #else $r.translate("fig.testId") #end</th>
-			<td>$testId</td></tr>
-		<tr><th>$r.translate("fig.participants")</th>
-			<td>$numOfParticipants</td>
-			<th>$r.translate("fig.passed")</th>
-			<td>$numOfPassed</td></tr>
-		<tr><th>$r.translate("fig.failed")</th>
-			<td>$numOfFailed</td>
-			<th>$r.translate("chart.maxscore")</th>
-			<td>$maxScore</td></tr>
-		<tr>
-			<th>$r.translate("chart.cutscore")</th>
-			<td>$cutScore</td>
-			<th>$r.translate("fig.avg")</th>
-			<td>$average</td></tr>
-		<tr><th>$r.translate("fig.span")</th>
-			<td>$range</td>
-			<th>$r.translate("fig.stddev")</th>
-			<td>$standardDeviation</td></tr>
-		<tr><th>$r.translate("fig.mode")</th>
-			<td>$mode</td>
-			<th>$r.translate("fig.median")</th>
-			<td>$median</td></tr>
-		<tr><th>$r.translate("fig.averagedur")</th>
-			<td>$averageDuration</td>
-			<th></th><td></td>
+	<table class="table">
+		<tbody>
+			<tr>
+				<th scope="row">$r.translate("fig.courseId")</th>
+				<td>#if($r.isNotEmpty($courseId))$courseId#end</td>
+				<th scope="row">#if($type == "survey") $r.translate("fig.surveyId") #else $r.translate("fig.testId") #end</th>
+				<td>$testId</td>
 			</tr>
-	</tbody></table>
+			<tr>
+				<th scope="row">$r.translate("fig.participants")</th>
+				<td>$numOfParticipants</td>
+				<th scope="row">$r.translate("fig.passed")</th>
+				<td>$numOfPassed</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.failed")</th>
+				<td>$numOfFailed</td>
+				<th scope="row">$r.translate("chart.maxscore")</th>
+				<td>$maxScore</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("chart.cutscore")</th>
+				<td>$cutScore</td>
+				<th scope="row">$r.translate("fig.avg")</th>
+				<td>$average</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.span")</th>
+				<td>$range</td>
+				<th scope="row">$r.translate("fig.stddev")</th>
+				<td>$standardDeviation</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.mode")</th>
+				<td>$mode</td>
+				<th scope="row">$r.translate("fig.median")</th>
+				<td>$median</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.averagedur")</th>
+				<td>$averageDuration</td>
+				<td></td><td></td>
+			</tr>
+		</tbody>
+	</table>
 </div>
 
 #if($r.available("scoreHistogram") && $r.visible("scoreHistogram"))
