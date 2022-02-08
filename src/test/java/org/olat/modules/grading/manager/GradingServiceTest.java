@@ -30,6 +30,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -46,8 +47,11 @@ import org.olat.modules.grading.model.ReferenceEntryWithStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.olat.user.UserManager;
 import org.olat.user.manager.AbsenceLeaveDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.dumbster.smtp.SmtpMessage;
 
 /**
  * 
@@ -59,6 +63,8 @@ public class GradingServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private GradingService gradingService;
 	@Autowired
@@ -440,6 +446,53 @@ public class GradingServiceTest extends OlatTestCase {
 		Assert.assertNotNull(assignments);
 		Assert.assertEquals(1, assignments.size());
 		Assert.assertEquals(GradingAssignmentStatus.assigned, assignments.get(0).getAssignmentStatus());
+	}
+	
+	@Test
+	public void sendReminders() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-100");
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
+		
+		RepositoryEntryGradingConfiguration config = gradingService.getOrCreateConfiguration(entry);
+		config.setGradingEnabled(false);
+		config.setFirstReminder(1);
+		config.setSecondReminder(2);
+		gradingService.updateConfiguration(config);
+
+		Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-100-1");
+		
+		AssessmentEntry assessmentEntry = assessmentEntryDao.createAssessmentEntry(student, null, entry, null, false, entry);
+
+		Identity grader = JunitTestHelper.createAndPersistIdentityAsRndUser("assign-101");
+		grader.getUser().getPreferences().setLanguage("en");
+		userManager.updateUserFromIdentity(grader);
+		GraderToIdentity graderRelation = gradedToIdentityDao.createRelation(entry, grader);
+		dbInstance.commitAndCloseSession();
+		
+		//first assignment
+		gradingService.assignGrader(entry, assessmentEntry, DateUtils.addDays(new Date(), -5), true);
+		
+		List<GradingAssignment> assignmentsGrader = gradingAssignmentDao.getGradingAssignments(graderRelation);
+		Assert.assertEquals(1, assignmentsGrader.size());
+		
+		// set the reminder date
+		GradingAssignment assignmentGrader = assignmentsGrader.get(0);
+		assignmentGrader.setReminder1Date(DateUtils.addDays(new Date(), -5));
+		
+		// send reminders
+		gradingService.sendReminders();
+		
+		// check e-mails
+		List<SmtpMessage> reminders = getSmtpServer().getReceivedEmails();
+		SmtpMessage reminder = reminders.stream()
+				.filter(r ->  r.getHeaderValue("To").contains(grader.getUser().getEmail()))
+				.findFirst().orElse(null);
+		Assert.assertNotNull(reminder);
+		String body = reminder.getBody();
+		Assert.assertNotNull(body);
+		Assert.assertTrue(body.contains("New grading assignment"));
+
+		getSmtpServer().reset();
 	}
 	
 	@Test
@@ -830,5 +883,4 @@ public class GradingServiceTest extends OlatTestCase {
 		cal.add(Calendar.DATE, days);
 		return cal.getTime();
 	}
-	
 }

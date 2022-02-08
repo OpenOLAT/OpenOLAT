@@ -582,13 +582,16 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		List<GradingAssignment> inexactList = gradingAssignmentDao.getGradingAssignmentsOpenWithPotentialToRemind();
 		for(GradingAssignment assignment:inexactList) {
 			try {
-				RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(assignment.getReferenceEntry());
+				RepositoryEntry referenceEntry = assignment.getReferenceEntry();
+				RepositoryEntryGradingConfiguration config = gradingConfigurationDao.getConfiguration(referenceEntry);
 				if(exactReminderCalculation(assignment, assignment.getReminder1Date(), config.getFirstReminder())) {
-					reminder(assignment, config.getFirstReminderSubject(), config.getFirstReminderBody());
+					GraderMailTemplate template = reminderTemplate(assignment, config, true);
+					reminder(assignment, template);
 					assignment.setReminder1Date(new Date());
 					gradingAssignmentDao.updateAssignment(assignment);
 				} else if(exactReminderCalculation(assignment, assignment.getReminder2Date(), config.getSecondReminder())) {
-					reminder(assignment, config.getSecondReminderSubject(), config.getSecondReminderBody());
+					GraderMailTemplate template = reminderTemplate(assignment, config, true);
+					reminder(assignment, template);
 					assignment.setReminder2Date(new Date());
 					gradingAssignmentDao.updateAssignment(assignment);
 				}
@@ -600,6 +603,19 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		}
 	}
 	
+	private GraderMailTemplate reminderTemplate(GradingAssignment assignment, RepositoryEntryGradingConfiguration config, boolean first) {
+		assignment = gradingAssignmentDao.loadFullByKey(assignment.getKey());
+		
+		RepositoryEntry referenceEntry = assignment.getReferenceEntry();
+		GraderToIdentity grader = assignment.getGrader();
+		String language = grader.getIdentity().getUser().getPreferences().getLanguage();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+		Translator translator = Util.createPackageTranslator(GradingAssignmentsListController.class, locale);
+
+		return first ? GraderMailTemplate.firstReminder(translator, null, null, referenceEntry, config)
+				: GraderMailTemplate.secondReminder(translator, null, null, referenceEntry, config);
+	}
+	
 	private boolean exactReminderCalculation(GradingAssignment assignment, Date sendReminderDate, Integer reminderPeriod) {
 		if(reminderPeriod == null || sendReminderDate != null) return false;
 		
@@ -609,12 +625,11 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 		return new Date().after(assignmentDatePlusPeriod);
 	}
 	
-	private MailerResult reminder(GradingAssignment assignment, String subject, String body) {
-		
-		GraderMailTemplate template = new GraderMailTemplate(subject, body);
+	private MailerResult reminder(GradingAssignment assignment, GraderMailTemplate template) {
+
 		assignment = decorateGraderMailTemplate(assignment, template);
 
-		MailContext context = new MailContextImpl("[CoachSite:0][Grading:0]");
+		MailContext context = new MailContextImpl("[CoachSite:0][Grading:0][Assignments:0]");
 		
 		MailerResult result = new MailerResult();
 		Identity recipient = assignment.getGrader().getIdentity();
@@ -729,12 +744,16 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 	public void sendGraderAsssignmentNotification(GraderToIdentity grader, RepositoryEntry referenceEntry,
 			GradingAssignment assignment, RepositoryEntryGradingConfiguration config) {
 		if(grader == null) return; // nothing to do
+		
+		String language = grader.getIdentity().getUser().getPreferences().getLanguage();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+		Translator translator = Util.createPackageTranslator(GradingAssignmentsListController.class, locale);
 
-		GraderMailTemplate mailTemplate = new GraderMailTemplate(config.getNotificationSubject(), config.getNotificationBody());
+		GraderMailTemplate mailTemplate = GraderMailTemplate.notification(translator, null, null, referenceEntry, config);
 		decorateGraderMailTemplate(referenceEntry, mailTemplate);
 
 		MailerResult result = new MailerResult();
-		MailContext context = new MailContextImpl("[RepositoryEntry:0][Grading:0]");
+		MailContext context = new MailContextImpl("[CoachSite:0][Orders:0][Assignments:0]");
 		decorateGraderMailTemplate(assignment, mailTemplate);
 		doSendEmails(context, Collections.singletonList(grader), mailTemplate, result);
 	}
@@ -926,7 +945,7 @@ public class GradingServiceImpl implements GradingService, UserDataDeletable, Re
 				assignment.getKey(), grader.getKey(), grader.getIdentity());
 		
 		if(mailTemplate != null) {
-			MailContext context = new MailContextImpl("[CoachSite:0][Grading:0]");
+			MailContext context = new MailContextImpl("[CoachSite:0][Orders:0][Assignments:0]");
 			decorateGraderMailTemplate(assignment, mailTemplate);
 			doSendEmails(context, Collections.singletonList(grader), mailTemplate, result);
 		}

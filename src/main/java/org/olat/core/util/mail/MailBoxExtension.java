@@ -34,6 +34,7 @@ import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.ui.MailContextResolver;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
@@ -78,15 +79,17 @@ public class MailBoxExtension implements MailContextResolver, InitializingBean {
 			for(ContextEntry entry:entries) {
 				String resourceTypeName = entry.getOLATResourceable().getResourceableTypeName();
 				Long resourceId = entry.getOLATResourceable().getResourceableId();
-				if("BusinessGroup".equals(resourceTypeName)) {
+				if("BusinessGroup".equals(resourceTypeName) && !Long.valueOf(0l).equals(resourceId)) {
 					List<Long> ids = Collections.singletonList(resourceId);
 					List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(ids);
 					if(groups == null || groups.isEmpty()) {
 						return null;
 					}
 					return groups.get(0).getName();
-				} else if ("RepositoryEntry".equals(resourceTypeName)) {
+				} else if ("RepositoryEntry".equals(resourceTypeName) && !Long.valueOf(0l).equals(resourceId)) {
 					return repositoryManager.lookupDisplayName(resourceId);
+				} else if ("CoachSite".equals(resourceTypeName)) {
+					return Util.createPackageTranslator(MailBoxExtension.class, locale).translate("coaching");
 				}
 			}
 		} catch (Exception e) {
