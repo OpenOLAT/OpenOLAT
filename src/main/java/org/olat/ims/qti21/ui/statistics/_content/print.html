@@ -8,13 +8,11 @@
 	</div>
 #end
 <script>
-/* <![CDATA[ */
-    ## Execute deferred. Gives browser the time to finish the page rendering first before executing the print dialog. 
-	jQuery(function() {
-		setTimeout(function() {
-			window.focus();
-			window.print();
-		},1500);
-	});
-/* ]]> */
+## Execute deferred. Gives browser the time to finish the page rendering first before executing the print dialog. 
+jQuery(function() {
+	setTimeout(function() {
+		window.focus();
+		window.print();
+	},1500);
+});
 </script>
