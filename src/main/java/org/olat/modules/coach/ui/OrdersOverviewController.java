@@ -68,11 +68,11 @@ public class OrdersOverviewController extends BasicController implements Activat
 	private final GradingSecurityCallback secCallback;
 	
 	public OrdersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CoachingSecurity coachingSec, GradingSecurityCallback gradningSec) {
+			CoachingSecurity coachingSec, GradingSecurityCallback gradingSec) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.coachingSec = coachingSec;
-		this.secCallback = gradningSec;
+		this.secCallback = gradingSec;
 		
 		mainVC = createVelocityContainer("segments");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -90,10 +90,10 @@ public class OrdersOverviewController extends BasicController implements Activat
 		segmentView.addSegment(assessmentReleaseLink, false);
 		
 		gradingAssignmentsLink = LinkFactory.createLink("orders.grading", mainVC, this);
-		gradingAssignmentsLink.setVisible(gradningSec.canManage());
+		gradingAssignmentsLink.setVisible(secCallback.canGrade() && !secCallback.canManage());
 		segmentView.addSegment(gradingAssignmentsLink, false);
-		if(gradningSec.canGrade() && !coachingSec.isCoach()) {
-			doOpenGradingAssignments(ureq);
+		if(secCallback.canGrade() && !secCallback.canManage()) {
+			doOpenMyGradingAssignments(ureq);
 			segmentView.select(gradingAssignmentsLink);
 		}
 		if (mainVC.contextGet("segmentCmp") == null) {
@@ -115,7 +115,7 @@ public class OrdersOverviewController extends BasicController implements Activat
 			doOpenAssessmentRelease(ureq);
 			segmentView.select(assessmentReleaseLink);
 		} else if("Assignments".equalsIgnoreCase(type) && secCallback.canGrade()) {
-			doOpenGradingAssignments(ureq);
+			doOpenMyGradingAssignments(ureq);
 			segmentView.select(gradingAssignmentsLink);
 		}
 	}
@@ -132,7 +132,7 @@ public class OrdersOverviewController extends BasicController implements Activat
 				} else if (clickedLink == assessmentReleaseLink) {
 					doOpenAssessmentRelease(ureq);
 				} else if (clickedLink == gradingAssignmentsLink) {
-					doOpenGradingAssignments(ureq);
+					doOpenMyGradingAssignments(ureq);
 				}
 			}
 		}
@@ -163,7 +163,7 @@ public class OrdersOverviewController extends BasicController implements Activat
 		return assessmentReleaseCtrl;
 	}
 
-	private void doOpenGradingAssignments(UserRequest ureq) {
+	private void doOpenMyGradingAssignments(UserRequest ureq) {
 		if(gradingAssignmentsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Assignments"), null);
 			GradingSecurityCallback mySecCallback = GradingSecurityCallbackFactory.mySecurityCalllback(secCallback);
