@@ -139,9 +139,6 @@ public class RelationRolesAdminController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(editRoleCtrl == source || translatorCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				System.out.println("save");
-			}
 			loadModel();
 			cmc.deactivate();
 			cleanUp();

@@ -160,7 +160,7 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 						label.append(", ");
 					}
 
-					label.append(StringHelper.escapeHtml(valForLabel));
+					label.append(valForLabel);
 					currentLength += valForLabel.length();
 				}
 			}

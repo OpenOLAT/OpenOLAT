@@ -460,6 +460,7 @@ public class OrganisationsWebService {
 			inheritance = GroupMembershipInheritance.valueOf(inheritanceMode);
 		}
 
+		int count = 0;
 		for(UserVO member:members) {
 			Identity identity = securityManager.loadIdentityByKey(member.getKey());
 			if(identity != null) {
@@ -468,6 +469,9 @@ public class OrganisationsWebService {
 				} else {
 					organisationService.addMember(organisation, identity, getRoles(role), inheritance);
 				}
+			}
+			if(++count % 25 == 0) {
+				dbInstance.commitAndCloseSession();
 			}
 		}
 		return Response.ok().build();
