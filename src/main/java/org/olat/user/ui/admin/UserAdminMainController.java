@@ -37,6 +37,7 @@ import org.olat.admin.user.UserCreateController;
 import org.olat.admin.user.UsermanagerUserSearchController;
 import org.olat.admin.user.imp.UserImportController;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationRoles;
@@ -433,13 +434,14 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private UsermanagerUserSearchController createUserSearchControllerAfterDate(UserRequest ureq, WindowControl bwControl, int unit, int amount) {
 		Calendar cal = Calendar.getInstance();
 		cal.add(unit, amount);
-		SearchIdentityParams predefinedQuery = SearchIdentityParams.params(cal.getTime(), null, Identity.STATUS_VISIBLE_LIMIT);
+		SearchIdentityParams predefinedQuery = SearchIdentityParams.created(cal.getTime(), null, Identity.STATUS_VISIBLE_LIMIT);
 		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true, true);
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, OrganisationRoles role) {
 		final OrganisationRoles[] roles = { role };
-		SearchIdentityParams predefinedQuery = SearchIdentityParams.params(roles, Identity.STATUS_VISIBLE_LIMIT);
+		final GroupMembershipInheritance[] inheritence = { GroupMembershipInheritance.root, GroupMembershipInheritance.none };
+		SearchIdentityParams predefinedQuery = SearchIdentityParams.roles(roles, inheritence, Identity.STATUS_VISIBLE_LIMIT);
 		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, true, true);
 	}
 	
@@ -449,7 +451,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	}
 	
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, Integer status) {
-		SearchIdentityParams predefinedQuery = SearchIdentityParams.params(null, status);
+		SearchIdentityParams predefinedQuery = SearchIdentityParams.roles(null, null, status);
 		return createUserSearchController(ureq, bwControl, predefinedQuery, false, true, false, true);
 	}
 	

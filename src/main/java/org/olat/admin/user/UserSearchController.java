@@ -342,7 +342,7 @@ public class UserSearchController extends BasicController {
 		int maxResults = securityModule.getUserSearchMaxResultsValue() > 0 ? securityModule.getUserSearchMaxResultsValue() + 1 : -1;
 		login = (login.equals("") ? null : login);
 		SearchIdentityParams params = new SearchIdentityParams(login, userPropertiesSearch, userPropertiesAsIntersectionSearch, null, 
-				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+				null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		params.setOrganisations(searchableOrganisations);
 		return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, maxResults);
 	}

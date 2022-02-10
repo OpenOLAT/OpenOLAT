@@ -480,7 +480,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	 */
 	private List<Identity> searchUsers(String login, Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch) {
 		SearchIdentityParams params = new SearchIdentityParams(login,
-				userPropertiesSearch, userPropertiesAsIntersectionSearch, null, 
+				userPropertiesSearch, userPropertiesAsIntersectionSearch, null, null,
 				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		params.setOrganisations(searchableOrganisations);
 		params.setRepositoryEntryRole(repositoryEntryRole, false);

@@ -251,7 +251,7 @@ public class UserWebService {
 			}
 			
 			SearchIdentityParams searchParams = new SearchIdentityParams(login, userProps, true,
-					null, authProviders, null, null, null, null, status);
+					null, null, authProviders, null, null, null, null, status);
 			if(StringHelper.containsNonWhitespace(externalId)) {
 				searchParams.setExternalId(externalId);
 			}
