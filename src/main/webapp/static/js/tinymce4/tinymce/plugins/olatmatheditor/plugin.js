@@ -84,6 +84,9 @@
 					    	   { name: 'latex', type: 'textbox', multiline:true, flex:1, minHeight:120, onkeyup: updatePreview },
 					    	   { name: 'preview', type: 'panel', label: '', flex:1, minHeight:120,
 					    		 html:'<div id="mathpreviewFormula" style="width:100%; height=100%;"><div class="math"></div></div><div id="mathpreviewErrorMessage"></div>'
+							   },
+							   { name: 'hints', type: 'panel', label: '', flex:1, minHeight:20,
+					    		 html:'<div style="width:100%;">' + translator().translate('olatmatheditor.latexGroupHint') + '</div>'
 							   }
 					    	]
 					   }],
@@ -198,7 +201,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : "1.2.2"
+				version : "1.2.3"
 			};
 		}
 	});
