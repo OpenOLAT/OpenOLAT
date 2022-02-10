@@ -46,6 +46,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -146,6 +147,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	// The test is really assessment not a self test or a survey
 	private final boolean assessmentType = true;
 	private final WindowedResourceableList resourceList;
+	private final DisadvantageCompensation compensation;
 	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
 	
 	private AssessmentResultController resultCtrl;
@@ -205,6 +207,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("type", "self");
 		}
 		
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		DisadvantageCompensation c = disadvantageCompensationService
+				.getActiveDisadvantageCompensation(getIdentity(), courseEntry, courseNode.getIdent());
+		compensation = (c != null && c.getExtraTime() != null) ? c : null;
+
 		deliveryOptions = getDeliveryOptions();
 		overrideOptions = getOverrideOptions();
 		init(ureq);
@@ -387,25 +394,18 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			long lhours = timeLimitInSeconds / 3600;
 			String minutes = Long.toString((timeLimitInSeconds % 3600) / 60);
 			if(lhours == 0) {
-				mainVC.contextPut("timeLimitMessage", translate("block.time.limit.minute",
-						new String[] { minutes }));
+				mainVC.contextPut("timeLimitMessage", translate("block.time.limit.minute", minutes));
 			} else {
 				String hours = Long.toString(lhours);
-				mainVC.contextPut("timeLimitMessage", translate("block.time.limit.hour",
-						new String[] { hours, minutes }));
+				mainVC.contextPut("timeLimitMessage", translate("block.time.limit.hour", hours, minutes));
 			}
 			mainVC.contextPut("timeLimit", Formatter.formatHourAndSeconds(timeLimitInSeconds * 1000l));
 		}
 		
-		if(courseNode != null && userCourseEnv != null) {
-			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			DisadvantageCompensation compensation = disadvantageCompensationService
-					.getActiveDisadvantageCompensation(getIdentity(), courseEntry, courseNode.getIdent());
-			if(compensation != null && compensation.getExtraTime() != null) {
-				int extraMinutes = compensation.getExtraTime().intValue() / 60;
-				mainVC.contextPut("disadvantageCompensationMessage", translate("block.disadvantage.compensation",
-						new String[] { Integer.toString(extraMinutes) }));
-			}
+		if(courseNode != null && userCourseEnv != null && compensation != null ) {
+			int extraMinutes = compensation.getExtraTime().intValue() / 60;
+			mainVC.contextPut("disadvantageCompensationMessage", translate("block.disadvantage.compensation",
+					Integer.toString(extraMinutes)));
 		}
 	}
 	
@@ -427,22 +427,28 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				if(endTestDate != null) {
 					end = formatter.formatDateAndTime(endTestDate);
 					mainVC.contextPut("endTestDate", end);
+					
+					// add eventually compensation for disadvantage
+					if(compensation != null) {
+						int extraSeconds = compensation.getExtraTime().intValue();
+						endTestDate = DateUtils.addSeconds(endTestDate, extraSeconds);
+					}
 				}
 				
 				Date now = ureq.getRequestTimestamp();
 				if(startTestDate.after(now)) {
 					blocked = true;
 					if(end != null) {
-						mainVC.contextPut("startDateMessage", translate("block.before.dates.start.end", new String[] { start, end }));
+						mainVC.contextPut("startDateMessage", translate("block.before.dates.start.end", start, end));
 					} else {
-						mainVC.contextPut("startDateMessage", translate("block.before.dates.start", new String[] { start }));
+						mainVC.contextPut("startDateMessage", translate("block.before.dates.start", start));
 					}
 				} else if(endTestDate != null) {
 					if(endTestDate.before(now)) {
 						blocked = true;
-						mainVC.contextPut("startDateMessage", translate("block.after.dates.end", new String[] { end }));
+						mainVC.contextPut("startDateMessage", translate("block.after.dates.end", end));
 					} else {
-						mainVC.contextPut("startDateMessage", translate("block.during.dates.end", new String[] { end }));
+						mainVC.contextPut("startDateMessage", translate("block.during.dates.end", end));
 					}
 				}
 			}
