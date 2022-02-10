@@ -192,16 +192,24 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
-			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey) and orgtomember.role in (:roles))");
+			  .append("  where orgtomember.identity.key=ident.key and org.key in (:organisationKey) and orgtomember.role in (:roles)");
+			if(params.hasRoleInheritence()) {
+				sb.append(" and orgtomember.inheritanceModeString ").in(params.getRoleInheritence());	  
+			}
+			sb.append(")");
 		} else if(params.hasRoles()) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" ident.key in (select membership.identity.key from bgroupmember membership ")
-			  .append("  where  membership.role in (:roles))");
+			  .append("  where  membership.role in (:roles)");
+			if(params.hasRoleInheritence()) {
+				sb.append(" and orgtomember.inheritanceModeString ").in(params.getRoleInheritence());	  
+			}
+			sb.append(")");
 		} else if(params.hasOrganisations()) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
-			  .append("  where orgtomember.identity.key=ident.key and orgtomember.inheritanceModeString in ('").append(GroupMembershipInheritance.none).append("','").append(GroupMembershipInheritance.root).append("')")
+			  .append("  where orgtomember.identity.key=ident.key and orgtomember.inheritanceModeString ").in(GroupMembershipInheritance.none, GroupMembershipInheritance.root)
 			  .append("  and org.key in (:organisationKey))");
 		}
 		

@@ -117,7 +117,7 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 		
 		Long identityKey = contextEntry.getOLATResourceable().getResourceableId();
 		List<OrganisationRef> organisations = roles.getOrganisationsWithRoles(OrganisationRoles.valuesWithoutGuestAndInvitee());
-		SearchIdentityParams params = new SearchIdentityParams(null, null, false, null, 
+		SearchIdentityParams params = new SearchIdentityParams(null, null, false, null, null,
 				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		params.setOrganisations(organisations);
 		params.setIdentityKeys(Collections.singletonList(identityKey));

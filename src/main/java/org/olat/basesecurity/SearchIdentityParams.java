@@ -46,6 +46,7 @@ public class SearchIdentityParams {
 	
 	private OrganisationRoles[] roles;
 	private OrganisationRoles[] excludedRoles;
+	private GroupMembershipInheritance[] roleInheritence;
 	private GroupRoles repositoryEntryRole;
 	private boolean repositoryEntryRoleInDefaultOnly;
 	private GroupRoles businessGroupRole;
@@ -77,12 +78,13 @@ public class SearchIdentityParams {
 	}
 	
 	public SearchIdentityParams(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
-			OrganisationRoles[] roles, String[] authProviders,
+			OrganisationRoles[] roles, GroupMembershipInheritance[] roleInheritence, String[] authProviders,
 			Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status) {
 		setLogin(login);
 		this.userProperties = userproperties;
 		this.userPropertiesAsIntersectionSearch = userPropertiesAsIntersectionSearch;
 		this.roles = roles;
+		this.roleInheritence = roleInheritence;
 		this.authProviders = authProviders;
 		this.createdAfter = createdAfter;
 		this.createdBefore = createdBefore;
@@ -91,22 +93,22 @@ public class SearchIdentityParams {
 		this.status = status;
 	}
 	
-	public static SearchIdentityParams params(Date createdAfter, Date createdBefore, Integer status) {
-		return new SearchIdentityParams(null, null, true, null, null, createdAfter, createdBefore, null, null, status);
+	public static SearchIdentityParams created(Date createdAfter, Date createdBefore, Integer status) {
+		return new SearchIdentityParams(null, null, true, null, null, null, createdAfter, createdBefore, null, null, status);
 	}
 	
-	public static SearchIdentityParams params(OrganisationRoles[] roles, Integer status) {
-		return new SearchIdentityParams(null, null, true, roles, null, null, null, null, null, status);
+	public static SearchIdentityParams roles(OrganisationRoles[] roles, GroupMembershipInheritance[] roleInheritence, Integer status) {
+		return new SearchIdentityParams(null, null, true, roles, roleInheritence, null, null, null, null, null, status);
 	}
 	
 	public static SearchIdentityParams authenticationProviders(String[] authProviders, Integer status) {
-		return new SearchIdentityParams(null, null, true, null, authProviders, null, null, null, null, status);
+		return new SearchIdentityParams(null, null, true, null, null, authProviders, null, null, null, null, status);
 	}
 	
 	public static SearchIdentityParams resources(GroupRoles repositoryEntryRole, boolean defOnly,
 			GroupRoles businessGroupRole, CurriculumRoles curriculumRole,
 			OrganisationRoles[] roles, OrganisationRoles[] excludedRoles, Integer status) {
-		SearchIdentityParams params = new SearchIdentityParams(null, null, true, null, null, null, null, null, null, status);
+		SearchIdentityParams params = new SearchIdentityParams(null, null, true, null, null, null, null, null, null, null, status);
 		params.setRepositoryEntryRole(repositoryEntryRole, defOnly);
 		params.setBusinessGroupRole(businessGroupRole);
 		params.setCurriculumRole(curriculumRole);
@@ -213,6 +215,18 @@ public class SearchIdentityParams {
 		this.roles = roles;
 	}
 	
+	public boolean hasRoleInheritence() {
+		return roleInheritence != null && roleInheritence.length > 0;
+	}
+	
+	public GroupMembershipInheritance[] getRoleInheritence() {
+		return roleInheritence;
+	}
+
+	public void setRoleInheritence(GroupMembershipInheritance[] roleInheritence) {
+		this.roleInheritence = roleInheritence;
+	}
+
 	public boolean hasExcludedRoles() {
 		return excludedRoles != null && excludedRoles.length > 0;
 	}

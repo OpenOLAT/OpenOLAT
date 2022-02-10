@@ -228,7 +228,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		
 		OrganisationRoles[] selectedRoles = getRoles().toArray(new OrganisationRoles[0]);
 		SearchIdentityParams params = new SearchIdentityParams(loginVal, userPropertiesSearch, true,
-				selectedRoles, getAuthProviders(), getAfterDate(), getBeforeDate(),
+				selectedRoles, null, getAuthProviders(), getAfterDate(), getBeforeDate(),
 				getUserLoginAfter(), getUserLoginBefore(), null);
 		params.setOrganisations(getOrganisations());
 		params.setExactStatusList(statusList);

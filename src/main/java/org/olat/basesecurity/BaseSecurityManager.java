@@ -1079,7 +1079,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
 			OrganisationRoles[] roles, String[] authProviders, Date createdAfter, Date createdBefore) {
 		return identityPowerSearchQueries.getIdentitiesByPowerSearch(new SearchIdentityParams(login,
-				userproperties, userPropertiesAsIntersectionSearch, roles, 
+				userproperties, userPropertiesAsIntersectionSearch, roles, null,
 				authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT),
 				0, -1); 
 	}
@@ -1089,7 +1089,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			boolean userPropertiesAsIntersectionSearch, OrganisationRoles[] roles,
 			String[] authProviders, Date createdAfter, Date createdBefore, int firstResult, int maxResults) {
 		return identityPowerSearchQueries.getIdentitiesByPowerSearch(new SearchIdentityParams(login,
-				userProperties, userPropertiesAsIntersectionSearch, roles, 
+				userProperties, userPropertiesAsIntersectionSearch, roles, null,
 				authProviders, createdAfter, createdBefore, null, null, Identity.STATUS_VISIBLE_LIMIT),
 				firstResult, maxResults); 
 	}
@@ -1098,7 +1098,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	public long countIdentitiesByPowerSearch(String login, Map<String, String> userproperties, boolean userPropertiesAsIntersectionSearch,
 			OrganisationRoles[] roles, String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore,  Integer status) {
 	  	return identityPowerSearchQueries.countIdentitiesByPowerSearch(new SearchIdentityParams(login,
-	  			userproperties, userPropertiesAsIntersectionSearch, roles, authProviders,
+	  			userproperties, userPropertiesAsIntersectionSearch, roles, null, authProviders,
 	  			createdAfter, createdBefore, userLoginAfter, userLoginBefore, status));
 	}
 
@@ -1107,7 +1107,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			OrganisationRoles[] roles,
 			String[] authProviders, Date createdAfter, Date createdBefore, Date userLoginAfter, Date userLoginBefore, Integer status) {
 		return identityPowerSearchQueries.getIdentitiesByPowerSearch(new SearchIdentityParams(login, userproperties, userPropertiesAsIntersectionSearch,
-				roles, authProviders, createdAfter, createdBefore,
+				roles, null, authProviders, createdAfter, createdBefore,
 				userLoginAfter, userLoginBefore, status), 0, -1);
 	}
   
