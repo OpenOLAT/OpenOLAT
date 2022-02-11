@@ -84,7 +84,6 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 	private SingleSelection allowWlanEl;
 	private SingleSelection allowSpellCheckEl;
 	private SingleSelection allowZoomEl;
-	private SingleSelection allowTextSearchEl;
 	
 	private SingleSelection urlFilterEl;
 	private SingleSelection urlContentFilterEl;
@@ -141,12 +140,6 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_mode_edit_form");
 		setFormContextHelp("Assessment mode");
-
-		if(StringHelper.containsNonWhitespace(assessmentMode.getName())) {
-			setFormTitle("form.mode.title", new String[]{ assessmentMode.getName() });
-		} else {
-			setFormTitle("form.mode.title.add");
-		}
 		setFormDescription("form.mode.description");
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
@@ -178,7 +171,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		SelectionValues typeOfUse = new SelectionValues();
 		typeOfUse.add(SelectionValues.entry("keys", translate("mode.safeexambrowser.type.keys")));
 		typeOfUse.add(SelectionValues.entry("inConfig", translate("mode.safeexambrowser.type.inOpenOlat")));
-		typeOfUseEl = uifactory.addDropdownSingleselect("mode.safeexambrowser.typeofuse", formLayout, typeOfUse.keys(), typeOfUse.values());
+		typeOfUseEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.typeofuse", formLayout, typeOfUse.keys(), typeOfUse.values());
 		typeOfUseEl.setEnabled(editable);
 		typeOfUseEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -292,11 +285,6 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		allowZoomEl.setEnabled(editable);
 		allowZoomEl.select(trueFalseKey(sebConfig.isAllowZoomInOut()), true);
 		
-		allowTextSearchEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.text.search", formLayout,
-				trueFalseValues.keys(), trueFalseValues.values());
-		allowTextSearchEl.setEnabled(editable);
-		allowTextSearchEl.select(trueFalseKey(sebConfig.isAllowTextSearch()), true);
-		
 		urlFilterEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.url.filter", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		urlFilterEl.addActionListener(FormEvent.ONCHANGE);
@@ -371,7 +359,6 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		allowVideoCaptureEl.setVisible(enabled && inConfig);
 		allowSpellCheckEl.setVisible(enabled && inConfig);
 		allowZoomEl.setVisible(enabled && inConfig);
-		allowTextSearchEl.setVisible(enabled && inConfig);
 		urlFilterEl.setVisible(enabled && inConfig);
 		urlContentFilterEl.setVisible(enabled && inConfig && urlFilterEnabled);
 		allowedExpressionsEl.setVisible(enabled && inConfig && urlFilterEnabled);
@@ -434,7 +421,6 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		configuration.setAllowVideoCapture(allowVideoCaptureEl.isKeySelected("true"));
 		configuration.setAllowSpellCheck(allowSpellCheckEl.isKeySelected("true"));
 		configuration.setAllowZoomInOut(allowZoomEl.isKeySelected("true"));
-		configuration.setAllowTextSearch(allowTextSearchEl.isKeySelected("true"));
 		
 		configuration.setUrlFilter(urlFilterEl.isKeySelected("true"));
 		configuration.setUrlContentFilter(urlContentFilterEl.isKeySelected("true"));

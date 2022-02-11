@@ -69,6 +69,8 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.add("allowVideoCapture", configuration.isAllowVideoCapture());
 			plist.add("allowWlan", configuration.isAllowWlan());
 			plist.add("allowSpellCheck", configuration.isAllowSpellCheck());
+			plist.add("enableZoomPage", configuration.isAllowZoomInOut());
+			plist.add("enableZoomText", configuration.isAllowZoomInOut());
 			plist.add("browserWindowAllowReload", configuration.isBrowserWindowAllowReload());
 			if(StringHelper.containsNonWhitespace(configuration.getPasswordToExit())) {
 				plist.add("hashedQuitPassword", Encoder.sha256Exam(configuration.getPasswordToExit()));
@@ -120,6 +122,8 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.addProperty("audioMute", configuration.isAudioMute());
 			plist.addProperty("browserViewMode", configuration.getBrowserViewMode() < 0 ? 0 : configuration.getBrowserViewMode());
 			plist.addProperty("browserWindowAllowReload", configuration.isBrowserWindowAllowReload());
+			plist.addProperty("enableZoomPage", configuration.isAllowZoomInOut());
+			plist.addProperty("enableZoomText", configuration.isAllowZoomInOut());
 			plist.addProperty("examSessionClearCookiesOnStart", false);
 			if(StringHelper.containsNonWhitespace(configuration.getPasswordToExit())) {
 				plist.addProperty("hashedQuitPassword", Encoder.sha256Exam(configuration.getPasswordToExit()));

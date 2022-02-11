@@ -217,20 +217,20 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 	
 	private String getMembers() {
 		StringBuilder sb = new StringBuilder();
-		RepositoryEntry entry = lectureBlock.getEntry();
+		RepositoryEntry blockEntry = lectureBlock.getEntry();
 		List<Group> selectedGroups = lectureService.getLectureBlockToGroups(lectureBlock);
 		
 		// course
-		Group entryBaseGroup = repositoryService.getDefaultGroup(entry);
+		Group entryBaseGroup = repositoryService.getDefaultGroup(blockEntry);
 		if(selectedGroups.contains(entryBaseGroup)) {
-			sb.append(translate("mode.target.course", new String[] { StringHelper.escapeHtml(entry.getDisplayname()) }));
+			sb.append(translate("mode.target.course", StringHelper.escapeHtml(blockEntry.getDisplayname())));
 		}
 		
 		// business groups
 		int numOfBusinessGroups = 0;
 		StringBuilder gpString = new StringBuilder();
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
-		List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
+		List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, blockEntry, 0, -1, BusinessGroupOrder.nameAsc);
 		for(BusinessGroup businessGroup:businessGroups) {
 			if(selectedGroups.contains(businessGroup.getBaseGroup())) {
 				if(gpString.length() > 0) gpString.append(", ");
@@ -242,13 +242,13 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		if(numOfBusinessGroups > 0) {
 			if(sb.length() > 0) sb.append(" ");
 			String i18n = numOfBusinessGroups == 1 ? "mode.target.business.group" : "mode.target.business.groups";
-			sb.append(translate(i18n, new String[] { StringHelper.escapeHtml(sb.toString()) }));
+			sb.append(translate(i18n, StringHelper.escapeHtml(sb.toString())));
 		}
 		
 		// curriculum elements
 		int numOfCurriculums = 0;
 		StringBuilder curString = new StringBuilder();
-		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
+		List<CurriculumElement> elements = curriculumService.getCurriculumElements(blockEntry);
 		for(CurriculumElement element:elements) {
 			if(selectedGroups.contains(element.getGroup())) {
 				if(curString.length() > 0) curString.append(", ");
@@ -260,7 +260,7 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		if(numOfCurriculums > 0) {
 			if(sb.length() > 0) sb.append(" ");
 			String i18n = numOfCurriculums == 1 ? "mode.target.curriculum.element" : "mode.target.curriculum.elements";
-			sb.append(translate(i18n, new String[] { StringHelper.escapeHtml(curString.toString()) }));
+			sb.append(translate(i18n, StringHelper.escapeHtml(curString.toString())));
 		}
 		return sb.toString();
 	}

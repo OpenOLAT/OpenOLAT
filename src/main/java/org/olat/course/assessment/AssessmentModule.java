@@ -58,7 +58,6 @@ public class AssessmentModule extends AbstractSpringModule {
 	private static final String SEB_ALLOWSPELLCHECK = "safe.exam.browser.allow.spell.check";
 	private static final String SEB_BROWSERWINDOWALLOWRELOAD = "safe.exam.browser.browser.window.allow.reload";
 	private static final String SEB_ALLOWZOOMINOUT = "safe.exam.browser.allow.zoom.in.out";
-	private static final String SEB_ALLOWTEXTSEARCH = "safe.exam.browser.allow.text.search";
 	private static final String SEB_URLFILTER = "safe.exam.browser.url.filter";
 	private static final String SEB_URLCONTENTFILTER = "safe.exam.browser.url.content.filter";
 	private static final String SEB_ALLOWEDURLEXPRESSIONS = "safe.exam.browser.allowed.url.expressions";
@@ -99,8 +98,6 @@ public class AssessmentModule extends AbstractSpringModule {
 	private String safeExamBrowserBrowserWindowAllowReload;
 	@Value("${safe.exam.browser.allow.zoom.in.out:true}")
 	private String safeExamBrowserAllowZoomInOut;
-	@Value("${safe.exam.browser.allow.text.search:true}")
-	private String safeExamBrowserAllowTextSearch;
 	@Value("${safe.exam.browser.allow.wlan:true}")
 	private String safeExamBrowserAllowWlan;
 	@Value("${safe.exam.browser.allow.audio.capture:true}")
@@ -169,7 +166,6 @@ public class AssessmentModule extends AbstractSpringModule {
 		safeExamBrowserBrowserWindowAllowReload = getStringPropertyValue(SEB_BROWSERWINDOWALLOWRELOAD, safeExamBrowserBrowserWindowAllowReload);
 		
 		safeExamBrowserAllowZoomInOut = getStringPropertyValue(SEB_ALLOWZOOMINOUT, safeExamBrowserAllowZoomInOut);
-		safeExamBrowserAllowTextSearch = getStringPropertyValue(SEB_ALLOWTEXTSEARCH, safeExamBrowserAllowTextSearch);
 
 		safeExamBrowserUrlFilter = getStringPropertyValue(SEB_URLFILTER, safeExamBrowserUrlFilter);
 		safeExamBrowserUrlContentFilter = getStringPropertyValue(SEB_URLCONTENTFILTER, safeExamBrowserUrlContentFilter);
@@ -213,7 +209,6 @@ public class AssessmentModule extends AbstractSpringModule {
 		config.setAllowVideoCapture(isSafeExamBrowserAllowVideoCapture());
 		config.setAllowSpellCheck(isSafeExamBrowserAllowSpellCheck());
 		config.setAllowZoomInOut(isSafeExamBrowserAllowZoomInOut());
-		config.setAllowTextSearch(isSafeExamBrowserAllowTextSearch());
 
 		config.setUrlFilter(isSafeExamBrowserUrlFilter());
 		config.setUrlContentFilter(isSafeExamBrowserUrlContentFilter());
@@ -360,15 +355,6 @@ public class AssessmentModule extends AbstractSpringModule {
 	public void setSafeExamBrowserAllowZoomInOut(boolean allowZoomInOut) {
 		this.safeExamBrowserAllowZoomInOut = allowZoomInOut ? "true" : "false";
 		setStringProperty(SEB_ALLOWZOOMINOUT, safeExamBrowserAllowZoomInOut, true);
-	}
-
-	public boolean isSafeExamBrowserAllowTextSearch() {
-		return "true".equals(safeExamBrowserAllowTextSearch);
-	}
-
-	public void setSafeExamBrowserAllowTextSearch(boolean allowTextSearch) {
-		this.safeExamBrowserAllowTextSearch = allowTextSearch ? "true" : "false";
-		setStringProperty(SEB_ALLOWTEXTSEARCH, safeExamBrowserAllowTextSearch, true);
 	}
 
 	public boolean isSafeExamBrowserUrlFilter() {

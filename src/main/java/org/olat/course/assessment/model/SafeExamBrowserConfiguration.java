@@ -180,10 +180,18 @@ public class SafeExamBrowserConfiguration {
 		this.allowZoomInOut = allowZoomInOut;
 	}
 	
+	/**
+	 * @return Not implemented in SEB
+	 */
 	public boolean isAllowTextSearch() {
 		return allowTextSearch;
 	}
 	
+	/**
+	 * Not implemented in SEB
+	 * 
+	 * @param allowTextSearch
+	 */
 	public void setAllowTextSearch(boolean allowTextSearch) {
 		this.allowTextSearch = allowTextSearch;
 	}

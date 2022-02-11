@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
@@ -73,6 +74,11 @@ public class AssessmentModeEditController extends BasicController {
 		this.assessmentMode = assessmentMode;
 		
 		mainVC = createVelocityContainer("edit");
+		if(StringHelper.containsNonWhitespace(assessmentMode.getName())) {
+			mainVC.contextPut("title", translate("form.mode.title", assessmentMode.getName()));
+		} else {
+			mainVC.contextPut("title", translate("form.mode.title.add"));
+		}
 		
 		tabbedPane = new TabbedPane("segments", getLocale());
 		mainVC.put("segments", tabbedPane);
@@ -106,25 +112,6 @@ public class AssessmentModeEditController extends BasicController {
 			listenTo(safeExamBrowserCtrl);
 			return safeExamBrowserCtrl;
 		});
-
-		/*
-		 * 
-		 * 
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		generalLink = LinkFactory.createLink("tab.edit.general", mainVC, this);
-		segmentView.addSegment(generalLink, true);
-		doOpenGeneral(ureq);
-		
-		restrictionLink = LinkFactory.createLink("tab.edit.restriction", mainVC, this);
-		restrictionLink.setTextReasonForDisabling(translate("message.tab.disabled"));
-		segmentView.addSegment(restrictionLink, false);
-		accessLink = LinkFactory.createLink("tab.edit.access", mainVC, this);
-		accessLink.setTextReasonForDisabling(translate("message.tab.disabled"));
-		segmentView.addSegment(accessLink, false);
-		safeExamBrowserLink = LinkFactory.createLink("tab.edit.seb", mainVC, this);
-		safeExamBrowserLink.setTextReasonForDisabling(translate("message.tab.disabled"));
-		segmentView.addSegment(safeExamBrowserLink, false);
-		*/
 		
 		putInitialPanel(mainVC);
 		updateSegments();

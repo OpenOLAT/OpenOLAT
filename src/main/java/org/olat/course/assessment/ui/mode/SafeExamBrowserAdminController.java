@@ -56,7 +56,6 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 	private SingleSelection audioMuteEl;
 	private SingleSelection allowSpellCheckEl;
 	private SingleSelection allowZoomEl;
-	private SingleSelection allowTextSearchEl;
 	private SingleSelection allowAudioCaptureEl;
 	private SingleSelection allowVideoCaptureEl;
 	
@@ -160,10 +159,6 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 				trueFalseValues.keys(), trueFalseValues.values());
 		allowZoomEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserAllowZoomInOut()), true);
 		
-		allowTextSearchEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.text.search", formLayout,
-				trueFalseValues.keys(), trueFalseValues.values());
-		allowTextSearchEl.select(trueFalseKey(assessmentModule.isSafeExamBrowserAllowTextSearch()), true);
-		
 		urlFilterEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.url.filter", formLayout,
 				trueFalseValues.keys(), trueFalseValues.values());
 		urlFilterEl.addActionListener(FormEvent.ONCHANGE);
@@ -248,7 +243,6 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 
 		assessmentModule.setSafeExamBrowserAllowSpellCheck(allowSpellCheckEl.isOneSelected() && allowSpellCheckEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserAllowZoomInOut(allowZoomEl.isOneSelected() && allowZoomEl.isKeySelected("true"));
-		assessmentModule.setSafeExamBrowserAllowTextSearch(allowTextSearchEl.isOneSelected() && allowTextSearchEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserBrowserWindowAllowReload(enableReloadInExamEl.isOneSelected() && enableReloadInExamEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserUrlFilter(urlFilterEl.isOneSelected() && urlFilterEl.isKeySelected("true"));
 		assessmentModule.setSafeExamBrowserUrlContentFilter(urlContentFilterEl.isOneSelected() && urlContentFilterEl.isKeySelected("true"));
