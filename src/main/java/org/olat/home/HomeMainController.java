@@ -80,7 +80,7 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 		String navKey = entry.getOLATResourceable().getResourceableTypeName();
 		if("HomeSite".equals(navKey)) {
 			entries = entries.subList(1, entries.size());
-			if(entries.size() > 0) {
+			if(!entries.isEmpty()) {
 				entry = entries.get(0);
 				navKey = entry.getOLATResourceable().getResourceableTypeName();
 			}
@@ -96,6 +96,9 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 			if (gAE != null) {
 				currentNavKey = navKey;
 				stackPanel.popUpToRootController(ureq);
+				
+				removeAsListenerAndDispose(contentCtr);
+				contentCtr = null;
 	
 				currentCtr = createController(gAE, ureq);
 				contentCtr = new LayoutMain3ColsController(ureq, getWindowControl(), currentCtr);
@@ -115,12 +118,10 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 	}
 	
 	protected Controller createController(GenericActionExtension ae, UserRequest ureq) {
-		WindowControl bwControl = getWindowControl();
-
 		// get our ores for the extension
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ae.getNavigationKey(), 0L);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		bwControl = addToHistory(ureq, ores, null);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
 
 		Controller ctrl = ae.createController(ureq, bwControl, null);
 		if(ctrl instanceof BreadcrumbPanelAware) {
