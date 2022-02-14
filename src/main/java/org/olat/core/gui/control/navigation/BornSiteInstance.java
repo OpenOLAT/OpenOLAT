@@ -65,20 +65,18 @@ public class BornSiteInstance implements Disposable, CustomCSSProvider {
 		return guiStackHandle;
 	}
 
+	@Override
 	public void dispose() {
 		if (controller != null) {
 			controller.dispose();			
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.htmlheader.jscss.CustomCSSProvider#getCustomCSS()
-	 */
+	@Override
 	public CustomCSS getCustomCSS() {
 		// delegate to content controller if of type main layout controller
-		if (controller != null && controller instanceof MainLayoutController) {
+		if (controller instanceof MainLayoutController) {
 			MainLayoutController layoutController = (MainLayoutController) controller;
-			// fxdiff: do return!
 			return layoutController.getCustomCSS();
 		}
 		return null;
