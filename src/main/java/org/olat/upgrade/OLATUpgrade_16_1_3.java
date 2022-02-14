@@ -34,6 +34,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -62,6 +63,8 @@ public class OLATUpgrade_16_1_3 extends OLATUpgrade {
 	private RepositoryService repositoryService;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private AssessmentEntryDAO assessmentEntryDao;
 	
 	public OLATUpgrade_16_1_3() {
 		super();
@@ -167,6 +170,7 @@ public class OLATUpgrade_16_1_3 extends OLATUpgrade {
 			dbInstance.commit();
 			
 			if(allAuthorMode) {
+				asEntry = assessmentEntryDao.loadAssessmentEntryById(asEntry.getKey());
 				dbInstance.getCurrentEntityManager().remove(asEntry);
 			}
 			dbInstance.commit();
