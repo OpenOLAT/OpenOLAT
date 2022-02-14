@@ -97,6 +97,8 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 	private RichTextElement safeExamBrowserHintEl;
 	private MultipleSelectionElement safeExamBrowserEl;
 	
+	private FormLayoutContainer sebConfigCont;
+	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmCtrl;
 	
@@ -113,7 +115,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 	
 	public AssessmentModeEditSafeExamBrowserController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, AssessmentMode assessmentMode) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.entry = entry;
 		
 		
@@ -138,7 +140,11 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_assessment_mode_edit_form");
+		
+		FormLayoutContainer enableCont = FormLayoutContainer.createDefaultFormLayout("enable.container", getTranslator());
+		formLayout.add(enableCont);
+		
+		enableCont.setElementCssClass("o_sel_assessment_mode_edit_form");
 		setFormContextHelp("Assessment mode");
 		setFormDescription("form.mode.description");
 		
@@ -163,7 +169,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		Status status = assessmentMode.getStatus();
 		boolean editable = isEditable();
 		
-		safeExamBrowserEl = uifactory.addCheckboxesHorizontal("safeexam", "mode.safeexambrowser", formLayout, onKeys, onValues);
+		safeExamBrowserEl = uifactory.addCheckboxesHorizontal("safeexam", "mode.safeexambrowser", enableCont, onKeys, onValues);
 		safeExamBrowserEl.select(onKeys[0], assessmentMode.isSafeExamBrowser());
 		safeExamBrowserEl.addActionListener(FormEvent.ONCHANGE);
 		safeExamBrowserEl.setEnabled(editable);
@@ -171,7 +177,7 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		SelectionValues typeOfUse = new SelectionValues();
 		typeOfUse.add(SelectionValues.entry("keys", translate("mode.safeexambrowser.type.keys")));
 		typeOfUse.add(SelectionValues.entry("inConfig", translate("mode.safeexambrowser.type.inOpenOlat")));
-		typeOfUseEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.typeofuse", formLayout, typeOfUse.keys(), typeOfUse.values());
+		typeOfUseEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.typeofuse", enableCont, typeOfUse.keys(), typeOfUse.values());
 		typeOfUseEl.setEnabled(editable);
 		typeOfUseEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -192,26 +198,30 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		trueFalseValues.add(SelectionValues.entry("true", translate("yes")));
 		trueFalseValues.add(SelectionValues.entry("false", translate("no")));
 		
-		downloadConfigEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.download.config", formLayout,
+		downloadConfigEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.download.config", enableCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		downloadConfigEl.select(trueFalseKey(assessmentMode.isSafeExamBrowserConfigDownload()), true);
+		
+		sebConfigCont = FormLayoutContainer.createDefaultFormLayout("seb.config", getTranslator());
+		sebConfigCont.setFormTitle(translate("mode.safeexambrowser.section.title"));
+		formLayout.add(sebConfigCont);
 
-		quitUrlConfirmEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.confirm.exit", formLayout,
+		quitUrlConfirmEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.confirm.exit", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		quitUrlConfirmEl.setEnabled(editable);
 		quitUrlConfirmEl.select(trueFalseKey(sebConfig.isQuitURLConfirm()), true);
 		
-		allowToExitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.toexit", formLayout,
+		allowToExitEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.toexit", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		allowToExitEl.addActionListener(FormEvent.ONCHANGE);
 		allowToExitEl.setEnabled(editable);
 		allowToExitEl.select(trueFalseKey(sebConfig.isAllowQuit()), true);
 		
 		String password = sebConfig.getPasswordToExit();
-		passwordToQuitEl = uifactory.addTextElement("password.quit", "mode.safeexambrowser.password.exit", 255, password, formLayout);
+		passwordToQuitEl = uifactory.addTextElement("password.quit", "mode.safeexambrowser.password.exit", 255, password, sebConfigCont);
 		passwordToQuitEl.setEnabled(editable);
 		
-		enableReloadInExamEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.enable.reload", formLayout,
+		enableReloadInExamEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.enable.reload", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		enableReloadInExamEl.setEnabled(editable);
 		enableReloadInExamEl.select(trueFalseKey(sebConfig.isBrowserWindowAllowReload()), true);
@@ -223,104 +233,107 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 				translate("mode.safeexambrowser.browser.view.mode.fullscreen")));
 		viewModeValues.add(SelectionValues.entry(Integer.toString(SafeExamBrowserConfiguration.BROWSERVIEWMODE_TOUCH),
 				translate("mode.safeexambrowser.browser.view.mode.touch")));
-		browserViewModeEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.browser.view.mode", formLayout,
+		browserViewModeEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.browser.view.mode", sebConfigCont,
 				viewModeValues.keys(), viewModeValues.values());
 		browserViewModeEl.setEnabled(editable);
 		browserViewModeEl.select(Integer.toString(sebConfig.getBrowserViewMode() < 0 ? 0 : sebConfig.getBrowserViewMode()), true);
 		
-		showSebTaskListEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.tasklist", formLayout,
+		showSebTaskListEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.tasklist", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		showSebTaskListEl.addActionListener(FormEvent.ONCHANGE);
 		showSebTaskListEl.setEnabled(editable);
 		showSebTaskListEl.select(trueFalseKey(sebConfig.isShowTaskBar()), true);
 		
-		showReloadButtonEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.reload.button", formLayout,
+		showReloadButtonEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.reload.button", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		showReloadButtonEl.setEnabled(editable);
 		showReloadButtonEl.select(trueFalseKey(sebConfig.isShowReloadButton()), true);
 		
-		showTimeClockEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.timeclock", formLayout,
+		showTimeClockEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.timeclock", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		showTimeClockEl.setEnabled(editable);
 		showTimeClockEl.select(trueFalseKey(sebConfig.isShowTimeClock()), true);
 		
-		showKeyboardLayoutEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.keyboard", formLayout,
+		showKeyboardLayoutEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.keyboard", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		showKeyboardLayoutEl.setEnabled(editable);
 		showKeyboardLayoutEl.select(trueFalseKey(sebConfig.isShowKeyboardLayout()), true);
 		
-		showAudioOptionsEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.audio", formLayout,
+		showAudioOptionsEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.audio", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		showAudioOptionsEl.addActionListener(FormEvent.ONCHANGE);
 		showAudioOptionsEl.setEnabled(editable);
 		showAudioOptionsEl.select(trueFalseKey(sebConfig.isAudioControlEnabled()), true);
 		
-		allowWlanEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.wlan", formLayout,
+		allowWlanEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.wlan", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		allowWlanEl.setEnabled(editable);
 		allowWlanEl.select(trueFalseKey(sebConfig.isAllowWlan()), true);
 		
-		audioMuteEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.audio.mute", formLayout,
+		audioMuteEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.audio.mute", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		audioMuteEl.setEnabled(editable);
 		audioMuteEl.select(trueFalseKey(sebConfig.isAudioMute()), true);
 		
-		allowAudioCaptureEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.audio.capture", formLayout,
+		allowAudioCaptureEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.audio.capture", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		allowAudioCaptureEl.setEnabled(editable);
 		allowAudioCaptureEl.select(trueFalseKey(sebConfig.isAllowAudioCapture()), true);
 		
-		allowVideoCaptureEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.video.capture", formLayout,
+		allowVideoCaptureEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.allow.video.capture", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		allowVideoCaptureEl.setEnabled(editable);
 		allowVideoCaptureEl.select(trueFalseKey(sebConfig.isAllowVideoCapture()), true);
 		
-		allowSpellCheckEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.spellchecking", formLayout,
+		allowSpellCheckEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.show.spellchecking", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		allowSpellCheckEl.setEnabled(editable);
 		allowSpellCheckEl.select(trueFalseKey(sebConfig.isAllowSpellCheck()), true);
 		
-		allowZoomEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.zoom", formLayout,
+		allowZoomEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.zoom", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		allowZoomEl.setEnabled(editable);
 		allowZoomEl.select(trueFalseKey(sebConfig.isAllowZoomInOut()), true);
 		
-		urlFilterEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.url.filter", formLayout,
+		urlFilterEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.url.filter", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		urlFilterEl.addActionListener(FormEvent.ONCHANGE);
 		urlFilterEl.setEnabled(editable);
 		urlFilterEl.select(trueFalseKey(sebConfig.isUrlFilter()), true);
 		
-		urlContentFilterEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.url.content.filter", formLayout,
+		urlContentFilterEl = uifactory.addRadiosHorizontal("mode.safeexambrowser.url.content.filter", sebConfigCont,
 				trueFalseValues.keys(), trueFalseValues.values());
 		urlContentFilterEl.setEnabled(editable);
 		urlContentFilterEl.select(trueFalseKey(sebConfig.isUrlContentFilter()), true);
 		
 		allowedExpressionsEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.allow.exp", "mode.safeexambrowser.url.filter.allow.exp",
-				2000, 2, 60, false, false, sebConfig.getAllowedUrlExpressions(), formLayout);
+				2000, 2, 60, false, false, sebConfig.getAllowedUrlExpressions(), sebConfigCont);
 		allowedRegexEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.allow.regex", "mode.safeexambrowser.url.filter.allow.regex",
-				2000, 2, 60, false, false, sebConfig.getAllowedUrlRegex(), formLayout);
+				2000, 2, 60, false, false, sebConfig.getAllowedUrlRegex(), sebConfigCont);
 		blockedExpressionsEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.blocked.exp", "mode.safeexambrowser.url.filter.blocked.exp",
-				2000, 2, 60, false, false, sebConfig.getBlockedUrlExpressions(), formLayout);
+				2000, 2, 60, false, false, sebConfig.getBlockedUrlExpressions(), sebConfigCont);
 		blockedRegexEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.blocked.regex", "mode.safeexambrowser.url.filter.blocked.regex",
-				2000, 2, 60, false, false, sebConfig.getBlockedUrlRegex(), formLayout);
+				2000, 2, 60, false, false, sebConfig.getBlockedUrlRegex(), sebConfigCont);
 		
-		safeExamBrowserConfigKeyEl = uifactory.addStaticTextElement("mode.safeexambrowser.config.key", assessmentMode.getSafeExamBrowserConfigPListKey(), formLayout);
+		FormLayoutContainer keyConfigCont = FormLayoutContainer.createDefaultFormLayout("key.config", getTranslator());
+		formLayout.add(keyConfigCont);
+		
+		safeExamBrowserConfigKeyEl = uifactory.addStaticTextElement("mode.safeexambrowser.config.key", assessmentMode.getSafeExamBrowserConfigPListKey(), keyConfigCont);
 		safeExamBrowserConfigKeyEl.setExampleKey("mode.safeexambrowser.config.key.hint", null);
 		
 		String key = assessmentMode.getSafeExamBrowserKey();
-		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 16000, 6, 60, false, false, key, formLayout);
+		safeExamBrowserKeyEl = uifactory.addTextAreaElement("safeexamkey", "mode.safeexambrowser.key", 16000, 6, 60, false, false, key, keyConfigCont);
 		safeExamBrowserKeyEl.setMaxLength(16000);
 		safeExamBrowserKeyEl.setVisible(assessmentMode.isSafeExamBrowser());
 		safeExamBrowserKeyEl.setEnabled(status != Status.end);
 		String hint = assessmentMode.getSafeExamBrowserHint();
 		safeExamBrowserHintEl = uifactory.addRichTextElementForStringData("safeexamhint", "mode.safeexambrowser.hint",
-				hint, 10, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+				hint, 10, -1, false, null, null, keyConfigCont, ureq.getUserSession(), getWindowControl());
 		safeExamBrowserHintEl.setVisible(assessmentMode.isSafeExamBrowser());
 		safeExamBrowserHintEl.setEnabled(status != Status.end);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("button", getTranslator());
-		formLayout.add(buttonCont);
+		keyConfigCont.add(buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 		if(status != Status.end) {
 			uifactory.addFormSubmitButton("save", buttonCont);
@@ -367,7 +380,8 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		blockedRegexEl.setVisible(enabled && inConfig && urlFilterEnabled);
 		
 		safeExamBrowserConfigKeyEl.setVisible(enabled && inConfig);
-		
+		sebConfigCont.setVisible(enabled && inConfig);
+
 		// Keys
 		safeExamBrowserKeyEl.setVisible(enabled && !inConfig);
 		
