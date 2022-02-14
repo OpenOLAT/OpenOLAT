@@ -406,10 +406,8 @@ public class CourseOverviewStep extends BasicStep {
 					}
 				}
 				
-				DateWithLabel earliestCourseNodeDate = getEarliestDateWithLabel(row);
-				
+				DateWithLabel earliestCourseNodeDate = getEarliestDateWithLabel(row, true);
 				row.setEarliestDate(earliestCourseNodeDate);
-				
 				if (earliestCourseNodeDate != null) {
 					if (earliestCourseNodeDate.needsTranslation() &&  StringHelper.containsNonWhitespace(earliestCourseNodeDate.getLabel())) {
 						earliestCourseNodeDate.setLabel(translate(earliestCourseNodeDate.getLabel()));
@@ -497,20 +495,12 @@ public class CourseOverviewStep extends BasicStep {
 					DateChooser sourceDateChooser = (DateChooser) source;
 					boolean hasInitialDate = sourceDateChooser.getInitialDate() != null;
 					
-					if (hasInitialDate && askForDateMove) {
+					if (hasInitialDate && askForDateMove && sourceDateChooser.getDate() != null) {
 						doAskForDateMove(ureq, sourceDateChooser);
-					} else {
-						if (sourceDateChooser.getUserObject() instanceof CopyCourseOverviewRow) {
-							CopyCourseOverviewRow row = (CopyCourseOverviewRow) sourceDateChooser.getUserObject();
-							shiftDate(row, sourceDateChooser);
-						}
-						
-						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
+					} else if (sourceDateChooser.getUserObject() instanceof CopyCourseOverviewRow) {
+						CopyCourseOverviewRow row = (CopyCourseOverviewRow) sourceDateChooser.getUserObject();
+						shiftDate(ureq, row, sourceDateChooser);
 					}
-					
-					saveDatesToContext(context, dataModel.getObjects());
-					courseNodeDatesListController.updateDates(ureq);
-					updateDateWarningUI();
 				}
 			}
 			
@@ -528,7 +518,7 @@ public class CourseOverviewStep extends BasicStep {
 						moveAllDates(moveDatesEvent, dataModel);					
 					} else {
 						CopyCourseOverviewRow row = (CopyCourseOverviewRow) moveDatesEvent.getDateChooser().getUserObject();
-						shiftDate(row, moveDatesEvent.getDateChooser());
+						shiftDate(ureq, row, moveDatesEvent.getDateChooser());
 					}
 					
 					askForDateMove = !moveDatesEvent.isRememberChoice();
@@ -605,10 +595,31 @@ public class CourseOverviewStep extends BasicStep {
 			return earliestDate;
 		}
 		
-		private void shiftDate(CopyCourseOverviewRow row, DateChooser dateChooser) {
-			long difference = dateChooser.getDateDifference();
+		private void shiftDate(UserRequest ureq, CopyCourseOverviewRow row, DateChooser dateChooser) {
 			dateChooser.setInitialDate(dateChooser.getDate());
-			shiftEarliestDate(row, difference);
+			saveDatesToContext(context, dataModel.getObjects());
+			courseNodeDatesListController.updateDates(ureq);
+			
+			DateWithLabel earliestDateWithLabel = getEarliestDateWithLabel(row, false);
+			DateChooser startEl = row.getNewStartDateChooser() instanceof DateChooser? (DateChooser)row.getNewStartDateChooser(): null;
+			if (startEl != null && startEl.getDate() != null) {
+				if (earliestDateWithLabel == null || earliestDateWithLabel.getDate()  == null || earliestDateWithLabel.getDate().after(startEl.getDate())) {
+					earliestDateWithLabel = new DateWithLabel(startEl.getDate(), "table.header.start", row.getCourseNode().getShortName());
+				}
+			}
+			DateChooser endEl = row.getNewEndDateChooser() instanceof DateChooser? (DateChooser)row.getNewEndDateChooser(): null;
+			if (endEl != null && endEl.getDate() != null) {
+				if (earliestDateWithLabel == null || earliestDateWithLabel.getDate()  == null || earliestDateWithLabel.getDate().after(endEl.getDate())) {
+					earliestDateWithLabel = new DateWithLabel(endEl.getDate(), "table.header.end", row.getCourseNode().getShortName());
+				}
+			}
+			
+			row.setEarliestDate(earliestDateWithLabel);
+			if (earliestDateWithLabel != null) {
+				if (earliestDateWithLabel.needsTranslation() &&  StringHelper.containsNonWhitespace(earliestDateWithLabel.getLabel())) {
+					earliestDateWithLabel.setLabel(translate(earliestDateWithLabel.getLabel()));
+				}
+			}
 		}
 
 		private void shiftEarliestDate(CopyCourseOverviewRow row, long difference) {
@@ -689,7 +700,7 @@ public class CourseOverviewStep extends BasicStep {
 			}
 		}
 		
-		private DateWithLabel getEarliestDateWithLabel(CopyCourseOverviewRow row) {
+		private DateWithLabel getEarliestDateWithLabel(CopyCourseOverviewRow row, boolean withStartEnd) {
 			CourseNode courseNode = row.getCourseNode();
 			
 			// If there are no dates, stop here
@@ -792,36 +803,38 @@ public class CourseOverviewStep extends BasicStep {
 			}
 			
 			
-			// Start date
-			DueDateConfig startConfig = row.getStart();
-			if (startConfig != null) {
-				if (DueDateConfig.isRelative(startConfig)) {
-					// Nothing to do yet
-				} else if (row.getLearningPathConfigs().isRelativeDates()) {
-					// Nothing to do yet
-				} else {
-					// Date startDate = calculateDate(startConfig.getAbsoluteDate(), context.getDateDifference());
-					Date startDate = startConfig.getAbsoluteDate();
-					
-					if (startDate != null) {
-						dates.add(new DateWithLabel(startDate, "table.header.start", courseNode.getShortName()));
+			if (withStartEnd) {
+				// Start date
+				DueDateConfig startConfig = row.getStart();
+				if (startConfig != null) {
+					if (DueDateConfig.isRelative(startConfig)) {
+						// Nothing to do yet
+					} else if (row.getLearningPathConfigs().isRelativeDates()) {
+						// Nothing to do yet
+					} else {
+						// Date startDate = calculateDate(startConfig.getAbsoluteDate(), context.getDateDifference());
+						Date startDate = startConfig.getAbsoluteDate();
+						
+						if (startDate != null) {
+							dates.add(new DateWithLabel(startDate, "table.header.start", courseNode.getShortName()));
+						}
 					}
 				}
-			}
-			
-			// End date
-			DueDateConfig endDateConfig = row.getEnd();
-			if (endDateConfig != null) {
-				if (DueDateConfig.isRelative(endDateConfig)) {
-					// Nothing to do yet
-				} else if (row.getLearningPathConfigs().isRelativeDates()) {
-					// Nothing to do yet
-				} else {
-					// Date endDate = calculateDate(row.getEnd().getAbsoluteDate(), context.getDateDifference());
-					Date endDate = row.getEnd().getAbsoluteDate();
-					
-					if (endDate != null) {
-						dates.add(new DateWithLabel(endDate, "table.header.end", courseNode.getShortName()));
+				
+				// End date
+				DueDateConfig endDateConfig = row.getEnd();
+				if (endDateConfig != null) {
+					if (DueDateConfig.isRelative(endDateConfig)) {
+						// Nothing to do yet
+					} else if (row.getLearningPathConfigs().isRelativeDates()) {
+						// Nothing to do yet
+					} else {
+						// Date endDate = calculateDate(row.getEnd().getAbsoluteDate(), context.getDateDifference());
+						Date endDate = row.getEnd().getAbsoluteDate();
+						
+						if (endDate != null) {
+							dates.add(new DateWithLabel(endDate, "table.header.end", courseNode.getShortName()));
+						}
 					}
 				}
 			}

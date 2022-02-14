@@ -566,11 +566,15 @@ public class CopyServiceImpl implements CopyService {
 					// Start date
 					if (overviewRow.getNewStartDate() != null) {
 						targetConfigs.setStartDateConfig(DueDateConfig.absolute(overviewRow.getNewStartDate()));
+					} else {
+						targetConfigs.setStartDateConfig(DueDateConfig.noDueDateConfig());
 					}
 				
 					// Due date
 					if (overviewRow.getNewEndDate() != null) {
 						targetConfigs.setEndDateConfig(DueDateConfig.absolute(overviewRow.getNewEndDate()));
+					} else {
+						targetConfigs.setEndDateConfig(DueDateConfig.noDueDateConfig());
 					}
 				} else if (context.getDateDifference() != 0) {
 					if (DueDateConfig.isAbsolute(targetConfigs.getStartDateConfig())) {
