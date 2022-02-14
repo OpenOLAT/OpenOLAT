@@ -2638,9 +2638,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		 * @return The test duration in milliseconds
 		 */
 		public long getAssessmentTestDuration() {
-			long duration = AssessmentTestDisplayController.this.getAssessmentTestDuration();
-			System.out.println("Duration: " + (duration / 1000));
-			return duration;
+			return AssessmentTestDisplayController.this.getAssessmentTestDuration();
 		}
 		
 		/**
@@ -2653,7 +2651,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			if(timeLimits != null) {
 				maxDuration = timeLimits.longValue() * 1000;
 			}
-			System.out.println("Limit: " + (maxDuration / 1000));
 			return maxDuration;
 		}
 		
