@@ -772,7 +772,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private Long getLeadingTimeEndTestOption() {
 		if(overrideOptions != null && overrideOptions.getEndTestDate() != null) {
 			Date endTestDate = overrideOptions.getEndTestDate();
-			long diff = endTestDate.getTime() - testSessionController.getCurrentRequestTimestamp().getTime();
+			long diff = endTestDate.getTime() - new Date().getTime();
 			return Long.valueOf(diff);
 		}
 		return null;// default is a year
@@ -2638,7 +2638,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		 * @return The test duration in milliseconds
 		 */
 		public long getAssessmentTestDuration() {
-			return AssessmentTestDisplayController.this.getAssessmentTestDuration();
+			long duration = AssessmentTestDisplayController.this.getAssessmentTestDuration();
+			System.out.println("Duration: " + (duration / 1000));
+			return duration;
 		}
 		
 		/**
@@ -2651,6 +2653,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			if(timeLimits != null) {
 				maxDuration = timeLimits.longValue() * 1000;
 			}
+			System.out.println("Limit: " + (maxDuration / 1000));
 			return maxDuration;
 		}
 		
