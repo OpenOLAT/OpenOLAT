@@ -227,7 +227,11 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			String dateWarningText = ExecutionType.beginAndEnd != context.getExecutionType()
+					? translate("date.early.warning")
+					: translate("date.early.warning.period");
 			dateWarning = FormLayoutContainer.createCustomFormLayout("date_warning", getTranslator(), velocity_root + "/date_warning.html");
+			dateWarning.contextPut("warning", dateWarningText);
 			dateWarning.setVisible(false);
 			formLayout.add(dateWarning);
 			
