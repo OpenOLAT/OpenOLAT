@@ -525,6 +525,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: space-between;
+		align-items: flex-start;
 		>div {
 			padding: 10px;
 		}
@@ -534,11 +535,11 @@
 		.o_overview_passed {
 			flex: 3 0 auto;
 			display: flex;
-			.o_passed_chart {
+			.o_assessment_chart {
 				&.radial-progress {
-					width: 62px;
-					height: 62px;
-					padding: 2px;
+					width: $o-course-assessment-chart-size;
+					height: $o-course-assessment-chart-size;
+					padding: $o-course-assessment-chart-padding;
 					margin: unset;
 					.o_passed_slice {
 						stroke: $o-course-state-passed-color;
@@ -546,15 +547,24 @@
 					.o_failed_slice {
 						stroke: $o-course-state-failed-color;
 					}
+					.o_done_slice {
+						stroke: $brand-primary;
+					}
 				}
 			}
-			ul {
+			.o_overview_passed_fig {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
 				margin-left: 5px;
+				ul {
+					margin: 0px;
+				}
 			}
 		}
 	}
 
-	.o_passed_progress {
+	.o_assessment_progress {
 		display: flex;
 		flex-wrap: wrap;
 		

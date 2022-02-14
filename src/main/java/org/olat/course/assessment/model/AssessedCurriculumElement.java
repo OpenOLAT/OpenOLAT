@@ -36,11 +36,13 @@ public class AssessedCurriculumElement implements CurriculumElementRef {
 	private final int numOfPassed;
 	private final int numOfFailed;
 	private final int numOfUndefined;
+	private final int numDone;
+	private final int numNotDone;
 	private final double averageScore;
 	private final boolean hasScore;
 	
-	public AssessedCurriculumElement(Long key, String name, double averageScore, boolean hasScore,
-			int numOfPassed, int numOfFailed, int numOfUndefined, int numOfParticipants) {
+	public AssessedCurriculumElement(Long key, String name, double averageScore, boolean hasScore, int numOfPassed,
+			int numOfFailed, int numOfUndefined, int numDone, int numNotDone, int numOfParticipants) {
 		this.key = key;
 		this.name = name;
 		this.hasScore = hasScore;
@@ -48,6 +50,8 @@ public class AssessedCurriculumElement implements CurriculumElementRef {
 		this.numOfPassed = numOfPassed;
 		this.numOfFailed = numOfFailed;
 		this.numOfUndefined = numOfUndefined;
+		this.numDone = numDone;
+		this.numNotDone = numNotDone;
 		this.numOfParticipants = numOfParticipants;
 		
 	}
@@ -79,6 +83,14 @@ public class AssessedCurriculumElement implements CurriculumElementRef {
 	
 	public int getNumOfUndefined() {
 		return numOfUndefined;
+	}
+
+	public int getNumDone() {
+		return numDone;
+	}
+
+	public int getNumNotDone() {
+		return numNotDone;
 	}
 
 	public boolean isHasScore() {

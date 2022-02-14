@@ -19,6 +19,8 @@
  */
 package org.olat.modules.assessment.ui;
 
+import java.util.Collection;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -42,7 +44,7 @@ public class AssessmentStatisticsController extends BasicController {
 	private final AssessmentStatsController statsCtrl;
 
 	public AssessmentStatisticsController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params) {
+			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params, Collection<Stat> stats) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("statistic");
 		
@@ -50,7 +52,7 @@ public class AssessmentStatisticsController extends BasicController {
 		listenTo(expandCtrl);
 		mainVC.put("expand", expandCtrl.getInitialComponent());
 		
-		statsCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, true, false);
+		statsCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, stats, true, false);
 		listenTo(statsCtrl);
 		expandCtrl.setExpandableController(statsCtrl);
 		

@@ -20,6 +20,7 @@
 package org.olat.modules.assessment.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,8 +57,9 @@ import org.olat.course.assessment.ui.tool.event.BusinessGroupEvent;
 import org.olat.course.assessment.ui.tool.event.CurriculumElementEvent;
 import org.olat.course.assessment.ui.tool.event.SelectionEvents;
 import org.olat.modules.assessment.model.AssessmentMembersStatistics;
+import org.olat.modules.assessment.ui.AssessmentStatsController.GroupTableModel.GroupCols;
 import org.olat.modules.assessment.ui.AssessmentStatsController.LaunchTableModel.LaunchCols;
-import org.olat.modules.assessment.ui.AssessmentStatsController.PassedTableModel.GroupCols;
+import org.olat.modules.assessment.ui.component.DoneChart;
 import org.olat.modules.assessment.ui.component.PassedChart;
 import org.olat.modules.assessment.ui.component.PassedChart.PassedPercent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,16 +84,20 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	private FormLink passedLink;
 	private FormLink failedLink;
 	private FormLink undefinedLink;
+	private FormLink doneLink;
+	private FormLink notDoneLink;
 	private PassedChart passedChart;
+	private DoneChart doneChart;
 	private LaunchTableModel launchTableModel;
 	private FlexiTableElement launchTableEl;
-	private PassedTableModel groupTableModel;
+	private GroupTableModel groupTableModel;
 	private FlexiTableElement groupTableEl;
-	private PassedTableModel curriculumElementTableModel;
+	private GroupTableModel curriculumElementTableModel;
 	private FlexiTableElement curriculumElementTableEl;
 
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final SearchAssessedIdentityParams params;
+	private final Collection<Stat> stats;
 	private final boolean courseInfoLaunch;
 	private final boolean readOnly;
 	
@@ -105,10 +111,11 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 
 	public AssessmentStatsController(UserRequest ureq, WindowControl wControl,
 			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params,
-			boolean courseInfoLaunch, boolean readOnly) {
+			Collection<Stat> stats, boolean courseInfoLaunch, boolean readOnly) {
 		super(ureq, wControl, "stats");
 		this.assessmentCallback = assessmentCallback;
 		this.params = params;
+		this.stats = stats;
 		this.courseInfoLaunch = courseInfoLaunch;
 		this.readOnly = readOnly;
 
@@ -131,22 +138,35 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		curriculumElementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_element");
 		curriculumElementLink.setEnabled(!readOnly);
 		
-		passedLink = uifactory.addFormLink("num.passed", "num.passed", null, null, formLayout, Link.NONTRANSLATED);
-		passedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed o_passed");
-		passedLink.setEnabled(!readOnly);
-		
-		failedLink = uifactory.addFormLink("num.failed", "num.failed", null, null, formLayout, Link.NONTRANSLATED);
-		failedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_failed o_failed");
-		failedLink.setEnabled(!readOnly);
-		
-		undefinedLink = uifactory.addFormLink("num.undefined", "num.undefined", null, null, formLayout, Link.NONTRANSLATED);
-		undefinedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed_undefined o_noinfo");
-		undefinedLink.setEnabled(!readOnly);
-		
-		passedChart = new PassedChart("passed.chart");
-		passedChart.setDomReplacementWrapperRequired(false);
-		flc.put("passed.chart", passedChart);
-		
+		if (stats.contains(Stat.passed)) {
+			passedLink = uifactory.addFormLink("num.passed", "num.passed", null, null, formLayout, Link.NONTRANSLATED);
+			passedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed o_passed");
+			passedLink.setEnabled(!readOnly);
+			
+			failedLink = uifactory.addFormLink("num.failed", "num.failed", null, null, formLayout, Link.NONTRANSLATED);
+			failedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_failed o_failed");
+			failedLink.setEnabled(!readOnly);
+			
+			undefinedLink = uifactory.addFormLink("num.undefined", "num.undefined", null, null, formLayout, Link.NONTRANSLATED);
+			undefinedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed_undefined o_noinfo");
+			undefinedLink.setEnabled(!readOnly);
+			
+			passedChart = new PassedChart("passed.chart");
+			passedChart.setDomReplacementWrapperRequired(false);
+			flc.put("passed.chart", passedChart);
+		} else if (stats.contains(Stat.status)) {
+			doneLink = uifactory.addFormLink("num.done", "num.done", null, null, formLayout, Link.NONTRANSLATED);
+			doneLink.setIconLeftCSS("o_icon o_icon-fw o_black_led");
+			doneLink.setEnabled(!readOnly);
+			
+			notDoneLink = uifactory.addFormLink("num.not.done", "num.not.done", null, null, formLayout, Link.NONTRANSLATED);
+			notDoneLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed o_grey_led");
+			notDoneLink.setEnabled(!readOnly);
+
+			doneChart = new DoneChart("done.chart");
+			doneChart.setDomReplacementWrapperRequired(false);
+			flc.put("done.chart", doneChart);
+		}
 		
 		// Participants
 		FlexiTableColumnModel launchColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -165,9 +185,13 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		FlexiTableColumnModel groupColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.group));
 		groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.members));
-		groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
+		if (stats.contains(Stat.passed)) {
+			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
+		} else if (stats.contains(Stat.status)) {
+			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status, new StatusStatsRenderer()));
+		}
 		
-		groupTableModel = new PassedTableModel(groupColumnsModel);
+		groupTableModel = new GroupTableModel(groupColumnsModel);
 		groupTableEl = uifactory.addTableElement(getWindowControl(), "groupList", groupTableModel, 20, false, getTranslator(), formLayout);
 		groupTableEl.setElementCssClass("o_group_list");
 		groupTableEl.setNumOfRowsEnabled(false);
@@ -179,9 +203,13 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		FlexiTableColumnModel curriculumElementColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.curriculumElement));
 		curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.members));
-		curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
+		if (stats.contains(Stat.passed)) {
+			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
+		} else if (stats.contains(Stat.status)) {
+			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status, new StatusStatsRenderer()));
+		}
 		
-		curriculumElementTableModel = new PassedTableModel(curriculumElementColumnsModel);
+		curriculumElementTableModel = new GroupTableModel(curriculumElementColumnsModel);
 		curriculumElementTableEl = uifactory.addTableElement(getWindowControl(), "curriculumElementList", curriculumElementTableModel, 20, false, getTranslator(), formLayout);
 		curriculumElementTableEl.setElementCssClass("o_group_list");
 		curriculumElementTableEl.setNumOfRowsEnabled(false);
@@ -226,19 +254,31 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			curriculumElementLink.setVisible(false);
 		}
 		
-		int numOfPassedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountPassed() / statistics.getCountTotal()) : 0;
-		String numOfPassedText = translate("assessment.tool.num.passed", Integer.toString(statistics.getCountPassed()), Integer.toString(numOfPassedPercent));
-		passedLink.setI18nKey(numOfPassedText);
-		
-		int numOfFailedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountFailed() / statistics.getCountTotal()) : 0;
-		String numOfFailedText = translate("assessment.tool.num.failed", Integer.toString(statistics.getCountFailed()), Integer.toString(numOfFailedPercent));
-		failedLink.setI18nKey(numOfFailedText);
-		
-		int numOfUndefinedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountUndefined() / statistics.getCountTotal()) : 0;
-		String numOfUndefinedText = translate("assessment.tool.num.undefined", Integer.toString(statistics.getCountUndefined()), Integer.toString(numOfUndefinedPercent));
-		undefinedLink.setI18nKey(numOfUndefinedText);
-		
-		passedChart.setPassedPercent(new PassedPercent(numOfPassedPercent, numOfFailedPercent));
+		if (stats.contains(Stat.passed)) {
+			int numOfPassedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountPassed() / statistics.getCountTotal()) : 0;
+			String numOfPassedText = translate("assessment.tool.num.passed", Integer.toString(statistics.getCountPassed()), Integer.toString(numOfPassedPercent));
+			passedLink.setI18nKey(numOfPassedText);
+			
+			int numOfFailedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountFailed() / statistics.getCountTotal()) : 0;
+			String numOfFailedText = translate("assessment.tool.num.failed", Integer.toString(statistics.getCountFailed()), Integer.toString(numOfFailedPercent));
+			failedLink.setI18nKey(numOfFailedText);
+			
+			int numOfUndefinedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountUndefined() / statistics.getCountTotal()) : 0;
+			String numOfUndefinedText = translate("assessment.tool.num.undefined", Integer.toString(statistics.getCountUndefined()), Integer.toString(numOfUndefinedPercent));
+			undefinedLink.setI18nKey(numOfUndefinedText);
+			
+			passedChart.setPassedPercent(new PassedPercent(numOfPassedPercent, numOfFailedPercent));
+		} else if (stats.contains(Stat.status)) {
+			int numOfDonePercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountDone() / statistics.getCountTotal()) : 0;
+			String numOfDoneText = translate("assessment.tool.num.done", Integer.toString(statistics.getCountDone()), Integer.toString(numOfDonePercent));
+			doneLink.setI18nKey(numOfDoneText);
+			
+			int numOfNotDonePercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountNotDone() / statistics.getCountTotal()) : 0;
+			String numOfNotDoneText = translate("assessment.tool.num.not.done", Integer.toString(statistics.getCountNotDone()), Integer.toString(numOfNotDonePercent));
+			notDoneLink.setI18nKey(numOfNotDoneText);
+			
+			doneChart.setDonePercent(numOfDonePercent);
+		}
 	}
 
 	private void updateLaunchModel() {
@@ -284,15 +324,17 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		}
 		
 		groupTableEl.setVisible(true);
-		List<PassedRow> rows = new ArrayList<>(businessGroupStatistics.size());
+		List<GroupRow> rows = new ArrayList<>(businessGroupStatistics.size());
 		businessGroupStatistics.sort((g1, g2) -> g1.getName().compareToIgnoreCase(g2.getName()));
 		for (AssessedBusinessGroup assessedBusinessGroup : businessGroupStatistics) {
-			PassedRow row = new PassedRow();
+			GroupRow row = new GroupRow();
 			
 			row.setNumPassed(assessedBusinessGroup.getNumOfPassed());
 			row.setNumFailed(assessedBusinessGroup.getNumOfFailed());
 			row.setNumUndefined(assessedBusinessGroup.getNumOfUndefined());
 			row.setNumIdentities(assessedBusinessGroup.getNumOfParticipants());
+			row.setNumDone(assessedBusinessGroup.getNumDone());
+			row.setNumNotDone(assessedBusinessGroup.getNumNotDone());
 			
 			FormLink link = uifactory.addFormLink("group_" + assessedBusinessGroup.getKey(), CMD_GROUP, null, null, null, Link.NONTRANSLATED);
 			link.setI18nKey(assessedBusinessGroup.getName());
@@ -314,15 +356,17 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		}
 		
 		curriculumElementTableEl.setVisible(true);
-		List<PassedRow> rows = new ArrayList<>(curriculumElementStatistics.size());
+		List<GroupRow> rows = new ArrayList<>(curriculumElementStatistics.size());
 		curriculumElementStatistics.sort((g1, g2) -> g1.getName().compareToIgnoreCase(g2.getName()));
 		for (AssessedCurriculumElement assessedCurriculumElement : curriculumElementStatistics) {
-			PassedRow row = new PassedRow();
+			GroupRow row = new GroupRow();
 			
 			row.setNumPassed(assessedCurriculumElement.getNumOfPassed());
 			row.setNumFailed(assessedCurriculumElement.getNumOfFailed());
 			row.setNumUndefined(assessedCurriculumElement.getNumOfUndefined());
 			row.setNumIdentities(assessedCurriculumElement.getNumOfParticipants());
+			row.setNumDone(assessedCurriculumElement.getNumDone());
+			row.setNumNotDone(assessedCurriculumElement.getNumNotDone());
 			
 			FormLink link = uifactory.addFormLink("ce_" + assessedCurriculumElement.getKey(), CMD_CURRICULUM_ELEMENT, null, null, null, Link.NONTRANSLATED);
 			link.setI18nKey(assessedCurriculumElement.getName());
@@ -363,6 +407,10 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			fireEvent(ureq, SelectionEvents.FAILED_EVENT);
 		} else if(undefinedLink == source) {
 			fireEvent(ureq, SelectionEvents.UNDEFINED_EVENT);
+		} else if(doneLink == source) {
+			fireEvent(ureq, SelectionEvents.DONE_EVENT);
+		} else if(notDoneLink == source) {
+			fireEvent(ureq, SelectionEvents.NOT_DONE_EVENT);
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if (CMD_MEMBERS.equals(link.getCmd())) {
@@ -480,13 +528,15 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		
 	}
 	
-	public static class PassedRow {
+	public static class GroupRow {
 		
 		private FormLink groupLink;
 		private int numIdentities;
 		private int numPassed;
 		private int numFailed;
 		private int numUndefined;
+		private int numDone;
+		private int numNotDone;
 		
 		public FormLink getGroupLink() {
 			return groupLink;
@@ -527,24 +577,41 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		public void setNumUndefined(int numUndefined) {
 			this.numUndefined = numUndefined;
 		}
+
+		public int getNumDone() {
+			return numDone;
+		}
+
+		public void setNumDone(int numDone) {
+			this.numDone = numDone;
+		}
+
+		public int getNumNotDone() {
+			return numNotDone;
+		}
+
+		public void setNumNotDone(int numNotDone) {
+			this.numNotDone = numNotDone;
+		}
 		
 	}
 	
-	public static class PassedTableModel extends DefaultFlexiTableDataModel<PassedRow> {
+	public static class GroupTableModel extends DefaultFlexiTableDataModel<GroupRow> {
 
-		public PassedTableModel(FlexiTableColumnModel columnModel) {
+		public GroupTableModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
 		
 		@Override
 		public Object getValueAt(int row, int col) {
-			PassedRow passedRow = getObject(row);
+			GroupRow groupRow = getObject(row);
 			if(col >= 0 && col < GroupCols.values().length) {
 				switch(GroupCols.values()[col]) {
-					case group: return passedRow.getGroupLink();
-					case curriculumElement: return passedRow.getGroupLink();
-					case members: return passedRow.getNumIdentities();
-					case passed: return passedRow;
+					case group: return groupRow.getGroupLink();
+					case curriculumElement: return groupRow.getGroupLink();
+					case members: return groupRow.getNumIdentities();
+					case passed: return groupRow;
+					case status: return groupRow;
 				}
 			}
 			return null;
@@ -554,7 +621,8 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			group("table.header.group"),
 			curriculumElement("table.header.curriculum.element"),
 			members("table.header.num.members"),
-			passed("table.header.passed");
+			passed("table.header.passed"),
+			status("table.header.done");
 			
 			private final String i18nKey;
 			
@@ -574,22 +642,52 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		@Override
 		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-			if(cellValue instanceof PassedRow) {
-				PassedRow passedRow = (PassedRow)cellValue;
-				if (passedRow.getNumIdentities() > 0) {
-					int passedPercent = Math.round(100f * (passedRow.getNumPassed() / (float)passedRow.getNumIdentities()));
-					int failedPercent = Math.round(100f * (passedRow.getNumFailed() / (float)passedRow.getNumIdentities()));
-					int undefinedPercent = Math.round(100f * (passedRow.getNumUndefined() / (float)passedRow.getNumIdentities()));
+			if(cellValue instanceof GroupRow) {
+				GroupRow groupRow = (GroupRow)cellValue;
+				if (groupRow.getNumIdentities() > 0) {
+					int passedPercent = Math.round(100f * (groupRow.getNumPassed() / (float)groupRow.getNumIdentities()));
+					int failedPercent = Math.round(100f * (groupRow.getNumFailed() / (float)groupRow.getNumIdentities()));
+					int undefinedPercent = Math.round(100f * (groupRow.getNumUndefined() / (float)groupRow.getNumIdentities()));
 					
 					String tooltip = translate("passed.tooltip", Integer.toString(passedPercent), Integer.toString(failedPercent),
 							Integer.toString(undefinedPercent));
-					target.append("<div class='o_passed_progress'>");
+					target.append("<div class='o_assessment_progress'>");
 					target.append("<div class='progress' title='").append(tooltip).append("'>");
 					appendBar(target, passedPercent, "o_passed_progress_bar");
 					appendBar(target, failedPercent, "o_failed_progress_bar");
 					target.append("</div>");
-					target.append(" <div class='o_values'>").append(passedRow.getNumPassed()).append(" / ").append(passedRow.getNumFailed())
-							.append(" / ").append(passedRow.getNumUndefined()).append("</div>");
+					target.append(" <div class='o_values'>").append(groupRow.getNumPassed()).append(" / ").append(groupRow.getNumFailed())
+							.append(" / ").append(groupRow.getNumUndefined()).append("</div>");
+					target.append("</div>");
+				}
+			}
+		}
+
+		private void appendBar(StringOutput sb, int percent, String cssClass) {
+			sb.append("<div class='progress-bar ").append(cssClass).append("' style='width:").append(percent).append("%'>");
+			sb.append("<div class='sr-only'>").append(percent).append("%</div>");
+			sb.append("</div>");
+		}
+	}
+	
+	public class StatusStatsRenderer implements FlexiCellRenderer {
+		
+		@Override
+		public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
+				FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			if(cellValue instanceof GroupRow) {
+				GroupRow groupRow = (GroupRow)cellValue;
+				if (groupRow.getNumIdentities() > 0) {
+					int donePercent = Math.round(100f * (groupRow.getNumDone() / (float)groupRow.getNumIdentities()));
+					int notDonePercent = Math.round(100f * (groupRow.getNumNotDone() / (float)groupRow.getNumIdentities()));
+					
+					String tooltip = translate("done.tooltip", Integer.toString(donePercent), Integer.toString(notDonePercent));
+					target.append("<div class='o_assessment_progress'>");
+					target.append("<div class='progress' title='").append(tooltip).append("'>");
+					appendBar(target, donePercent, "o_done_progress_bar");
+					target.append("</div>");
+					target.append(" <div class='o_values'>").append(groupRow.getNumDone()).append(" / ").append(groupRow.getNumNotDone())
+							.append("</div>");
 					target.append("</div>");
 				}
 			}

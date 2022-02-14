@@ -17,18 +17,38 @@
 			</ul>
 		</div>
 		<div class="o_overview_passed">
-			$r.render("passed.chart")
-			<ul class="list-unstyled">
-				#if($r.available("num.passed"))
-					<li>$r.render("num.passed")</li>
-				#end
-				#if($r.available("num.failed"))
-					<li>$r.render("num.failed")</li>
-				#end
-				#if($r.available("num.undefined"))
-					<li>$r.render("num.undefined")</li>
-				#end
-			</ul>
+			#if($r.available("passed.chart"))
+				$r.render("passed.chart")
+			#end
+			#if($r.available("done.chart"))
+				$r.render("done.chart")
+			#end
+			#if($r.available("num.passed") || $r.available("num.failed") || $r.available("num.undefined") || $r.available("num.done") || $r.available("num.not.done"))
+				<div class="o_overview_passed_fig">
+					<ul class="list-unstyled">
+						#if($r.available("num.passed"))
+							<li>$r.render("num.passed")</li>
+						#end
+						#if($r.available("num.failed"))
+							<li>$r.render("num.failed")</li>
+						#end
+						#if($r.available("num.undefined"))
+							<li>$r.render("num.undefined")</li>
+						#end
+						#if($r.available("num.done"))
+							<li>$r.render("num.done")</li>
+						#end
+						#if($r.available("num.not.done"))
+							<li>$r.render("num.not.done")</li>
+						#end
+					</ul>
+				</div>
+			#end
+		</div>
+		<div class="o_overview_score">
+			#if($r.available("score.chart"))
+				$r.render("score.chart")
+			#end
 		</div>
 	</div>
 	

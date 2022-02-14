@@ -683,6 +683,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_green_led:before { content: $fa-var-circle; color: $brand-success; }
 .o_yellow_led:before { content: $fa-var-circle; color: $brand-warning; }
 .o_red_led:before { content: $fa-var-circle; color: $brand-danger; }
+.o_grey_led:before { content: $fa-var-circle; color: #eee; }
 
 /* grading */
 .o_grader_active:before { content: $fa-var-check-circle-o; color: $brand-success; }

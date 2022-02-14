@@ -74,7 +74,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		toolContainer = new AssessmentToolContainer();
 		toolContainer.setCertificateMap(new ConcurrentHashMap<>());
 		
-		overviewCtrl = new AssessmentOverviewController(ureq, getWindowControl(), testEntry, assessmentCallback);
+		overviewCtrl = new AssessmentOverviewController(ureq, getWindowControl(), testEntry, element, assessmentCallback);
 		listenTo(overviewCtrl);
 		putInitialPanel(overviewCtrl.getInitialComponent());
 		assessmentEventToState = new AssessmentEventToState(overviewCtrl);

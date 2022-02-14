@@ -19,6 +19,9 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -27,12 +30,19 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentStatsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.Stat;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,6 +58,9 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 	protected final UserCourseEnvironment userCourseEnv;
 	protected final CourseNode courseNode;
 	protected final AssessmentToolSecurityCallback assessmentCallback;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public AssessmentCourseNodeStatsController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNode courseNode, AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
@@ -65,7 +78,18 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 				courseNode.getReferencedRepositoryEntry(), assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
-		assessmentStatsCtrl = new AssessmentStatsController(ureq, wControl, assessmentCallback, params, courseInfoLaunch, readOnly);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		List<Stat> stats = new ArrayList<>(2);
+		if (Mode.none != assessmentConfig.getPassedMode()) {
+			stats.add(Stat.passed);
+		} else if (assessmentConfig.hasStatus() || LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnv).getType())) {
+			stats.add(Stat.status);
+		}
+		if (Mode.none != assessmentConfig.getScoreMode()) {
+			stats.add(Stat.score);
+		}
+		
+		assessmentStatsCtrl = new AssessmentStatsController(ureq, wControl, assessmentCallback, params, stats, courseInfoLaunch, readOnly);
 		assessmentStatsCtrl.setExpanded(true);
 		listenTo(assessmentStatsCtrl);
 		mainVC.put("stats", assessmentStatsCtrl.getInitialComponent());

@@ -280,10 +280,12 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
 		ae1.setScore(BigDecimal.valueOf(3.0));
 		ae1.setPassed(Boolean.FALSE);
+		ae1.setAssessmentStatus(AssessmentEntryStatus.done);
 		assessmentEntryDao.updateAssessmentEntry(ae1);
 		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry);
 		ae2.setScore(BigDecimal.valueOf(5.0));
 		ae2.setPassed(Boolean.TRUE);
+		ae2.setAssessmentStatus(AssessmentEntryStatus.inReview);
 		assessmentEntryDao.updateAssessmentEntry(ae2);
 		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, refEntry);
 		ae3.setScore(BigDecimal.valueOf(8.0));
@@ -326,6 +328,8 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, statistics.getCountFailed());
 		Assert.assertEquals(6, statistics.getCountPassed());
 		Assert.assertEquals(2, statistics.getCountUndefined());
+		Assert.assertEquals(1, statistics.getCountDone());
+		Assert.assertEquals(8, statistics.getCountNotDone());
 		
 		//check only the queries as the statistics need the course infos
 		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(admin, params, true);

@@ -186,8 +186,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
 		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
-		  //.append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.notStarted.name()).append("') or aentry.passed is null) then 1 else 0 end) as numOfNotAttempted,")
-		  //.append(" sum(aentry.key) as numOfStatements,")
+		  .append(" sum(case when aentry.status='").append(AssessmentEntryStatus.done.name()).append("' then 1 else 0 end) as numDone,")
+		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.done.name()).append("')) then 1 else 0 end) as numNotDone,")
 		  .append(" v.key as repoKey")
 		  .append(" from assessmententry aentry ")
 		  .append(" inner join aentry.repositoryEntry v ")
@@ -254,12 +254,16 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			Long numOfPassed = (Long)result[1];
 			Long numOfFailed = (Long)result[2];
 			Long numOfUndefined = (Long)result[3];
+			Long numDone = (Long)result[4];
+			Long numNotDone = (Long)result[5];
 			
 			entry.setAverageScore(averageScore);
 			entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
 			entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
 			entry.setCountUndefined(numOfUndefined == null ? 0 : numOfUndefined.intValue());
 			entry.setCountTotal(entry.getCountPassed() + entry.getCountFailed() + entry.getCountUndefined());
+			entry.setCountDone(numDone == null ? 0 : numDone.intValue());
+			entry.setCountNotDone(numNotDone == null ? 0 : numNotDone.intValue());
 		}
 		return entry;
 	}
@@ -275,6 +279,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
 		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
+		  .append(" sum(case when aentry.status='").append(AssessmentEntryStatus.done.name()).append("' then 1 else 0 end) as numDone,")
+		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.done.name()).append("')) then 1 else 0 end) as numNotDone,")
 		  .append(" count(aentry.key) as numOfParticipants")
 		  .append(" from businessgroup as bgi")
 		  .append(" inner join bgi.baseGroup as baseGroup")
@@ -327,9 +333,11 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			int numOfPassed = result[5] == null ? 0 : ((Number)result[5]).intValue();
 			int numOfFailed = result[6] == null ? 0  : ((Number)result[6]).intValue();
 			int numOfUndefined = result[7] == null ? 0 : ((Number)result[7]).intValue();
-			int numOfParticipants = result[8] == null ? 0 : ((Number)result[8]).intValue();
+			int numDone = result[8] == null ? 0 : ((Number)result[8]).intValue();
+			int numNotDone = result[9] == null ? 0 : ((Number)result[9]).intValue();
+			int numOfParticipants = result[10] == null ? 0 : ((Number)result[10]).intValue();
 			rows.add(new AssessedBusinessGroup(key, name, averageScore, numOfScores > 0,
-					numOfPassed, numOfFailed, numOfUndefined, numOfParticipants));
+					numOfPassed, numOfFailed, numOfUndefined, numDone, numNotDone, numOfParticipants));
 		}
 		return rows;
 	}
@@ -343,6 +351,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
 		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
+		  .append(" sum(case when aentry.status='").append(AssessmentEntryStatus.done.name()).append("' then 1 else 0 end) as numDone,")
+		  .append(" sum(case when (aentry.status is null or not(aentry.status='").append(AssessmentEntryStatus.done.name()).append("')) then 1 else 0 end) as numNotDone,")
 		  .append(" count(aentry.key) as numOfParticipants")
 		  .append(" from curriculumelement as ce")
 		  .append(" inner join ce.group as baseGroup")
@@ -395,9 +405,11 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			int numOfPassed = result[5] == null ? 0 : ((Number)result[5]).intValue();
 			int numOfFailed = result[6] == null ? 0  : ((Number)result[6]).intValue();
 			int numOfUndefined = result[7] == null ? 0 : ((Number)result[7]).intValue();
-			int numOfParticipants = result[8] == null ? 0 : ((Number)result[8]).intValue();
+			int numDone = result[8] == null ? 0 : ((Number)result[8]).intValue();
+			int numNotDone = result[9] == null ? 0 : ((Number)result[9]).intValue();
+			int numOfParticipants = result[10] == null ? 0 : ((Number)result[10]).intValue();
 			rows.add(new AssessedCurriculumElement(key, name, averageScore, numOfScores > 0,
-					numOfPassed, numOfFailed, numOfUndefined, numOfParticipants));
+					numOfPassed, numOfFailed, numOfUndefined, numDone, numNotDone, numOfParticipants));
 		}
 		return rows;
 	}

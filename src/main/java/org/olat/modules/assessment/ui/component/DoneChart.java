@@ -17,25 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment.ui.tool.event;
+package org.olat.modules.assessment.ui.component;
 
-import org.olat.core.gui.control.Event;
+import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
  * 
- * Initial date: 26 Jan 2022<br>
+ * Initial date: 14 Feb 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SelectionEvents {
+public class DoneChart extends FormBaseComponentImpl {
 	
-	public static final Event USERS_EVENT = new Event("assessment-tool-select-users");
-	public static final Event PASSED_EVENT = new Event("assessment-tool-select-passed");
-	public static final Event FAILED_EVENT = new Event("assessment-tool-select-failed");
-	public static final Event UNDEFINED_EVENT = new Event("assessment-tool-select-undfined");
-	public static final Event DONE_EVENT = new Event("assessment-tool-select-done");
-	public static final Event NOT_DONE_EVENT = new Event("assessment-tool-select-not-done");
-	public static final Event MEMBERS_EVENT = new Event("assessment-tool-select-members");
-	public static final Event NON_MEMBERS_EVENT = new Event("assessment-tool-select-non-members");
+	private static final DoneChartRenderer RENDERER = new DoneChartRenderer();
+	
+	private int donePercent;
 
+	public DoneChart(String name) {
+		super(name);
+	}
+	
+	public int getDonePercent() {
+		return donePercent;
+	}
+	
+	public void setDonePercent(int donePercent) {
+		this.donePercent = donePercent;
+	}
+
+	@Override
+	public ComponentRenderer getHTMLRendererSingleton() {
+		return RENDERER;
+	}
 }

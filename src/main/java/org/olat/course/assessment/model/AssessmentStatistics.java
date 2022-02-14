@@ -31,6 +31,8 @@ public class AssessmentStatistics {
 	private int countPassed;
 	private int countFailed;
 	private int countUndefined;
+	private int countDone;
+	private int countNotDone;
 	private Double averageScore;
 	
 	public int getCountTotal() {
@@ -63,6 +65,22 @@ public class AssessmentStatistics {
 
 	public void setCountUndefined(int countUndefined) {
 		this.countUndefined = countUndefined;
+	}
+
+	public int getCountDone() {
+		return countDone;
+	}
+
+	public void setCountDone(int countDone) {
+		this.countDone = countDone;
+	}
+
+	public int getCountNotDone() {
+		return countNotDone;
+	}
+
+	public void setCountNotDone(int countNotDone) {
+		this.countNotDone = countNotDone;
 	}
 
 	public Double getAverageScore() {

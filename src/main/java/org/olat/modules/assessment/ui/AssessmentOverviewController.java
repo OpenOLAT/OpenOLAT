@@ -19,6 +19,9 @@
  */
 package org.olat.modules.assessment.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -44,8 +47,8 @@ public class AssessmentOverviewController extends BasicController {
 	private final AssessmentToReviewSmallController toReviewCtrl;
 	private final AssessmentStatsController statisticCtrl;
 		
-	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry testEntry, AssessmentToolSecurityCallback assessmentCallback) {
+	public AssessmentOverviewController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
+			AssessableResource element, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentModule.class, ureq.getLocale()));
 		
 		mainVC = createVelocityContainer("overview");
@@ -55,7 +58,16 @@ public class AssessmentOverviewController extends BasicController {
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
 		
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
-		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, true, false);
+		List<Stat> stats = new ArrayList<>(2);
+		if (element.hasPassedConfigured()) {
+			stats.add(Stat.passed);
+		} else {
+			stats.add(Stat.status);
+		}
+		if (element.hasScoreConfigured()) {
+			stats.add(Stat.score);
+		}
+		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, stats, true, false);
 		statisticCtrl.setExpanded(true);
 		listenTo(statisticCtrl);
 		mainVC.put("statistics", statisticCtrl.getInitialComponent());

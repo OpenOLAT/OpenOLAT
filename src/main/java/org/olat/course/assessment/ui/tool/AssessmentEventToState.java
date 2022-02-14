@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.course.assessment.ui.tool.event.BusinessGroupEvent;
 import org.olat.course.assessment.ui.tool.event.CurriculumElementEvent;
 import org.olat.course.assessment.ui.tool.event.SelectionEvents;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 
 /**
@@ -54,6 +55,10 @@ public class AssessmentEventToState {
 				return true;
 			} else if (event == SelectionEvents.UNDEFINED_EVENT) {
 				return true;
+			} else if (event == SelectionEvents.DONE_EVENT) {
+				return true;
+			} else if (event == SelectionEvents.NOT_DONE_EVENT) {
+				return true;
 			} else if (event == SelectionEvents.MEMBERS_EVENT) {
 				return true;
 			} else if (event == SelectionEvents.NON_MEMBERS_EVENT) {
@@ -76,6 +81,14 @@ public class AssessmentEventToState {
 			return new AssessedIdentityListState(null, Collections.singletonList("failed"), null, null, null, null, "Failed", false);
 		} else if (event == SelectionEvents.UNDEFINED_EVENT) {
 			return new AssessedIdentityListState(null, Collections.singletonList("notGraded"), null, null, null, null, null, false);
+		} else if (event == SelectionEvents.DONE_EVENT) {
+			return new AssessedIdentityListState(Collections.singletonList(AssessmentEntryStatus.done.name()),
+					null, null, null, null, null, null, false);
+		} else if (event == SelectionEvents.NOT_DONE_EVENT) {
+			return new AssessedIdentityListState(
+					List.of(AssessmentEntryStatus.notReady.name(), AssessmentEntryStatus.notStarted.name(),
+							AssessmentEntryStatus.inProgress.name(), AssessmentEntryStatus.inReview.name()),
+					null, null, null, null, null, null, false);
 		} else if (event == SelectionEvents.MEMBERS_EVENT) {
 			return new AssessedIdentityListState(null, null, null, "membersOnly", null, null, null, false);
 		} else if (event == SelectionEvents.NON_MEMBERS_EVENT) {

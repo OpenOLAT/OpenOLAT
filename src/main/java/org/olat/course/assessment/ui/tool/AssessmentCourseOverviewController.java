@@ -19,6 +19,9 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -34,17 +37,24 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentStatisticsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.assessment.ui.Stat;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,6 +74,8 @@ public class AssessmentCourseOverviewController extends BasicController {
 
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
@@ -99,11 +111,22 @@ public class AssessmentCourseOverviewController extends BasicController {
 			mainVC.put("certificationSubscription", certificateSubscriptionCtrl.getInitialComponent());
 		}
 		
-		String rootNodeIdent = course.getRunStructure().getRootNode().getIdent();
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNodeIdent, null, assessmentCallback);
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, rootNode.getIdent(), null, assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
-		statisticCtrl = new AssessmentStatisticsController(ureq, getWindowControl(), courseEntry, assessmentCallback, params);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
+		List<Stat> stats = new ArrayList<>(2);
+		if (Mode.none != assessmentConfig.getPassedMode()) {
+			stats.add(Stat.passed);
+		} else if (assessmentConfig.hasStatus() || LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachUserEnv).getType())) {
+			stats.add(Stat.status);
+		}
+		if (Mode.none != assessmentConfig.getScoreMode()) {
+			stats.add(Stat.score);
+		}
+		
+		statisticCtrl = new AssessmentStatisticsController(ureq, getWindowControl(), courseEntry, assessmentCallback, params, stats);
 		listenTo(statisticCtrl);
 		mainVC.put("statistic", statisticCtrl.getInitialComponent());
 		
@@ -111,7 +134,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		listenTo(toReviewCtrl);
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
 		
-		if (coachUserEnv.isAdmin() || course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY, true)) {
+		if (coachUserEnv.isAdmin() || rootNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY, true)) {
 			toReleaseCtrl = new CourseNodeToReleaseSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		} else {
 			toReleaseCtrl = new MessagePanelController(ureq, wControl, "o_icon_results_hidden",

@@ -26,28 +26,25 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.assessment.ui.component.PassedChart.PassedPercent;
 
 /**
  * 
- * Initial date: 28 Jan 2022<br>
+ * Initial date: 14 Feb 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class PassedChartRenderer extends DefaultComponentRenderer {
+public class DoneChartRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
-		PassedChart passedChart = (PassedChart)source;
-		PassedPercent passedPercent = passedChart.getPassedPercent();
+		DoneChart doneChart = (DoneChart)source;
 		
 		sb.append("<span class=\"radial-progress radial-progress-pie o_assessment_chart\">");
 		sb.append("<svg viewBox=\"0 0 32 32\">");
 		sb.append("<circle r=\"16\" cx=\"16\" cy=\"16\" class=\"radial-bg\"></circle>");
-		appendPieSlice(sb, "o_failed_slice", passedPercent.getPassedPercent() + passedPercent.getFailedPercent());
-		appendPieSlice(sb, "o_passed_slice", passedPercent.getPassedPercent());
+		appendPieSlice(sb, "o_done_slice", doneChart.getDonePercent());
 		sb.append("</svg>");
 		sb.append("</span>");
 	}
