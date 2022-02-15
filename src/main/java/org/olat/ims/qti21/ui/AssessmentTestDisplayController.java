@@ -772,7 +772,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private Long getLeadingTimeEndTestOption() {
 		if(overrideOptions != null && overrideOptions.getEndTestDate() != null) {
 			Date endTestDate = overrideOptions.getEndTestDate();
-			long diff = endTestDate.getTime() - testSessionController.getCurrentRequestTimestamp().getTime();
+			long diff = endTestDate.getTime() - new Date().getTime();
 			return Long.valueOf(diff);
 		}
 		return null;// default is a year
