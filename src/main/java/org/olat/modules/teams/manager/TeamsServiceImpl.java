@@ -42,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
+import org.olat.group.DeletableGroupData;
 import org.olat.login.oauth.spi.MicrosoftAzureADFSProvider;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsMeetingDeletionHandler;
@@ -54,6 +55,7 @@ import org.olat.modules.teams.model.TeamsErrors;
 import org.olat.modules.teams.model.TeamsMeetingImpl;
 import org.olat.modules.teams.model.TeamsMeetingsSearchParameters;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,7 +72,7 @@ import com.microsoft.graph.models.User;
  *
  */
 @Service
-public class TeamsServiceImpl implements TeamsService {
+public class TeamsServiceImpl implements TeamsService, RepositoryEntryDataDeletable, DeletableGroupData {
 	
 	private static final Logger log = Tracing.createLoggerFor(TeamsServiceImpl.class);
 
@@ -145,13 +147,41 @@ public class TeamsServiceImpl implements TeamsService {
 	public void deleteMeeting(TeamsMeeting meeting) {
 		if(meeting == null || meeting.getKey() == null) return;
 		
+		deleteInternalMeeting(meeting, false);
+	}
+	
+	/**
+	 * @param meeting The meeting to delete
+	 * @param ignoreCalendar Don't delete calendar events
+	 */
+	private void deleteInternalMeeting(TeamsMeeting meeting, boolean ignoreCalendar) {
 		TeamsMeeting reloadedMeeting = teamsMeetingDao.loadByKey(meeting.getKey());
 		if(reloadedMeeting != null) {
 			teamsMeetingDeletionHandlers.forEach(h -> h.onBeforeDelete(reloadedMeeting));
-			removeCalendarEvent(reloadedMeeting);
+			if(!ignoreCalendar) {
+				removeCalendarEvent(reloadedMeeting);
+			}
 			teamsAttendeeDao.deleteMeetingsAttendees(reloadedMeeting);
 			teamsMeetingDao.deleteMeeting(reloadedMeeting);
 		}
+	}
+	
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		List<TeamsMeeting> meetings = teamsMeetingDao.getMeetings(null, null, group);
+		for(TeamsMeeting meeting:meetings) {
+			deleteInternalMeeting(meeting, true);
+		}
+		return true;
+	}
+
+	@Override
+	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
+		List<TeamsMeeting> meetings = teamsMeetingDao.getMeetings(re);
+		for(TeamsMeeting meeting:meetings) {
+			deleteInternalMeeting(meeting, true);
+		}
+		return true;
 	}
 	
 	@Override

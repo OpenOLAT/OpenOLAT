@@ -165,7 +165,7 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getMeetingsbyRepositoryEntryAndSubIdent() {
+	public void getMeetingsByRepositoryEntryAndSubIdent() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String name = "Online-Meeting - 8";
 		String subIdent = UUID.randomUUID().toString();
@@ -178,6 +178,22 @@ public class TeamsMeetingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(meetings);
 		Assert.assertEquals(1, meetings.size());
 		Assert.assertEquals(meeting, meetings.get(0));
+	}
+	
+	@Test
+	public void getMeetingsByRepositoryEntry() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		TeamsMeeting meeting1 = teamsMeetingDao.createMeeting("Online-Meeting - 10", new Date(), new Date(),
+				entry, "Something unique", null, null);
+		TeamsMeeting meeting2 = teamsMeetingDao.createMeeting("Online-Meeting - 11", new Date(), new Date(),
+				entry, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<TeamsMeeting> meetings = teamsMeetingDao.getMeetings(entry);
+		Assert.assertNotNull(meetings);
+		Assert.assertEquals(2, meetings.size());
+		Assert.assertTrue(meetings.contains(meeting1));
+		Assert.assertTrue(meetings.contains(meeting2));
 	}
 	
 	@Test
