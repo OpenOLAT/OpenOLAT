@@ -251,7 +251,7 @@ public class AssessmentToolPage {
 		
 		By newBy = By.cssSelector("a.o_sel_assessment_tool_new_bulk_assessment");
 		browser.findElement(newBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_data"), browser);
 		return new BulkAssessmentPage(browser);
 	}

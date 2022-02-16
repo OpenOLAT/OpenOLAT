@@ -306,8 +306,8 @@ public class CourseTest extends Deployments {
 		AuthoringEnvPage authoringEnv = navBar
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();
-		
-		String title = "Coedit-" + UUID.randomUUID();
+
+		String title = "Coedit-" + UUID.randomUUID().toString().replace("-", " ");
 		//create course
 		authoringEnv
 			.openCreateDropDown()

@@ -108,8 +108,8 @@ public class BinderPage {
 	}
 	
 	public BinderPage assertOnAssignmentInEntries(String title) {
-		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(assignmentTitleBy, 5, browser);
+		By assignmentTitleBy = By.xpath("//h4[i[contains(@class,'o_icon_assignment')]][text()[contains(.,'" + title + "')]]");
+		OOGraphene.waitElementPresence(assignmentTitleBy, 5, browser);
 		return this;
 	}
 	
