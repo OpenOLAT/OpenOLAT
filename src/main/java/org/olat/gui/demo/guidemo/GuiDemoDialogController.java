@@ -107,7 +107,7 @@ public class GuiDemoDialogController extends BasicController {
 			dialogBoxSpecialCSS = activateYesNoDialog(ureq, "Hello World",
 					"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aliquam id quam in dui pellentesque sodales?", dialogBoxSpecialCSS);
 			// use custom CSS: in this case with a special icon
-			dialogBoxSpecialCSS.setCssClass("o_icon_warn");
+			dialogBoxSpecialCSS.setCssClass("o_warning");
 		}
 		if (source == noCloseButton) {
 			dialogBoxWithoutClose = activateYesNoDialog(ureq, "Hello World",
