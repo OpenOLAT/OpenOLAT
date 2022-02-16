@@ -168,6 +168,25 @@ public class TeamsMeetingDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * Returns all the meeting of the specified entry. Sub-identifier
+	 * will be ignored.
+	 * 
+	 * @param entry The repository entry
+	 * @return A list of meetings
+	 */
+	public List<TeamsMeeting> getMeetings(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from teamsmeeting as meeting");
+		if(entry != null) {
+			sb.and().append("meeting.entry.key=:entryKey");
+		}
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), TeamsMeeting.class)
+			.setParameter("entryKey", entry.getKey())
+			.getResultList();
+	}
+	
 	public List<TeamsMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select meeting from teamsmeeting as meeting");
