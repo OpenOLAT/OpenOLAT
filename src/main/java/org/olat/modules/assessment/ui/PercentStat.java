@@ -25,10 +25,9 @@ package org.olat.modules.assessment.ui;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum Stat {
+public enum PercentStat {
 	
 	passed,
-	score,
 	status;
 	
 }

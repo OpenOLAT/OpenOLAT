@@ -26,7 +26,9 @@ import static org.olat.test.JunitTestHelper.random;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,6 +44,7 @@ import org.olat.course.assessment.CoachingAssessmentSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessedCurriculumElement;
+import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.core.CourseElement;
@@ -451,6 +454,46 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(2d, statistics.getAverageScore().doubleValue(), 0.0001);
 		Assert.assertEquals(0, statistics.getCountFailed());
 		Assert.assertEquals(3, statistics.getCountPassed());
+	}
+	
+	@Test
+	public void getScoreStatistic() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		String subIdent = random();
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity4, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		// Assessment data
+		AssessmentEntry ae1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, null);
+		ae1.setScore(BigDecimal.valueOf(4.1));
+		assessmentEntryDao.updateAssessmentEntry(ae1);
+		AssessmentEntry ae2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, null);
+		ae2.setScore(BigDecimal.valueOf(3.9));
+		assessmentEntryDao.updateAssessmentEntry(ae2);
+		AssessmentEntry ae3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, null);
+		ae3.setScore(BigDecimal.valueOf(1));
+		assessmentEntryDao.updateAssessmentEntry(ae3);
+		AssessmentEntry ae4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, null);
+		assessmentEntryDao.updateAssessmentEntry(ae4);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
+		List<AssessmentScoreStatistic> scoreStatistics = assessmentToolManager.getScoreStatistics(admin, params);
+		assertThat(scoreStatistics).hasSize(2);
+		
+		Map<Integer, Long> scoreToCount = scoreStatistics.stream()
+				.collect(Collectors.toMap(AssessmentScoreStatistic::getScore, AssessmentScoreStatistic::getCount));
+		assertThat(scoreToCount.get(Integer.valueOf(4))).isEqualTo(2);
+		assertThat(scoreToCount.get(Integer.valueOf(1))).isEqualTo(1);
 	}
 	
 	@Test

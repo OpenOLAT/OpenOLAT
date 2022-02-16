@@ -19,9 +19,6 @@
  */
 package org.olat.modules.assessment.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -58,16 +55,17 @@ public class AssessmentOverviewController extends BasicController {
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
 		
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
-		List<Stat> stats = new ArrayList<>(2);
+		PercentStat percentStat = null;
 		if (element.hasPassedConfigured()) {
-			stats.add(Stat.passed);
+			percentStat = PercentStat.passed;
 		} else {
-			stats.add(Stat.status);
+			percentStat = PercentStat.status;
 		}
+		ScoreStat scoreStat = ScoreStat.noScore();
 		if (element.hasScoreConfigured()) {
-			stats.add(Stat.score);
+			scoreStat = ScoreStat.of(element.getMinScoreConfiguration(), element.getMaxScoreConfiguration());
 		}
-		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, stats, true, false);
+		statisticCtrl = new AssessmentStatsController(ureq, getWindowControl(), assessmentCallback, params, percentStat, scoreStat, true, false, true);
 		statisticCtrl.setExpanded(true);
 		listenTo(statisticCtrl);
 		mainVC.put("statistics", statisticCtrl.getInitialComponent());

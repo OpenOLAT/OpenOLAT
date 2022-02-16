@@ -20,9 +20,9 @@
 package org.olat.modules.assessment.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -51,6 +51,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessedCurriculumElement;
+import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.event.BusinessGroupEvent;
@@ -62,6 +63,7 @@ import org.olat.modules.assessment.ui.AssessmentStatsController.LaunchTableModel
 import org.olat.modules.assessment.ui.component.DoneChart;
 import org.olat.modules.assessment.ui.component.PassedChart;
 import org.olat.modules.assessment.ui.component.PassedChart.PassedPercent;
+import org.olat.modules.assessment.ui.component.ScoreChart;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -86,6 +88,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	private FormLink undefinedLink;
 	private FormLink doneLink;
 	private FormLink notDoneLink;
+	private ScoreChart scoreChart;
 	private PassedChart passedChart;
 	private DoneChart doneChart;
 	private LaunchTableModel launchTableModel;
@@ -97,12 +100,15 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final SearchAssessedIdentityParams params;
-	private final Collection<Stat> stats;
+	private final PercentStat percentStat;
+	private final ScoreStat scoreStat;
 	private final boolean courseInfoLaunch;
 	private final boolean readOnly;
+	private final boolean small;
 	
 	private AssessmentStatistics statistics;
 	private AssessmentMembersStatistics memberStatistics;
+	private Map<Integer, Long> scoreToCount;
 	private List<AssessedBusinessGroup> businessGroupStatistics;
 	private List<AssessedCurriculumElement> curriculumElementStatistics;
 	
@@ -111,13 +117,15 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 
 	public AssessmentStatsController(UserRequest ureq, WindowControl wControl,
 			AssessmentToolSecurityCallback assessmentCallback, SearchAssessedIdentityParams params,
-			Collection<Stat> stats, boolean courseInfoLaunch, boolean readOnly) {
+			PercentStat percentStat, ScoreStat scoreStat, boolean courseInfoLaunch, boolean readOnly, boolean small) {
 		super(ureq, wControl, "stats");
 		this.assessmentCallback = assessmentCallback;
 		this.params = params;
-		this.stats = stats;
+		this.percentStat = percentStat;
+		this.scoreStat = scoreStat;
 		this.courseInfoLaunch = courseInfoLaunch;
 		this.readOnly = readOnly;
+		this.small = small;
 
 		initForm(ureq);
 		reload();
@@ -138,7 +146,15 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		curriculumElementLink.setIconLeftCSS("o_icon o_icon-fw o_icon_curriculum_element");
 		curriculumElementLink.setEnabled(!readOnly);
 		
-		if (stats.contains(Stat.passed)) {
+		if (scoreStat.isEnabled()) {
+			scoreChart = new ScoreChart("score.chart");
+			scoreChart.setMinScore(scoreStat.getMin());
+			scoreChart.setMaxScore(scoreStat.getMax());
+			scoreChart.setDomReplacementWrapperRequired(false);
+			flc.put("score.chart", scoreChart);
+		}
+		
+		if (PercentStat.passed == percentStat) {
 			passedLink = uifactory.addFormLink("num.passed", "num.passed", null, null, formLayout, Link.NONTRANSLATED);
 			passedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_passed o_passed");
 			passedLink.setEnabled(!readOnly);
@@ -154,7 +170,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			passedChart = new PassedChart("passed.chart");
 			passedChart.setDomReplacementWrapperRequired(false);
 			flc.put("passed.chart", passedChart);
-		} else if (stats.contains(Stat.status)) {
+		} else if (PercentStat.status == percentStat) {
 			doneLink = uifactory.addFormLink("num.done", "num.done", null, null, formLayout, Link.NONTRANSLATED);
 			doneLink.setIconLeftCSS("o_icon o_icon-fw o_black_led");
 			doneLink.setEnabled(!readOnly);
@@ -185,9 +201,12 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		FlexiTableColumnModel groupColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.group));
 		groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.members));
-		if (stats.contains(Stat.passed)) {
+		if (scoreStat.isEnabled()) {
+			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.scoreAvg, new ScoreCellRenderer()));
+		}
+		if (PercentStat.passed == percentStat) {
 			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
-		} else if (stats.contains(Stat.status)) {
+		} else if (PercentStat.status == percentStat) {
 			groupColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status, new StatusStatsRenderer()));
 		}
 		
@@ -203,9 +222,12 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		FlexiTableColumnModel curriculumElementColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.curriculumElement));
 		curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.members));
-		if (stats.contains(Stat.passed)) {
+		if (scoreStat.isEnabled()) {
+			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.scoreAvg, new ScoreCellRenderer()));
+		}
+		if (PercentStat.passed == percentStat) {
 			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.passed, new PassedStatsRenderer()));
-		} else if (stats.contains(Stat.status)) {
+		} else if (PercentStat.status == percentStat) {
 			curriculumElementColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupCols.status, new StatusStatsRenderer()));
 		}
 		
@@ -215,6 +237,10 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		curriculumElementTableEl.setNumOfRowsEnabled(false);
 		curriculumElementTableEl.setExportEnabled(false);
 		curriculumElementTableEl.setCustomizeColumns(false);
+		
+		flc.contextPut("small", Boolean.valueOf(small));
+		flc.contextPut("hasScoreColumn", Boolean.valueOf(scoreStat.isEnabled()));
+		flc.contextPut("hasPassedColumn", Boolean.valueOf(percentStat != null));
 	}
 	
 	public void reload() {
@@ -222,6 +248,10 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		memberStatistics = assessmentToolManager.getNumberOfParticipants(getIdentity(), params, courseInfoLaunch);
 		businessGroupStatistics = assessmentToolManager.getBusinessGroupStatistics(getIdentity(), params);
 		curriculumElementStatistics = assessmentToolManager.getCurriculumElementStatistics(getIdentity(), params);
+		if (scoreStat.isEnabled()) {
+			scoreToCount = assessmentToolManager.getScoreStatistics(getIdentity(), params).stream()
+					.collect(Collectors.toMap(AssessmentScoreStatistic::getScore, AssessmentScoreStatistic::getCount));
+		}
 		
 		updateUI();
 		updateLaunchModel();
@@ -254,7 +284,10 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			curriculumElementLink.setVisible(false);
 		}
 		
-		if (stats.contains(Stat.passed)) {
+		if (scoreStat.isEnabled()) {
+			scoreChart.setScoreToCount(scoreToCount);
+		}
+		if (PercentStat.passed == percentStat) {
 			int numOfPassedPercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountPassed() / statistics.getCountTotal()) : 0;
 			String numOfPassedText = translate("assessment.tool.num.passed", Integer.toString(statistics.getCountPassed()), Integer.toString(numOfPassedPercent));
 			passedLink.setI18nKey(numOfPassedText);
@@ -268,7 +301,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			undefinedLink.setI18nKey(numOfUndefinedText);
 			
 			passedChart.setPassedPercent(new PassedPercent(numOfPassedPercent, numOfFailedPercent));
-		} else if (stats.contains(Stat.status)) {
+		} else if (PercentStat.status == percentStat) {
 			int numOfDonePercent = statistics.getCountTotal() > 0? Math.round(100 * statistics.getCountDone() / statistics.getCountTotal()) : 0;
 			String numOfDoneText = translate("assessment.tool.num.done", Integer.toString(statistics.getCountDone()), Integer.toString(numOfDonePercent));
 			doneLink.setI18nKey(numOfDoneText);
@@ -335,6 +368,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			row.setNumIdentities(assessedBusinessGroup.getNumOfParticipants());
 			row.setNumDone(assessedBusinessGroup.getNumDone());
 			row.setNumNotDone(assessedBusinessGroup.getNumNotDone());
+			row.setScoreAvg(assessedBusinessGroup.getAverageScore());
 			
 			FormLink link = uifactory.addFormLink("group_" + assessedBusinessGroup.getKey(), CMD_GROUP, null, null, null, Link.NONTRANSLATED);
 			link.setI18nKey(assessedBusinessGroup.getName());
@@ -367,6 +401,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			row.setNumIdentities(assessedCurriculumElement.getNumOfParticipants());
 			row.setNumDone(assessedCurriculumElement.getNumDone());
 			row.setNumNotDone(assessedCurriculumElement.getNumNotDone());
+			row.setScoreAvg(assessedCurriculumElement.getAverageScore());
 			
 			FormLink link = uifactory.addFormLink("ce_" + assessedCurriculumElement.getKey(), CMD_CURRICULUM_ELEMENT, null, null, null, Link.NONTRANSLATED);
 			link.setI18nKey(assessedCurriculumElement.getName());
@@ -537,6 +572,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		private int numUndefined;
 		private int numDone;
 		private int numNotDone;
+		private double scoreAvg;
 		
 		public FormLink getGroupLink() {
 			return groupLink;
@@ -593,6 +629,14 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		public void setNumNotDone(int numNotDone) {
 			this.numNotDone = numNotDone;
 		}
+
+		public double getScoreAvg() {
+			return scoreAvg;
+		}
+
+		public void setScoreAvg(double scoreAvg) {
+			this.scoreAvg = scoreAvg;
+		}
 		
 	}
 	
@@ -610,6 +654,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 					case group: return groupRow.getGroupLink();
 					case curriculumElement: return groupRow.getGroupLink();
 					case members: return groupRow.getNumIdentities();
+					case scoreAvg: return groupRow.getScoreAvg();
 					case passed: return groupRow;
 					case status: return groupRow;
 				}
@@ -621,6 +666,7 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 			group("table.header.group"),
 			curriculumElement("table.header.curriculum.element"),
 			members("table.header.num.members"),
+			scoreAvg("table.header.score.avg"),
 			passed("table.header.passed"),
 			status("table.header.done");
 			

@@ -530,7 +530,10 @@
 			padding: 10px;
 		}
 		.o_overview_members {
-			flex: 1 1 40%;
+			flex: 1 1 auto;
+			&.o_overview_members_small {
+				flex: 1 1 40%;
+			}
 		}
 		.o_overview_passed {
 			flex: 3 0 auto;
@@ -561,6 +564,9 @@
 					margin: 0px;
 				}
 			}
+		}
+		.o_overview_score {
+			flex: 3 0 auto;
 		}
 	}
 

@@ -3,7 +3,7 @@
 		<h4 class="panel-title"><i class="o_icon o_icon_user"> </i> $r.translate("participants")</h4>
 	</div>
 	<div class="o_overview">
-		<div class="o_overview_members">
+		<div class="o_overview_members #if($small) o_overview_members_small #end">
 			<ul class="list-unstyled">
 				#if($r.available("assessed.identities"))
 					<li>$r.render("assessed.identities")</li>
@@ -65,31 +65,56 @@
 			/* <![CDATA[ */ 
 			## Inspired by BFormatter.alignTableColumns()
 			## Column name has no/variable width.
-			## Column #members is as long as it's header cell.
-			## Column passed is as long as the smallest cell (without header cell).
-			var cellWidthsMembers = 0;
-			var cellWidthsPassed = 1000;
+			## Column #members is as long as it's smallest header cell.
+			## Column avg score is as long as it's smallest header cell.
+			## Column passed is as long as the longest cell (without header cell).
+			var widthMembers = -1;
+			var widthScoreAvg = -1;
+			var widthPassed = 0;
+			var passedOffset = $hasScoreColumn? 1: 0;
 			## Calculate the 'best' columns width
 			jQuery('.o_assessment_stats .o_group_list table').each(function() {
 				for(i = 0; i < jQuery(this)[0].rows.length; i++){	## rows
-					var cellWithMembers = jQuery(this)[0].rows[i].cells[1].clientWidth;
-					if(cellWidthsMembers < cellWithMembers) {
-						cellWidthsMembers = cellWithMembers;
+					if (i == 0) {
+						var cellWithMembers = jQuery(this)[0].rows[i].cells[1].clientWidth;
+						if(widthMembers == -1 || widthMembers > cellWithMembers) {
+							widthMembers = cellWithMembers;
+						}
 					}
-					var cellWithPassed = jQuery(this)[0].rows[i].cells[2].clientWidth;
-					if(cellWidthsPassed > cellWithPassed) {
-						cellWidthsPassed = cellWithPassed;
+					
+					if (i == 0 && $hasScoreColumn) {
+						var cellWithScoreAvg = jQuery(this)[0].rows[i].cells[2].clientWidth;
+						if(widthScoreAvg == -1  || widthScoreAvg > cellWithScoreAvg) {
+							widthScoreAvg = cellWithScoreAvg;
+						}
+					}
+					if (i > 0 && $hasPassedColumn) {
+						var cellWithPassed = jQuery(this)[0].rows[i].cells[2 + passedOffset].clientWidth;
+						if(widthPassed < cellWithPassed) {
+							widthPassed = cellWithPassed;
+						}
 					}
 				}	
 			});
 			## Apply the calculated width to the columns.
 			jQuery('.o_assessment_stats .o_group_list table').each(function() {
-				jQuery(this)[0].rows[0].cells[1].style.width = cellWidthsMembers+'px';
-				jQuery(this)[0].rows[0].cells[2].style.width = cellWidthsPassed+'px';
+				jQuery(this)[0].rows[0].cells[1].style.width = widthMembers+'px';
+				if ($hasScoreColumn) {
+					jQuery(this)[0].rows[0].cells[2].style.width = widthScoreAvg+'px';
+				}
+				if ($hasPassedColumn) {
+ 					jQuery(this)[0].rows[0].cells[2 + passedOffset].style.width = widthPassed+'px';
+ 				}
 			});
-			if (cellWidthsPassed < 1000) {
+			if (widthMembers > 0) {
+				var withLaunch = widthMembers;
+				if (widthPassed > 0) {
+					withLaunch = widthPassed;
+				} else if (widthScoreAvg > 0) {
+					withLaunch = widthScoreAvg;
+				}
 				jQuery('.o_assessment_stats .o_launch_list table').each(function() {
-					jQuery(this)[0].rows[0].cells[1].style.width = cellWidthsPassed+'px';
+					jQuery(this)[0].rows[0].cells[1].style.width = withLaunch+'px';
 				});
 			}
 			/* ]]> */

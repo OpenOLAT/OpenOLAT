@@ -19,9 +19,6 @@
  */
 package org.olat.course.assessment.ui.tool;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -54,7 +51,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentStatisticsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.modules.assessment.ui.Stat;
+import org.olat.modules.assessment.ui.PercentStat;
+import org.olat.modules.assessment.ui.ScoreStat;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -116,17 +114,20 @@ public class AssessmentCourseOverviewController extends BasicController {
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(rootNode);
-		List<Stat> stats = new ArrayList<>(2);
+		PercentStat percentStat = null;
 		if (Mode.none != assessmentConfig.getPassedMode()) {
-			stats.add(Stat.passed);
+			percentStat = PercentStat.passed;
 		} else if (assessmentConfig.hasStatus() || LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(coachUserEnv).getType())) {
-			stats.add(Stat.status);
+			percentStat = PercentStat.status;
 		}
+		ScoreStat scoreStat = ScoreStat.noScore();
 		if (Mode.none != assessmentConfig.getScoreMode()) {
-			stats.add(Stat.score);
+			Double minScore = assessmentConfig.getMinScore()!= null? Double.valueOf(assessmentConfig.getMinScore().doubleValue()): null;
+			Double maxScore = assessmentConfig.getMaxScore()!= null? Double.valueOf(assessmentConfig.getMaxScore().doubleValue()): null;
+			scoreStat = ScoreStat.of(minScore, maxScore);
 		}
 		
-		statisticCtrl = new AssessmentStatisticsController(ureq, getWindowControl(), courseEntry, assessmentCallback, params, stats);
+		statisticCtrl = new AssessmentStatisticsController(ureq, getWindowControl(), courseEntry, assessmentCallback, params, percentStat, scoreStat);
 		listenTo(statisticCtrl);
 		mainVC.put("statistic", statisticCtrl.getInitialComponent());
 		

@@ -49,6 +49,7 @@ import org.olat.course.assessment.CoachingAssessmentSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.AssessedCurriculumElement;
+import org.olat.course.assessment.model.AssessmentScoreStatistic;
 import org.olat.course.assessment.model.AssessmentStatistics;
 import org.olat.course.assessment.model.CoachingAssessmentEntryImpl;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -268,7 +269,73 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		return entry;
 	}
 	
+	@Override
+	public List<AssessmentScoreStatistic> getScoreStatistics(Identity coach, SearchAssessedIdentityParams params) {
+		QueryBuilder sf = new QueryBuilder();
+		sf.append("select new org.olat.course.assessment.model.AssessmentScoreStatistic(")
+		  .append(" round(aentry.score), ")
+		  .append(" count(aentry.key)")
+		  .append(")")
+		  .append(" from assessmententry aentry ")
+		  .append(" inner join aentry.repositoryEntry v ")
+		  .append(" where aentry.score is not null")
+		  .append(" and v.key=:repoEntryKey");
+		if(params.getReferenceEntry() != null) {
+			sf.append(" and aentry.referenceEntry.key=:referenceKey");
+		}
+		if(params.getSubIdent() != null) {
+			sf.append(" and aentry.subIdent=:subIdent");
+		}
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			sf.append(" and (");
+			if (params.getAssessmentObligations().contains(AssessmentObligation.mandatory)) {
+				sf.append("aentry.obligation is null or ");
+			}
+			sf.append(" aentry.obligation in (:assessmentObligations))");
+		}
+		sf.append(" and (aentry.identity.key in");
+		if(params.isAdmin()) {
+			if (params.isMemebersOnly() || !params.isNonMembers()) {
+				sf.append(" (select participant.identity.key from repoentrytogroup as rel, bgroupmember as participant")
+				  .append("    where rel.entry.key=:repoEntryKey and rel.group.key=participant.group.key")
+				  .append("      and participant.role='").append(GroupRoles.participant.name()).append("'")
+				  .append("  )");
+			} else {
+				sf.append(" (select ae.identity.key from assessmententry ae")
+				  .append(" where ae.identity.key is not null") // exclude anonymous 
+				  .append("   and ae.repositoryEntry.key = :repoEntryKey");
+				if(params.getSubIdent() != null) {
+					sf.append(" and ae.subIdent=:subIdent");
+				}
+				sf.append("  )");
+			}
+		} else if(params.isCoach()) {
+			sf.append(" (select participant.identity from repoentrytogroup as rel, bgroupmember as participant, bgroupmember as coach")
+	          .append("    where rel.entry.key=:repoEntryKey")
+	          .append("      and rel.group.key=coach.group.key and coach.role='").append(GroupRoles.coach.name()).append("' and coach.identity.key=:identityKey")
+	          .append("      and rel.group.key=participant.group.key and participant.role='").append(GroupRoles.participant.name()).append("'")
+	          .append("  )");
+		}
+		sf.append(" ) group by round(aentry.score)");
 
+		TypedQuery<AssessmentScoreStatistic> stats = dbInstance.getCurrentEntityManager()
+				.createQuery(sf.toString(), AssessmentScoreStatistic.class)
+				.setParameter("repoEntryKey", params.getEntry().getKey());
+		if(!params.isAdmin()) {
+			stats.setParameter("identityKey", coach.getKey());
+		}
+		if(params.getReferenceEntry() != null) {
+			stats.setParameter("referenceKey", params.getReferenceEntry().getKey());
+		}
+		if(params.getSubIdent() != null) {
+			stats.setParameter("subIdent", params.getSubIdent());
+		}
+		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
+			stats.setParameter("assessmentObligations", params.getAssessmentObligations());
+		}
+		
+		return stats.getResultList();
+	}
 
 	@Override
 	public List<AssessedBusinessGroup> getBusinessGroupStatistics(Identity coach, SearchAssessedIdentityParams params) {
