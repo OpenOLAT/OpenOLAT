@@ -24,7 +24,7 @@
 */
 package org.olat.admin.user.delete.service;
 
-import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
+import org.olat.core.commons.services.taskexecutor.LongRunnable;
 
 /**
  * This is only a placeholder for 15.5.3 and older OpenOlat version.
@@ -33,7 +33,7 @@ import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DeleteUserDataTask implements LowPriorityRunnable {
+public class DeleteUserDataTask implements LongRunnable {
 	private static final long serialVersionUID = 4278304131373256050L;
 
 	private final Long identityKey;
@@ -52,6 +52,11 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 		return newDeletedUserName;
 	}
 	
+	@Override
+	public Queue getExecutorsQueue() {
+		return Queue.lowPriority;
+	}
+
 	@Override
 	public void run() {
 		//

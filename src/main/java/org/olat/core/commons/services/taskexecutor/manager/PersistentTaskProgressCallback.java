@@ -21,6 +21,7 @@ package org.olat.core.commons.services.taskexecutor.manager;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.logging.Tracing;
@@ -50,7 +51,8 @@ public class PersistentTaskProgressCallback extends DefaultTaskProgressCallback 
 
 	@Override
 	public void setProgress(double progress, String checkpoint) {
-		log.info("Progress: {} ({})", progress, checkpoint);//TODO export
+		log.debug("Progress: {} ({})", progress, checkpoint);
 		taskExecutorManager.updateProgress(task, Double.valueOf(progress), checkpoint);
+		DBFactory.getInstance().commitAndCloseSession();
 	}
 }

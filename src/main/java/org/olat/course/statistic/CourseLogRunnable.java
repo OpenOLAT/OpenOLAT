@@ -24,7 +24,7 @@ import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.taskexecutor.LowPriority;
+import org.olat.core.commons.services.taskexecutor.TaskRunnable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
@@ -38,7 +38,7 @@ import org.olat.core.util.resource.OresHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseLogRunnable implements LowPriority {
+public class CourseLogRunnable implements TaskRunnable {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseLogRunnable.class);
 	
@@ -67,6 +67,11 @@ public class CourseLogRunnable implements LowPriority {
 		this.locale = locale;
 		this.email = email;
 		this.isAdministrativeUser = isAdministrativeUser;
+	}
+	
+	@Override
+	public Queue getExecutorsQueue() {
+		return Queue.lowPriority;
 	}
 
 	@Override

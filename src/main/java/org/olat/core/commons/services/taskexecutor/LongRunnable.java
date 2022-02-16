@@ -31,6 +31,13 @@ import java.io.Serializable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LongRunnable extends Runnable, Serializable {
+public interface LongRunnable extends TaskRunnable, Serializable {
+	
+	/**
+	 * @return false to execute the task without waiting for the scheduler 
+	 */
+	public default boolean isDelayed() {
+		return true;
+	}
 
 }

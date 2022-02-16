@@ -19,9 +19,9 @@
  */
 package org.olat.user.manager;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserDataExportService;
 
@@ -31,7 +31,7 @@ import org.olat.user.UserDataExportService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserDataExportTask implements LowPriorityRunnable {
+public class UserDataExportTask implements LongRunnable {
 
 	private static final long serialVersionUID = 6931074116105090545L;
 
@@ -44,10 +44,15 @@ public class UserDataExportTask implements LowPriorityRunnable {
 	}
 	
 	@Override
+	public Queue getExecutorsQueue() {
+		return Queue.lowPriority;
+	}
+
+	@Override
 	public void run() {
 		long startTime = System.currentTimeMillis();
 		UserDataExportService exportService = CoreSpringFactory.getImpl(UserDataExportService.class);
 		exportService.exportData(exportKey);
-		log.info("Finished data export thread for=" + exportKey + " in " + (System.currentTimeMillis() - startTime) + " (ms)");
+		log.info("Finished data export thread for={} in {} (ms)", exportKey, (System.currentTimeMillis() - startTime));
 	}
 }

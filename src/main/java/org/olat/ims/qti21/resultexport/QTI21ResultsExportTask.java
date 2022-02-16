@@ -30,7 +30,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.export.AbstractExportTask;
 import org.olat.core.commons.services.export.ExportManager;
-import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskProgressCallback;
@@ -54,7 +53,7 @@ import org.olat.course.nodes.QTICourseNode;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21ResultsExportTask extends AbstractExportTask implements LongRunnable {
+public class QTI21ResultsExportTask extends AbstractExportTask {
 
 	private static final long serialVersionUID = -432616692413096169L;
 	private static final Logger log = Tracing.createLoggerFor(QTI21ResultsExportTask.class);
@@ -103,10 +102,20 @@ public class QTI21ResultsExportTask extends AbstractExportTask implements LongRu
 	public String getDescription() {
 		return description;
 	}
+	
+	@Override
+	public boolean isDelayed() {
+		return false;
+	}
+
+	@Override
+	public Queue getExecutorsQueue() {
+		return withPdfs ? Queue.standard : Queue.external;
+	}
 
 	@Override
 	public void run() {
-		log.info("Export results: {}", title);//TODO export
+		log.debug("Export results: {}", title);
 		
 		ICourse course = CourseFactory.loadCourse(courseRes.getResourceableId());
 		QTICourseNode courseNode = (QTICourseNode)course.getRunStructure().getNode(courseNodeIdent);
@@ -115,6 +124,21 @@ public class QTI21ResultsExportTask extends AbstractExportTask implements LongRu
 		ExportManager exportManager = CoreSpringFactory.getImpl(ExportManager.class);
 		VFSContainer subFolder = exportManager
 				.getExportContainer(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNodeIdent);
+		
+		String vfsName = filename + "_" + task.getKey() + ".zip";
+		exportZip = subFolder.createChildLeaf(vfsName);
+		if(exportZip == null) {
+			exportZip = (VFSLeaf)subFolder.resolve(vfsName);
+		} else {
+			fillMetadata(exportZip, title, description);
+		}
+		
+		if(task.getStatus() == TaskStatus.cancelled) {
+			if(exportZip != null) {
+				exportZip.deleteSilently();
+			}
+			return;
+		}
 		
 		BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		List<Identity> identities = securityManager.loadIdentityByKeys(identitiesKeys);
@@ -128,14 +152,6 @@ public class QTI21ResultsExportTask extends AbstractExportTask implements LongRu
 		export = new QTI21ResultsExport(course.getCourseEnvironment(),
 				identities, withNonParticipants, withPdfs, courseNode, "", locale,
 				task.getCreator(), new WindowControlMocker());
-		
-		String vfsName = filename + "_" + task.getKey() + ".zip";
-		exportZip = subFolder.createChildLeaf(vfsName);
-		if(exportZip == null) {
-			exportZip = (VFSLeaf)subFolder.resolve(vfsName);
-		}
-		
-		fillMetadata(exportZip, title, description);
 
 		try(OutputStream out=exportZip.getOutputStream(true);
 				ZipOutputStream zout = new ZipOutputStream(out)) {

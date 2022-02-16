@@ -20,13 +20,21 @@
 package org.olat.core.commons.services.taskexecutor;
 
 /**
- * Marker interface to signal a task for the sequential queue
  * 
- * 
- * Initial date: 18.12.2013<br>
+ * Initial date: 16 févr. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Sequential {
-
+public interface TaskRunnable extends Runnable {
+	
+	public default Queue getExecutorsQueue() {
+		return Queue.standard;
+	}
+	
+	public enum Queue {
+		sequential,
+		lowPriority,
+		external,
+		standard;	
+	}
 }

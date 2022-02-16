@@ -247,7 +247,7 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
-	public void taskCancelled() {
+	public void newTaskCancelled() {
 		String taskName = UUID.randomUUID().toString();
 		PersistentTask taskToCancel = persistentTaskDao.createTask(taskName, new DummyTask());
 		dbInstance.commitAndCloseSession();
@@ -256,9 +256,24 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		persistentTaskDao.taskCancelled(cancelledTask);
 		dbInstance.commitAndCloseSession();
 		
-		TaskStatus status = persistentTaskDao.getStatus(cancelledTask);
-		Assert.assertNotNull(status);
-		Assert.assertEquals(TaskStatus.cancelled, status);
+		PersistentTask deletedTask = persistentTaskDao.loadTaskById(cancelledTask.getKey());
+		Assert.assertNull(deletedTask);
+	}
+	
+	@Test
+	public void runningTaskCancelled() {
+		String taskName = UUID.randomUUID().toString();
+		PersistentTask taskToCancel = persistentTaskDao.createTask(taskName, new DummyTask());
+		dbInstance.commitAndCloseSession();
+		
+		PersistentTask runningTask = persistentTaskDao.pickTaskForRun(taskToCancel);
+		dbInstance.commitAndCloseSession();
+		persistentTaskDao.taskCancelled(runningTask);
+		dbInstance.commitAndCloseSession();
+		
+		PersistentTask cancelledTask = persistentTaskDao.loadTaskById(runningTask.getKey());
+		Assert.assertNotNull(cancelledTask);
+		Assert.assertEquals(TaskStatus.cancelled, cancelledTask.getStatus());
 	}
 	
 	@Test

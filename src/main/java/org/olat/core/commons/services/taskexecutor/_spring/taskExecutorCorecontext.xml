@@ -9,6 +9,7 @@
 		<constructor-arg index="0" ref="mpTaskExecutorService" />
 		<constructor-arg index="1" ref="sequentialTaskExecutorService" />
 		<constructor-arg index="2" ref="lowPriorityTaskSpringExecutorService" />
+		<constructor-arg index="3" ref="externalPriorityTaskSpringExecutorService" />
 		<property name="persistentTaskDao" ref="persistentTaskDao"/>
 		<property name="dbInstance" ref="database"/>
 		<property name="scheduler" ref="schedulerFactoryBean"/>
@@ -24,6 +25,10 @@
 	
 	<bean id="lowPriorityTaskSpringExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">
 		<constructor-arg index="0" ref="lowPriorityTaskSpringExecutor" />
+	</bean>
+	
+	<bean id="externalPriorityTaskSpringExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+		<constructor-arg index="0" ref="externalPriorityTaskSpringExecutor" />
 	</bean>
 
 	<bean id="mpTaskSpringExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
@@ -41,6 +46,12 @@
 	<bean id="lowPriorityTaskSpringExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
 		<property name="corePoolSize" value="2" />
 		<property name="maxPoolSize" value="2" />
+		<property name="queueCapacity" value="1000" />
+	</bean>
+	
+	<bean id="externalPriorityTaskSpringExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="2" />
+		<property name="maxPoolSize" value="5" />
 		<property name="queueCapacity" value="1000" />
 	</bean>
 	

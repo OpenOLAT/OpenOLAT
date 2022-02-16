@@ -39,7 +39,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
-import org.olat.core.commons.services.taskexecutor.Sequential;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -109,7 +108,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequential {
+public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 
 	private static final long serialVersionUID = 4614724183354689151L;
 	private static final Logger log = Tracing.createLoggerFor(BulkAssessmentTask.class);
@@ -143,7 +142,12 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 	public BulkAssessmentDatas getDatas() {
 		return datas;
 	}
-		
+	
+	@Override
+	public Queue getExecutorsQueue() {
+		return Queue.sequential;
+	}
+
 	@Override
 	public void setTask(Task task) {
 		this.task = task;

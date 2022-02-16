@@ -22,10 +22,12 @@ package org.olat.ims.qti21.resultexport;
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -49,6 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21NewExportController extends FormBasicController {
 	
+	private String defaultTitle;
 	private TextElement titleEl;
 	private SingleSelection withPdfEl;
 	
@@ -81,6 +84,7 @@ public class QTI21NewExportController extends FormBasicController {
 		withPdfValues.add(new SelectionValue("wo", translate("export.wo.option"), translate("export.wo.option.desc")));
 		withPdfValues.add(new SelectionValue("with", translate("export.with.option"), translate("export.with.option.desc")));
 		withPdfEl = uifactory.addCardSingleSelectHorizontal("export.with", formLayout, withPdfValues.keys(), withPdfValues.values(), withPdfValues.descriptions(), null);
+		withPdfEl.addActionListener(FormEvent.ONCHANGE);
 		withPdfEl.setElementCssClass("o_radio_cards_lg");
 		withPdfEl.setVisible(pdfModule.isEnabled());
 		withPdfEl.select("wo", true);
@@ -96,17 +100,8 @@ public class QTI21NewExportController extends FormBasicController {
 		}
 		uifactory.addStaticTextElement("export.participants", "export.participants", text, formLayout);
 		
-		String title;
-		String date = Formatter.getInstance(getLocale()).formatDate(ureq.getRequestTimestamp());
-		String[] args = { Integer.toString(numOfUsers), date };
-		if(identities.isAll()) {
-			title = translate("export.title.all", args);
-		} else if (numOfUsers <= 1) {
-			title = translate("export.title.participant", args);
-		} else {
-			title = translate("export.title.participants", args);
-		}
-		titleEl = uifactory.addTextElement("export.title", 64, title, formLayout);
+		defaultTitle = getDefaultTitle(ureq, false);
+		titleEl = uifactory.addTextElement("export.title", 64, defaultTitle, formLayout);
 		titleEl.setMandatory(true);
 		
 		uifactory.addFormSubmitButton("export", formLayout);
@@ -127,9 +122,17 @@ public class QTI21NewExportController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(withPdfEl == source) {
+			updateTitle(ureq, isWithPdfs());
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		if (!identities.isEmpty()) {
-			boolean withPdfs = withPdfEl.isVisible() && "with".equals(withPdfEl.getSelectedKey());
+			boolean withPdfs = isWithPdfs();
 			OLATResource resource = courseEnv.getCourseGroupManager().getCourseResource();
 			String title = titleEl.getValue();
 			String description = buildDescription();
@@ -143,6 +146,44 @@ public class QTI21NewExportController extends FormBasicController {
 		}
 
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private boolean isWithPdfs() {
+		return withPdfEl.isVisible() && "with".equals(withPdfEl.getSelectedKey());
+	}
+
+	private void updateTitle(UserRequest ureq, boolean withPdf) {
+		String  withTitle = getDefaultTitle(ureq, true);
+		String  withoutTitle = getDefaultTitle(ureq, false);
+		String currentTitle = titleEl.getValue();
+		if(!StringHelper.containsNonWhitespace(currentTitle)
+				|| currentTitle.equals(withTitle) || currentTitle.equals(withoutTitle)) {
+			titleEl.setValue(getDefaultTitle(ureq, withPdf));
+		}
+	}
+	
+	private String getDefaultTitle(UserRequest ureq, boolean withPdf) {
+		String date = Formatter.getInstance(getLocale()).formatDate(ureq.getRequestTimestamp());
+		int numOfUsers = identities.getIdentities().size();
+		String[] args = { Integer.toString(numOfUsers), date };
+		
+		String title;
+		if(withPdf) {
+			if(identities.isAll()) {
+				title = translate("export.title.pdf.all", args);
+			} else if (numOfUsers <= 1) {
+				title = translate("export.title.pdf.participant", args);
+			} else {
+				title = translate("export.title.pdf.participants", args);
+			}
+		} else if(identities.isAll()) {
+			title = translate("export.title.all", args);
+		} else if (numOfUsers <= 1) {
+			title = translate("export.title.participant", args);
+		} else {
+			title = translate("export.title.participants", args);
+		}
+		return title;
 	}
 	
 	private String buildDescription() {

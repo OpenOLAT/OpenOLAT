@@ -31,6 +31,8 @@
 		<div class="o_actions">
 		#if($r.isTrue($row.taskRunning) || $r.isTrue($row.taskNew))
 			$r.render($row.cancelButton)
+		#elseif($r.isTrue($row.taskCancelled))
+			## No actions
 		#else
 			$r.render($row.infosButton)
 			$r.render($row.deleteButton)

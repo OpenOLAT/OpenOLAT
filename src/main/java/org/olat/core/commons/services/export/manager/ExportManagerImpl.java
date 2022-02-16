@@ -120,7 +120,7 @@ public class ExportManagerImpl implements ExportManager {
 				if(zipItem instanceof VFSLeaf) {
 					VFSLeaf zipLeaf = (VFSLeaf)zipItem;
 					VFSMetadata metadata = vfsRepositoryService.getMetadataFor(zipLeaf);
-					if(metadata.getSource() == null || !taskKeys.contains(metadata.getSource())) {
+					if(metadata.getSource() != null && !taskKeys.contains(metadata.getSource())) {
 						ExportInfos resultsExport = new ExportInfos(zipLeaf, metadata);
 						exports.add(resultsExport);
 					}

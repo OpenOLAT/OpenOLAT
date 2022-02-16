@@ -40,11 +40,11 @@ import java.util.concurrent.RejectedExecutionException;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
-import org.olat.core.commons.services.taskexecutor.LowPriority;
-import org.olat.core.commons.services.taskexecutor.Sequential;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
+import org.olat.core.commons.services.taskexecutor.TaskRunnable;
+import org.olat.core.commons.services.taskexecutor.TaskRunnable.Queue;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.model.DBSecureRunnable;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
@@ -71,7 +71,9 @@ import org.quartz.SchedulerException;
  */
 public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	private static final Logger log = Tracing.createLoggerFor(TaskExecutorManagerImpl.class);
+	
 	private final ExecutorService taskExecutor;
+	private final ExecutorService externalExecutor;
 	private final ExecutorService sequentialTaskExecutor;
 	private final ExecutorService lowPriorityTaskExecutor;
 	
@@ -85,8 +87,10 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	/**
 	 * [used by spring]
 	 */
-	private TaskExecutorManagerImpl(ExecutorService mpTaskExecutor, ExecutorService sequentialTaskExecutor, ExecutorService lowPriorityTaskExecutor) {
+	private TaskExecutorManagerImpl(ExecutorService mpTaskExecutor, ExecutorService sequentialTaskExecutor,
+			ExecutorService lowPriorityTaskExecutor, ExecutorService externalExecutor) {
 		this.taskExecutor = mpTaskExecutor;
+		this.externalExecutor = externalExecutor;
 		this.sequentialTaskExecutor = sequentialTaskExecutor;
 		this.lowPriorityTaskExecutor = lowPriorityTaskExecutor;
 	}
@@ -118,6 +122,7 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	public void shutdown() {
 		timer.cancel();
 		taskExecutor.shutdownNow();
+		externalExecutor.shutdownNow();
 		sequentialTaskExecutor.shutdownNow();
 		lowPriorityTaskExecutor.shutdownNow();
 	}
@@ -128,10 +133,20 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 		//like outOfMemory or other system errors.
 		Task persistentTask = null;
 		if(task instanceof LongRunnable) {
-			persistentTask = persistentTaskDao.createTask(UUID.randomUUID().toString(), (LongRunnable)task);
+			LongRunnable lRunnable = (LongRunnable)task;
+			persistentTask = persistentTaskDao.createTask(UUID.randomUUID().toString(), lRunnable);
 			dbInstance.commit();
+			
+			if(!lRunnable.isDelayed()) {
+				Queue queue = getExecutorsQueue(lRunnable);
+				processTaskToDo(persistentTask.getKey(), queue, new ArrayList<>());
+			}
 		} else {
-			execute(task, persistentTask, Queue.valueOf(task));
+			Queue queue = Queue.standard;
+			if(task instanceof TaskRunnable) {
+				queue = ((TaskRunnable)task).getExecutorsQueue();
+			}
+			execute(task, persistentTask, queue);
 		}
 	}
 
@@ -139,8 +154,13 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	public void execute(LongRunnable task, Identity creator, OLATResource resource,
 			String resSubPath, Date scheduledDate) {
 
-		persistentTaskDao.createTask(UUID.randomUUID().toString(), task, creator, resource, resSubPath, scheduledDate);
+		Task persistentTask = persistentTaskDao.createTask(UUID.randomUUID().toString(), task, creator, resource, resSubPath, scheduledDate);
 		dbInstance.commit();
+		
+		if(!task.isDelayed()) {
+			Queue queue = getExecutorsQueue(task);
+			processTaskToDo(persistentTask.getKey(), queue, new ArrayList<>());
+		}
 	}
 	
 	private void execute(Runnable task, Task persistentTask, Queue queue) {
@@ -155,6 +175,8 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 				future = sequentialTaskExecutor.submit(safetask);
 			} else if(queue == Queue.lowPriority) {
 				future = lowPriorityTaskExecutor.submit(task);
+			} else if(queue == Queue.external) {
+				future = externalExecutor.submit(task);
 			} else {
 				future = taskExecutor.submit(safetask);
 			}
@@ -188,22 +210,34 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 			for(Long todo:todos) {
 				PersistentTask task = persistentTaskDao.loadTaskById(todo);
 				Runnable runnable = persistentTaskDao.deserializeTask(task);
-				Queue queue = Queue.valueOf(runnable);
+				Queue queue = getExecutorsQueue(runnable);
 				if(!filled.contains(queue)) {
-					PersistentTaskRunnable command = new PersistentTaskRunnable(todo);
-					try {
-						execute(command, null, queue);
-					} catch(RejectedExecutionException e) {
-						log.info("Queue is currently filled");
-						dbInstance.rollbackAndCloseSession();
-						filled.add(queue);
-					}
+					processTaskToDo(todo, queue, filled);
 				}
 			}
 		} catch (Exception e) {
 			// ups, something went completely wrong! We log this but continue next time
 			log.error("Error while executing task todo", e);
 		}		
+	}
+	
+	private void processTaskToDo(Long todo, Queue queue, List<Queue> filled) {
+		PersistentTaskRunnable command = new PersistentTaskRunnable(todo);
+		try {
+			execute(command, null, queue);
+		} catch(RejectedExecutionException e) {
+			log.info("Queue is currently filled");
+			dbInstance.rollbackAndCloseSession();
+			filled.add(queue);
+		}
+	}
+	
+	private Queue getExecutorsQueue(Runnable runnable) {
+		Queue queue = Queue.standard;
+		if(runnable instanceof TaskRunnable) {
+			queue = ((TaskRunnable)runnable).getExecutorsQueue();
+		}
+		return queue;
 	}
 
 	@Override
@@ -296,20 +330,5 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 		timer.schedule(task, delay);
 	}
 	
-	public enum Queue {
-		sequential,
-		lowPriority,
-		standard;
-		
-		public static Queue valueOf(Runnable runnable) {
-			if(runnable instanceof Sequential) {
-				return sequential;
-			}
-			if(runnable instanceof LowPriority) {
-				return lowPriority;
-			}
-			return standard;
-		}
-		
-	}
+
 }
