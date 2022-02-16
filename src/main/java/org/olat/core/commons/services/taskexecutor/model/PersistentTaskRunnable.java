@@ -19,12 +19,15 @@
  */
 package org.olat.core.commons.services.taskexecutor.model;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
+import org.olat.core.commons.services.taskexecutor.TaskEvent;
+import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.CoordinatorManager;
 
 /**
  * 
@@ -38,6 +41,10 @@ public class PersistentTaskRunnable implements Runnable {
 	public PersistentTaskRunnable(Long taskKey) {
 		this.taskKey = taskKey;
 	}
+	
+	public Long getTaskKey() {
+		return taskKey;
+	}
 
 	@Override
 	public void run() {
@@ -48,19 +55,42 @@ public class PersistentTaskRunnable implements Runnable {
 			if(task != null) {
 				task = taskDao.pickTaskForRun(task);
 				if(task != null) {
+					CoordinatorManager.getInstance().getCoordinator().getEventBus()
+						.fireEventToListenersOf(new TaskEvent(TaskEvent.TASK_STARTED, taskKey), TaskExecutorManager.TASK_EVENTS);
+					
 					Runnable runnable = taskDao.deserializeTask(task);
 					if(runnable instanceof TaskAwareRunnable) {
 						((TaskAwareRunnable)runnable).setTask(task);
 					}
 					runnable.run();
-					taskDao.taskDone(task);
+					
+					markAsDone(task);
+					CoordinatorManager.getInstance().getCoordinator().getEventBus()
+						.fireEventToListenersOf(new TaskEvent(TaskEvent.TASK_DONE, taskKey), TaskExecutorManager.TASK_EVENTS);
 				}
 			}
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Throwable e) {
 			DBFactory.getInstance().rollbackAndCloseSession();
 			markAsFailed(task);
-			log.error("Error while running task in a separate thread: " + (task == null ? "NULL" : task.getKey()), e);
+			log.error("Error while running task in a separate thread: {}", (task == null ? "NULL" : task.getKey()), e);
+		}
+	}
+	
+	private void markAsDone(PersistentTask task) {
+		if(task == null) return;
+		try {
+			// remove it from the cache
+			DBFactory.getInstance().getCurrentEntityManager().detach(task);
+
+			PersistentTaskDAO taskDao = CoreSpringFactory.getImpl(PersistentTaskDAO.class);
+			task = taskDao.loadTaskById(task.getKey());
+			if(task != null) {
+				taskDao.taskDone(task);
+				DBFactory.getInstance().commitAndCloseSession();
+			}
+		} catch (Exception e1) {
+			DBFactory.getInstance().rollbackAndCloseSession();
 		}
 	}
 	

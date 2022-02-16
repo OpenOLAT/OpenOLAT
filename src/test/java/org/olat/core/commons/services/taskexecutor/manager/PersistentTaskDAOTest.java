@@ -35,8 +35,10 @@ import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -213,6 +215,50 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		Assert.assertTrue(todos.contains(ptask.getKey()));
 		Assert.assertTrue(todos.contains(ctask.getKey()));
 		Assert.assertFalse(todos.contains(alienTask.getKey()));
+	}
+	
+	@Test
+	public void taskDone() {
+		String taskName = UUID.randomUUID().toString();
+		PersistentTask taskToDo = persistentTaskDao.createTask(taskName, new DummyTask());
+		dbInstance.commitAndCloseSession();
+		
+		PersistentTask doneTask = persistentTaskDao.loadTaskById(taskToDo.getKey());
+		persistentTaskDao.taskDone(doneTask);
+		dbInstance.commitAndCloseSession();
+
+		PersistentTask deletedTask = persistentTaskDao.loadTaskById(doneTask.getKey());
+		Assert.assertNull(deletedTask);
+	}
+	
+	@Test
+	public void taskFailed() {
+		String taskName = UUID.randomUUID().toString();
+		PersistentTask taskToFail = persistentTaskDao.createTask(taskName, new DummyTask());
+		dbInstance.commitAndCloseSession();
+		
+		PersistentTask failedTask = persistentTaskDao.loadTaskById(taskToFail.getKey());
+		persistentTaskDao.taskFailed(failedTask);
+		dbInstance.commitAndCloseSession();
+		
+		TaskStatus status = persistentTaskDao.getStatus(failedTask);
+		Assert.assertNotNull(status);
+		Assert.assertEquals(TaskStatus.failed, status);
+	}
+	
+	@Test
+	public void taskCancelled() {
+		String taskName = UUID.randomUUID().toString();
+		PersistentTask taskToCancel = persistentTaskDao.createTask(taskName, new DummyTask());
+		dbInstance.commitAndCloseSession();
+		
+		PersistentTask cancelledTask = persistentTaskDao.loadTaskById(taskToCancel.getKey());
+		persistentTaskDao.taskCancelled(cancelledTask);
+		dbInstance.commitAndCloseSession();
+		
+		TaskStatus status = persistentTaskDao.getStatus(cancelledTask);
+		Assert.assertNotNull(status);
+		Assert.assertEquals(TaskStatus.cancelled, status);
 	}
 	
 	@Test
@@ -495,6 +541,60 @@ public class PersistentTaskDAOTest extends OlatTestCase  {
 		Assert.assertNotNull(againEditableTask);
 		Assert.assertEquals(TaskStatus.edition, againEditableTask.getStatus());
 		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
+	public void updateProgress() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("extask-21");
+	
+		PersistentTask task = persistentTaskDao.createTask("Update progress" + CodeHelper.getRAMUniqueID(), new DummyTask(), creator,
+				re.getOlatResource(), "progress", null);
+		Assert.assertNotNull(task);
+		dbInstance.commitAndCloseSession();
+		
+		//update
+		persistentTaskDao.updateProgressTask(task, 0.1, "check");
+		dbInstance.commitAndCloseSession();
+		
+		PersistentTask reloadedTask = persistentTaskDao.loadTaskById(task.getKey());
+		Assert.assertNotNull(reloadedTask.getProgress());
+		Assert.assertEquals(0.1, reloadedTask.getProgress().doubleValue(), 0.0001d);
+		Assert.assertEquals("check", reloadedTask.getCheckpoint());
+	}
+	
+	@Test
+	public void getProgress() {
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("extask-22");
+	
+		PersistentTask task = persistentTaskDao.createTask("Update progress" + CodeHelper.getRAMUniqueID(), new DummyTask(), creator,
+				resource, "progress", null);
+		Assert.assertNotNull(task);
+		dbInstance.commitAndCloseSession();
+		
+		//update
+		persistentTaskDao.updateProgressTask(task, 0.1, "check");
+		dbInstance.commitAndCloseSession();
+		
+		Double progress = persistentTaskDao.getProgress(task);
+		Assert.assertNotNull(progress);
+		Assert.assertEquals(0.1, progress.doubleValue(), 0.0001d);
+	}
+	
+	@Test
+	public void getStatus() {
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("extask-23");
+	
+		PersistentTask task = persistentTaskDao.createTask("Update progress" + CodeHelper.getRAMUniqueID(), new DummyTask(), creator,
+				resource, "progress", null);
+		Assert.assertNotNull(task);
+		dbInstance.commitAndCloseSession();
+		
+		TaskStatus status = persistentTaskDao.getStatus(task);
+		Assert.assertNotNull(status);
+		Assert.assertEquals(TaskStatus.newTask, status);
 	}
 	
 	public static class DummyTask implements Runnable, Serializable {

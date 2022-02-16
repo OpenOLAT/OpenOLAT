@@ -28,7 +28,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -49,10 +48,8 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="extaskmodifier")
 @Table(name="o_ex_task_modifier")
-@NamedQueries({
-	@NamedQuery(name="loadTaskModifierByKey", query="select taskmod from extaskmodifier taskmod where taskmod.key=:modifierKey"),
-	@NamedQuery(name="loadTaskModifiers", query="select distinct(taskmod.modifier) from extaskmodifier taskmod where taskmod.task.key=:taskKey")
-})
+@NamedQuery(name="loadTaskModifierByKey", query="select taskmod from extaskmodifier taskmod where taskmod.key=:modifierKey")
+@NamedQuery(name="loadTaskModifiers", query="select distinct(taskmod.modifier) from extaskmodifier taskmod where taskmod.task.key=:taskKey")
 public class PersistentTaskModifier implements CreateInfo, Persistable {
 
 	private static final long serialVersionUID = 7218761635450794698L;

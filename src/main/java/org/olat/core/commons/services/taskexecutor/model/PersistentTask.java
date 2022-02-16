@@ -20,7 +20,6 @@
 package org.olat.core.commons.services.taskexecutor.model;
 
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -40,9 +39,7 @@ import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
-import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
@@ -58,7 +55,7 @@ import org.olat.resource.OLATResourceImpl;
 @NamedQuery(name="loadTaskByKey", query="select task from extask where task.key=:taskKey")
 @NamedQuery(name="loadTaskByResource", query="select task from extask task where task.resource.key=:resourceKey")
 @NamedQuery(name="taskToDos", query="select task.key from extask task where (task.statusStr='newTask' or (task.statusStr='inWork' and task.executorNode=:executorNode and task.executorBootId!=:executorBootId)) and (task.scheduledDate is null or task.scheduledDate <=:currentDate)")
-public class PersistentTask implements Task, CreateInfo, ModifiedInfo, Persistable {
+public class PersistentTask implements Task, Persistable {
 	
 	private static final long serialVersionUID = 800884851125711998L;
 
@@ -113,6 +110,11 @@ public class PersistentTask implements Task, CreateInfo, ModifiedInfo, Persistab
 	@Column(name="e_executor_boot_id", nullable=true, insertable=true, updatable=true)
 	private String executorBootId;
 	
+	@Column(name="e_progress", nullable=true, insertable=true, updatable=true)
+	private Double progress;
+	@Column(name="e_checkpoint", nullable=true, insertable=true, updatable=true)
+	private String checkpoint;
+	
 	@Column(name="e_task", nullable=false, insertable=true, updatable=true)
 	private String task;
 
@@ -151,7 +153,8 @@ public class PersistentTask implements Task, CreateInfo, ModifiedInfo, Persistab
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	@Override
 	public Date getScheduledDate() {
 		return scheduledDate;
 	}
@@ -186,17 +189,13 @@ public class PersistentTask implements Task, CreateInfo, ModifiedInfo, Persistab
 		this.statusBeforeEditStr = statusBeforeEditStr;
 	}
 
+	@Override
 	public Identity getCreator() {
 		return creator;
 	}
 
 	public void setCreator(Identity creator) {
 		this.creator = creator;
-	}
-
-	@Override
-	public List<Identity> getModifiers() {
-		return null;
 	}
 
 	public OLATResource getResource() {
@@ -229,6 +228,24 @@ public class PersistentTask implements Task, CreateInfo, ModifiedInfo, Persistab
 
 	public void setExecutorBootId(String executorBootId) {
 		this.executorBootId = executorBootId;
+	}
+	
+	@Override
+	public Double getProgress() {
+		return progress;
+	}
+
+	public void setProgress(Double progress) {
+		this.progress = progress;
+	}
+
+	@Override
+	public String getCheckpoint() {
+		return checkpoint;
+	}
+
+	public void setCheckpoint(String checkpoint) {
+		this.checkpoint = checkpoint;
 	}
 
 	public String getTask() {

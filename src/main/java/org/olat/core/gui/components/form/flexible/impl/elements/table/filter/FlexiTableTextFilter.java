@@ -103,6 +103,11 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 	}
 	
 	@Override
+	public List<String> getHumanReadableValues() {
+		return getValues();
+	}
+	
+	@Override
 	public void reset() {
 		value = null;
 	}

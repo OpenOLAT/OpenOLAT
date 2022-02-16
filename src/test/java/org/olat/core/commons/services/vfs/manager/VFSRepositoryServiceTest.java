@@ -45,11 +45,13 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.test.JunitTestHelper;
@@ -269,6 +271,50 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 			log.error("", e);
 		}
 		Assert.assertEquals("A little comment", comment);
+	}
+	
+	@Test
+	public void deleteExpiredfiles() {
+		Date now = new Date();
+		String uuid = UUID.randomUUID().toString();
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		
+		// An expired file
+		String expiredFilename = "expired_" + uuid + ".txt";
+		VFSLeaf expiredLeaf = testContainer.createChildLeaf(expiredFilename);
+		copyTestTxt(expiredLeaf, "test.txt");
+		VFSMetadata expiredMetaInfo = expiredLeaf.getMetaInfo();
+		expiredMetaInfo.setExpirationDate(DateUtils.addDays(now, -2));
+		vfsRepositoryService.updateMetadata(expiredMetaInfo);
+		
+		// Expire in future
+		String notYetExpiredFilename = "notexpired_" + uuid + ".txt";
+		VFSLeaf notYetExpiredLeaf = testContainer.createChildLeaf(notYetExpiredFilename);
+		copyTestTxt(notYetExpiredLeaf, "test.txt");
+		VFSMetadata notYetExpiredMetaInfo = notYetExpiredLeaf.getMetaInfo();
+		notYetExpiredMetaInfo.setExpirationDate(DateUtils.addDays(now, 2));
+		vfsRepositoryService.updateMetadata(notYetExpiredMetaInfo);
+		
+		// Not expiration  in future
+		String noExpirationFilename = "noexpiration_" + uuid + ".txt";
+		VFSLeaf notExpirationLeaf = testContainer.createChildLeaf(noExpirationFilename);
+		copyTestTxt(notExpirationLeaf, "test.txt");
+		VFSMetadata notExpirationMetaInfo = notExpirationLeaf.getMetaInfo();
+		vfsRepositoryService.updateMetadata(notExpirationMetaInfo);
+
+		dbInstance.commitAndCloseSession();
+		
+		((VFSRepositoryServiceImpl)vfsRepositoryService).deleteExpiredFiles();
+		
+		// Check the files
+		VFSItem expired = testContainer.resolve(expiredFilename);
+		Assert.assertNull(expired);
+		VFSItem notYetExpired = testContainer.resolve(notYetExpiredFilename);
+		Assert.assertNotNull(notYetExpired);
+		Assert.assertTrue(notYetExpired.exists());
+		VFSItem noExpiration = testContainer.resolve(noExpirationFilename);
+		Assert.assertNotNull(noExpiration);
+		Assert.assertTrue(noExpiration.exists());
 	}
 	
 	private VFSLeaf createFile() {

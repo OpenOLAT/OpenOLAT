@@ -26,9 +26,9 @@ import java.util.List;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.gui.components.progressbar.ProgressDelegate;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.group.area.BGArea;
 import org.olat.group.model.BGRepositoryEntryRelation;

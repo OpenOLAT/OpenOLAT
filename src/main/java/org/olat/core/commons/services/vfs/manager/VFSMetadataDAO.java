@@ -227,6 +227,20 @@ public class VFSMetadataDAO {
 			.getResultList();
 	}
 	
+	public List<VFSMetadata> getExpiredMetadatas(Date reference) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select metadata from filemetadata metadata")
+		  .append(" left join fetch metadata.fileInitializedBy as fileInitializedBy")
+		  .append(" left join fetch fileInitializedBy.user as fileInitializedByUser")
+		  .append(" left join fetch metadata.licenseType as licenseType")
+		  .append(" where metadata.expirationDate<=:referenceDate");
+
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), VFSMetadata.class)
+			.setParameter("referenceDate", reference, TemporalType.TIMESTAMP)
+			.getResultList();
+	}
+	
 	/**
 	 * This is an exact match to find the direct children of a specific
 	 * directory.

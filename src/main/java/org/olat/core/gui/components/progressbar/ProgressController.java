@@ -25,7 +25,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.async.ProgressDelegate;
 
 /**
  * A controller which use a procentual progress bar filled at 100% at start.

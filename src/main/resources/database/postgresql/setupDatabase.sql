@@ -1857,6 +1857,7 @@ create table o_vfs_metadata (
    f_licensor varchar(4000),
    f_locked_date timestamp,
    f_locked bool default false,
+   f_expiration_date timestamp,
    f_revision_nr bigint default 0 not null,
    f_revision_temp_nr bigint,
    f_revision_comment varchar(32000),
@@ -2732,6 +2733,8 @@ create table o_ex_task (
    e_task text not null,
    e_scheduled timestamp,
    e_status_before_edit varchar(16),
+   e_progress decimal,
+   e_checkpoint varchar(255),
    fk_resource_id int8,
    fk_identity_id int8,
    primary key (id)
@@ -4336,6 +4339,7 @@ create index idx_fmeta_to_parent_idx on o_vfs_metadata (fk_parent);
 create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path varchar_pattern_ops);
 create index f_m_file_idx on o_vfs_metadata (f_relative_path,f_filename);
 create index f_m_uuid_idx on o_vfs_metadata (f_uuid);
+create index f_exp_date_idx on o_vfs_metadata (f_expiration_date);
 
 alter table o_vfs_thumbnail add constraint fthumb_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 create index idx_fthumb_to_meta_idx on o_vfs_thumbnail (fk_metadata);

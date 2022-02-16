@@ -19,6 +19,9 @@
  */
 package org.olat.core.commons.services.taskexecutor.model;
 
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.logging.Tracing;
@@ -27,13 +30,43 @@ import org.olat.core.logging.Tracing;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class DBSecureRunnable implements Runnable {
+public class DBSecureRunnable implements Runnable, Future<Void> {
 	
 	private static final Logger log = Tracing.createLoggerFor(DBSecureRunnable.class);
 	private final Runnable task;
 	
+    private volatile boolean cancelled;
+    private volatile boolean done;
+	
 	public DBSecureRunnable(Runnable task) {
 		this.task = task;
+	}
+	
+	@Override
+	public boolean cancel(boolean mayInterruptIfRunning) {
+		boolean retval = !isDone();
+        cancelled = true;
+        return retval;
+	}
+
+	@Override
+	public boolean isCancelled() {
+		return cancelled;
+	}
+
+	@Override
+	public boolean isDone() {
+		return done || cancelled;
+	}
+
+	@Override
+	public Void get() {
+		return null;
+	}
+
+	@Override
+	public Void get(long timeout, TimeUnit unit) {
+		return null;
 	}
 
 	@Override
@@ -46,4 +79,8 @@ public class DBSecureRunnable implements Runnable {
 			log.error("Error while running task in a separate thread.", e);
 		}
 	}
+
+
+	
+	
 }

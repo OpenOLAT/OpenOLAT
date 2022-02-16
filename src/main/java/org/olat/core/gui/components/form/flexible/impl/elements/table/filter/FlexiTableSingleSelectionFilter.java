@@ -75,6 +75,20 @@ public class FlexiTableSingleSelectionFilter extends FlexiTableFilter implements
 		}
 		return List.of();
 	}
+	
+	
+
+	@Override
+	public List<String> getHumanReadableValues() {
+		if(value != null) {
+			SelectionValue selectionValue = getSelectionValue(value);
+			String valForLabel = selectionValue == null ? value : selectionValue.getValue();
+			if(StringHelper.containsNonWhitespace(valForLabel)) {
+				return List.of(StringHelper.unescapeHtml(valForLabel));
+			}
+		}
+		return List.of();
+	}
 
 	@Override
 	public void reset() {

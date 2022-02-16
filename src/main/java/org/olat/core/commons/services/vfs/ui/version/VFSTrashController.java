@@ -55,6 +55,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressController;
+import org.olat.core.gui.components.progressbar.ProgressDelegate;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -65,7 +66,6 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.core.util.async.ProgressDelegate;
 import org.olat.core.util.vfs.VFSItem;
 import org.springframework.beans.factory.annotation.Autowired;
 

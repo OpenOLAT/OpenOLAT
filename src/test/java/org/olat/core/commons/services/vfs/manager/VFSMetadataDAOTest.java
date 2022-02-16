@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -197,6 +198,27 @@ public class VFSMetadataDAOTest extends OlatTestCase {
 			Assert.assertTrue(vfsMetadata.getCreationDate().compareTo(createdAtOlder) <= 0);
 			Assert.assertTrue(vfsMetadata.getLastModified().compareTo(editedAtNewer) >= 0);
 			Assert.assertTrue(vfsMetadata.getLastModified().compareTo(editedAtOlder) <= 0);
+		}
+	}
+	
+	@Test
+	public void getExpiredMetadatas() {
+		String uuid = UUID.randomUUID().toString();
+		String relativePath = "/bcroot/hello/world/";
+		String filename = uuid + ".pdf";
+		String uri = "file:///Users/frentix/Documents/bcroot/hello/world/image.jpg";;
+		VFSMetadata metadata = vfsMetadataDao.createMetadata(uuid, relativePath, filename, new Date(), 18l, false, uri, "file", null);
+		dbInstance.commitAndCloseSession();
+		metadata.setExpirationDate(DateUtils.addDays(new Date(), -1));
+		Assert.assertNotNull(metadata);
+		
+		final Date now = new Date();
+		List<VFSMetadata> expiredList = vfsMetadataDao.getExpiredMetadatas(now);
+		dbInstance.commitAndCloseSession();
+		
+		for (VFSMetadata vfsMetadata : expiredList) {
+			Assert.assertNotNull(vfsMetadata.getExpirationDate());
+			Assert.assertTrue(vfsMetadata.getExpirationDate().compareTo(now) <= 0);
 		}
 	}
 }

@@ -1,0 +1,9 @@
+<fieldset>
+	<legend>$r.translate("export.list")</legend>
+	#if($r.visible("delete.all"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("delete.all")
+	</div>
+	#end
+	$r.render("list")
+</fieldset>

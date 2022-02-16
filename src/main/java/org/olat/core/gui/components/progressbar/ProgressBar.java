@@ -61,6 +61,8 @@ public class ProgressBar extends AbstractComponent {
 	private String info;
 	private String cssClass;
 	
+	private ProgressBarCallback progressCallback;
+	
 	public ProgressBar(String name) {
 		super(name);
 		setDomReplacementWrapperRequired(false);
@@ -242,6 +244,22 @@ public class ProgressBar extends AbstractComponent {
 	public void setCssClass(String cssClass) {
 		this.cssClass = cssClass;
 		this.setDirty(true);
+	}
+
+	public ProgressBarCallback getProgressCallback() {
+		return progressCallback;
+	}
+
+	public void setProgressCallback(ProgressBarCallback progressCallback) {
+		this.progressCallback = progressCallback;
+	}
+
+	@Override
+	public boolean isDirty() {
+		if(progressCallback != null) {
+			return true;
+		}
+		return super.isDirty();
 	}
 
 	@Override

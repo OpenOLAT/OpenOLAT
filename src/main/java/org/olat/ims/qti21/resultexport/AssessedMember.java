@@ -76,7 +76,7 @@ public class AssessedMember {
 	}
 	
 	public String getPassedIcon() {
-		return QTI21ResultsExportMediaResource.createPassedIcons(passed);
+		return QTI21ResultsExport.createPassedIcons(passed);
 	}
 	
 	public String getScoreString() {

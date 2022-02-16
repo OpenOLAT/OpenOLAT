@@ -104,7 +104,8 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 	private static List<String> convert(Object val) {
 		if(val == null) {
 			return null;
-		} else if(val instanceof List) {
+		}
+		if(val instanceof List) {
 			@SuppressWarnings("unchecked")
 			List<String> vals = (List<String>)val;
 			return new ArrayList<>(vals);
@@ -134,6 +135,21 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 	@Override
 	public String getDecoratedLabel(boolean withHtml) {
 		return getDecoratedLabel(value, withHtml);
+	}
+
+	@Override
+	public List<String> getHumanReadableValues() {
+		List<String> hrValues = new ArrayList<>();
+		if(value != null && !value.isEmpty()) {
+			for(String val:value) {
+				SelectionValue selectionValue = getSelectionValue(val);
+				String valForLabel = selectionValue == null ? val : selectionValue.getValue();
+				if(StringHelper.containsNonWhitespace(valForLabel)) {
+					hrValues.add(StringHelper.unescapeHtml(valForLabel));
+				}
+			}
+		}
+		return hrValues;
 	}
 
 	@Override

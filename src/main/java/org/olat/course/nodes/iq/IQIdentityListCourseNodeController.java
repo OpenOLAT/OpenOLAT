@@ -33,12 +33,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -53,8 +52,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -79,7 +76,8 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
-import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
+import org.olat.ims.qti21.resultexport.IdentitiesList;
+import org.olat.ims.qti21.resultexport.QTI21ExportResultsController;
 import org.olat.ims.qti21.ui.QTI21ResetDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewController;
@@ -113,7 +111,6 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	
 	private FormLink extraTimeButton;
 	private FormLink exportResultsButton;
-	private FormLink exportResultsWithPdfButton;
 	private FormLink statsButton;
 	private FormLink validateButton;
 	private FormLink correctionButton;
@@ -121,21 +118,19 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private FormLink resetButton;
 	
 	private FormLink bulkExportResultsButton;
-	private FormLink bulkExportResultsWithPdfButton;
 	private FormLink bulkStatsButton;
 	private FormLink bulkCorrectionButton;
 
 	private Controller retrieveConfirmationCtr;
 	private QTI21ResetDataController resetDataCtrl;
 	private ConfirmExtraTimeController extraTimeCtrl;
+	private QTI21ExportResultsController exportResultsCtrl;
 	private ValidationXmlSignatureController validationCtrl;
 	private CorrectionOverviewController correctionIdentitiesCtrl;
 	private ConfirmReopenAssessmentEntriesController reopenForCorrectionCtrl;
 	
 	private boolean modelDirty = false;
 
-	@Autowired
-	private PdfModule pdfModule;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -232,28 +227,12 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			bulkStatsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
 			tableEl.addBatchButton(bulkStatsButton);
 
-			boolean pdfEnabled = pdfModule.isEnabled();
-			exportResultsButton = uifactory.addFormLink("button.export", formLayout, pdfEnabled ? Link.LINK : Link.BUTTON);
+			exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
 			exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
-			if(pdfEnabled) {
-				exportResultsWithPdfButton = uifactory.addFormLink("button.export.pdf", formLayout, Link.LINK);
-				exportResultsWithPdfButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
-				
-				DropdownItem exportResults = uifactory.addDropdownMenu("button.export.menu", null, formLayout, getTranslator());
-				exportResults.setOrientation(DropdownOrientation.normal);
-				exportResults.addElement(exportResultsButton);
-				exportResults.addElement(exportResultsWithPdfButton);
-			}
 			
 			bulkExportResultsButton = uifactory.addFormLink("bulk.export", "button.export", null, formLayout, Link.BUTTON);
 			bulkExportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 			tableEl.addBatchButton(bulkExportResultsButton);
-			
-			if(pdfModule.isEnabled()) {
-				bulkExportResultsWithPdfButton = uifactory.addFormLink("bulk.export.pdf", "button.export.pdf", null, formLayout, Link.BUTTON);
-				bulkExportResultsWithPdfButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
-				tableEl.addBatchButton(bulkExportResultsWithPdfButton);
-			}
 		}
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
@@ -287,7 +266,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 	
 	private boolean isTestRunning() {
-		Identities identities = getIdentities(false);
+		IdentitiesList identities = getIdentities(false);
 		if(isTestQTI21()) {
 			return qtiService.isRunningAssessmentTestSession(getCourseRepositoryEntry(),
 					courseNode.getIdent(), getReferencedRepositoryEntry(), identities.getIdentities());
@@ -441,25 +420,13 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 
 	@Override
-	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-		if(fiSrc != bulkExportResultsButton && fiSrc != bulkExportResultsWithPdfButton
-				&& fiSrc != exportResultsButton  && fiSrc != exportResultsWithPdfButton) {
-			super.propagateDirtinessToContainer(fiSrc, fe);
-		}
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(extraTimeButton == source) {
 			doConfirmExtraTime(ureq);
 		} else if(exportResultsButton == source) {
-			doExportResults(ureq, false);
-		} else if(exportResultsWithPdfButton == source) {
-			doExportResults(ureq, true);
+			doExportResults(ureq);
 		} else if(bulkExportResultsButton == source) {
-			doBulkExportResults(ureq, false);
-		} else if(bulkExportResultsWithPdfButton == source) {
-			doBulkExportResults(ureq, true);
+			doBulkExportResults(ureq);
 		} else if(statsButton == source) {
 			doLaunchStatistics(ureq);
 		}  else if(bulkStatsButton == source) {
@@ -509,7 +476,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	 * @param allIfAdmin Admin. have the possibility to see not participants.
 	 * @return A list of identities
 	 */
-	private Identities getIdentities(boolean allIfAdmin) {
+	private IdentitiesList getIdentities(boolean allIfAdmin) {
 		AssessmentToolOptions asOptions = getOptions();
 		boolean withNonParticipants = false;
 		List<Identity> identities = asOptions.getIdentities();
@@ -523,31 +490,42 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				identities = ScoreAccountingHelper.loadParticipants(getCourseEnvironment());
 			}
 		}
-		return new Identities(identities, withNonParticipants);
+		
+		List<String> filters = getHumanReadableFilterValues();
+		return new IdentitiesList(identities, filters, withNonParticipants, true);
 	}
 	
-	private void doExportResults(UserRequest ureq, boolean withPdfs) {
-		Identities identities = getIdentities(true);
-		doExportResults(ureq, identities, withPdfs);
+	private List<String> getHumanReadableFilterValues() {
+		List<String> values = new ArrayList<>();
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		for(FlexiTableFilter filter:filters) {
+			if(filter instanceof FlexiTableExtendedFilter) {
+				List<String> hrVal = ((FlexiTableExtendedFilter)filter).getHumanReadableValues();
+				if(hrVal != null && !hrVal.isEmpty()) {
+					values.addAll(hrVal);
+				}
+			}
+		}
+		return values;
+	}
+	
+	private void doExportResults(UserRequest ureq) {
+		IdentitiesList identities = getIdentities(true);
+		doExportResults(ureq, identities);
 	}
 
-	private void doBulkExportResults(UserRequest ureq, boolean withPdfs) {
+	private void doBulkExportResults(UserRequest ureq) {
 		List<Identity> identities = getSelectedIdentities(row -> true);
-		doExportResults(ureq, new Identities(identities, false), withPdfs);
+		doExportResults(ureq, new IdentitiesList(identities, null, false, false));
 	}
 	
-	private void doExportResults(UserRequest ureq, Identities identities, boolean withPdfs) {
+	private void doExportResults(UserRequest ureq, IdentitiesList identities) {
 		if (!identities.isEmpty()) {
-			MediaResource resource;
 			CourseEnvironment courseEnv = getCourseEnvironment();
-			if(isTestQTI21()) {
-				resource = new QTI21ResultsExportMediaResource(courseEnv, identities.getIdentities(),
-						identities.isWithNonParticipants(), withPdfs, (IQTESTCourseNode)courseNode, "",
-						getLocale(), getIdentity(), getWindowControl());
-			} else {
-				resource = new NotFoundMediaResource();
-			}
-			ureq.getDispatchResult().setResultingMediaResource(resource);
+			exportResultsCtrl = new QTI21ExportResultsController(ureq, getWindowControl(),
+					courseEnv, (IQTESTCourseNode)courseNode, identities, getAssessmentCallback());
+			listenTo(exportResultsCtrl);
+			stackPanel.pushController(translate("export.results.crumb"), exportResultsCtrl);
 		} else {
 			showWarning("error.no.assessed.users");
 		}
@@ -794,29 +772,6 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				c = start2.compareTo(start1);
 			}
 			return c;
-		}
-	}
-	
-	private static class Identities {
-		
-		private final List<Identity> identities;
-		private final boolean withNonParticipants;
-		
-		public Identities(List<Identity> identities, boolean withNonParticipants) {
-			this.identities = identities;
-			this.withNonParticipants = withNonParticipants;
-		}
-
-		public List<Identity> getIdentities() {
-			return identities;
-		}
-
-		public boolean isWithNonParticipants() {
-			return withNonParticipants;
-		}
-		
-		public boolean isEmpty() {
-			return identities == null || identities.isEmpty();
 		}
 	}
 }

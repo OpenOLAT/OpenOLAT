@@ -96,6 +96,10 @@ public class ProgressBarItem extends FormItemImpl {
 		component.setInfo(info);
 	}
 
+	public void setProgressCallback(ProgressBarCallback progressCallback) {
+		component.setProgressCallback(progressCallback);
+	}
+
 	@Override
 	protected void rootFormAvailable() {
 		//

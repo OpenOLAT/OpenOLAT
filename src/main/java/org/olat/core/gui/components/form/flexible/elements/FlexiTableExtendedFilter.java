@@ -61,6 +61,8 @@ public interface FlexiTableExtendedFilter {
 
 	public void setValue(Object val);
 	
+	public List<String> getHumanReadableValues();
+	
 	
 	public void reset();
 	

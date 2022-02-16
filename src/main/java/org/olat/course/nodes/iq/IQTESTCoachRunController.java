@@ -108,8 +108,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		
 		//Participants
 		participantsPanel = new TooledStackedPanel("participantsPanel", getTranslator(), this);
-		participantsPanel.setToolbarAutoEnabled(false);
-		participantsPanel.setToolbarEnabled(true);
+		participantsPanel.setToolbarAutoEnabled(true);
+		participantsPanel.setToolbarEnabled(false);
 		participantsPanel.setShowCloseLink(true, false);
 		participantsPanel.setCssClass("o_segment_toolbar o_block_top");
 		

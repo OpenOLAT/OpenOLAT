@@ -29,8 +29,8 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -38,16 +38,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.pdf.PdfService;
+import org.olat.core.commons.services.taskexecutor.TaskProgressCallback;
+import org.olat.core.commons.services.taskexecutor.manager.DefaultTaskProgressCallback;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -58,7 +59,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -97,16 +97,22 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class QTI21ResultsExportMediaResource implements MediaResource {
-
-	private static final Logger log = Tracing.createLoggerFor(QTI21ResultsExportMediaResource.class);
+/**
+ * 
+ * Initial date: 1 févr. 2022<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class QTI21ResultsExport {
+	
+	private static final Logger log = Tracing.createLoggerFor(QTI21ResultsExport.class);
 	private static final AtomicLong counter = new AtomicLong(0l);
 	
 	private static final String DATA = "userdata/";
 	private static final String SEP = File.separator;
+	
 	private final SimpleDateFormat assessmentDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final SimpleDateFormat displayDateFormat;
-	
 	private VelocityHelper velocityHelper;
 	
 	private List<Identity> identities;
@@ -124,6 +130,9 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	private final Identity identity;
 	private final WindowControl windowControl;
 	
+	private String startPoint;
+	private volatile boolean cancelled = false;
+	
 	@Autowired
 	private PdfService pdfService;
 	@Autowired
@@ -133,7 +142,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	@Autowired
 	private MapperService mapperService;
 	
-	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities,
+	public QTI21ResultsExport(CourseEnvironment courseEnv, List<Identity> identities,
 			boolean withNonParticipants, boolean withPdfs, QTICourseNode courseNode, String archivePath, Locale locale,
 			Identity identity, WindowControl windowControl) {
 		CoreSpringFactory.autowireObject(this);
@@ -153,72 +162,57 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 
 		velocityHelper = VelocityHelper.getInstance();
 		entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
+		translator = Util.createPackageTranslator(QTI21ResultsExport.class, locale);
 		exportFolderName = ZipUtil.concat(archivePath, translator.translate("export.folder.name"));
 	}
-
-	@Override
-	public long getCacheControlDuration() {
-		return 0;
-	}
-
-	@Override
-	public boolean acceptRanges() {
-		return false;
-	}
-
-	@Override
-	public String getContentType() {
-		return "application/zip";
-	}
-
-	@Override
-	public Long getSize() {
-		return null;
-	}
-
-	@Override
-	public InputStream getInputStream() {
-		return null;
-	}
-
-	@Override
-	public Long getLastModified() {
-		return null;
-	}
-
-	@Override
-	public void prepare(HttpServletResponse hres) {
-		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName() + "_" + entry.getDisplayname())
-				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
-				+ ".zip";
-		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
-		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
-		hres.setHeader("Content-Description", urlEncodedLabel);
-
-		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
-			zout.setLevel(9);
-			exportTestResults(zout);
-			for(RepositoryEntry testEntry:testEntries) {
-				exportExcelResults(testEntry, zout);
-			}
-		} catch (Exception e) {
-			log.error("Unknown error while assessment result resource export", e);
+	
+	public boolean isCancelled() {
+		if(cancelled) return true;
+		
+		boolean interrupted = Thread.interrupted();
+		if(interrupted) {
+			cancelled = true;
 		}
+		return interrupted;
 	}
 	
+	public void setStartPoint(String point) {
+		this.startPoint = point;
+	}
+	
+	public void exportTestResults(ZipOutputStream zout) throws IOException {
+		exportTestResults(zout, new DefaultTaskProgressCallback());
+	}
+
 	/**
 	 * Adds the result export to existing zip stream.
 	 *
 	 * @throws IOException
 	 */
-	public void exportTestResults(ZipOutputStream zout) throws IOException {
-		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
+	public void exportTestResults(ZipOutputStream zout, TaskProgressCallback progressCallback) throws IOException {
+		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout, progressCallback);
 		
-		//convert velocity template to zip entry
-		String membersHTML = createMemberListingHTML(assessedMembers);	
-		convertToZipEntry(zout, exportFolderName + "/index.html", membersHTML);
-		
+		if(!isCancelled()) {
+			//convert velocity template to zip entry
+			String membersHTML = createMemberListingHTML(assessedMembers);	
+			convertToZipEntry(zout, exportFolderName + "/index.html", membersHTML);
+			
+			exportStaticMaterials(zout);
+	
+			//materials
+			for(RepositoryEntry testEntry:testEntries) {
+				copyTestMaterials(testEntry, zout);
+			}
+		}
+	}
+	
+	public void exportExcelResults(ZipOutputStream zout) {
+		for(RepositoryEntry testEntry:testEntries) {
+			exportExcelResults(testEntry, zout);
+		}
+	}
+	
+	private void exportStaticMaterials(ZipOutputStream zout) {
 		//Copy resource files or file trees to export file tree 
 		File theme = new File(WebappHelper.getContextRealPath("/static/themes/light/theme.css"));
 		ZipUtil.addFileToZip(exportFolderName + "/css/offline/qti/theme.css", theme, zout);
@@ -228,11 +222,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		ZipUtil.addDirectoryToZip(fontawesome.toPath(), exportFolderName + "/css/font-awesome", zout);
 		File qtiJs = new File(WebappHelper.getContextRealPath("/static/js/jquery/"));
 		ZipUtil.addDirectoryToZip(qtiJs.toPath(), exportFolderName + "/js/jquery", zout);
-
-		//materials
-		for(RepositoryEntry testEntry:testEntries) {
-			copyTestMaterials(testEntry, zout);
-		}
 	}
 	
 	private void exportExcelResults(RepositoryEntry testEntry, ZipOutputStream zout) {
@@ -253,6 +242,118 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
 				+ ".xlsx";
 		qaf.exportCourseElement(exportFolderName + "/" + label, zout);
+	}
+	
+	private List<AssessedMember> createAssessedMembersDetail(ZipOutputStream zout, TaskProgressCallback progressCallback) throws IOException {
+		AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
+		List<AssessmentEntry> assessmentEntries = assessmentManager.getAssessmentEntries(courseNode);
+		Map<Identity,AssessmentEntry> assessmentEntryMap = assessmentEntries.stream()
+				.collect(Collectors.toMap(AssessmentEntry::getIdentity, aEntry -> aEntry, (u, v) -> u)) ;
+
+		int numOfIdentities = identities.size();
+		Collections.sort(identities, new IdentityComparator());
+		List<AssessedMember> assessedMembers = new ArrayList<>(numOfIdentities);
+		
+		boolean savedPointPassed = !StringHelper.containsNonWhitespace(startPoint);
+		if(savedPointPassed) {
+			progressCallback.setProgress(0.0f, "start-details");
+		}
+
+		for(int i=0; i<numOfIdentities; i++) {
+			Identity assessedIdentity = identities.get(i);
+			if(isCancelled() || assessedIdentity == null || assessedIdentity.getStatus() == null || assessedIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
+				continue;
+			}
+			
+			double progress;
+			if(i == 0) {
+				progress = 0.0d;
+			} else {
+				progress = i / (double)numOfIdentities;
+			}
+			savedPointPassed = savedPointPassed || assessedIdentity.getKey().toString().equals(startPoint);
+			if(savedPointPassed) {
+				progressCallback.setProgress(progress, assessedIdentity.getKey().toString());
+			}
+			AssessmentEntry assessmentEntry = assessmentEntryMap.get(assessedIdentity);
+			AssessedMember member = createAssessedMemberDetail(zout, assessedIdentity, assessmentEntry, savedPointPassed);
+			assessedMembers.add(member);	
+		}
+		return assessedMembers;
+	}
+	
+	private AssessedMember createAssessedMemberDetail(ZipOutputStream zout, Identity assessedIdentity,
+			AssessmentEntry assessmentEntry, boolean saveFiles) throws IOException {
+		AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
+		
+		String nickname = assessedIdentity.getUser().getNickName();
+		String firstName = assessedIdentity.getUser().getFirstName();
+		String lastNameOrAnonymous = assessedIdentity.getUser().getLastName();
+		if(!StringHelper.containsNonWhitespace(lastNameOrAnonymous)) {
+			lastNameOrAnonymous = "anonym";
+		}
+		String nameOrAnonymous = lastNameOrAnonymous;
+		if(StringHelper.containsNonWhitespace(firstName)) {
+			nameOrAnonymous += "_" + firstName;
+		}
+		if(StringHelper.containsNonWhitespace(nickname)) {
+			nameOrAnonymous += "_" + nickname;
+		} else {
+			nameOrAnonymous += "_" + assessedIdentity.getKey();
+		}
+		
+		String names = StringHelper.transformDisplayNameToFileSystemName(nameOrAnonymous);
+		String idDir = exportFolderName + "/" + DATA + names;
+		idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
+		if(saveFiles) {
+			createZipDirectory(zout, idDir);
+		}
+		
+		//content of single assessed member		
+		List<ResultDetail> assessments = createResultDetail(assessedIdentity, zout, idDir);
+		List<File> assessmentDocuments = assessmentManager.getIndividualAssessmentDocuments(courseNode, assessedIdentity);
+		
+		Boolean passed = null;
+		BigDecimal score = null;
+		String obligationString = null;
+		if(assessmentEntry != null) {
+			passed = assessmentEntry.getPassed();
+			score = assessmentEntry.getScore();
+			if (assessmentEntry.getObligation() != null && assessmentEntry.getObligation().getCurrent() != null) {
+				switch (assessmentEntry.getObligation().getCurrent()) {
+				case mandatory:
+					obligationString = translator.translate("obligation.mandatory"); break;
+				case optional:
+					obligationString = translator.translate("obligation.optional"); break;
+				case excluded:
+					obligationString = translator.translate("obligation.excluded"); break;
+				default:
+					break;
+				}
+			}
+		}
+		
+		String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";
+		String memberEmail = userManager.getUserDisplayEmail(assessedIdentity, ureq.getLocale());
+		AssessedMember member = new AssessedMember(nickname, lastNameOrAnonymous, firstName,
+				memberEmail, assessments.size(), passed, score, obligationString, linkToUser);
+		
+		if(saveFiles) {
+			try {
+				String singleUserInfoHTML = createResultListingHTML(assessments, assessmentDocuments, member);
+				convertToZipEntry(zout, idDir + "index.html", singleUserInfoHTML);
+				
+				//assessment documents
+				for(File document:assessmentDocuments) {
+					String assessmentDocDir = idDir + "Assessment_documents/" + document.getName();
+					ZipUtil.addFileToZip(assessmentDocDir, document, zout);
+				}
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		
+		return member;
 	}
 	
 	private List<ResultDetail> createResultDetail(Identity assessedIdentity, ZipOutputStream zout, String idDir) throws IOException {
@@ -338,83 +439,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		}
 	}
 	
-	private List<AssessedMember> createAssessedMembersDetail(ZipOutputStream zout) throws IOException {
-		AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
-		List<AssessmentEntry> assessmentEntries = assessmentManager.getAssessmentEntries(courseNode);
-		Map<Identity,AssessmentEntry> assessmentEntryMap = new HashMap<>();
-		for(AssessmentEntry assessmentEntry:assessmentEntries) {
-			assessmentEntryMap.put(assessmentEntry.getIdentity(), assessmentEntry);
-		}
-
-		List<AssessedMember> assessedMembers = new ArrayList<>();
-		for(Identity assessedIdentity : identities) {
-			if(assessedIdentity == null || assessedIdentity.getStatus() == null || assessedIdentity.getStatus().equals(Identity.STATUS_DELETED)) {
-				continue;
-			}
-			String nickname = assessedIdentity.getUser().getNickName();
-			String firstName = assessedIdentity.getUser().getFirstName();
-			String lastNameOrAnonymous = assessedIdentity.getUser().getLastName();
-			if(!StringHelper.containsNonWhitespace(lastNameOrAnonymous)) {
-				lastNameOrAnonymous = "anonym";
-			}
-			String nameOrAnonymous = lastNameOrAnonymous;
-			if(StringHelper.containsNonWhitespace(firstName)) {
-				nameOrAnonymous += "_" + firstName;
-			}
-			if(StringHelper.containsNonWhitespace(nickname)) {
-				nameOrAnonymous += "_" + nickname;
-			} else {
-				nameOrAnonymous += "_" + assessedIdentity.getKey();
-			}
-			
-			String names = StringHelper.transformDisplayNameToFileSystemName(nameOrAnonymous);
-			String idDir = exportFolderName + "/" + DATA + names;
-			idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
-			createZipDirectory(zout, idDir);				
-			
-			//content of single assessed member		
-			List<ResultDetail> assessments = createResultDetail(assessedIdentity, zout, idDir);
-			List<File> assessmentDocuments = assessmentManager.getIndividualAssessmentDocuments(courseNode, assessedIdentity);
-			
-			Boolean passed = null;
-			BigDecimal score = null;
-			String obligationString = null;
-			if(assessmentEntryMap.containsKey(assessedIdentity)) {
-				AssessmentEntry assessmentEntry = assessmentEntryMap.get(assessedIdentity);
-				passed = assessmentEntry.getPassed();
-				score = assessmentEntry.getScore();
-				if (assessmentEntry.getObligation() != null && assessmentEntry.getObligation().getCurrent() != null) {
-					switch (assessmentEntry.getObligation().getCurrent()) {
-					case mandatory:
-						obligationString = translator.translate("obligation.mandatory"); break;
-					case optional:
-						obligationString = translator.translate("obligation.optional"); break;
-					case excluded:
-						obligationString = translator.translate("obligation.excluded"); break;
-					default:
-						break;
-					}
-				}
-			}
-			
-			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";
-			String memberEmail = userManager.getUserDisplayEmail(assessedIdentity, ureq.getLocale());
-			AssessedMember member = new AssessedMember(nickname, lastNameOrAnonymous, firstName,
-					memberEmail, assessments.size(), passed, score, obligationString, linkToUser);
-			
-			String singleUserInfoHTML = createResultListingHTML(assessments, assessmentDocuments, member);
-			convertToZipEntry(zout, idDir + "index.html", singleUserInfoHTML);
-			assessedMembers.add(member);	
-			
-			//assessment documents
-			for(File document:assessmentDocuments) {
-				String assessmentDocDir = idDir + "Assessment_documents/" + document.getName();
-				ZipUtil.addFileToZip(assessmentDocDir, document, zout);
-			}
-		}
-		return assessedMembers;
-	}
-	
 	private void copyTestMaterials(RepositoryEntry testEntry, ZipOutputStream zout) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
@@ -463,7 +487,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		ctx.put("hasDocuments", Boolean.valueOf(!assessmentDocs.isEmpty()));
 		ctx.put("hasPdfResults", Boolean.valueOf(withPdfs));
 
-		String template = FileUtils.load(QTI21ResultsExportMediaResource.class
+		String template = FileUtils.load(QTI21ResultsExport.class
 				.getResourceAsStream("_content/qtiListing.html"), "utf-8");
 
 		return velocityHelper.evaluateVTL(template, ctx);
@@ -478,7 +502,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		ctx.put("assessedMembers", assessedMembers);
 		ctx.put("hasObligation", Boolean.valueOf(NodeAccessType.of(courseEnv).getType().equals(LearningPathNodeAccessProvider.TYPE)));
 
-		String template = FileUtils.load(QTI21ResultsExportMediaResource.class
+		String template = FileUtils.load(QTI21ResultsExport.class
 				.getResourceAsStream("_content/qtiUserlisting.html"), "utf-8");
 
 		return velocityHelper.evaluateVTL(template, ctx);
@@ -510,10 +534,23 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		dir = dir.endsWith(SEP) ? dir : dir + SEP;
 		zout.putNextEntry(new ZipEntry(dir));
 		zout.closeEntry();		
-	} 
+	}
+	
+	private static class IdentityComparator implements Comparator<Identity> {
 
-	@Override
-	public void release() {
-		//
+		@Override
+		public int compare(Identity o1, Identity o2) {
+			int c;
+			if(o1 == null && o2 == null) {
+				c = 0;
+			} else if(o1 != null && o2 == null) {
+				c = -1;
+			} else if(o1 == null && o2 != null) {
+				c = 1;
+			} else {
+				c = o1.getKey().compareTo(o2.getKey());
+			}
+			return c;
+		}
 	}
 }

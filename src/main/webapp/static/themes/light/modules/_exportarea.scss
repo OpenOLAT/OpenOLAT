@@ -1,0 +1,55 @@
+.o_export_card {
+	display: flex;
+	position: relative;
+	height: 95px;
+	padding: $o-export-area-rowelem-space-md;
+	border-bottom: 1px solid grey;
+	
+	.o_export_type {
+		font-size: 65px;
+		line-height: 80px;
+		text-align: center;
+		height: 80px;
+		flex: 0 0 80px;
+		box-sizing: content-box;
+	}
+	
+	.o_export_meta {
+		flex: 1 1 auto;
+		position: relative;
+		padding: 0 10px;
+		min-width: 0;
+		
+		>span {
+			font-size: 90%;
+			color: $o-export-area-meta-color;
+		}
+	}
+	
+	.o_export_expiration.o_labeled {
+		border-color: $alert-warning-text;
+		color: $alert-warning-text;
+		background-color: $alert-warning-bg;
+		text-transform: none;
+		font-weight: normal;
+		display: inline-block;
+		position: absolute;
+		bottom: 0;
+		right: 0;
+	}
+	
+	.o_export_actions {
+		flex: 0 0 auto;
+		overflow: hidden;
+		width: 120px;
+		font-size: 150%;
+		
+		.o_actions {
+			position: absolute;
+			display: block;
+			bottom: 8px;
+			right: 0;
+			white-space: nowrap;
+		}
+	}
+}

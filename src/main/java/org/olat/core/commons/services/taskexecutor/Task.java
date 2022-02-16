@@ -20,9 +20,10 @@
 package org.olat.core.commons.services.taskexecutor;
 
 import java.util.Date;
-import java.util.List;
 
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
@@ -30,7 +31,7 @@ import org.olat.core.id.Identity;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Task {
+public interface Task extends CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
 	
@@ -40,6 +41,13 @@ public interface Task {
 	
 	public Identity getCreator();
 	
-	public List<Identity> getModifiers();
+	/**
+	 * Progress from 0.0 to 1.0 to exprim the progress.
+	 * 
+	 * @return Null if unkown or a value between 0.0 and 1.0
+	 */
+	public Double getProgress();
+	
+	public String getCheckpoint();
 
 }

@@ -57,7 +57,7 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 		List<Tool> centerTools = getVisibleTools(panel, Align.center);
 		
 		if(panel.isToolbarEnabled() || (panel.isToolbarAutoEnabled()
-				&& (!leftTools.isEmpty() || !rightTools.isEmpty() || !centerTools.isEmpty() || !segmentsTools.isEmpty()))) {
+				&& (!leftTools.isEmpty() || !rightTools.isEmpty() || !rightEdgeTools.isEmpty() || !centerTools.isEmpty() || !segmentsTools.isEmpty()))) {
 			sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='o_tools_container'><div class='container-fluid'>");
 
 			renderTools(leftTools, renderer, toolBar.getSlot(Align.left), sb, translator, args);

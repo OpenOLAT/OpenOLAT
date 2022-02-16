@@ -32,6 +32,7 @@ import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.resource.OLATResource;
@@ -119,6 +120,8 @@ public class PersistentTaskDAO {
 	public synchronized PersistentTask pickTaskForRun(PersistentTask task) {
 		if(task != null) {// remove it from the cache
 			dbInstance.getCurrentEntityManager().detach(task);
+		} else {
+			return null;
 		}
 
 		task = dbInstance.getCurrentEntityManager()
@@ -139,7 +142,7 @@ public class PersistentTaskDAO {
 					task.setExecutorBootId(WebappHelper.getBootId());
 					task = dbInstance.getCurrentEntityManager().merge(task);
 				}
-			} else if(TaskStatus.edition.equals(task.getStatus())) {
+			} else if(TaskStatus.edition.equals(task.getStatus()) || TaskStatus.cancelled.equals(task.getStatus())) {
 				task = null;
 			}
 		}
@@ -182,6 +185,39 @@ public class PersistentTaskDAO {
 		}
 		dbInstance.commit();
 		return mtask;
+	}
+	
+	public PersistentTask updateProgressTask(Task task, Double progress, String checkpoint) {
+		PersistentTask ptask = dbInstance.getCurrentEntityManager()
+				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		if(ptask != null) {
+			ptask.setLastModified(new Date());
+			ptask.setProgress(progress);
+			ptask.setCheckpoint(checkpoint);
+			dbInstance.commit();
+		}
+		return ptask;
+	}
+	
+	public Double getProgress(Task task) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select task.progress from extask task where task.key=:taskKey");
+		List<Double> progressList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Double.class)
+				.setParameter("taskKey", task.getKey())
+				.getResultList();
+		return progressList != null && progressList.size() == 1 ? progressList.get(0) : null;
+	}
+	
+	public TaskStatus getStatus(Task task) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select task.statusStr from extask task where task.key=:taskKey");
+		List<String> progressList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setParameter("taskKey", task.getKey())
+				.getResultList();
+		return progressList != null && progressList.size() == 1 && StringHelper.containsNonWhitespace(progressList.get(0))
+				? TaskStatus.valueOf(progressList.get(0)) : null;
 	}
 	
 	public PersistentTask updateTask(Task task, Serializable runnableTask, Identity modifier, Date scheduledDate) {
@@ -252,6 +288,12 @@ public class PersistentTaskDAO {
 		dbInstance.commit();
 	}
 	
+	public void taskCancelled(PersistentTask task) {
+		task = dbInstance.getCurrentEntityManager()
+				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
+		task.setStatus(TaskStatus.cancelled);
+		dbInstance.commit();
+	}
 	
 	protected static String toXML(Serializable task) {
 		return xstream.toXML(task);

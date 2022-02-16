@@ -130,6 +130,10 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	private String licenseText;
 	@Column(name="f_licensor", nullable=true, insertable=true, updatable=true)
 	private String licensor;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="f_expiration_date", nullable=true, insertable=true, updatable=true)
+	private Date expirationDate;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="f_locked_date", nullable=true, insertable=true, updatable=true)
@@ -460,6 +464,16 @@ public class VFSMetadataImpl implements Persistable, VFSMetadata {
 	@Override
 	public void setLicensor(String licensor) {
 		this.licensor = licensor;
+	}
+
+	@Override
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+
+	@Override
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
 	}
 
 	@Override

@@ -17,22 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.util.async;
+package org.olat.core.commons.services.taskexecutor;
 
 /**
  * 
- * Initial date: 28.11.2012<br>
+ * Initial date: 15 févr. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface ProgressDelegate {
+public interface TaskProgressCallback {
 	
-	public void setMax(float max);
-	
-	public void setActual(float value);
-	
-	public void setInfo(String message);
-	
-	public void finished();
+	public void setProgress(double progress, String checkpoint);
 
 }

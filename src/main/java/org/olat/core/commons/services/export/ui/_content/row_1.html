@@ -1,0 +1,41 @@
+#if($r.isNotEmpty($row.month))
+	<h4>$row.month</h4>
+#end
+
+#set($creatorFullName = $row.creatorFullName)
+#set($creationDate = $r.formatDate($row.creationDate))
+#set($expirationInDays = $row.expirationInDays)
+<div class="o_export_card">
+	<div class="o_export_type">
+		<span><i class="o_icon o_filetype_zip"> </i></span>
+	</div>
+	<div class="o_export_meta">
+		#if($r.isTrue($row.taskRunning) || $r.isTrue($row.taskNew) || $r.isTrue($row.taskCancelled))
+			<h5>$row.title#if(${row.isTaskNew()}) $r.translate("row.new")#elseif(${row.isTaskCancelled()}) $r.translate("row.cancelled")#end</h5>
+			<span>$r.translate("row.running.by", $creationDate, $creatorFullName)</span><br>
+			$r.render($row.progressBar)
+		#else
+			<h5>$r.render($row.downloadLink)</h5>
+			<span>$r.translate("row.created.by", $creatorFullName)</span><br>
+			<span>$creationDate | $r.translate("row.zip") | $r.formatBytes($row.archiveSize)</span>
+			#if($r.isNotEmpty($expirationInDays) && $expirationInDays == 0)
+				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.today", $expirationInDays)</span>
+			#elseif($r.isNotEmpty($expirationInDays) && $expirationInDays == 1)
+				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.day", $expirationInDays)</span>
+			#elseif($r.isNotEmpty($expirationInDays) && $expirationInDays > 1)
+				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.days", $expirationInDays)</span>
+			#end
+		#end
+	</div>
+	<div class="o_export_actions">
+		<div class="o_actions">
+		#if($r.isTrue($row.taskRunning) || $r.isTrue($row.taskNew))
+			$r.render($row.cancelButton)
+		#else
+			$r.render($row.infosButton)
+			$r.render($row.deleteButton)
+			$r.render($row.downloadButton)
+		#end
+		</div>
+	</div>
+</div>

@@ -31,5 +31,6 @@ public enum TaskStatus {
 	edition,
 	failed,
 	done,
-	ignore
+	ignore,
+	cancelled
 }

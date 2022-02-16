@@ -31,6 +31,8 @@ import java.util.TimerTask;
 import java.util.concurrent.Executor;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.resource.OLATResource;
 
 /**
@@ -49,6 +51,8 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frnetix.com
  */
 public interface TaskExecutorManager extends Executor {
+	
+	public static final OLATResourceable TASK_EVENTS = OresHelper.createOLATResourceableType("ExTask");
 	
 	public void execute(LongRunnable task, Identity creator, OLATResource resource,
 			String resSubPath, Date scheduledDate);
@@ -81,11 +85,21 @@ public interface TaskExecutorManager extends Executor {
 	 */
 	public void updateAndReturn(Task task, LongRunnable runnableTask, Identity modifier, Date scheduledDate);
 	
+	public void updateProgress(Task task, Double progress, String checkpoint);
+	
+	public Double getProgress(Task task);
+	
+	public TaskStatus getStatus(Task task);
+	
 	public <T extends Runnable> T getPersistedRunnableTask(Task task, Class<T> type);
 	
 	public List<Task> getTasks(OLATResource resource);
 	
+	public List<Task> getTasks(OLATResource resource, String resSubPath);
+	
 	public List<Identity> getModifiers(Task task);
+	
+	public void cancel(Task task);
 	
 	public void delete(Task task);
 	

@@ -50,6 +50,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -100,7 +101,7 @@ import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
-import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
+import org.olat.ims.qti21.resultexport.QTI21ResultsExport;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
@@ -497,7 +498,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				// 2a) create export resource
 				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
 				boolean withPdfs = options != null && options.getDoer() != null && options.getWindowControl() != null && options.isWithPdfs();
-				new QTI21ResultsExportMediaResource(courseEnv, identities, true, withPdfs, this, archivePath, locale,
+				Translator translator = Util.createPackageTranslator(QTI21ResultsExport.class, locale);
+				String exportFolderName = ZipUtil.concat(archivePath, translator.translate("export.folder.name"));
+				new QTI21ResultsExport(courseEnv, identities, true, withPdfs, this, exportFolderName, locale,
 						options == null ? null : options.getDoer(), options == null ? null : options.getWindowControl())
 					.exportTestResults(exportStream);
 				// excel results

@@ -50,7 +50,13 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 			RenderResult renderResult, String[] args) {
 
 		ProgressBar ubar = (ProgressBar) source;
-		boolean renderLabels = (args == null) ? true : false;
+		if(ubar.getProgressCallback() != null) {
+			ProgressBarCallback callback = ubar.getProgressCallback();
+			ubar.setActual(callback.getActual());
+			ubar.setMax(callback.getMax());
+		}
+		
+		boolean renderLabels = (args == null);
 		float percent = 100;
 		if (!ubar.getIsNoMax()) {
 			percent = 100 * ubar.getActual() / ubar.getMax();

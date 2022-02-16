@@ -1969,6 +1969,7 @@ create table o_vfs_metadata (
    f_licensor text(4000),
    f_locked_date timestamp,
    f_locked bool default false,
+   f_expiration_date datetime,
    f_migrated varchar(12),
    f_m_path_keys varchar(1024),
    fk_locked_identity bigint,
@@ -2710,6 +2711,8 @@ create table o_ex_task (
    e_task mediumtext not null,
    e_scheduled datetime,
    e_ressubpath varchar(2048),
+   e_progress float(65,30),
+   e_checkpoint varchar(255),
    fk_resource_id bigint,
    fk_identity_id bigint,
    primary key (id)
@@ -4372,6 +4375,7 @@ alter table o_vfs_metadata add constraint fmeta_to_parent_idx foreign key (fk_pa
 create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path(255));
 create index f_m_file_idx on o_vfs_metadata (f_relative_path(255),f_filename(255));
 create index f_m_uuid_idx on o_vfs_metadata (f_uuid);
+create index f_exp_date_idx on o_vfs_metadata (f_expiration_date);
 
 alter table o_vfs_thumbnail add constraint fthumb_to_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 

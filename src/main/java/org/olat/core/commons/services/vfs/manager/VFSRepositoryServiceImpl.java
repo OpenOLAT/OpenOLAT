@@ -177,7 +177,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				metadataDao.updateMetadata(file.length(), lastModified, event.getRelativePath(), event.getFilename());
 				dbInstance.commit();
 			} catch (Exception e) {
-				log.error("Cannot update file size of: " + event.getRelativePath() + " " + event.getFilename(), e);
+				log.error("Cannot update file size of: {} {}", event.getRelativePath(), event.getFilename(), e);
 			}
 		}
 	}
@@ -187,7 +187,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			metadataDao.increaseDownloadCount(event.getRelativePath(), event.getFilename());
 			dbInstance.commit();
 		} catch (Exception e) {
-			log.error("Cannot increment file downloads of: " + event.getRelativePath() + " " + event.getFilename(), e);
+			log.error("Cannot increment file downloads of: {} {}", event.getRelativePath(), event.getFilename(), e);
 		}
 	}
 	
@@ -317,9 +317,6 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	
 	@Override
 	public VFSContextInfo getContextInfoFor(String relativePath, Locale locale) {
-		if (relativePath == null) {
-			new VFSContextInfoUnknown("No Relative Path");	
-		}
 		for (VFSContextInfoResolver resolver : vfsContextInfoResolver) {
 			VFSContextInfo contextInfo = resolver.resolveContextInfo(relativePath, locale);
 			if (contextInfo != null) {
@@ -476,6 +473,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		Identity initializedBy = metadataExists? vfsMetadata.getFileInitializedBy(): savedBy;
 		metadataDao.updateMetadata(leaf.getSize(), lastModified, initializedBy, savedBy, relativePath, leaf.getName());
 		dbInstance.commitAndCloseSession();
+	}
+	
+	protected void deleteExpiredFiles() {
+		List<VFSMetadata> expiredList = metadataDao.getExpiredMetadatas(new Date());
+		for(VFSMetadata metadata:expiredList) {
+			VFSItem item = getItemFor(metadata);
+			if(item instanceof VFSLeaf) {
+				((VFSLeaf)item).deleteSilently();
+			}
+		}
 	}
 
 	@Override

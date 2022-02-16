@@ -31,7 +31,10 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
@@ -75,6 +78,7 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	private DB dbInstance;
 	private Scheduler scheduler;
 	private PersistentTaskDAO persistentTaskDao;
+	private ConcurrentMap<Long, Future<?>> taskKeyToFuture = new ConcurrentHashMap<>();
 	
 	private Timer timer = new Timer();
 
@@ -146,12 +150,20 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 			}
 			
 			DBSecureRunnable safetask = new DBSecureRunnable(task);
+			Future<?> future = null;
 			if(queue == Queue.sequential) {
-				sequentialTaskExecutor.submit(safetask);
+				future = sequentialTaskExecutor.submit(safetask);
 			} else if(queue == Queue.lowPriority) {
-				lowPriorityTaskExecutor.submit(task);
+				future = lowPriorityTaskExecutor.submit(task);
 			} else {
-				taskExecutor.submit(safetask);
+				future = taskExecutor.submit(safetask);
+			}
+			if(future != null) {
+				if(persistentTask instanceof PersistentTask) {
+					taskKeyToFuture.put(((PersistentTask)persistentTask).getKey(), future);
+				} else if(task instanceof PersistentTaskRunnable) {
+					taskKeyToFuture.put(((PersistentTaskRunnable)task).getTaskKey(), future);
+				}
 			}
 		} else {
 			log.error("taskExecutor is not initialized (taskExecutor=null). Do not call 'runTask' before TaskExecutorModule is initialized.");
@@ -198,6 +210,11 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	public List<Task> getTasks(OLATResource resource) {
 		return persistentTaskDao.findTasks(resource);
 	}
+	
+	@Override
+	public List<Task> getTasks(OLATResource resource, String resSubPath) {
+		return persistentTaskDao.findTasks(resource, resSubPath);
+	}
 
 	@Override
 	public List<Identity> getModifiers(Task task) {
@@ -228,6 +245,35 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	@Override
 	public void updateAndReturn(Task task, LongRunnable runnableTask, Identity modifier, Date scheduledDate) {
 		persistentTaskDao.updateTask(task, runnableTask, modifier, scheduledDate);
+	}
+
+	@Override
+	public void updateProgress(Task task, Double progress, String checkpoint) {
+		persistentTaskDao.updateProgressTask(task, progress, checkpoint);
+	}
+
+	@Override
+	public Double getProgress(Task task) {
+		if(task == null || task.getKey() == null) return null;
+		return persistentTaskDao.getProgress(task);
+	}
+
+	@Override
+	public TaskStatus getStatus(Task task) {
+		if(task == null || task.getKey() == null) return null;
+		return persistentTaskDao.getStatus(task);
+	}
+
+	@Override
+	public void cancel(Task task) {
+		if(task instanceof PersistentTask) {
+			PersistentTask pTask = (PersistentTask)task;
+			Future<?> future = taskKeyToFuture.get(pTask.getKey());
+			if(future != null) {
+				future.cancel(true);
+			}
+			persistentTaskDao.taskCancelled(pTask);
+		}
 	}
 
 	@Override

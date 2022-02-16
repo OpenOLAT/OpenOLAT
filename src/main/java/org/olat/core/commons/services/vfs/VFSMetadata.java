@@ -59,6 +59,8 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	
 	public Identity getFileInitializedBy();
 	
+	public void setFileInitializedBy(Identity identity);
+	
 	public long getFileSize();
 	
 	public boolean isDirectory();
@@ -145,6 +147,10 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	public String getLicensor();
 	
 	public void setLicensor(String licensor);
+	
+	public Date getExpirationDate();
+	
+	public void setExpirationDate(Date expiration);
 
 	/**
 	 * @return true if the file is locked (VFS).
