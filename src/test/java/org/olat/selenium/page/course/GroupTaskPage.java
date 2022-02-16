@@ -69,13 +69,11 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage confirmOptionalTask() {
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By confirmBy = By.cssSelector("div.o_sel_course_gta_confirm_optional_task button.btn-primary");
 		OOGraphene.waitElement(confirmBy, browser);
 		browser.findElement(confirmBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
