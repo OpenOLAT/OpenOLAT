@@ -337,6 +337,24 @@ public class SiteDefinitions extends AbstractSpringModule {
 		return sites;
 	}
 	
+	public boolean isSiteEnabled(Class<? extends SiteDefinition> type) {
+		Map<String,SiteDefinition> allDefList = getAndInitSiteDefinitionList();
+		for(Map.Entry<String,SiteDefinition> siteDefEntry:allDefList.entrySet()) {
+			String id = siteDefEntry.getKey();
+			SiteDefinition siteDef = siteDefEntry.getValue();
+			if(siteDef.getClass().isAssignableFrom(type)) {
+				if(siteDef.isFeatureEnabled()) {
+					if(siteConfigMap.containsKey(id)) {
+						return siteConfigMap.get(id).isEnabled();
+					} else if(siteDef.isEnabled()) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
 	public Map<String,SiteDefinition> getAllSiteDefinitionsList() {
 		Map<String,SiteDefinition> allDefList = getAndInitSiteDefinitionList();
 		return new HashMap<>(allDefList);

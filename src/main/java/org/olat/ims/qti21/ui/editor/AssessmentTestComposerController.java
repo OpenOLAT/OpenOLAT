@@ -68,6 +68,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
+import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -132,6 +133,7 @@ import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.site.QuestionPoolSiteDef;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.repository.RepositoryEntry;
@@ -210,6 +212,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private SiteDefinitions sitesModule;
 	@Autowired
 	private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
 	
@@ -327,9 +331,13 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		addItemTools.addComponent(new Dropdown.Spacer("sep-import"));
 		//import
-		importFromPoolLink = LinkFactory.createToolLink("import.pool", translate("tools.import.qpool"), this, "o_mi_qpool_import");
-		importFromPoolLink.setDomReplacementWrapperRequired(false);
-		addItemTools.addComponent(importFromPoolLink);
+		boolean questionPoolEnabled = sitesModule.isSiteEnabled(QuestionPoolSiteDef.class);
+		if(questionPoolEnabled) {
+			importFromPoolLink = LinkFactory.createToolLink("import.pool", translate("tools.import.qpool"), this, "o_mi_qpool_import");
+			importFromPoolLink.setDomReplacementWrapperRequired(false);
+			addItemTools.addComponent(importFromPoolLink);
+		}
+		
 		importFromTableLink = LinkFactory.createToolLink("import.table", translate("tools.import.table"), this, "o_mi_table_import");
 		importFromTableLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
 		importFromTableLink.setDomReplacementWrapperRequired(false);
@@ -363,8 +371,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		copyLink.setVisible(!restrictedEdit);
 		changeItemDropDown.addComponent(copyLink);
 		
-		exportToPoolLink = LinkFactory.createToolLink("export.pool", translate("tools.export.qpool"), this, "o_icon_table");
-		changeItemDropDown.addComponent(exportToPoolLink);
+		if(questionPoolEnabled) {
+			exportToPoolLink = LinkFactory.createToolLink("export.pool", translate("tools.export.qpool"), this, "o_icon_table");
+			changeItemDropDown.addComponent(exportToPoolLink);
+		}
 		
 		// main layout
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, mainVC, "at" + testEntry.getKey());			
