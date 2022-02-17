@@ -111,7 +111,7 @@ public class ScormMainManager {
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl,
 			boolean showMenu, File cpRoot, Long scormResourceId, String courseId,
 			String lessonMode, String creditMode, String assessableType, boolean activate,
-			boolean fullWindow, boolean attemptsIncremented, boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
+			ScormDisplayEnum fullWindow, boolean attemptsIncremented, boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
 		
 		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, cpRoot,
 				scormResourceId, courseId, lessonMode, creditMode, assessableType, activate, fullWindow,

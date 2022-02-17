@@ -31,6 +31,7 @@ public class DeliveryOptions implements Cloneable, Serializable {
 	private static final long serialVersionUID = 4863839055413222066L;
 	
 	public static final String CONFIG_HEIGHT_AUTO = "auto";
+	public static final String CONFIG_HEIGHT_IGNORE = "ignore";
 	
 	private Boolean inherit;
 	private Boolean standardMode;

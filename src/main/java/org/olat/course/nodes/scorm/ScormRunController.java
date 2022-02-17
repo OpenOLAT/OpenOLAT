@@ -67,6 +67,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormCPManifestTreeModel;
 import org.olat.modules.scorm.ScormConstants;
+import org.olat.modules.scorm.ScormDisplayEnum;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.events.FinishEvent;
@@ -298,8 +299,7 @@ public class ScormRunController extends BasicController implements GenericEventL
 		// closes / reopens the cp from the same CPRuncontroller instance)
 
 		boolean showMenu = config.getBooleanSafe(ScormEditController.CONFIG_SHOWMENU, true);
-		final boolean fullWindow = config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW, true);
-
+		final ScormDisplayEnum fullWindow = ScormDisplayEnum.fromConfiguration(config);
 		if (isPreview) {
 			scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 					cpRoot, null, null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,

@@ -10,7 +10,7 @@
 		<iframe name="$frameId" class="o_iframe_rel" id="$frameId" src="${baseURI}/${currentURI}" frameborder="0" height="$iframeHeight" style="min-height:${iframeHeight}px" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
 	#end
 	
-	#if($adjustAutoHeight)
+	#if($r.isTrue($adjustAutoHeight))
 		<script>
 		## Init the iFrame to the max height possible.
 		jQuery(function() {b_resizeIframeToMainMaxHeight("$frameId");});

@@ -211,6 +211,9 @@ public class IFrameDisplayController extends BasicController implements GenericE
 				|| options.getHeight() == null) {
 			myContent.contextPut("iframeHeight", 600); // used as fallback
 			myContent.contextPut("adjustAutoHeight", Boolean.TRUE);
+		} else if(DeliveryOptions.CONFIG_HEIGHT_IGNORE.equals(options.getHeight())) {
+			myContent.contextPut("iframeHeight", 600);
+			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);	
 		} else {
 			myContent.contextPut("iframeHeight", options.getHeight());
 			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);

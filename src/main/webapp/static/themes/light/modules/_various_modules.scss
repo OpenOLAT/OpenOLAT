@@ -162,6 +162,44 @@ ul.o_dropdown {
 	&.o_scorm_not_attempted { background: none; }
 }
 
+body.o_scorm_full_width {
+	.o_toolbar {
+		margin: 10px 0;
+	}
+	
+	div.o_container_offcanvas {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	
+	#o_main_wrapper #o_toplink {
+		display: none;
+	}
+	
+	.o_scorm {
+	
+		.o_iframedisplay {
+			margin: 0;
+			padding: 0;
+			overflow:hidden;
+			
+			>iframe {
+				display: block;
+				border: none;
+				height:100%;
+				width:100%;
+				position: fixed;
+				top: 47px;
+				bottom:0;
+				left:0;
+				right:0;
+				padding-bottom: 47px;
+				min-height:600px
+			}
+		}
+	}
+}
+
 /* Empty state in various modules */
 .o_empty_state {
 	text-align: center;

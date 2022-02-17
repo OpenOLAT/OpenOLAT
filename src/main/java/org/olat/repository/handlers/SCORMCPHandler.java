@@ -51,6 +51,7 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.scorm.ScormConstants;
+import org.olat.modules.scorm.ScormDisplayEnum;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.ScormRuntimeController;
@@ -193,7 +194,7 @@ public class SCORMCPHandler extends FileHandler {
 					File cpRoot = FileResourceManager.getInstance().unzipFileResource(res);
 					return CoreSpringFactory.getImpl(ScormMainManager.class).createScormAPIandDisplayController(uureq, wwControl, true, cpRoot,
 							res.getResourceableId(), null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-							null, false, false, false, reSecurity.isEntryAdmin(), null);
+							null, false, ScormDisplayEnum.standard, false, reSecurity.isEntryAdmin(), null);
 			});
 	}
 	

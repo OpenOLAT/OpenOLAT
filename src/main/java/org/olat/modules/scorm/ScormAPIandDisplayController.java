@@ -100,8 +100,6 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private Link nextScoBottom;
 	private Link previousScoTop;
 	private Link previousScoBottom;
-	private ListPanel scoTopButtons;
-	private ListPanel scoBottomButtons;
 	
 	private String username;
 	private String scorm_lesson_mode;
@@ -131,7 +129,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu,
 			File cpRoot, Long scormResourceId, String courseIdNodeId, String lesson_mode, String credit_mode,
-			String assessableType, boolean activate, boolean fullWindow, boolean attemptsIncremented,
+			String assessableType, boolean activate, ScormDisplayEnum fullWindow, boolean attemptsIncremented,
 			boolean radomizeDelivery, DeliveryOptions deliveryOptions) {
 		super(ureq, wControl);
 		
@@ -208,6 +206,9 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 				&& packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();
 		}
+		if(deliveryOptions != null && fullWindow == ScormDisplayEnum.fullWidthHeight) {
+			deliveryOptions.setHeight(DeliveryOptions.CONFIG_HEIGHT_IGNORE);
+		}
 		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres, deliveryOptions, true, radomizeDelivery);
 		listenTo(iframeCtr);
 		displayContent.put("contentpackage", iframeCtr.getInitialComponent());
@@ -223,8 +224,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		if (activate) {
 			LayoutMain3ColsBackController ctr = new LayoutMain3ColsBackController(ureq, getWindowControl(), (showMenu ? menuTree : null), displayContent, "scorm" + scormResourceId);
 			ctr.setDeactivateOnBack(false);
-			if(fullWindow) {
+			if(fullWindow == ScormDisplayEnum.fullWindow) {
 				ctr.setAsFullscreen();
+			} else if(fullWindow == ScormDisplayEnum.fullWidthHeight) {
+				ctr.setAsFullscreen();
+				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_full_width");
 			}
 			columnLayoutCtr = ctr;
 		} else {
@@ -255,10 +259,10 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		previousScoBottom = LinkFactory.createCustomLink("previousScoBottom", "previoussco", "", Link.NONTRANSLATED | Link.BUTTON, displayContent, this);
 		previousScoBottom.setIconLeftCSS("o_icon o_icon_previous_page");
 		
-		scoTopButtons = new ListPanel("scoTopButtons", "o_scorm_navigation");
+		ListPanel scoTopButtons = new ListPanel("scoTopButtons", "o_scorm_navigation");
 		scoTopButtons.addContent(previousScoTop);
 		scoTopButtons.addContent(nextScoTop);
-		scoBottomButtons = new ListPanel("scoBottomButtons", "o_scorm_navigation");
+		ListPanel scoBottomButtons = new ListPanel("scoBottomButtons", "o_scorm_navigation");
 		scoBottomButtons.addContent(previousScoBottom);
 		scoBottomButtons.addContent(nextScoBottom);
 		
@@ -311,12 +315,6 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	
 	public void setJSEncoding(String encoding) {
 		iframeCtr.setJSEncoding(encoding);
-	}
-
-	public void close() {
-		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
-			((LayoutMain3ColsBackController)columnLayoutCtr).deactivate();
-		}
 	}
 	
 	@Override
@@ -444,10 +442,15 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		return cmis;
 	}
 	
-	private void executeBack(UserRequest ureq) {
+	public void close() {
 		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
 			((LayoutMain3ColsBackController)columnLayoutCtr).deactivate();
+			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
 		}
+	}
+	
+	private void executeBack(UserRequest ureq) {
+		close();
 		fireEvent(ureq, Event.BACK_EVENT);
 	}
 
@@ -522,9 +525,11 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
 			LayoutMain3ColsBackController layoutCtr = (LayoutMain3ColsBackController)columnLayoutCtr;
 			layoutCtr.deactivate();
+			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
 		} else if(columnLayoutCtr instanceof LayoutMain3ColsController) {
 			LayoutMain3ColsController layoutCtr = (LayoutMain3ColsController)columnLayoutCtr;
 			layoutCtr.deactivate(null);
+			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
 		}
 	}
 
