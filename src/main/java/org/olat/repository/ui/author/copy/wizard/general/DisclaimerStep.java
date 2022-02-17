@@ -79,7 +79,7 @@ public class DisclaimerStep extends BasicStep {
 		return new DisclaimerStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class DisclaimerStepController extends StepFormBasicController {
+	private static class DisclaimerStepController extends StepFormBasicController {
 
 		private CourseDisclaimerController disclaimerController; 
 		private CopyCourseContext context;

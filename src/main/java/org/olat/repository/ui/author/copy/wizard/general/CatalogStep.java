@@ -93,7 +93,7 @@ public class CatalogStep extends BasicStep {
 		return new CatalogStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class CatalogStepController extends StepFormBasicController {
+	private static class CatalogStepController extends StepFormBasicController {
 
 		private CopyCourseContext context;
 		

@@ -59,7 +59,7 @@ public class ModifyOwnersStep4 extends BasicStep {
 	
 	
 	
-	private class AuthorListEditOwnersStep4Controller extends StepFormBasicController {
+	private static class AuthorListEditOwnersStep4Controller extends StepFormBasicController {
 
 		private final String[] keys = { "send" };
 		

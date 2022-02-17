@@ -106,7 +106,7 @@ public class AssessmentModesStep extends BasicStep {
 		return new AssessmentModesStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class AssessmentModesStepController extends StepFormBasicController {
+	private static class AssessmentModesStepController extends StepFormBasicController {
 
 		private CopyCourseContext context;
 		

@@ -175,7 +175,7 @@ public class CopyCourseWizardController extends BasicController {
 		copyContext.setAssessmentModes(hasAssessmentModes(sourceEntry));
 		copyContext.setNewCoaches(getCoaches(sourceEntry));
 		copyContext.setHasGroups(hasGroups(sourceEntry));
-		copyContext.setHasCoaches(hasCoaches(sourceEntry));
+		copyContext.setHasCoaches(hasCoaches());
 		copyContext.setHasOwners(hasOwners(sourceEntry));
 		copyContext.setHasDisclaimer(hasDisclaimer(course));
 		copyContext.setHasCatalogEntry(hasCatalogEntry(sourceEntry));
@@ -411,7 +411,7 @@ public class CopyCourseWizardController extends BasicController {
 		return !catalogEntries.isEmpty();
 	}
 	
-	private boolean hasCoaches(RepositoryEntry repositoryEntry) {
+	private boolean hasCoaches() {
 		String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 		SearchMembersParams params = new SearchMembersParams(false, GroupRoles.coach);

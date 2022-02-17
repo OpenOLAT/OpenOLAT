@@ -69,7 +69,7 @@ public class ModifyOwnersStep3 extends BasicStep {
 	
 	
 	
-	private class AuthorListEditOwnersStep3Controller extends StepFormBasicController {
+	private static class AuthorListEditOwnersStep3Controller extends StepFormBasicController {
 
 		private ModifyOwnersContext context;
 		

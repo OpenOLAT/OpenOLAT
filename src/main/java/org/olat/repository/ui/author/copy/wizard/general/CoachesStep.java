@@ -106,7 +106,7 @@ public class CoachesStep extends BasicStep {
 		return new CoachesStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class CoachesStepController extends StepFormBasicController {
+	private static class CoachesStepController extends StepFormBasicController {
 
 		private final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		

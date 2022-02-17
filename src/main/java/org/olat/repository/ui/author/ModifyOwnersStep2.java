@@ -61,7 +61,7 @@ public class ModifyOwnersStep2 extends BasicStep {
 		return new AuthorListEditOwnersStep2Controller(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class AuthorListEditOwnersStep2Controller extends StepFormBasicController {
+	private static class AuthorListEditOwnersStep2Controller extends StepFormBasicController {
 		
 		private final UserSearchFlexiController searchController; 
 		private boolean showOverviewTable;

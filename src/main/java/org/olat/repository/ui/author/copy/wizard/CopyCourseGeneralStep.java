@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.author.copy.wizard;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
@@ -89,18 +88,18 @@ public class CopyCourseGeneralStep extends BasicStep {
 		private static final String CUSTOM_MODE = "wizard.mode.custom";
 		private static final String AUTOMATIC_MODE = "wizard.mode.automatic";
 		
-		private final Map<String, String> COPY_TYPE_TRANSLATION_KEYS_MAP = new HashMap<String, String>() {{ 
-			put("copy", "options.copy");
-			put("ignore", "options.ignore");
-			put("reference", "options.reference");
-			put("custom", "options.customize");
-			put("createNew", "options.empty.resource");
-			put("ignore.later", "options.configure.later");
-			put("copy.folder", "options.copy.content");
-			put("ignore.folder", "options.ignore.content");
-			put("copy.task", "options.copy.assignment.solution");
-			put("ignore.task", "options.ignore.assignment.solution");
-		}};
+		private final Map<String, String> COPY_TYPE_TRANSLATION_KEYS_MAP = Map.of(
+			"copy", "options.copy",
+			"ignore", "options.ignore",
+			"reference", "options.reference",
+			"custom", "options.customize",
+			"createNew", "options.empty.resource",
+			"ignore.later", "options.configure.later",
+			"copy.folder", "options.copy.content",
+			"ignore.folder", "options.ignore.content",
+			"copy.task", "options.copy.assignment.solution",
+			"ignore.task", "options.ignore.assignment.solution"
+		);
 		
 		private TextElement externalRefEl;
 		private TextElement displayNameEl;
@@ -225,7 +224,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 				checkCourseAvailability(ureq, externalRefEl);
 				checkCourseAvailability(ureq, displayNameEl);
 			}
-		};
+		}
 		
 		private void checkCourseAvailability(UserRequest ureq, TextElement textElement) {
 			if (StringHelper.containsNonWhitespace(textElement.getValue())) {

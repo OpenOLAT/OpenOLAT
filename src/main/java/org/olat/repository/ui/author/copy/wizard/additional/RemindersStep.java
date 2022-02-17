@@ -111,7 +111,7 @@ public class RemindersStep extends BasicStep {
 		return new RemindersStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class RemindersStepController extends StepFormBasicController {
+	private static class RemindersStepController extends StepFormBasicController {
 
 		private CopyCourseContext context;
 		

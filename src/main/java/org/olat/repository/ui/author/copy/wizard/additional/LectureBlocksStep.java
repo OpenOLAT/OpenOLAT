@@ -112,7 +112,7 @@ public class LectureBlocksStep extends BasicStep {
 		return new LectureBlocksStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class LectureBlocksStepController extends StepFormBasicController {
+	private static class LectureBlocksStepController extends StepFormBasicController {
 
 		private CopyCourseContext context;
 		

@@ -111,7 +111,7 @@ public class GroupStep extends BasicStep {
 		return new GroupStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class GroupStepController extends StepFormBasicController {
+	private static class GroupStepController extends StepFormBasicController {
 
 		private final String REMOVE_GROUP = "remove_group";
 		

@@ -139,7 +139,7 @@ public class CourseOverviewStep extends BasicStep {
 		return new CourseOverviewStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class CourseOverviewStepController extends StepFormBasicController implements FlexiTableComponentDelegate {
+	private static class CourseOverviewStepController extends StepFormBasicController implements FlexiTableComponentDelegate {
 
 		private CopyCourseContext context;
 		

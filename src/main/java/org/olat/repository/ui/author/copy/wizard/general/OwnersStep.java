@@ -108,7 +108,7 @@ public class OwnersStep extends BasicStep {
 		return new OwnersStepController(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private class OwnersStepController extends StepFormBasicController {
+	private static class OwnersStepController extends StepFormBasicController {
 
 		private final String usageIdentifyer = UserTableDataModel.class.getCanonicalName();
 		
@@ -183,7 +183,7 @@ public class OwnersStep extends BasicStep {
 				List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, false);
 				SearchMembersParams params = new SearchMembersParams(false, GroupRoles.owner);
 				List<MemberView> memberViews = memberViewQueries.getRepositoryEntryMembers(context.getSourceRepositoryEntry(), params, userPropertyHandlers, getLocale());
-				List<Long> identityKeys = memberViews.stream().map(memberView -> memberView.getIdentityKey()).collect(Collectors.toList());
+				List<Long> identityKeys = memberViews.stream().map(MemberView::getIdentityKey).collect(Collectors.toList());
 				List<Identity> owners = securityManager.loadIdentityByKeys(identityKeys);
 				
 				if (owners.contains(getIdentity())) {
