@@ -227,7 +227,10 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			String dateWarningText = ExecutionType.beginAndEnd != context.getExecutionType()
+			boolean canSwitchAllDates = ExecutionType.beginAndEnd != context.getExecutionType()
+					|| context.getSourceRepositoryEntry().getLifecycle() == null 
+					|| !context.getSourceRepositoryEntry().getLifecycle().isPrivateCycle();
+			String dateWarningText = canSwitchAllDates
 					? translate("date.early.warning")
 					: translate("date.early.warning.period");
 			dateWarning = FormLayoutContainer.createCustomFormLayout("date_warning", getTranslator(), velocity_root + "/date_warning.html");
@@ -237,7 +240,7 @@ public class CourseOverviewStep extends BasicStep {
 			
 			shiftAllDates = uifactory.addFormLink("shift.all.dates", formLayout, Link.BUTTON);
 			shiftAllDates.setElementCssClass("pull-right");
-			shiftAllDates.setVisible(ExecutionType.beginAndEnd != context.getExecutionType());
+			shiftAllDates.setVisible(canSwitchAllDates);
 			
 			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 			
