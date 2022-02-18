@@ -1,8 +1,8 @@
 .o_export_card {
 	display: flex;
-	align-items: flex-end;
 	flex-wrap: wrap;
-	position: relative;
+	align-items: flex-end;
+	justify-content: space-between;
 	padding: $o-export-area-rowelem-space-md;
 	border-bottom: 1px solid grey;
 	
@@ -16,10 +16,9 @@
 	}
 	
 	.o_export_meta {
-		flex: 1 1 auto;
+		flex: 1 1 180px;
 		position: relative;
 		padding: 0 10px;
-		min-width: 360px;
 		
 		>span {
 			font-size: 90%;
@@ -43,15 +42,16 @@
 	}
 	
 	.o_export_exp {
-		flex: 0 0 120px;
+		flex: 0 0 auto;
 		overflow: hidden;
 	}
 	
 	.o_export_actions {
-		flex: 0 0 120px;
+		flex: 0 0 auto;
 		overflow: hidden;
 		font-size: 150%;
 		margin-bottom: -5px;
+		margin-left: 20px;
 		text-align: right;
 		
 		.o_actions {
@@ -61,8 +61,21 @@
 }
 
 @media (max-width: $screen-sm-max) {
-	.o_export_card .o_export_exp, .o_export_card .o_export_actions {
+	.o_export_card .o_export_exp {
 		margin-left: 80px;
 		text-align: left;
 	}
+	
+	.o_export_card .o_export_actions {
+		margin-left: 80px;
+		text-align: right;
+	}
 }
+
+@media (max-width: $screen-xs-max) {
+	.o_export_card .o_export_actions {
+		margin-left: 0;
+		text-align: right;
+	}
+}
+

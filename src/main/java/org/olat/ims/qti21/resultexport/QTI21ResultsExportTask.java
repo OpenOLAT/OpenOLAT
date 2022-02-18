@@ -173,14 +173,13 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 		}
 		
 		// Reload the metadata
-		if(!export.isCancelled()) {
+		TaskStatus status = taskExecutorManager.getStatus(task);
+		if(export.isCancelled() || status == TaskStatus.cancelled) {
+			exportZip.deleteSilently();
+			taskExecutorManager.delete(task);
+		} else {
 			vfsRepositoryService.getMetadataFor(exportZip);
 			sendMail(course, courseNode);
-		} else {
-			TaskStatus status = taskExecutorManager.getStatus(task);
-			if(status == TaskStatus.cancelled) {
-				exportZip.deleteSilently();
-			}
 		}
 	}
 	

@@ -46,7 +46,7 @@ public interface ExportManager {
 	
 	public void startExport(ExportTask task, Identity creator, OLATResource resource, String resSubPath);
 	
-	public void cancelExport(ExportInfos export);
+	public void cancelExport(ExportInfos export, RepositoryEntry entry, String resSubPath);
 	
 	public void deleteExport(ExportInfos export);
 

@@ -83,10 +83,25 @@ public class ExportManagerImpl implements ExportManager {
 	}
 
 	@Override
-	public void cancelExport(ExportInfos export) {
+	public void cancelExport(ExportInfos export, RepositoryEntry entry, String resSubPath) {
 		Task task = export.getTask();
 		if(task != null) {
-			taskExecutorManager.cancel(task);
+			Task cancelledTask = taskExecutorManager.cancel(task);
+			if(cancelledTask == null) {
+				if(export.getZipLeaf() != null) {
+					deleteExport(export);
+				} else {
+					// try to clean the mess eventually
+					String taskEnding = "_" + task.getKey() + ".zip";
+					VFSContainer exportContainer = getExportContainer(entry, resSubPath);
+					List<VFSItem> zipItems = exportContainer.getItems(new ZIPLeafFilter());
+					for(VFSItem zipItem:zipItems) {
+						if(zipItem.getName().endsWith(taskEnding)) {
+							zipItem.deleteSilently();
+						}
+					}
+				}
+			}
 		} else {
 			deleteExport(export);
 		}

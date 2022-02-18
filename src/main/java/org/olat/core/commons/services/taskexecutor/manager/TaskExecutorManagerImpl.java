@@ -42,6 +42,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.core.commons.services.taskexecutor.TaskAwareRunnable;
+import org.olat.core.commons.services.taskexecutor.TaskEvent;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.taskexecutor.TaskRunnable;
 import org.olat.core.commons.services.taskexecutor.TaskRunnable.Queue;
@@ -52,6 +53,7 @@ import org.olat.core.commons.services.taskexecutor.model.PersistentTaskRunnable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.resource.OLATResource;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
@@ -299,20 +301,26 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 	}
 
 	@Override
-	public void cancel(Task task) {
+	public Task cancel(Task task) {
 		if(task instanceof PersistentTask) {
 			PersistentTask pTask = (PersistentTask)task;
 			Future<?> future = taskKeyToFuture.get(pTask.getKey());
 			if(future != null) {
 				future.cancel(true);
 			}
-			persistentTaskDao.taskCancelled(pTask);
+			return persistentTaskDao.taskCancelled(pTask);
 		}
+		return null;
 	}
 
 	@Override
 	public void delete(Task task) {
 		persistentTaskDao.delete(task);
+		dbInstance.commit();
+		if(task instanceof PersistentTask) {
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new TaskEvent(TaskEvent.TASK_DELETED, task.getKey()), TaskExecutorManager.TASK_EVENTS);
+		}
 	}
 
 	@Override

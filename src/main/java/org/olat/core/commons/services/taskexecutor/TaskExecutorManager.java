@@ -99,7 +99,7 @@ public interface TaskExecutorManager extends Executor {
 	
 	public List<Identity> getModifiers(Task task);
 	
-	public void cancel(Task task);
+	public Task cancel(Task task);
 	
 	public void delete(Task task);
 	

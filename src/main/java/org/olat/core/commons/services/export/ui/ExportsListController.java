@@ -351,7 +351,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	}
 	
 	private void doCancel(ExportRow row) {
-		exportManager.cancelExport(row.getExport());
+		exportManager.cancelExport(row.getExport(), entry, subIdent);
 		loadModel();
 		showInfo("info.export.cancelled");
 	}

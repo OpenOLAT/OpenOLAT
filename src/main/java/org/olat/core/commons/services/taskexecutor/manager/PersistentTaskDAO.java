@@ -289,19 +289,22 @@ public class PersistentTaskDAO {
 		dbInstance.commit();
 	}
 	
-	public void taskCancelled(PersistentTask task) {
+	public Task taskCancelled(PersistentTask task) {
 		// remove from cache
 		dbInstance.getCurrentEntityManager().detach(task);
 		
 		task = dbInstance.getCurrentEntityManager()
 				.find(PersistentTask.class, task.getKey(), LockModeType.PESSIMISTIC_WRITE);
-		if(task.getStatus() == TaskStatus.newTask) {
-			delete(task);
-		} else {
-			task.setStatus(TaskStatus.cancelled);
-			dbInstance.getCurrentEntityManager().merge(task);
+		if(task != null) {
+			if(task.getStatus() == TaskStatus.newTask) {
+				delete(task);
+			} else {
+				task.setStatus(TaskStatus.cancelled);
+				task = dbInstance.getCurrentEntityManager().merge(task);
+			}
 		}
 		dbInstance.commit();
+		return task;
 	}
 	
 	protected static String toXML(Serializable task) {
