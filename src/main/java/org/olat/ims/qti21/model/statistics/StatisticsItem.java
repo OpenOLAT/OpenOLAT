@@ -48,10 +48,16 @@ public class StatisticsItem {
 		this.averageScore = averageScore;
 	}
 	
+	/**
+	 * @return The average duration in milliseconds.
+	 */
 	public long getAverageDuration() {
 		return averageDuration;
 	}
 	
+	/**
+	 * @param averageDuration The average duration in milliseconds
+	 */
 	public void setAverageDuration(long averageDuration) {
 		this.averageDuration = averageDuration;
 	}

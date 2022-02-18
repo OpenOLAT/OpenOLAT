@@ -45,7 +45,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeVisitor;
-import org.olat.core.util.tree.Visitor;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -142,29 +141,25 @@ public class StatisticCourseNodesController extends BasicController implements A
 		
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 
-		new TreeVisitor(new Visitor() {
-			@Override
-			public void visit(INode node) {
-				CourseNode courseNode = (CourseNode)node;
-				StatisticResourceResult result = courseNode.createStatisticNodeResult(ureq, getWindowControl(), userCourseEnv, options, type);
-				if(result != null) {
-					StatisticResourceNode courseNodeTreeNode = new StatisticResourceNode(courseNode, result);
-					rootTreeNode.addChild(courseNodeTreeNode);
-					
-					TreeModel subTreeModel = result.getSubTreeModel();
-					if(subTreeModel != null) {
-						TreeNode subRootNode = subTreeModel.getRootNode();
-						List<INode> subNodes = new ArrayList<>();
-						for(int i=0; i<subRootNode.getChildCount(); i++) {
-							subNodes.add(subRootNode.getChildAt(i));
-						}
-						for(INode subNode:subNodes) {
-							courseNodeTreeNode.addChild(subNode);
-						}
+		new TreeVisitor(node -> {
+			CourseNode courseNode = (CourseNode)node;
+			StatisticResourceResult result = courseNode.createStatisticNodeResult(ureq, getWindowControl(), userCourseEnv, options, type);
+			if(result != null) {
+				StatisticResourceNode courseNodeTreeNode = new StatisticResourceNode(courseNode, result);
+				rootTreeNode.addChild(courseNodeTreeNode);
+				
+				TreeModel subTreeModel = result.getSubTreeModel();
+				if(subTreeModel != null) {
+					TreeNode subRootNode = subTreeModel.getRootNode();
+					List<INode> subNodes = new ArrayList<>();
+					for(int i=0; i<subRootNode.getChildCount(); i++) {
+						subNodes.add(subRootNode.getChildAt(i));
+					}
+					for(INode subNode:subNodes) {
+						courseNodeTreeNode.addChild(subNode);
 					}
 				}
 			}
-
 		}, course.getRunStructure().getRootNode(), true).visitAll();
 		return gtm;
 	}

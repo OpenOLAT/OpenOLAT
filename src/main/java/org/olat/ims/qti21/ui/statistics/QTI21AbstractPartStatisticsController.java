@@ -25,97 +25,78 @@ import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.getModeString;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.chart.BarSeries;
 import org.olat.core.gui.components.chart.BarSeries.Stringuified;
 import org.olat.core.gui.components.chart.StatisticsComponent;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.link.LinkPopupSettings;
-import org.olat.core.gui.components.stack.TooledController;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
-import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.nodes.QTICourseNode;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
-import org.olat.ims.qti21.model.statistics.StatisticAssessment;
+import org.olat.ims.qti21.model.statistics.StatisticsPart;
+import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.modules.assessment.ui.UserFilterController;
 import org.olat.modules.assessment.ui.event.UserFilterEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.SectionPart;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 
 /**
  * 
+ * Initial date: 8 févr. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21AssessmentTestStatisticsController extends BasicController implements Activateable2, TooledController {
+public class QTI21AbstractPartStatisticsController extends BasicController implements Activateable2 {
 
 	private final VelocityContainer mainVC;
-	private final TooledStackedPanel stackPanel;
-	private final Link printLink;
-	private final Link downloadRawLink;
 	
 	private UserFilterController filterCtrl;
 	
-	private QTICourseNode courseNode;
 	private final QTI21StatisticResourceResult resourceResult;
 	private final boolean withDiagramm;
 	
+	private TestPart testPart;
+	private AssessmentSection section;
+	private List<AssessmentSection> sectionsHierarchy;
+	
 	@Autowired
 	private QTI21StatisticsManager qtiStatisticsManager;
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
 
-	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QTI21StatisticResourceResult resourceResult, boolean withFilter, boolean printMode, boolean withDiagramm) {
+	public QTI21AbstractPartStatisticsController(UserRequest ureq, WindowControl wControl,
+			AbstractPart abstractPart, QTI21StatisticResourceResult resourceResult,
+			boolean withFilter, boolean printMode, boolean withDiagramm) {
 		super(ureq, wControl);
-		this.stackPanel = stackPanel;
 		this.resourceResult = resourceResult;
 		this.withDiagramm = withDiagramm;
-		courseNode = resourceResult.getTestCourseNode();
 
-		mainVC = createVelocityContainer("statistics_assessment_test");
+		mainVC = createVelocityContainer("statistics_assessment_part");
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
 		mainVC.contextPut("printMode", Boolean.valueOf(printMode));
-		if(resourceResult.getCourseEntry() != null) {
-			mainVC.contextPut("courseId", resourceResult.getCourseEntry().getKey());
+		if(abstractPart instanceof AssessmentSection) {
+			section = (AssessmentSection)abstractPart;
+			sectionsHierarchy = new ArrayList<>();
+			subSections(section, sectionsHierarchy);
+			mainVC.contextPut("partTitle", section.getTitle());
+			mainVC.contextPut("itemCss", "o_mi_qtisection");
+		} else if(abstractPart instanceof TestPart) {
+			testPart = (TestPart)abstractPart;
+			mainVC.contextPut("partTitle", translate("test.part"));
+			mainVC.contextPut("itemCss", "o_qtiassessment_icon");
 		}
-		mainVC.contextPut("testId", resourceResult.getTestEntry().getKey());
-		if(stackPanel != null) {
-			printLink = LinkFactory.createToolLink("print" + CodeHelper.getRAMUniqueID(), translate("print"), this);
-			printLink.setIconLeftCSS("o_icon o_icon_print o_icon-lg");
-			printLink.setPopup(new LinkPopupSettings(680, 500, "qti-stats"));
-
-			downloadRawLink = LinkFactory.createToolLink("download" + CodeHelper.getRAMUniqueID(), translate("download.raw.data"), this);
-		} else {
-			printLink = null;
-			downloadRawLink = LinkFactory.createLink("download.raw.data", mainVC, this);
-			downloadRawLink.setCustomEnabledLinkCSS("o_content_download");
-			mainVC.put("download", downloadRawLink);
-		}
-		downloadRawLink.setIconLeftCSS("o_icon o_icon_download o_icon-lg");
 		
 		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
 			filterCtrl = new UserFilterController(ureq, getWindowControl(),
@@ -129,51 +110,38 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		updateData();
 	}
 	
-	@Override
-	protected void doDispose() {
-		if(stackPanel != null) {
-			stackPanel.removeTool(downloadRawLink);
-			stackPanel.removeTool(printLink);
-		}
-        super.doDispose();
-	}
-	
-	@Override
-	public void initTools() {
-		if(stackPanel != null) {
-			stackPanel.addTool(printLink, Align.right);
-			stackPanel.addTool(downloadRawLink, Align.right);
+	private void subSections(AssessmentSection assessmentSection, List<AssessmentSection> subSections) {
+		subSections.add(assessmentSection);
+		
+		List<SectionPart> sectionParts = assessmentSection.getSectionParts();
+		for(SectionPart sectionPart:sectionParts) {
+			if(sectionPart instanceof AssessmentSection) {
+				subSections((AssessmentSection)sectionPart, subSections);
+			}
 		}
 	}
 
 	private void updateData() {
-		StatisticAssessment stats = resourceResult.getQTIStatisticAssessment();
+		StatisticsPart stats = qtiStatisticsManager.getAssessmentPartStatistics(getControllerCount(), resourceResult.getSearchParams(), testPart, sectionsHierarchy);
 		if (withDiagramm) {
 			initScoreHistogram(stats);
 			initScoreStatisticPerItem(stats.getNumOfParticipants());
 			initDurationHistogram(stats);
 		}
-		initCourseNodeInformation(stats);
+		initAbstractPartInformation(stats);
 	}
 	
-	private Float getMaxScoreSetting(QTICourseNode testNode) {
-		return testNode instanceof IQTESTCourseNode
-					? courseAssessmentService.getAssessmentConfig(courseNode).getMaxScore()
-					: null;
-	}
-	
-	private Float getCutValueSetting(QTICourseNode testNode) {
-		return testNode instanceof IQTESTCourseNode
-					? courseAssessmentService.getAssessmentConfig(courseNode).getCutValue()
-					: null;
+	private Double getMaxScoreSetting() {
+		if(testPart != null) {
+			return QtiMaxScoreEstimator.estimateMaxScore(testPart, resourceResult.getResolvedAssessmentTest());
+		} else if(section != null) {
+			return QtiMaxScoreEstimator.estimateMaxScore(section, resourceResult.getResolvedAssessmentTest());
+		}
+		return null;
 	}
 
-	private void initCourseNodeInformation(StatisticAssessment stats) {
+	private void initAbstractPartInformation(StatisticsPart stats) {
 		mainVC.contextPut("numOfParticipants", stats.getNumOfParticipants());
-	
-		mainVC.contextPut("type", "qtiworks");
-		mainVC.contextPut("numOfPassed", stats.getNumOfPassed());
-		mainVC.contextPut("numOfFailed", stats.getNumOfFailed());
 
 		mainVC.contextPut("average", format(stats.getAverage()));
 		mainVC.contextPut("range", format(stats.getRange()));
@@ -184,13 +152,11 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		String duration = duration(stats.getAverageDuration());
 		mainVC.contextPut("averageDuration", duration);
 		
-		Float maxScore = getMaxScoreSetting(courseNode);
+		Double maxScore = getMaxScoreSetting();
 		mainVC.contextPut("maxScore", maxScore == null ? "-" : format(maxScore));
-		Float cutValue = getCutValueSetting(courseNode);
-		mainVC.contextPut("cutScore", cutValue == null ? "-" : format(cutValue));
 	}
 
-	private void initScoreHistogram(StatisticAssessment stats) {
+	private void initScoreHistogram(StatisticsPart stats) {
 		int numOfParticipants = stats.getNumOfParticipants();
 		VelocityContainer scoreHistogramVC = createVelocityContainer("histogram_score");
 		scoreHistogramVC.setVisible(numOfParticipants > 0);
@@ -198,7 +164,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		mainVC.put("scoreHistogram", scoreHistogramVC);
 	}
 	
-	private void initDurationHistogram(StatisticAssessment stats) {
+	private void initDurationHistogram(StatisticsPart stats) {
 		boolean visible = BarSeries.hasNotNullDatas(stats.getDurations()) && stats.getNumOfParticipants() > 0;
 		VelocityContainer durationHistogramVC = createVelocityContainer("histogram_duration");
 		durationHistogramVC.setVisible(visible);
@@ -219,7 +185,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		
 		List<AssessmentItemStatistic> statisticItems = qtiStatisticsManager
 				.getStatisticPerItem(resourceResult.getResolvedAssessmentTest(), resourceResult.getSearchParams(),
-				null, null, numOfParticipants);
+						testPart, sectionsHierarchy, numOfParticipants);
 		
 		int i = 0;
 		List<ItemInfos> itemInfos = new ArrayList<>(statisticItems.size());
@@ -268,29 +234,6 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(printLink == source) {
-			printPages(ureq);
-		} else if(downloadRawLink == source) {
-			doDownloadRawData(ureq);
-		}
-	}
-	
-	private void printPages(UserRequest ureq) {
-		ControllerCreator printControllerCreator = (lureq, lwControl) -> new QTI21PrintController(lureq, lwControl, resourceResult);
-		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
-		openInNewBrowserWindow(ureq, layoutCtrlr);
-	}
-	
-	private void doDownloadRawData(UserRequest ureq) {
-		String label;
-		if(courseNode == null) {
-			label = StringHelper.transformDisplayNameToFileSystemName(resourceResult.getTestEntry().getDisplayname());
-		} else {
-			label = courseNode.getType() + "_"
-					+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName());
-		}
-		label += "_" + Formatter.formatDatetimeFilesystemSave(new Date()) + ".xlsx";
-		MediaResource resource = new QTI21StatisticsResource(resourceResult, label, getLocale());
-		ureq.getDispatchResult().setResultingMediaResource(resource);
+		///
 	}
 }

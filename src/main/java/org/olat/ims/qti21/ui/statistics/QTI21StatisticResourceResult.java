@@ -53,6 +53,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
@@ -239,13 +240,9 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		//list all test parts
 		List<TestPart> parts = test.getTestParts();
 		if(parts.size() == 1) {
-			TreeNode firstItem = null;
 			List<AssessmentSection> sections = test.getTestParts().get(0).getAssessmentSections();
 			for(AssessmentSection section:sections) {
-				TreeNode itemNode = buildRecursively(section, rootTreeNode);
-				if(firstItem == null) {
-					firstItem = itemNode;
-				}
+				buildRecursively(section, rootTreeNode);
 			}
 		} else {
 			int counter = 0;
@@ -262,40 +259,26 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		partNode.setUserObject(part);
 		parentNode.addChild(partNode);
 
-		TreeNode firstItem = null;
 		List<AssessmentSection> sections = part.getAssessmentSections();
 		for(AssessmentSection section:sections) {
-			TreeNode itemNode = buildRecursively(section, partNode);
-			if(firstItem == null) {
-				firstItem = itemNode;
-			}
+			buildRecursively(section, partNode);
 		}
-		partNode.setDelegate(firstItem);
 	}
 	
-	private TreeNode buildRecursively(AssessmentSection section, TreeNode parentNode) {
+	private void buildRecursively(AssessmentSection section, TreeNode parentNode) {
 		GenericTreeNode sectionNode = new GenericTreeNode();
 		sectionNode.setTitle(section.getTitle());
 		sectionNode.setIconCssClass("o_icon o_mi_qtisection");
 		sectionNode.setUserObject(section);
 		parentNode.addChild(sectionNode);
 		
-		TreeNode firstItem = null;
 		for(SectionPart part: section.getSectionParts()) {
-			TreeNode itemNode = null;
 			if(part instanceof AssessmentItemRef) {
-				itemNode = buildRecursively((AssessmentItemRef)part, sectionNode);
-				
+				buildRecursively((AssessmentItemRef)part, sectionNode);
 			} else if(part instanceof AssessmentSection) {
-				itemNode = buildRecursively((AssessmentSection) part, sectionNode);
-			}
-			if(firstItem == null) {
-				firstItem = itemNode;
+				buildRecursively((AssessmentSection) part, sectionNode);
 			}
 		}
-		
-		sectionNode.setDelegate(firstItem);
-		return firstItem;
 	}
 	
 	private TreeNode buildRecursively(AssessmentItemRef itemRef, TreeNode parentNode) {
@@ -328,7 +311,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			TreeNode selectedNode, boolean printMode) {	
 		if(selectedNode instanceof StatisticResourceNode) {
-			return createAssessmentController(ureq, wControl, stackPanel, printMode);
+			return createAssessmentTestController(ureq, wControl, stackPanel, printMode);
 		} else {
 			Object uobject = selectedNode.getUserObject();
 			
@@ -337,20 +320,44 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 				String sectionTitle = parentNode.getTitle();
 				return createAssessmentItemController(ureq, wControl,
 						(AssessmentItemRef)uobject, sectionTitle, printMode);
+			} else if(uobject instanceof AssessmentSection) {
+				return createAssessmentPartController(ureq, wControl,
+						(AssessmentSection)uobject, printMode);
+			} else if(uobject instanceof TestPart) {
+				return createAssessmentPartController(ureq, wControl,
+						(TestPart)uobject, printMode);
 			} else if(uobject instanceof AssessmentTest) {
-				return createAssessmentController(ureq, wControl, stackPanel, printMode);
+				return createAssessmentTestController(ureq, wControl, stackPanel, printMode);
 			}
 		}
 		return null;
 	}
 	
-	private Controller createAssessmentController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, boolean printMode) {
+	private Controller createAssessmentTestController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, boolean printMode) {
 		Controller ctrl = new QTI21AssessmentTestStatisticsController(ureq, wControl, stackPanel, this, withFilter, printMode, true);
 		if(courseNode != null) {
 			CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance()
 					.getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
 			String iconCssClass = cnConfig.getIconCSSClass();
 			ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
+		}
+		return ctrl;
+	}
+	
+	/**
+	 * Create the statistics view for test part and assessment sections.
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param part The test part or the section
+	 * @param printMode If in print mode
+	 * @return The controller
+	 */
+	private Controller createAssessmentPartController(UserRequest ureq, WindowControl wControl,
+			AbstractPart part, boolean printMode) {
+		Controller ctrl = new QTI21AbstractPartStatisticsController(ureq, wControl, part, this, withFilter, printMode, true);
+		if(courseNode != null) {
+			ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, "o_mi_qtisection");
 		}
 		return ctrl;
 	}
@@ -365,12 +372,11 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			return TitledWrapperHelper.getWrapper(ureq, wControl, errorCtrl, courseNode, "o_icon_error");
 		}
 		
-		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl,
+		QTI21AssessmentItemStatisticsController itemCtrl = new QTI21AssessmentItemStatisticsController(ureq, wControl,
 				assessmentItemRef, resolvedAssessmentItem, sectionTitle, this, withFilter, printMode);
-		String iconCssClass = "o_mi_qtisc";
 		if(courseNode != null) {
-			ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);
+			return TitledWrapperHelper.getWrapper(ureq, wControl, itemCtrl, courseNode, itemCtrl.getItemCss());
 		}
-		return ctrl;
+		return itemCtrl;
 	}
 }

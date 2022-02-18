@@ -1,0 +1,78 @@
+#if($r.available("filter") && !$printMode)
+<div class="o_button_group o_button_group_right">
+	$r.render("filter")
+</div>
+#end
+
+#if($partTitle)
+<h3><i class="o_icon $itemCss"> </i> $r.escapeHtml($partTitle)</h3>
+#end
+
+<div class="o_qti_statistics">
+<div class="panel panel-default">
+	<div class="panel-heading"><h4>$r.translate("fig.title")</h4></div>
+	<table class="table">
+		<tbody>
+			<tr>
+				<th id="participants">$r.translate("fig.participants")</th>
+				<td headers="participants">$numOfParticipants</td>
+				<td></td><td></td>
+			</tr>
+			<tr>
+				<th id="maxscore">$r.translate("chart.maxscore")</th>
+				<td headers="maxscore">$maxScore</td>
+				<th id="average">$r.translate("fig.avg")</th>
+				<td headers="average">$average</td>
+			</tr>
+			<tr>
+				<th id="range">$r.translate("fig.span")</th>
+				<td headers="range">$range</td>
+				<th id="standarddeviation">$r.translate("fig.stddev")</th>
+				<td headers="standarddeviation">$standardDeviation</td>
+			</tr>
+			<tr>
+				<th id="mode">$r.translate("fig.mode")</th>
+				<td headers="mode">$mode</td>
+				<th id="median">$r.translate("fig.median")</th>
+				<td headers="median">$median</td>
+			</tr>
+			<tr>
+				<th id="averageduration">$r.translate("fig.averagedur")</th>
+				<td headers="averageduration">$averageDuration</td>
+				<td></td><td></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+#if($r.available("scoreHistogram") && $r.visible("scoreHistogram"))
+	$r.render("scoreHistogram")
+#end
+#if($r.available("durationHistogram") && $r.visible("durationHistogram"))
+	$r.render("durationHistogram")
+#end
+
+#if($r.available("averageScorePerItemChart"))
+<div class="o_print_break_avoid">
+	<h4>$r.translate("chart.averagescore.peritem")</h4>
+	$r.render("averageScorePerItemChart")
+	<ul>
+	#foreach($itemInfo in $itemInfoList)
+		<li><strong>${itemInfo.label}.</strong> $itemInfo.text</li>
+	#end
+	</ul>
+</div>
+#end
+
+#if($r.available("percentRightAnswersPerItemChart"))
+<div class="o_print_break_avoid">
+	<h4>$r.translate("chart.rightanswers.peritem")</h4>
+	$r.render("percentRightAnswersPerItemChart")
+	<ul>
+	#foreach($itemInfo in $itemInfoList)
+		<li><strong>${itemInfo.label}.</strong> $itemInfo.text</li>
+	#end
+	</ul>
+</div>
+#end
+</div>

@@ -76,6 +76,7 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	
 	private UserFilterController filterCtrl;
 
+	private final String itemCss;
 	private final String mapperUri;
 	private final AssessmentItem item;
 	private final AssessmentItemRef itemRef;
@@ -108,10 +109,11 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		
 		QTI21QuestionType type = QTI21QuestionType.getTypeRelax(item);
 		if(type != null) {
-			mainVC.contextPut("itemCss", type.getCssClass());
+			itemCss = type.getCssClass();
 		} else {
-			mainVC.contextPut("itemCss", "o_mi_qtiunkown");
+			itemCss = "o_mi_qtiunkown";
 		}
+		mainVC.contextPut("itemCss", itemCss);
 		
 		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
 			filterCtrl = new UserFilterController(ureq, getWindowControl(),
@@ -129,6 +131,10 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		
 		putInitialPanel(mainVC);
 		updateData(ureq);
+	}
+	
+	protected String getItemCss() {
+		return itemCss;
 	}
 	
 	private void updateData(UserRequest ureq) {

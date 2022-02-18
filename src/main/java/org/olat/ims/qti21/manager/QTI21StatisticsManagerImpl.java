@@ -50,6 +50,7 @@ import org.olat.ims.qti21.model.statistics.MatchStatistics;
 import org.olat.ims.qti21.model.statistics.NumericalInputInteractionStatistics;
 import org.olat.ims.qti21.model.statistics.OrderStatistics;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
+import org.olat.ims.qti21.model.statistics.StatisticsPart;
 import org.olat.ims.qti21.model.statistics.StatisticsItem;
 import org.olat.ims.qti21.model.statistics.TextEntryInteractionStatistics;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
@@ -75,6 +76,8 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -201,7 +204,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		double[] durationSeconds = new double[rawDatas.size()];
 		
 		double minDuration = Double.MAX_VALUE;
-		double maxDuration = 0d;
+		double maxDuration = 0.0d;
 		
 		BigDecimal cutBigValue = cutValue == null ? null : BigDecimal.valueOf(cutValue.doubleValue());
 		
@@ -236,7 +239,7 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 				}
 			}
 
-			Long duration = (Long)rawData[pos++];
+			Long duration = (Long)rawData[pos];
 			if(duration != null) {
 				double durationd = duration.doubleValue();
 				double durationSecond = Math.round(durationd / 1000d);
@@ -273,6 +276,131 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		stats.setScores(scores);
 		stats.setDurations(durationSeconds);
 		return stats;
+	}
+
+	@Override
+	public StatisticsPart getAssessmentPartStatistics(double maxScore,
+			QTI21StatisticSearchParams searchParams, TestPart testPart, List<AssessmentSection> sections) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select isession.key, isession.score, isession.manualScore, isession.duration, asession.identity.key from qtiassessmentitemsession isession ")
+		  .append(" inner join isession.assessmentTestSession asession");
+		decorateRSet(sb, searchParams, true);
+		
+		if(testPart != null) {
+			sb.append(" and isession.testPartIdentifier=:testPartId");
+		}
+		if(sections != null && !sections.isEmpty()) {
+			sb.append(" and isession.sectionIdentifier in (:sectionPartIds)");
+		}
+		
+		sb.append(" and isession.duration > 0")
+		  .append(" order by asession.identity.key");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Object[].class);
+		decorateRSetQuery(query, searchParams);
+		if(testPart != null) {
+			query.setParameter("testPartId", testPart.getIdentifier().toString());
+		}
+		if(sections != null && !sections.isEmpty()) {
+			List<String> sectionIds = sections.stream()
+					.map(sect -> sect.getIdentifier().toString()).collect(Collectors.toList());
+			query.setParameter("sectionPartIds", sectionIds);
+		}
+		
+		List<Object[]> results = query.getResultList();
+
+		
+		boolean hasScore = false;
+		double minScore = 0.0d;
+		double totalDuration = 0.0;
+
+		IdentityStats currentIdentity = null;
+		List<IdentityStats> list = new ArrayList<>();
+		for(Object[] result:results) {
+			Long identityKey = (Long)result[4];
+			if(currentIdentity == null || !currentIdentity.isSameIdentity(identityKey)) {
+				currentIdentity = new IdentityStats(identityKey);
+				list.add(currentIdentity);
+			}
+
+			BigDecimal score = (BigDecimal)result[1];
+			BigDecimal manualScore = (BigDecimal)result[2];
+			if(score == null) {
+				score = manualScore;
+			} else if(manualScore != null) {
+				score = score.add(manualScore);
+			}
+			
+			if(currentIdentity.score == null) {
+				currentIdentity.score = score;
+			} else {
+				currentIdentity.score = currentIdentity.score.add(score);
+			}
+
+			Number duration = (Number)result[3];
+			if(duration != null) {
+				double durationd = duration.doubleValue();
+				currentIdentity.duration += durationd;
+				totalDuration += durationd;
+			}
+		}
+
+		double[] scores = new double[list.size()];
+		double[] durationSeconds = new double[list.size()];
+		for(int i=0; i<list.size(); i++) {
+			IdentityStats stats = list.get(i);
+			if(list.get(i).score != null) {
+				scores[i] = stats.score.doubleValue();
+			}
+			if(stats.duration > 0.0d) {
+				durationSeconds[i] = stats.duration / 1000.0d;
+			}
+		}
+		
+		Statistics statisticsHelper = new Statistics(scores);		
+
+		StatisticsPart stats = new StatisticsPart();
+		int numOfParticipants = list.size();
+		stats.setNumOfParticipants(numOfParticipants);
+
+		long averageDuration = 0l;
+		if(numOfParticipants > 0) {
+			averageDuration = Math.round(totalDuration / numOfParticipants);
+		}
+		stats.setAverageDuration(averageDuration);
+		stats.setAverage(statisticsHelper.getMean());
+		if(hasScore) {
+			double range = maxScore - minScore;
+			stats.setRange(range);
+			stats.setMaxScore(maxScore);
+			stats.setMinScore(minScore);
+		}
+		stats.setStandardDeviation(statisticsHelper.getStdDev());
+		stats.setMedian(statisticsHelper.median());
+		stats.setMode(statisticsHelper.mode());
+		stats.setScores(scores);
+
+		stats.setDurations(durationSeconds);
+		
+		return stats;
+	}
+	
+	private static class IdentityStats {
+		
+		private final Long identityKey;
+		
+		private double duration = 0.0d;
+		private BigDecimal score = null;
+		
+		public IdentityStats(Long identityKey) {
+			this.identityKey = identityKey;
+		}
+		
+		public boolean isSameIdentity(Long newIdentityKey) {
+			return identityKey.equals(newIdentityKey);
+		}
 	}
 
 	@Override
@@ -734,24 +862,43 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 	}
 	
 	@Override
-	public List<AssessmentItemStatistic> getStatisticPerItem(ResolvedAssessmentTest resolvedAssessmentTest, QTI21StatisticSearchParams searchParams, double numOfParticipants) {
+	public List<AssessmentItemStatistic> getStatisticPerItem(ResolvedAssessmentTest resolvedAssessmentTest, QTI21StatisticSearchParams searchParams,
+			TestPart testPart, List<AssessmentSection> sections, double numOfParticipants) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select isession.assessmentItemIdentifier, isession.score, isession.manualScore, count(*) from qtiassessmentitemsession isession")
 		  .append(" inner join isession.assessmentTestSession asession");
 		decorateRSet(sb, searchParams, true);
+		if(testPart != null) {
+			sb.append(" and isession.testPartIdentifier=:testPartId");
+		}
+		if(sections != null && !sections.isEmpty()) {
+			sb.append(" and isession.sectionIdentifier in (:sectionPartIds)");
+		}
+		
 		sb.append(" and isession.duration > 0")
 		  .append(" group by isession.assessmentItemIdentifier, isession.score, isession.manualScore");
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		decorateRSetQuery(query, searchParams);
+		if(testPart != null) {
+			query.setParameter("testPartId", testPart.getIdentifier().toString());
+		}
+		if(sections != null && !sections.isEmpty()) {
+			List<String> sectionIds = sections.stream()
+					.map(sect -> sect.getIdentifier().toString()).collect(Collectors.toList());
+			query.setParameter("sectionPartIds", sectionIds);
+		}
+		
 		List<Object[]> results = query.getResultList();
 		if(results.isEmpty()) {
 			return new ArrayList<>();
 		}
 		
 		Map<String,AssessmentItemRef> itemMap = new HashMap<>();
-		List<AssessmentItemRef> itemRefs = new ArrayList<>(resolvedAssessmentTest.getAssessmentItemRefs());
+		List<AssessmentItemRef> itemRefs = resolvedAssessmentTest.getAssessmentItemRefs().stream()
+				.filter(itemRef -> acceptAssessmentItem(itemRef, testPart, sections))
+				.collect(Collectors.toList());
 		for(AssessmentItemRef itemRef:itemRefs) {
 			itemMap.put(itemRef.getIdentifier().toString(), itemRef);
 		}
@@ -813,6 +960,21 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			}
 		}
 		return statistics;
+	}
+	
+	private boolean acceptAssessmentItem(AssessmentItemRef itemRef, TestPart testPart, List<AssessmentSection> sections) {
+		if(sections != null && !sections.isEmpty()) {
+			for(AssessmentSection section:sections) {
+				if(section.getIdentifier().equals(itemRef.getParentSection().getIdentifier())) {
+					return true;
+				}
+			}
+			return false;
+		}
+		if(testPart != null) {
+			return testPart.getIdentifier().equals(itemRef.getEnclosingTestPart().getIdentifier());
+		}
+		return true;
 	}
 	
 	public static class AssessmentItemHelper {

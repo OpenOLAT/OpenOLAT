@@ -31,6 +31,7 @@ import org.olat.ims.qti21.model.statistics.KPrimStatistics;
 import org.olat.ims.qti21.model.statistics.MatchStatistics;
 import org.olat.ims.qti21.model.statistics.OrderStatistics;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
+import org.olat.ims.qti21.model.statistics.StatisticsPart;
 import org.olat.ims.qti21.model.statistics.StatisticsItem;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -40,6 +41,8 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
@@ -70,6 +73,8 @@ public interface QTI21StatisticsManager {
 	 */
 	public StatisticAssessment getAssessmentStatistics(QTI21StatisticSearchParams searchParams, Double cutValue);
 	
+	public StatisticsPart getAssessmentPartStatistics(double maxScore,
+			QTI21StatisticSearchParams searchParams, TestPart testPart, List<AssessmentSection> sections);
 	
 	public StatisticsItem getAssessmentItemStatistics(String itemRefIdent, double maxScore, QTI21StatisticSearchParams searchParams);
 	
@@ -96,12 +101,14 @@ public interface QTI21StatisticsManager {
 	
 	/**
 	 * 
-	 * @param items
-	 * @param searchParams
-	 * @param numOfParticipants
+	 * @param resolvedAssessmentTest The test
+	 * @param searchParams The search parameters
+	 * @param testPart Limit to a test part (can be null)
+	 * @param sections Limit to a list of sections (can be null)
+	 * @param numOfParticipants The number of participants
 	 * @return
 	 */
-	public List<AssessmentItemStatistic> getStatisticPerItem(ResolvedAssessmentTest resolvedAssessmentTest, QTI21StatisticSearchParams searchParams,
-			double numOfParticipants);
+	public List<AssessmentItemStatistic> getStatisticPerItem(ResolvedAssessmentTest resolvedAssessmentTest,
+			QTI21StatisticSearchParams searchParams, TestPart testPart, List<AssessmentSection> sections, double numOfParticipants);
 
 }

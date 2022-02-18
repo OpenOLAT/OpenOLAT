@@ -54,8 +54,14 @@ public interface AssessmentItemSession extends CreateInfo, ModifiedInfo, Assessm
 
 	public void setPassed(Boolean passed);
 	
+	/**
+	 * @return The duration in milliseconds
+	 */
 	public Long getDuration();
 	
+	/**
+	 * @param duration The duration in milliseconds
+	 */
 	public void setDuration(Long duration);
 	
 	public BigDecimal getScore();
