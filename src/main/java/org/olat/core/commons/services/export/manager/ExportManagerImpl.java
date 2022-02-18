@@ -20,9 +20,7 @@
 package org.olat.core.commons.services.export.manager;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.commons.services.export.ExportManager;
 import org.olat.core.commons.services.export.ExportTask;
@@ -98,7 +96,7 @@ public class ExportManagerImpl implements ExportManager {
 	public List<ExportInfos> getResultsExport(RepositoryEntry courseEntry, String resSubPath) {
 		List<ExportInfos> exports = new ArrayList<>();
 		
-		Set<String> taskKeys = new HashSet<>();
+		List<String> taskEndings = new ArrayList<>();
 		List<Task> runningTasks = taskExecutorManager.getTasks(courseEntry.getOlatResource(), resSubPath);
 		for(Task runningTask:runningTasks) {
 			try {
@@ -106,7 +104,7 @@ public class ExportManagerImpl implements ExportManager {
 				if(exportTask != null) {
 					ExportInfos resultsExport = new ExportInfos(exportTask.getTitle(), runningTask);
 					exports.add(resultsExport);
-					taskKeys.add(runningTask.getKey().toString());
+					taskEndings.add("_" + runningTask.getKey().toString() + ".zip");
 				}
 			} catch (Exception e) {
 				//
@@ -117,13 +115,17 @@ public class ExportManagerImpl implements ExportManager {
 		if(exportContainer != null) {
 			List<VFSItem> zipItems = exportContainer.getItems(new ZIPLeafFilter());
 			for(VFSItem zipItem:zipItems) {
-				if(zipItem instanceof VFSLeaf) {
+				boolean running = false;
+				for(String taskEnding:taskEndings) {
+					if(zipItem.getName().endsWith(taskEnding)) {
+						running = true;
+					}
+				}
+				if(!running && zipItem instanceof VFSLeaf) {
 					VFSLeaf zipLeaf = (VFSLeaf)zipItem;
 					VFSMetadata metadata = vfsRepositoryService.getMetadataFor(zipLeaf);
-					if(metadata.getSource() != null && !taskKeys.contains(metadata.getSource())) {
-						ExportInfos resultsExport = new ExportInfos(zipLeaf, metadata);
-						exports.add(resultsExport);
-					}
+					ExportInfos resultsExport = new ExportInfos(zipLeaf, metadata);
+					exports.add(resultsExport);
 				}
 			}
 		}

@@ -1,16 +1,17 @@
 .o_export_card {
 	display: flex;
+	align-items: flex-end;
+	flex-wrap: wrap;
 	position: relative;
-	height: 95px;
 	padding: $o-export-area-rowelem-space-md;
 	border-bottom: 1px solid grey;
 	
 	.o_export_type {
-		font-size: 65px;
-		line-height: 80px;
+		font-size: 60px;
+		line-height: 70px;
 		text-align: center;
-		height: 80px;
-		flex: 0 0 80px;
+		min-height: 70px;
+		flex: 0 0 70px;
 		box-sizing: content-box;
 	}
 	
@@ -18,12 +19,18 @@
 		flex: 1 1 auto;
 		position: relative;
 		padding: 0 10px;
-		min-width: 0;
+		min-width: 360px;
 		
 		>span {
 			font-size: 90%;
 			color: $o-export-area-meta-color;
 		}
+	}
+	
+	.o_export_wait {
+		font-style: italic;
+		padding-left: 2em;
+		color: $alert-warning-text;
 	}
 	
 	.o_export_expiration.o_labeled {
@@ -33,23 +40,29 @@
 		text-transform: none;
 		font-weight: normal;
 		display: inline-block;
-		position: absolute;
-		bottom: 0;
-		right: 0;
+	}
+	
+	.o_export_exp {
+		flex: 0 0 120px;
+		overflow: hidden;
 	}
 	
 	.o_export_actions {
-		flex: 0 0 auto;
+		flex: 0 0 120px;
 		overflow: hidden;
-		width: 120px;
 		font-size: 150%;
+		margin-bottom: -5px;
+		text-align: right;
 		
 		.o_actions {
-			position: absolute;
-			display: block;
-			bottom: 8px;
-			right: 0;
 			white-space: nowrap;
 		}
+	}
+}
+
+@media (max-width: $screen-sm-max) {
+	.o_export_card .o_export_exp, .o_export_card .o_export_actions {
+		margin-left: 80px;
+		text-align: left;
 	}
 }

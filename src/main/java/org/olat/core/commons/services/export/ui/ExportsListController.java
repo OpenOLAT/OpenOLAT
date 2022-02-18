@@ -75,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ExportsListController extends FormBasicController implements FlexiTableComponentDelegate, GenericEventListener {
 	
+	private FormLink deleteMyButton;
 	private FormLink deleteAllButton;
 	private FlexiTableElement tableEl;
 	private ExportsListDataModel tableModel;
@@ -128,6 +129,10 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		deleteAllButton = uifactory.addFormLink("delete.all", formLayout, Link.BUTTON);
 		deleteAllButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		
+		deleteMyButton = uifactory.addFormLink("delete.my", formLayout, Link.BUTTON);
+		deleteMyButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		deleteMyButton.setVisible(admin);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.title));
@@ -290,7 +295,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 			}
 		} else if(confirmDeleteAllCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				doDeleteAll();
+				doDeleteAll((Boolean)confirmDeleteAllCtrl.getUserObject());
 			}
 		} else if(infosCtrl == source) {
 			cmc.deactivate();
@@ -313,8 +318,10 @@ public class ExportsListController extends FormBasicController implements FlexiT
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(deleteAllButton == source) {
-			doConfirmDeleteAll(ureq);
-		} else if(source instanceof FormLink) {
+			doConfirmDeleteAll(ureq, Boolean.TRUE);
+		} else if(deleteMyButton == source) {
+			doConfirmDeleteAll(ureq, Boolean.FALSE);
+		}  else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if("cancel".equals(cmd) && link.getUserObject() instanceof ExportRow) {
@@ -363,20 +370,30 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		showInfo("info.export.deleted");
 	}
 	
-	private void doConfirmDeleteAll(UserRequest ureq) {
-		int numOfRows = tableModel.getRowCount();
+	private void doConfirmDeleteAll(UserRequest ureq, Boolean all) {
+		int numOfRows = 0;
+		List<ExportRow> rows = tableModel.getObjects();
+		for(ExportRow row:rows) {
+			if(all.booleanValue() || getIdentity().equals(row.getExport().getCreator())) {
+				numOfRows++;
+			}
+		}
+		
 		String[] args = { Integer.toString(numOfRows) };
 		String i18nTitle = numOfRows <= 1 ? "confirm.delete.all.title" : "confirm.delete.all.title.plural";
 		String i18nText = numOfRows <= 1 ? "confirm.delete.all.text" : "confirm.delete.all.text.plural";
 		String title = translate(i18nTitle, args);
 		String text = translate(i18nText, args);		
 		confirmDeleteAllCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteAllCtrl);
+		confirmDeleteAllCtrl.setUserObject(all);
 	}
 	
-	private void doDeleteAll() {
-		List<ExportRow> rows = this.tableModel.getObjects();
+	private void doDeleteAll(Boolean all) {
+		List<ExportRow> rows = tableModel.getObjects();
 		for(ExportRow row:rows) {
-			exportManager.deleteExport(row.getExport());
+			if(all.booleanValue() || getIdentity().equals(row.getExport().getCreator())) {
+				exportManager.deleteExport(row.getExport());
+			}
 		}
 		dbInstance.commitAndCloseSession();
 		loadModel();
@@ -388,7 +405,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		infosCtrl = new ExportInfosController(ureq, this.getWindowControl(), row);
 		listenTo(infosCtrl);
 		
-		String title = translate("export.metadata");
+		String title = translate("export.metadata", row.getTitle());
 		cmc = new CloseableModalController(getWindowControl(), "close", infosCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);

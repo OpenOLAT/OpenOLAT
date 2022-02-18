@@ -124,7 +124,7 @@ public class QTI21NewExportController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(withPdfEl == source) {
-			updateTitle(ureq, isWithPdfs());
+			titleEl.setValue(getDefaultTitle(ureq, isWithPdfs()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -150,16 +150,6 @@ public class QTI21NewExportController extends FormBasicController {
 	
 	private boolean isWithPdfs() {
 		return withPdfEl.isVisible() && "with".equals(withPdfEl.getSelectedKey());
-	}
-
-	private void updateTitle(UserRequest ureq, boolean withPdf) {
-		String  withTitle = getDefaultTitle(ureq, true);
-		String  withoutTitle = getDefaultTitle(ureq, false);
-		String currentTitle = titleEl.getValue();
-		if(!StringHelper.containsNonWhitespace(currentTitle)
-				|| currentTitle.equals(withTitle) || currentTitle.equals(withoutTitle)) {
-			titleEl.setValue(getDefaultTitle(ureq, withPdf));
-		}
 	}
 	
 	private String getDefaultTitle(UserRequest ureq, boolean withPdf) {

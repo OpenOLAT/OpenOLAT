@@ -160,7 +160,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 		if(ORES_TYPE_OVERVIEW.equalsIgnoreCase(type)) {
 			doOpenOverview();
 		} else if(ORES_TYPE_PARTICIPANTS.equalsIgnoreCase(type)) {
-			doOpenParticipants(ureq);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenParticipants(ureq).activate(ureq, subEntries, state);
 		} else if(ORES_TYPE_ASSESSMENT_MODE.equalsIgnoreCase(type) && assessmentModeLink != null) {
 			doOpenAssessmentMode(ureq);
 		} else if(ORES_TYPE_PREVIEW.equalsIgnoreCase(type)) {

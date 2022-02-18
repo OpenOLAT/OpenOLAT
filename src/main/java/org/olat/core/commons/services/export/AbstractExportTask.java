@@ -47,6 +47,17 @@ public abstract class AbstractExportTask implements ExportTask {
 	public void setTask(Task task) {
 		this.task = task;
 	}
+	
+	/**
+	 * The ending of the file will exclude the file from the export list,
+	 * and prevent concurrent metadata generation.
+	 * 
+	 * @param filename The filename
+	 * @return A convenient formatted file name
+	 */
+	protected String generateFilename(String filename) {
+		return filename + "_" + task.getKey() + ".zip";
+	}
 
 	protected VFSMetadata fillMetadata(VFSLeaf exportZip, String title, String description) {
 		VFSRepositoryService vfsRepositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);

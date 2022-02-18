@@ -34,11 +34,18 @@ import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskProgressCallback;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -46,6 +53,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.QTICourseNode;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -125,7 +133,7 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 		VFSContainer subFolder = exportManager
 				.getExportContainer(course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNodeIdent);
 		
-		String vfsName = filename + "_" + task.getKey() + ".zip";
+		String vfsName = generateFilename(filename);
 		exportZip = subFolder.createChildLeaf(vfsName);
 		if(exportZip == null) {
 			exportZip = (VFSLeaf)subFolder.resolve(vfsName);
@@ -167,11 +175,37 @@ public class QTI21ResultsExportTask extends AbstractExportTask {
 		// Reload the metadata
 		if(!export.isCancelled()) {
 			vfsRepositoryService.getMetadataFor(exportZip);
+			sendMail(course, courseNode);
 		} else {
 			TaskStatus status = taskExecutorManager.getStatus(task);
 			if(status == TaskStatus.cancelled) {
 				exportZip.deleteSilently();
 			}
+		}
+	}
+	
+	private void sendMail(ICourse course, QTICourseNode courseNode) {
+		Translator translator = Util.createPackageTranslator(QTI21ResultsExportTask.class, locale);
+		try {
+			String email = task.getCreator().getUser().getEmail();
+			MailBundle bundle = new MailBundle();
+			bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+			bundle.setTo(email);
+			
+			RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			List<ContextEntry> cEntries = BusinessControlFactory.getInstance()
+					.createCEListFromString("[RepositoryEntry:" + entry.getKey() + "][CourseNode:" + courseNode.getIdent() + "][Participants:0][Export:0]");
+			String url = BusinessControlFactory.getInstance().getAsURIString(cEntries, true);
+
+			String[] args = { title, url };
+
+			String subject = translator.translate("export.notification.subject", args);
+			String body = translator.translate("export.notification.body", args);
+			bundle.setContent(subject, body);
+
+			CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundle);
+		} catch (Exception e) {
+			log.error("Error sending information email to user that file was saved successfully.", e);
 		}
 	}
 }

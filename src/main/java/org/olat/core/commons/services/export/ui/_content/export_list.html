@@ -1,8 +1,13 @@
 <fieldset>
 	<legend>$r.translate("export.list")</legend>
-	#if($r.visible("delete.all"))
+	#if($r.visible("delete.all") || $r.visible("delete.my"))
 	<div class="o_button_group o_button_group_right">
-		$r.render("delete.all")
+		#if($r.visible("delete.my"))
+			$r.render("delete.my")
+		#end
+		#if($r.visible("delete.all"))
+			$r.render("delete.all")
+		#end
 	</div>
 	#end
 	$r.render("list")

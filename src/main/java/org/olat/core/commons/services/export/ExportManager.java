@@ -28,6 +28,9 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
 /**
+ * Only support course for the moment<br>
+ * The exported ZIP file need to have a file name which ends with
+ * "_taskKey.zip" @see AbstractExportTask.java
  * 
  * Initial date: 2 févr. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -37,9 +40,9 @@ public interface ExportManager {
 	
 	public static final String ROOT_FOLDER = "persistedexports";
 	
-	public VFSContainer getExportContainer(RepositoryEntry courseEntry, String resSubPath);
+	public VFSContainer getExportContainer(RepositoryEntry entry, String resSubPath);
 	
-	public List<ExportInfos> getResultsExport(RepositoryEntry courseEntry, String resSubPath);
+	public List<ExportInfos> getResultsExport(RepositoryEntry entry, String resSubPath);
 	
 	public void startExport(ExportTask task, Identity creator, OLATResource resource, String resSubPath);
 	

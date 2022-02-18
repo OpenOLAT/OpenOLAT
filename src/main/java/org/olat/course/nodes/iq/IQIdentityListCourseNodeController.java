@@ -53,6 +53,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
@@ -108,6 +111,8 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
  *
  */
 public class IQIdentityListCourseNodeController extends IdentityListCourseNodeController {
+	
+	private static final String ORES_TYPE_EXPORT_RESULTS = "Export";
 	
 	private FormLink extraTimeButton;
 	private FormLink exportResultsButton;
@@ -358,6 +363,19 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		super.activate(ureq, entries, state);
+		
+		if(entries != null && !entries.isEmpty()) {
+			ContextEntry entry = entries.get(0);
+			String resourceType = entry.getOLATResourceable().getResourceableTypeName();
+			if(ORES_TYPE_EXPORT_RESULTS.equalsIgnoreCase(resourceType)) {
+				doExportResults(ureq);
+			}
+		}
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(stackPanel == source) {
 			if(event instanceof PopEvent) {
@@ -522,7 +540,9 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private void doExportResults(UserRequest ureq, IdentitiesList identities) {
 		if (!identities.isEmpty()) {
 			CourseEnvironment courseEnv = getCourseEnvironment();
-			exportResultsCtrl = new QTI21ExportResultsController(ureq, getWindowControl(),
+
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_EXPORT_RESULTS), null);
+			exportResultsCtrl = new QTI21ExportResultsController(ureq, swControl,
 					courseEnv, (IQTESTCourseNode)courseNode, identities, getAssessmentCallback());
 			listenTo(exportResultsCtrl);
 			stackPanel.pushController(translate("export.results.crumb"), exportResultsCtrl);
