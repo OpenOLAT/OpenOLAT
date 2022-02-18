@@ -62,7 +62,6 @@ public class QuestionPoolAdminPage {
 			//engage review process
 			By confirmBy = By.cssSelector("fieldset.o_sel_qpool_reset_status_form button.btn-primary");
 			browser.findElement(confirmBy).click();
-			OOGraphene.waitBusy(browser);
 			OOGraphene.waitModalDialogDisappears(browser);
 			
 			By saveConfigurationBy = By.cssSelector(".o_sel_qpool_buttons button.btn-primary");
@@ -113,7 +112,6 @@ public class QuestionPoolAdminPage {
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_edit_level_form button.btn.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

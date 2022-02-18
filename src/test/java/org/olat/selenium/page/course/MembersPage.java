@@ -181,7 +181,6 @@ public class MembersPage {
 		By editBy = By.xpath("//div[contains(@class,'popover')]//ul[contains(@class,'o_dropdown')]/li/a[contains(@onclick,'tbl_edit')]");
 		browser.findElement(editBy).click();
 		
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
@@ -215,7 +214,6 @@ public class MembersPage {
 		By confirmNoMailBy = By.xpath("//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_1')]");
 		OOGraphene.waitElement(confirmNoMailBy, browser);
 		browser.findElement(confirmNoMailBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

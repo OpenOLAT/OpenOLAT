@@ -101,7 +101,6 @@ public class QuestionPoolPage {
 		
 		By saveBy = By.cssSelector("div.modal-content fieldset.o_sel_qpool_review_form button.btn.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -109,7 +108,6 @@ public class QuestionPoolPage {
 	public QuestionPoolPage newQuestion(String title, QTI21QuestionType type) {
 		By newQuestionBy = By.xpath("//a[i[contains(@class,'o_icon_qitem_new')]]");
 		browser.findElement(newQuestionBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By titleBy = By.cssSelector("fieldset.o_sel_new_item_form div.o_sel_item_title input[type='text']");
@@ -121,7 +119,6 @@ public class QuestionPoolPage {
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_new_item_form button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		By assessmentItemBy = By.cssSelector("ul.o_sel_assessment_item_config");
@@ -146,13 +143,11 @@ public class QuestionPoolPage {
 		By startProcessBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'process.activate.start.review')]");
 		OOGraphene.waitElement(startProcessBy, browser);
 		browser.findElement(startProcessBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By confirmBy = By.cssSelector("fieldset.o_sel_qpool_confirm_start_form button.btn.btn-primary");
 		OOGraphene.waitElement(confirmBy, browser);
 		browser.findElement(confirmBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

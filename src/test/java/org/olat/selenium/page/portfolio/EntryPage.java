@@ -140,7 +140,6 @@ public class EntryPage {
 		//ok save
 		By saveBy = By.cssSelector("fieldset.o_sel_pf_collect_document_form button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -241,7 +240,6 @@ public class EntryPage {
 		OOGraphene.waitElement(confirmButtonBy, browser);
 		OOGraphene.waitBusyAndScrollTop(browser);
 		browser.findElement(confirmButtonBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 	}
 }

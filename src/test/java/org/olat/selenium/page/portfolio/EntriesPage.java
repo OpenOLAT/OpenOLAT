@@ -45,8 +45,7 @@ public class EntriesPage {
 	public EntryPage newPage(String title) {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_entry");
-		WebElement createButton = browser.findElement(createBy);
-		createButton.click();
+		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_entry_form");
 		OOGraphene.waitElement(popupBy, 5, browser);
@@ -58,8 +57,7 @@ public class EntriesPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_pf_edit_entry_form button.btn-primary");
-		WebElement submitButton = browser.findElement(submitBy);
-		submitButton.click();
+		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 		return new EntryPage(browser);
 	}

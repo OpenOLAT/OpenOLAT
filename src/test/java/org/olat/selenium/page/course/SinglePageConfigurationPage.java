@@ -50,7 +50,6 @@ public class SinglePageConfigurationPage {
 		By editBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_edit");
 		OOGraphene.waitElement(editBy, browser);
 		browser.findElement(editBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		OOGraphene.tinymce(content, browser);
@@ -58,10 +57,7 @@ public class SinglePageConfigurationPage {
 		By saveAndCloseBy = By.cssSelector("div.o_htmleditor #o_button_saveclose a");
 		OOGraphene.waitElement(saveAndCloseBy, browser);
 		browser.findElement(saveAndCloseBy).click();
-		
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
-		
 		return this;
 	}
 	
@@ -69,7 +65,6 @@ public class SinglePageConfigurationPage {
 		By editBy = By.cssSelector("fieldset.o_sel_single_page_file_settings a.o_sel_filechooser_edit");
 		OOGraphene.waitElement(editBy, browser);
 		browser.findElement(editBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return new TinyPage(browser);
 	}
@@ -84,7 +79,6 @@ public class SinglePageConfigurationPage {
 		By uploadLinkBy = By.cssSelector("ul.o_dropdown .o_sel_filechooser_upload");
 		OOGraphene.waitElement(uploadLinkBy, browser);
 		browser.findElement(uploadLinkBy).click();
-		
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector(".modal-body .o_fileinput input[type='file']");
@@ -96,7 +90,6 @@ public class SinglePageConfigurationPage {
 		By uploadBy = By.cssSelector(".modal-body .o_sel_upload_buttons button.btn-primary");
 		OOGraphene.waitElement(uploadBy, browser);
 		browser.findElement(uploadBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		return this;

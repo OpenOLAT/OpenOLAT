@@ -111,7 +111,6 @@ public class UserProfilePage {
 		OOGraphene.waitModalDialog(browser);
 		By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		browser.findElement(yesBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

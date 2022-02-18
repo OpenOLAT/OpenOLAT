@@ -121,7 +121,6 @@ public class QTI21ConfigurationCEPage {
 		By confirmBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		OOGraphene.waitElement(confirmBy, browser);
 		browser.findElement(confirmBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitingALittleLonger();
 		OOGraphene.moveTo(By.cssSelector("div.o_qti_21_datetest_end"), browser);

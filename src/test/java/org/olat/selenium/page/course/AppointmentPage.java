@@ -358,7 +358,6 @@ public class AppointmentPage {
 		
 		By saveBy = By.xpath("//div[@class='o_sel_appointment_confirm_finding']//button[contains(@class,'btn-primary')]");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		return this;

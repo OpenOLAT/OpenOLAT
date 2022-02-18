@@ -123,7 +123,6 @@ public class GroupTaskPage {
 		By uploadButtonBy = By.cssSelector("#" + stepId + " .o_sel_course_gta_submit_file");
 		OOGraphene.waitElement(uploadButtonBy, browser);
 		browser.findElement(uploadButtonBy).click();
-		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
@@ -134,7 +133,6 @@ public class GroupTaskPage {
 		
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -143,7 +141,7 @@ public class GroupTaskPage {
 		String startWindow = browser.getWindowHandle();
 		
 		By createButtonBy = By.cssSelector("#o_step_submit_content .o_sel_course_gta_create_doc");
-		OOGraphene.clickAndWait(createButtonBy, browser);
+		OOGraphene.click(createButtonBy, browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By filenameBy = By.cssSelector(".o_sel_course_gta_doc_filename input[type='text']");

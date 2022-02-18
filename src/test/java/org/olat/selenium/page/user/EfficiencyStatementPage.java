@@ -145,8 +145,8 @@ public class EfficiencyStatementPage {
 		OOGraphene.waitElement(collectBy, browser);
 		OOGraphene.scrollTo(collectBy, browser);
 		browser.findElement(collectBy).click();
-		OOGraphene.waitTinymce(browser);
 		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitTinymce(browser);
 		return new MediaPage(browser);
 	}
 }

@@ -57,7 +57,6 @@ public class BigBlueButtonTemplatePage {
 	public void save() {
 		By saveBy = By.cssSelector("div.modal-body fieldset.o_sel_bbb_edit_template button.btn.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 	}
 }

@@ -86,7 +86,6 @@ public class FolderPage {
 	public FolderPage createHTMLFile(String name, String content) {
 		By newFileBy = By.className("b_bc_newfile");
 		browser.findElement(newFileBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		String startWindow = browser.getWindowHandle();

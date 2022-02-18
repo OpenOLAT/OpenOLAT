@@ -474,7 +474,6 @@ public class CourseEditorPageFragment {
 	
 	private CourseEditorPageFragment createResource(By chooseButton, String resourceTitle, String resourceType) {
 		browser.findElement(chooseButton).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//popup

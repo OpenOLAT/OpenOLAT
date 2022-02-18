@@ -94,12 +94,10 @@ public class SurveyPage {
 	public SurveyPage saveAndCloseSurvey() {
 		By saveBy = By.xpath("//div[contains(@class,'o_evaluation_form')]//button[contains(@class,'btn-primary')]");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		
 		OOGraphene.waitModalDialog(browser);
 		By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		browser.findElement(yesBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

@@ -85,7 +85,6 @@ public class ContactTracingAdminPage {
 		By addLocationBy = By.cssSelector("div.o_button_group a.o_sel_contacttracing_add_location");
 		OOGraphene.waitElement(addLocationBy, browser);
 		browser.findElement(addLocationBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contacttracing_location"), browser);
@@ -108,7 +107,6 @@ public class ContactTracingAdminPage {
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_contacttracing_location button.btn.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return url;
 	}
