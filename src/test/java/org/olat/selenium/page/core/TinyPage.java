@@ -91,7 +91,6 @@ public class TinyPage {
 		OOGraphene.waitElement(saveAndCloseBy, browser);
 		browser.findElement(saveAndCloseBy).click();
 		
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

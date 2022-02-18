@@ -94,7 +94,6 @@ public class TaxonomyTreePage {
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_taxonomy_level_form button.btn.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		// wait update in the table

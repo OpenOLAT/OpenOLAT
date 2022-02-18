@@ -77,7 +77,6 @@ public class UserAdminPage {
 		By createBy = By.cssSelector("ul.o_tools a.o_sel_user_delete");
 		OOGraphene.waitElement(createBy, browser);
 		browser.findElement(createBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
@@ -95,7 +94,6 @@ public class UserAdminPage {
 		
 		By buttonsBy = By.cssSelector("div.modal-dialog div.modal-body a.btn.o_sel_delete_user");
 		browser.findElement(buttonsBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -141,7 +139,6 @@ public class UserAdminPage {
 		//select
 		By selectBy = By.cssSelector("fieldset.o_sel_usersearch_searchform div.o_table_wrapper div.o_table_buttons button.btn.btn-default");
 		browser.findElement(selectBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//confirm
@@ -155,7 +152,6 @@ public class UserAdminPage {
 		
 		By buttonsBy = By.cssSelector("div.modal-dialog div.modal-body a.btn.o_sel_delete_user");
 		browser.findElement(buttonsBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}

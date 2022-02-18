@@ -56,7 +56,6 @@ public class DocumentConfigurationPage {
 		By inputBy = By.cssSelector("fieldset.o_sel_document_settings_upload a.o_sel_doc_select_repository_entry");
 		OOGraphene.waitElement(inputBy, browser);
 		browser.findElement(inputBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//find the row

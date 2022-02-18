@@ -93,7 +93,6 @@ public class MemberListPage {
 	public MemberListPage send() {
 		By sendBy = By.cssSelector("div.modal-dialog fieldset button.btn-primary");
 		browser.findElement(sendBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

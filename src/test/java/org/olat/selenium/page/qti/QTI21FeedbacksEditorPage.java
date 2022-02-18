@@ -189,6 +189,7 @@ public class QTI21FeedbacksEditorPage {
 		By saveBy = By.cssSelector("div.o_sel_assessment_item_feedbacks button.btn.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 }

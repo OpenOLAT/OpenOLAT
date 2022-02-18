@@ -225,7 +225,6 @@ public class LoginPage {
 		List<WebElement> resumes = browser.findElements(resumeButton);
 		if(resumes.size() > 0 && resumes.get(0).isDisplayed()) {
 			resumes.get(0).click();
-			OOGraphene.waitBusy(browser);
 			OOGraphene.waitModalDialogDisappears(browser);
 		}
 		return this;

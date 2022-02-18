@@ -101,7 +101,6 @@ public class ForumPage {
 	public ForumPage createThread(String title, String content, String alias) {
 		By newThreadBy = By.className("o_sel_forum_thread_new");
 		browser.findElement(newThreadBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
@@ -205,7 +204,6 @@ public class ForumPage {
 		By replyBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + reference + "')]]//a[contains(@class,'o_sel_forum_reply')]");
 		OOGraphene.waitElement(replyBy, browser);
 		OOGraphene.click(replyBy, browser);
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		if(title != null) {
@@ -227,7 +225,6 @@ public class ForumPage {
 		By collectBy = By.cssSelector(".o_ep_collect .o_portfolio_collector");
 		OOGraphene.waitElement(collectBy, 5, browser);
 		browser.findElement(collectBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);
 	}

@@ -63,7 +63,6 @@ public class TaxonomyLevelPage {
 		OOGraphene.waitElement(By.cssSelector("div.popover-content ul.o_sel_tools"), browser);
 		By competenceBy = By.xpath("//ul[contains(@class,'o_sel_tools')]/li/a[contains(@onclick,'add.competence." + competence + "')]");
 		browser.findElement(competenceBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		searchMember(user);

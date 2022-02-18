@@ -60,7 +60,6 @@ public class EnrollmentConfigurationPage {
 		
 		By selectBy = By.cssSelector("div.modal-body div.o_button_group button.btn.btn-primary");
 		browser.findElement(selectBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -73,7 +72,6 @@ public class EnrollmentConfigurationPage {
 			int maxParticipants, boolean waitingList, boolean auto) {
 		By chooseGroupBy = By.cssSelector("a.o_form_groupcreate");
 		browser.findElement(chooseGroupBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
@@ -98,7 +96,6 @@ public class EnrollmentConfigurationPage {
 		//save the group
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

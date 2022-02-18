@@ -85,7 +85,7 @@ public class GroupTaskToCoachPage {
 	public GroupTaskToCoachPage reviewed() {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_reviewed");
 		OOGraphene.waitElement(reviewBy, browser);
-		OOGraphene.moveAndClick(reviewBy, browser);
+		OOGraphene.click(reviewBy, browser);
 		confirm();
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
@@ -93,7 +93,7 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage needRevision() {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_need_revision");
-		OOGraphene.clickAndWait(reviewBy, browser);
+		OOGraphene.click(reviewBy, browser);
 		
 		OOGraphene.waitModalDialog(browser);
 		By okBy = By.xpath("//div[contains(@class,'modal-dialog')]//button");
@@ -104,16 +104,14 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage closeRevisions() {
 		By closeRevisionBy = By.cssSelector("#o_step_revision_content .o_sel_course_gta_close_revision");
-		OOGraphene.clickAndWait(closeRevisionBy, browser);
+		OOGraphene.click(closeRevisionBy, browser);
 		return confirm();
 	}
 	
 	public GroupTaskToCoachPage confirm() {
-		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		By yes = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		browser.findElement(yes).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
@@ -132,7 +130,8 @@ public class GroupTaskToCoachPage {
 	
 	public GroupTaskToCoachPage uploadCorrection(File correctionFile) {
 		By uploadButtonBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_submit_file");
-		OOGraphene.clickAndWait(uploadButtonBy, browser);
+		OOGraphene.click(uploadButtonBy, browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, correctionFile, browser);
@@ -142,7 +141,6 @@ public class GroupTaskToCoachPage {
 		
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		By correctionUploaded = By.xpath("//table[contains(@class,'table')]//tr/td//a[text()[contains(.,'" + correctionFile.getName() + "')]]");
 		OOGraphene.waitElement(correctionUploaded, 5, browser);
@@ -160,7 +158,6 @@ public class GroupTaskToCoachPage {
 		}
 		
 		OOGraphene.click(assessmentButtonBy, browser);
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}

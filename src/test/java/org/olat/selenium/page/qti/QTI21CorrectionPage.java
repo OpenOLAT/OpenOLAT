@@ -140,7 +140,6 @@ public class QTI21CorrectionPage {
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-body button.btn-primary");
 		OOGraphene.waitElement(confirmButtonBy, browser);
 		browser.findElement(confirmButtonBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

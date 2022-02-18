@@ -86,13 +86,11 @@ public class RemindersPage {
 		By sendBy = By.cssSelector("div.o_callout_content ul.o_dropdown a.o_sel_course_reminder_send");
 		OOGraphene.waitElement(sendBy, browser);
 		browser.findElement(sendBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By sendAllBy = By.cssSelector("div.modal-dialog a.o_sel_course_reminder_send_all");
 		OOGraphene.waitElement(sendAllBy, browser);
 		browser.findElement(sendAllBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
