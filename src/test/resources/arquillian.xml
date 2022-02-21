@@ -32,7 +32,7 @@
 		-->
 		<property name="firefoxDriverVersion">${webdriver.firefox.version:v0.30.0}</property>
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
-		<property name="chromeDriverVersion">${webdriver.chrome.version:97.0.4692.71}</property>
+		<property name="chromeDriverVersion">${webdriver.chrome.version:98.0.4758.102}</property>
 		<property name="chromeArguments">${webdriver.chrome.arguments}</property>
 		<property name="chromeExperimentalOption">{
 			"prefs":{"credentials_enable_service": false, "profile.password_manager_enabled": false }
