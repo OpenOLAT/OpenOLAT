@@ -170,6 +170,8 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	@Override
 	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			AssessmentEntryStatus status) {
+		if (courseNode == null) return;
+		
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
 		getNodeAccessProvider(type).onStatusUpdated(courseNode, userCourseEnv, status);
 	}
