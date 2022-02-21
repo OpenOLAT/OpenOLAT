@@ -15,14 +15,14 @@
     	}
     	
     	var wrapperId = this.attr('id');
-    	var now = Date.now();
+    	var now = performance.now();
     	var startTime = now - settings.testDuration;
     	var availableTime = startTime + settings.availableTime;
     	var remainingTime = availableTime - now;
 		displayRemainingTime(wrapperId, settings.availableTime, remainingTime);
     	
     	var periodic = jQuery.periodic({period: 1000, decay:1.0, max_period: remainingTime + 1000 }, function() {
-			var remaining = availableTime - Date.now();
+			var remaining = availableTime - performance.now();
 			if(remaining >= 0) {
 				displayRemainingTime(wrapperId, settings.availableTime, remaining);
 			} else {

@@ -14,12 +14,12 @@
     	}
     	
     	var wrapperId = this.attr('id');
-    	var startTime = Date.now();
+    	var startTime = performance.now();
     	var availableTime = settings.timeLimit;
 		displayRemainingTime(wrapperId, settings.timeLimit, settings.timeLimit);
     	
     	var periodic = jQuery.periodic({period: 1000, decay:1.0, max_period: availableTime + 1000 }, function() {
-			var remaining = availableTime - (Date.now() - startTime);
+			var remaining = availableTime - (performance.now() - startTime);
 			if(jQuery("#" + settings.formName).length == 0) {
 				periodic.cancel();
 				if(window.qti21CountDown == periodic) {
