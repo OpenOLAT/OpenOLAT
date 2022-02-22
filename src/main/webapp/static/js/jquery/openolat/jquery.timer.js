@@ -13,13 +13,13 @@
     	
     	var wrapperId = this.attr('id');
     	settings.wrapperId = wrapperId; 
-    	var now = Date.now();
+    	var now = performance.now();
     	var remainingTime = settings.remainingTime;//milliseconds
     	var availableTime = now + remainingTime;
 		displayRemainingTime(wrapperId, remainingTime);
 
     	var periodic = jQuery.periodic({period: 1000, decay:1.0, max_period: remainingTime + 10000 }, function() {
-			var remaining = availableTime - Date.now();
+			var remaining = availableTime - performance.now();
 			if(remaining >= 0) {
 				displayRemainingTime(wrapperId, remaining);
 			} else {
