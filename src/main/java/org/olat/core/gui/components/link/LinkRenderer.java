@@ -187,6 +187,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					sb.appendHtmlEscaped(translator.translate(link.getAriaLabel())).append("\"");
 				}
 			}
+			if(link.getAriaRole() != null) {
+				sb.append(" role=\"").appendHtmlEscaped(link.getAriaRole()).append("\"");
+			}
 			sb.append(">");
 			
 			// CSS icon

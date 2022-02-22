@@ -74,7 +74,9 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	 */
 	public static final int TOOLENTRY_DEFAULT = 7;
 	public static final int TOOLENTRY_CLOSE = 8;
-		
+
+	public static final String ARIA_ROLE_BUTTON = "button";
+
 	/**
 	 * can be added to one of the following:
 	 * 
@@ -90,6 +92,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	private String i18n;
 	private String title;
 	private String ariaLabel;
+	private String ariaRole;
 	private final String elementId;
 	private String textReasonForDisabling;
 	private String customDisplayText;
@@ -324,6 +327,14 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	public String getAriaLabel() {
 		return ariaLabel;
 	}
+
+	/**
+	 * The aria role if set or NULL
+	 * @return
+	 */
+	public String getAriaRole() {
+		return ariaRole;
+	}
 	
 	FormLink getFlexiForm() {
 		return flexiLink;
@@ -386,6 +397,14 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	
 	public void setAriaLabel(String i18nKey) {
 		this.ariaLabel = i18nKey;
+	}
+
+	/**
+	 * Use the aria role to override the link behavior. E.g. set it to 'button' if the link is a button
+	 * @param ariaRole
+	 */
+	public void setAriaRole(String ariaRole) {
+		this.ariaRole = ariaRole;
 	}
 
 	/**
