@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,7 +47,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
@@ -126,7 +124,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private static final String CMD_CURRICULUM = "cmd.filter.curriculum.";
 	private static final String CMD_TOOLS = "cmd.tools";
 	
-	private final AtomicInteger counter = new AtomicInteger();
+	private int counter = 0;
 
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
@@ -507,7 +505,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			}
 		}
 		
-		tableRows.sort(new FlexiTreeNodeComparator());
+		tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
 		tableRows.forEach(row -> forgeToolsLinks(row));
 		
 		tableModel.setObjects(tableRows);
@@ -670,7 +668,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	private void forgeToolsLinks(CertificateAndEfficiencyStatementRow row) {
 		if (row.isStatement() && (canLaunchCourse || canModify)) {
-			FormLink toolsLink = uifactory.addFormLink(CMD_TOOLS + "_" + counter.incrementAndGet(), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
+			FormLink toolsLink = uifactory.addFormLink(CMD_TOOLS + "_" + (++counter), CMD_TOOLS, "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);

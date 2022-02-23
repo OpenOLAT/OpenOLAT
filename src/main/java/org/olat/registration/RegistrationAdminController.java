@@ -22,6 +22,7 @@ package org.olat.registration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -229,17 +230,22 @@ public class RegistrationAdminController extends FormBasicController {
 		openCourseBrowserLink = uifactory.addFormLink("auto.enrolment.select.courses", autoEnrolmentCoursesContainer, Link.BUTTON_XSMALL);
 		
 		Map<Long, String> courseNames = new HashMap<>();
-		
-		for (Long courseKey : registrationModule.getAutoEnrolmentCourseKeys()) {
-			String courseName = repositoryService.loadByKey(courseKey).getDisplayname();
-			FormLink removeLink = uifactory.addFormLink("remove_course_" + courseKey.toString(), "remove_course", "remove", null, autoEnrolmentCoursesContainer, Link.LINK);
-			removeLink.setElementCssClass("o_button_textstyle");
-			removeLink.setUserObject(courseKey);
-			
-			courseNames.put(courseKey, courseName);
+		List<Long> courseKeys = new ArrayList<>(registrationModule.getAutoEnrolmentCourseKeys());
+		for (Iterator<Long> courseIt=courseKeys.iterator(); courseIt.hasNext(); ) {
+			Long courseKey = courseIt.next();
+			RepositoryEntry entry = repositoryService.loadByKey(courseKey);
+			if(entry != null) {
+				String courseName = entry.getDisplayname();
+				FormLink removeLink = uifactory.addFormLink("remove_course_" + courseKey, "remove_course", "remove", null, autoEnrolmentCoursesContainer, Link.LINK);
+				removeLink.setElementCssClass("o_button_textstyle");
+				removeLink.setUserObject(courseKey);
+				courseNames.put(courseKey, courseName);
+			} else {
+				courseIt.remove();
+			}
 		}		
 		
-		autoEnrolmentCoursesContainer.contextPut("autoEnrolmentCourseKeys", registrationModule.getAutoEnrolmentCourseKeys());
+		autoEnrolmentCoursesContainer.contextPut("autoEnrolmentCourseKeys", courseKeys);
 		autoEnrolmentCoursesContainer.contextPut("autoEnrolmentCourseNames", courseNames);
 		autoEnrolmentCoursesContainer.contextPut("autoBooking", acModule.isAutoEnabled());
 		
