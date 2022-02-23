@@ -139,8 +139,7 @@ public class ZipUtil {
 	 */
 	public static boolean unzip(File zipFile, File targetDir) {
 		try(InputStream in=new FileInputStream(zipFile)) {
-			xxunzip(in, zipFile.length(), targetDir.getAbsolutePath());
-			return true;
+			return xxunzip(in, zipFile.length(), targetDir.getAbsolutePath());
 		} catch (IOException e) {
 			handleIOException("I/O failure while unzipping " + zipFile.getAbsolutePath() + " to " + targetDir.getAbsolutePath(), e);
 			return false;
@@ -158,8 +157,7 @@ public class ZipUtil {
 		if (targetDir instanceof LocalFolderImpl) {
 			String outdir = ((LocalFolderImpl) targetDir).getBasefile().getAbsolutePath();
 			try(InputStream in=zipLeaf.getInputStream()) {
-				xxunzip(in, zipLeaf.getSize(), outdir);
-				return true;
+				return xxunzip(in, zipLeaf.getSize(), outdir);
 			} catch (IOException e) {
 				handleIOException("I/O failure while unzipping " + zipLeaf.getName() + " to " + outdir, e);
 				return false;
@@ -178,10 +176,8 @@ public class ZipUtil {
 	public static boolean unzipStrict(File zipFile, VFSContainer targetDir) {
 		if (targetDir instanceof LocalFolderImpl) {
 			String outdir = ((LocalFolderImpl) targetDir).getBasefile().getAbsolutePath();
-			
 			try(InputStream in = new FileInputStream(zipFile)) {
-				xxunzip (in, zipFile.length(), outdir);
-				return true;
+				return xxunzip(in, zipFile.length(), outdir);
 			} catch (IOException e) {
 				handleIOException("I/O failure while unzipping " + zipFile.getName() + " to " + outdir, e);
 				return false;
@@ -261,10 +257,9 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								if (!copy(oZip, newEntry)) {
+								if (!copy(oZip, newEntry, stats)) {
 									return false;
 								}
-								stats.uncompressedEntry(newEntry.getSize());
 								vfsRepositoryService.itemSaved(newEntry, identity);
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, false, "", oZip);
@@ -272,10 +267,9 @@ public class ZipUtil {
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								if (!copy(oZip, newEntry)) {
+								if (!copy(oZip, newEntry, stats)) {
 									return false;
 								}
-								stats.uncompressedEntry(newEntry.getSize());
 								vfsRepositoryService.itemSaved(newEntry, identity);
 							}
 						}
@@ -290,9 +284,10 @@ public class ZipUtil {
 		return true;
 	} // unzip
 	
-	private static boolean copy(ZipInputStream oZip, VFSLeaf newEntry) {
+	private static boolean copy(ZipInputStream oZip, VFSLeaf newEntry, ZipStatistics stats) {
 		try(OutputStream out = newEntry.getOutputStream(false)) {
-			return FileUtils.copy(oZip, out);
+			stats.entry();
+			return zpio(oZip, out, stats) > 0;
 		} catch(Exception e) {
 			handleIOException("", e);
 			return false;
@@ -383,22 +378,20 @@ public class ZipUtil {
 							VFSLeaf newEntry = (VFSLeaf)createIn.resolve(name);
 							if(newEntry == null) {
 								newEntry = createIn.createChildLeaf(name);
-								if (!copyShielded(oZip, newEntry, identity)) {
+								if (!copyShielded(oZip, newEntry, stats)) {
 									return false;
 								}
 							} else if (newEntry.canVersion() == VFSConstants.YES) {
 								vfsRepositoryService.addVersion(newEntry, identity, false, "", oZip);
 							}
-							stats.uncompressedEntry(newEntry.getSize());
 							vfsRepositoryService.itemSaved(newEntry, identity);
 							lastLeaf = newEntry;
 						} else {
 							VFSLeaf newEntry = createIn.createChildLeaf(name);
 							if (newEntry != null) {
-								if (!copyShielded(oZip, newEntry, identity)) {
+								if (!copyShielded(oZip, newEntry, stats)) {
 									return false;
 								}
-								stats.uncompressedEntry(newEntry.getSize());
 								vfsRepositoryService.itemSaved(newEntry, identity);
 								lastLeaf = newEntry;
 							}
@@ -414,9 +407,11 @@ public class ZipUtil {
 		return true;
 	} // unzip
 	
-	private static boolean copyShielded(net.sf.jazzlib.ZipInputStream oZip, VFSLeaf newEntry, Identity savedBy) {
-		try(InputStream in = new ShieldInputStream(oZip)) {
-			return VFSManager.copyContent(in, newEntry, savedBy);
+	private static boolean copyShielded(net.sf.jazzlib.ZipInputStream oZip, VFSLeaf newEntry, ZipStatistics stats) {
+		try(InputStream in = new ShieldInputStream(oZip);
+				OutputStream out = new BufferedOutputStream(newEntry.getOutputStream(false))) {
+			stats.entry();
+			return zpio(in, out, stats) > 0;
 		} catch(Exception e) {
 			handleIOException("", e);
 			return false;
@@ -424,7 +419,8 @@ public class ZipUtil {
 	}
 	
 	private static boolean copyShielded(VFSLeaf leaf, ZipOutputStream out) {
-		try(OutputStream sout = new ShieldOutputStream(out)) {
+		try(OutputStream sout = new ShieldOutputStream(out);
+				InputStream in=leaf.getInputStream()) {
 			return VFSManager.copyContent(leaf, sout);
 		} catch(Exception e) {
 			handleIOException("", e);
@@ -863,7 +859,7 @@ public class ZipUtil {
 	 * @param is, stream from zip archive
 	 * @param outdir, path to output directory, relative to cwd or absolute
 	 */
-	private static void xxunzip(InputStream is, long fileSize, String outdir) throws IOException {
+	private static boolean xxunzip(InputStream is, long fileSize, String outdir) throws IOException {
 		final Path outPath = Paths.get(outdir);
 		
 		ZipStatistics stats = new ZipStatistics(fileSize);
@@ -885,12 +881,16 @@ public class ZipUtil {
 					if (!parent.exists()) {
 						parent.mkdirs();
 					}
-					long uncompressedSize = xxunzipcpio(zis, of);
-					stats.uncompressedEntry(uncompressedSize);
+					if(!xxunzipcpio(zis, of, stats)) {
+						return false;
+					}
+					stats.entry();
 				}
 			}
+			return true;
 		} catch (IllegalArgumentException e) {
 			//problem with chars in entry name likely
+			return false;
 		}
 	}
 	
@@ -912,12 +912,14 @@ public class ZipUtil {
 			maxEntries = vfsRepositoryModule.getZipMaxEntries();
 		}
 		
-		public void uncompressedEntry(long uncompressedData) throws IOException {
+		public void entry() throws IOException {
 			numOfEntries++;
 			if(numOfEntries > maxEntries) {
 				throw new IOException("Suspected of ZIP-bomb. Max num. of entries: " + maxEntries);
 			}
+		}
 
+		public void uncompressedData(long uncompressedData) throws IOException {
 			uncompressedSize += uncompressedData;
 			if(uncompressedSize < GRACE_ENTRY_SIZE) {
 				return;
@@ -931,15 +933,28 @@ public class ZipUtil {
 		}
 	}
 	
-	private static long xxunzipcpio(ZipInputStream zis, File of) {
+	private static boolean xxunzipcpio(ZipInputStream zis, File of, ZipStatistics stats) {
 		try(BufferedOutputStream bos = new BufferedOutputStream (new FileOutputStream(of), FileUtils.BSIZE)) {
-			long size = FileUtils.cpio(new BufferedInputStream(zis), bos, "unzip:" + of.getName());
+			zpio(new BufferedInputStream(zis), bos, stats);
 			bos.flush();
-			return size;
+			return true;
 		} catch(IOException e) {
 			handleIOException("", e);
-			return -1l;
+			return false;
 		}
+	}
+	
+	private static long zpio(InputStream in, OutputStream out, ZipStatistics stats) throws IOException {
+		byte[] buffer = new byte[FileUtils.BSIZE];
+
+		int c;
+		long tot = 0;
+		while ((c = in.read(buffer, 0, buffer.length)) != -1) {
+    		out.write(buffer, 0, c);
+    		stats.uncompressedData(c);
+    		tot += c;
+		}
+		return tot;
 	}
 	
 	private static final void handleIOException(String msg, Exception e) {
