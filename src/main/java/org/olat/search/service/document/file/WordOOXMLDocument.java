@@ -56,6 +56,8 @@ public class WordOOXMLDocument extends FileDocument {
 	private static final long serialVersionUID = 2322994231200065526L;
 	private static final Logger log = Tracing.createLoggerFor(WordOOXMLDocument.class);
 
+	private static final int MAX_ENTRIES = 64;
+	
 	public static final String WORD_FILE_TYPE = "type.file.word";
 	private static final String HEADER = "word/header";
 	private static final String FOOTER = "word/footer";
@@ -80,8 +82,9 @@ public class WordOOXMLDocument extends FileDocument {
 		try(LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize());
 				ZipFile wordFile = new ZipFile(file)) {
 			
+			int count = 0;
 			List<String> contents = new ArrayList<>();
-			for(Enumeration<? extends ZipEntry> entriesEnumeration=wordFile.entries(); entriesEnumeration.hasMoreElements(); ) {
+			for(Enumeration<? extends ZipEntry> entriesEnumeration=wordFile.entries(); entriesEnumeration.hasMoreElements() && count<MAX_ENTRIES; count++) {
 				ZipEntry entry = entriesEnumeration.nextElement();
 				String name = entry.getName();
 				if(name.endsWith("word/document.xml")

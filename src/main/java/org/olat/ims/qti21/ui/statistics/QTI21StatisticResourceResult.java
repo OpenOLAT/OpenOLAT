@@ -369,7 +369,10 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 			Translator translator = Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale());
 			String text = translator.translate("error.assessment.item.missing");
 			Controller errorCtrl = MessageUIFactory.createErrorMessage(ureq, wControl, "", text);
-			return TitledWrapperHelper.getWrapper(ureq, wControl, errorCtrl, courseNode, "o_icon_error");
+			if(courseNode != null) {
+				errorCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, errorCtrl, courseNode, "o_icon_error");
+			}
+			return errorCtrl;
 		}
 		
 		QTI21AssessmentItemStatisticsController itemCtrl = new QTI21AssessmentItemStatisticsController(ureq, wControl,
