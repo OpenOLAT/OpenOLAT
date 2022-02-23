@@ -41,6 +41,48 @@ import org.olat.test.VFSJavaIOFile;
  *
  */
 public class ZipUtilTest extends OlatTestCase {
+	
+	@Test
+	public void simpleUnzipFileToDir() throws Exception {
+		File tmpFolder = new File(WebappHelper.getTmpDir(), "zip" + CodeHelper.getRAMUniqueID());
+		URL url = ZipUtilTest.class.getResource("Images.zip");
+		File zipFile = new File(url.toURI());
+
+		File unzipDir = new File(tmpFolder, "unzipSimple1");
+		unzipDir.mkdirs();
+		
+		boolean success = ZipUtil.unzip(zipFile, unzipDir);
+		Assert.assertTrue(success);
+		FileUtils.deleteDirsAndFiles(tmpFolder, true, true);
+	}
+	
+	@Test
+	public void simpleUnzipLeafToContainer() throws Exception {
+		URL url = ZipUtilTest.class.getResource("Images.zip");
+		VFSLeaf zipLeaf = new VFSJavaIOFile(url.toURI());
+		
+		VFSContainer tmpDir = VFSManager.olatRootContainer(FolderConfig.getRelativeTmpDir());
+		tmpDir.setLocalSecurityCallback(new FullAccessCallback());
+		VFSContainer targetDir = tmpDir.createChildContainer("zip" + CodeHelper.getForeverUniqueID());
+		boolean success = ZipUtil.unzip(zipLeaf, targetDir, (Identity)null, false);
+
+		Assert.assertTrue(success);
+		targetDir.deleteSilently();
+	}
+	
+	@Test
+	public void simpleUnzipNonStrictLeafToContainer() throws Exception {
+		URL url = ZipUtilTest.class.getResource("Images.zip");
+		VFSLeaf zipLeaf = new VFSJavaIOFile(url.toURI());
+		
+		VFSContainer tmpDir = VFSManager.olatRootContainer(FolderConfig.getRelativeTmpDir());
+		tmpDir.setLocalSecurityCallback(new FullAccessCallback());
+		VFSContainer targetDir = tmpDir.createChildContainer("zip" + CodeHelper.getForeverUniqueID());
+		boolean success = ZipUtil.unzipNonStrict(zipLeaf, targetDir, (Identity)null, false);
+
+		Assert.assertTrue(success);
+		targetDir.deleteSilently();
+	}
 
 	@Test
 	public void unzipFileToDir() throws Exception {

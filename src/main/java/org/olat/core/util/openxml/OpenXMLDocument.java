@@ -1045,9 +1045,10 @@ public class OpenXMLDocument {
 			out = null;
 			
 			//extract docx
+			int count = 0;
 			ZipInputStream zip = new ZipInputStream(in);
 			ZipEntry entry = zip.getNextEntry();
-			while (entry != null) {
+			while (entry != null && count++ < 64) {
 				String name = entry.getName();
 				if(name.endsWith("word/document.xml")) {
 					

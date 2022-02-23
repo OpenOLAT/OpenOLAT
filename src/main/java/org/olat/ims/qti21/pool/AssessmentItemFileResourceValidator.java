@@ -26,9 +26,6 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.ShieldInputStream;
@@ -75,22 +72,17 @@ public class AssessmentItemFileResourceValidator {
 		}
 	}
 
-	public boolean validate(String filename, InputStream in) {
+	private boolean validate(String filename, InputStream in) {
 		boolean valid = false;
 
 		if(filename.toLowerCase().endsWith(".xml")) {
 			valid = validateXml(in);
-			IOUtils.closeQuietly(in);
 		} else if(filename.toLowerCase().endsWith(".zip")) {
-			ZipInputStream oZip = new ZipInputStream(in);
-			try {
+			try(ZipInputStream oZip = new ZipInputStream(in)) {
 				valid = walkZip(oZip);
 			} catch(Exception e) {
 				log.error("", e);
 				valid = false;
-			} finally {
-				IOUtils.closeQuietly(oZip);
-				IOUtils.closeQuietly(in);
 			}
 		}
 		
@@ -134,8 +126,6 @@ public class AssessmentItemFileResourceValidator {
 			reader.parse(new InputSource(in));
 
 			return errorHandler.isValid() && contentHandler.isAssessmentItem();
-		} catch (ParserConfigurationException | SAXException e) {
-			return false;
 		} catch (Exception e) {
 			return false;
 		}

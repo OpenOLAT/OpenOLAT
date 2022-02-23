@@ -380,12 +380,12 @@ public class DataStepForm extends StepFormBasicController {
 
 		if(target.exists()) {
 			File parentTarget = ((LocalImpl)target).getBasefile().getParentFile();
-
+			
 			ZipEntry entry;
 			try(InputStream is = target.getInputStream();
 					ZipInputStream zis = new ZipInputStream(is)) {
 				byte[] b = new byte[FileUtils.BSIZE];
-				while ((entry = zis.getNextEntry()) != null) {//TODO zip
+				while ((entry = zis.getNextEntry()) != null) {
 					if(!entry.isDirectory()) {
 						while (zis.read(b) > 0) {
 							//continue
@@ -408,7 +408,7 @@ public class DataStepForm extends StepFormBasicController {
 							}
 
 							if(row.getReturnFiles() == null) {
-								row.setReturnFiles(new ArrayList<String>(2));
+								row.setReturnFiles(new ArrayList<>(2));
 							}
 							row.getReturnFiles().add(filename);
 						}
