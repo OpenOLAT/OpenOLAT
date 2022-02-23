@@ -311,6 +311,8 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	}
 	
 	private void doColumnWidth(UserRequest ureq, String command, String width) {
+		if(!StringHelper.containsNonWhitespace(command)) return;
+		
 		int parsedWidth;
 		try {
 			if(StringHelper.isLong(width)) {
@@ -327,11 +329,11 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 			logWarn("Could not parse column width::" + width + " for command::" + command, e);
 			parsedWidth = 14; // default value
 		}
-		if (command.equals("saveCol1Width")) {
+		if ("saveCol1Width".equals(command)) {
 			localLayoutConfig.setCol1WidthEM(parsedWidth);
 			saveGuiPrefs(ureq, localLayoutConfig);
 			layoutMainVC.getContext().put("col1CustomCSSStyles", "width: " + localLayoutConfig.getCol1WidthEM() + "em;");
-		} else if (command.equals("saveCol2Width")) {
+		} else if ("saveCol2Width".equals(command)) {
 			localLayoutConfig.setCol2WidthEM(parsedWidth);
 			saveGuiPrefs(ureq, localLayoutConfig);
 			layoutMainVC.getContext().put("col2CustomCSSStyles", "width: " + localLayoutConfig.getCol2WidthEM() + "em;");
