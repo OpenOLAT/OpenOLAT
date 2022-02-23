@@ -115,4 +115,45 @@ public class ZipUtilTest extends OlatTestCase {
 		
 		targetDir.deleteSilently();
 	}
+	
+	@Test
+	public void unzipFileToDirInflationRatio() throws Exception {
+		File tmpFolder = new File(WebappHelper.getTmpDir(), "zip" + CodeHelper.getRAMUniqueID());
+		URL url = ZipUtilTest.class.getResource("Zero.zip");
+		File zipFile = new File(url.toURI());
+		
+		File unzipDir = new File(tmpFolder, "unzip1");
+		unzipDir.mkdirs();
+		
+		boolean success = ZipUtil.unzip(zipFile, unzipDir);
+		Assert.assertFalse(success);
+		FileUtils.deleteDirsAndFiles(tmpFolder, true, true);
+	}
+	
+	@Test
+	public void unzipLeafToContainerInflationRatio() throws Exception {
+		URL url = ZipUtilTest.class.getResource("Zero.zip");
+		VFSLeaf zipLeaf = new VFSJavaIOFile(url.toURI());
+		VFSContainer tmpDir = VFSManager.olatRootContainer(FolderConfig.getRelativeTmpDir());
+		tmpDir.setLocalSecurityCallback(new FullAccessCallback());
+		VFSContainer targetDir = tmpDir.createChildContainer("zip" + CodeHelper.getForeverUniqueID());
+		boolean success = ZipUtil.unzip(zipLeaf, targetDir, (Identity)null, false);
+		Assert.assertFalse(success);
+		
+		targetDir.deleteSilently();
+	}
+	
+	@Test
+	public void unzipNonStrictLeafToContainerInflationRatio() throws Exception {
+		URL url = ZipUtilTest.class.getResource("Zero.zip");
+		VFSLeaf zipLeaf = new VFSJavaIOFile(url.toURI());
+		
+		VFSContainer tmpDir = VFSManager.olatRootContainer(FolderConfig.getRelativeTmpDir());
+		tmpDir.setLocalSecurityCallback(new FullAccessCallback());
+		VFSContainer targetDir = tmpDir.createChildContainer("zip" + CodeHelper.getForeverUniqueID());
+		boolean success = ZipUtil.unzipNonStrict(zipLeaf, targetDir, (Identity)null, false);
+
+		Assert.assertFalse(success);
+		targetDir.deleteSilently();
+	}
 }
