@@ -49,6 +49,11 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 	private long upperBorder;
 	@Value("${vfs.largefiles.lowerborder}")
 	private long lowerBorder;
+
+	@Value("${zip.min.inflate.ratio:0.01}")
+	private double zipMinInflateRatio;
+	@Value("${zip.max.entries:32000}")
+	private int zipMaxEntries;
 	
 	@Autowired
 	public VFSRepositoryModule(CoordinatorManager coordinatorManager) {
@@ -124,4 +129,19 @@ public class VFSRepositoryModule extends AbstractSpringModule {
 		return lowerBorder;
 	}
 
+	public double getZipMinInflateRatio() {
+		return zipMinInflateRatio;
+	}
+
+	public void setZipMinInflateRatio(double zipMinInflateRatio) {
+		this.zipMinInflateRatio = zipMinInflateRatio;
+	}
+
+	public int getZipMaxEntries() {
+		return zipMaxEntries;
+	}
+
+	public void setZipMaxEntries(int zipMaxEntries) {
+		this.zipMaxEntries = zipMaxEntries;
+	}
 }

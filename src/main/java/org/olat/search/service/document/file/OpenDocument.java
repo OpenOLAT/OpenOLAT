@@ -29,13 +29,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLFactories;
 import org.olat.search.service.SearchResourceContext;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -53,11 +53,13 @@ public class OpenDocument extends FileDocument {
 	private static final long serialVersionUID = 7285894180135411850L;
 	private static final Logger log = Tracing.createLoggerFor(OpenDocument.class);
 	
-	public final static String TEXT_FILE_TYPE = "type.file.odt";
-	public final static String SPEADSHEET_FILE_TYPE = "type.file.ods";
-	public final static String PRESENTATION_FILE_TYPE = "type.file.odp";
-	public final static String FORMULA_FILE_TYPE = "type.file.odf";
-	public final static String GRAPHIC_FILE_TYPE = "type.file.odg";
+	private static final int MAX_ENTRIES = 64;
+	
+	public static final String TEXT_FILE_TYPE = "type.file.odt";
+	public static final String SPEADSHEET_FILE_TYPE = "type.file.ods";
+	public static final String PRESENTATION_FILE_TYPE = "type.file.odp";
+	public static final String FORMULA_FILE_TYPE = "type.file.odf";
+	public static final String GRAPHIC_FILE_TYPE = "type.file.odg";
 
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
 	throws IOException, DocumentException, DocumentAccessException {
@@ -83,26 +85,22 @@ public class OpenDocument extends FileDocument {
 	public FileContent readContent(VFSLeaf leaf) throws DocumentException {
 		final OpenDocumentHandler dh = new OpenDocumentHandler();
 
-		InputStream stream = null;
-		ZipInputStream zip = null;
-		try {
-			stream = leaf.getInputStream();
-			zip = new ZipInputStream(stream);
+		int count = 0;
+		try(InputStream stream = leaf.getInputStream();
+				ZipInputStream zip = new ZipInputStream(stream)) {
 			ZipEntry entry = zip.getNextEntry();
-			while (entry != null) {
+			while (entry != null && count < MAX_ENTRIES) {
 				if (entry.getName().endsWith("content.xml")) {
 					parse(new ShieldInputStream(zip), dh);
 					break;//we parsed only content
 				}
 				entry = zip.getNextEntry();
+				count++;
 			}
 		} catch (DocumentException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new DocumentException(e.getMessage());
-		} finally {
-			FileUtils.closeSafely(zip);
-			FileUtils.closeSafely(stream);
 		}
 		return new FileContent(dh.getContent());
 	}
@@ -113,6 +111,8 @@ public class OpenDocument extends FileDocument {
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
 			parser.parse(new InputSource(stream));
+		} catch(StopSAXException e) {
+			//
 		} catch (Exception e) {
 			throw new DocumentException("XML parser configuration error", e);
 		}
@@ -133,11 +133,14 @@ public class OpenDocument extends FileDocument {
 		}
 
 		@Override
-		public void characters(char[] ch, int start, int length) {
+		public void characters(char[] ch, int start, int length) throws SAXException {
 			if(sb .length() > 0 && sb.charAt(sb.length() - 1) != ' '){
 				sb.append(' ');
 			}
 			sb.write(ch, start, length);
+			if(!sb.accept()) {
+				throw new StopSAXException();
+			}
 		}
 		
 		public String getContent() {

@@ -56,8 +56,11 @@ public class ExcelOOXMLDocument extends FileDocument {
 	private static final long serialVersionUID = 2322994231200065526L;
 	private static final Logger log = Tracing.createLoggerFor(ExcelOOXMLDocument.class);
 
+	private static final int MAX_ENTRIES = 64;
+	private static final int MAX_CELLS = 32000;
+	
 	private static final String SHEET = "xl/worksheets/sheet";
-	public final static String EXCEL_FILE_TYPE = "type.file.excel";
+	public static final String EXCEL_FILE_TYPE = "type.file.excel";
 
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException, DocumentException,
 			DocumentAccessException {
@@ -86,9 +89,9 @@ public class ExcelOOXMLDocument extends FileDocument {
 				ZipInputStream zip = new ZipInputStream(stream);
 				LimitedContentWriter writer = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize())) {
 			
+			int count = 0;
 			ZipEntry entry = zip.getNextEntry();
-			
-			while (entry != null) {
+			while (entry != null && count++ < MAX_ENTRIES) {
 				if(writer.accept()) {
 					String name = entry.getName();
 					if(name.startsWith(SHEET) && name.endsWith(".xml")) {
@@ -111,8 +114,9 @@ public class ExcelOOXMLDocument extends FileDocument {
 		try(InputStream stream = leaf.getInputStream();
 			ZipInputStream zip = new ZipInputStream(stream)) {
 
+			int count = 0;
 			ZipEntry entry = zip.getNextEntry();
-			while (entry != null) {
+			while (entry != null && count++ < MAX_ENTRIES) {
 				String name = entry.getName();
 				if(name.endsWith("xl/sharedStrings.xml")) {
 					parse(zip, dh);
@@ -141,6 +145,8 @@ public class ExcelOOXMLDocument extends FileDocument {
 				log.error("Cannot deactivate validation", e);
 			}
 			parser.parse(new InputSource(in));
+		} catch(StopSAXException e) {
+			// stopped
 		} catch (Exception e) {
 			throw new DocumentException("XML parser configuration error", e);
 		}
@@ -183,7 +189,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 		}
 
 		@Override
-		public void characters(char[] ch, int start, int length) {
+		public void characters(char[] ch, int start, int length) throws SAXException {
 			if(sharedStrings) {
 				String key = new String(ch, start, length);
 				String value = strings.get(key);
@@ -198,6 +204,10 @@ public class ExcelOOXMLDocument extends FileDocument {
 					sb.append(' ');
 				}
 				sb.write(ch, start, length);
+			}
+			
+			if(!sb.accept()) {
+				throw new StopSAXException();
 			}
 		}
 	}
@@ -228,11 +238,15 @@ public class ExcelOOXMLDocument extends FileDocument {
 		}
 
 		@Override
-		public void characters(char[] ch, int start, int length) {
+		public void characters(char[] ch, int start, int length) throws SAXException {
 			if(sb .length() > 0 && sb.charAt(sb.length() - 1) != ' '){
 				sb.append(' ');
 			}
 			sb.append(ch, start, length);
+			
+			if(strings.size() > MAX_CELLS) {
+				throw new StopSAXException();
+			}
 		}
 	}
 }

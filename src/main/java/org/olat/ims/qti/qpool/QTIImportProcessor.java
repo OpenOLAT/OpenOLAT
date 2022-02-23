@@ -382,19 +382,6 @@ class QTIImportProcessor {
 			}
 		} else if(QTIConstants.META_ITEM_TYPE.equals(label)) {
 			if(poolItem.getType() == null &&  StringHelper.containsNonWhitespace(entry)) {
-				//some heuristic
-				String typeStr = entry;
-				if(typeStr.equalsIgnoreCase("MCQ") || typeStr.equalsIgnoreCase("Multiple choice")) {
-					typeStr = QuestionType.MC.name();
-				} else if(typeStr.equalsIgnoreCase("SCQ") || typeStr.equalsIgnoreCase("Single choice")) {
-					typeStr = QuestionType.SC.name();
-				} else if(typeStr.equalsIgnoreCase("fill-in") || typeStr.equals("Fill-in-the-Blank")
-						|| typeStr.equalsIgnoreCase("Fill-in-Blank") || typeStr.equalsIgnoreCase("Fill In the Blank")) {
-					typeStr = QuestionType.FIB.name();
-				} else if(typeStr.equalsIgnoreCase("Essay")) {
-					typeStr = QuestionType.ESSAY.name();
-				}
-				
 				QItemType type = qItemTypeDao.loadByType(entry);
 				if(type == null) {
 					type = qItemTypeDao.create(entry, true);
@@ -436,12 +423,10 @@ class QTIImportProcessor {
 		questestinteropEl.add(deepClone);
 		
 		//write
-		try {
-			OutputStream os = endFile.getOutputStream(false);
+		try(OutputStream os = endFile.getOutputStream(false)) {
 			XMLWriter xw = new XMLWriter(os, new OutputFormat("  ", true));
 			xw.write(itemDoc.getRootElement());
 			xw.close();
-			os.close();
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -470,14 +455,16 @@ class QTIImportProcessor {
 		}
 	}
 	
-	private void unzipMaterial(ZipInputStream zis, VFSContainer container, String name) {
+	private long unzipMaterial(ZipInputStream zis, VFSContainer container, String name) {
 		VFSLeaf leaf = container.createChildLeaf(name);
 		try(OutputStream out = leaf.getOutputStream(false);
 				OutputStream bos = new BufferedOutputStream(out);) {
-			FileUtils.cpio(zis, bos, "unzip:" + name);
+			long size = FileUtils.cpio(zis, bos, "unzip:" + name);
 			bos.flush();
+			return size;
 		} catch (IOException e) {
 			log.error("", e);
+			return -1;
 		}
 	}
 	

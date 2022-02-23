@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 
 import org.apache.logging.log4j.Logger;
@@ -84,10 +83,8 @@ public class ItemFileResourceValidator {
 			try(ZipInputStream oZip = new ZipInputStream(in)) {
 				ZipEntry oEntr = oZip.getNextEntry();
 				while (oEntr != null) {
-					if (!oEntr.isDirectory()) {
-						if(validateXml(new ShieldInputStream(oZip))) {
-							valid = true;
-						}
+					if (!oEntr.isDirectory() && validateXml(new ShieldInputStream(oZip))) {
+						valid = true;
 					}
 					oZip.closeEntry();
 					oEntr = oZip.getNextEntry();
@@ -140,10 +137,6 @@ public class ItemFileResourceValidator {
 			validator.validate(in);
 			
 			return errorHandler.isValid() && contentHandler.isItem();
-		} catch (ParserConfigurationException e) {
-			return false;
-		} catch (SAXException e) {
-			return false;
 		} catch (Exception e) {
 			return false;
 		}
