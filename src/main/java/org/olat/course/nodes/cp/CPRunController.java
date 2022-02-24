@@ -175,7 +175,9 @@ public class CPRunController extends BasicController implements ControllerEventL
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		cpDispC.activate(ureq, entries, state);
+		if(cpDispC != null) {
+			cpDispC.activate(ureq, entries, state);
+		}
 	}
 
 	private void doLaunch(UserRequest ureq) {

@@ -929,9 +929,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	}
 	
 	private void doAssessmentConfirmation(boolean confirmed) {
-		nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce(), confirmed);
-		updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
-		updateAssessmentConfirmUI(getCurrentCourseNode());
+		if (getCurrentCourseNode() != null) {
+			nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce(), confirmed);
+			updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
+			updateAssessmentConfirmUI(getCurrentCourseNode());
+		}
 	}
 	
 	private void doScrollTop() {
