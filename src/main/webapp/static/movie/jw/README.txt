@@ -1,1 +1,0 @@
-This is JW Player version 5.6.1 with SWObjects 2.2
