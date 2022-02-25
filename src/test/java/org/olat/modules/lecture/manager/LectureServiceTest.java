@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
@@ -718,6 +719,25 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice4_5));
 		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice4_5_6));
 		Assert.assertTrue(uniquelyRelatedNotices1_2_3_4_5_6.contains(notice6));
+	}
+	
+	@Test
+	public void getAbsenceNoticePreferedOne() {
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("noticee-4");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock block = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		
+		AbsenceNotice longNotice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.entries,
+				DateUtils.addDays(new Date(), -2), DateUtils.addDays(new Date(), 2), null, null, Boolean.TRUE, List.of(entry), null, null);
+		sleep(100);// ensure different creation date
+		AbsenceNotice specificNotice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				block.getStartDate(), block.getEndDate(), null, null, null, null, List.of(block), null);
+		dbInstance.commitAndCloseSession();
+		
+		AbsenceNotice notice = lectureService.getAbsenceNotice(participant, block);
+		Assert.assertEquals(longNotice, notice);
+		Assert.assertNotEquals(specificNotice, notice);
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {

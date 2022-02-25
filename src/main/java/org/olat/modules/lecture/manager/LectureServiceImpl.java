@@ -1189,13 +1189,23 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public AbsenceNotice getAbsenceNotice(IdentityRef identity, LectureBlock lectureBlock) {
 		List<AbsenceNotice> notices = absenceNoticeDao.getAbsenceNotices(identity, lectureBlock);
-		AbsenceNotice preferedNotice;
-		if(notices.isEmpty()) {
-			preferedNotice = null;
-		} else if(notices.size() == 1) {
+		AbsenceNotice preferedNotice = null;
+		if(notices.size() == 1) {
 			preferedNotice = notices.get(0);
-		} else {
-			preferedNotice = notices.get(notices.size() - 1);
+		} else if(notices.size() > 1) {
+			// sort by date
+			Collections.sort(notices, (n1, n2) -> n1.getCreationDate().compareTo(n2.getCreationDate()));
+			
+			for(int i=notices.size(); i-->=0 && preferedNotice == null;) {
+				AbsenceNotice notice = notices.get(i);
+				if(notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized().booleanValue()) {
+					preferedNotice = notice;
+				}
+			}
+			
+			if(preferedNotice == null) {
+				preferedNotice = notices.get(notices.size() - 1);
+			}
 		}
 		return preferedNotice;
 	}
@@ -1205,7 +1215,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		LectureBlockStatus status = lectureBlock.getStatus();
 		LectureRollCallStatus rollCallStatus = lectureBlock.getRollCallStatus();
 		if(status == LectureBlockStatus.done || rollCallStatus == LectureRollCallStatus.closed || rollCallStatus == LectureRollCallStatus.autoclosed) {
-			log.warn("Try to adapt roll call of a closed lecture block: " + lectureBlock.getKey());
+			log.warn("Try to adapt roll call of a closed lecture block: {}", lectureBlock.getKey());
 			return;
 		}
 
