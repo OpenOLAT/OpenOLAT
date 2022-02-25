@@ -50,6 +50,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -391,6 +392,16 @@ public interface LectureService {
 	 * @return A list of groups
 	 */
 	public List<Group> getLectureBlockToGroups(LectureBlockRef block);
+	
+	
+	/**
+	 * Lists the base groups attached to the specified lecture block with the specified
+	 * type (linked to business groups, curriculum elements...)
+	 * 
+	 * @param block A lecture block
+	 * @return A list of groups
+	 */
+	public List<Group> getLectureBlockToGroups(LectureBlockRef block, RepositoryEntryRelationType type);
 	
 	/**
 	 * Returns the list of participants of a lecture block.

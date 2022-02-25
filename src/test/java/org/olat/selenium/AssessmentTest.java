@@ -1927,7 +1927,7 @@ public class AssessmentTest extends Deployments {
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 		
-		LoginPage authorLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course

@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.restapi;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -49,6 +50,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
@@ -252,29 +254,43 @@ public class LectureBlockWebService {
 	}
 	
 	/**
-	 * Add the group of all curriculum elements to the lecture block participants list.
+	 * Sync the groups of all curriculum elements to the lecture block participants list. Add missing
+	 * ones and removing groups from elements which are not longer linked to the course.
 	 * 
 	 * @return 200 if all ok
 	 */
 	@PUT
 	@Path("participants/curriculum")
-	@Operation(summary = "Add group", description = "Add the group of all curriculum elements to the lecture block participants list")
+	@Operation(summary = "Add group", description = "Synchronize the groups of all curriculum elements to the lecture block participants list")
 	@ApiResponse(responseCode = "200", description = "Successfully added")
-	public Response addCurriculumElementParticipantGroup() {
+	public Response syncCurriculumElementParticipantGroup() {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
 		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
-		List<Group> currentGroups = lectureService.getLectureBlockToGroups(reloadedBlock);
+		List<Group> elementGroups = elements.stream()
+				.filter(el -> el.getElementStatus() != CurriculumElementStatus.deleted)
+				.map(CurriculumElement::getGroup)
+				.collect(Collectors.toList());
+
+		List<Group> allGroups = lectureService.getLectureBlockToGroups(reloadedBlock, RepositoryEntryRelationType.all);
 		
 		boolean changed = false;
-		for(CurriculumElement element:elements) {
-			Group elementGroup = element.getGroup();
-			if(element.getElementStatus() != CurriculumElementStatus.deleted && !currentGroups.contains(elementGroup)) {
-				currentGroups.add(elementGroup);
+		for(Group elementGroup:elementGroups) {
+			if(!allGroups.contains(elementGroup)) {
+				allGroups.add(elementGroup);
 				changed = true;
 			}
 		}
+		
+		List<Group> currentElementGroups = lectureService.getLectureBlockToGroups(reloadedBlock, RepositoryEntryRelationType.curriculums);
+		for(Group currentElementGroup:currentElementGroups) {
+			if(!elementGroups.contains(currentElementGroup)) {
+				allGroups.remove(currentElementGroup);
+				changed = true;
+			}
+		}
+
 		if(changed) {
-			reloadedBlock = lectureService.save(reloadedBlock, currentGroups);
+			reloadedBlock = lectureService.save(reloadedBlock, allGroups);
 		}
 		dbInstance.commit();
 		lectureService.syncParticipantSummaries(reloadedBlock);

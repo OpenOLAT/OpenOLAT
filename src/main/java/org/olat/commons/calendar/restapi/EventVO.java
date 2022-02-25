@@ -20,6 +20,7 @@
 package org.olat.commons.calendar.restapi;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -27,6 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -49,6 +51,8 @@ public class EventVO {
 	private Integer classification;
 	
 	private String liveStreamUrl;
+	
+	private EventLinkVO[] links;
 	
 	@Schema(required = true, description = "Action to be performed on managedFlags", allowableValues = { 
 			"all",
@@ -85,6 +89,13 @@ public class EventVO {
 		externalId = event.getExternalId();
 		externalSource = event.getExternalSource();
 		classification = event.getClassification();
+		
+		List<KalendarEventLink> kalendarLinks = event.getKalendarEventLinks();
+		if(kalendarLinks != null && !kalendarLinks.isEmpty()) {
+			links = kalendarLinks.stream()
+					.map(EventLinkVO::new)
+					.toArray(EventLinkVO[]::new);
+		}
 	}
 
 	public String getId() {
@@ -201,5 +212,13 @@ public class EventVO {
 
 	public void setExternalSource(String externalSource) {
 		this.externalSource = externalSource;
+	}
+
+	public EventLinkVO[] getLinks() {
+		return links;
+	}
+
+	public void setLinks(EventLinkVO[] links) {
+		this.links = links;
 	}
 }

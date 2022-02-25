@@ -346,6 +346,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.lecture.manager.AbsenceNoticeToRepositoryEntryDAOTest.class,
 	org.olat.modules.lecture.manager.LectureBlockDAOTest.class,
 	org.olat.modules.lecture.manager.LectureBlockRollCallDAOTest.class,
+	org.olat.modules.lecture.manager.LectureBlockToGroupDAOTest.class,
 	org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAOTest.class,
 	org.olat.modules.lecture.manager.LectureParticipantSummaryDAOTest.class,
 	org.olat.modules.lecture.manager.LectureServiceTest.class,

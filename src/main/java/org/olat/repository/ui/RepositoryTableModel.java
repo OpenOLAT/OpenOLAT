@@ -52,7 +52,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.olat.resource.accesscontrol.ACService;
@@ -93,7 +92,6 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	private final ACService acService;
 	private final AccessControlModule acModule;
 	private final RepositoryModule repositoryModule;
-	private final RepositoryEntryLifecycleDAO lifecycleDao;
 	private final UserManager userManager;
 	private final AccessRenderer accessRenderer;
 	
@@ -105,13 +103,12 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * @param translator
 	 */
 	public RepositoryTableModel(Locale locale) {
-		super(new ArrayList<RepositoryEntry>());
+		super(new ArrayList<>());
 		translator = Util.createPackageTranslator(RepositoryService.class, locale);
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		repositoryModule = CoreSpringFactory.getImpl(RepositoryModule.class);
-		lifecycleDao = CoreSpringFactory.getImpl(RepositoryEntryLifecycleDAO.class);
 		accessRenderer = new AccessRenderer(locale);
 	}
 
@@ -121,7 +118,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 	 * @param enableDirectLaunch
 	 * @return the position of the display name column
 	 */
-	public ColumnDescriptor addColumnDescriptors(TableController tableCtr, boolean selectTitle, boolean selectIcon, boolean remove, boolean infos) {
+	public ColumnDescriptor addColumnDescriptors(TableController tableCtr, boolean selectTitle, boolean selectIcon, boolean remove, boolean infos, boolean lifecycle) {
 		Locale loc = translator.getLocale();
 
 		CustomCellRenderer acRenderer = new RepositoryEntryACColumnDescriptor();
@@ -174,9 +171,8 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		String selectAction = selectTitle ? TABLE_ACTION_SELECT_LINK : null;
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.externalid", RepoCols.externalId.ordinal(), selectAction, loc));
 		tableCtr.addColumnDescriptor(repositoryModule.isManagedRepositoryEntries(), new DefaultColumnDescriptor("table.header.externalref", RepoCols.externalRef.ordinal(), selectAction, loc));
-
-			boolean lfVisible = lifecycleDao.countPublicLifecycle() > 0;
-		tableCtr.addColumnDescriptor(lfVisible, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, loc));
+		
+		tableCtr.addColumnDescriptor(lifecycle, new DefaultColumnDescriptor("table.header.lifecycle.label", RepoCols.lifecycleLabel.ordinal(), null, loc));
 		tableCtr.addColumnDescriptor(false, new DefaultColumnDescriptor("table.header.lifecycle.softkey", RepoCols.lifecycleSoftKey.ordinal(), null, loc));
 		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", RepoCols.displayname.ordinal(), selectAction, loc) {
 			@Override

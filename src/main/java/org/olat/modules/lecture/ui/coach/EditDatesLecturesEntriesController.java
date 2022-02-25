@@ -112,6 +112,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		initForm(ureq);
 		updateDuration();
 		updateTargets();
+		updateAnalyseCollision();
 	}
 
 	@Override
@@ -452,11 +453,22 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			List<AbsenceNotice> notices = lectureService.detectCollision(noticedIdentity,
 					noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
 			if(!notices.isEmpty()) {
-				allOk &= analyseCollision(notices);
+				analyseCollision(notices);
 			}
 		}
 
 		return allOk;
+	}
+	
+	private void updateAnalyseCollision() {
+		Dates dates = getDates();
+		if(dates.getStartDate() != null && dates.getEndDate() != null) {
+			List<AbsenceNotice> notices = lectureService.detectCollision(noticedIdentity,
+					noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
+			if(!notices.isEmpty()) {
+				analyseCollision(notices);
+			}
+		}
 	}
 	
 	private boolean analyseCollision(List<AbsenceNotice> notices) {
@@ -466,7 +478,8 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			return true;
 		}
 
-		datesEl.setErrorKey("error.collision", null);
+		String explanation = getNoticesExplaination(notices);
+		datesEl.setErrorKey("error.collision", true, explanation);
 		if(prolongateButton != null) {
 			prolongateButton.setVisible(true);
 			prolongateButton.setUserObject(notices);
@@ -477,6 +490,34 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			markLectureBlocksCollisions(notices);
 		}
 		return false;
+	}
+	
+	private String getNoticesExplaination(List<AbsenceNotice> notices) {
+		StringBuilder sb = new StringBuilder(128);
+		for(AbsenceNotice notice: notices) {
+			if(sb.length() > 0) {
+				sb.append("; ");
+			}
+			
+			String type = translate("noticed.type." + notice.getNoticeType().name());
+			sb.append(type).append(" (");
+			
+			Date start = notice.getStartDate();
+			Date end = notice.getEndDate();
+			if(start != null && end != null) {
+				if(DateUtils.isSameDate(start, end)) {
+					sb.append(formatter.formatDate(start));
+				} else {
+					sb.append(formatter.formatDate(start)).append(" - ").append(formatter.formatDate(end));
+				}
+			} else if(start != null) {
+				sb.append(formatter.formatDate(start));
+			} else if(end != null) {
+				sb.append(formatter.formatDate(end));
+			}
+			sb.append(")");
+		}
+		return sb.toString();
 	}
 	
 	private boolean autoProlongate(List<AbsenceNotice> notices) {
@@ -513,7 +554,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		
 		Set<String> entriesKeys = entriesEl.getKeys();
 		for(String entryKey:entriesKeys) {
-			String cssClass = collisionKeys.contains(entryKey) ? "o_checkbox_error" : null;
+			String cssClass = collisionKeys.contains(entryKey) ? "o_checkbox_warning" : null;
 			entriesEl.setCssClass(entryKey, cssClass);
 		}
 		entriesEl.getComponent().setDirty(true);
@@ -528,7 +569,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 
 		Set<String> lectureBlocksKeys = lectureBlocksEl.getKeys();
 		for(String lectureBlocksKey:lectureBlocksKeys) {
-			String cssClass = collisionKeys.contains(lectureBlocksKey) ? "o_checkbox_error" : null;
+			String cssClass = collisionKeys.contains(lectureBlocksKey) ? "o_checkbox_warning" : null;
 			lectureBlocksEl.setCssClass(lectureBlocksKey, cssClass);
 		}
 		lectureBlocksEl.getComponent().setDirty(true);
@@ -548,8 +589,10 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(durationEl == source) {
 			updateDuration();
+			updateAnalyseCollision();
 		} else if(targetsEl == source || datesEl == source) {
 			updateTargets();
+			updateAnalyseCollision();
 		} else if(prolongateButton == source) {
 			doProlongate(ureq);
 		}

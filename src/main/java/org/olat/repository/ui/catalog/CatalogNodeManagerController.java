@@ -493,7 +493,8 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		for(RepositoryEntry entry:repoEntries) {
 			CatalogEntryRow row = new CatalogEntryRow(entry);
 			for (CatalogEntry catEntry : detachedChildren) {
-				if (catEntry != null && catEntry.getType() == CatalogEntry.TYPE_LEAF && catEntry.getRepositoryEntry().equals(entry)) {
+				if (catEntry != null && catEntry.getType() == CatalogEntry.TYPE_LEAF
+						&& catEntry.getRepositoryEntry() != null && catEntry.getRepositoryEntry().equals(entry)) {
 					row = new CatalogEntryRow(entry, catEntry);
 					break;
 				} 

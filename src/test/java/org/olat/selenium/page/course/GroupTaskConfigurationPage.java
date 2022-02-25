@@ -54,7 +54,7 @@ public class GroupTaskConfigurationPage {
 			optionalBy = By.cssSelector("div#o_coobligation input[type='radio'][value='mandatory']");
 		}
 		OOGraphene.waitElement(optionalBy, browser);
-		browser.findElement(optionalBy).click();
+		OOGraphene.check(browser.findElement(optionalBy), Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -183,7 +183,7 @@ public class GroupTaskConfigurationPage {
 		//task.assignment.type
 		String type = enable ? "auto" : "manual";
 		By typeBy = By.xpath("//fieldset[contains(@class,'o_sel_course_gta_task_config_form')]//input[@name='task.assignment.type'][@value='" + type + "']");
-		browser.findElement(typeBy).click();
+		OOGraphene.check(browser.findElement(typeBy), Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

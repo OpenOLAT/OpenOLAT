@@ -528,6 +528,10 @@
 	color: $state-danger-text;
 }
 
+.checkbox label.o_checkbox_warning {
+	color: $state-warning-text;
+}
+
 /* choice element */
 .o_choice_checkrow,
 .o_choice_textrow {

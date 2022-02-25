@@ -106,6 +106,7 @@ public class GroupTaskToCoachPage {
 	public GroupTaskToCoachPage reviewed() {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_reviewed");
 		OOGraphene.waitElement(reviewBy, browser);
+		OOGraphene.scrollTo(By.id("o_step_review_content"), browser);
 		OOGraphene.click(reviewBy, browser);
 		confirm();
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);

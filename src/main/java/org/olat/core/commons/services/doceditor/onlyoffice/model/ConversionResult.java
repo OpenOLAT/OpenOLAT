@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.doceditor.onlyoffice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
@@ -28,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  *
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ConversionResult {
 	
 	private Boolean endConvert;

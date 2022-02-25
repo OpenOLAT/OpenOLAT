@@ -627,6 +627,7 @@ public class CourseTest extends Deployments {
 			.start();
 		
 		By courseTitleBy = By.cssSelector("div.o_course_run h2");
+		OOGraphene.waitElement(courseTitleBy, userBrowser);
 		WebElement courseTitleEl = userBrowser.findElement(courseTitleBy);
 		Assert.assertTrue(courseTitleEl.getText().contains(courseTitle));
 	}
