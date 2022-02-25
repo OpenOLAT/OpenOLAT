@@ -184,7 +184,6 @@ public class EntryPage {
 		By publishBy = By.cssSelector("a.o_sel_pf_publish_entry");
 		OOGraphene.waitElement(publishBy, browser);
 		browser.findElement(publishBy).click();
-		OOGraphene.waitBusy(browser);
 		confirm();
 		By publishedBy = By.cssSelector("div.o_portfolio_status i.o_icon_pf_entry_published");
 		OOGraphene.waitElement(publishedBy, browser);
@@ -236,9 +235,9 @@ public class EntryPage {
 	 * Yes in a dialog box controller.
 	 */
 	private void confirm() {
+		OOGraphene.waitModalDialog(browser);
 		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
 		OOGraphene.waitElement(confirmButtonBy, browser);
-		OOGraphene.waitBusyAndScrollTop(browser);
 		browser.findElement(confirmButtonBy).click();
 		OOGraphene.waitModalDialogDisappears(browser);
 	}

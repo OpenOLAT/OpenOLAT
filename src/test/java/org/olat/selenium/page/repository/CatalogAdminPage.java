@@ -48,6 +48,7 @@ public class CatalogAdminPage {
 	public CatalogAdminPage addCatalogNode(String title, String shortTitle, String description) {
 		//click in toolbox
 		By addNodeBy = By.className("o_sel_catalog_add_category");
+		OOGraphene.waitElement(addNodeBy, browser);
 		browser.findElement(addNodeBy).click();
 		OOGraphene.waitModalDialog(browser);
 		
@@ -63,7 +64,7 @@ public class CatalogAdminPage {
 		//save
 		By saveBy = By.cssSelector(".o_sel_catalog_add_category_popup .o_sel_catalog_entry_form_buttons button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		By nodeTitleBy = By.xpath("//div[contains(@class,'o_meta')]//h4[contains(@class,'o_title')]/a/span[contains(text(),'" + shortTitle + "')]");
 		OOGraphene.waitElement(nodeTitleBy, browser);
 		return this;

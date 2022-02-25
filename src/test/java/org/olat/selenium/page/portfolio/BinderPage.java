@@ -171,12 +171,16 @@ public class BinderPage {
 	 * @return Itself
 	 */
 	public BinderPage selectEntries() {
-		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_entries");
-		OOGraphene.waitElement(tocBy, browser);
-		browser.findElement(tocBy).click();
-		OOGraphene.waitBusy(browser);
-		By binderPageListBy = By.cssSelector("div.o_portfolio_entries");
-		OOGraphene.waitElementSlowly(binderPageListBy, 10, browser);
+		try {
+			By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_entries");
+			OOGraphene.waitElement(tocBy, browser);
+			browser.findElement(tocBy).click();
+			By binderPageListBy = By.cssSelector("div.o_portfolio_entries");
+			OOGraphene.waitElementSlowly(binderPageListBy, 10, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Select portfolio entries", browser);
+			throw e;
+		}
 		return this;
 	}
 	
