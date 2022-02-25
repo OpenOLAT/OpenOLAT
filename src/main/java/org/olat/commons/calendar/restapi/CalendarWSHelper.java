@@ -19,6 +19,7 @@
  */
 package org.olat.commons.calendar.restapi;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,6 +35,7 @@ import javax.ws.rs.core.Response;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.restapi.support.MediaTypeVariants;
@@ -62,6 +64,16 @@ public class CalendarWSHelper {
         			|| classification == KalendarEvent.CLASS_X_FREEBUSY) {
         		kalEvent.setClassification(classification);
         	}
+        }
+        EventLinkVO[] links = event.getLinks();
+        if(links != null && links.length > 0) {
+        	List<KalendarEventLink> kalendarLinks = new ArrayList<>(links.length);
+        	for(EventLinkVO link:links) {
+        		KalendarEventLink kalendarLink = new KalendarEventLink(link.getProvider(), link.getId(),
+        				link.getDisplayName(), link.getUri(), link.getIconCssClass());
+        		kalendarLinks.add(kalendarLink);
+        	}
+        	kalEvent.setKalendarEventLinks(kalendarLinks);
         }
 	}
 	
