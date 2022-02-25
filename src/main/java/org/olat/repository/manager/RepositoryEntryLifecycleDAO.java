@@ -77,13 +77,6 @@ public class RepositoryEntryLifecycleDAO {
 		return reLifeCycleList.get(0);
 	}
 	
-	public int countPublicLifecycle() {
-		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("countPublicReLifeCycle", Number.class)
-				.setHint("org.hibernate.cacheable", Boolean.TRUE)
-				.getSingleResult().intValue();
-	}
-	
 	public List<RepositoryEntryLifecycle> loadPublicLifecycle() {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadPublicReLifeCycle", RepositoryEntryLifecycle.class)

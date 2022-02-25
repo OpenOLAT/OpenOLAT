@@ -88,7 +88,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 		listenTo(resourcesCtr);
 
 		repoTableModel = new RepositoryTableModel(getLocale());
-		repoTableModel.addColumnDescriptors(resourcesCtr, false, false, true, true);
+		repoTableModel.addColumnDescriptors(resourcesCtr, false, false, true, true, true);
 		resourcesCtr.setTableDataModel(repoTableModel);
 		
 		((FormLayoutContainer)formLayout).put("resources", resourcesCtr.getInitialComponent());

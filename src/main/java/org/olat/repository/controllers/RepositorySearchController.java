@@ -146,7 +146,8 @@ public class RepositorySearchController extends BasicController implements Activ
 		listenTo(tableCtr);
 		
 		repoTableModel = new RepositoryTableModel(getLocale());
-		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(tableCtr, selectButtonLabel != null, selectButtonLabel != null, false, true);
+		ColumnDescriptor sortCol = repoTableModel.addColumnDescriptors(tableCtr, selectButtonLabel != null, selectButtonLabel != null,
+				false, true, isLifecycleDefVisible(limitTypes));
 		tableCtr.setTableDataModel(repoTableModel);
 		tableCtr.setSortColumn(sortCol, true);
 		vc.put("repotable", tableCtr.getInitialComponent());
@@ -154,6 +155,17 @@ public class RepositorySearchController extends BasicController implements Activ
 		enableBackToSearchFormLink(false); // default, must be enabled explicitly
 		enableSearchforAllXXAbleInSearchForm(null); // default
 		putInitialPanel(vc);
+	}
+	
+	private boolean isLifecycleDefVisible(String[] limitTypes) {
+		if(limitTypes != null && limitTypes.length > 0) {
+			for(String type:limitTypes) {
+				if("CourseModule".equals(type)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
