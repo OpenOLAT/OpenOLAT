@@ -266,8 +266,8 @@ $r.renderForce("development")
 #if($screenMode.standardScreen)
 <div id="o_header_wrapper"> 
 	<div id="o_header_container" class="o_container_offcanvas container-fluid"> 
-		<div id="o_logo"></div>
-		<div id="o_right_logo"></div>
+		<div id="o_logo" aria-hidden="true"></div>
+		<div id="o_right_logo" aria-hidden="true"></div>
 		
 		## something to be displayed in the header, a logo, some ads, whatever
 		#if($r.available("headerComponent"))
@@ -280,7 +280,7 @@ $r.renderForce("development")
 
 ## ---- START #o_navbar ---
 #if($screenMode.standardScreen)
-<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation">
+<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation" aria-label="$r.translate("accesskey.side")">
 	<a href="javascript:;" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'> </i> </a>
 	<div id="o_offcanvas_right_container" class="o_navbar-collapse">
 		#if($r.available("menuComponent"))
@@ -288,7 +288,7 @@ $r.renderForce("development")
 		#end
 	</div>
 </div>
-<div id="o_navbar_wrapper" class="o_navbar" role="navigation">
+<div id="o_navbar_wrapper" class="o_navbar" role="navigation" aria-label="$r.translate("accesskey.nav")">
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
 		#set($logoLinkUri = $logoInfos.logoLinkUri)
 		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end rel="noopener noreferrer"></a>
@@ -305,9 +305,9 @@ $r.renderForce("development")
 		
 	</div>
 </div>
-<div id="o_container_page_width_toggler">
-	<div id="o_go_standard_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-primary btn-xs o_noprint"><i class="o_icon o_icon_width_collapse o_icon-fw"> </i></div>
-	<div id="o_go_full_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-default btn-xs o_noprint"><i class="o_icon o_icon_width_expand o_icon-fw"> </i></div>
+<div id="o_container_page_width_toggler" aria-hidden="true">
+	<div id="o_go_standard_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-primary btn-xs o_noprint" role="button"><i class="o_icon o_icon_width_collapse o_icon-fw"> </i></div>
+	<div id="o_go_full_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-default btn-xs o_noprint" role="button"><i class="o_icon o_icon_width_expand o_icon-fw"> </i></div>
 </div>
 <div><script>
 jQuery(document).ready(function() {
@@ -323,7 +323,7 @@ $r.render("stickymsg")
 <div id="o_main_wrapper">
 	<div id="o_main_container" class="o_container_offcanvas container-fluid">
 		$r.render("main")
-		<a id="o_toplink" href="#o_top" onclick="o_scrollToElement('#o_top');" title="$r.translateInAttribute("top.alt")">
+		<a id="o_toplink" href="#o_top" onclick="o_scrollToElement('#o_top');" title="$r.translateInAttribute("top.alt")" aria-hidden="true">
 			<i class="o_icon o_icon_top"></i> 
 			$r.translate("top")
 		</a>	
@@ -388,7 +388,7 @@ $r.render("topmodalpanel")
 </div>
 
 ## hidden div for EM-PX factor readout 
-<div id="o_width_1em" style="width:1em; position: absolute; left: -1000px;"></div>
+<div id="o_width_1em" style="width:1em; position: absolute; left: -1000px;" aria-hidden="true"></div>
 <div><script>
 // init size and listen to text resize events
 jQuery(function() {

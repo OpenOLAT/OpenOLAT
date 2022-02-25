@@ -79,7 +79,7 @@ $r.renderHeaderIncludes()
 <div id="o_beta_logo"></div>
 
 ## ---- START #o_header ---
-<div id="o_header_wrapper"> 
+<div id="o_header_wrapper" aria-hidden="true"> 
 	<div id="o_header_container" class="o_container_offcanvas container-fluid"> 
 		<div id="o_logo"></div>
 		<div id="o_right_logo"></div>		
@@ -88,13 +88,13 @@ $r.renderHeaderIncludes()
 ## ---- END #o_header ---	
 
 ## ---- START #o_navbar ---
-<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas" role="navigation">
+<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas" role="navigation" aria-label="$r.translate("accesskey.side")">
 	<a href="#" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'></i></a>
 	<div id="o_offcanvas_right_container" class="o_navbar-collapse">
 	</div>
 </div>
 <a id='o_top' aria-hidden='true'></a>
-<div id="o_navbar_wrapper" class="o_navbar" role="navigation">
+<div id="o_navbar_wrapper" class="o_navbar" role="navigation" aria-label="$r.translate("accesskey.nav")">
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
 		<a class="o_navbar-brand" href="#"></a>
 		<div class="o_collapse o_navbar-collapse">

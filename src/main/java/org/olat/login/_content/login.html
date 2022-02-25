@@ -37,16 +37,16 @@
 		<div class="o_old_browser o_warning">$r.translate("warning.old.browser","$helplink")</div>
 		<div class="o_login_box">
 			#if ($r.isTrue($guestLogin) || ($providerSet && $providerSet.size() > 1))
-			<div class="o_login_providers" role="navigation">
+			<div class="o_login_providers" role="navigation" aria-label="$r.translate("login.provider.selection")">
 				<div class="btn-group btn-group-lg btn-group-justified">
 				#foreach ($authProvider in $providerSet)
 					<a $r.hrefAndOnclick("login",true,true,"lp","$authProvider.getName()") title="$r.escapeHtml("$authProvider.getDescription($locale)")" class="btn btn-default #if ($currentProvider == $authProvider.getName()) btn-primary #end">
-						<i class="o_icon o_icon-2x $authProvider.getIconCssClass()"></i><span>$authProvider.getLinktext($locale)</span>
+						<i class="o_icon o_icon-2x $authProvider.getIconCssClass()" aria-hidden="true"></i><span>$authProvider.getLinktext($locale)</span>
 					</a>
 				#end
 				#if ($r.isTrue($guestLogin))
-					<a $r.hrefAndOnclick("login",true,true,"lp","guest") title="$r.translate("menu.guest.alt")" class="btn btn-default">
-						<i class="o_icon o_icon-2x o_icon_provider_guest"></i><span>$r.translate("menu.guest")</span>
+					<a $r.hrefAndOnclick("login",true,true,"lp","guest") title="$r.translate("menu.guest.alt")" class="btn btn-default" role="button">
+						<i class="o_icon o_icon-2x o_icon_provider_guest" aria-hidden="true"></i><span>$r.translate("menu.guest")</span>
 					</a>
 				#end
 				</div>
