@@ -907,7 +907,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public List<Group> getLectureBlockToGroups(LectureBlockRef block) {
 		return lectureBlockToGroupDao.getGroups(block);
 	}
-	
+
+	@Override
+	public List<Group> getLectureBlockToGroups(LectureBlockRef block, RepositoryEntryRelationType type) {
+		return lectureBlockToGroupDao.getGroups(block, type);
+	}
+
 	@Override
 	public List<Identity> getParticipants(LectureBlockRef block) {
 		return lectureBlockDao.getParticipants(block);

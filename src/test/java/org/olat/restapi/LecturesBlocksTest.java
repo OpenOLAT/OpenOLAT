@@ -511,7 +511,7 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 	}
 
 	@Test
-	public void addRepositoryEntryCurriculumElementToLectureBlock()
+	public void syncRepositoryEntryCurriculumElementToLectureBlock()
 	throws IOException, URISyntaxException {
 		// prepare a course with a curriculum element and a lecture block
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
@@ -540,6 +540,188 @@ public class LecturesBlocksTest extends OlatRestTestCase {
 		// check the response
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
+		
+		//check the database
+		List<Group> groups = lectureService.getLectureBlockToGroups(block);
+		Assert.assertNotNull(groups);
+		Assert.assertEquals(1, groups.size());
+		Assert.assertTrue(groups.contains(curriculumElement.getGroup()));
+	}
+	
+	@Test
+	public void syncRepositoryEntryCurriculumElementToLectureBlockAddRemove()
+	throws IOException, URISyntaxException {
+		// prepare a course with a curriculum element and a lecture block
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("add-groups", "Add groups REST", "", defOrganisation);
+		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement("add-group-1",
+				"Add element group", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement("add-group-2",
+				"Add element group", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		
+		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
+		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("participants").path("curriculum").build();
+		
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		// check the response
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		//check the database
+		List<Group> groups = lectureService.getLectureBlockToGroups(block);
+		Assert.assertNotNull(groups);
+		Assert.assertEquals(2, groups.size());
+		
+		// remove a curriculum
+		curriculumService.removeRepositoryEntry(curriculumElement2, entry);
+		dbInstance.commit();
+		
+		method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		response = conn.execute(method);
+		// check the response
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Group> synchedGroups = lectureService.getLectureBlockToGroups(block);
+		Assert.assertNotNull(synchedGroups);
+		Assert.assertEquals(1, synchedGroups.size());
+		Assert.assertEquals(curriculumElement1.getGroup(), synchedGroups.get(0));	
+	}
+	
+	@Test
+	public void syncRepositoryEntryCurriculumElementToLectureBlockAddRemoveOtherGroups()
+	throws IOException, URISyntaxException {
+		// prepare a course with a curriculum element and a lecture block
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("add-groups-but-notall", "Add groups REST", "", defOrganisation);
+		CurriculumElement curriculumElement1 = curriculumService.createCurriculumElement("add-group-1",
+				"Add element group", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		CurriculumElement curriculumElement2 = curriculumService.createCurriculumElement("add-group-2",
+				"Add element group", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		CurriculumElement curriculumElement3 = curriculumService.createCurriculumElement("add-group-3",
+				"Add element group", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		
+		curriculumService.addRepositoryEntry(curriculumElement1, entry, true);
+		curriculumService.addRepositoryEntry(curriculumElement2, entry, true);
+		curriculumService.addRepositoryEntry(curriculumElement3, entry, true);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		// add curriculum elements groups
+		URI cUri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("participants").path("curriculum").build();
+		
+		HttpPut cMethod = conn.createPut(cUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse cResponse = conn.execute(cMethod);
+		// check the response
+		Assert.assertEquals(200, cResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(cResponse.getEntity());
+		
+		// add repository entry default group
+		URI rUri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("participants").path("repositoryentry").build();
+		
+		HttpPut rMethod = conn.createPut(rUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse rResponse = conn.execute(rMethod);
+		// check the response
+		Assert.assertEquals(200, rResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(rResponse.getEntity());
+		
+		//check the lecture block has 4 groups (3 from curriculum elements and 1 default from course)
+		List<Group> groups = lectureService.getLectureBlockToGroups(block);
+		Assert.assertNotNull(groups);
+		Assert.assertEquals(4, groups.size());
+		
+		// remove a curriculum
+		curriculumService.removeRepositoryEntry(curriculumElement2, entry);
+		dbInstance.commit();
+		
+		// re-sync
+		
+		HttpPut syncMethod = conn.createPut(cUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse syncResponse = conn.execute(syncMethod);
+		// check the response
+		Assert.assertEquals(200, syncResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(syncResponse.getEntity());
+		
+		List<Group> synchedGroups = lectureService.getLectureBlockToGroups(block);
+		Assert.assertNotNull(synchedGroups);
+		Assert.assertEquals(3, synchedGroups.size());
+		Assert.assertTrue(synchedGroups.contains(curriculumElement1.getGroup()));
+		Assert.assertFalse(synchedGroups.contains(curriculumElement2.getGroup()));
+		Assert.assertTrue(synchedGroups.contains(curriculumElement3.getGroup()));
+		
+		Group defGroup = repositoryService.getDefaultGroup(entry);
+		Assert.assertTrue(synchedGroups.contains(defGroup));
+	}
+	
+	@Test
+	public void syncRepositoryEntryCurriculumElementToLectureBlockSeveralAdd()
+	throws IOException, URISyntaxException {
+		// prepare a course with a curriculum element and a lecture block
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		LectureBlock block = createLectureBlock(entry);
+		dbInstance.commit();
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Curriculum curriculum = curriculumService.createCurriculum("add-group-serveral", "Add several times group REST", "", defOrganisation);
+		CurriculumElement curriculumElement = curriculumService.createCurriculumElement("add-group",
+				"Add several times element group", CurriculumElementStatus.active, null, null, null, null,
+				CurriculumCalendars.disabled, CurriculumLectures.disabled, CurriculumLearningProgress.disabled,
+				curriculum);
+		curriculumService.addRepositoryEntry(curriculumElement, entry, true);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString())
+				.path("lectureblocks").path(block.getKey().toString())
+				.path("participants").path("curriculum").build();
+		
+		for(int i=0; i<4; i++) {
+			HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+			HttpResponse response = conn.execute(method);
+			
+			// check the response
+			Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+			EntityUtils.consume(response.getEntity());
+		}
 		
 		//check the database
 		List<Group> groups = lectureService.getLectureBlockToGroups(block);

@@ -23,10 +23,12 @@ import java.util.List;
 
 import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +71,33 @@ public class LectureBlockToGroupDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select blockToGroup.group from lectureblocktogroup blockToGroup")
 		  .append(" where blockToGroup.lectureBlock.key=:blockKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Group.class)
+				.setParameter("blockKey", lectureBlock.getKey())
+				.getResultList();
+	}
+	
+	public List<Group> getGroups(LectureBlockRef lectureBlock, RepositoryEntryRelationType type) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select blockToGroup.group from lectureblocktogroup blockToGroup")
+		  .where().append(" blockToGroup.lectureBlock.key=:blockKey");
+		
+		if(type == RepositoryEntryRelationType.businessGroups) {
+			sb.and().append(" exists (select businessGroup.key from businessgroup as businessGroup")
+			  .append(" where businessGroup.baseGroup.key=blockToGroup.group.key)");
+		} else if(type == RepositoryEntryRelationType.curriculums) {
+			sb.and().append(" exists (select curEl.key from curriculumelement as curEl")
+			  .append(" where curEl.group.key=blockToGroup.group.key)");
+		} else if(type == RepositoryEntryRelationType.defaultGroup) {
+			sb.and().append(" exists (select rel.key from repoentrytogroup as rel")
+			  .append(" where rel.group.key=blockToGroup.group.key and rel.defaultGroup=true)");
+		} else if(type == RepositoryEntryRelationType.entryAndCurriculums) {
+			sb.and().append("(exists (select rel.key from repoentrytogroup as rel")
+			  .append(" where rel.group.key=blockToGroup.group.key and rel.defaultGroup=true)")
+			  .append(" or exists (select curEl.key from curriculumelement as curEl")
+			  .append(" where curEl.group.key=blockToGroup.group.key))");
+		}
+		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Group.class)
 				.setParameter("blockKey", lectureBlock.getKey())
