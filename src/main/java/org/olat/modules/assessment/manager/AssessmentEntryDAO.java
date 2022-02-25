@@ -593,6 +593,7 @@ public class AssessmentEntryDAO {
 		sb.append("   and (ae.repositoryEntry.key, ae.identity.key) in (");
 		sb.append("       select subae.repositoryEntry.key, subae.identity.key");
 		sb.append("          from assessmententry subae");
+		sb.append("          inner join courseelement as subelem on (subelem.repositoryEntry.key=subae.repositoryEntry.key and  subelem.subIdent=subae.subIdent)");
 		sb.append("         where subae.startDate <= :start");
 		sb.append("       )");
 		sb.append("   and re.status").in(RepositoryEntryStatusEnum.preparationToClosed());
