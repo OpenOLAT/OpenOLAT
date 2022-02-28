@@ -67,7 +67,7 @@
 		<apache.cxf>3.5.0</apache.cxf>
 		<apache.pdfbox>2.0.25</apache.pdfbox>
 		<apache.poi>5.2.0</apache.poi>
-		<apache.log4j>2.17.1</apache.log4j>
+		<apache.log4j>2.17.2</apache.log4j>
 		<org.slf4j>1.7.36</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.2</io.jsonwebtoken>
@@ -2028,7 +2028,7 @@
 		<dependency>
 			<groupId>com.rometools</groupId>
 			<artifactId>rome</artifactId>
-			<version>1.7.2</version>
+			<version>1.18.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jdom</groupId>
