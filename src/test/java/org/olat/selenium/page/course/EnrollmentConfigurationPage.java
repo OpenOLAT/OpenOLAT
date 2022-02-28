@@ -85,12 +85,10 @@ public class EnrollmentConfigurationPage {
 		if(waitingList) {
 			By waitingListBy = By.cssSelector(".o_sel_group_edit_waiting_list input[type='checkbox']");
 			browser.findElement(waitingListBy).click();
-			OOGraphene.waitBusy(browser);
 		}
 		if(auto) {
 			By autoBy = By.cssSelector(".o_sel_group_edit_auto_close_ranks input[type='checkbox']");
 			browser.findElement(autoBy).click();
-			OOGraphene.waitBusy(browser);
 		}
 		
 		//save the group
@@ -102,19 +100,17 @@ public class EnrollmentConfigurationPage {
 	
 	public EnrollmentConfigurationPage selectMultipleEnrollments(int maxEnrollmentCount) {
 		By multiEnroll = By.name("allowMultipleEnroll");
+		OOGraphene.waitElement(multiEnroll, browser);
 		browser.findElement(multiEnroll).click();
-		OOGraphene.waitBusy(browser);
 		By maxCountBy = By.cssSelector(".o_sel_enroll_max input[type='text']");
+		OOGraphene.waitElement(maxCountBy, browser);
 		WebElement maxCountBox = browser.findElement(maxCountBy);
 		maxCountBox.clear();
 		maxCountBox.sendKeys(Integer.toString(maxEnrollmentCount));
-		OOGraphene.waitBusy(browser);
 		By saveBy = By.cssSelector(".o_sel_course_en button.btn");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
 		By updatedMaxCountBy = By.cssSelector(".o_sel_enroll_max input[type='text'][value='" + maxEnrollmentCount + "']");
 		OOGraphene.waitElement(updatedMaxCountBy, browser);
-		// For Firefox
 		OOGraphene.scrollTop(browser);
 		return this;
 	}
