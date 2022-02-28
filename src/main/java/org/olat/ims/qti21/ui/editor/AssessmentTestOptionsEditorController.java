@@ -94,7 +94,7 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Configure tests");
+		setFormContextHelp("manual_user/tests/Configure_tests/");
 		
 		String title = assessmentTest.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);

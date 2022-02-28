@@ -105,7 +105,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("settings.title");
-		setFormContextHelp("Learning path course");
+		setFormContextHelp("manual_user/course_create/Learning_path_course/");
 		String nodeAccessTypeName = nodeAccessService.getNodeAccessTypeName(courseConfig.getNodeAccessType(),
 				getLocale());
 		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);

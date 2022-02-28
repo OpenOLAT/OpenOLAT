@@ -170,7 +170,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_repo_metadata");
 		if (showHeading) {
-			setFormContextHelp("Set up info page");
+			setFormContextHelp("manual_user/authoring/Set_up_info_page/");
 			setFormTitle("details.metadata.title");
 		}
 		

@@ -51,7 +51,7 @@ public class CreateCollectionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Data Management#qb_lists");
+		setFormContextHelp("manual_user/question_bank/Question_bank_possible_operations/#lists");
 		setFormDescription("create.collection.description");
 		
 		nameEl = uifactory.addTextElement("collection.name", "collection.name", 128, "", formLayout);

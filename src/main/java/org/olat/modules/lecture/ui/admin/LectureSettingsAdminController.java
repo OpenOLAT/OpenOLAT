@@ -102,7 +102,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		// configuration which can be overriden in course
 		FormLayoutContainer courseCont = FormLayoutContainer.createDefaultFormLayout("override_course", getTranslator());
 		courseCont.setFormTitle(translate("lecture.admin.course.override.title"));
-		courseCont.setFormContextHelp("Lecture and roll call management");
+		courseCont.setFormContextHelp("manual_admin/administration/Lecture_and_roll_call_management/");
 		courseCont.setRootForm(mainForm);
 		formLayout.add("course", courseCont);
 

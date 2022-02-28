@@ -200,7 +200,7 @@ public class CourseToolbarController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Course Settings#_optionen");
+		setFormContextHelp("manual_user/course_create/Course_Settings/#options");
 		setFormTitle("details.toolbar.title");
 		formLayout.setElementCssClass("o_sel_toolbar_settings");
 		

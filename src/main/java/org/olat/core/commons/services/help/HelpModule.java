@@ -31,11 +31,11 @@ import org.apache.logging.log4j.Logger;
 import org.olat.admin.help.ui.HelpAdminController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.spi.AcademyLinkSPI;
-import org.olat.core.commons.services.help.spi.ConfluenceLinkSPI;
 import org.olat.core.commons.services.help.spi.CourseHelpSPI;
 import org.olat.core.commons.services.help.spi.CustomLink1SPI;
 import org.olat.core.commons.services.help.spi.CustomLink2SPI;
 import org.olat.core.commons.services.help.spi.CustomLink3SPI;
+import org.olat.core.commons.services.help.spi.OODocsLinkSPI;
 import org.olat.core.commons.services.help.spi.OOTeachLinkSPI;
 import org.olat.core.commons.services.help.spi.SupportMailSPI;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -64,8 +64,9 @@ public class HelpModule extends AbstractSpringModule {
 
 	public final static String ACADEMY = "academy";
 	public final static String ACADEMY_KEY = "ooAcademyLinkHelp";
-	public final static String CONFLUENCE = "confluence";
-	public final static String CONFLUENCE_KEY = "ooConfluenceLinkHelp";
+	public final static String OODOCS = "ooDocs";
+	public final static String OODOCS_KEY = "ooDocsLinkHelp";
+	
 	public final static String OOTEACH_KEY = "ooTeachLinkHelp";
 	public final static String OOTEACH = "ooTeach";
 	public final static String SUPPORT = "support";
@@ -90,7 +91,7 @@ public class HelpModule extends AbstractSpringModule {
 	// General help settings
 	@Value("${help.enabled:true}")
 	private boolean helpEnabled;
-	@Value("${help.plugin:ooConfluenceLinkHelp}")
+	@Value("${help.plugin:ooDocsLinkHelp}")
 	private String helpPlugins;
 
 	// Academy settings
@@ -113,13 +114,13 @@ public class HelpModule extends AbstractSpringModule {
 	@Value("${help.ooteach.pos:0}")
 	private int ooTeachPos;
 
-	// Confluence settings
-	@Value("${help.confluence.enabled:usertool,authorsite}")
-	private String confluenceEnabled;
-	@Value("${help.confluence.icon:o_icon_manual}")
-	private String confluenceIcon;
-	@Value("${help.confluence.pos:0}")
-	private int confluencePos;
+	// Manual and context help settings
+	@Value("${help.ooDocs.enabled:usertool,authorsite}")
+	private String ooDocsEnabled;
+	@Value("${help.ooDocs.icon:o_icon_manual}")
+	private String ooDocsIcon;
+	@Value("${help.ooDocs.pos:0}")
+	private int ooDocsPos;
 
 	// Support settings
 	@Value("${help.support.email:mail@your.domain}")
@@ -207,10 +208,10 @@ public class HelpModule extends AbstractSpringModule {
 		ooTeachIcon = getStringPropertyValue("help.ooteach.icon", ooTeachIcon);
 		ooTeachPos = getIntPropertyValue("help.ooteach.pos", ooTeachPos);
 
-		// Confluence settings
-		confluenceEnabled = getStringPropertyValue("help.confluence.enabled", confluenceEnabled);
-		confluenceIcon = getStringPropertyValue("help.confluence.icon", confluenceIcon);
-		confluencePos = getIntPropertyValue("help.confluence.pos", confluencePos);
+		// OODocs settings
+		ooDocsEnabled = getStringPropertyValue("help.ooDocs.enabled", ooDocsEnabled);
+		ooDocsIcon = getStringPropertyValue("help.ooDocs.icon", ooDocsIcon);
+		ooDocsPos = getIntPropertyValue("help.ooDocs.pos", ooDocsPos);
 
 		// Support settings
 		supportEmail = getStringPropertyValue("help.support.email", supportEmail);
@@ -248,7 +249,7 @@ public class HelpModule extends AbstractSpringModule {
 	// CRUD operations
 	public HelpLinkSPI getManualProvider() {
 		// Manual provider for tool tips
-		return (ConfluenceLinkSPI)CoreSpringFactory.getBean("ooConfluenceLinkHelp");
+		return (OODocsLinkSPI)CoreSpringFactory.getBean("ooDocsLinkHelp");
 	}
 
 	public void deleteHelpPlugin(String plugin) {
@@ -281,12 +282,12 @@ public class HelpModule extends AbstractSpringModule {
 			removeProperty("help.ooteach.enabled", true);
 			removeProperty("help.ooteach.pos", true);
 			break;
-		case CONFLUENCE:
-			plugin = CONFLUENCE_KEY;
-			removalPosition = confluencePos;
-			removeProperty("help.confluence.icon", true);
-			removeProperty("help.confluence.enabled", true);
-			removeProperty("help.confluence.pos", true);
+		case OODOCS:
+			plugin = OODOCS_KEY;
+			removalPosition = ooDocsPos;
+			removeProperty("help.ooDocs.icon", true);
+			removeProperty("help.ooDocs.enabled", true);
+			removeProperty("help.ooDocs.pos", true);
 			break;
 		case COURSE:
 			plugin = COURSE_KEY;
@@ -356,10 +357,10 @@ public class HelpModule extends AbstractSpringModule {
 					setIntProperty("help.ooteach.pos", ooTeachPos, true);
 				}
 				break;				
-			case CONFLUENCE_KEY:
-				if (confluencePos > removalPosition) {
-					confluencePos -= 1;
-					setIntProperty("help.confluence.pos", confluencePos, true);
+			case OODOCS_KEY:
+				if (ooDocsPos > removalPosition) {
+					ooDocsPos -= 1;
+					setIntProperty("help.ooDocs.pos", ooDocsPos, true);
 				}
 				break;
 			case COURSE_KEY:
@@ -415,10 +416,10 @@ public class HelpModule extends AbstractSpringModule {
 			ooTeachEnabled = setStringProperty("help.ooteach.enabled", generateEnabledString(usertool, authorsite, login), true);
 			addToHelpPlugins(OOTEACH_KEY);
 			break;
-		case CONFLUENCE:
-			confluenceEnabled = setStringProperty("help.confluence.enabled", generateEnabledString(usertool, authorsite, login), true);
-			confluenceIcon = setStringProperty("help.confluence.icon", icon, true);
-			addToHelpPlugins(CONFLUENCE_KEY);
+		case OODOCS:
+			ooDocsEnabled = setStringProperty("help.ooDocs.enabled", generateEnabledString(usertool, authorsite, login), true);
+			ooDocsIcon = setStringProperty("help.ooDocs.icon", icon, true);
+			addToHelpPlugins(OODOCS_KEY);
 			break;
 		case COURSE:
 			courseSoftkey = setStringProperty("help.course.softkey", input, true);
@@ -470,11 +471,11 @@ public class HelpModule extends AbstractSpringModule {
 	}
 	
 	/**
-	 * Returns whether the confluence manual is enabled or not
+	 * Returns whether the OpenOlat manual is enabled or not
 	 * @return boolean
 	 */
 	public boolean isManualEnabled() {
-		return isHelpEnabled() && helpPlugins.contains(CONFLUENCE_KEY);
+		return isHelpEnabled() && helpPlugins.contains(OODOCS_KEY);
 	}
 
 	public void setHelpEnabled(boolean helpEnabled) {
@@ -493,9 +494,9 @@ public class HelpModule extends AbstractSpringModule {
 			ooTeachPos = position;
 			setIntProperty("help.ooteach.pos", position, true);
 			break;
-		case CONFLUENCE:
-			confluencePos = position;
-			setIntProperty("help.confluence.pos", position, true);
+		case OODOCS:
+			ooDocsPos = position;
+			setIntProperty("help.ooDocs.pos", position, true);
 			break;
 		case COURSE:
 			coursePos = position;
@@ -575,12 +576,12 @@ public class HelpModule extends AbstractSpringModule {
 		return ooTeachIcon;
 	}
 
-	public String getConfluenceEnabled() {
-		return confluenceEnabled;
+	public String getOODocsEnabled() {
+		return ooDocsEnabled;
 	}
 
-	public String getConfluenceIcon() {
-		return confluenceIcon;
+	public String getOODocsIcon() {
+		return ooDocsIcon;
 	}
 
 	public String getSupportEmail() {
@@ -668,8 +669,8 @@ public class HelpModule extends AbstractSpringModule {
 		if (!helpPlugins.contains(HelpModule.OOTEACH_KEY)) {
 			remainingPlugins.add(OOTEACH);
 		}
-		if (!helpPlugins.contains(HelpModule.CONFLUENCE_KEY)) {
-			remainingPlugins.add(CONFLUENCE);
+		if (!helpPlugins.contains(HelpModule.OODOCS_KEY)) {
+			remainingPlugins.add(OODOCS);
 		} 
 		if (!helpPlugins.contains(HelpModule.SUPPORT_KEY)) {
 			remainingPlugins.add(SUPPORT);
@@ -730,16 +731,16 @@ public class HelpModule extends AbstractSpringModule {
 					dmzHelpPlugins.add(ooTeachLinkSPI);
 				}
 				break;
-			case CONFLUENCE_KEY:
-				ConfluenceLinkSPI confluenceHelpLinkSPI = (ConfluenceLinkSPI) CoreSpringFactory.getBean(helpPlugin);
-				if (confluenceEnabled.contains(USERTOOL)) {
-					userToolHelpPlugins.add(confluenceHelpLinkSPI);
+			case OODOCS_KEY:
+				OODocsLinkSPI ooDocsHelpLinkSPI = (OODocsLinkSPI) CoreSpringFactory.getBean(helpPlugin);
+				if (ooDocsEnabled.contains(USERTOOL)) {
+					userToolHelpPlugins.add(ooDocsHelpLinkSPI);
 				} 
-				if (confluenceEnabled.contains(AUTHORSITE)) {
-					authorSiteHelpPlugins.add(confluenceHelpLinkSPI);
+				if (ooDocsEnabled.contains(AUTHORSITE)) {
+					authorSiteHelpPlugins.add(ooDocsHelpLinkSPI);
 				} 
-				if (confluenceEnabled.contains(DMZ)) {
-					dmzHelpPlugins.add(confluenceHelpLinkSPI);
+				if (ooDocsEnabled.contains(DMZ)) {
+					dmzHelpPlugins.add(ooDocsHelpLinkSPI);
 				}
 				break;
 			case COURSE_KEY:
@@ -850,9 +851,9 @@ public class HelpModule extends AbstractSpringModule {
 						Collections.swap(helpPluginList, ooTeachPos, helpPluginList.indexOf(helpPlugin));
 					}
 					break;
-				case CONFLUENCE_KEY:
-					if (helpPluginList.indexOf(helpPlugin) != confluencePos) {
-						Collections.swap(helpPluginList, confluencePos, helpPluginList.indexOf(helpPlugin));
+				case OODOCS_KEY:
+					if (helpPluginList.indexOf(helpPlugin) != ooDocsPos) {
+						Collections.swap(helpPluginList, ooDocsPos, helpPluginList.indexOf(helpPlugin));
 					}
 					break;
 				case COURSE_KEY:
@@ -935,5 +936,26 @@ public class HelpModule extends AbstractSpringModule {
 		public List<HelpLinkSPI> getDmzHelpPlugins() {
 			return dmzHelpPlugins;
 		}		
+	}
+
+
+	/**
+	 * Migration routine to re-map legacy confluence manual configuration to new
+	 * docs.openolat.org website
+	 */
+	public void migrateConfluenceToOODocs() {
+		String legacyEnabled = getStringPropertyValue("help.confluence.enabled", false);	
+		if (legacyEnabled != null) {
+			ooDocsEnabled = legacyEnabled; 
+			setStringProperty("help.ooDocs.enabled", ooDocsEnabled, true);						
+			addToHelpPlugins(OODOCS_KEY);
+			//
+			int posEnabled = getIntPropertyValue("help.confluence.pos", -1);	
+			if (posEnabled >=0) {
+				setPosition(OODOCS, posEnabled);
+			}
+			loadLists();
+		}
+
 	}
 }

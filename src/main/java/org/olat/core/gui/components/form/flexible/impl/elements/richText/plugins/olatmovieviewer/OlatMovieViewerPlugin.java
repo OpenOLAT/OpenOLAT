@@ -77,7 +77,7 @@ public class OlatMovieViewerPlugin extends TinyMCECustomPlugin {
 		
 		String helpKey = "helpUrl" + locale.getLanguage();
 		if(!params.containsKey(helpKey)) {
-			String url = CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "Video");
+			String url = CoreSpringFactory.getImpl(HelpModule.class).getManualProvider().getURL(locale, "manual_user/resource_video/");
 			params.put(helpKey, url);
 		}
 		return params;

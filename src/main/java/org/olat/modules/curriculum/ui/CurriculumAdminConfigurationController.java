@@ -72,7 +72,7 @@ public class CurriculumAdminConfigurationController extends FormBasicController 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("admin.description");
-		setFormContextHelp("Modules: Curriculum");
+		setFormContextHelp("manual_admin/administration/Modules_Curriculum/");
 		
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("curriculum.admin.enabled", formLayout, onKeys, onValues);

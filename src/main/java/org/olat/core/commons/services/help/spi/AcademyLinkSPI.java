@@ -22,9 +22,9 @@ package org.olat.core.commons.services.help.spi;
 import java.util.Locale;
 
 import org.olat.admin.user.tools.UserTool;
-import org.olat.core.commons.services.help.ConfluenceHelper;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
+import org.olat.core.commons.services.help.OpenOlatDocsHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
@@ -78,15 +78,15 @@ public class AcademyLinkSPI implements HelpLinkSPI  {
 	
 	@Override
 	public String getURL(Locale locale, String page) {
-		// Fallback to confluence context help
-		return ConfluenceHelper.getURL(locale, page);
+		// Fallback to OpenOlat-docs context help
+		return OpenOlatDocsHelper.getURL(locale, page);
 	}
 
 	@Override
 	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
 			String page) {
-		// Fallback to confluence context help
-		return ConfluenceHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
+		// Fallback to OpenOlat-docs context help
+		return OpenOlatDocsHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
 	}
 	
 	@Override

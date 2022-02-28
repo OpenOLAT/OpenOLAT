@@ -89,7 +89,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("chooseColumns.title");
 		setFormDescription("chooseColumns.description");
-		setFormContextHelp("Using Course Tools#bulkassessment_map");
+		setFormContextHelp("manual_user/how-to/create_a_bulk_assessment_for_submission_tasks/#map");
 
 		CourseNode courseNode = (CourseNode)getFromRunContext("courseNode");
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);

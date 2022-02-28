@@ -75,7 +75,7 @@ public class MailTemplateAdminController extends FormBasicController  {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("mail.template.title");
 		setFormDescription("mail.template.description");
-		setFormContextHelp("E-Mail Settings#_template");
+		setFormContextHelp("manual_admin/administration/E-Mail_Settings/#template");
 		
 		String emailCss = guiSettings.getGuiTheme().getEmailCss();
 		emailCss = emailCss.replaceAll("}", "}\n");

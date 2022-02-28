@@ -105,7 +105,7 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
-		setFormContextHelp("Configure test questions#_tab_score");
+		setFormContextHelp("manual_user/tests/Configure_test_questions/#score");
 
 		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();
 		String minValue = minScore == null ? "" : (minScore.getScore() == null ? "" : minScore.getScore().toString());

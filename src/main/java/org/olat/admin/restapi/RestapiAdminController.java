@@ -86,7 +86,7 @@ public class RestapiAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rest.title");
-		setFormContextHelp("REST API");
+		setFormContextHelp("manual_admin/administration/REST_API/");
 
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutContainer = (FormLayoutContainer)formLayout;

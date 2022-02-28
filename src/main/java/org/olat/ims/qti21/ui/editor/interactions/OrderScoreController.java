@@ -61,7 +61,7 @@ public class OrderScoreController extends AssessmentItemRefEditorController impl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Configure test questions#_tab_score");
+		setFormContextHelp("manual_user/tests/Configure_test_questions/#score");
 		super.initForm(formLayout, listener, ureq);
 		
 		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();

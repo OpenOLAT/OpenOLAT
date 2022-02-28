@@ -64,7 +64,7 @@ public class BlogPostFormController extends ItemFormController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Working With Course Elements#_blog_lerner");
+		setFormContextHelp("manual_user/learning_activities/Working_With_Course_Elements/#blog");
 		super.initForm(formLayout, listener, ureq);
 	}
 }

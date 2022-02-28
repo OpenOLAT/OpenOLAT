@@ -124,7 +124,7 @@ public class DataStepForm extends StepFormBasicController {
 		if (!onlyReturnFiles) {
 			setFormDescription("data.description");
 		}
-		setFormContextHelp("... create a bulk assessment for submission tasks");
+		setFormContextHelp("manual_user/how-to/create_a_bulk_assessment_for_submission_tasks/");
 
 		String dataVal = "";
 		if(savedDatas != null && StringHelper.containsNonWhitespace(savedDatas.getDataBackupFile())) {

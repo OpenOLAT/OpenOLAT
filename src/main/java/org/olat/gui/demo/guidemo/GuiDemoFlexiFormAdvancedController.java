@@ -87,7 +87,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("guidemo_flexi_form_advanced");
 		setFormDescription("advanced_form.description");
-		setFormContextHelp("Introduction");
+		setFormContextHelp("manual_user/general/");
 
 		// Mandatory and read-only text fields		
 		addTextFields(formLayout);

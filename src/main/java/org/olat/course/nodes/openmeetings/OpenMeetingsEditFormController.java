@@ -92,7 +92,7 @@ public class OpenMeetingsEditFormController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.vcconfig");
 		setFormDescription("create.room.desc");
-		setFormContextHelp("Communication and Collaboration#_openmeeting");
+		setFormContextHelp("manual_user/course_elements/Course_element_OpenMeetings/");
 
 		if(serverDown) {
 			setFormWarning(errorKey);

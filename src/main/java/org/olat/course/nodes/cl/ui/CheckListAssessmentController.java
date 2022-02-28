@@ -204,7 +204,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("coach.desc");
-		setFormContextHelp("Assessment#_checklist_manage");
+		setFormContextHelp("manual_user/course_elements/Course_Element_Checklist/");
 
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;

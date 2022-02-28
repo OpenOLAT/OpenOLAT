@@ -118,7 +118,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("lecture.course.admin.title");
-		setFormContextHelp("Lectures and absences");
+		setFormContextHelp("manual_user/course_operation/Lectures_and_absences/");
 		formLayout.setElementCssClass("o_sel_repo_lecture_settings_form");
 		if(lectureConfigManaged) {
 			String flags = entry.getManagedFlagsString() == null ? "" : entry.getManagedFlagsString().trim();

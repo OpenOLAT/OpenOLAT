@@ -86,7 +86,7 @@ public class IMPreferenceController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.roster");
-		setFormContextHelp("Chat#_settings");
+		setFormContextHelp("manual_user/personal/Chat/#settings");
 		
 		ImPreferences imPrefs = imService.getImPreferences(changeableIdentity);
 		

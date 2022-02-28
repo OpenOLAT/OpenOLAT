@@ -343,7 +343,7 @@ public class CalendarEntryForm extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_cal_entry_form");
 		
 		setFormTitle("cal.form.title");
-		setFormContextHelp("Calendar");
+		setFormContextHelp("manual_user/personal/Calendar/");
 		
 		chooseCalendar = uifactory.addDropdownSingleselect("cal.form.chooseCalendar", formLayout, calendarKeys, calendarValues, null);
 		if(choosenWrapper != null) {

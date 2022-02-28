@@ -95,7 +95,7 @@ public class VideoAdminErrorController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("number.transcodings");
 		setFormDescription("number.transcodings");
-		setFormContextHelp("Portfolio template: Administration and editing#configuration");
+		setFormContextHelp("manual_user/portfolio/Portfolio_template_Administration_and_editing/");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.resid));

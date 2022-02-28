@@ -61,7 +61,7 @@ public class ScheduleStepForm extends StepFormBasicController {
 		
 		setFormTitle("schedule.title");
 		setFormDescription("schedule.description");
-		setFormContextHelp("Using Course Tools#bulkassessment_schedule");
+		setFormContextHelp("manual_user/how-to/create_a_bulk_assessment_for_submission_tasks/#schedule");
 
 		String[] typeValues = new String[]{
 				translate("schedule.immediately"), translate("schedule.delayed")

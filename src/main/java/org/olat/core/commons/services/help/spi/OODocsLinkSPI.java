@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.core.commons.services.help.spi;
@@ -22,9 +22,9 @@ package org.olat.core.commons.services.help.spi;
 import java.util.Locale;
 
 import org.olat.admin.user.tools.UserTool;
-import org.olat.core.commons.services.help.ConfluenceHelper;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
+import org.olat.core.commons.services.help.OpenOlatDocsHelper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
@@ -34,17 +34,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * Helper to create openolat docs help links.  
  * 
- * Build a link to openolat confluence. It has the following form:<br/>
- * https://confluence.openolat.org/display/OO100DE/OpenOLAT+10+Benutzerhandbuch
+ * Help links have the following form:<br/>
+ * https://docs.openolat.org/de/manual_user/general/
  * 
- * Initial date: 07.01.2015<br>
+ * Initial date: 24.02.2022<br>
  * 
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author gnaegi@frentix.com, https://www.frentix.com
  *
  */
-@Service("ooConfluenceLinkHelp")
-public class ConfluenceLinkSPI implements HelpLinkSPI {
+@Service("ooDocsLinkHelp")
+public class OODocsLinkSPI implements HelpLinkSPI {
 
 	private static final String PLUGIN_NAME = "manual";
 	
@@ -60,13 +61,13 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 
 		@Override
 		public Component getMenuComponent(UserRequest ureq, VelocityContainer container) {
-			ExternalLink helpLink = new ExternalLink("help.confluence");
-			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getConfluenceIcon());
-			helpLink.setName(container.getTranslator().translate("help.confluence"));
-			helpLink.setTooltip(container.getTranslator().translate("help.confluence"));
+			ExternalLink helpLink = new ExternalLink("help.ooDocs");
+			helpLink.setIconLeftCSS("o_icon o_icon-fw " + helpModule.getOODocsIcon());
+			helpLink.setName(container.getTranslator().translate("help.ooDocs"));
+			helpLink.setTooltip(container.getTranslator().translate("help.ooDocs"));
 			helpLink.setTarget("oohelp");
 			helpLink.setUrl(getURL(ureq.getLocale(), null));
-			container.put("help.confluence", helpLink);
+			container.put("help.ooDocs", helpLink);
 			return helpLink;
 		}
 
@@ -79,14 +80,14 @@ public class ConfluenceLinkSPI implements HelpLinkSPI {
 	@Override
 	public String getURL(Locale locale, String page) {
 		// delegate to helper
-		return ConfluenceHelper.getURL(locale, page);
+		return OpenOlatDocsHelper.getURL(locale, page);
 	}
 
 	@Override
 	public Component getHelpPageLink(UserRequest ureq, String title, String tooltip, String iconCSS, String elementCSS,
 			String page) {
 		// delegate to helper
-		return ConfluenceHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
+		return OpenOlatDocsHelper.createHelpPageLink(ureq, title, tooltip, iconCSS, elementCSS, page);
 	}
 	
 	@Override

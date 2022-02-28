@@ -140,7 +140,7 @@ public class CourseDisclaimerController extends FormBasicController {
 		if (!usedInWizard) {
 			setFormTitle("course.disclaimer.headline");
 		}
-		setFormContextHelp("Course Settings#_course_disclaimer");
+		setFormContextHelp("manual_user/course_create/Course_Settings/#disclaimer");
 		
 		// Enable and disable the disclaimers
 		disclaimer1CheckBoxEl = uifactory.addCheckboxesHorizontal("course.disclaimer.1", formLayout, onKeys, onValues);

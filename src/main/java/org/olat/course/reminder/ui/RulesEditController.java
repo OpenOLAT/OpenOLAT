@@ -160,7 +160,7 @@ public class RulesEditController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer generalCont = FormLayoutContainer.createVerticalFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
-		generalCont.setFormContextHelp("Course Reminders");
+		generalCont.setFormContextHelp("manual_user/course_operation/Course_Reminders/");
 		generalCont.setFormInfo(getSendTimeDescription());
 		if (StringHelper.containsNonWhitespace(warningI18nKey)) {
 			generalCont.setFormWarning(translate(warningI18nKey));

@@ -107,7 +107,7 @@ public class PortfolioConfigForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Creating Portfolio Tasks");
+		setFormContextHelp("manual_user/portfolio/Creating_Portfolio_Tasks/");
 		setFormTitle("pane.tab.portfolio_config.title");
 
 		String name = getName(mapEntry);

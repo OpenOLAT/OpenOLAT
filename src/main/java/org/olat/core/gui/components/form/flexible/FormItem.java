@@ -378,7 +378,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 
 	/**
 	 * Set an optional context reference from the official manual. This
-	 * generates a link to the confluence server. The HelpLinkSPI is used to
+	 * generates a link to the OpenOlat-docs server. The HelpLinkSPI is used to
 	 * generate the actual help URL from this alias name.
 	 * 
 	 * @param manualAliasName

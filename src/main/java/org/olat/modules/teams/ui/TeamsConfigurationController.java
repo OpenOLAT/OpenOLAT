@@ -83,7 +83,7 @@ public class TeamsConfigurationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("teams.title");
 		setFormInfo("teams.intro");
-		setFormContextHelp("Teams+module");
+		setFormContextHelp("manual_user/course_elements/Course_element_Microsoft_Teams/");
 		String[] enabledValues = new String[]{ translate("enabled") };
 		
 		moduleEnabled = uifactory.addCheckboxesHorizontal("teams.module.enabled", formLayout, ENABLED_KEY, enabledValues);

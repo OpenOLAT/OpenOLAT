@@ -123,7 +123,7 @@ public class HighScoreEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("controller.title");
 		setFormDescription("highscore.description");
-		setFormContextHelp("Assessment#highscore");
+		setFormContextHelp("manual_user/course_elements/Assessment/#highscore");
 		
 		allowHighScore = uifactory.addCheckboxesHorizontal("highscore.show", formLayout, new String[] { "xx" },
 				new String[] { null });

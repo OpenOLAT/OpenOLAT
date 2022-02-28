@@ -117,8 +117,6 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.vfs.manager.VFSRepositoryModuleTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSLockManagerTest.class,
 	org.olat.core.commons.services.vfs.manager.VFSVersioningTest.class,
-	org.olat.core.commons.services.help.ConfluenceHelperTest.class,
-	org.olat.core.commons.services.help.spi.ConfluenceLinkSPITest.class,
 	org.olat.core.commons.services.license.manager.LicenseTypeActivationDAOTest.class,
 	org.olat.core.commons.services.license.manager.LicenseTypeDAOTest.class,
 	org.olat.core.commons.services.license.manager.ResourceLicenseDAOTest.class,

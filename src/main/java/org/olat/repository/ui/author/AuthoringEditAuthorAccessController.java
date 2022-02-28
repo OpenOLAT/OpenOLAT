@@ -111,7 +111,7 @@ public class AuthoringEditAuthorAccessController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("rentry.access.author.title");
-		setFormContextHelp("Course Settings#_zugriff");
+		setFormContextHelp("manual_user/course_create/Access_configuration/");
 		formLayout.setElementCssClass("o_sel_repositoryentry_author_access");
 
 		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);

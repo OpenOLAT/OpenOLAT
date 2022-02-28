@@ -68,7 +68,7 @@ public class HelpAdminController extends FormBasicController {
 	private DropdownItem addHelpDropDown;
 	private FormLink addAcademy;
 	private FormLink addOOTeach;
-	private FormLink addConfluence;
+	private FormLink addOODocs;
 	private FormLink addCourse;
 	private FormLink addSupport;
 	private FormLink addCustom1;
@@ -102,7 +102,7 @@ public class HelpAdminController extends FormBasicController {
 
 		addAcademy = uifactory.addFormLink("help.admin.academy", formLayout);
 		addOOTeach = uifactory.addFormLink("help.admin.ooTeach", formLayout);
-		addConfluence = uifactory.addFormLink("help.admin.confluence", formLayout);
+		addOODocs = uifactory.addFormLink("help.admin.ooDocs", formLayout);
 		addCourse = uifactory.addFormLink("help.admin.course", formLayout);
 		addSupport = uifactory.addFormLink("help.admin.support", formLayout);
 		addCustom1 = uifactory.addFormLink("help.admin.custom1", formLayout);
@@ -152,8 +152,8 @@ public class HelpAdminController extends FormBasicController {
 			case HelpModule.OOTEACH:
 				addHelpDropDown.addElement(addOOTeach);
 				break;
-			case HelpModule.CONFLUENCE:
-				addHelpDropDown.addElement(addConfluence);
+			case HelpModule.OODOCS:
+				addHelpDropDown.addElement(addOODocs);
 				break;
 			case HelpModule.COURSE:
 				addHelpDropDown.addElement(addCourse);
@@ -201,13 +201,13 @@ public class HelpAdminController extends FormBasicController {
 						helpModule.getOOTeachEnabled().contains(HelpModule.AUTHORSITE), 
 						helpModule.getOOTeachEnabled().contains(HelpModule.DMZ));
 				break;
-			case HelpModule.CONFLUENCE_KEY:
+			case HelpModule.OODOCS_KEY:
 				tableRow = new HelpAdminTableContentRow(
-						HelpModule.CONFLUENCE, 
-						helpModule.getConfluenceIcon(), 
-						helpModule.getConfluenceEnabled().contains(HelpModule.USERTOOL), 
-						helpModule.getConfluenceEnabled().contains(HelpModule.AUTHORSITE), 
-						helpModule.getConfluenceEnabled().contains(HelpModule.DMZ));
+						HelpModule.OODOCS, 
+						helpModule.getOODocsIcon(), 
+						helpModule.getOODocsEnabled().contains(HelpModule.USERTOOL), 
+						helpModule.getOODocsEnabled().contains(HelpModule.AUTHORSITE), 
+						helpModule.getOODocsEnabled().contains(HelpModule.DMZ));
 				break;
 			case HelpModule.COURSE_KEY:
 				tableRow = new HelpAdminTableContentRow(
@@ -298,8 +298,8 @@ public class HelpAdminController extends FormBasicController {
 			doOpenAddHelpDialog(ureq, HelpModule.ACADEMY);
 		} else if (source == addOOTeach) {
 			doOpenAddHelpDialog(ureq, HelpModule.OOTEACH);
-		} else if (source == addConfluence) {
-			doOpenAddHelpDialog(ureq, HelpModule.CONFLUENCE);
+		} else if (source == addOODocs) {
+			doOpenAddHelpDialog(ureq, HelpModule.OODOCS);
 		} else if (source == addCourse) {
 			doOpenAddHelpDialog(ureq, HelpModule.COURSE);
 		} else if (source == addSupport) {

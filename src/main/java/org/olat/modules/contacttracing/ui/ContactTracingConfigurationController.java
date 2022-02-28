@@ -154,7 +154,7 @@ public class ContactTracingConfigurationController extends FormBasicController {
         generalConfig.setRootForm(mainForm);
         generalConfig.setFormTitle(translate("contact.tracing.general.title"));
         generalConfig.setFormDescription(translate("contact.tracing.info"));
-        generalConfig.setFormContextHelp("Contact tracing: Configuration");
+        generalConfig.setFormContextHelp("manual_admin/administration/Modules_Contact_Tracing/");
         formLayout.add("generalConfig", generalConfig);
 
         // Enable

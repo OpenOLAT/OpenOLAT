@@ -63,7 +63,7 @@ public class EdubaseAdminController extends FormBasicController {
 		// Edubase
 		FormLayoutContainer edubaseCont = FormLayoutContainer.createDefaultFormLayout("edubase_admin", getTranslator());
 		edubaseCont.setFormTitle(translate("admin.edubase.title"));
-		edubaseCont.setFormContextHelp("KnowledgeTransfer#_edubase_config");
+		edubaseCont.setFormContextHelp("manual_user/course_elements/Knowledge_Transfer/#edubase");
 		edubaseCont.setFormDescription(translate("admin.edubase.description"));
 		edubaseCont.setRootForm(mainForm);
 		formLayout.add("edubase", edubaseCont);

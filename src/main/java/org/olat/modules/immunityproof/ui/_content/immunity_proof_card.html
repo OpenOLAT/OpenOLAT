@@ -2,7 +2,7 @@
 	<h2>
 		$r.translate("proof.heading") 
 		#if($r.isEmpty($customHelpLink))
-			$r.contextHelpWithWrapper("COVID+certificate")
+			$r.contextHelpWithWrapper("manual_user/personal/COVID_certificate/")
 		#else
 			<span class="o_chelp_wrapper">
 				<a href="$r.xssScan($customHelpLink)" class="o_chelp" target="_blank" title="$r.translate('help.button')">

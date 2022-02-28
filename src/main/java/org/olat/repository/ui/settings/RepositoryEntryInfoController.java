@@ -128,7 +128,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		UserSession usess = ureq.getUserSession();
-		setFormContextHelp("Set up info page");
+		setFormContextHelp("manual_user/authoring/Set_up_info_page/");
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
 		setFormTitle("details.info.title");
 

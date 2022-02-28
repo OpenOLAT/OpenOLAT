@@ -143,7 +143,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_mode_edit_form");
-		setFormContextHelp("Assessment mode");
+		setFormContextHelp("manual_user/e-assessment/Assessment_mode/");
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		if(StringHelper.containsNonWhitespace(assessmentMode.getStartElement())) {

@@ -110,7 +110,7 @@ public class PortfolioAdminController extends FormBasicController  {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("portfolio.title");
-		setFormContextHelp("eAssessment: ePortfolio");
+		setFormContextHelp("manual_admin/administration/eAssessment_ePortfolio/");
 
 		String[] enabledValues = new String[] { translate("enabled")};
 		

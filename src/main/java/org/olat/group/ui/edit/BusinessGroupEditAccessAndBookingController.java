@@ -73,7 +73,7 @@ public class BusinessGroupEditAccessAndBookingController extends FormBasicContro
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("accesscontrol.title");
 		setFormDescription("accesscontrol_group.desc");
-		setFormContextHelp("Group Administration#gruppensystem_buchung_ag");
+		setFormContextHelp("manual_user/groups/Group_Administration/#booking");
 		formLayout.setElementCssClass("o_block_large_bottom");
 
 		if(configController != null) {

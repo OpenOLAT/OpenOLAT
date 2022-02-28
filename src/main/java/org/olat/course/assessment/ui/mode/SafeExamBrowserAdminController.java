@@ -81,7 +81,7 @@ public class SafeExamBrowserAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_assessment_mode_template_form");
-		setFormContextHelp("Assessment mode");
+		setFormContextHelp("manual_user/e-assessment/Assessment_mode/");
 		
 		setFormTitle("admin.assessment.mode.seb.title");
 

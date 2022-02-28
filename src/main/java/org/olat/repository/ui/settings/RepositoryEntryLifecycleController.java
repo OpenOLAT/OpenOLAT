@@ -125,7 +125,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
 		if (!usedInWizard) {
-			setFormContextHelp("Set up info page");
+			setFormContextHelp("manual_user/authoring/Set_up_info_page/");
 			setFormTitle("details.execution.title");
 		}
 
