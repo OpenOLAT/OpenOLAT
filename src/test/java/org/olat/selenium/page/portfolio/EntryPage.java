@@ -187,6 +187,7 @@ public class EntryPage {
 		confirm();
 		By publishedBy = By.cssSelector("div.o_portfolio_status i.o_icon_pf_entry_published");
 		OOGraphene.waitElement(publishedBy, browser);
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 	

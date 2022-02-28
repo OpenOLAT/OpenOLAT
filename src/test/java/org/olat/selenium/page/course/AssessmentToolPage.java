@@ -95,10 +95,12 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage selectUsersCourseNode(String nodeTitle) {
 		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span[contains(text(),'" + nodeTitle + "')]]/td/a[contains(@onclick,'cmd.select.node')]");
+		OOGraphene.waitElement(rowsBy, browser);
 		List<WebElement> rowEls = browser.findElements(rowsBy);
 		Assert.assertEquals(1, rowEls.size());
-		rowEls.get(0).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.scrollTo(rowsBy, browser);
+		browser.findElement(rowsBy).click();
+		OOGraphene.waitElement(By.cssSelector("div.o_assessment_panel"), browser);
 		return this;
 	}
 	
