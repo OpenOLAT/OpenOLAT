@@ -47,7 +47,7 @@ public class MathJaxDirectiveProvider implements CSPDirectiveProvider {
 
 	@Override
 	public Collection<String> getFontSrcUrls() {
-		return null;
+		return getUrls();
 	}
 
 	@Override
