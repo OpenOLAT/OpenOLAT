@@ -1345,7 +1345,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
 		DueDate assignmentDueDate = null;
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
-		if(DueDateConfig.isAbsolute(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getAssignmentDueDate() != null) {
+		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getAssignmentDueDate() != null) {
 			assignmentDueDate = new DueDate(false, assignedTask.getAssignmentDueDate());
 		} else if(DueDateConfig.isRelative(dueDateConfig)) {
 			assignmentDueDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
@@ -1360,7 +1360,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
 		DueDate submissionDueDate = null;
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_SUBMIT_DEADLINE);
-		if(DueDateConfig.isAbsolute(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSubmissionDueDate() != null) {
+		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSubmissionDueDate() != null) {
 			submissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate());
 		} else if(DueDateConfig.isRelative(dueDateConfig)) {
 			submissionDueDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
@@ -1375,7 +1375,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
 		DueDate solutionDueDate = null;
 		DueDateConfig dueDateConfig = cNode.getDueDateConfig(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-		if(DueDateConfig.isAbsolute(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSolutionDueDate() != null) {
+		if(DueDateConfig.isDueDate(dueDateConfig) && withIndividualDueDate && assignedTask != null && assignedTask.getSolutionDueDate() != null) {
 			solutionDueDate = new DueDate(false, assignedTask.getSolutionDueDate());
 		} else if(DueDateConfig.isRelative(dueDateConfig)) {
 			solutionDueDate = getReferenceDate(dueDateConfig, assignedTask, assessedIdentity, assessedGroup, courseEntry);
