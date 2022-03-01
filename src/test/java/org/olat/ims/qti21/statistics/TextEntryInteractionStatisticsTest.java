@@ -59,7 +59,8 @@ public class TextEntryInteractionStatisticsTest {
             { false, "+bremsen()", Collections.singletonList("+ bremsen()"), " + BREMSEN() ", true },
             { false, "+bremsen()", Collections.singletonList("+ bremsen()"), "bremsen", false },
             { false, "+bremsen()", Collections.singletonList("+ bremsen()"), "bremsen()", false },
-            { false, "+bremsen()", Collections.singletonList("+ bremsen()"), "-bremsen()", false }
+            { false, "+bremsen()", Collections.singletonList("+ bremsen()"), "-bremsen()", false },
+            { false, null, List.of(), "-bremsen()", false }// special case where FIB has no correct response
         });
     }
 	
