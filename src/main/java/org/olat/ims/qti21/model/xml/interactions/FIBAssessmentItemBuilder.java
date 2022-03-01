@@ -1425,12 +1425,12 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		private boolean match(String response, String alternative) {
 			if(caseSensitive) {
-				if(alternative.equals(response)
-						|| (response != null && alternative.trim().equals(response.trim()))) {
+				if((alternative != null && alternative.equals(response))
+						|| (alternative != null && response != null && alternative.trim().equals(response.trim()))) {
 					return true;
 				}
-			} else if(alternative.equalsIgnoreCase(response)
-					|| (response != null && alternative.trim().equalsIgnoreCase(response.trim()))) {
+			} else if((alternative != null && alternative.equalsIgnoreCase(response))
+					|| (alternative != null && response != null && alternative.trim().equalsIgnoreCase(response.trim()))) {
 				return true;
 			}
 			return false;

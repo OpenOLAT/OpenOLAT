@@ -73,6 +73,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Hottext;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -681,20 +682,23 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		double points = Double.NaN;
 		List<String> alternatives = new ArrayList<>();
 
-		List<MapEntry> mapEntries = responseDeclaration.getMapping().getMapEntries();
-		for(MapEntry mapEntry:mapEntries) {
-			SingleValue mapKey = mapEntry.getMapKey();
-			if(mapKey instanceof StringValue) {
-				String value = ((StringValue)mapKey).stringValue();
-				if(correctResponse == null) {
-					correctResponse = value;
-					points = mapEntry.getMappedValue();
-				} else {
-					alternatives.add(value);
+		Mapping mapping = responseDeclaration.getMapping();
+		if(mapping != null) {
+			List<MapEntry> mapEntries = mapping.getMapEntries();
+			for(MapEntry mapEntry:mapEntries) {
+				SingleValue mapKey = mapEntry.getMapKey();
+				if(mapKey instanceof StringValue) {
+					String value = ((StringValue)mapKey).stringValue();
+					if(correctResponse == null) {
+						correctResponse = value;
+						points = mapEntry.getMappedValue();
+					} else {
+						alternatives.add(value);
+					}
 				}
+				
+				caseSensitive &= mapEntry.getCaseSensitive();
 			}
-			
-			caseSensitive &= mapEntry.getCaseSensitive();
 		}
 
 		if(points == -1.0d) {
