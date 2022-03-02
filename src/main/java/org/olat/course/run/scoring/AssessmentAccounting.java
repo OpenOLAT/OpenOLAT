@@ -278,7 +278,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setScore(score);
 		BigDecimal maxScore = result.getMaxScore() != null? new BigDecimal(result.getMaxScore()): null;
 		entry.setMaxScore(maxScore);
-		entry.setPassed(result.getPassed());
+		entry.getPassedOverridable().setCurrent(result.getPassed());
 		entry.setCompletion(result.getCompletion());
 		entry.setDuration(result.getDuration());
 		entry.setLastUserModified(result.getLastUserModified());
