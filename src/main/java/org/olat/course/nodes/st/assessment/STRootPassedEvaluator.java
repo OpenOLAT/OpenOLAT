@@ -59,7 +59,9 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 	@Override
 	public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 			ScoreAccounting scoreAccounting, RepositoryEntry courseEntry) {
-		Boolean currentPassed = currentEvaluation.getPassed();
+		Boolean currentPassed = currentEvaluation.getPassedOverridable().isOverridden()
+				? currentEvaluation.getPassedOverridable().getOriginal()
+				: currentEvaluation.getPassedOverridable().getCurrent();
 		if (currentPassed != null && currentPassed.booleanValue()) {
 			// Never reset a passed course to null or failed
 			return currentPassed;

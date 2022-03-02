@@ -40,7 +40,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation((Float)null, (Boolean)null);
 	
 	private final Float maxScore;
-	private final Boolean passedOverriden;
+	private final Overridable<Boolean> passedOverridable;
 	private final Date startDate;
 	private final Overridable<Date> endDate;
 	private final Integer duration;
@@ -79,7 +79,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 				lastModified, lastUserModified, lastCoachModified, null, null, null, null, null, null, null);
 	}
 
-	public AssessmentEvaluation(Float score, Float maxScore, Boolean passed, Boolean passedOverriden,
+	public AssessmentEvaluation(Float score, Float maxScore, Boolean passed, Overridable<Boolean> passedOverridable,
 			Integer attempts, Date lastAttempt, Double completion, AssessmentEntryStatus assessmentStatus,
 			Boolean userVisibility, Boolean fullyAssessed, Date fullyAssessedDate, Date currentRunStart, Double currentRunCompletion,
 			AssessmentRunStatus runStatus, Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs,
@@ -88,7 +88,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			Date firstVisit, Date lastVisit) {
 		super(score, passed, assessmentStatus, userVisibility, currentRunStart, currentRunCompletion, runStatus, assessmentID);
 		this.maxScore = maxScore;
-		this.passedOverriden = passedOverriden;
+		this.passedOverridable = passedOverridable;
 		this.attempts = attempts;
 		this.lastAttempt = lastAttempt;
 		this.completion = completion;
@@ -116,7 +116,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 * @param assessmentStatus
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
-		this(eval.getScore(), eval.getMaxScore(), eval.getPassed(), eval.getPassedOverriden(), eval.getAttempts(),
+		this(eval.getScore(), eval.getMaxScore(), eval.getPassed(), eval.getPassedOverridable(), eval.getAttempts(),
 				eval.getLastAttempt(), eval.getCompletion(), assessmentStatus, eval.getUserVisible(),
 				eval.getFullyAssessed(), eval.getFullyAssessedDate(), eval.getCurrentRunStartDate(), eval.getCurrentRunCompletion(),
 				eval.getCurrentRunStatus(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1,
@@ -127,9 +127,9 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	public Float getMaxScore() {
 		return maxScore;
 	}
-
-	public Boolean getPassedOverriden() {
-		return passedOverriden;
+	
+	public Overridable<Boolean> getPassedOverridable() {
+		return passedOverridable;
 	}
 
 	public Date getStartDate() {
@@ -224,10 +224,10 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		}
 		
 		Boolean passed = null;
-		Boolean passedOverriden = null;
+		Overridable<Boolean> passedOverridable = null;
 		if(Mode.none != assessmentConfig.getPassedMode()) {
 			passed = entry.getPassed();
-			passedOverriden = Boolean.valueOf(entry.getPassedOverridable().isOverridden());
+			passedOverridable = entry.getPassedOverridable();
 		}
 		
 		String comment = null;
@@ -246,7 +246,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			runStatus = entry.getCurrentRunStatus();
 		}
 		
-		return new AssessmentEvaluation(score, maxScore, passed, passedOverriden, attempts, lastAttempt, completion,
+		return new AssessmentEvaluation(score, maxScore, passed, passedOverridable, attempts, lastAttempt, completion,
 				entry.getAssessmentStatus(), entry.getUserVisibility(), entry.getFullyAssessed(), entry.getFullyAssessedDate(), currentRunStartDate,
 				currentRunCompletion, runStatus, entry.getAssessmentId(), comment,
 				entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(), entry.getLastModified(),

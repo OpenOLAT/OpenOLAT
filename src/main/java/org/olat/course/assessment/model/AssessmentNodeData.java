@@ -44,6 +44,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -73,7 +74,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private Float minScore;
 	
 	private Boolean passed;
-	private Boolean passedOverriden;
+	private Overridable<Boolean> passedOverridable;
 	
 	private Boolean userVisibility;
 	private AssessmentEntryStatus assessmentStatus;
@@ -222,13 +223,13 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	public void setPassed(Boolean passed) {
 		this.passed = passed;
 	}
-
-	public Boolean getPassedOverriden() {
-		return passedOverriden;
+	
+	public Overridable<Boolean> getPassedOverridable() {
+		return passedOverridable;
 	}
 
-	public void setPassedOverriden(Boolean passedOverriden) {
-		this.passedOverriden = passedOverriden;
+	public void setPassedOverridable(Overridable<Boolean> passedOverridable) {
+		this.passedOverridable = passedOverridable;
 	}
 
 	public AssessmentEntryStatus getAssessmentStatus() {
