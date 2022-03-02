@@ -70,12 +70,12 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, null, passed, null, null, null, null, null, null, fullyAssessed, null, null, null, null, assessmentID,
+		this(score, null, passed, Overridable.of(passed), null, null, null, null, null, fullyAssessed, null, null, null, null, assessmentID,
 				null, null, -1, null, null, null, null, null, null, null, null, null, null);
 	}
 
 	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
-		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, -1,
+		this(null, null, null, Overridable.of(null), null, null, null, null, null, null, null, null, null, null, null, null, null, -1,
 				lastModified, lastUserModified, lastCoachModified, null, null, null, null, null, null, null);
 	}
 
