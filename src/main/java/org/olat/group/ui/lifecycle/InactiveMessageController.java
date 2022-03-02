@@ -60,8 +60,6 @@ public class InactiveMessageController extends BasicController {
 		
 		mainVC = createVelocityContainer("inactive_warn");
 		
-		groupAdmin = true;
-		
 		String i18nKey = "";
 		long days = 0;
 		if(currentStatus == BusinessGroupStatusEnum.active) {
@@ -95,7 +93,7 @@ public class InactiveMessageController extends BasicController {
 			}
 		} else if(businessGroup.getGroupStatus() == BusinessGroupStatusEnum.inactive) {
 			Date softDeleteDate = businessGroupLifecycleManager.getSoftDeleteDate(businessGroup);
-			days = 4;DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
+			days = DateUtils.countDays(ureq.getRequestTimestamp(), softDeleteDate);
 			if(groupAdmin) {
 				if(days <= 0) {
 					i18nKey = "warning.readonly.group.admin.today";
