@@ -172,6 +172,11 @@ public class AccountingResult extends AssessmentEvaluation {
 	public void setLastCoachModified(Date lastCoachModified) {
 		this.evaluatedLastCoachModified = lastCoachModified;
 	}
+	
+	@Override
+	public Overridable<Boolean> getPassedOverridable() {
+		return Overridable.of(evaluatedPassed);
+	}
 
 	public boolean hasChanges() {
 		return !Objects.equals(origin.getStartDate(), evaluatedStartDate)
