@@ -128,6 +128,11 @@ public class AccountingResult extends AssessmentEvaluation {
 	public void setPassedOverridable(Overridable<Boolean> passedOverridable) {
 		this.evaluatedPassedOverridable = passedOverridable;
 	}
+	
+	@Override
+	public Boolean getPassed() {
+		return evaluatedPassedOverridable.getCurrent();
+	}
 
 	@Override
 	public Double getCompletion() {

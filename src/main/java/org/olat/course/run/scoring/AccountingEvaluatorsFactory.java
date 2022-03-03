@@ -219,9 +219,11 @@ public class AccountingEvaluatorsFactory {
 	private static class UnchangingPassedEvaluator implements PassedEvaluator {
 		
 		@Override
-		public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+		public Overridable<Boolean> getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 				RepositoryEntry courseEntry, ConditionInterpreter conditionInterpreter) {
-			return currentEvaluation.getPassed();
+			return currentEvaluation.getPassedOverridable() != null
+					? currentEvaluation.getPassedOverridable().clone()
+					: Overridable.of(currentEvaluation.getPassed());
 		}
 	}
 	

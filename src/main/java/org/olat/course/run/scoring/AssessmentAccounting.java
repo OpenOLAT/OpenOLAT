@@ -237,13 +237,11 @@ public class AssessmentAccounting implements ScoreAccounting {
 		Float maxScore = maxScoreEvaluator.getMaxScore(result, courseNode, this);
 		result.setMaxScore(maxScore);
 		
-		if (courseNode.getParent() != null) {
-			PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
-			Boolean passed = passedEvaluator.getPassed(result, courseNode,
-					userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-					userCourseEnvironment.getConditionInterpreter());
-			result.getPassedOverridable().setCurrent(passed);
-		}
+		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
+		Overridable<Boolean> passed = passedEvaluator.getPassed(result, courseNode,
+				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				userCourseEnvironment.getConditionInterpreter());
+		result.setPassedOverridable(passed);
 		
 		FullyAssessedEvaluator fullyAssessedEvaluator = evaluators.getFullyAssessedEvaluator();
 		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children, blocker);
