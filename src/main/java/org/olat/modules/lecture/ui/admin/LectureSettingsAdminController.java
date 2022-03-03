@@ -66,6 +66,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private TextElement assessmentLeadTimeEl;
 	private TextElement assessmentFollowupTimeEl;
 	private TextElement assessmentSafeExamBrowserEl;
+	private TextElement defaultPlannedLecturesEl;
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement enableAbsenceNoticeEl;
 	private MultipleSelectionElement enableAssessmentModeEl;
@@ -156,6 +157,10 @@ public class LectureSettingsAdminController extends FormBasicController {
 		String[] statusValues = new String[]{ translate(LectureBlockStatus.cancelled.name()) };
 		statusEnabledEl = uifactory.addCheckboxesVertical("lecture.status.enabled", globalCont, statusKeys, statusValues, 1);
 		statusEnabledEl.setElementCssClass("o_sel_lecture_status_cancelled");
+		
+		String plannedLectures = Integer.toString(lectureModule.getDefaultPlannedLectures());
+		defaultPlannedLecturesEl = uifactory.addTextElement("lecture.def.planned.lectures", 4, plannedLectures, globalCont);
+		defaultPlannedLecturesEl.setMandatory(true);
 		
 		// reminder enabled
 		reminderEnableEl = uifactory.addCheckboxesHorizontal("lecture.reminder.enabled", globalCont, onKeys, onValues);
@@ -364,6 +369,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 		rollCallEnableEl.setVisible(enabled);
 		calculateAttendanceRateEnableEl.setVisible(enabled);
 		
+		defaultPlannedLecturesEl.setVisible(enabled);
+		
 		appealPeriodEl.setVisible(appealAbsenceEnableEl.isVisible() && appealAbsenceEnableEl.isAtLeastSelected(1));
 		reminderPeriodEl.setVisible(reminderEnableEl.isVisible() && reminderEnableEl.isAtLeastSelected(1));
 		
@@ -406,6 +413,13 @@ public class LectureSettingsAdminController extends FormBasicController {
 			allOk &= validateInt(reminderPeriodEl);
 		}
 		
+		boolean validatePlannedLectures = validateInt(defaultPlannedLecturesEl);
+		if(validatePlannedLectures && Integer.parseInt(defaultPlannedLecturesEl.getValue()) > 12) {
+			defaultPlannedLecturesEl.setErrorKey("lecture.def.planned.lectures.max", null);
+			validatePlannedLectures = false;
+		}
+		allOk &= validatePlannedLectures;
+
 		return allOk;
 	}
 	
@@ -482,6 +496,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 			
 			lectureModule.setStatusPartiallyDoneEnabled(partiallyDoneEnabledEl.isAtLeastSelected(1));
 			lectureModule.setStatusCancelledEnabled(statusEnabledEl.isAtLeastSelected(1));
+			lectureModule.setDefaultPlannedLectures(Integer.parseInt(defaultPlannedLecturesEl.getValue()));	
 			
 			boolean authorizedAbsenceEnabled = authorizedAbsenceEnableEl.isAtLeastSelected(1);
 			lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnabled);

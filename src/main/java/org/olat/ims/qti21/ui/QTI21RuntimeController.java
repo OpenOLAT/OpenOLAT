@@ -130,7 +130,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		
 		super.initToolsMenuRuntime(toolsDropdown);
 		
-		if(pdfModule.isEnabled()) {
+		if(pdfModule.isEnabled() && reSecurity.isEntryAdmin()) {
 			toolsDropdown.addComponent(new Spacer("export-exams-tools"));
 			exportTestsWizardLink = LinkFactory.createToolLink("export.pool", translate("tools.export.tests.wizard"), this, "o_mi_tests_export");
 			exportTestsWizardLink.setIconLeftCSS("o_icon o_icon_files o_icon-fw");

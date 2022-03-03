@@ -87,6 +87,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String ABSENCE_DEFAULT_AUTHORIZED = "lecture.absence.default.authorized";
 	private static final String COURSE_SHOW_ALL_TEACHERS = "lecture.course.show.all.teachers";
 	
+	private static final String DEFAULT_PLANNED_LECTURES = "lecture.default.planned.lectures";
+	
 	@Value("${lecture.enabled:false}")
 	private boolean enabled;
 	@Value("${lecture.managed:true}")
@@ -182,6 +184,9 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	@Value("${lecture.daily.rollcall:start}")
 	private String dailyRollCall;
+	
+	@Value("${lecture.default.planned.lectures:4}")
+	private int defaultPlannedLectures;
 	
 	@Autowired
 	public LectureModule(CoordinatorManager coordinatorManager) {
@@ -393,6 +398,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String dailyRollCallObj = getStringPropertyValue(DAILY_ROLL_CALL, true);
 		if(StringHelper.containsNonWhitespace(dailyRollCallObj)) {
 			dailyRollCall = dailyRollCallObj;
+		}
+		
+		String plannedLecturesObj = getStringPropertyValue(DEFAULT_PLANNED_LECTURES, true);
+		if(StringHelper.isLong(plannedLecturesObj)) {
+			defaultPlannedLectures = Integer.parseInt(plannedLecturesObj);
 		}
 
 		assessmentModeAdmissibleIps = getStringPropertyValue(ASSESSMENT_MODE_ADMISSIBLE_IPS, assessmentModeAdmissibleIps);
@@ -760,6 +770,13 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		this.dailyRollCall = enable.name();
 		setStringProperty(DAILY_ROLL_CALL, dailyRollCall, true);
 	}
-	
-	
+
+	public int getDefaultPlannedLectures() {
+		return defaultPlannedLectures;
+	}
+
+	public void setDefaultPlannedLectures(int defaultPlannedLectures) {
+		this.defaultPlannedLectures = defaultPlannedLectures;
+		setStringProperty(DEFAULT_PLANNED_LECTURES, Integer.toString(defaultPlannedLectures), true);
+	}
 }
