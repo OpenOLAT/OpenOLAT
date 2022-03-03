@@ -65,6 +65,10 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
 		}
 		
+		if(LTIConfigForm.CONFIGKEY_LTI_13.equals(config.get(LTIConfigForm.CONFIGKEY_LTI_VERSION))) {
+			return null;
+		}
+		
 		Float scaleFactor = (Float) config.get(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 		if(scaleFactor == null || scaleFactor.floatValue() < 0.0000001f) {
 			return 1.0f;
