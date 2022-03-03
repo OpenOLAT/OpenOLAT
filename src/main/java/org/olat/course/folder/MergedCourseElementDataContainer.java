@@ -53,6 +53,7 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.bc.FolderNodeCallback;
+import org.olat.course.nodes.bc.FolderNodeReadOnlyCallback;
 import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -74,13 +75,14 @@ public class MergedCourseElementDataContainer extends MergeSource {
 	
 	private final Long courseId;
 	private boolean initialized = false;
-	private boolean courseReadOnly = false;
+	private final boolean courseReadOnly;
 	private final IdentityEnvironment identityEnv;
 	
-	public MergedCourseElementDataContainer(Long courseId, IdentityEnvironment identityEnv) {
+	public MergedCourseElementDataContainer(Long courseId, IdentityEnvironment identityEnv, boolean courseReadOnly) {
 		super(null, "_courseelementdata");
 		this.courseId = courseId;
 		this.identityEnv = identityEnv;
+		this.courseReadOnly = courseReadOnly;
 	}
 	
 	public boolean isEmpty() {
@@ -350,11 +352,15 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			rootFolder = VFSManager.olatRootContainer(path, null);
 			if(nodeEval != null) {
 				SubscriptionContext subContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), bcNode);
-				boolean canDownload = bcNode.canDownload(nodeEval);
-				boolean canUpload = userCourseEnv != null
-						? bcNode.canUpload(userCourseEnv, nodeEval)
-						: true; // is for admin
-				rootFolder.setLocalSecurityCallback(new FolderNodeCallback(path, canDownload, canUpload, isOlatAdmin, false, subContext));
+				if(courseReadOnly) {
+					rootFolder.setLocalSecurityCallback(new FolderNodeReadOnlyCallback(subContext));	
+				} else {
+					boolean canDownload = bcNode.canDownload(nodeEval);
+					boolean canUpload = userCourseEnv != null
+							? bcNode.canUpload(userCourseEnv, nodeEval)
+							: true; // is for admin
+					rootFolder.setLocalSecurityCallback(new FolderNodeCallback(path, canDownload, canUpload, isOlatAdmin, false, subContext));
+				}
 			} else {
 				VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(this);
 				if(secCallback != null) {

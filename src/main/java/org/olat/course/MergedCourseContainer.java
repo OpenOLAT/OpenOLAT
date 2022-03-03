@@ -126,7 +126,7 @@ public class MergedCourseContainer extends MergeSource {
 			
 		// add all course building blocks of type BC to a virtual folder
 		if(options.withCourseElements()) {
-			MergedCourseElementDataContainer nodesContainer = new MergedCourseElementDataContainer(courseId, identityEnv);
+			MergedCourseElementDataContainer nodesContainer = new MergedCourseElementDataContainer(courseId, identityEnv, courseReadOnly);
 			if (!nodesContainer.isEmpty()) {
 				addContainer(nodesContainer);
 			}
