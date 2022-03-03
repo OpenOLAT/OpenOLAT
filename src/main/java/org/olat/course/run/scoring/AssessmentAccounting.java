@@ -237,11 +237,13 @@ public class AssessmentAccounting implements ScoreAccounting {
 		Float maxScore = maxScoreEvaluator.getMaxScore(result, courseNode, this);
 		result.setMaxScore(maxScore);
 		
-		PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
-		Boolean passed = passedEvaluator.getPassed(result, courseNode,
-				userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-				userCourseEnvironment.getConditionInterpreter());
-		result.setPassed(passed);
+		if (courseNode.getParent() != null) {
+			PassedEvaluator passedEvaluator = evaluators.getPassedEvaluator();
+			Boolean passed = passedEvaluator.getPassed(result, courseNode,
+					userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+					userCourseEnvironment.getConditionInterpreter());
+			result.getPassedOverridable().setCurrent(passed);
+		}
 		
 		FullyAssessedEvaluator fullyAssessedEvaluator = evaluators.getFullyAssessedEvaluator();
 		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children, blocker);
@@ -258,7 +260,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 			RootPassedEvaluator rootPassedEvaluator = evaluators.getRootPassedEvaluator();
 			Boolean rootPassed = rootPassedEvaluator.getPassed(result, courseNode, this,
 					userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
-			result.setPassed(rootPassed);
+			result.getPassedOverridable().setCurrent(rootPassed);
 		}
 		
 		if (result.hasChanges()) {
@@ -278,7 +280,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setScore(score);
 		BigDecimal maxScore = result.getMaxScore() != null? new BigDecimal(result.getMaxScore()): null;
 		entry.setMaxScore(maxScore);
-		entry.getPassedOverridable().setCurrent(result.getPassed());
+		entry.setPassedOverridable(result.getPassedOverridable());
 		entry.setCompletion(result.getCompletion());
 		entry.setDuration(result.getDuration());
 		entry.setLastUserModified(result.getLastUserModified());
