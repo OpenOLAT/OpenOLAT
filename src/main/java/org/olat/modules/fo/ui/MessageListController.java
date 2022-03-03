@@ -879,6 +879,7 @@ public class MessageListController extends BasicController implements GenericEve
 			} else {
 				Message message = editMessageCtrl.getMessage();
 				if(message != null) {
+					message = forumManager.getMessageById(message.getKey());
 					if(thread != null && thread.getKey().equals(message.getKey())) {
 						thread = message;
 					}
@@ -891,7 +892,8 @@ public class MessageListController extends BasicController implements GenericEve
 				handleEditError(ureq);
 			} else {
 				Message reply = replyMessageCtrl.getMessage();
-				if(reply != null) {	
+				if(reply != null) {
+					reply = forumManager.getMessageById(reply.getKey());
 					reloadModel(ureq, reply);
 				} else {
 				  	showInfo("header.cannotsavemessage");

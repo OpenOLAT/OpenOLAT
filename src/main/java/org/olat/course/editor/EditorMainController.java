@@ -862,7 +862,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		removeAsListenerAndDispose(alternateCtr);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(statusCtr);
-		removeAsListenerAndDispose(nodeStatusCtr);
 		removeAsListenerAndDispose(cmc);
 		moveCopyController = null;
 		chooseNodeTypeCtr = null;
@@ -872,7 +871,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		alternateCtr = null;
 		calloutCtrl = null;
 		statusCtr = null;
-		nodeStatusCtr = null;
 		cmc = null;
 	}
 	

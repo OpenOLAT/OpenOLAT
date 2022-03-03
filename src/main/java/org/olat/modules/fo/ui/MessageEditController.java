@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -131,6 +131,8 @@ public class MessageEditController extends FormBasicController {
 	private Message message;
 	private Message parentMessage;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private ForumManager fm;
 	@Autowired
@@ -468,7 +470,7 @@ public class MessageEditController extends FormBasicController {
 			commitMessage(ureq);
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch(DBRuntimeException | PersistenceException e) {
-			DBFactory.getInstance().rollback();
+			dbInstance.rollback();
 			logError("", e);
 			fireEvent(ureq, new ErrorEditMessage());
 		}
@@ -551,7 +553,7 @@ public class MessageEditController extends FormBasicController {
 			notifiySubscription();
 			addLoggingResourceable(LoggingResourceable.wrap(message));
 			//commit before sending events
-			DBFactory.getInstance().commit();
+			dbInstance.commit();
 			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, message.getKey(), message.getKey(), getIdentity());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_MESSAGE_CREATE, getClass());
@@ -569,7 +571,7 @@ public class MessageEditController extends FormBasicController {
 			persistTempUploadedFiles(message);
 			notifiySubscription();
 			//commit before sending events
-			DBFactory.getInstance().commit();
+			dbInstance.commit();
 			Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
 			ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.CHANGED_MESSAGE, threadTopKey, message.getKey(), getIdentity());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);
@@ -588,7 +590,7 @@ public class MessageEditController extends FormBasicController {
 		Long threadTopKey = message.getThreadtop() == null ? null : message.getThreadtop().getKey();
 
 		//commit before sending events
-		DBFactory.getInstance().commit();
+		dbInstance.commit();
 		ForumChangedEvent event = new ForumChangedEvent(ForumChangedEvent.NEW_MESSAGE, threadTopKey, message.getKey(), getIdentity());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, forum);	
 		ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_REPLY_MESSAGE_CREATE, getClass(),
