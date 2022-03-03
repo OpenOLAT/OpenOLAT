@@ -51,9 +51,9 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.translator.Translator;
 
 /**
@@ -301,7 +301,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		filterButtons.clear();
 		for(FlexiTableExtendedFilter filter:filters) {
 			boolean enabled = filter.isDefaultVisible();
-			filterButtons.add(forgeFormLink(filter, enabled));
+			FlexiFilterButton filterButton = forgeFormLink(filter, enabled);
+			if (filter.isSelected()) {
+				filterButton.setChanged(true);
+			}
+			filterButtons.add(filterButton);
 		}
 		component.setDirty(true);
 	}

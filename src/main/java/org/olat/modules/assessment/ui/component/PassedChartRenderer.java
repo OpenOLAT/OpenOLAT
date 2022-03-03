@@ -53,7 +53,8 @@ public class PassedChartRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void appendPieSlice(StringOutput sb, String cssClass, int percent) {
-		sb.append("<circle r=\"16\" cx=\"16\" cy=\"16\" class=\"radial-bar ").append(cssClass).append("\" style=\"stroke-dasharray: ").append(percent).append(" 100;\"></circle>");
+		int percentCorr = percent == 100? 101: percent;
+		sb.append("<circle r=\"16\" cx=\"16\" cy=\"16\" class=\"radial-bar ").append(cssClass).append("\" style=\"stroke-dasharray: ").append(percentCorr).append(" 100;\"></circle>");
 	}
 	
 }

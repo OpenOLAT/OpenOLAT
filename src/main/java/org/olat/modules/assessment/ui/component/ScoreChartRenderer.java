@@ -67,7 +67,7 @@ public class ScoreChartRenderer extends DefaultComponentRenderer {
 		  .append("\n")
 		  .append("var x = d3.scaleBand()\n")
 		  .append("    .domain(data.map(function(d) { return d[0]; }))\n")
-		  .append("    .rangeRound([0, width]).padding(.1);\n")
+		  .append("    .range([0, width]).paddingInner(0.1).paddingOuter(0);\n")
 		  .append("\n")
 		  .append("var y = d3.scaleLinear()\n")
 		  .append("    .domain([0, ").append(yMax).append("])\n")

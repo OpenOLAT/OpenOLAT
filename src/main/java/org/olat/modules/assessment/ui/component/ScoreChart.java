@@ -22,7 +22,7 @@ package org.olat.modules.assessment.ui.component;
 import java.util.Map;
 
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.components.chart.DefaultD3Component;
 
 /**
  * 
@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ScoreChart extends FormBaseComponentImpl {
+public class ScoreChart extends DefaultD3Component {
 	
 	private static final ScoreChartRenderer RENDERER = new ScoreChartRenderer();
 	
