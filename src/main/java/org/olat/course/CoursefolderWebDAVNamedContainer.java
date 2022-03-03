@@ -73,7 +73,7 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 					parentContainer = null;
 				}
 			} catch (Exception e) {
-				log.error("Error loading course: " + entry, e);
+				log.error("Error loading course: {}", entry, e);
 			}
 		}
 		return super.getDelegate();
