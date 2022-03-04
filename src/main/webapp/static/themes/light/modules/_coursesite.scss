@@ -342,6 +342,11 @@
 
 /* the course catalog */
 .o_catalog {
+	.o_visual {
+		flex: 0 0 auto;
+		box-sizing: content-box;
+	}
+
 	.o_title {
 		a {
 			display: block;
