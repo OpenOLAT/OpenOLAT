@@ -355,9 +355,9 @@ public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 				showTextToStream(text, currentContentStream);
 				currentContentStream.endText();
 			} else {
-				String[] texts = splitTextInParts(text, headerHeight, fontSize);
+				String[] texts = splitTextInParts(text, maxHeaderSize, fontSize);
 				if(texts.length > 1) {
-					int maxNumOfLines = Math.round(colWidth / (lineHeightFactory * fontSize));
+					int maxNumOfLines = (int)(colWidth / (lineHeightFactory * fontSize));
 					if(maxNumOfLines < 1) {
 						maxNumOfLines = 1;
 					}
