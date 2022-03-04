@@ -81,6 +81,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.openxml.OpenXmlWorkbookTest.class,
 	org.olat.core.util.openxml.OpenXMLDocumentTest.class,
 	org.olat.core.util.pdf.PdfDocumentTest.class,
+	org.olat.core.util.pdf.PdfDocumentSplitTest.class,
 	org.olat.core.util.xml.XMLDigitalSignatureUtilTest.class,
 	org.olat.core.util.xml.XStreamHelperTest.class,
 	org.olat.core.configuration.EDConfigurationTest.class,

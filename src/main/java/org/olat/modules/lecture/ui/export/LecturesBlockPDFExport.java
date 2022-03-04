@@ -425,7 +425,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			
 			if(rowHeights[i] > rowHeight + 1) {
 				//can do 2 lines
-				String[] texts = splitText(text, nameMaxSize, fontSize);
+				String[] texts = splitTextInTwo(text, nameMaxSize, fontSize);
 				float lineTexty = texty;
 				for(int k=0; k<2 && k<texts.length; k++) {
 					String textLine = texts[k];
