@@ -74,11 +74,6 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 				null, null, -1, null, null, null, null, null, null, null, null, null, null);
 	}
 
-	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
-		this(null, null, null, Overridable.of(null), null, null, null, null, null, null, null, null, null, null, null, null, null, -1,
-				lastModified, lastUserModified, lastCoachModified, null, null, null, null, null, null, null);
-	}
-
 	public AssessmentEvaluation(Float score, Float maxScore, Boolean passed, Overridable<Boolean> passedOverridable,
 			Integer attempts, Date lastAttempt, Double completion, AssessmentEntryStatus assessmentStatus,
 			Boolean userVisibility, Boolean fullyAssessed, Date fullyAssessedDate, Date currentRunStart, Double currentRunCompletion,
@@ -228,6 +223,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		if(Mode.none != assessmentConfig.getPassedMode()) {
 			passed = entry.getPassed();
 			passedOverridable = entry.getPassedOverridable();
+		} else {
+			passedOverridable = Overridable.empty();
 		}
 		
 		String comment = null;

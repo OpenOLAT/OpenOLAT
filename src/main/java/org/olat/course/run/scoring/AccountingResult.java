@@ -29,6 +29,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 /**
  * 
  * Initial date: 16 Sep 2019<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
@@ -41,7 +42,7 @@ public class AccountingResult extends AssessmentEvaluation {
 	private ObligationOverridable evaluatedObligation;
 	private Float evaluatedScore;
 	private Float evaluatedMaxScore;
-	private Boolean evaluatedPassed;
+	private Overridable<Boolean> evaluatedPassedOverridable;
 	private Double evaluatedCompletion;
 	private AssessmentEntryStatus evaluatedStatus;
 	private Boolean evaluatedFullyAssessed;
@@ -57,14 +58,14 @@ public class AccountingResult extends AssessmentEvaluation {
 		this.evaluatedObligation = origin.getObligation();
 		this.evaluatedScore = origin.getScore();
 		this.evaluatedMaxScore = origin.getMaxScore();
-		this.evaluatedPassed = origin.getPassed();
+		this.evaluatedPassedOverridable = origin.getPassedOverridable().clone();
 		this.evaluatedCompletion = origin.getCompletion();
 		this.evaluatedStatus = origin.getAssessmentStatus();
 		this.evaluatedFullyAssessed = origin.getFullyAssessed();
 		this.evaluatedLastUserModified = origin.getLastUserModified();
 		this.evaluatedLastCoachModified = origin.getLastCoachModified();
 	}
-	
+
 	@Override
 	public Date getStartDate() {
 		return evaluatedStartDate;
@@ -120,12 +121,17 @@ public class AccountingResult extends AssessmentEvaluation {
 	}
 
 	@Override
-	public Boolean getPassed() {
-		return evaluatedPassed;
+	public Overridable<Boolean> getPassedOverridable() {
+		return evaluatedPassedOverridable;
 	}
 
-	public void setPassed(Boolean passed) {
-		this.evaluatedPassed = passed;
+	public void setPassedOverridable(Overridable<Boolean> passedOverridable) {
+		this.evaluatedPassedOverridable = passedOverridable;
+	}
+	
+	@Override
+	public Boolean getPassed() {
+		return evaluatedPassedOverridable.getCurrent();
 	}
 
 	@Override
@@ -172,11 +178,6 @@ public class AccountingResult extends AssessmentEvaluation {
 	public void setLastCoachModified(Date lastCoachModified) {
 		this.evaluatedLastCoachModified = lastCoachModified;
 	}
-	
-	@Override
-	public Overridable<Boolean> getPassedOverridable() {
-		return Overridable.of(evaluatedPassed);
-	}
 
 	public boolean hasChanges() {
 		return !Objects.equals(origin.getStartDate(), evaluatedStartDate)
@@ -190,7 +191,8 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getObligation().getConfigOriginal(), evaluatedObligation.getConfigOriginal())
 				|| !Objects.equals(origin.getObligation().getModBy(), evaluatedObligation.getModBy())
 				|| !Objects.equals(origin.getObligation().getModDate(), evaluatedObligation.getModDate())
-				|| !Objects.equals(origin.getPassed(), evaluatedPassed)
+				|| !Objects.equals(origin.getPassedOverridable().getCurrent(), evaluatedPassedOverridable.getCurrent())
+				|| !Objects.equals(origin.getPassedOverridable().getOriginal(), evaluatedPassedOverridable.getOriginal())
 				|| !Objects.equals(origin.getScore(), evaluatedScore)
 				|| !Objects.equals(origin.getMaxScore(), evaluatedMaxScore)
 				|| !Objects.equals(origin.getFullyAssessed(), evaluatedFullyAssessed)
