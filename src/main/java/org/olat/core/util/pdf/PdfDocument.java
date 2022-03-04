@@ -391,11 +391,15 @@ public class PdfDocument {
 	protected String[] splitTextInParts(String text, float maxWidth, float fontSize) throws IOException {
 		float textWidth = getStringWidth(text, fontSize);
 		if(maxWidth < textWidth) {
-			final float letterWidth = textWidth / text.length();
-			final int maxNumOfLetter = Math.round(maxWidth / letterWidth) - 1;
 			
 			List<String> list = new ArrayList<>();
 			for( ; text.length() > 0; ) {
+				
+				// calculate them specifically for every line to be more precise
+				textWidth = getStringWidth(text, fontSize);
+				float letterWidth = textWidth / text.length();
+				int maxNumOfLetter = Math.round(maxWidth / letterWidth) - 1;
+				
 				String line;
 				if(text.length() < maxNumOfLetter) {
 					line = text;
@@ -423,7 +427,7 @@ public class PdfDocument {
 						text = text.substring(indexBefore + 1);
 					}
 				}
-				list.add(line);
+				list.add(line.trim());
 			}
 			return list.toArray(new String[list.size()]);
 		}
@@ -431,7 +435,7 @@ public class PdfDocument {
 	}
 	
 	public static int findBreakBefore(String line, int start) {
-		start = Math.min(line.length() - 1, start);
+		start = Math.min(line.length(), start);
 		for (int i = start; i >= 0; --i) {
 			char c = line.charAt(i);
 			if (Character.isWhitespace(c) || c == '-' || c == ',') {
