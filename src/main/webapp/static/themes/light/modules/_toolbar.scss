@@ -183,9 +183,10 @@
 		.o_form_auto_completer {
 			.form-control {
 				width: 100px;
+				height: 26px;
 				padding: 3px 6px;			
 				position: relative;
-				top: -0.5em;		
+				top: -10px;		
 				/* make it lager when in focus */
 				 -webkit-transition: all 0.7s ease 0s;
 				 -moz-transition: all 0.7s ease 0s;

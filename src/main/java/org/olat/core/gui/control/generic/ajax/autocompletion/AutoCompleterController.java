@@ -149,8 +149,7 @@ public class AutoCompleterController extends BasicController {
 	 * string
 	 */
 	public void resetAutocompleter() {
-		JSCommand resetCmd = new JSCommand("jQuery('#o_so_autocomplete_input" + myContent.getDispatchID()  +"').val('');");
-		getWindowControl().getWindowBackOffice().sendCommandTo(resetCmd);
+		myContent.contextPut("inputValue", "");
 	}
 
 	/**
