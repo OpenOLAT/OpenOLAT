@@ -345,7 +345,7 @@ class ImportStep00 extends BasicStep {
 			try {
 				return Formatter.getInstance(locale).parseDate(val);
 			} catch (ParseException e) {
-				getLogger().error("Cannot parse date {} with locale {}", val, locale);
+				getLogger().warn("Cannot parse date {} with locale {}", val, locale);
 				return null;
 			}
 		}

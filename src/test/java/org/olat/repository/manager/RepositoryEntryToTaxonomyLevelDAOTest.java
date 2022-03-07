@@ -130,6 +130,28 @@ public class RepositoryEntryToTaxonomyLevelDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getTaxonomyLevelsByKeys() {
+		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
+				RepositoryEntryStatusEnum.trash, null);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-402-by-keys", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-402", "My taxonomy level by key", "A basic level", null, null, null, null, taxonomy);
+		repositoryEntryToTaxonomyLevelDao.createRelation(re, level);
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long,List<TaxonomyLevel>> loadedLevels = repositoryEntryToTaxonomyLevelDao
+				.getTaxonomyLevelsByEntryKeys(List.of(re.getKey()));
+		Assert.assertNotNull(loadedLevels);
+		Assert.assertEquals(1, loadedLevels.size());
+		Assert.assertEquals(re.getKey(), loadedLevels.keySet().iterator().next());
+		
+		List<TaxonomyLevel> entryLevels = loadedLevels.get(re.getKey());
+		Assert.assertNotNull(entryLevels);
+		Assert.assertEquals(1, entryLevels.size());
+		Assert.assertEquals(level, entryLevels.get(0));
+	}
+	
+	@Test
 	public void getRepositoryEntries() {
 		RepositoryEntry re = repositoryService.create(null, "Asuka Langley", "rel", "rel", null, null,
 				RepositoryEntryStatusEnum.trash, null);
