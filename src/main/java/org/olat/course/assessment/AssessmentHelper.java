@@ -285,7 +285,7 @@ public class AssessmentHelper {
 		}
 	}
 	
-	public static TreeModel assessmentTreeModel(ICourse course) {
+	public static TreeModel assessmentTreeModel(ICourse course, Locale locale) {
 		CourseNode rootNode = course.getRunStructure().getRootNode();
 		GenericTreeModel gtm = new GenericTreeModel();
 		GenericTreeNode node = new GenericTreeNode();
@@ -294,23 +294,25 @@ public class AssessmentHelper {
 		node.setIconCssClass("o_CourseModule_icon");
 		gtm.setRootNode(node);
 		
-		List<GenericTreeNode> children = addAssessableNodesToList(rootNode);
+		List<GenericTreeNode> children = addAssessableNodesToList(rootNode, locale);
 		children.forEach(child -> node.addChild(child));
 		return gtm;
 	}
 	
-	private static List<GenericTreeNode> addAssessableNodesToList(CourseNode parentCourseNode) {
+	private static List<GenericTreeNode> addAssessableNodesToList(CourseNode parentCourseNode, Locale locale) {
 		List<GenericTreeNode> result = new ArrayList<>();
 		for(int i=0; i<parentCourseNode.getChildCount(); i++) {
 			CourseNode courseNode = (CourseNode)parentCourseNode.getChildAt(i);
-			List<GenericTreeNode> assessableChildren = addAssessableNodesToList(courseNode);
+			List<GenericTreeNode> assessableChildren = addAssessableNodesToList(courseNode, locale);
 			
 			if (assessableChildren.size() > 0 || isAssessable(courseNode)) {
 				GenericTreeNode node = new GenericTreeNode();
 				node.setTitle(courseNode.getShortTitle());
 				node.setUserObject(courseNode);
 				CourseNodeConfiguration nodeconfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
-				node.setIconCssClass(nodeconfig.getIconCSSClass());
+				node.setIconCssClass(nodeconfig.getIconCSSClass());								
+				String translatedType = nodeconfig.getLinkText(locale);
+				node.setAltText(translatedType + ": "  + courseNode.getLongTitle() + " (id:" + courseNode.getIdent() + ")");							
 				result.add(node);
 				assessableChildren.forEach(child -> node.addChild(child));
 			}

@@ -106,7 +106,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		
 		nodeIdentToCourseNode = new HashMap<>();
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		TreeModel tm = AssessmentHelper.assessmentTreeModel(course);
+		TreeModel tm = AssessmentHelper.assessmentTreeModel(course, getLocale());
 		new TreeVisitor(node -> {
 			if(node instanceof TreeNode) {
 				Object uobject = ((TreeNode)node).getUserObject();

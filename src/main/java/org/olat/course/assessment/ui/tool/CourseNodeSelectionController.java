@@ -60,7 +60,7 @@ public class CourseNodeSelectionController extends BasicController {
 		
 		// Navigation menu
 		menuTree = new MenuTree("menuTree");
-		TreeModel tm = AssessmentHelper.assessmentTreeModel(course);
+		TreeModel tm = AssessmentHelper.assessmentTreeModel(course, getLocale());
 		menuTree.setTreeModel(tm);
 		menuTree.setExpandSelectedNode(true);
 		menuTree.setSelectedNodeId(tm.getRootNode().getIdent());

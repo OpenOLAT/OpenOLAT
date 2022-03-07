@@ -53,6 +53,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -118,7 +120,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 
 		// Navigation menu
 		menuTree = new MenuTree("menuTree");
-		TreeModel tm = AssessmentHelper.assessmentTreeModel(course);
+		TreeModel tm = AssessmentHelper.assessmentTreeModel(course, getLocale());
 		menuTree.setTreeModel(tm);
 		menuTree.setSelectedNode(tm.getRootNode());
 		menuTree.setHighlightSelection(false);
@@ -286,7 +288,10 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		stackPanel.popUpToController(this);
 		stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);
 		mainVC.contextPut("courseNodeIcon", treeNode.getIconCssClass());
-		mainVC.contextPut("courseNodeTitle", courseNode.getLongTitle());
+		mainVC.contextPut("courseNodeTitle", courseNode.getLongTitle());		
+		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType());
+		String translatedType = nodeConfig.getLinkText(getLocale());
+		mainVC.contextPut("translatedType", translatedType);
 		mainVC.remove("overview");
 	}
 	
