@@ -156,11 +156,11 @@ public class AssessmentItemEditorController extends BasicController implements A
 			
 			displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 			listenTo(displayCtrl);
-			displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
+			displayTabPosition = tabbedPane.addTab(translate("preview"), "o_sel_assessment_item_preview", displayCtrl);
 		
 			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 			listenTo(solutionCtrl);
-			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
+			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), "o_sel_assessment_item_solution", solutionCtrl);
 		}
 		
 		putInitialPanel(mainVC);
@@ -206,11 +206,11 @@ public class AssessmentItemEditorController extends BasicController implements A
 			displayCtrl = new AssessmentItemPreviewController(ureq, getWindowControl(),
 					resolvedAssessmentItem, itemRef, testEntry, assessmentEntry, rootDirectory, itemFile);
 			listenTo(displayCtrl);
-			displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
+			displayTabPosition = tabbedPane.addTab(translate("preview"), "o_sel_assessment_item_preview", displayCtrl);
 
 			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 			listenTo(solutionCtrl);
-			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
+			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), "o_sel_assessment_item_solution", solutionCtrl);
 			
 			if(poolEditor != null ) {
 				tabbedPane.addTab(translate("form.pool"), poolEditor);
@@ -232,7 +232,6 @@ public class AssessmentItemEditorController extends BasicController implements A
 	
 	public void addTab(int pos, String displayName, Controller controller) {
 		tabbedPane.addTab(pos, displayName, controller);
-		
 	}
 	
 	public QPoolInformations getPoolStatus() {
@@ -320,9 +319,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.choice"), "o_sel_assessment_item_choice", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return scItemBuilder;
 	}
 	
@@ -338,9 +337,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.choice"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.choice"), "o_sel_assessment_item_choice", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return mcItemBuilder;
 	}
 	
@@ -356,9 +355,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.kprim"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.kprim"), "o_sel_assessment_item_kprim", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return kprimItemBuilder;
 	}
 	
@@ -375,9 +374,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.match"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.match"), "o_sel_assessment_item_match", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return matchItemBuilder;
 	}
 	
@@ -394,9 +393,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.matchdraganddrop"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.matchdraganddrop"), "o_sel_assessment_item_dnd", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return matchItemBuilder;
 	}
 	
@@ -413,9 +412,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.matchtruefalse"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.matchtruefalse"), "o_sel_assessment_item_truefalse", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return matchItemBuilder;
 	}
 	
@@ -432,9 +431,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.fib"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.fib"), "o_sel_assessment_item_fib", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return fibItemBuilder;
 	}
 	
@@ -451,9 +450,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.hotspot"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.hotspot"), "o_sel_assessment_item_hotspot", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return hotspotItemBuilder;
 	}
 	
@@ -469,9 +468,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.essay"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.essay"), "o_sel_assessment_item_essay", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return essayItemBuilder;
 	}
 	
@@ -487,9 +486,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.upload"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.upload"), "o_sel_assessment_item_upload", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return uploadItemBuilder;
 	}
 	
@@ -505,9 +504,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 		
-		tabbedPane.addTab(translate("form.drawing"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.drawing"), "o_sel_assessment_item_drawing", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return uploadItemBuilder;
 	}
 	
@@ -523,9 +522,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 
-		tabbedPane.addTab(translate("form.hottext"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.hottext"), "o_sel_assessment_item_hottext", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return hottextItemBuilder;
 	}
 	
@@ -541,9 +540,9 @@ public class AssessmentItemEditorController extends BasicController implements A
 				restrictedEdit, readOnly);
 		listenTo(feedbackEditor);
 
-		tabbedPane.addTab(translate("form.order"), itemEditor);
-		tabbedPane.addTab(translate("form.score"), scoreEditor);
-		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		tabbedPane.addTab(translate("form.order"), "o_sel_assessment_item_order", itemEditor);
+		tabbedPane.addTab(translate("form.score"), "o_sel_assessment_item_score", scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), "o_sel_assessment_item_feedback", feedbackEditor);
 		return orderItemBuilder;
 	}
 

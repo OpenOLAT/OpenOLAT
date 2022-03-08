@@ -330,9 +330,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController {
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main); // the choose learning content tab
-		tabbedPane.addTab(translate(PANE_TAB_DELIVERY), deliveryOptionsCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), "o_sel_repo_entry", main); // the choose learning content tab
+		tabbedPane.addTab(translate(PANE_TAB_DELIVERY), "o_sel_scorm_layout", deliveryOptionsCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
 	}
 

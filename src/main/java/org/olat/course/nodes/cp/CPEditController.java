@@ -264,8 +264,8 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main);
-		tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), "o_sel_repo_entry", main);
+		tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), "o_sel_cp_layout_options", deliveryOptionsCtrl.getInitialComponent());
 	}
 
 	/**

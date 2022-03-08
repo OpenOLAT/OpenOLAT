@@ -174,7 +174,7 @@ public class PortfolioV2Test extends Deployments {
 		courseEditor
 			.createNode("ep")
 			.nodeTitle(portfolioNodeTitle)
-			.selectTabLearnContent()
+			.selectTabPortfolioContent()
 			.choosePortfolio(binderTitle)
 			.publish()
 			.quickPublish(UserAccess.membersOnly);
@@ -376,7 +376,7 @@ public class PortfolioV2Test extends Deployments {
 		courseEditor
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
-			.selectTabLearnContent()
+			.selectTabPortfolioContent()
 			.createFeed(blogTitle);
 
 		//publish the course
@@ -689,7 +689,7 @@ public class PortfolioV2Test extends Deployments {
 		courseEditor
 			.createNode("ep")
 			.nodeTitle(portfolioNodeTitle)
-			.selectTabLearnContent()
+			.selectTabPortfolioContent()
 			.choosePortfolio(binderTitle);
 		//configure the assessment
 		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);

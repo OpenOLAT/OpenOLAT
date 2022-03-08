@@ -472,13 +472,6 @@ public class OOGraphene {
 		}, false, browser);
 	}
 	
-	public static final void selectTabSlowly(String ulClass, By formBy, WebDriver browser) {
-		selectTab(ulClass, (b) -> {
-			List<WebElement> chooseRepoEntry = browser.findElements(formBy);
-			return !chooseRepoEntry.isEmpty();
-		}, false, browser);
-	}
-	
 	/**
 	 * 
 	 * @param ulClass The class of the nav-tabs
@@ -510,7 +503,7 @@ public class OOGraphene {
 		Assert.assertTrue("Found the tab", found);
 	}
 	
-	public static final boolean selectTab(String ulClass, Predicate<WebDriver> selectTab, int start, int end, boolean slowly, WebDriver browser) {
+	private static final boolean selectTab(String ulClass, Predicate<WebDriver> selectTab, int start, int end, boolean slowly, WebDriver browser) {
 		boolean found = false;
 		
 		a_a:
@@ -520,7 +513,7 @@ public class OOGraphene {
 			String tabClass = tabEl.getAttribute("onclick");
 			if(StringHelper.containsNonWhitespace(tabClass)) {
 				tabEl.click();
-				By activatedTabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "][@class='active']/a");
+				By activatedTabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "][contains(@class,'active')]/a");
 				if(slowly) {
 					waitElementSlowly(activatedTabLinkBy, 10, browser);
 				} else {
