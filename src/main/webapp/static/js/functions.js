@@ -967,11 +967,11 @@ function gotonode(nodeid) {
 		// check if o_activateCourseNode method is available in this window
 		if (typeof o_activateCourseNode != 'undefined') {
 			o_activateCourseNode(nodeid);
-		} else {
+		} else if (typeof o_activateInfoNode != 'undefined') {
+			o_activateInfoNode(nodeid);
+		} else if (opener && typeof opener.o_activateCourseNode != 'undefined') {
 			// must be content opened using the clone controller - search in opener window
-			if (opener && typeof opener.o_activateCourseNode != 'undefined') {
-			  opener.o_activateCourseNode(nodeid);
-			}		
+			opener.o_activateCourseNode(nodeid);		
 		}
 	} catch (e) {
 		alert('Goto node error:' + e);
@@ -982,10 +982,10 @@ function gototool(toolname) {
 	try {
 		if (typeof o_activateCourseTool != 'undefined') {
 			o_activateCourseTool(toolname);
-		} else {
-			if (opener && typeof opener.o_activateCourseTool != 'undefined') {
-				opener.o_activateCourseTool(toolname);
-			}
+		} else if (typeof o_activateInfoTool != 'undefined') {
+			o_activateInfoTool(toolname);
+		} else if (opener && typeof opener.o_activateCourseTool != 'undefined') {
+			opener.o_activateCourseTool(toolname);
 		}
 	} catch (e) {
 		alert('Goto tool error:' + e);
@@ -1800,6 +1800,8 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 	} else {
 		targetWindow = window;
 	}
+	
+	console.log('XHREvent', targetUrl);
 
 	jQuery.ajax(targetUrl,{
 		type:'POST',
