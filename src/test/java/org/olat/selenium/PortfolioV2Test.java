@@ -376,7 +376,7 @@ public class PortfolioV2Test extends Deployments {
 		courseEditor
 			.createNode("blog")
 			.nodeTitle(blogNodeTitle)
-			.selectTabPortfolioContent()
+			.selectTabFeedContent()
 			.createFeed(blogTitle);
 
 		//publish the course
