@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -37,6 +38,8 @@ import org.openqa.selenium.support.ui.Select;
  */
 public class QTI21ConfigurationCEPage {
 	
+	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
+	
 	private final WebDriver browser;
 	
 	public QTI21ConfigurationCEPage(WebDriver browser) {
@@ -44,8 +47,11 @@ public class QTI21ConfigurationCEPage {
 	}
 	
 	public QTI21ConfigurationCEPage selectConfiguration() {
-		By configBy = By.className("o_qti_21_configuration");
-		return selectTab(configBy);
+		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_repo_entry>a");
+		OOGraphene.waitElement(tabBy, browser);
+		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(By.className("o_qti_21_configuration"), browser);
+		return this;
 	}
 	
 	public QTI21ConfigurationCEPage showScoreOnHomepage(boolean showResults) {
@@ -176,14 +182,28 @@ public class QTI21ConfigurationCEPage {
 	}
 	
 	public QTI21LayoutConfigurationCEPage selectLayoutConfiguration() {
-		By configBy = By.className("o_qti_21_layout_configuration");
-		selectTab(configBy);
+		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_qti_layout>a");
+		OOGraphene.waitElement(tabBy, browser);
+		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(By.className("o_qti_21_layout_configuration"), browser);
 		return new QTI21LayoutConfigurationCEPage(browser);
 	}
 	
-	private QTI21ConfigurationCEPage selectTab(By tabBy) {
-		OOGraphene.selectTab("o_node_config", tabBy, browser);
+	public QTI21ConfigurationCEPage selectLearnContent() {
+		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_repo_entry>a");
+		OOGraphene.waitElement(tabBy, browser);
+		browser.findElement(tabBy).click();
+		OOGraphene.waitElement(chooseTestButton, browser);
 		return this;
 	}
-
+	
+	public QTI21ConfigurationCEPage chooseTest(String resourceTitle, boolean closeWarning) {
+		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
+		fragment.chooseResource(chooseTestButton, resourceTitle);
+		if(closeWarning) {
+			//close the warning
+			OOGraphene.closeWarningBox(browser);
+		}
+		return this;
+	}
 }

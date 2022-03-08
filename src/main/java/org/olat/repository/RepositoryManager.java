@@ -218,8 +218,8 @@ public class RepositoryManager {
 		return getImage(re.getKey(), re.getOlatResource());
 	}
 	
-	public VFSLeaf getImage(Long repoEntryKey, OLATResource re) {
-		VFSContainer repositoryHome = getMediaDirectory(re);
+	public VFSLeaf getImage(Long repoEntryKey, OLATResourceable ores) {
+		VFSContainer repositoryHome = getMediaDirectory(ores);
 		
 		String imageName = repoEntryKey + ".jpg";
 		VFSItem image = repositoryHome.resolve(imageName);
@@ -234,7 +234,7 @@ public class RepositoryManager {
 		return null;
 	}
 	
-	private VFSContainer getMediaDirectory(OLATResource re) {
+	private VFSContainer getMediaDirectory(OLATResourceable re) {
 		File fResourceFileroot;
 		if("CourseModule".equals(re.getResourceableTypeName())) {
 			fResourceFileroot = new File(FolderConfig.getCanonicalRoot(), PersistingCourseImpl.COURSE_ROOT_DIR_NAME);

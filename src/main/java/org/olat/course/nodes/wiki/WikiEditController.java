@@ -136,7 +136,7 @@ public class WikiEditController extends ActivateableTabbableDefaultController im
 			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), editAccessVc);
 			
 		}
-		tabbedPane.addTab(translate(PANE_TAB_WIKICONFIG), configCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_WIKICONFIG), "o_sel_repo_entry", configCtrl.getInitialComponent());
 	}
 
 	@Override

@@ -39,13 +39,11 @@ public abstract class QTI21AssessmentItemEditorPage {
 		this.browser = browser;
 	}
 	
-	protected QTI21AssessmentItemEditorPage selectTab(By tabBy) {
-		OOGraphene.selectTab("o_sel_assessment_item_config", tabBy, browser);
-		return this;
-	}
-	
-	protected QTI21AssessmentItemEditorPage selectTabSlowly(By tabBy) {
-		OOGraphene.selectTabSlowly("o_sel_assessment_item_config", tabBy, browser);
+	protected QTI21AssessmentItemEditorPage selectTab(String tabCssClass, By tabBy) {
+		By tabItemBy = By.cssSelector("ul li." + tabCssClass + ">a");
+		OOGraphene.waitElement(tabItemBy, browser);
+		browser.findElement(tabItemBy).click();
+		OOGraphene.waitElement(tabBy, browser);
 		return this;
 	}
 }

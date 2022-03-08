@@ -105,13 +105,18 @@ public class UserProfilePage {
 	}
 	
 	public UserProfilePage saveProfilAndConfirmEmail() {
-		By saveBy = By.cssSelector(".o_user_profile_form button.btn-primary");
-		OOGraphene.click(saveBy, browser);
-		OOGraphene.scrollTop(browser);
-		OOGraphene.waitModalDialog(browser);
-		By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
-		browser.findElement(yesBy).click();
-		OOGraphene.waitModalDialogDisappears(browser);
+		try {
+			By saveBy = By.cssSelector(".o_user_profile_form button.btn-primary");
+			OOGraphene.click(saveBy, browser);
+			OOGraphene.waitingALittleLonger();
+			OOGraphene.waitModalDialog(browser);
+			By yesBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
+			browser.findElement(yesBy).click();
+			OOGraphene.waitModalDialogDisappears(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Confirm Email", browser);
+			throw e;
+		}
 		return this;
 	}
 	

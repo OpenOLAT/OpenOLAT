@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
+import org.jboss.arquillian.drone.api.annotation.lifecycle.MethodLifecycle;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -53,6 +54,7 @@ import org.olat.selenium.page.course.GroupTaskToCoachPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupPage;
+import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
@@ -77,6 +79,7 @@ import org.openqa.selenium.WebElement;
 public class AssessmentTest extends Deployments {
 
 	@Drone
+	@MethodLifecycle
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
@@ -129,7 +132,7 @@ public class AssessmentTest extends Deployments {
 		courseEditor
 			.createNode("scorm")
 			.nodeTitle(scormNodeTitle)
-			.selectTabLearnContent()
+			.selectTabScormContent()
 			.chooseScorm(scormTitle);
 
 		//publish the course
@@ -258,9 +261,12 @@ public class AssessmentTest extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false);
 
 		//publish the course
 		courseEditor
@@ -484,12 +490,17 @@ public class AssessmentTest extends Deployments {
 		//create a course element of type test with the QTI 2.1 test that we upload above
 		String testNodeTitle = "Test-QTI-2.1";
 		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser);
-		courseRuntime
+		CourseEditorPageFragment editor = courseRuntime
 			.edit()
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(testTitle)
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(testTitle, false);
+		
+		editor
 			.selectRoot()
 			.selectTabScore()
 			.enableRootScoreByNodes()

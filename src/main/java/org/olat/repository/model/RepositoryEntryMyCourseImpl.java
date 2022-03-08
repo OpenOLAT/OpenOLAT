@@ -21,7 +21,6 @@ package org.olat.repository.model;
 
 import java.util.Date;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
@@ -77,7 +76,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 
 	private final long offersAvailable;
 	
-	private final Set<TaxonomyLevel> taxonomyLevels;
+	private Set<TaxonomyLevel> taxonomyLevels;
 	
 	public RepositoryEntryMyCourseImpl(RepositoryEntry re, RepositoryEntryStatistics stats,
 			boolean marked, long offersAvailable, Integer myRating) {
@@ -99,9 +98,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 		
 		olatResource = re.getOlatResource();
 		lifecycle = re.getLifecycle();
-		
-		taxonomyLevels = re.getTaxonomyLevels().stream().map(relation -> relation.getTaxonomyLevel()).collect(Collectors.toSet());
-	
+
 		this.marked = marked;
 		this.myRating = myRating;
 
@@ -286,6 +283,10 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public Set<TaxonomyLevel> getTaxonomyLevels() {
 		return taxonomyLevels;
+	}
+	
+	public void setTaxonomyLevels(Set<TaxonomyLevel> levels) {
+		this.taxonomyLevels = levels;
 	}
 
 	@Override

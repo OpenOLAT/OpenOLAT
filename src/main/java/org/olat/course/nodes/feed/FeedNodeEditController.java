@@ -159,7 +159,7 @@ public class FeedNodeEditController extends ActivateableTabbableDefaultControlle
 			tabbedPane.addTab(translate(PANE_TAB_ACCESS), accessVC);
 		}
 		if (configCtrl != null) {
-			tabbedPane.addTab(translate(PANE_TAB_CONFIG), configCtrl.getInitialComponent());
+			tabbedPane.addTab(translate(PANE_TAB_CONFIG), "o_sel_repo_entry", configCtrl.getInitialComponent());
 		}
 	}
 }

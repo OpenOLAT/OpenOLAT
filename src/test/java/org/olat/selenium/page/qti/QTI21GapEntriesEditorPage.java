@@ -207,7 +207,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return The score page
 	 */
 	public QTI21GapEntriesScoreEditorPage selectScores() {
-		selectTab(By.className("o_sel_assessment_item_options"));
+		selectTab("o_sel_assessment_item_score", By.className("o_sel_assessment_item_options"));
 		return new QTI21GapEntriesScoreEditorPage(browser);
 	}
 	
@@ -217,7 +217,7 @@ public class QTI21GapEntriesEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return the feedback page
 	 */
 	public QTI21FeedbacksEditorPage selectFeedbacks() {
-		selectTab(By.className("o_sel_assessment_item_feedbacks"));
+		selectTab("o_sel_assessment_item_feedback", By.className("o_sel_assessment_item_feedbacks"));
 		return new QTI21FeedbacksEditorPage(browser);
 	}
 }

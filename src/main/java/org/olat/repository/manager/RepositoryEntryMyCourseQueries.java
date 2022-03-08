@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,6 +49,8 @@ import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.assessment.AssessmentEntryScoring;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -80,9 +83,13 @@ public class RepositoryEntryMyCourseQueries {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private TaxonomyModule taxonomyModule;
+	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	
 	public int countViews(SearchMyRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -138,6 +145,13 @@ public class RepositoryEntryMyCourseQueries {
 			repoKeys.add(re.getKey());
 		}
 		
+		Map<Long,List<TaxonomyLevel>> levelsMap;
+		if(!viewImpls.isEmpty() && taxonomyModule.isEnabled() && StringHelper.containsNonWhitespace(repositoryModule.getTaxonomyTreeKey())) {
+			levelsMap = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevelsByEntryKeys(repoKeys);
+		} else {
+			levelsMap = Collections.emptyMap();
+		}
+		
 		Map<Long, AssessmentEntryScoring> repoKeyToAssessmentEntry = assessmentService
 				.loadRootAssessmentEntriesByAssessedIdentity(params.getIdentity(), repoKeys).stream()
 				.collect(Collectors.toMap(AssessmentEntryScoring::getRepositoryEntryKey, Function.identity(), (u, v) -> u));
@@ -149,6 +163,13 @@ public class RepositoryEntryMyCourseQueries {
 				view.setScore(score != null? Float.valueOf(score.floatValue()): null);
 				view.setPassed(assessmentEntry.getPassed());
 				view.setCompletion(assessmentEntry.getCompletion());
+			}
+			
+			List<TaxonomyLevel> levels = levelsMap.get(view.getKey());
+			if(levels == null) {
+				view.setTaxonomyLevels(Set.of());
+			} else {
+				view.setTaxonomyLevels(Set.copyOf(levels));
 			}
 			views.add(view);
 		}

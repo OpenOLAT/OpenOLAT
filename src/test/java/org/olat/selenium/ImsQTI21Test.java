@@ -469,12 +469,12 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(testNodeTitle);
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false)
 			.selectLayoutConfiguration()
 			.overrideConfiguration()
 			.fullWindow()
@@ -697,13 +697,12 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(testNodeTitle);
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
-			.selectConfiguration()
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false)
 			.showScoreOnHomepage(true)
 			.assertShowResultsOptions()
 			.saveConfiguration();
@@ -799,12 +798,12 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(testNodeTitle);
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false)
 			.selectLayoutConfiguration()
 			.overrideConfiguration()
 			.fullWindow()
@@ -912,12 +911,12 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(testNodeTitle);
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false)
 			.selectLayoutConfiguration()
 			.overrideConfiguration()
 			.fullWindow()
@@ -1056,13 +1055,12 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(testNodeTitle);
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
-			.selectConfiguration()
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false)
 			.showScoreOnHomepage(true)
 			.assertShowResultsOptions()
 			.saveConfiguration();
@@ -1186,17 +1184,18 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(testNodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false);
 		
 		//SEL cannot wait and discard the warning box on the server, simply wait it disappears
 		OOGraphene.waitingTooLong();
 		OOGraphene.waitingTooLong();
 		
-		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
-			.selectConfiguration()
 			.showScoreOnHomepage(true)
 			.assertShowResultsOptions()
 			.saveConfiguration();
@@ -1349,14 +1348,12 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
-		OOGraphene.closeWarningBox(browser);//close the warning
+			.nodeTitle(testNodeTitle);
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
-			.selectConfiguration()
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, true)
 			.setCorrectionMode("grading")
 			.saveConfiguration();
 		
@@ -1526,14 +1523,12 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqtest")
-			.nodeTitle(testNodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
-		OOGraphene.closeWarningBox(browser);//close the warning
-		
+			.nodeTitle(testNodeTitle);
+
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
-			.selectConfiguration()
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, true)
 			.setCorrectionMode("grading")
 			.saveConfiguration();
 		
@@ -1710,12 +1705,12 @@ public class ImsQTI21Test extends Deployments {
 			.edit();
 		courseEditor
 			.createNode("iqself")
-			.nodeTitle(nodeTitle)
-			.selectTabLearnContent()
-			.chooseTest(qtiTestTitle);
+			.nodeTitle(nodeTitle);
 		
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle, false)
 			.showResultsOnHomepage(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.showScoreOnHomepage(true)
 			.saveConfiguration();

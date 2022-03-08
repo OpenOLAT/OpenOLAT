@@ -111,12 +111,12 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		workflowPos = tabbedPane.addTab(translate(PANE_TAB_WORKLOW), workflowCtrl.getInitialComponent());
-		assignmentPos = tabbedPane.addTab(translate(PANE_TAB_ASSIGNMENT), assignmentCtrl.getInitialComponent());
-		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), submissionCtrl.getInitialComponent());
+		workflowPos = tabbedPane.addTab(translate(PANE_TAB_WORKLOW), "o_sel_gta_workflow", workflowCtrl.getInitialComponent());
+		assignmentPos = tabbedPane.addTab(translate(PANE_TAB_ASSIGNMENT), "o_sel_gta_assignment", assignmentCtrl.getInitialComponent());
+		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), "o_sel_gta_submission", submissionCtrl.getInitialComponent());
 		revisionPos = tabbedPane.addTab(translate(PANE_TAB_REVIEW_AND_CORRECTIONS), revisionCtrl.getInitialComponent());
-		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), manualAssessmentCtrl.getInitialComponent());
-		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), solutionsCtrl.getInitialComponent());
+		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), "o_sel_gta_assessment", manualAssessmentCtrl.getInitialComponent());
+		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), "o_sel_gta_solution", solutionsCtrl.getInitialComponent());
 		highScoreTabPosition = myTabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateEnabledDisabledTabs();
 	}

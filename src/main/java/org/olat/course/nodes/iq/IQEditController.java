@@ -354,8 +354,8 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(paneTabIQConfiguration), configurationCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), layoutConfigurationCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(paneTabIQConfiguration), "o_sel_repo_entry", configurationCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), "o_sel_qti_layout", layoutConfigurationCtrl.getInitialComponent());
 		if (QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
 			tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		}
