@@ -229,7 +229,7 @@ public class UserAdminPage {
 		
 		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default");
 		OOGraphene.click(searchBy, browser);
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.cssSelector(".o_sel_user_search_table"), browser);
 		return this;
 	}
 	
@@ -240,7 +240,7 @@ public class UserAdminPage {
 		
 		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default");
 		browser.findElement(searchBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.cssSelector(".o_sel_user_search_table"), browser);
 		return this;
 	}
 	
