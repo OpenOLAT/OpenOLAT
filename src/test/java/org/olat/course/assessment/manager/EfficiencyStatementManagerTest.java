@@ -103,9 +103,8 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(participant, statementLight.getIdentity());
 		Assert.assertEquals(statement.getCourseRepoKey(), statementLight.getCourseRepoKey());
 		Assert.assertEquals(re.getKey(), statementLight.getCourseRepoKey());
-		Assert.assertEquals(course.getCourseTitle(), statementLight.getShortTitle());
-		Assert.assertEquals(re.getOlatResource(), statementLight.getResource());
-		Assert.assertEquals(re.getOlatResource().getKey(), statementLight.getArchivedResourceKey());
+		Assert.assertEquals(course.getCourseTitle(), statementLight.getTitle());
+		Assert.assertEquals(re.getOlatResource().getKey(), statementLight.getResourceKey());
 		Assert.assertNotNull(statementLight.getCreationDate());
 		Assert.assertNotNull(statementLight.getLastModified());
 		Assert.assertTrue(statementLight.getPassed());
@@ -208,9 +207,8 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(statement.getKey(), reloadedStatement.getKey());
 		Assert.assertEquals(participant, reloadedStatement.getIdentity());
 		Assert.assertEquals(re.getKey(), reloadedStatement.getCourseRepoKey());
-		Assert.assertEquals(course.getCourseTitle(), reloadedStatement.getShortTitle());
-		Assert.assertEquals(re.getOlatResource(), reloadedStatement.getResource());
-		Assert.assertEquals(re.getOlatResource().getKey(), reloadedStatement.getArchivedResourceKey());
+		Assert.assertEquals(course.getCourseTitle(), reloadedStatement.getTitle());
+		Assert.assertEquals(re.getOlatResource().getKey(), reloadedStatement.getResourceKey());
 		Assert.assertNotNull(reloadedStatement.getCreationDate());
 		Assert.assertNotNull(reloadedStatement.getLastModified());
 		Assert.assertFalse(reloadedStatement.getPassed());
@@ -257,7 +255,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(statement.getKey(), fullStatement.getKey());
 		Assert.assertEquals(participant, fullStatement.getIdentity());
 		Assert.assertEquals(re.getKey(), fullStatement.getCourseRepoKey());
-		Assert.assertEquals(course.getCourseTitle(), fullStatement.getShortTitle());
+		Assert.assertEquals(course.getCourseTitle(), fullStatement.getTitle());
 		Assert.assertEquals(re.getOlatResource(), fullStatement.getResource());
 		Assert.assertNotNull(fullStatement.getCreationDate());
 		Assert.assertNotNull(fullStatement.getLastModified());
@@ -284,7 +282,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
 		Assert.assertEquals(participant, lightStatement.getIdentity());
 		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
-		Assert.assertEquals(course.getCourseTitle(), lightStatement.getShortTitle());
+		Assert.assertEquals(course.getCourseTitle(), lightStatement.getTitle());
 		Assert.assertNotNull(lightStatement.getCreationDate());
 		Assert.assertNotNull(lightStatement.getLastModified());
 		Assert.assertFalse(lightStatement.getPassed());
@@ -313,7 +311,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
 		Assert.assertEquals(participant, lightStatement.getIdentity());
 		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
-		Assert.assertEquals(course.getCourseTitle(), lightStatement.getShortTitle());
+		Assert.assertEquals(course.getCourseTitle(), lightStatement.getTitle());
 		Assert.assertNotNull(lightStatement.getCreationDate());
 		Assert.assertNotNull(lightStatement.getLastModified());
 		Assert.assertFalse(lightStatement.getPassed());
@@ -630,7 +628,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
 		Assert.assertEquals(participant, lightStatement.getIdentity());
 		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
-		Assert.assertEquals(course.getCourseTitle(), lightStatement.getShortTitle());
+		Assert.assertEquals(course.getCourseTitle(), lightStatement.getTitle());
 		Assert.assertFalse(lightStatement.getPassed());
 		Assert.assertEquals(0f, lightStatement.getScore(), 0.00001);
 	}
@@ -660,7 +658,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		Assert.assertEquals(statement.getKey(), lightStatement.getKey());
 		Assert.assertEquals(participant, lightStatement.getIdentity());
 		Assert.assertEquals(re.getKey(), lightStatement.getCourseRepoKey());
-		Assert.assertEquals(course.getCourseTitle(), lightStatement.getShortTitle());
+		Assert.assertEquals(course.getCourseTitle(), lightStatement.getTitle());
 		Assert.assertFalse(lightStatement.getPassed());
 		Assert.assertEquals(0f, lightStatement.getScore(), 0.00001);
 	}

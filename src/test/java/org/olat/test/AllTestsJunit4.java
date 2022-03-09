@@ -212,6 +212,7 @@ import org.junit.runners.Suite;
 	org.olat.course.assessment.AssessmentManagerTest.class,
 	org.olat.course.assessment.manager.AssessmentModeManagerTest.class,
 	org.olat.course.assessment.manager.AssessmentToolManagerTest.class,
+	org.olat.course.assessment.manager.EfficiencyStatementManagerTest.class,
 	org.olat.course.assessment.manager.ScoreAccountingProcessorTest.class,
 	org.olat.course.assessment.manager.ScoreAccountingTriggerDAOTest.class,
 	org.olat.course.assessment.manager.UserCourseInformationsManagerTest.class,

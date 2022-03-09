@@ -407,8 +407,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 					));
 		
 		efficiencyStatementsList.forEach(statement -> {
-			if (!olatResourceKeyToStatement.containsKey(statement.getArchivedResourceKey())) {
-				olatResourceKeyToStatement.put(statement.getArchivedResourceKey(), statement);
+			if (!olatResourceKeyToStatement.containsKey(statement.getResourceKey())) {
+				olatResourceKeyToStatement.put(statement.getResourceKey(), statement);
 			} 			
 		});
 		
@@ -539,11 +539,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				statementRow.setDisplayName(efficiencyStatement.getTitle());
 				statementRow.setPassed(efficiencyStatement.getPassed());
 				statementRow.setEfficiencyStatementKey(efficiencyStatement.getKey());
-				statementRow.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+				statementRow.setResourceKey(efficiencyStatement.getResourceKey());
 				statementRow.setLastModified(efficiencyStatement.getLastModified());
 				statementRow.setLastUserModified(efficiencyStatement.getLastUserModified());
 				statementRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
-				statementRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getArchivedResourceKey()));
+				statementRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getResourceKey()));
 				
 				statementRow.setStatement(true);
 				
@@ -553,11 +553,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			for (UserEfficiencyStatementLight efficiencyStatement : efficiencyStatements) {
 				parentRow.setPassed(efficiencyStatement.getPassed());
 				parentRow.setEfficiencyStatementKey(efficiencyStatement.getKey());
-				parentRow.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+				parentRow.setResourceKey(efficiencyStatement.getResourceKey());
 				parentRow.setLastModified(efficiencyStatement.getLastModified());
 				parentRow.setLastUserModified(efficiencyStatement.getLastUserModified());
 				parentRow.setCourseRepoKey(efficiencyStatement.getCourseRepoKey());
-				parentRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getArchivedResourceKey()));
+				parentRow.setCertificate(olatResourceKeyToCertificate.get(efficiencyStatement.getResourceKey()));
 				
 				parentRow.setStatement(true);
 			}
@@ -599,7 +599,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setPassed(efficiencyStatement.getPassed());
 			wrapper.setScore(efficiencyStatement.getScore());
 			wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
-			wrapper.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+			wrapper.setResourceKey(efficiencyStatement.getResourceKey());
 			wrapper.setLastModified(efficiencyStatement.getLastModified());
 			wrapper.setLastUserModified(efficiencyStatement.getLastUserModified());
 			Double completion = courseEntryKeysToCompletion.get(efficiencyStatement.getCourseRepoKey());
@@ -607,7 +607,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setStatement(true);
 			statments.add(wrapper);
 			
-			resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
+			resourceKeyToStatments.put(efficiencyStatement.getResourceKey(), wrapper);
 		}
 		
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);
