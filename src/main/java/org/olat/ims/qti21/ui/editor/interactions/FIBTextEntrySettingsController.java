@@ -107,7 +107,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		formLayout.add(alternativesCont);
 		alternativesCont.setLabel("fib.alternative", null);
 		alternativesCont.setHelpText(translate("fib.alternative.help"));
-		alternativesCont.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_fib");
+		alternativesCont.setHelpUrlForManualPage("manual_user/tests/Test_question_types/#fib");
 		alternativesCont.contextPut("alternatives", alternativeRows);
 		
 		addFirstAlternative = uifactory.addFormLink("add.first.alternative", "add", "", null, alternativesCont, Link.LINK | Link.NONTRANSLATED);

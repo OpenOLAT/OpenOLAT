@@ -107,7 +107,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		toleranceModeEl = uifactory.addDropdownSingleselect("fib.tolerance.mode", "fib.tolerance.mode", formLayout, toleranceModeKeys, toleranceModeValues, null);
 		toleranceModeEl.setEnabled(!restrictedEdit && !readOnly);
 		toleranceModeEl.setHelpText(getToleranceHelp());
-		toleranceModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_ni");
+		toleranceModeEl.setHelpUrlForManualPage("manual_user/tests/Test_question_types/#ni");
 		if(interaction.getToleranceMode() != null) {
 			for(String toleranceModeKey:toleranceModeKeys) {
 				if(toleranceModeKey.equals(interaction.getToleranceMode().name())) {

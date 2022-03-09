@@ -317,7 +317,7 @@ public class QTI21EditForm extends FormBasicController {
 				correctionKeyValues.keys(), correctionKeyValues.values());
 		correctionModeEl.addActionListener(FormEvent.ONCHANGE);
 		correctionModeEl.setHelpText(translate("correction.mode.help"));
-		correctionModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
+		correctionModeEl.setHelpUrlForManualPage("manual_user/tests/Tests_at_course_level/#correction");
 		correctionModeEl.setVisible(!selfAssessment);
 
 		boolean selected = false;
@@ -428,7 +428,7 @@ public class QTI21EditForm extends FormBasicController {
 		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFinish", "qti.form.summary", formLayout, resultsOptionsKeys, resultsOptionsValues, 1);
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
-		assessmentResultsOnFinishEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#overview_results");
+		assessmentResultsOnFinishEl.setHelpUrlForManualPage("manual_user/tests/Test_settings/#results");
 		
 		if (!wizard) {
 			uifactory.addFormSubmitButton("submit", formLayout);

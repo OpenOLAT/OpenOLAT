@@ -451,7 +451,7 @@ public class CalendarEntryForm extends FormBasicController {
 		updateLiveStreamUI(event);
 		
 		classification = uifactory.addRadiosVertical("classification", "cal.form.class", formLayout, classKeys, classValues);
-		classification.setHelpUrlForManualPage("Calendar#_visibility");
+		classification.setHelpUrlForManualPage("manual_user/personal/Calendar/#visibility");
 		//classification.setHelpTextKey("cal.form.class.hover", null);
 		classification.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.classification));
 		switch (event.getClassification()) {
