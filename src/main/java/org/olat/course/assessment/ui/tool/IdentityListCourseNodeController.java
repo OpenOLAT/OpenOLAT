@@ -1281,8 +1281,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		row.getCurrentCompletion().setEnded(endedEvent);
 		IdentityRef assessedIdentity = new IdentityRefImpl(row.getIdentityKey());
 		AssessmentEntry assessmentEntry = assessmentToolManager.getAssessmentEntries(assessedIdentity, courseEntry, courseNode.getIdent());
-		String grader = null;
-		if(endedEvent && !endedRow) {
+		boolean statusChanged = assessmentEntry.getAssessmentStatus() != row.getAssessmentStatus();
+		if(statusChanged || (endedEvent && !endedRow)) {
+			String grader = null;
 			if(courseAssessmentService.getAssessmentConfig(courseNode).isExternalGrading()) {
 				RepositoryEntry testEntry = referenceEntry == null ? courseEntry : referenceEntry;
 				GradingAssignment assignment = gradingService.getGradingAssignment(testEntry, assessmentEntry);
@@ -1290,8 +1291,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 					grader = userManager.getUserDisplayName(assignment.getGrader().getIdentity());
 				}
 			}
+			row.setAssessmentEntry(assessmentEntry, grader);
+			tableEl.getComponent().setDirty(true);
 		}
-		row.setAssessmentEntry(assessmentEntry, grader);
-		tableEl.getComponent().setDirty(true);
 	}
 }
