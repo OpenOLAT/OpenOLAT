@@ -1279,10 +1279,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 		boolean endedRow = row.getCurrentCompletion().isEnded();
 		boolean endedEvent = status != null && AssessmentRunStatus.done.equals(status);
 		row.getCurrentCompletion().setEnded(endedEvent);
-		if(endedEvent && !endedRow) {
-			IdentityRef assessedIdentity = new IdentityRefImpl(row.getIdentityKey());
-			AssessmentEntry assessmentEntry = assessmentToolManager.getAssessmentEntries(assessedIdentity, courseEntry, courseNode.getIdent());
-
+		IdentityRef assessedIdentity = new IdentityRefImpl(row.getIdentityKey());
+		AssessmentEntry assessmentEntry = assessmentToolManager.getAssessmentEntries(assessedIdentity, courseEntry, courseNode.getIdent());
+		boolean statusChanged = assessmentEntry.getAssessmentStatus() != row.getAssessmentStatus();
+		if(statusChanged || (endedEvent && !endedRow)) {
 			String grader = null;
 			if(courseAssessmentService.getAssessmentConfig(courseNode).isExternalGrading()) {
 				RepositoryEntry testEntry = referenceEntry == null ? courseEntry : referenceEntry;

@@ -368,13 +368,13 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
             wrapper.setPassed(efficiencyStatement.getPassed());
             wrapper.setScore(efficiencyStatement.getScore());
             wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
-            wrapper.setResourceKey(efficiencyStatement.getArchivedResourceKey());
+            wrapper.setResourceKey(efficiencyStatement.getResourceKey());
             wrapper.setLastModified(efficiencyStatement.getLastModified());
             wrapper.setLastUserModified(efficiencyStatement.getLastUserModified());
             Double completion = courseEntryKeysToCompletion.get(efficiencyStatement.getCourseRepoKey());
             wrapper.setCompletion(completion);
             statements.add(wrapper);
-            resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
+            resourceKeyToStatments.put(efficiencyStatement.getResourceKey(), wrapper);
         }
 
         List<CertificateLight> certificates = certificatesManager.getLastCertificates(assessedIdentity);

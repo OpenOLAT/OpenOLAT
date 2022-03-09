@@ -893,6 +893,10 @@ public abstract class GroupByController extends FormBasicController implements F
 
 	private void doShowDetails(UserRequest ureq, GroupByRow row, int index) {
 		GroupByKey groupByKey = getGroupByAndKey(multiGroupBy, row.getMultiKey(), index);
+		// Grouping 2 == none, Grouping 3 != none
+		if (groupByKey.getKey() == null && index <= 2) {
+			groupByKey = getGroupByAndKey(multiGroupBy, row.getMultiKey(), index + 1);
+		}
 		doShowDetails(ureq, groupByKey);
 	}
 	
