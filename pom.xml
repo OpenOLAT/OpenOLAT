@@ -66,7 +66,7 @@
 		<org.hibernate.version>5.6.3.Final</org.hibernate.version>
 		<apache.cxf>3.5.0</apache.cxf>
 		<apache.pdfbox>2.0.25</apache.pdfbox>
-		<apache.poi>5.1.0</apache.poi>
+		<apache.poi>5.2.1</apache.poi>
 		<apache.log4j>2.17.1</apache.log4j>
 		<org.slf4j>1.7.32</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
