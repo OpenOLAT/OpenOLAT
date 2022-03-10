@@ -181,15 +181,20 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		DefaultFlexiColumnModel alertCol = new DefaultFlexiColumnModel(BlockCols.alerts, new LectureBlockAbsenceAlertCellRenderer());
 		alertCol.setIconHeader("o_icon o_absences_col_alert");
 		columnsModel.addFlexiColumnModel(alertCol);
-		DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details.i18nHeaderKey(), BlockCols.details.ordinal(), "details",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null));
-		// set sort key even though we do not sort - added as css classes to column headers for styling
-		detailsCol.setSortKey(TeachCols.details.name());
-		columnsModel.addFlexiColumnModel(detailsCol);
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(BlockCols.tools);
-
-		toolsCol.setSortable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		
+		if(rollCallSecCallback.canViewDetails()) {
+			DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details.i18nHeaderKey(), BlockCols.details.ordinal(), "details",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null));
+			// set sort key even though we do not sort - added as css classes to column headers for styling
+			detailsCol.setSortKey(TeachCols.details.name());
+			columnsModel.addFlexiColumnModel(detailsCol);
+		}
+		
+		if(rollCallSecCallback.canExport()) {
+			StickyActionColumnModel toolsCol = new StickyActionColumnModel(BlockCols.tools);
+			toolsCol.setSortable(false);
+			columnsModel.addFlexiColumnModel(toolsCol);
+		}
 		
 		tableModel = new DailyLectureBlockTableModel(columnsModel, dailyRecordingEnabled);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
