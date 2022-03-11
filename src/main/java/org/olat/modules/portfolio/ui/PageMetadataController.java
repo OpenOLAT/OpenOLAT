@@ -117,7 +117,7 @@ public class PageMetadataController extends BasicController {
 	private final List<Assignment> assignments;
 	private final BinderSecurityCallback secCallback;
 	
-	private boolean competencesEnabled;
+	private final boolean taxonomyLinkingEnabled;
 	
 	@Autowired
 	private UserManager userManager;
@@ -133,6 +133,7 @@ public class PageMetadataController extends BasicController {
 		super(ureq, wControl);
 		this.page = page;
 		this.secCallback = secCallback;
+		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		assignments = portfolioService.getSectionsAssignments(page, null);
 		if(secCallback.canBookmark() || secCallback.canPageUserInfosStatus()) {
 			pageUserInfos = portfolioService.getPageUserInfos(page, getIdentity(), PageUserStatus.inProcess);
@@ -166,11 +167,7 @@ public class PageMetadataController extends BasicController {
 	}
 	
 	private void initTaxonomyCompetences() {
-		if (portfolioV2Module.isTaxonomyLinkingReady()) {
-			this.competencesEnabled = true;			
-		}
-		
-		mainVC.contextPut("isCompetencesEnabled", competencesEnabled);
+		mainVC.contextPut("isCompetencesEnabled", taxonomyLinkingEnabled);
 	}
 	
 	private void syncUserInfosStatus() {
@@ -239,7 +236,7 @@ public class PageMetadataController extends BasicController {
 			mainVC.contextPut("pageCategories", categoryNames);
 		}
 		
-		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+		if (taxonomyLinkingEnabled) {
 			if (secCallback.canEditCompetences(page)) {
 				// editable categories
 				competencesEditCtrl = new CompetencesEditController(ureq, getWindowControl(), page);
