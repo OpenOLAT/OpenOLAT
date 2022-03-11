@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -64,10 +63,8 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
@@ -76,21 +73,10 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.mail.MailPackage;
-import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
-import org.olat.fileresource.types.ImsQTI21Resource;
-import org.olat.ims.qti.editor.QTIEditorMainController;
-import org.olat.ims.qti.editor.QTIEditorPackage;
-import org.olat.ims.qti.editor.QTIEditorPackageImpl;
-import org.olat.ims.qti.fileresource.TestFileResource;
-import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
@@ -1131,52 +1117,6 @@ public class RepositoryEntryWebService {
 		}
 		repositoryEntryToTaxonomyLevelDao.deleteRelation(entry, level);
 		return Response.ok().build();
-	}
-	
-	@POST
-	@Path("convertQti")
-	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response convertToQTI21(@Context HttpServletRequest request) {
-		if(!isAuthorEditor(request)) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
-		
-		Identity identity = getUserRequest(request).getIdentity();
-		QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
-		QTI21QPoolServiceProvider qpoolServiceProvider = CoreSpringFactory.getImpl(QTI21QPoolServiceProvider.class);
-		
-		Identity initialAuthor = null;
-		if(StringHelper.containsNonWhitespace(entry.getInitialAuthor())) {
-			initialAuthor = CoreSpringFactory.getImpl(BaseSecurity.class).findIdentityByUsernames(entry.getInitialAuthor());
-		}
-		ImsQTI21Resource ores = new ImsQTI21Resource();
-		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
-		RepositoryEntry re = repositoryService.create(initialAuthor, entry.getInitialAuthor(), "", entry.getDisplayname(), entry.getDescription(),
-				resource, entry.getEntryStatus(), null);
-		re = repositoryService.update(re);
-		DBFactory.getInstance().commit();
-		
-		repositoryManager.setDescriptionAndName(re, entry.getDisplayname(), entry.getKey().toString(), entry.getAuthors(), entry.getDescription(),
-				entry.getObjectives(), entry.getRequirements(), entry.getCredits(), entry.getMainLanguage(), entry.getLocation(),
-				entry.getExpenditureOfWork(), null, null, null, null);
-		DBFactory.getInstance().commit();
-		
-		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
-		if(!repositoryDir.exists()) {
-			repositoryDir.mkdirs();
-		}
-
-		TestFileResource fr = new TestFileResource();
-		fr.overrideResourceableId(entry.getOlatResource().getResourceableId());
-		
-		Translator translator = Util.createPackageTranslator(QTIEditorMainController.class, Locale.GERMAN);
-		QTIEditorPackage testToConvert = new QTIEditorPackageImpl(identity, fr, new FullAccessCallback(), translator);
-		QTI21DeliveryOptions options = qtiService.getDeliveryOptions(re);
-		qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, Locale.GERMAN, options);
-		qtiService.setDeliveryOptions(re, options);
-		
-		return Response.ok(RepositoryEntryVO.valueOf(re)).build();
 	}
 	
 	private Response getMembers(RepositoryEntry re, String role) {
