@@ -475,6 +475,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(params.getAssessmentObligations() != null && !params.getAssessmentObligations().isEmpty()) {
 			list.setParameter("assessmentObligations", params.getAssessmentObligations());
 		}
+		if(params.getUserProperties() != null && !params.getUserProperties().isEmpty()) {
+			for(Map.Entry<String, String> entry:params.getUserProperties().entrySet()) {
+				String fuzzyValue = PersistenceHelper.makeFuzzyQueryString(entry.getValue());
+				list.setParameter("uprop" + entry.getKey(), fuzzyValue);
+			}
+		}
 	}
 	
 	private void applySearchAssessedIdentityParams(QueryBuilder sb, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
@@ -526,6 +532,13 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	          .append("  )");
 		}
 		sb.append(" )");
+		
+		if(params.getUserProperties() != null && !params.getUserProperties().isEmpty()) {
+			for(Map.Entry<String, String> entry:params.getUserProperties().entrySet()) {
+				sb.append(" and ")
+				  .appendFuzzyLike("assessedUser." + entry.getKey(), "uprop" + entry.getKey());
+			}
+		}
 	}
 
 	@Override
