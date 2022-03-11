@@ -299,7 +299,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.publicationDate, "select-page"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.categories, new CategoriesCellRenderer()));
-		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+		if (taxonomyLinkingEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PageCols.competences, new CompetencesCellRenderer()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PageCols.section));

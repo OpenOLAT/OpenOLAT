@@ -137,6 +137,7 @@ public class PageMetadataEditController extends FormBasicController {
 	private final boolean chooseBinder;
 	private final boolean chooseSection;
 	private final boolean editTitleAndSummary;
+	private final boolean taxonomyLinkingEnabled;
 
 	private List<FileInfos> documents = new ArrayList<>();
 	private List<TextBoxItem> categories = new ArrayList<>();
@@ -165,6 +166,7 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
+		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		
 		initTaxonomyCompetences();
 		initForm(ureq);
@@ -198,6 +200,7 @@ public class PageMetadataEditController extends FormBasicController {
 		this.chooseBinder = chooseBinder;
 		this.chooseSection = chooseSection;
 		editTitleAndSummary = true;
+		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		
 		initTaxonomyCompetences();
 		initForm(ureq);
@@ -214,6 +217,7 @@ public class PageMetadataEditController extends FormBasicController {
 		this.secCallback = secCallback;
 		this.page = page;
 		this.editTitleAndSummary = editTitleAndSummary;
+		taxonomyLinkingEnabled = portfolioV2Module.isTaxonomyLinkingReady();
 		
 		this.currentBinder = currentBinder;
 		this.currentSection = currentSection;
@@ -349,7 +353,7 @@ public class PageMetadataEditController extends FormBasicController {
 		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 		categoriesEl.setAllowDuplicates(false);
 		
-		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+		if (taxonomyLinkingEnabled) {
 			competencesEl = uifactory.addTextBoxListElement("competences", "competences", "competences.hint", existingCompetences, formLayout, getTranslator());
 			competencesEl.setHelpText(translate("competences.hint"));
 			competencesEl.setElementCssClass("o_sel_ep_tagsinput");
@@ -362,7 +366,7 @@ public class PageMetadataEditController extends FormBasicController {
 		openCompetenceBrowserLink = uifactory.addFormLink("open.browser.link", formLayout, Link.BUTTON_XSMALL);
 		openCompetenceBrowserLink.setLabel("no.label", null);
 		openCompetenceBrowserLink.setPopup(new LinkPopupSettings(800, 600, "Open"));
-		openCompetenceBrowserLink.setVisible(portfolioV2Module.isTaxonomyLinkingReady());
+		openCompetenceBrowserLink.setVisible(taxonomyLinkingEnabled);
 		
 		bindersEl = uifactory.addDropdownSingleselect("binders", "page.binders", formLayout, new String[] { "" }, new String[] { "" }, null);
 		
@@ -704,12 +708,12 @@ public class PageMetadataEditController extends FormBasicController {
 		List<String> updatedCategories = categoriesEl.getValueList();
 		portfolioService.updateCategories(page, updatedCategories);
 		
-		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+		if (taxonomyLinkingEnabled) {
 			portfolioService.linkCompetences(page, getIdentity(), competencesEl.getValueItems());
 		}
 		
 		if (editModeEl != null && editModeEl.getSelectedKey().equals(editKeys[1])) {
-		List<Page> sharingTheBody = portfolioService.getPagesSharingSameBody(page);
+			List<Page> sharingTheBody = portfolioService.getPagesSharingSameBody(page);
 			for(Page sharing:sharingTheBody) {
 				if(!sharing.equals(page) && updateGlobalEntriesEl.getSelectedKeys().contains(sharing.getKey().toString())) {
 					sharing.setTitle(titleEl.getValue());
@@ -718,7 +722,7 @@ public class PageMetadataEditController extends FormBasicController {
 					sharing.setImagePath(imagePath);
 					portfolioService.updatePage(sharing, null);
 					portfolioService.updateCategories(sharing, updatedCategories);
-					if (portfolioV2Module.isTaxonomyLinkingReady()) {
+					if (taxonomyLinkingEnabled) {
 						portfolioService.linkCompetences(sharing, getIdentity(), competencesEl.getValueItems());
 					}
 				}
@@ -837,7 +841,7 @@ public class PageMetadataEditController extends FormBasicController {
 	}
 	
 	private void initTaxonomyCompetences() {
-		if (portfolioV2Module.isTaxonomyLinkingReady() && page != null) {
+		if (taxonomyLinkingEnabled && page != null) {
 			List<TaxonomyCompetence> competences = portfolioService.getRelatedCompetences(page, true);
 			existingCompetences = new ArrayList<>();
 			for (TaxonomyCompetence competence : competences) {
@@ -847,7 +851,7 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		}
 		
-		if (portfolioV2Module.isTaxonomyLinkingReady()) {
+		if (taxonomyLinkingEnabled) {
 			availableTaxonomyLevels = new ArrayList<>();
 			for (Taxonomy taxonomy : portfolioV2Module.getLinkedTaxonomies()) {
 				for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
