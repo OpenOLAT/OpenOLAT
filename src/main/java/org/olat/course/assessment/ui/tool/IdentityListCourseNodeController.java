@@ -58,6 +58,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -79,6 +80,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -135,6 +137,7 @@ import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -339,7 +342,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		int colIndex = AssessmentToolConstants.USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance().isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
+			boolean visible = userManager.isMandatoryUserProperty(AssessmentToolConstants.usageIdentifyer , userPropertyHandler);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, select, true, "userProp-" + colIndex));
 			if(!options.hasDefaultOrderBy()) {
 				options.setDefaultOrderBy(new SortKey("userProp-" + colIndex, true));
@@ -510,6 +513,15 @@ public class IdentityListCourseNodeController extends FormBasicController
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"),
 					AssessedIdentityListState.FILTER_GROUPS, groupValues, true));
 		}
+		
+		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+			String propName = userPropertyHandler.getName();
+			if(!UserConstants.FIRSTNAME.equals(propName) && !UserConstants.LASTNAME.equals(propName)
+					&& !UserConstants.EMAIL.equals(propName) && !UserConstants.NICKNAME.equals(propName)
+					&& userPropertyHandler instanceof Generic127CharTextPropertyHandler) {
+				filters.add(new FlexiTableTextFilter(translate(userPropertyHandler.i18nColumnDescriptorLabelKey()), "user-prop-".concat(propName), true));
+			}
+		}
 
 		tableEl.setFilters(true, filters, false, false);
 	}
@@ -636,7 +648,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	@Override
-	public void reload(@SuppressWarnings("unused") UserRequest ureq) {
+	public void reload(UserRequest ureq) {
 		SearchAssessedIdentityParams params = getSearchParameters();
 		
 		// Get the identities and remove identity without assessment entry.
@@ -828,9 +840,23 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 		}
 		
+		Map<String,String> userProps = new HashMap<>();
+		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+			String propName = userPropertyHandler.getName();
+			if(!UserConstants.FIRSTNAME.equals(propName) && !UserConstants.LASTNAME.equals(propName)
+					&& !UserConstants.EMAIL.equals(propName) && !UserConstants.NICKNAME.equals(propName)
+					&& userPropertyHandler instanceof Generic127CharTextPropertyHandler) {
+				FlexiTableFilter userPropFilter = FlexiTableFilter.getFilter(filters, "user-prop-".concat(propName));
+				if(userPropFilter != null && StringHelper.containsNonWhitespace(userPropFilter.getValue())) {
+					userProps.put(propName, userPropFilter.getValue());
+				}
+			}
+		}
+
 		params.setBusinessGroupKeys(businessGroupKeys);
 		params.setCurriculumElementKeys(curriculumElementKeys);
 		params.setSearchString(tableEl.getQuickSearchString());
+		params.setUserProperties(userProps);
 		return params;
 	}
 	

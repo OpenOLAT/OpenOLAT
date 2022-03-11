@@ -135,12 +135,12 @@ public class PersistenceHelper {
 		return true;
 	}
 	
-	public static final void appendFuzzyLike(Appendable sb, String var, String key, String dbVendor) {
+	public static final void appendFuzzyLike(Appendable sb, String field, String key, String dbVendor) {
 		try {
 			if(dbVendor.equals("mysql")) {
-				sb.append(" ").append(var).append(" like :").append(key);
+				sb.append(" ").append(field).append(" like :").append(key);
 			} else {
-				sb.append(" lower(").append(var).append(") like :").append(key);
+				sb.append(" lower(").append(field).append(") like :").append(key);
 			}
 			if(dbVendor.equals("oracle")) {
 				sb.append(" escape '\\'");

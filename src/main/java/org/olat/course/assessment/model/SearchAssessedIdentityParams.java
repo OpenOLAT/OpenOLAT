@@ -21,6 +21,7 @@ package org.olat.course.assessment.model;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -59,6 +60,8 @@ public class SearchAssessedIdentityParams {
 	private String searchString;
 	private List<Long> businessGroupKeys;
 	private List<Long> curriculumElementKeys;
+	
+	private Map<String,String> userProperties;
 	
 	public SearchAssessedIdentityParams(RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, 
 			AssessmentToolSecurityCallback secCallback) {
@@ -174,5 +177,13 @@ public class SearchAssessedIdentityParams {
 
 	public void setCurriculumElementKeys(List<Long> curriculumElementKeys) {
 		this.curriculumElementKeys = curriculumElementKeys;
+	}
+
+	public Map<String, String> getUserProperties() {
+		return userProperties;
+	}
+
+	public void setUserProperties(Map<String, String> userProperties) {
+		this.userProperties = userProperties;
 	}
 }

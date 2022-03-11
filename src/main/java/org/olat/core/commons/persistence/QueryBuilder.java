@@ -132,6 +132,11 @@ public class QueryBuilder implements Appendable {
 		return this;
 	}
 	
+	public QueryBuilder appendFuzzyLike(String field, String key) {
+		PersistenceHelper.appendFuzzyLike(sb, field, key, dbInstance.getDbVendor());
+		return this;
+	}
+	
 	public QueryBuilder where() {
 		return and();
 	}
