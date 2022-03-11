@@ -427,7 +427,7 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 			if(vwindex >= 0){
 				naviKey = viewIdentifier.substring(0,viewIdentifier.indexOf(':'));
 			}
-			ae = ExtManager.getInstance().getActionExtensioByNavigationKey(className, naviKey);
+			ae = ExtManager.getInstance().getActionExtensionByNavigationKey(className, naviKey);
 			if(ae == null){
 				// this happens, if someone uses a navigation key, that no actionExtension uses...
 				logWarn("couldn't find an ActionExtension for  navigationKey '"+naviKey+"' . I suggest adjusting spring configuration for GenericMainController.." , null);
@@ -473,7 +473,7 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 			}
 		} else {
 			// maybe the node is a GAE-NavigationKey ?
-			GenericActionExtension gAE = ExtManager.getInstance().getActionExtensioByNavigationKey(className, node);
+			GenericActionExtension gAE = ExtManager.getInstance().getActionExtensionByNavigationKey(className, node);
 			if (gAE != null) {
 				//if the controller is already selected, only activate it, don't reinstanciate it
 				if(selectedNode != null && selectedNode.getUserObject() != gAE) {

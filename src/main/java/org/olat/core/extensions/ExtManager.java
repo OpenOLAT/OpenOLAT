@@ -115,7 +115,7 @@ public class ExtManager {
 	 * @param navKey
 	 * @return the GenericActionExtension or null
 	 */
-	public GenericActionExtension getActionExtensioByNavigationKey(String extensionPoint, String navKey) {
+	public GenericActionExtension getActionExtensionByNavigationKey(String extensionPoint, String navKey) {
 		ExtensionPointKeyPair key = new ExtensionPointKeyPair(extensionPoint, navKey);
 		if (navKeyGAExtensionlookup.containsKey(key)) {
 			return navKeyGAExtensionlookup.get(key);

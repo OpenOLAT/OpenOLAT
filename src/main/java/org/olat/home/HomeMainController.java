@@ -87,7 +87,7 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 			}
 		} else {
 			GenericActionExtension gAE = ExtManager.getInstance()
-					.getActionExtensioByNavigationKey(HomeMainController.class.getName(), navKey);
+					.getActionExtensionByNavigationKey(HomeMainController.class.getName(), navKey);
 			if (gAE != null) {
 				currentNavKey = navKey;
 				stackPanel.popUpToRootController(ureq);
