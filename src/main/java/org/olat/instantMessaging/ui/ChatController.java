@@ -25,6 +25,7 @@
 */
 package org.olat.instantMessaging.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -53,10 +54,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.floatingresizabledialog.FloatingResizableDialogController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessage;
@@ -67,6 +73,17 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.LeaveChatEvent;
 import org.olat.instantMessaging.RosterEntry;
 import org.olat.instantMessaging.model.Buddy;
+import org.olat.instantMessaging.ui.event.SelectChannelEvent;
+import org.olat.instantMessaging.ui.event.StartMeetingEvent;
+import org.olat.modules.bigbluebutton.BigBlueButtonAttendeeRoles;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.manager.AvatarMapper;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsService;
+import org.olat.modules.teams.model.TeamsErrors;
+import org.olat.modules.teams.ui.TeamsMeetingEvent;
+import org.olat.modules.teams.ui.TeamsUIHelper;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
@@ -112,13 +129,16 @@ public class ChatController extends BasicController implements GenericEventListe
 	private String channel;
 	private Roster buddyList;
 	private ChatViewConfig chatViewConfig;
+	private String meetingAvatarUrl;
 
 	private final boolean persistent;
 	private final Long privateReceiverKey;
 	private final RosterFormDisplay rosterDisplay;
-	
+
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private TeamsService teamsService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -131,6 +151,10 @@ public class ChatController extends BasicController implements GenericEventListe
 	private DisplayPortraitManager portraitManager;
 	@Autowired
 	private UserSessionManager sessionManager;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
+	@Autowired
+	private DisplayPortraitManager displayPortraitManager;
 
 	protected ChatController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable ores, String resSubPath, String channel, ChatViewConfig chatViewConfig,
@@ -322,8 +346,9 @@ public class ChatController extends BasicController implements GenericEventListe
 				doCloseChat();
 			} else if(event == Event.BACK_EVENT) {
 				doReactivateChat();
+			} else if(event instanceof StartMeetingEvent) {
+				doSendMeetingMessage();
 			}
-			
 		} else if (source == rosterCtrl) {
 			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
 		} else if (source == supervisorRosterCtrl) {
@@ -341,6 +366,11 @@ public class ChatController extends BasicController implements GenericEventListe
 			loadModel(getLastWeek(), -1);
 		} else if(lastMonth == source) {
 			loadModel(getLastMonth(), -1);
+		} else if(source instanceof Link) {
+			Link link = (Link)source;
+			if("meeting".equals(link.getCommand()) && link.getUserObject() instanceof ChatMessage) {
+				doStartMeeting((ChatMessage)link.getUserObject());
+			}
 		}
 	}
 	
@@ -357,6 +387,77 @@ public class ChatController extends BasicController implements GenericEventListe
 			//ignore empty manObjectessage entry and refocus on entry field
 			chatMsgFieldContent.contextPut("chatMessages", messageHistory);
 			chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
+		}
+	}
+	
+
+	private void doSendMeetingMessage() {
+		boolean anonym = isAnonym();
+		String fromName = getFromName();
+		imService.sendMeetingMessage(getIdentity(), fromName, anonym, chatViewConfig.getRoomName(), ores, resSubPath, channel);
+		loadModel(currentDateFrom, currentMaxResults);
+	}
+	
+	private void doStartMeeting(ChatMessage message) {
+		InstantMessage im = imService.getMessageById(getIdentity(), message.getMessageKey(), true);
+		if(im.getBbbMeeting() != null) {
+			BigBlueButtonErrors errors = new BigBlueButtonErrors();
+			BigBlueButtonAttendeeRoles role = highlightVip ? BigBlueButtonAttendeeRoles.moderator: BigBlueButtonAttendeeRoles.viewer;
+			String avatarUrl = isAnonym() ? null : getAvatarUrl();
+			String meetingUrl = bigBlueButtonManager.join(im.getBbbMeeting(), getIdentity(), getFromName(), avatarUrl, role, null, errors);
+			redirectTo(meetingUrl, errors);
+		} else if(im.getTeamsMeeting() != null) {
+			TeamsErrors errors = new TeamsErrors();
+			TeamsMeeting meeting = teamsService.joinMeeting(im.getTeamsMeeting(), getIdentity(), highlightVip, false, errors);
+			redirectTo(meeting, errors);	
+		}
+	}
+	
+	private String getAvatarUrl() {
+		if(meetingAvatarUrl == null) {
+			File portraitFile = displayPortraitManager.getBigPortrait(getIdentity());
+			if(portraitFile != null) {
+				String rnd = "r" + getIdentity().getKey() + CodeHelper.getRAMUniqueID();
+				meetingAvatarUrl = Settings.createServerURI()
+						+ registerCacheableMapper(null, rnd, new AvatarMapper(portraitFile), 5 * 60 * 60)
+						+ "/" + portraitFile.getName();
+			}
+		}
+		return meetingAvatarUrl;
+	}
+	
+	private void redirectTo(String meetingUrl, BigBlueButtonErrors errors) {
+		if(errors.hasErrors()) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+		} else if(StringHelper.containsNonWhitespace(meetingUrl)) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(meetingUrl));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			showWarning("warning.no.access");
+		}
+	}
+	
+
+	private void redirectTo(TeamsMeeting meeting, TeamsErrors errors) {
+		if(meeting == null) {
+			showWarning("warning.no.meeting");
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			return;
+		} else if(errors.hasErrors()) {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			getWindowControl().setError(TeamsUIHelper.formatErrors(getTranslator(), errors));
+			return;
+		}
+		
+		String joinUrl = meeting.getOnlineMeetingJoinUrl();
+		if(StringHelper.containsNonWhitespace(joinUrl)) {
+			TeamsMeetingEvent event = new TeamsMeetingEvent(meeting.getKey(), getIdentity().getKey());
+			OLATResourceable meetingOres = OresHelper.createOLATResourceableInstance(TeamsMeeting.class.getSimpleName(), meeting.getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(event, meetingOres);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(joinUrl));
+		} else {
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
+			showWarning("warning.no.access");
 		}
 	}
 	
@@ -634,7 +735,16 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 		
 		String m = "";
-		if(StringHelper.containsNonWhitespace(message.getBody())) {
+		Link link = null;
+		if(message.getType() == InstantMessageTypeEnum.meeting) {
+			String id = "meet" + message.getKey();
+			link = (Link)mainVC.getComponent(id);
+			if(link == null) {
+				link = LinkFactory.createLink(id, id, "meeting", "meeting.invitation", getTranslator(), chatMsgFieldContent, this, Link.LINK);
+				link.setIconLeftCSS("o_icon o_icon-fw o_livestream_icon");
+				link.setNewWindow(true, true);
+			}
+		} else if(StringHelper.containsNonWhitespace(message.getBody())) {
 			m = message.getBody().replace("<br>\n", "\r\n");
 			m = prepareMsgBody(m.replace("<", "&lt;").replace(">", "&gt;")).replace("\r\n", "<br>\n");
 		} else if (message.getType().isStatus()) {
@@ -662,11 +772,15 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 
 		boolean anonym = message.isAnonym();
-		ChatMessage msg = new ChatMessage(message.getKey(), creationDate, from, fromKey, m, message.getType(),
+		ChatMessage msg = new ChatMessage(message.getKey(), creationDate, from, fromKey, m, link, message.getType(),
 				first, anonym, getIdentity().getKey().equals(message.getFromKey()));
 		if(!anonym ) {
 			msg.setAvatarKey(getAvatarKey(message.getFromKey()));
 		}
+		if(link != null) {
+			link.setUserObject(msg);
+		}
+		
 		messageHistory.addLast(msg);
 
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);

@@ -41,7 +41,13 @@
 			#set($messageGroupCount=$messageGroupCount+1)
 		#end
 		## The real messages start here
-		<div class="o_im_body clearfix">${message.body}</div>
+		<div class="o_im_body clearfix">
+			#if($message.type == "meeting")
+				$r.render(${message.link.componentName})
+			#else
+				$r.xssScan(${message.body})
+			#end
+		</div>
 	#end
 	
 	#if ($messageGroupCount > 0)

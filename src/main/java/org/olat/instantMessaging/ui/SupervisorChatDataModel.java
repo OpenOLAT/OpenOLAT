@@ -36,10 +36,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.instantMessaging.InstantMessage;
+import org.olat.instantMessaging.InstantMessageTypeEnum;
 import org.olat.instantMessaging.model.RosterChannelInfos;
 import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
 import org.olat.instantMessaging.ui.component.RosterEntryWithUnreadCellRenderer;
@@ -61,14 +63,16 @@ implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
 	private final Locale locale;
 	private List<RosterRow> backups;
 	private final IdentityRef identity;
+	private final String videoMarker;
 	
 	private Set<Long> identityKeys;
 	
-	public SupervisorChatDataModel(FlexiTableColumnModel columnModel, IdentityRef identity, Locale locale) {
+	public SupervisorChatDataModel(FlexiTableColumnModel columnModel, IdentityRef identity, Translator translator) {
 		super(columnModel);
 		this.now = new Date();
-		this.locale = locale;
+		this.locale = translator.getLocale();
 		this.identity = identity;
+		this.videoMarker = "<span><i class='o_icon o_icon-fw o_livestream_icon'> </i> " + translator.translate("meeting.invitation") + "</span>";
 	}
 	
 	@Override
@@ -142,8 +146,12 @@ implements SortableFlexiTableDataModel<RosterRow>, FlexiTableCssDelegate {
 	
 	private String getMessage(RosterRow row) {
 		InstantMessage msg = row.getLastTextMessage();
-		if(msg != null && StringHelper.containsNonWhitespace(msg.getBody())) {
-			return Formatter.truncate(msg.getBody(), 64, "\u2026");
+		if(msg != null) {
+			if(msg.getType() == InstantMessageTypeEnum.meeting) {
+				return videoMarker;
+			} else if(StringHelper.containsNonWhitespace(msg.getBody())) {
+				return Formatter.truncate(msg.getBody(), 64, "\u2026");
+			}
 		}
 		return null;
 	}

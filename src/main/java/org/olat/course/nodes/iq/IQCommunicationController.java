@@ -43,7 +43,10 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.instantMessaging.ui.ChatViewConfig;
 import org.olat.instantMessaging.ui.SupervisorChatController;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.resource.OLATResource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -58,6 +61,11 @@ public class IQCommunicationController extends BasicController implements Activa
 	private CloseableModalController cmc;
 	private UserSearchController userSearchCtrl;
 	private final SupervisorChatController supervisedChatsCtrl;
+
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 
 	public IQCommunicationController(UserRequest ureq, WindowControl wControl,
 			OLATResource resource, IQTESTCourseNode courseNode) {
@@ -75,6 +83,8 @@ public class IQCommunicationController extends BasicController implements Activa
 		viewConfig.setResourceIconCssClass(nodeConfig.getIconCSSClass());
 		viewConfig.setCanClose(true);
 		viewConfig.setCanReactivate(true);
+		viewConfig.setCanMeeting((bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isChatExamsEnabled())
+				|| (teamsModule.isEnabled() && teamsModule.isChatExamsEnabled()));
 		viewConfig.setWidth(620);
 		viewConfig.setHeight(480);
 		

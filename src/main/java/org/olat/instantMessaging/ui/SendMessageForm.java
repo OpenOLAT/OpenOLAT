@@ -37,6 +37,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.instantMessaging.ui.event.StartMeetingEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SendMessageForm extends FormBasicController {
 
 	private TextElement msg;
+	private FormLink meetingLink;
 	private FormLink closeChatLink;
 	private FormLink reactivateChatLink;
 	private FormLink submit;
@@ -71,13 +73,16 @@ public class SendMessageForm extends FormBasicController {
 		msg.setPlaceholderText(chatViewConfig.getSendMessagePlaceholder());
 		msg.setFocus(true);//always focus to the message field
 		msg.setDisplaySize(40);
-		
+
 		submit = uifactory.addFormLink("subm", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		submit.setElementCssClass("o_im_send_button");
 		submit.setAriaLabel(translate("msg.send"));
 		submit.setTitle(translate("msg.send"));
 		submit.setIconLeftCSS("o_icon o_icon-fw o_icon_show_send");
-		
+
+		meetingLink = uifactory.addFormLink("start.meeting", formLayout, Link.LINK);
+		meetingLink.setIconLeftCSS("o_icon o_icon-fw o_livestream_icon");
+		meetingLink.setVisible(chatViewConfig.isCanMeeting());
 		closeChatLink = uifactory.addFormLink("close.chat", formLayout, Link.LINK);
 		closeChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_check_on");
 		closeChatLink.setVisible(chatViewConfig.isCanClose());
@@ -99,11 +104,14 @@ public class SendMessageForm extends FormBasicController {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 		} else if(reactivateChatLink == source) {
 			fireEvent(ureq, Event.BACK_EVENT);
+		} else if(meetingLink == source) {
+			fireEvent(ureq, new StartMeetingEvent());
 		}
 	}
 	
 	protected void setCloseableChat(boolean message, boolean close, boolean reactivate) {
 		updateVisibility(msg, message);
+		updateVisibility(meetingLink, message && chatViewConfig.isCanMeeting());
 		updateVisibility(submit, message);
 		updateVisibility(closeChatLink, close && chatViewConfig.isCanClose());
 		updateVisibility(reactivateChatLink, reactivate && chatViewConfig.isCanReactivate());

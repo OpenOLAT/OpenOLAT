@@ -19,6 +19,7 @@
  */
 package org.olat.instantMessaging.ui;
 
+import org.olat.core.gui.components.link.Link;
 import org.olat.instantMessaging.InstantMessageTypeEnum;
 
 /**
@@ -36,11 +37,12 @@ public class ChatMessage {
 	private final String from;
 	private final Long fromKey;
 	private final String body;
+	private final Link link;
 	private final Long messageKey;
 	private Long avatarKey;
 	private final InstantMessageTypeEnum type;
 	
-	public ChatMessage(Long messageKey, String creationDate, String from, Long fromKey, String body,
+	public ChatMessage(Long messageKey, String creationDate, String from, Long fromKey, String body, Link link,
 			InstantMessageTypeEnum type, boolean first, boolean anonym, boolean me) {
 		this.messageKey = messageKey;
 		this.creationDate = creationDate;
@@ -48,6 +50,7 @@ public class ChatMessage {
 		this.from = from;
 		this.fromKey = fromKey;
 		this.body = body;
+		this.link = link;
 		this.first = first;
 		this.anonym = anonym;
 		this.type = type;
@@ -91,6 +94,10 @@ public class ChatMessage {
 	 */
 	public String getBody() {
 		return body;
+	}
+	
+	public Link getLink() {
+		return link;
 	}
 
 	/**

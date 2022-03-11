@@ -1685,6 +1685,8 @@ create table if not exists o_im_message (
    msg_from varchar(255) not null,
    msg_body longtext,
    fk_from_identity_id bigint not null,
+   fk_meeting_id bigint,
+   fk_teams_id bigint,
    primary key (id)
 );
 
@@ -4205,6 +4207,9 @@ create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mim
 alter table o_im_message add constraint idx_im_msg_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_msg_res_idx on o_im_message (msg_resid,msg_resname);
 create index idx_im_msg_channel_idx on o_im_message (msg_resid,msg_resname,msg_ressubpath,msg_channel);
+
+alter table o_im_message add constraint im_msg_bbb_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+alter table o_im_message add constraint im_msg_teams_idx foreign key (fk_teams_id) references o_teams_meeting (id);
 
 alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_to_identity_id) references o_bs_identity (id);
 alter table o_im_notification add constraint idx_im_not_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);

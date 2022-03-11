@@ -199,9 +199,10 @@ public class RosterDAO {
 	}
 	
 	/**
+	 * Returns the rosters of chats with resource, sup-path informations and channels.
 	 * 
 	 * @param ores The resource
-	 * @param resSubPath The resource sub-path (check null value)
+	 * @param resSubPath The resource sub-path (mandatory)
 	 * @param channel The channel (optional)
 	 * @param identity The identity which search
 	 * @param onlyMyActiveRosters
@@ -212,44 +213,35 @@ public class RosterDAO {
 		sb.append("select entry, lastMessage, lastStatusMessage,")
 		  .append(" (select count(unread.key) from instantmessage unread")
 		  .append("  where entry.resourceTypeName=unread.resourceTypeName and entry.resourceId=unread.resourceId")
-		  .append("  and ((entry.resSubPath is null and unread.resSubPath is null) or (entry.resSubPath=unread.resSubPath))")
-		  .append("  and ((entry.channel is null and unread.channel is null) or (entry.channel=unread.channel))")
-		  .append("  and unread.type ").in(InstantMessageTypeEnum.text, InstantMessageTypeEnum.request)
+		  .append("  and entry.resSubPath=unread.resSubPath and entry.channel=unread.channel")
+		  .append("  and unread.type ").in(InstantMessageTypeEnum.text, InstantMessageTypeEnum.request, InstantMessageTypeEnum.meeting)
 		  .append("  and unread.creationDate > entry.lastSeen and entry.identityKey<>unread.fromKey")
 		  .append(" ) as unreadMsgs")
 		  .append(" from imrosterentry entry")
 		  .append(" left join instantmessage lastMessage on (entry.resourceTypeName=lastMessage.resourceTypeName and entry.resourceId=lastMessage.resourceId")
-		  .append("  and ((entry.resSubPath is null and lastMessage.resSubPath is null) or (entry.resSubPath=lastMessage.resSubPath))")
-		  .append("  and ((entry.channel is null and lastMessage.channel is null) or (entry.channel=lastMessage.channel))")
-		  .append("  and lastMessage.type ").in(InstantMessageTypeEnum.text, InstantMessageTypeEnum.request)
+		  .append("  and entry.resSubPath=lastMessage.resSubPath and entry.channel=lastMessage.channel")
+		  .append("  and lastMessage.type ").in(InstantMessageTypeEnum.text, InstantMessageTypeEnum.request, InstantMessageTypeEnum.meeting)
 		  .append(" )")
 		  .append(" left join instantmessage lastStatusMessage on (entry.resourceTypeName=lastStatusMessage.resourceTypeName and entry.resourceId=lastStatusMessage.resourceId")
-		  .append("  and ((entry.resSubPath is null and lastStatusMessage.resSubPath is null) or (entry.resSubPath=lastStatusMessage.resSubPath))")
-		  .append("  and ((entry.channel is null and lastStatusMessage.channel is null) or (entry.channel=lastStatusMessage.channel))")
+		  .append("  and entry.resSubPath=lastStatusMessage.resSubPath and entry.channel=lastStatusMessage.channel")
 		  .append("  and lastStatusMessage.type ").in(InstantMessageTypeEnum.accept, InstantMessageTypeEnum.join, InstantMessageTypeEnum.close, InstantMessageTypeEnum.end)
 		  .append(" )")
-		  
-		  .where().append(" entry.resourceId=:resid and entry.resourceTypeName=:resname");
-		if(resSubPath == null) {
-			sb.and().append(" entry.resSubPath is null");
-		} else {
-			sb.and().append(" entry.resSubPath=:ressubPath");
-		}
+		  .where().append(" entry.resourceId=:resid and entry.resourceTypeName=:resname")
+		  .and().append(" entry.resSubPath=:ressubPath");
+
 		if(StringHelper.containsNonWhitespace(channel)) {
 			sb.and().append(" entry.channel=:channel");
 		}
 		// limit to last message
 		sb.and().append("(lastMessage.creationDate is null or lastMessage.creationDate = (select max(msg.creationDate) from instantmessage msg where")
 		  .append(" entry.resourceTypeName=msg.resourceTypeName and entry.resourceId=msg.resourceId")
-		  .append(" and ((entry.resSubPath is null and msg.resSubPath is null) or (entry.resSubPath=msg.resSubPath))")
-		  .append(" and ((entry.channel is null and msg.channel is null) or (entry.channel=msg.channel))")
-		  .append(" and msg.type ").in(InstantMessageTypeEnum.text, InstantMessageTypeEnum.request)
+		  .append(" and entry.resSubPath=msg.resSubPath and entry.channel=msg.channel")
+		  .append(" and msg.type ").in(InstantMessageTypeEnum.text, InstantMessageTypeEnum.request, InstantMessageTypeEnum.meeting)
 		  .append("))");
 		// limit to last status
 		sb.and().append("(lastStatusMessage.creationDate is null or lastStatusMessage.creationDate = (select max(status.creationDate) from instantmessage status where")
 		  .append(" entry.resourceTypeName=status.resourceTypeName and entry.resourceId=status.resourceId")
-		  .append(" and ((entry.resSubPath is null and status.resSubPath is null) or (entry.resSubPath=status.resSubPath))")
-		  .append(" and ((entry.channel is null and status.channel is null) or (entry.channel=status.channel))")
+		  .append(" and entry.resSubPath=status.resSubPath and entry.channel=status.channel")
 		  .append(" and status.type ").in(InstantMessageTypeEnum.accept, InstantMessageTypeEnum.join, InstantMessageTypeEnum.close, InstantMessageTypeEnum.end)
 		  .append("))");
 		

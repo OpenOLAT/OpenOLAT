@@ -76,10 +76,12 @@ import org.olat.instantMessaging.ui.RosterFormDisplay;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.modules.dcompensation.DisadvantageCompensationStatusEnum;
 import org.olat.modules.dcompensation.ui.ConfirmDeleteDisadvantageCompensationController;
+import org.olat.modules.teams.TeamsModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,6 +136,10 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private UserManager userManager;
 	@Autowired
 	private InstantMessagingService imService;
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -502,6 +508,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		viewConfig.setResourceIconCssClass(nodeConfig.getIconCSSClass());
 		viewConfig.setCanClose(true);
 		viewConfig.setCanReactivate(true);
+		viewConfig.setCanMeeting((bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isChatExamsEnabled())
+				|| (teamsModule.isEnabled() && teamsModule.isChatExamsEnabled()));
 		viewConfig.setWidth(620);
 		viewConfig.setHeight(480);
 		OpenInstantMessageEvent event = new OpenInstantMessageEvent(courseEntry.getOlatResource(), testCourseNode.getIdent(), channel,

@@ -1040,8 +1040,15 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		String businessPath;
 		if(meeting.getEntry() != null) {
 			businessPath = "[RepositoryEntry:" + meeting.getEntry().getKey() + "]";
-			if(StringHelper.containsNonWhitespace(meeting.getSubIdent())) {
-				businessPath += "[CourseNode:" + meeting.getSubIdent() + "]";
+			String subIdent = meeting.getSubIdent();
+			if(StringHelper.containsNonWhitespace(subIdent)) {
+				int firstIndex = subIdent.indexOf('-');
+				if(firstIndex >= 0) {
+					subIdent = subIdent.substring(0, firstIndex);
+				}
+				if(StringHelper.isLong(subIdent)) {
+					businessPath += "[CourseNode:" + subIdent + "]";
+				}
 			}
 		} else if(meeting.getBusinessGroup() != null) {
 			businessPath = "[BusinessGroup:" + meeting.getBusinessGroup().getKey() + "]";
@@ -1091,6 +1098,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 			.optionalParameter("attendeePW", meeting.getAttendeePassword())
 			.optionalParameter("moderatorPW", meeting.getModeratorPassword())
 			.optionalParameter("logoutURL", getBusinessPath(meeting));
+		
 		if(meeting.getStartWithLeadTime() != null && meeting.getEndWithFollowupTime() != null) {
 			long now = new Date().getTime();
 			long start = Math.max(now, meeting.getStartWithLeadTime().getTime());

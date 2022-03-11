@@ -1741,6 +1741,8 @@ create table o_im_message (
    msg_from varchar2(255 char) not null,
    msg_body clob,
    fk_from_identity_id number(20) not null,
+   fk_meeting_id number(20);
+   fk_teams_id number(20);
    primary key (id)
 );
 
@@ -4217,6 +4219,11 @@ alter table o_im_message add constraint idx_im_msg_to_fromid foreign key (fk_fro
 create index idx_im_msg_from_idx on o_im_message(fk_from_identity_id);
 create index idx_im_msg_res_idx on o_im_message (msg_resid,msg_resname);
 create index idx_im_msg_channel_idx on o_im_message (msg_resid,msg_resname,msg_ressubpath,msg_channel);
+
+alter table o_im_message add constraint im_msg_bbb_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+create index idx_im_msg_bbb_idx on o_im_message(fk_meeting_id);
+alter table o_im_message add constraint im_msg_teams_idx foreign key (fk_teams_id) references o_teams_meeting (id);
+create index idx_im_msg_teams_idx on o_im_message(fk_teams_id);
 
 alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_to_identity_id) references o_bs_identity (id);
 create index idx_im_chat_to_idx on o_im_notification (fk_to_identity_id);

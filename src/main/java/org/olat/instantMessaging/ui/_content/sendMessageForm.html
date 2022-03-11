@@ -8,6 +8,9 @@
 	#if($f.hasError("msg"))
 		$r.render("msg_ERROR")
 	#end
+	#if($r.visible("start.meeting"))
+		$r.render("start.meeting")
+	#end
 	#if($r.visible("close.chat"))
 		$r.render("close.chat")
 	#end

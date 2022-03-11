@@ -108,12 +108,14 @@ public interface InstantMessagingService {
 	 */
 	public OLATResourceable getPrivateChatResource(Long identityKey1, Long identityKey2);
 	
-
 	
 	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, InstantMessageTypeEnum type,
 			OLATResourceable chatResource, String resSubPath, String channel, List<IdentityRef> toNotifyList);
 	
 	public InstantMessage sendStatusMessage(Identity from, String fromNickName, boolean anonym, InstantMessageTypeEnum type,
+			OLATResourceable chatResource, String resSubPath, String channel);
+	
+	public InstantMessage sendMeetingMessage(Identity from, String fromNickName, boolean anonym, String meetingName,
 			OLATResourceable chatResource, String resSubPath, String channel);
 	
 	

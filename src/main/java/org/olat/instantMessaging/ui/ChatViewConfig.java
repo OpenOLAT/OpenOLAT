@@ -41,8 +41,9 @@ public class ChatViewConfig {
 
 	private boolean canClose = false;
 	private boolean canReactivate = false;
+	private boolean canMeeting = false;
 	private boolean assessmentAllowed = false;
-	
+
 	private List<IdentityRef> toNotifyRequests;
 	
 	private int width = 550;
@@ -63,6 +64,7 @@ public class ChatViewConfig {
 		copy.toNotifyRequests = original.toNotifyRequests == null ? null : List.copyOf(original.toNotifyRequests);
 		copy.canClose = original.canClose;
 		copy.canReactivate = original.canReactivate;
+		copy.canMeeting = original.canMeeting;
 		copy.width = original.width;
 		copy.height = original.height;
 		return copy;
@@ -136,6 +138,14 @@ public class ChatViewConfig {
 
 	public void setCanReactivate(boolean canReactivate) {
 		this.canReactivate = canReactivate;
+	}
+
+	public boolean isCanMeeting() {
+		return canMeeting;
+	}
+
+	public void setCanMeeting(boolean canMeeting) {
+		this.canMeeting = canMeeting;
 	}
 
 	public boolean isAssessmentAllowed() {

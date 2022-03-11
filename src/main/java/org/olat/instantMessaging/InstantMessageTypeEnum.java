@@ -32,7 +32,8 @@ public enum InstantMessageTypeEnum {
 	accept,
 	join,
 	close,
-	end;
+	end,
+	meeting;
 	
 	public boolean isStatus() {
 		return this == accept || this == join || this == close || this == end;

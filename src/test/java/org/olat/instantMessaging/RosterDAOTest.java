@@ -234,7 +234,7 @@ public class RosterDAOTest extends OlatTestCase {
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-8", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-10");
 		RosterEntry entry = rosterDao.createRosterEntry(chatResource, "sub-path", "msg-channel", id, null, null, false, true, true, true);
-		InstantMessage msg = messageDao.createMessage(id, "From me", false, "Hello world",
+		InstantMessage msg = messageDao.createMessage(id, "From me", false, "Hello world", null, null,
 				chatResource, "sub-path", "msg-channel", InstantMessageTypeEnum.text);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(msg);
@@ -255,10 +255,10 @@ public class RosterDAOTest extends OlatTestCase {
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-7", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-9");
 		RosterEntry entry = rosterDao.createRosterEntry(chatResource, "sub-path", "msg-channel-2", id, null, null, false, true, true, true);
-		InstantMessage msg = messageDao.createMessage(id, "From me", false, "Hello world",
+		InstantMessage msg = messageDao.createMessage(id, "From me", false, "Hello world", null, null,
 				chatResource, "sub-path", "msg-channel-2", InstantMessageTypeEnum.text);
 		sleep(1200);
-		InstantMessage status = messageDao.createMessage(id, "From me", false, null,
+		InstantMessage status = messageDao.createMessage(id, "From me", false, null, null, null,
 				chatResource, "sub-path", "msg-channel-2", InstantMessageTypeEnum.close);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(msg);

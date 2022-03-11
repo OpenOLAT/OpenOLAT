@@ -35,6 +35,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageTypeEnum;
 import org.olat.instantMessaging.model.InstantMessageImpl;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.teams.TeamsMeeting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,10 +53,13 @@ public class InstantMessageDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public InstantMessage createMessage(Identity from, String fromNickName, boolean anonym, String body,
+	public InstantMessage createMessage(Identity from, String fromNickName, boolean anonym,
+			String body, BigBlueButtonMeeting bigBlueButtonMeeting, TeamsMeeting teamsMeeting,
 			OLATResourceable chatResource, String resSubPath, String channel, InstantMessageTypeEnum type) {
 		InstantMessageImpl msg = new InstantMessageImpl();
 		msg.setBody(body);
+		msg.setBbbMeeting(bigBlueButtonMeeting);
+		msg.setTeamsMeeting(teamsMeeting);
 		msg.setFromKey(from.getKey());
 		msg.setFromNickName(fromNickName);
 		msg.setAnonym(anonym);
@@ -138,6 +143,14 @@ public class InstantMessageDAO {
 			log.info(Tracing.M_AUDIT, "{} IM messages delete for resource: {}", count, ores);
 		}
 		return count;
+	}
+	
+	public List<InstantMessage> getAllResourcesMessages(OLATResourceable ores) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadAllRsourceMessages")
+				.setParameter("resid", ores.getResourceableId())
+				.setParameter("resname", ores.getResourceableTypeName())
+				.getResultList();
 	}
 	
 	public int deleteMessages(IdentityRef identity) {

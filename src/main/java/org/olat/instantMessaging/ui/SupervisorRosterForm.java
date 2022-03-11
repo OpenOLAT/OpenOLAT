@@ -55,6 +55,7 @@ import org.olat.instantMessaging.RosterEntry;
 import org.olat.instantMessaging.model.RosterChannelInfos;
 import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
 import org.olat.instantMessaging.ui.component.RosterEntryWithUnreadCellRenderer;
+import org.olat.instantMessaging.ui.event.SelectChannelEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

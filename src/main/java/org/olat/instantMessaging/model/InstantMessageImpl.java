@@ -25,9 +25,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -39,6 +42,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageTypeEnum;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonMeetingImpl;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.model.TeamsMeetingImpl;
 
 /**
  * 
@@ -49,6 +56,7 @@ import org.olat.instantMessaging.InstantMessageTypeEnum;
 @Entity(name="instantmessage")
 @Table(name="o_im_message")
 @NamedQuery(name="loadIMessageByKey",query="select msg from instantmessage msg  where msg.key=:key")
+@NamedQuery(name="loadAllRsourceMessages",query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname")
 public class InstantMessageImpl implements InstantMessage, Persistable, CreateInfo {
 	
 	private static final long serialVersionUID = 1425964260797865080L;
@@ -94,6 +102,13 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 
 	@Column(name="msg_body", nullable=true, insertable=true, updatable=false)
 	private String body;
+	
+	@OneToOne(targetEntity=BigBlueButtonMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_meeting_id", nullable=true, insertable=true, updatable=true)
+	private BigBlueButtonMeeting bbbMeeting;
+	@OneToOne(targetEntity=TeamsMeetingImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_teams_id", nullable=true, insertable=true, updatable=true)
+	private TeamsMeeting teamsMeeting;
 
 	@Override
 	public Long getKey() {
@@ -194,6 +209,22 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 
 	public void setBody(String body) {
 		this.body = body;
+	}
+
+	public BigBlueButtonMeeting getBbbMeeting() {
+		return bbbMeeting;
+	}
+
+	public void setBbbMeeting(BigBlueButtonMeeting bbbMeeting) {
+		this.bbbMeeting = bbbMeeting;
+	}
+
+	public TeamsMeeting getTeamsMeeting() {
+		return teamsMeeting;
+	}
+
+	public void setTeamsMeeting(TeamsMeeting teamsMeeting) {
+		this.teamsMeeting = teamsMeeting;
 	}
 
 	@Override

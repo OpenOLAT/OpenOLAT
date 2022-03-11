@@ -55,7 +55,7 @@ public class InstantMessageDAOTest extends OlatTestCase {
 		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-im-dao-1", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-dao-1");
 		String from = userManager.getUserDisplayName(id);
-		InstantMessage msg = imDao.createMessage(id, from, false, "Hello world",
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello world", null, null,
 				chatResources, null, null, InstantMessageTypeEnum.text);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getKey());
@@ -71,7 +71,7 @@ public class InstantMessageDAOTest extends OlatTestCase {
 		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-im-dao-2", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-dao-2");
 		String from = userManager.getUserDisplayName(id);
-		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by id",
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by id", null, null,
 				chatResources, null, null, InstantMessageTypeEnum.text);
 		Assert.assertNotNull(msg);
 		dbInstance.commitAndCloseSession();
@@ -89,7 +89,7 @@ public class InstantMessageDAOTest extends OlatTestCase {
 		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-im-dao-3", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-dao-3");
 		String from = userManager.getUserDisplayName(id);
-		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by resource",
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by resource", null, null,
 				chatResources, null, null, InstantMessageTypeEnum.text);
 		Assert.assertNotNull(msg);
 		dbInstance.commitAndCloseSession();
@@ -108,9 +108,9 @@ public class InstantMessageDAOTest extends OlatTestCase {
 		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-im-dao-4", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-dao-4");
 		String from = userManager.getUserDisplayName(id);
-		InstantMessage msgNoChannel = imDao.createMessage(id, from, false, "Hello load by resource",
+		InstantMessage msgNoChannel = imDao.createMessage(id, from, false, "Hello load by resource", null, null,
 				chatResources, null, null, InstantMessageTypeEnum.text);
-		InstantMessage msgWithChannel = imDao.createMessage(id, from, false, "Hello load by resource",
+		InstantMessage msgWithChannel = imDao.createMessage(id, from, false, "Hello load by resource", null, null,
 				chatResources, "sub-path", "channel", InstantMessageTypeEnum.text);
 		Assert.assertNotNull(msgNoChannel);
 		dbInstance.commitAndCloseSession();

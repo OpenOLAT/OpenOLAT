@@ -17,43 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.instantMessaging.ui;
+package org.olat.instantMessaging.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.core.id.OLATResourceable;
 
 /**
  * 
- * Initial date: 1 mars 2022<br>
+ * Initial date: 11 mars 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SelectChannelEvent extends Event {
+public class StartMeetingEvent extends Event {
+
+	private static final long serialVersionUID = 6158663763810661192L;
+	public static final String START_MEETING = "start-meeting";
 	
-	private static final long serialVersionUID = 4180926105872099355L;
-
-	public static final String SELECT_CHANNEL = "select-channel";
-	
-	private OLATResourceable ores;
-	private String resSubPath;
-	private String channel;
-	
-	public SelectChannelEvent(OLATResourceable ores, String resSubPath, String channel) {
-		super(SELECT_CHANNEL);
-		this.ores = ores;
-		this.resSubPath = resSubPath;
-		this.channel = channel;
+	public StartMeetingEvent() {
+		super(START_MEETING);
 	}
 
-	public OLATResourceable getOres() {
-		return ores;
-	}
-
-	public String getResSubPath() {
-		return resSubPath;
-	}
-
-	public String getChannel() {
-		return channel;
-	}
 }

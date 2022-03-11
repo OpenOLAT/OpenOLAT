@@ -17,40 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.instantMessaging;
+package org.olat.instantMessaging.ui.event;
 
-import java.util.Date;
-
-import org.olat.core.id.Identity;
-import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
-import org.olat.modules.teams.TeamsMeeting;
+import org.olat.core.gui.control.Event;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
- * Initial date: 04.12.2012<br>
+ * Initial date: 1 mars 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface InstantMessage {
+public class SelectChannelEvent extends Event {
 	
-	public Long getKey();
+	private static final long serialVersionUID = 4180926105872099355L;
 
-	public Long getFromKey();
+	public static final String SELECT_CHANNEL = "select-channel";
 	
-	public String getFromNickName();
+	private OLATResourceable ores;
+	private String resSubPath;
+	private String channel;
 	
-	public boolean isAnonym();
-	
-	public Date getCreationDate();
-	
-	public String getBody();
-	
-	public BigBlueButtonMeeting getBbbMeeting();
+	public SelectChannelEvent(OLATResourceable ores, String resSubPath, String channel) {
+		super(SELECT_CHANNEL);
+		this.ores = ores;
+		this.resSubPath = resSubPath;
+		this.channel = channel;
+	}
 
-	public TeamsMeeting getTeamsMeeting();
-	
-	public boolean isFromMe(Identity me);
-	
-	public InstantMessageTypeEnum getType();
+	public OLATResourceable getOres() {
+		return ores;
+	}
 
+	public String getResSubPath() {
+		return resSubPath;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
 }

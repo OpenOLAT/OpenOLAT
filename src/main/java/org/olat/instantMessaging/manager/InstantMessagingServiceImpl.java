@@ -75,6 +75,15 @@ import org.olat.instantMessaging.model.InstantMessageNotificationTypeEnum;
 import org.olat.instantMessaging.model.Presence;
 import org.olat.instantMessaging.model.RosterChannelInfos;
 import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
+import org.olat.modules.bigbluebutton.BigBlueButtonManager;
+import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
+import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.bigbluebutton.model.BigBlueButtonErrors;
+import org.olat.modules.teams.TeamsMeeting;
+import org.olat.modules.teams.TeamsModule;
+import org.olat.modules.teams.TeamsService;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserDataExportable;
 import org.olat.user.UserManager;
@@ -113,6 +122,17 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	private BaseSecurity securityManager;
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	
+	@Autowired
+	private TeamsModule teamsModule;
+	@Autowired
+	private TeamsService teamsService;
+	@Autowired
+	private BigBlueButtonModule bigBlueButtonModule;
+	@Autowired
+	private BigBlueButtonManager bigBlueButtonManager;
 
 
 	@Override
@@ -221,11 +241,75 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	}
 
 	@Override
+	public InstantMessage sendMeetingMessage(Identity from, String fromNickName, boolean anonym, String meetingName,
+			OLATResourceable chatResource, String resSubPath, String channel) {
+		InstantMessage msg = null;
+		if(bigBlueButtonModule.isEnabled() && bigBlueButtonModule.isChatExamsEnabled()) {
+			msg = sendBigBlueButtonMessage(from, fromNickName, anonym, chatResource, resSubPath, channel);
+		} else if(teamsModule.isEnabled() && teamsModule.isChatExamsEnabled()) {
+			msg = sendTeamsMessage(from, fromNickName, anonym, chatResource, resSubPath, channel);
+		}
+		return msg;
+	}
+	
+	private InstantMessage sendTeamsMessage(Identity from, String fromNickName, boolean anonym,
+			OLATResourceable chatResource, String resSubPath, String channel) {
+		InstantMessage msg = null;
+		
+		String identifier = resSubPath + "-" + channel;
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(chatResource, false);
+		if(entry != null) {
+			List<TeamsMeeting> meetings = teamsService.getMeetings(entry, identifier, null);
+			TeamsMeeting meeting = null;
+			if(meetings.isEmpty()) {
+				meeting = teamsService.createMeeting(channel, null, null, entry, identifier, null, from);
+			} else {
+				meeting = meetings.get(meetings.size() - 1);
+			}
+			
+			if(meeting != null) {
+				msg = sendMessage(from, fromNickName, anonym, null, null, meeting, InstantMessageTypeEnum.meeting, chatResource, resSubPath, channel, null);
+			}
+		}
+		
+		return msg;
+	}
+	
+	private InstantMessage sendBigBlueButtonMessage(Identity from, String fromNickName, boolean anonym,
+			OLATResourceable chatResource, String resSubPath, String channel) {
+		InstantMessage msg = null;
+		
+		String identifier = resSubPath + "-" + channel;
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(chatResource, false);
+		if(entry != null) {
+			List<BigBlueButtonMeeting> meetings = bigBlueButtonManager.getMeetings(entry, identifier, null, false);
+			BigBlueButtonMeeting meeting = null;
+			if(meetings.isEmpty()) {
+				meeting = bigBlueButtonManager.createAndPersistMeeting(fromNickName, entry, identifier, null, from);
+			} else {
+				meeting = meetings.get(meetings.size() - 1);
+			}
+			
+			if(meeting != null) {
+				msg = sendMessage(from, fromNickName, anonym, null, meeting, null, InstantMessageTypeEnum.meeting, chatResource, resSubPath, channel, null);
+			}
+		}
+		
+		return msg;
+	}
+
+	@Override
 	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, InstantMessageTypeEnum type,
+			OLATResourceable chatResource, String resSubPath, String channel, List<IdentityRef> toNotifyList) {
+		return sendMessage(from, fromNickName, anonym, body, null, null, type, chatResource, resSubPath, channel, toNotifyList);
+	}
+	
+	private InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym,
+			String body, BigBlueButtonMeeting bbbMeeting, TeamsMeeting teamsMeeting, InstantMessageTypeEnum type,
 			OLATResourceable chatResource, String resSubPath, String channel, List<IdentityRef> toNotifyList) {
 		InstantMessage message = null;
 		try {
-			message = imDao.createMessage(from, fromNickName, anonym, body, chatResource, resSubPath, channel, type);
+			message = imDao.createMessage(from, fromNickName, anonym, body, bbbMeeting, teamsMeeting, chatResource, resSubPath, channel, type);
 			dbInstance.commit();//commit before sending event
 
 			InstantMessageNotificationTypeEnum notification = InstantMessageNotificationTypeEnum.message;
@@ -266,7 +350,7 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 		InstantMessage message = null;
 		try {
 			String name = userManager.getUserDisplayName(from);
-			message = imDao.createMessage(from, name, false, body, chatResource, null, null, InstantMessageTypeEnum.text);
+			message = imDao.createMessage(from, name, false, body, null, null, chatResource, null, null, InstantMessageTypeEnum.text);
 			notificationDao.createNotification(from.getKey(), toIdentityKey, chatResource, null, null, InstantMessageNotificationTypeEnum.message);
 			dbInstance.commit();//commit before sending event
 			
@@ -290,7 +374,29 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 
 	@Override
 	public void deleteMessages(OLATResourceable ores) {
+		List<InstantMessage> messagesToDelete = imDao.getAllResourcesMessages(ores);
+		List<TeamsMeeting> teamsToDelete = new ArrayList<>();
+		List<BigBlueButtonMeeting> bigBlueButtonToDelete = new ArrayList<>();
+		for(InstantMessage message:messagesToDelete) {
+			if(message.getBbbMeeting() != null) {
+				bigBlueButtonToDelete.add(message.getBbbMeeting());
+				
+			} else if(message.getTeamsMeeting() != null) {
+				teamsToDelete.add(message.getTeamsMeeting());
+			}
+		}
+		
 		imDao.deleteMessages(ores);
+		dbInstance.commit();
+		
+		for(BigBlueButtonMeeting meeting:bigBlueButtonToDelete) {
+			BigBlueButtonErrors errors = new BigBlueButtonErrors();
+			bigBlueButtonManager.deleteMeeting(meeting, errors);
+		}
+		for(TeamsMeeting meeting:teamsToDelete) {
+			teamsService.deleteMeeting(meeting);
+		}
+		dbInstance.commit();
 	}
 
 	@Override

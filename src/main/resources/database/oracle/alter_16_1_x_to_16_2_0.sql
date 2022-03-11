@@ -24,8 +24,15 @@ create index idx_im_rost_sub_idx on o_im_roster_entry (r_resid,r_resname,r_ressu
 alter table o_im_message add msg_ressubpath varchar(255) default null;
 alter table o_im_message add msg_channel varchar(255) default null;
 alter table o_im_message add msg_type varchar(8) default 'text' not null;
+alter table o_im_message add fk_meeting_id number(20);
+alter table o_im_message add fk_teams_id number(20);
 
 create index idx_im_msg_channel_idx on o_im_message (msg_resid,msg_resname,msg_ressubpath,msg_channel);
+
+alter table o_im_message add constraint im_msg_bbb_idx foreign key (fk_meeting_id) references o_bbb_meeting (id);
+create index idx_im_msg_bbb_idx on o_im_message(fk_meeting_id);
+alter table o_im_message add constraint im_msg_teams_idx foreign key (fk_teams_id) references o_teams_meeting (id);
+create index idx_im_msg_teams_idx on o_im_message(fk_teams_id);
 
 alter table o_im_notification add chat_ressubpath varchar(255) default null;
 alter table o_im_notification add chat_channel varchar(255) default null;

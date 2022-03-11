@@ -179,7 +179,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		columnsModel.addFlexiColumnModel(toolsCol);
 		
-		tableModel = new SupervisorChatDataModel(columnsModel, getIdentity(), getLocale());
+		tableModel = new SupervisorChatDataModel(columnsModel, getIdentity(), getTranslator());
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "chats", tableModel, 24, false, getTranslator(), formLayout);
 		tableEl.setEmptyTableSettings("table.nochats", null, "o_icon_chat");
