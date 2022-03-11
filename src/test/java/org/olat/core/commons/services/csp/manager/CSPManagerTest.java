@@ -19,8 +19,10 @@
  */
 package org.olat.core.commons.services.csp.manager;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.csp.CSPLog;
 import org.olat.core.commons.services.csp.CSPManager;
 import org.olat.core.commons.services.csp.model.CSPReport;
 import org.olat.core.id.Identity;
@@ -58,8 +60,9 @@ public class CSPManagerTest extends OlatTestCase {
 		report.setStatusCode("status-code");
 		report.setViolatedDirective("directive");
 		
-		cspManager.log(report, identity);
+		CSPLog log = cspManager.log(report, identity);
 		dbInstance.commit();
+		Assert.assertNotNull(log);
 	}
 	
 

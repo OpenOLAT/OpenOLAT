@@ -104,6 +104,7 @@ import org.junit.runners.Suite;
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,
 	org.olat.core.commons.modules.glossary.GlossaryItemManagerTest.class,
+	org.olat.core.commons.services.csp.CSPDispatcherTest.class,
 	org.olat.core.commons.services.csp.manager.CSPManagerTest.class,
 	org.olat.core.commons.services.doceditor.manager.DocEditorIdentityServiceTest.class,
 	org.olat.core.commons.services.doceditor.manager.AccessDAOTest.class,
