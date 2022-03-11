@@ -978,7 +978,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CLOSED, getClass());
 		
 		if (chatAvailable) {
-			CloseInstantMessagingEvent e = new CloseInstantMessagingEvent(businessGroup);
+			CloseInstantMessagingEvent e = new CloseInstantMessagingEvent(businessGroup, null, null);
 			singleUserEventBus.fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 		}
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, businessGroup);

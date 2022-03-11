@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.ListPanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -53,6 +54,8 @@ public class GuiStackNiceImpl implements GuiStack {
 	private final StackedPanel topModalPanel;
 	private int modalLayers = 0;
 	private int topModalLayers = 0;
+	
+	private final ListPanel instantMessagePanel;
 
 	private WindowBackOffice wbo;
 
@@ -61,6 +64,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		// Use a layered panel instead of a standard panel to support multiple modal layers
 		modalPanel = new LayeredPanel("guistackmodalpanel", "o_layered_panel", 900, 100);
 		topModalPanel = new LayeredPanel("topmodalpanel", "o_ltop_modal_panel", 70000, 100);
+		instantMessagePanel = new ListPanel("instantmessagingpanel", null);
 	}
 
 	/**
@@ -256,5 +260,20 @@ public class GuiStackNiceImpl implements GuiStack {
 	@Override
 	public StackedPanel getTopModalPanel() {
 		return topModalPanel;
+	}
+
+	@Override
+	public void addInstantMessagePanel(Component imComponent) {
+		instantMessagePanel.addContent(imComponent);
+	}
+
+	@Override
+	public boolean removeInstantMessagePanel(Component imComponent) {
+		return instantMessagePanel.removeContent(imComponent);
+	}
+
+	@Override
+	public ListPanel getInstantMessagePanel() {
+		return instantMessagePanel;
 	}
 }

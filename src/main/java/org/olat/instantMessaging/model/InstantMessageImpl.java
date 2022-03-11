@@ -23,6 +23,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.NamedQuery;
@@ -36,6 +38,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.instantMessaging.InstantMessage;
+import org.olat.instantMessaging.InstantMessageTypeEnum;
 
 /**
  * 
@@ -46,8 +49,6 @@ import org.olat.instantMessaging.InstantMessage;
 @Entity(name="instantmessage")
 @Table(name="o_im_message")
 @NamedQuery(name="loadIMessageByKey",query="select msg from instantmessage msg  where msg.key=:key")
-@NamedQuery(name="loadIMessageByResource", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname order by msg.creationDate desc")
-@NamedQuery(name="loadIMessageByResourceAndDate", query="select msg from instantmessage msg where msg.resourceId=:resid and msg.resourceTypeName=:resname and msg.creationDate>=:from order by msg.creationDate desc")
 public class InstantMessageImpl implements InstantMessage, Persistable, CreateInfo {
 	
 	private static final long serialVersionUID = 1425964260797865080L;
@@ -74,9 +75,16 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 	
 	@Column(name="msg_resname", nullable=false, insertable=true, updatable=false)
 	private String resourceTypeName;
-	
 	@Column(name="msg_resid", nullable=false, insertable=true, updatable=false)
 	private Long resourceId;
+	@Column(name="msg_ressubpath", nullable=true, insertable=true, updatable=false)
+	private String resSubPath;
+	@Column(name="msg_channel", nullable=true, insertable=true, updatable=false)
+	private String channel;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name="msg_type", nullable=false, insertable=true, updatable=false)
+	private InstantMessageTypeEnum type;
 	
 	@Column(name="msg_anonym", nullable=false, insertable=true, updatable=false)
 	private boolean anonym;
@@ -84,7 +92,7 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 	@Column(name="msg_from", nullable=false, insertable=true, updatable=false)
 	private String fromNickName;
 
-	@Column(name="msg_body", nullable=false, insertable=true, updatable=false)
+	@Column(name="msg_body", nullable=true, insertable=true, updatable=false)
 	private String body;
 
 	@Override
@@ -134,6 +142,31 @@ public class InstantMessageImpl implements InstantMessage, Persistable, CreateIn
 
 	public void setResourceId(Long resourceId) {
 		this.resourceId = resourceId;
+	}
+
+	public String getResSubPath() {
+		return resSubPath;
+	}
+
+	public void setResSubPath(String resSubPath) {
+		this.resSubPath = resSubPath;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
+	@Override
+	public InstantMessageTypeEnum getType() {
+		return type;
+	}
+	
+	public void setType(InstantMessageTypeEnum type) {
+		this.type = type;
 	}
 
 	@Override

@@ -109,7 +109,14 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}
 		String scrollableWrapperId = "o_scroll_" + id;
 		sb.append("><div class='o_scrollable_wrapper' id=\"").append(scrollableWrapperId).append("\"><div class='o_scrollable'>")
-			.append("<table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover").append(" table-bordered", ftE.isBordered()).append("\">");
+			.append("<table id=\"").append(id).append("\" class=\"table table-condensed table-striped table-hover").append(" table-bordered", ftE.isBordered());
+		if(ftE.getCssDelegate() != null) {
+			String tableCssClass = ftE.getCssDelegate().getTableCssClass(FlexiTableRendererType.classic);
+			if(tableCssClass != null) {
+				sb.append(" ").append(tableCssClass);
+			}
+		}
+		sb.append("\">");
 		
 		//render headers
 		renderHeaders(sb, ftC, translator);

@@ -59,6 +59,7 @@ import org.olat.core.gui.components.countdown.CountDownComponent;
 import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.panel.ListPanel;
 import org.olat.core.gui.components.panel.OncePanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -152,6 +153,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	private Panel main;
 	private Panel modalPanel;
 	private Panel topModalPanel;
+	private Panel instantMessagePanel;
 	private final GUIMessage guiMessage;
 	private final OncePanel guimsgPanel;
 	private Panel cssHolder, guimsgHolder, currentMsgHolder;
@@ -561,6 +563,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		topModalPanel = new Panel("topmodalpanel");
 		mainVc.put("topmodalpanel", topModalPanel);
+		
+		instantMessagePanel = new Panel("impanel");
+		mainVc.put("instantmessagepanel", instantMessagePanel);
 
 		// main, mandatory (e.g. a LayoutMain3ColsController)
 		main = new Panel("mainContent");
@@ -807,6 +812,9 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		
 		StackedPanel topModalStackP = currentGuiStack.getTopModalPanel();
 		topModalPanel.setContent(topModalStackP);
+		
+		ListPanel instantMessageP = currentGuiStack.getInstantMessagePanel();
+		instantMessagePanel.setContent(instantMessageP);
 	}
 
 	/**

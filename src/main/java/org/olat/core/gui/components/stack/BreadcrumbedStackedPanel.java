@@ -370,7 +370,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 	public void pushContent(Component newContent) {
 		setContent(newContent);
 	}
-	
+
 	private int getIndex(Controller controller) {
 		int index = -1;
 		for(int i=0; i<stack.size(); i++) {
@@ -590,7 +590,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 			Link link = stack.get(0);
 			String unescapedText = StringHelper.unescapeHtml(link.getCustomDisplayText());
 			unescapedText = StringHelper.xssScan(unescapedText);
-			closeText = getTranslator().translate("doclose", new String[] { unescapedText });
+			closeText = getTranslator().translate("doclose", unescapedText);
 			showClose = isShowCloseLinkForRootCrumb();
 			backLink.setTitle(closeText);
 			backLink.setAriaLabel(closeText);
@@ -598,7 +598,7 @@ public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, 
 			Link link = stack.get(stack.size()-1);
 			String unescapedText = StringHelper.unescapeHtml(link.getCustomDisplayText());
 			unescapedText = StringHelper.xssScan(unescapedText);
-			closeText = getTranslator().translate("doclose", new String[] { unescapedText });
+			closeText = getTranslator().translate("doclose", unescapedText);
 			showClose = isShowCloseLink();
 			backLink.setTitle(getTranslator().translate("back"));
 			backLink.setAriaLabel(getTranslator().translate("back"));

@@ -22,6 +22,7 @@ package org.olat.instantMessaging;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.instantMessaging.model.InstantMessageNotificationTypeEnum;
 
 /**
  * 
@@ -32,25 +33,41 @@ import org.olat.core.util.resource.OresHelper;
 public class InstantMessagingEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = 4656092473467740418L;
+	
+	public static final String MESSAGE = InstantMessageNotificationTypeEnum.message.name();
+	public static final String REQUEST = InstantMessageNotificationTypeEnum.request.name();
+	public static final String DELETE_NOTIFICATION = "delete.notification";
+	public static final String PARTICIPANT = "participant";
+	public static final String END_CHANNEL = "end.channel";
 
 	private Long messageId;
+	private InstantMessageTypeEnum messageType;
 	private Long fromId;
 	private String name;
 	private boolean vip;
 	private boolean anonym;
 	private OLATResourceable chatResource;
+	private String resSubPath;
+	private String channel;
 	
-	public InstantMessagingEvent(String command, OLATResourceable chatResource) {
+	public InstantMessagingEvent(String command, OLATResourceable chatResource, String resSubPath, String channel) {
 		super(command);
 		this.chatResource = chatResource;
+		this.resSubPath = resSubPath;
+		this.channel = channel;
 	}
 
 	public Long getMessageId() {
 		return messageId;
 	}
+	
+	public InstantMessageTypeEnum getMessageType() {
+		return messageType;
+	}
 
-	public void setMessageId(Long messageId) {
+	public void setMessage(Long messageId, InstantMessageTypeEnum messageType) {
 		this.messageId = messageId;
+		this.messageType = messageType;
 	}
 
 	public Long getFromId() {
@@ -67,6 +84,22 @@ public class InstantMessagingEvent extends MultiUserEvent {
 
 	public void setChatResource(OLATResourceable chatResource) {
 		this.chatResource = OresHelper.clone(chatResource);
+	}
+
+	public String getResSubPath() {
+		return resSubPath;
+	}
+
+	public void setResSubPath(String resSubPath) {
+		this.resSubPath = resSubPath;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
 	}
 
 	public String getName() {

@@ -79,6 +79,10 @@ public interface WindowControl {
 	 */
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings);
 	
+	
+	public void addInstanteMessagePanel(Component comp);
+	
+	public boolean removeInstanteMessagePanel(Component comp);
 
 	/**
 	 * Push a controller to full screen mode.

@@ -1,0 +1,12 @@
+<div class="o_coaching_activities">
+	<h4><i class="o_icon o_icon_time"> </i> $r.translate("coaching.tool.activities")</h4>
+	
+	#if($r.isNotEmpty($communicationLinks))
+	<h5><i class="o_icon o_icon_chats"> </i> $r.translate("coaching.tool.communication.title")</h5>
+	<ul class="list-unstyled">
+		#foreach($communicationLink in $communicationLinks)
+		<li>$r.render($communicationLink.link): $r.escapeHtml($communicationLink.message)</li>
+		#end
+	</ul>
+	#end
+</div>

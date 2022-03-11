@@ -88,6 +88,7 @@ import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewModel;
 import org.olat.ims.qti21.ui.components.AssessmentTestSessionDetailsNumberRenderer;
+import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
@@ -155,6 +156,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	protected QTI21Service qtiService;
+	@Autowired
+	private InstantMessagingService imService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -556,7 +559,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
 		String title = translate("pull");
 		String fullname = userManager.getUserDisplayName(session.getIdentity());
-		String text = translate("retrievetest.confirm.text", new String[]{ fullname });
+		String text = translate("retrievetest.confirm.text", fullname);
 		retrieveConfirmationCtr = activateOkCancelDialog(ureq, title, text, retrieveConfirmationCtr);
 		retrieveConfirmationCtr.setUserObject(session);
 	}
@@ -567,6 +570,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		session = qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
 		if(courseNode != null) {
 			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+
+			String channel = assessedIdentity == null ? session.getAnonymousIdentifier() : assessedIdentity.getKey().toString();
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			imService.endChannel(getIdentity(), courseEntry.getOlatResource(), courseNode.getIdent(), channel);
 		}
 		updateModel();
 		fireEvent(ureq, Event.CHANGED_EVENT);

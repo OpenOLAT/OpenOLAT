@@ -32,10 +32,14 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -53,12 +57,15 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.session.UserSessionManager;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessage;
+import org.olat.instantMessaging.InstantMessageTypeEnum;
 import org.olat.instantMessaging.InstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.LeaveChatEvent;
+import org.olat.instantMessaging.RosterEntry;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
@@ -76,6 +83,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ChatController extends BasicController implements GenericEventListener{
 
 	private RosterForm rosterCtrl;
+	private SupervisorRosterForm supervisorRosterCtrl;
+	
 	private SendMessageForm sendMessageForm;
 	private final VelocityContainer mainVC;
 	private final VelocityContainer chatMsgFieldContent;
@@ -83,21 +92,30 @@ public class ChatController extends BasicController implements GenericEventListe
 	private Map<Long,Long> avatarKeyCache = new HashMap<>();
 	private Deque<ChatMessage> messageHistory = new LinkedBlockingDeque<>();
 
-	private Link refresh;
 	private Link lastWeek;
 	private Link lastMonth;
 	private Link todayLink;
 	private JSAndCSSComponent jsc;
 	private FloatingResizableDialogController chatPanelCtr;
+
+	private int currentMaxResults;
+	private Date currentDateFrom;
 	
 	private Date today;
 	private List<String> allChats;
 	private final Formatter formatter;
+	private final MapperKey avatarMapperKey;
 
 	private final boolean highlightVip;
 	private final OLATResourceable ores;
-	private final Roster buddyList;
+	private final String resSubPath;
+	private String channel;
+	private Roster buddyList;
+	private ChatViewConfig chatViewConfig;
+
+	private final boolean persistent;
 	private final Long privateReceiverKey;
+	private final RosterFormDisplay rosterDisplay;
 	
 	@Autowired
 	private UserManager userManager;
@@ -111,16 +129,23 @@ public class ChatController extends BasicController implements GenericEventListe
 	private InstantMessagingService imService;
 	@Autowired
 	private DisplayPortraitManager portraitManager;
-	
-	private final MapperKey avatarMapperKey;
+	@Autowired
+	private UserSessionManager sessionManager;
 
-	protected ChatController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String roomName,
-			Long privateReceiverKey, boolean highlightVip, int width, int height, int offsetX, int offsetY) {
+	protected ChatController(UserRequest ureq, WindowControl wControl,
+			OLATResourceable ores, String resSubPath, String channel, ChatViewConfig chatViewConfig,
+			Long privateReceiverKey, boolean highlightVip, boolean persistent,
+			RosterFormDisplay rosterDisplay, int width, int height, int offsetX, int offsetY) {
 		super(ureq, wControl);
 		formatter = Formatter.getInstance(getLocale());
 		this.ores = ores;
+		this.resSubPath = resSubPath;
+		this.channel = channel;
 		this.privateReceiverKey = privateReceiverKey;
 		this.highlightVip = highlightVip;
+		this.persistent = persistent;
+		this.chatViewConfig = chatViewConfig;
+		this.rosterDisplay = rosterDisplay;
 		setToday();
 
 		avatarMapperKey = mapperService.register(null, "avatars-members", new UserAvatarMapper(false));
@@ -130,6 +155,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		
 		mainVC = createVelocityContainer("chat");
 		chatMsgFieldContent = createVelocityContainer("chatMsgField");
+		chatMsgFieldContent.setDomReplacementWrapperRequired(false);
 		
 		boolean ajaxOn = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
 		mainVC.contextPut("isAjaxMode", Boolean.valueOf(ajaxOn));
@@ -141,7 +167,8 @@ public class ChatController extends BasicController implements GenericEventListe
 		// configure anonym mode depending on configuration. separate configurations for course and group chats
 		boolean offerAnonymMode;
 		boolean defaultAnonym;
-		if ("CourseModule".equals(ores.getResourceableTypeName())) {
+		if ("CourseModule".equals(ores.getResourceableTypeName())
+				&& !StringHelper.containsNonWhitespace(resSubPath) && !StringHelper.containsNonWhitespace(channel)) {
 			offerAnonymMode = imModule.isCourseAnonymEnabled();
 			defaultAnonym = offerAnonymMode && imModule.isCourseAnonymDefaultEnabled();
 		} else if ("BusinessGroup".equals(ores.getResourceableTypeName())){
@@ -152,57 +179,88 @@ public class ChatController extends BasicController implements GenericEventListe
 			defaultAnonym = false;
 		}
 		
+		initRoster(ureq, defaultAnonym, offerAnonymMode);
+
 		// register to chat events for this resource
-		
-		if(privateReceiverKey == null) {
-			buddyList = new Roster(getIdentity().getKey());
-			List<Buddy> buddies = imService.getBuddiesListenTo(getOlatResourceable());
-			buddyList.addBuddies(buddies);
-			//chat started as anonymous depending on configuration
-			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode);
-			listenTo(rosterCtrl);
-			String nickName = rosterCtrl.getNickName();
-			imService.listenChat(getIdentity(), getOlatResourceable(), nickName, defaultAnonym, highlightVip, this);
-		} else {
-			buddyList = null;
-			imService.listenChat(getIdentity(), getOlatResourceable(), null, defaultAnonym, highlightVip, this);
+		if(privateReceiverKey != null) {
+			imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
+					null, defaultAnonym, highlightVip, persistent, this);
 		}
 
 		chatPanelCtr = new FloatingResizableDialogController(ureq, getWindowControl(), mainVC,
-				roomName , width, height, offsetX, offsetY,
-				rosterCtrl == null ? null : rosterCtrl.getInitialComponent(),
-				translate("groupchat.roster"), true, false, true, String.valueOf(hashCode()));
+				chatViewConfig.getRoomName(), "o_im_floating", width, height, offsetX, offsetY, true, false, true, String.valueOf(hashCode()));
 		listenTo(chatPanelCtr);
 		chatPanelCtr.setElementCSSClass("o_im_chat_dialog");
 		
 		String pn = chatPanelCtr.getPanelName();
 		
-		sendMessageForm = new SendMessageForm(ureq, getWindowControl(), pn);
+		sendMessageForm = new SendMessageForm(ureq, getWindowControl(), chatViewConfig, pn);
 		listenTo(sendMessageForm);
 		sendMessageForm.resetTextField();
 		mainVC.put("sendMessageForm", sendMessageForm.getInitialComponent());
 		mainVC.contextPut("panelName", pn);
-
-		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
-		chatMsgFieldContent.contextPut("panelName", pn);
-		chatMsgFieldContent.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
-		chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
-		loadModel(getYesterday(), 50);
-		chatMsgFieldContent.contextPut("id", hashCode());
-		mainVC.put("chatMsgFieldPanel", chatMsgFieldContent);
 		
-		refresh = LinkFactory.createCustomLink("refresh", "cmd.refresh", " ", Link.NONTRANSLATED, mainVC, this);
-		refresh.setIconLeftCSS("o_icon o_icon_refresh o_icon-lg");
-		refresh.setTitle("im.refresh");
-		
-		todayLink = LinkFactory.createButton("im.today", mainVC, this);
-		lastWeek = LinkFactory.createButton("im.lastweek", mainVC, this);
-		lastMonth = LinkFactory.createButton("im.lastmonth", mainVC, this);
+		initMainPanel();
+		initChatMessageField(pn);
 
 		putInitialPanel(chatPanelCtr.getInitialComponent());
 		if(rosterCtrl != null) {
 			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
 		}
+	}
+	
+	private void initMainPanel() {
+		if(StringHelper.containsNonWhitespace(chatViewConfig.getResourceInfos())) {
+			mainVC.contextPut("resourceInfos", chatViewConfig.getResourceInfos());
+			mainVC.contextPut("resourceIconCssClass", chatViewConfig.getResourceIconCssClass());
+		}
+		mainVC.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
+		
+		todayLink = LinkFactory.createButton("im.today", mainVC, this);
+		lastWeek = LinkFactory.createButton("im.lastweek", mainVC, this);
+		lastMonth = LinkFactory.createButton("im.lastmonth", mainVC, this);
+	}
+
+	private void initChatMessageField(String pn) {
+		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
+		chatMsgFieldContent.contextPut("panelName", pn);
+		chatMsgFieldContent.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
+		chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
+		if(StringHelper.containsNonWhitespace(chatViewConfig.getWelcome())) {
+			chatMsgFieldContent.contextPut("welcome", chatViewConfig.getWelcome());
+			chatMsgFieldContent.contextPut("welcomeFrom", chatViewConfig.getWelcomeFrom());
+			chatMsgFieldContent.contextPut("welcomeDate", formatter.formatTimeShort(new Date()));
+		}
+		loadModel(getYesterday(), 50);
+		imService.updateLastSeen(getIdentity(), ores, resSubPath, channel);
+		chatMsgFieldContent.contextPut("id", hashCode());
+		mainVC.put("chatMsgFieldPanel", chatMsgFieldContent);
+	}
+		
+	private void initRoster(UserRequest ureq, boolean defaultAnonym, boolean offerAnonymMode) {
+		if(rosterDisplay == RosterFormDisplay.none) return;
+
+		String nickName;
+		if(rosterDisplay == RosterFormDisplay.supervisor) {
+			supervisorRosterCtrl = new SupervisorRosterForm(ureq, getWindowControl(),
+					ores, resSubPath, channel, avatarMapperKey);
+			listenTo(supervisorRosterCtrl);
+			mainVC.put("roster", supervisorRosterCtrl.getInitialComponent());
+			nickName = userManager.getUserDisplayName(getIdentity());
+		} else {
+			buddyList = new Roster(getIdentity().getKey(), rosterDisplay != RosterFormDisplay.supervised);
+			List<Buddy> buddies = imService.getBuddiesListenTo(getOlatResourceable(), resSubPath, channel);
+			buddyList.addBuddies(buddies);
+
+			rosterCtrl = new RosterForm(ureq, getWindowControl(), buddyList, defaultAnonym, offerAnonymMode, rosterDisplay, avatarMapperKey);
+			listenTo(rosterCtrl);
+			mainVC.put("roster", rosterCtrl.getInitialComponent());
+			nickName = rosterCtrl.getNickName();
+		}
+
+		imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
+				nickName, defaultAnonym, highlightVip, persistent, this);
+		mainVC.contextPut("rosterDisplay", rosterDisplay.name());
 	}
 	
 	private void setToday() {
@@ -235,36 +293,43 @@ public class ChatController extends BasicController implements GenericEventListe
 	public OLATResourceable getOlatResourceable() {
 		return ores;
 	}
+	
+	public String getResSubPath() {
+		return resSubPath;
+	}
+	
+	public String getChannel() {
+		return channel;
+	}
 
 	@Override
 	protected void doDispose() {
 		allChats.remove(Integer.toString(hashCode()));
-		imService.unlistenChat(getIdentity(), getOlatResourceable(), this);
+		imService.unlistenChat(getIdentity(), getOlatResourceable(), resSubPath, channel, this);
         super.doDispose();
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == chatPanelCtr) {
-			fireEvent(ureq, new CloseInstantMessagingEvent(getOlatResourceable()));
+			fireEvent(ureq, new CloseInstantMessagingEvent(getOlatResourceable(), resSubPath, channel));
 			allChats.remove(Integer.toString(hashCode()));
 			jsc.setRefreshIntervall(5000);
 		} else if (source == sendMessageForm) {
-			if(StringHelper.containsNonWhitespace(sendMessageForm.getMessage())) {
-				InstantMessage message = doSendMessage(sendMessageForm.getMessage());
-				if(message == null) {
-					sendMessageForm.setErrorTextField();
-				} else {
-					appendToMessageHistory(message, true);
-					sendMessageForm.resetTextField();
-				}
-			} else {
-				//ignore empty manObjectessage entry and refocus on entry field
-				chatMsgFieldContent.contextPut("chatMessages", messageHistory);
-				chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
+			if(event == Event.DONE_EVENT) {
+				doSendMessage();
+			} else if(event == Event.CLOSE_EVENT) {
+				doCloseChat();
+			} else if(event == Event.BACK_EVENT) {
+				doReactivateChat();
 			}
+			
 		} else if (source == rosterCtrl) {
 			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
+		} else if (source == supervisorRosterCtrl) {
+			if(event instanceof SelectChannelEvent) {
+				doSwitchChannel(((SelectChannelEvent)event).getChannel());
+			}
 		}
 	}
 	
@@ -279,12 +344,138 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 	}
 	
+	private void doSendMessage() {
+		if(StringHelper.containsNonWhitespace(sendMessageForm.getMessage())) {
+			InstantMessage message = doSendMessage(sendMessageForm.getMessage());
+			if(message == null) {
+				sendMessageForm.setErrorTextField();
+			} else {
+				appendToMessageHistory(message, true);
+				sendMessageForm.resetTextField();
+			}
+		} else {
+			//ignore empty manObjectessage entry and refocus on entry field
+			chatMsgFieldContent.contextPut("chatMessages", messageHistory);
+			chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
+		}
+	}
+	
+	private void doCloseChat() {
+		boolean anonym = isAnonym();
+		String fromName = getFromName();
+		imService.sendStatusMessage(getIdentity(), fromName, anonym, InstantMessageTypeEnum.close, ores, resSubPath, channel);
+		loadModel(currentDateFrom, currentMaxResults);
+		
+		if(supervisorRosterCtrl != null) {
+			supervisorRosterCtrl.loadModel();
+		}
+	}
+	
+	private void doReactivateChat() {
+		boolean anonym = isAnonym();
+		String fromName = getFromName();
+		imService.sendStatusMessage(getIdentity(), fromName, anonym, InstantMessageTypeEnum.accept, ores, resSubPath, channel);
+		loadModel(currentDateFrom, currentMaxResults);
+		
+		if(supervisorRosterCtrl != null) {
+			supervisorRosterCtrl.loadModel();
+		}
+	}
+	
+	public void switchChannel(String newChannel) {
+		if(supervisorRosterCtrl != null) {
+			supervisorRosterCtrl.switchChannel(newChannel);
+		}
+		doSwitchChannel(newChannel);
+	}
+	
+	private void doSwitchChannel(String newChannel) {
+		imService.unlistenChat(getIdentity(), ores, resSubPath, channel, this);
+		
+		channel = newChannel;
+		
+		String name;
+		if(rosterCtrl != null) {
+			name = rosterCtrl.getNickName();
+		} else {
+			name = userManager.getUserDisplayName(getIdentity());
+		}
+		
+		imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
+				name, false, highlightVip, persistent, this);
+		loadModel(currentDateFrom, currentMaxResults);
+		
+		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
+		chatMsgFieldContent.contextPut("focus", Boolean.TRUE);
+		
+		if(!messageHistory.isEmpty()) {
+			imService.updateLastSeen(getIdentity(), ores, resSubPath, channel);
+		}
+	}
+	
 	private void loadModel(Date from, int maxResults) {
+		this.currentDateFrom = from;
+		this.currentMaxResults = maxResults;
+		
 		setToday();
 		messageHistory.clear();
-		List<InstantMessage> lastMessages = imService.getMessages(getIdentity(), getOlatResourceable(), from, 0, maxResults, true);
+		List<InstantMessage> lastMessages = imService
+				.getMessages(getIdentity(), getOlatResourceable(), resSubPath, channel, from, 0, maxResults, true);
 		for(int i=lastMessages.size(); i-->0; ) {
 			appendToMessageHistory(lastMessages.get(i), false);
+		}
+		
+		if(supervisorRosterCtrl != null && channel != null) {
+			List<RosterEntry> allEntries = supervisorRosterCtrl.getRosterEntries(channel);
+			List<ChatRosterEntry> entries = allEntries.stream()
+					.filter(e -> !e.isVip() && !getIdentity().getKey().equals(e.getIdentityKey()))
+					.map(e -> new ChatRosterEntry(e, sessionManager.isOnline(e.getIdentityKey())))
+					.collect(Collectors.toList());
+			mainVC.contextPut("rosterNonVipEntries", entries);
+			
+			String i18nNum = allEntries.size() <= 1 ? "num.of.entry" : "num.of.entries";
+			mainVC.contextPut("numOfAllEntriesMsg", translate(i18nNum, Integer.toString(allEntries.size())));
+		}
+		
+		updateSendMessageForm();
+	}
+	
+	private void updateSendMessageForm() {
+		if(chatViewConfig.isCanClose() || chatViewConfig.isCanReactivate()) {
+			if(!messageHistory.isEmpty() && messageHistory.getLast().getTypeEnum() == InstantMessageTypeEnum.close) {
+				sendMessageForm.setCloseableChat(!chatViewConfig.isCanReactivate(), false, true);
+			} else if(!messageHistory.isEmpty() && messageHistory.getLast().getTypeEnum() == InstantMessageTypeEnum.end) {
+				sendMessageForm.setCloseableChat(!chatViewConfig.isCanReactivate(), false, false);
+			} else {
+				sendMessageForm.setCloseableChat(true, true, false);
+			}
+		} else {
+			sendMessageForm.setCloseableChat(true, false, false);
+		}
+	}
+	
+	public static class ChatRosterEntry {
+		
+		private String onlineCssStatus;
+		private Long avatarKey;
+		private String name;
+		
+		public ChatRosterEntry(RosterEntry entry, boolean online) {
+			name = entry.isAnonym() ? entry.getNickName() : entry.getFullName();
+			avatarKey = entry.getIdentityKey();
+			onlineCssStatus = online ? "o_icon_status_available" : "o_icon_status_unavailable";
+		}
+
+		public String getOnlineCssStatus() {
+			return onlineCssStatus;
+		}
+
+		public Long getAvatarKey() {
+			return avatarKey;
+		}
+
+		public String getName() {
+			return name;
 		}
 	}
 	
@@ -302,40 +493,89 @@ public class ChatController extends BasicController implements GenericEventListe
 	}
 	
 	private void doSendPresence(String nickName, boolean anonym) {
-		imService.sendPresence(getIdentity(), nickName, anonym, highlightVip, getOlatResourceable());	
+		imService.sendPresence(getIdentity(), getOlatResourceable(), resSubPath, channel,
+				nickName, anonym, highlightVip, persistent);	
 	}
 	
 	private InstantMessage doSendMessage(String text) {
-		boolean anonym;
-		String fromName;
-		if(rosterCtrl != null) {
-			anonym = rosterCtrl.isUseNickName();
-			fromName = rosterCtrl.getNickName();
-		} else {
-			anonym = false;
-			fromName = userManager.getUserDisplayName(getIdentity());
-		}
+		boolean anonym = isAnonym();
+		String fromName = getFromName();
+
 		InstantMessage message;
 		if(privateReceiverKey == null) {
-			message = imService.sendMessage(getIdentity(), fromName, anonym, text, getOlatResourceable());
+			InstantMessageTypeEnum msgType = InstantMessageTypeEnum.text;
+			List<IdentityRef> toNotifyRequests = null;
+			InstantMessageTypeEnum stopperStatus = stopper();
+			if(messageHistory.isEmpty() || stopperStatus == InstantMessageTypeEnum.end) {
+				msgType = InstantMessageTypeEnum.request;
+				toNotifyRequests = chatViewConfig.getToNotifyRequests();
+			} else if(stopperStatus == InstantMessageTypeEnum.close) {
+				msgType = InstantMessageTypeEnum.request;
+				toNotifyRequests = getRequestToNotifiyTo();
+			}
+			message = imService.sendMessage(getIdentity(), fromName, anonym, text, msgType, getOlatResourceable(), resSubPath, channel, toNotifyRequests);
 		} else {
-			message= imService.sendPrivateMessage(getIdentity(), privateReceiverKey, text, getOlatResourceable());
+			message = imService.sendPrivateMessage(getIdentity(), privateReceiverKey, text, getOlatResourceable());
 		}
 		return message;
 	}
 	
+	private InstantMessageTypeEnum stopper() {
+		if(highlightVip) return null;
+		
+		if(messageHistory.isEmpty()) {
+			return null;
+		}
+		
+		ChatMessage lastMessage = messageHistory.peekLast();
+		if(lastMessage == null) {
+			return null;
+		}
+		
+		InstantMessageTypeEnum type = lastMessage.getTypeEnum();
+		return type == InstantMessageTypeEnum.close || type == InstantMessageTypeEnum.end ? type : null;
+	}
+	
+	private List<IdentityRef> getRequestToNotifiyTo() {
+		List<IdentityRef> toNotifyRequests = chatViewConfig.getToNotifyRequests();
+		if(toNotifyRequests != null && rosterCtrl != null) {
+			toNotifyRequests = buddyList.getBuddies().stream().filter(Buddy::isVip)
+					.map(Buddy::getIdentityKey)
+					.map(IdentityRefImpl::new)
+					.collect(Collectors.toList());
+		}
+		return toNotifyRequests;
+	}
+	
+	private boolean isAnonym() {
+		boolean anonym;
+		if(rosterCtrl != null) {
+			anonym = rosterCtrl.isUseNickName();
+		} else {
+			anonym = false;
+		}
+		return anonym;
+	}
+	
+	private String getFromName() {
+		String fromName;
+		if(rosterCtrl != null) {
+			fromName = rosterCtrl.getNickName();
+		} else {
+			fromName = userManager.getUserDisplayName(getIdentity());
+		}
+		return fromName;
+	}
+	
 	private void processInstantMessageEvent(InstantMessagingEvent event) {
-		if ("message".equals(event.getCommand())) {
-			Long from = event.getFromId();
-			if(!getIdentity().getKey().equals(from)) {
-				Long messageId = event.getMessageId();
-				InstantMessage message = imService.getMessageById(getIdentity(), messageId, true);
-				appendToMessageHistory(message, false);
-			}
-		} else if ("participant".equals(event.getCommand())) {
-			if (event.getFromId() != null) {
-				updateRosterList(event.getFromId(), event.getName(), event.isAnonym(), event.isVip());
-			}
+		if ((InstantMessagingEvent.MESSAGE.equals(event.getCommand()) || InstantMessagingEvent.REQUEST.equals(event.getCommand()))
+				&& !getIdentity().getKey().equals(event.getFromId())
+				&& Objects.equals(resSubPath, event.getResSubPath()) && Objects.equals(channel, event.getChannel())) {
+			processInstantMessageTextEvent(event);
+		} else if (InstantMessagingEvent.PARTICIPANT.equals(event.getCommand())
+				&& event.getFromId() != null
+				&& Objects.equals(resSubPath, event.getResSubPath()) && Objects.equals(channel, event.getChannel())) {
+			updateRosterList(event.getFromId(), event.getName(), event.isAnonym(), event.isVip());
 		}
 	}
 	
@@ -350,6 +590,29 @@ public class ChatController extends BasicController implements GenericEventListe
 		}
 	}
 	
+	private void processInstantMessageTextEvent(InstantMessagingEvent event) {
+		Long messageId = event.getMessageId();
+		InstantMessage message = imService.getMessageById(getIdentity(), messageId, true);
+		boolean appended = appendToMessageHistory(message, false);
+		
+		if(supervisorRosterCtrl != null && StringHelper.containsNonWhitespace(event.getChannel())) {
+			supervisorRosterCtrl.activateChannel(event.getChannel());
+			if(channel != null && channel.equals(event.getChannel())) {
+				updateSendMessageForm();
+			}
+		} else if(buddyList != null
+				&& (message.getType() == InstantMessageTypeEnum.accept || message.getType() == InstantMessageTypeEnum.join)) {
+			Long identityKey = event.getFromId();
+			if(!buddyList.contains(identityKey)) {
+				updateRosterList(identityKey, event.getName(), event.isAnonym(), event.isVip());
+			}
+		}
+		
+		if(appended) {
+			imService.updateLastSeen(getIdentity(), ores, resSubPath, channel);
+		}
+	}
+	
 	/**
 	 * This method close the chat from external
 	 */
@@ -358,16 +621,32 @@ public class ChatController extends BasicController implements GenericEventListe
 		chatPanelCtr.executeCloseCommand();
 	}
 	
-	private void appendToMessageHistory(InstantMessage message, boolean focus) {
-		if(message == null || message.getBody() == null) return;
+	private boolean appendToMessageHistory(InstantMessage message, boolean focus) {
+		if(message == null) {
+			return false;
+		}
 		
-		String m = message.getBody().replace("<br/>\n", "\r\n");
-		m = prepareMsgBody(m.replace("<", "&lt;").replace(">", "&gt;")).replace("\r\n", "<br/>\n");
+		ChatMessage oldEntry = messageHistory.stream()
+				.filter(historyEntry -> message.getKey().equals(historyEntry.getMessageKey()))
+				.findFirst().orElse(null);
+		if(oldEntry != null) {
+			return false;
+		}
 		
+		String m = "";
+		if(StringHelper.containsNonWhitespace(message.getBody())) {
+			m = message.getBody().replace("<br>\n", "\r\n");
+			m = prepareMsgBody(m.replace("<", "&lt;").replace(">", "&gt;")).replace("\r\n", "<br>\n");
+		} else if (message.getType().isStatus()) {
+			m = prepareStatusMessage(message);
+		} else {
+			return false;
+		}
+
 		Date msgDate = message.getCreationDate();
 		String creationDate;
 		if(today.compareTo(msgDate) < 0) {
-			creationDate = formatter.formatTime(message.getCreationDate());
+			creationDate = formatter.formatTimeShort(message.getCreationDate());
 		} else {
 			creationDate = formatter.formatDateAndTime(message.getCreationDate());
 		}
@@ -377,13 +656,14 @@ public class ChatController extends BasicController implements GenericEventListe
 		String from = message.getFromNickName();
 		ChatMessage last = messageHistory.peekLast();
 		if(last != null
-				&& fromKey.equals(last.getFromKey())
-				&& from.equals(last.getFrom())) {
+				&& fromKey.equals(last.getFromKey()) && from.equals(last.getFrom())
+				&& !message.getType().isStatus() && !last.getTypeEnum().isStatus()) {
 			first = false;
 		}
 
 		boolean anonym = message.isAnonym();
-		ChatMessage msg = new ChatMessage(creationDate, from, fromKey, m, first, anonym);
+		ChatMessage msg = new ChatMessage(message.getKey(), creationDate, from, fromKey, m, message.getType(),
+				first, anonym, getIdentity().getKey().equals(message.getFromKey()));
 		if(!anonym ) {
 			msg.setAvatarKey(getAvatarKey(message.getFromKey()));
 		}
@@ -391,6 +671,31 @@ public class ChatController extends BasicController implements GenericEventListe
 
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
 		chatMsgFieldContent.contextPut("focus", Boolean.valueOf(focus));
+		return true;
+	}
+	
+	private String prepareStatusMessage(InstantMessage message) {
+		String i18nKey;
+		if (message.getType() == InstantMessageTypeEnum.join) {
+			i18nKey = "chat.join";
+		} else if (message.getType() == InstantMessageTypeEnum.accept) {
+			i18nKey = "chat.accept";
+		} else if (message.getType() == InstantMessageTypeEnum.close) {
+			i18nKey = "chat.close";
+		} else if (message.getType() == InstantMessageTypeEnum.end) {
+			i18nKey = "chat.end";
+		} else {
+			return null;
+		}
+		
+		String time = formatter.formatTimeShort(message.getCreationDate());
+		String from;
+		if(message.isAnonym()) {
+			from = message.getFromNickName();
+		} else {
+			from = userManager.getUserDisplayName(message.getFromKey());
+		}
+		return translate(i18nKey, time, from);
 	}
 	
 	private Long getAvatarKey(Long identityKey) {

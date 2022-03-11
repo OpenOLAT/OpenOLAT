@@ -1,4 +1,12 @@
-<div class="o_im_chat_history" id="$id">
+<div class="o_im_chat_history" id="${r.getCId()}">
+	#if($r.isNotEmpty($welcome))
+	<div class="o_im_message_group o_im_message_welcome">
+		<div class="o_portrait"><div class="o_portrait_image"><img src='$r.staticLink("images/openolat/openolat_logo_32.png")' alt="$altText" title="$altText" class="o_portrait_avatar_small" /></div></div>
+		<div class="o_im_from_name">$r.escapeHtml(${welcomeFrom}) <small class="o_date">$welcomeDate</small></div>	
+		<div class="o_im_body clearfix">$r.xssScan($welcome)</div>
+	</div>
+	#end
+
 	#set($messageGroupCount=0)
 	#foreach($message in $chatMessages)
 		## The first message opens a new o_im_message_group tag and adds the users
@@ -8,33 +16,32 @@
 				## close last o_im_message_group tag
 				</div>
 			#end		
-			<div class="o_im_message_group #if ($messageGroupCount % 2 == 1) o_odd #end">
-			
+			<div class="o_im_message_group #if($r.isTrue($message.me) && $r.isFalse($message.typeStatus)) o_im_message_me #end #if($messageGroupCount % 2 == 1) o_odd #end o_im_message_${message.type}">
+			#if($r.isTrue($message.me) && $r.isFalse($message.typeStatus))
+				<div class="o_im_from_name"><small class="o_date">${message.creationDate}</small></div>
+			#elseif($r.isFalse($message.typeStatus))
 				## link to visiting card
 				#if(!$message.anonym) <a href="$r.relLink("url/Identity/${message.fromKey}")" class="o_im_from">#end
 								
 				<div class="o_portrait"><div class="o_portrait_image">
 				#if($message.anonym) 
-					<img src="$r.staticLink("images/transparent.gif")" alt="$altText" title="$altText" class="o_portrait_anonymous_small" />
+					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_anonymous_small" aria-hidden="true" />
 				#elseif ($message.avatarKey != "-1") 
-					<img src="$r.staticLink("images/transparent.gif")" alt="$altText" title="$altText" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${message.avatarKey}/portrait_small.jpg')" />
+					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${message.avatarKey}/portrait_small.jpg')" />
 				#else
-					<img src="$r.staticLink("images/transparent.gif")" alt="$altText" title="$altText" class="o_portrait_dummy_small" />
+					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_dummy_small" aria-hidden="true" />
 				#end 
 				</div></div>
 								
-				<div class="o_im_from_name">$r.escapeHtml(${message.from})</div>				
-
+				<div class="o_im_from_name">$r.escapeHtml(${message.from}) <small class="o_date">${message.creationDate}</small></div>				
 				## end link to visiting card
 				#if(!$message.anonym) </a> #end
-
+			#end
+			
 			#set($messageGroupCount=$messageGroupCount+1)
 		#end
 		## The real messages start here
-		<div class="o_im_body clearfix">
-			<span class="o_date">${message.creationDate}</span>
-			${message.body}
-		</div>
+		<div class="o_im_body clearfix">${message.body}</div>
 	#end
 	
 	#if ($messageGroupCount > 0)
@@ -45,7 +52,7 @@
 #if($focus)
 	<script>jQuery(function(){try{focus_${panelName}();}catch(e){ if(window.console) console.log(e) }});</script>
 #else
-	<script>jQuery(function(){try{tweak_${panelName}();}catch(e){ if(window.console) console.log(e) }});</script>
+	<script>jQuery(function(){try{resize_${panelName}();}catch(e){ if(window.console) console.log(e) }});</script>
 #end
 <script>
 ## setTimeout used because otherwise it would not work the first time the chatwindow is displayed

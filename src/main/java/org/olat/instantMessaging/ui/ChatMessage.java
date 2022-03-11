@@ -19,6 +19,8 @@
  */
 package org.olat.instantMessaging.ui;
 
+import org.olat.instantMessaging.InstantMessageTypeEnum;
+
 /**
  * 
  * Initial date: 03.01.2013<br>
@@ -27,22 +29,32 @@ package org.olat.instantMessaging.ui;
  */
 public class ChatMessage {
 	
+	private final boolean me;
 	private final boolean first;
 	private final boolean anonym;
 	private final String creationDate;
 	private final String from;
 	private final Long fromKey;
 	private final String body;
+	private final Long messageKey;
 	private Long avatarKey;
+	private final InstantMessageTypeEnum type;
 	
-	public ChatMessage(String creationDate, String from, Long fromKey, String body,
-			boolean first, boolean anonym) {
+	public ChatMessage(Long messageKey, String creationDate, String from, Long fromKey, String body,
+			InstantMessageTypeEnum type, boolean first, boolean anonym, boolean me) {
+		this.messageKey = messageKey;
 		this.creationDate = creationDate;
+		this.me = me;
 		this.from = from;
 		this.fromKey = fromKey;
 		this.body = body;
 		this.first = first;
 		this.anonym = anonym;
+		this.type = type;
+	}
+	
+	public Long getMessageKey() {
+		return messageKey;
 	}
 
 	/**
@@ -51,6 +63,10 @@ public class ChatMessage {
 	 */
 	public String getCreationDate() {
 		return creationDate;
+	}
+	
+	public boolean isMe() {
+		return me;
 	}
 
 	/**
@@ -105,6 +121,20 @@ public class ChatMessage {
 	 */
 	public boolean isAnonym() {
 		return anonym;
+	}
+	
+	public String getType() {
+		return type == null ? InstantMessageTypeEnum.text.name() : type.name();
+	}
+	
+	public InstantMessageTypeEnum getTypeEnum() {
+		return type == null ? InstantMessageTypeEnum.text : type;
+	}
+	
+	public boolean isTypeStatus() {
+		return type == InstantMessageTypeEnum.accept
+				|| type == InstantMessageTypeEnum.join
+				|| type == InstantMessageTypeEnum.close;
 	}
 	
 	

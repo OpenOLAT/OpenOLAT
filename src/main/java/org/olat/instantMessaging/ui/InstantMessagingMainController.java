@@ -26,9 +26,11 @@
 package org.olat.instantMessaging.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
@@ -75,11 +77,12 @@ public class InstantMessagingMainController extends BasicController implements G
 	
 	private static final String ACTION_MSG = "cmd.msg";
 	
-	private VelocityContainer main = createVelocityContainer("topnav");
-	private VelocityContainer chatContent = createVelocityContainer("chat");
+	private final VelocityContainer main = createVelocityContainer("topnav");
 	
 	//new messages
 	private List<Long> showNewMessageHolder = new ArrayList<>();
+	private final Map<ChatReferenceKey, ChatReference> chats = new HashMap<>();
+	
 	private VelocityContainer newMsgIcon = createVelocityContainer("newMsgIcon");
 	//roster
 	private Panel rosterPanel;
@@ -92,7 +95,6 @@ public class InstantMessagingMainController extends BasicController implements G
 	private final Link unavailable;
 	//chat list
 	private JSAndCSSComponent jsc;
-	private ChatManagerController chatMgrCtrl;
 
 	private String imStatus;
 	private int stateUpdateCounter = 0;
@@ -100,13 +102,12 @@ public class InstantMessagingMainController extends BasicController implements G
 	private EventBus singleUserEventCenter;
 	
 	@Autowired
+	private InstantMessagingModule imModule;
+	@Autowired
 	private InstantMessagingService imService;
 
 	public InstantMessagingMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		boolean ajaxOn = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
-		chatContent.contextPut("isAjaxMode", Boolean.valueOf(ajaxOn));
 		
 		//	checks with the given intervall if dirty components are available to rerender
 		jsc = new JSAndCSSComponent("intervall", this.getClass(), 5000);
@@ -119,7 +120,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		String newMessageSoundURL = guiTheme.getBaseURI() + "/sounds/new_message.mp3";
 		newMessageSoundURL = newMessageSoundURL.replace("/themes/" + guiTheme.getIdentifyer(), "/themes/light");
 		newMsgIcon.contextPut("newMessageSoundURL", newMessageSoundURL);
-		loadNotifications();
+		loadPrivateNotifications();
 
 		// status changer links
 		available = LinkFactory.createLink("presence.available", main, this);
@@ -134,7 +135,6 @@ public class InstantMessagingMainController extends BasicController implements G
 		updateStatusCss(null);
 
 		// roster launcher (offline / online) link
-		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		if (imModule.isGroupPeersEnabled()) {
 			onlineOfflineCount = LinkFactory.createCustomLink("onlineOfflineCount", "cmd.roster", "", Link.NONTRANSLATED, main, this);
 			onlineOfflineCount.setTitle(translate("im.roster.intro"));
@@ -150,13 +150,8 @@ public class InstantMessagingMainController extends BasicController implements G
 		rosterPanel = new Panel("rosterPanel");
 		main.put("rosterPanel", rosterPanel);
 		
-		//creates and manages the p2p chats
-		chatMgrCtrl = new ChatManagerController(ureq, wControl);
-		listenTo(chatMgrCtrl);
-		newMsgIcon.put("chats", chatMgrCtrl.getInitialComponent());
-		
 		//listen to private chat messages
-		imService.listenChat(getIdentity(), getPrivatListenToResourceable(), null, false, false, this);
+		imService.listenChat(getIdentity(), getPrivatListenToResourceable(), null, null, null, false, false, false, this);
 		
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		singleUserEventCenter.registerFor(this, getIdentity(), InstantMessagingService.ASSESSMENT_EVENT_ORES);
@@ -167,7 +162,7 @@ public class InstantMessagingMainController extends BasicController implements G
 
 	@Override
 	protected void doDispose() {
-		imService.unlistenChat(getIdentity(), getPrivatListenToResourceable(), this);
+		imService.unlistenChat(getIdentity(), getPrivatListenToResourceable(), null, null, this);
 		singleUserEventCenter.deregisterFor(this, InstantMessagingService.ASSESSMENT_EVENT_ORES);
 		singleUserEventCenter.deregisterFor(this, InstantMessagingService.TOWER_EVENT_ORES);
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
@@ -178,9 +173,6 @@ public class InstantMessagingMainController extends BasicController implements G
 		return OresHelper.createOLATResourceableInstance("Buddy", getIdentity().getKey());	
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == available || source == dnd || source == unavailable) {			
@@ -196,7 +188,7 @@ public class InstantMessagingMainController extends BasicController implements G
 				Object obj = link.getUserObject();
 				if(obj instanceof Buddy) {
 					Buddy buddy = (Buddy)obj;
-					chatMgrCtrl.createChat(ureq, buddy);
+					createChat(ureq, buddy);
 					showNewMessageHolder.remove(buddy.getIdentityKey());
 				}
 				newMsgIcon.setDirty(true);
@@ -217,10 +209,25 @@ public class InstantMessagingMainController extends BasicController implements G
 		} else if (source == rosterCtr) {
 			if(event instanceof OpenInstantMessageEvent) {
 				OpenInstantMessageEvent e = (OpenInstantMessageEvent)event;
-				doOpenPrivateChat(ureq, e.getBuddy()); 
+				createChat(ureq, e.getBuddy()); 
 			}
-		} else if (source == chatMgrCtrl) {
-			//closing events from chat manager controller
+		} else if (source instanceof ChatController) {
+			if(event instanceof CloseInstantMessagingEvent) {
+				CloseInstantMessagingEvent close = (CloseInstantMessagingEvent)event;
+				cleanUp(new ChatReferenceKey(close.getOres(), close.getResSubPath(), close.getChannel()));
+				cleanUp(new ChatReferenceKey(close.getOres(), close.getResSubPath(), null));
+			}
+			//forward event also to main controller
+			fireEvent(ureq, event);
+		}
+	}
+	
+	private void cleanUp(ChatReferenceKey key) {
+		ChatReference refs = chats.remove(key);
+		if(refs != null) {
+			ChatController chatCtr = refs.getController();
+			getWindowControl().removeInstanteMessagePanel(refs.getInitialComponent());
+			imService.unlistenChat(getIdentity(), chatCtr.getOlatResourceable(), chatCtr.getResSubPath(), chatCtr.getChannel(), chatCtr);
 		}
 	}
 
@@ -249,7 +256,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private void updateBuddyStats() {
 		if(allowToUpdateBuddyStats()) {
 			BuddyStats stats = imService.getBuddyStats(getIdentity());
-			String text = translate("im.roster.launch", new String[]{ Long.toString(stats.getOnlineBuddies()), Long.toString(stats.getOfflineBuddies()) });
+			String text = translate("im.roster.launch", Long.toString(stats.getOnlineBuddies()), Long.toString(stats.getOfflineBuddies()));
 			if(!text.equals(onlineOfflineCount.getCustomDisplayText())) {
 				onlineOfflineCount.setCustomDisplayText(text);
 			}
@@ -266,8 +273,8 @@ public class InstantMessagingMainController extends BasicController implements G
 				|| !(chiefController.getScreenMode().isFullScreen() || chiefController.getScreenMode().isWishFullScreen())));
 	}
 	
-	private void loadNotifications() {
-		List<InstantMessageNotification> notifications = imService.getNotifications(getIdentity());
+	private void loadPrivateNotifications() {
+		List<InstantMessageNotification> notifications = imService.getPrivateNotifications(getIdentity());
 		for(InstantMessageNotification notification:notifications) {
 			if(!showNewMessageHolder.contains(notification.getFromIdentityKey())) {
 				showNewMessageHolder.add(notification.getFromIdentityKey());
@@ -275,11 +282,6 @@ public class InstantMessagingMainController extends BasicController implements G
 				createShowNewMessageLink(buddy);
 			}
 		}
-	}
-	
-	private void doOpenPrivateChat(UserRequest ureq, Buddy buddy) {
-		//info.getInitialMessages()
-		chatMgrCtrl.createChat(ureq, buddy);
 	}
 	
 	private void doOpenRoster(UserRequest ureq) {
@@ -290,8 +292,8 @@ public class InstantMessagingMainController extends BasicController implements G
 		listenTo(rosterCtr);
 		
 		rosterPanelCtr = new FloatingResizableDialogController(ureq, getWindowControl(), rosterCtr.getInitialComponent(),
-				translate("im.buddies"), 300, 500, onlineOfflineCount.getOffsetX() - 80, onlineOfflineCount.getOffsetY() + 25,
-				null, null, true, true, true, "im_roster"
+				translate("im.buddies"), "o_im_floating", 300, 500, onlineOfflineCount.getOffsetX() - 80, onlineOfflineCount.getOffsetY() + 25,
+				true, true, true, "im_roster"
 		);
 		listenTo(rosterPanelCtr);
 		rosterPanel.setContent(rosterPanelCtr.getInitialComponent());
@@ -312,7 +314,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		}
 		if(imStatus == null) {
 			imStatus = Presence.available.name();
-		  imService.updateStatus(getIdentity(), imStatus);
+			imService.updateStatus(getIdentity(), imStatus);
 		}
 		String cssClass = "o_icon o_icon_status_" + imStatus;
 		main.contextPut("statusClass", cssClass);
@@ -322,7 +324,14 @@ public class InstantMessagingMainController extends BasicController implements G
 		if(event.getEventType().equals(AssessmentEvent.TYPE.STARTED)) {
 			inAssessment = true;
 			main.contextPut("inAssessment", true);
-			chatMgrCtrl.closeAllChats();
+			
+			List<Map.Entry<ChatReferenceKey, ChatReference>> chatEntries = new ArrayList<>(chats.entrySet());
+			for(Map.Entry<ChatReferenceKey, ChatReference> chatEntry:chatEntries) {
+				if(!chatEntry.getValue().isAssessmentAllowed()) {
+					closeChat(chatEntry.getKey());
+				}
+			}
+			
 			if(rosterPanelCtr != null) {
 				rosterPanelCtr.executeCloseCommand();
 			}
@@ -331,20 +340,19 @@ public class InstantMessagingMainController extends BasicController implements G
 			if (singleUserEventCenter.getListeningIdentityCntFor(a) < 1) {
 				inAssessment = false;
 				main.contextPut("inAssessment", false);
-				loadNotifications();
+				loadPrivateNotifications();
 			}
 		} 
 	}
 
 	private void processOpenInstantMessageEvent(OpenInstantMessageEvent event) {
-		UserRequest ureq = event.getUserRequest();
-		if(ureq != null) {
-			if(event.getBuddy() != null) {
-				chatMgrCtrl.createChat(ureq, event.getBuddy());
-			} else if(event.getOres() != null) {
-				//open a group/course chat
-				chatMgrCtrl.createGroupChat(ureq, event.getOres(), event.getRoomName(), event.isVip());
-			}	
+		UserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
+		if(event.getBuddy() != null) {
+			createChat(ureq, event.getBuddy());
+		} else if(event.getOres() != null) {
+			//open a group/course chat
+			createChat(ureq, event.getOres(), event.getResSubPath(), event.getChannel(),
+					event.getViewConfig(), event.isVip(), event.isPersistent(), event.getRosterDisplay());
 		}
 	}
 	
@@ -352,13 +360,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		if(event.getOres() == null) {
 			close();
 		} else {
-			closeChat(event.getOres());
-		}
-	}
-	
-	private void closeChat(OLATResourceable ores) {
-		if(chatMgrCtrl != null) {
-			chatMgrCtrl.closeChat(ores);
+			closeChat(event.getOres(), event.getResSubPath(), event.getChannel());
 		}
 	}
 	
@@ -368,26 +370,111 @@ public class InstantMessagingMainController extends BasicController implements G
 			removeAsListenerAndDispose(rosterPanelCtr);
 			rosterPanel.setContent(null);
 		}
-		if(chatMgrCtrl != null) {
-			chatMgrCtrl.closeAllChats();
+		closeAllChats();
+	}
+	
+	/**
+	 * Close the chats windows
+	 */
+	protected void closeAllChats() {
+		List<ChatReferenceKey> chatKeys = new ArrayList<>(chats.keySet());
+		for(ChatReferenceKey chatKey :chatKeys) {
+			closeChat(chatKey);
 		}
+		chats.clear();
+	}
+	
+	protected void closeChat(OLATResourceable ores, String resSubPath, String channel) {
+		closeChat(new ChatReferenceKey(ores, resSubPath, channel));
+	}
+	
+	private void closeChat(ChatReferenceKey chatKey) {
+		ChatReference ref = chats.get(chatKey);
+		if(ref != null) {
+			ref.getController().closeChat();
+			getWindowControl().removeInstanteMessagePanel(ref.getInitialComponent());
+		}
+		chats.remove(chatKey);
+	}
+	
+	/**
+	 * For one to one/direct chat.
+	 * 
+	 * @param ureq The user request
+	 * @param buddy The buddy to chat with
+	 */
+	public void createChat(UserRequest ureq, Buddy buddy) {	
+		if (buddy == null) return;
+		
+		OLATResourceable ores = imService.getPrivateChatResource(getIdentity().getKey(), buddy.getIdentityKey());
+		String roomName = translate("im.chat.with") + ": " + buddy.getName();
+		createChat(ureq, ores, null, null, buddy.getIdentityKey(), ChatViewConfig.room(roomName), false, false, RosterFormDisplay.none, 400, 320);
+	}
+
+	/**
+	 * Open a chat with a group of users.
+	 * 
+	 * @param ureq The user request
+	 * @param ores The resource
+	 * @param resSubPath The sub identifier
+	 * @param channel The sub-sub identifier
+	 * @param roomName The name of the chat
+	 * @param vip If the identity is VIP
+	 */
+	public void createChat(UserRequest ureq, OLATResourceable ores, String resSubPath, String channel,
+			ChatViewConfig config, boolean vip, boolean persistent, RosterFormDisplay rosterDisplay) {
+		createChat(ureq, ores, resSubPath, channel, null, config, vip, persistent, rosterDisplay, config.getWidth(), config.getHeight());
+	}
+	
+	private void createChat(UserRequest ureq, OLATResourceable ores, String resSubPath, String channel, Long privateReceiverKey,
+			ChatViewConfig config, boolean vip, boolean persistent, RosterFormDisplay rosterDisplay, int width, int height) {
+		if (ores == null) return;
+		
+		String refChannel = rosterDisplay == RosterFormDisplay.supervisor ? null : channel;
+		ChatReferenceKey key = new ChatReferenceKey(ores, resSubPath, refChannel);
+		// chat with this resource is already ongoing
+		if(chats.containsKey(key)) {
+			if(StringHelper.containsNonWhitespace(channel)) {
+				chats.get(key).getController().switchChannel(channel);
+			}
+			return;
+		}
+		
+		int offsetX = 100 + (chats.size() * 10);
+		int offsetY = 100 + (chats.size() * 5);
+		ChatController chat = new ChatController(ureq, getWindowControl(), ores, resSubPath, channel,
+				config, privateReceiverKey, vip, persistent, rosterDisplay, width, height, offsetX, offsetY);
+		listenTo(chat);
+		
+		Component chatCmp = chat.getInitialComponent();
+		getWindowControl().addInstanteMessagePanel(chatCmp);
+		chats.put(key, new ChatReference(chat, chatCmp, config.isAssessmentAllowed()));
+	}
+
+	/**
+	 * check whether already a chat is running for this buddy
+	 * @param jabberId
+	 * @return
+	 */
+	public boolean hasRunningChat(OLATResourceable chatResource, String resSubPath, String channel) {
+		return chats.containsKey(new ChatReferenceKey(chatResource, resSubPath, channel))
+				|| chats.containsKey(new ChatReferenceKey(chatResource, resSubPath, null));
 	}
 	
 	private void processInstantMessageEvent(InstantMessagingEvent imEvent) {
-		if (imEvent.getCommand().equals("message")) {
+		if (InstantMessagingEvent.MESSAGE.equals(imEvent.getCommand())) {
 			//user receives messages from an other user
 			Long fromId = imEvent.getFromId();
-			if(!chatMgrCtrl.hasRunningChat(imEvent.getChatResource())) {
-				//only show icon if no chat running or msg from other user
-				//add follow up message to info holder
-				if (!showNewMessageHolder.contains(fromId)) {
-					Buddy buddy = imService.getBuddyById(fromId);
-					if(Presence.available.name().equals(imStatus) && !inAssessment) {
-						doOpenPrivateChat(new SyntheticUserRequest(getIdentity(), getLocale()), buddy);
-					} else {
-						showNewMessageHolder.add(fromId);
-						createShowNewMessageLink(buddy);
-					}
+			//only show icon if no chat running or msg from other user
+			//add follow up message to info holder
+			if(!hasRunningChat(imEvent.getChatResource(), imEvent.getResSubPath(), imEvent.getChannel())
+					&& !showNewMessageHolder.contains(fromId)) {
+				Buddy buddy = imService.getBuddyById(fromId);
+				if(Presence.available.name().equals(imStatus) && !inAssessment) {
+					createChat(new SyntheticUserRequest(getIdentity(), getLocale()), buddy);
+				} else {
+					showNewMessageHolder.add(fromId);
+					createShowNewMessageLink(buddy);
 				}
 			}
 		}
@@ -402,9 +489,67 @@ public class InstantMessagingMainController extends BasicController implements G
 		link.registerForMousePositionEvent(true);
 		link.setIconLeftCSS("o_icon o_icon_message o_icon-lg");
 		String buddyName = StringHelper.escapeHtml(buddy.getName());
-		link.setTooltip(translate("im.new.message", new String[]{ buddyName }));
+		link.setTooltip(translate("im.new.message", buddyName));
 		link.setUserObject(buddy);
 		newMsgIcon.put(buddy.getIdentityKey().toString(), link);
 		return link;
+	}
+	
+
+	private static class ChatReferenceKey {
+		
+		private final OLATResourceable ores;
+		private final String resSubPath;
+		private final String channel;
+		
+		public ChatReferenceKey(OLATResourceable ores, String resSubPath, String channel) {
+			this.ores = ores;
+			this.resSubPath = resSubPath;
+			this.channel = channel;
+		}
+	
+		@Override
+		public int hashCode() {
+			return ores.getResourceableTypeName().hashCode() + ores.getResourceableId().hashCode()
+					+ (channel == null ? -26354 : channel.hashCode())
+					+ (resSubPath == null ? 291 : resSubPath.hashCode());
+		}
+	
+		@Override
+		public boolean equals(Object obj) {
+			if(obj instanceof ChatReferenceKey) {
+				ChatReferenceKey key = (ChatReferenceKey)obj;
+				return Objects.equals(ores.getResourceableTypeName(), key.ores.getResourceableTypeName())
+						&& Objects.equals(ores.getResourceableId(), key.ores.getResourceableId())
+						&& Objects.equals(resSubPath, key.resSubPath)
+						&& Objects.equals(channel, key.channel);
+			}
+			return false;
+		}
+	}
+	
+	private static class ChatReference {
+		
+		private final ChatController controller;
+		private final Component initialComponent;
+		private final boolean assessmentAllowed;
+		
+		public ChatReference(ChatController controller, Component initialComponent, boolean assessmentAllowed) {
+			this.controller = controller;
+			this.initialComponent = initialComponent;
+			this.assessmentAllowed = assessmentAllowed;
+		}
+
+		public ChatController getController() {
+			return controller;
+		}
+
+		public Component getInitialComponent() {
+			return initialComponent;
+		}
+
+		public boolean isAssessmentAllowed() {
+			return assessmentAllowed;
+		}
 	}
 }

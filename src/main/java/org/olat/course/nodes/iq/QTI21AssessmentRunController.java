@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -880,8 +881,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 		
 		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(testEntry);
-		return deliveryOptions.getPassedType(cutValue);
+		QTI21DeliveryOptions testDeliveryOptions = qtiService.getDeliveryOptions(testEntry);
+		return testDeliveryOptions.getPassedType(cutValue);
 	}
 	
 	private QTI21DeliveryOptions getDeliveryOptions() {
@@ -907,6 +908,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions.setDigitalSignatureMail(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, testOptions.isDigitalSignatureMail()));
 		}
 		
+		String roles = config.getStringValue(IQEditController.CONFIG_KEY_IM_NOTIFICATIONS_ROLES);
+		finalOptions.setCanStartChat(config.getBooleanSafe(IQEditController.CONFIG_KEY_IM_PARTICIPANT_CAN_START, false));
+		finalOptions.setChatCoaches(roles != null && roles.contains(GroupRoles.coach.name()));
+		finalOptions.setChatOwners(roles != null && roles.contains(GroupRoles.owner.name()));
 		
 		if(!QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT.equals(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
 			//if this setting is set, override the summary

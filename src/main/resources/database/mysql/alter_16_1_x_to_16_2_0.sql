@@ -11,3 +11,24 @@ create index f_exp_date_idx on o_vfs_metadata (f_expiration_date);
 -- Task
 alter table o_ex_task add column e_progress decimal default null;
 alter table o_ex_task add column e_checkpoint varchar(255) default null;
+
+-- IM
+alter table o_im_roster_entry add column r_ressubpath varchar(255) default null;
+alter table o_im_roster_entry add column r_channel varchar(255) default null;
+alter table o_im_roster_entry add column r_persistent bool not null default false;
+alter table o_im_roster_entry add column r_active bool not null default true;
+alter table o_im_roster_entry add column r_read_upto timestamp default null;
+
+create index idx_im_rost_sub_idx on o_im_roster_entry (r_resid,r_resname,r_ressubpath);
+
+alter table o_im_message add column msg_ressubpath varchar(255) default null;
+alter table o_im_message add column msg_channel varchar(255) default null;
+alter table o_im_message add column msg_type varchar(8) not null default 'text';
+
+create index idx_im_msg_channel_idx on o_im_message (msg_resid,msg_resname,msg_ressubpath,msg_channel);
+
+alter table o_im_notification add column chat_ressubpath varchar(255) default null;
+alter table o_im_notification add column chat_channel varchar(255) default null;
+alter table o_im_notification add column chat_type varchar(16) not null default 'message';
+
+create index idx_im_chat_typed_idx on o_im_notification (fk_to_identity_id,chat_type);

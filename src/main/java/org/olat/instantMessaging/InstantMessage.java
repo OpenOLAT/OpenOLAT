@@ -44,5 +44,7 @@ public interface InstantMessage {
 	public String getBody();
 	
 	public boolean isFromMe(Identity me);
+	
+	public InstantMessageTypeEnum getType();
 
 }

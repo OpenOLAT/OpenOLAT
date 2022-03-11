@@ -12,8 +12,8 @@
 	<h5>$r.translate("groupchat.roster")</h5>
 	<ul class="list-unstyled">
 	#foreach($entry in $roster.entries)
-		<li class=" #if($entry.anonym) o_anonymous #elseif($entry.vip) o_vip #end ">
-			<i class="o_icon o_icon-fw #if($entry.anonym) o_icon_user_anonymous #elseif($entry.vip) o_icon_user_vip #else o_icon_user #end "></i> 
+		<li class="#if($entry.anonym) o_anonymous #elseif($entry.vip) o_vip #end">
+			<i class="o_icon o_icon-fw #if($entry.anonym) o_icon_user_anonymous #elseif($entry.vip) o_icon_user_vip #else o_icon_user #end "> </i>
 			<span>$r.escapeHtml(${entry.name})</span>
 		</li>			
 	#end

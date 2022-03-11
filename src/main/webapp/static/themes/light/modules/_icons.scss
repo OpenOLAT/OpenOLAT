@@ -75,6 +75,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_catalog_sub:before { content: $fa-var-folder; }
 .o_icon_certificate:before { content: $fa-var-certificate;}
 .o_icon_chat:before { content: $fa-var-comment-o; }
+.o_icon_chats:before { content: $fa-var-comments-o; }
 .o_icon_check:before { content: $fa-var-check; }
 .o_icon_check_disabled:before { content: $fa-var-ban; }
 .o_icon_check_mixed:before { content: $fa-var-minus-square-o; }
@@ -298,6 +299,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_radio_on:before { content: $fa-var-check-circle-o;}
 .o_icon_rating_on:before { content: $fa-var-star;}
 .o_icon_rating_off:before { content: $fa-var-star-o;}
+.o_icon_reactivate:before { content: $fa-var-level-up; }
 .o_icon_read:before { content: $fa-var-circle-o; }
 .o_icon_readonly:before { content: $fa-var-edit; color:red;}
 .o_icon_readwrite:before { content: $fa-var-edit; }

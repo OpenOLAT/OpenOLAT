@@ -48,35 +48,71 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SendMessageForm extends FormBasicController {
 
 	private TextElement msg;
+	private FormLink closeChatLink;
+	private FormLink reactivateChatLink;
 	private FormLink submit;
 	private final String panelId;
+	private final ChatViewConfig chatViewConfig;
 	
 	@Autowired
 	private DB dbInstance;
 
-	public SendMessageForm(UserRequest ureq, WindowControl wControl, String panelId) {
+	public SendMessageForm(UserRequest ureq, WindowControl wControl, ChatViewConfig chatViewConfig, String panelId) {
 		super(ureq, wControl, "sendMessageForm");
 		this.panelId = panelId;
+		this.chatViewConfig = chatViewConfig;
 		initForm(ureq);
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		msg = uifactory.addTextElement("input_" + panelId, "msg", null, 1024, null, formLayout);
+		msg = uifactory.addTextElement("input_" + panelId, "msg", null, 4096, null, formLayout);
+		msg.setDomReplacementWrapperRequired(false);
+		msg.setPlaceholderText(chatViewConfig.getSendMessagePlaceholder());
 		msg.setFocus(true);//always focus to the message field
 		msg.setDisplaySize(40);
-		submit = uifactory.addFormLink("subm", "msg.send", "msg.send", formLayout, Link.BUTTON);
+		
+		submit = uifactory.addFormLink("subm", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+		submit.setElementCssClass("o_im_send_button");
+		submit.setAriaLabel(translate("msg.send"));
+		submit.setTitle(translate("msg.send"));
+		submit.setIconLeftCSS("o_icon o_icon-fw o_icon_show_send");
+		
+		closeChatLink = uifactory.addFormLink("close.chat", formLayout, Link.LINK);
+		closeChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_check_on");
+		closeChatLink.setVisible(chatViewConfig.isCanClose());
+		reactivateChatLink = uifactory.addFormLink("reactivate.chat", formLayout, Link.LINK);
+		reactivateChatLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reactivate");
+		reactivateChatLink.setVisible(chatViewConfig.isCanReactivate());
+	}
+	
+	@Override
+	protected void formOK(UserRequest ureq) {
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == submit) {
 			flc.getRootForm().submit(ureq);
+		} else if(closeChatLink == source) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+		} else if(reactivateChatLink == source) {
+			fireEvent(ureq, Event.BACK_EVENT);
+		}
+	}
+	
+	protected void setCloseableChat(boolean message, boolean close, boolean reactivate) {
+		updateVisibility(msg, message);
+		updateVisibility(submit, message);
+		updateVisibility(closeChatLink, close && chatViewConfig.isCanClose());
+		updateVisibility(reactivateChatLink, reactivate && chatViewConfig.isCanReactivate());
+	}
+	
+	private void updateVisibility(FormItem item, boolean visible) {
+		if(item.isVisible() != visible) {
+			item.setVisible(visible);
+			flc.setDirty(true);
 		}
 	}
 

@@ -148,6 +148,8 @@ import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.ui.ChatViewConfig;
+import org.olat.instantMessaging.ui.RosterFormDisplay;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonMeetingDefaultConfiguration;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonRunController;
@@ -2256,7 +2258,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void launchChat(UserRequest ureq) {
 		boolean vip = reSecurity.isCoach() || reSecurity.isEntryAdmin();
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-		OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, course.getCourseTitle(), vip);
+
+		OpenInstantMessageEvent event = new OpenInstantMessageEvent(course, null, null, ChatViewConfig.room(course.getCourseTitle()), vip, false, RosterFormDisplay.left);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	

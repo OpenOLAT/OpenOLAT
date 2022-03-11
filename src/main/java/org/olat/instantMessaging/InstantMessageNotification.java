@@ -37,6 +37,12 @@ public interface InstantMessageNotification {
 	
 	public Long getFromIdentityKey();
 	
+	public Long getToIdentityKey();
+	
 	public OLATResourceable getChatResource();
+	
+	public String getResSubPath();
+	
+	public String getChannel();
 
 }

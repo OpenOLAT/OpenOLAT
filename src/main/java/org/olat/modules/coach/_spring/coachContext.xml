@@ -23,5 +23,19 @@
 		</property>
 		<property name="parentTreeNodeIdentifier" value="eAssessmentParent" /> 
 	</bean>
+	
+	<!-- Notifications -->
+	<bean class="org.olat.modules.coach.CoachingUserToolExtension" init-method="initExtensionPoints">
+		<property name="order" value="117" />
+		<property name="navigationKey" value="coaching-notif" />
+		<property name="translationPackage" value="org.olat.modules.coach.ui" />
+		<property name="i18nActionKey" value="coaching.notifications"/>
+		<property name="i18nDescriptionKey" value="coaching.notifications"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
 </beans>
 	

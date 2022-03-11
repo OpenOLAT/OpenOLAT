@@ -180,6 +180,7 @@ import org.junit.runners.Suite;
 	org.olat.repository.RepositoryEntryImportExportTest.class,
 	org.olat.repository.wizard.RepositoryWizardServiceTest.class,
 	org.olat.instantMessaging.InstantMessageDAOTest.class,
+	org.olat.instantMessaging.InstantMessageNotificationDAOTest.class,
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,
 	org.olat.instantMessaging.RosterDAOTest.class,
 	org.olat.instantMessaging.InstantMessageServiceTest.class,

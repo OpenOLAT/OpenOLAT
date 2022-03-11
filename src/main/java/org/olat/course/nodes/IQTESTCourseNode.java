@@ -645,6 +645,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			config.set(IQEditController.CONFIG_KEY_SUMMARY, QTI21Constants.QMD_ENTRY_SUMMARY_COMPACT);
 			config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, Boolean.TRUE);
 			config.set(IQEditController.CONFIG_KEY_CONFIG_REF, Boolean.TRUE);
+			// chat
+			config.set(IQEditController.CONFIG_KEY_IM_NOTIFICATIONS_ROLES, "coach");
+			config.set(IQEditController.CONFIG_KEY_IM_PARTICIPANT_CAN_START, Boolean.FALSE);
 		} else {
 			int version = config.getConfigurationVersion();
 			if (version < CURRENT_CONFIG_VERSION) {

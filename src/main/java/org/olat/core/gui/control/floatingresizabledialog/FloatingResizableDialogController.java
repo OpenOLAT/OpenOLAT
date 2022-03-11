@@ -60,17 +60,6 @@ public class FloatingResizableDialogController extends BasicController {
 	private int height  = -1;
 	
 	/**
-	 * create a panel with default sizes and position
-	 * @param ureq
-	 * @param wControl
-	 * @param content
-	 * @param title sets a panel title
-	 */
-	public FloatingResizableDialogController( UserRequest ureq, WindowControl wControl, Component content, String title) {
-		this(ureq, wControl, content, title, 200, 150, 300, 300, null, "", false, false);
-	}
-	
-	/**
 	 * creates a panel with a single content component
 	 * @param ureq
 	 * @param wControl
@@ -84,34 +73,12 @@ public class FloatingResizableDialogController extends BasicController {
 	 */
 	public FloatingResizableDialogController( UserRequest ureq, WindowControl wControl, Component content, String title, int initialWidth, int initialHeight,
 			int offsetX, int offsetY, boolean resizable, boolean autoScroll) {
-		this(ureq, wControl, content, title, initialWidth, initialHeight, offsetX, offsetY, null, "", resizable, autoScroll);
+		this(ureq, wControl, content, title, null, initialWidth, initialHeight, offsetX, offsetY, resizable, autoScroll, false, null);
 	}
-
-	/**
-	 * create a panel with an optional additions visual component which is collabsible
-	 * @param ureq
-	 * @param wControl
-	 * @param content
-	 * @param title
-	 * @param initialWidth
-	 * @param initialHeight
-	 * @param offsetX
-	 * @param offsetY
-	 * @param collabsibleContent
-	 * @param collabsibleContentPanelTitel
-	 * @param autoScroll
-	 * @param resizable
-	 */
+	
 	public FloatingResizableDialogController(UserRequest ureq, WindowControl wControl,
-			Component content, String title,
-			int initialWidth, int initialHeight,
-			int offsetX, int offsetY, Component collabsibleContent, String collabsibleContentPanelTitel, boolean resizable, boolean autoScroll) {
-		this(ureq, wControl, content, title, initialWidth, initialHeight, offsetX, offsetY, collabsibleContent, collabsibleContentPanelTitel, resizable, autoScroll, false, null);
-	}
-		
-	public FloatingResizableDialogController(UserRequest ureq, WindowControl wControl,
-			Component content, String title, int initialWidth, int initialHeight, int offsetX, int offsetY,
-			Component collabsibleContent, String collabsibleContentPanelTitel, boolean resizable, boolean autoScroll, boolean constrain, String uniquePanelName) {
+			Component content, String title, String cssClass, int initialWidth, int initialHeight, int offsetX, int offsetY,
+			boolean resizable, boolean autoScroll, boolean constrain, String uniquePanelName) {
 		
 		super(ureq, wControl);
 		
@@ -122,10 +89,7 @@ public class FloatingResizableDialogController extends BasicController {
 		
 		wrapper = createVelocityContainer("index");
 		wrapper.put("panelContent", content);
-		if (collabsibleContent != null) {
-			wrapper.put("collapsibleContent", collabsibleContent);
-		}
-		
+
 		String escapedTitle = StringHelper.escapeHtml(title);
 		escapedTitle = StringHelper.escapeJavaScript(title);
 		
@@ -136,10 +100,10 @@ public class FloatingResizableDialogController extends BasicController {
 		wrapper.contextPut("offsetX", this.offsetX);
 		wrapper.contextPut("offsetY", this.offsetY);
 		wrapper.contextPut("title", escapedTitle);
-		wrapper.contextPut("collabsibleContentPanelTitel", StringHelper.escapeHtml(collabsibleContentPanelTitel));
+		wrapper.contextPut("cssClass", cssClass);
 		wrapper.contextPut("resizable", resizable);
 		wrapper.contextPut("constrain", constrain);
-		wrapper.contextPut("scroll", Boolean.valueOf(autoScroll).toString());
+		wrapper.contextPut("scroll", Boolean.toString(autoScroll));
 		if (wControl.getWindowBackOffice().getGlobalSettings().getAjaxFlags().isIframePostEnabled()) {
 			wrapper.contextPut("renderOnce", new ConsumableBoolean(true));//panels should only be rendered once in ajax mode, otherwise they get doubled (e.g. switching tabs between open courses)
 			wrapper.contextPut("renderAlways", Boolean.FALSE);
@@ -165,9 +129,6 @@ public class FloatingResizableDialogController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if ("geometry".equals(event.getCommand())) {

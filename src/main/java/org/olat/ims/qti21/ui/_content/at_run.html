@@ -4,6 +4,10 @@
 		<div class="o_button_group o_button_group_right">
 		#set( $showClose = ${qtiWorksStatus.mayCloseTest()} && $r.available("closeTest") && $r.visible("closeTest") )
 		
+		#if($r.available("chatTest") && $r.visible("chatTest"))
+			$r.render("chatTest")
+		#end
+		
 		#if(${qtiWorksStatus.mayCancelTest()} && $r.available("cancelTest") && $r.visible("cancelTest") && !$showClose)
 			$r.render("cancelTest")
 		#end

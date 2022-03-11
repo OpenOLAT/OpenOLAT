@@ -100,6 +100,16 @@ public class StackedBusinessWindowControl implements WindowControl {
 	}
 
 	@Override
+	public void addInstanteMessagePanel(Component comp) {
+		origWControl.addInstanteMessagePanel(comp);
+	}
+
+	@Override
+	public boolean removeInstanteMessagePanel(Component comp) {
+		return origWControl.removeInstanteMessagePanel(comp);
+	}
+
+	@Override
 	public void pushFullScreen(Controller ctrl, String bodyClass) {
 		origWControl.pushFullScreen(ctrl, bodyClass);
 	}

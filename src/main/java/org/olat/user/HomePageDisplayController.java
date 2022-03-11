@@ -198,7 +198,7 @@ public class HomePageDisplayController extends BasicController {
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(imLink == source) {
 			Buddy buddy = (Buddy)imLink.getUserObject();
-			OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+			OpenInstantMessageEvent e = new OpenInstantMessageEvent(buddy);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 		}
 	}

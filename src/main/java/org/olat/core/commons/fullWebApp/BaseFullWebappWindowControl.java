@@ -83,6 +83,16 @@ class BaseFullWebappWindowControl implements WindowControl {
 	}
 
 	@Override
+	public void addInstanteMessagePanel(Component comp) {
+		webappCtrl.getCurrentGuiStack().addInstantMessagePanel(comp);
+	}
+
+	@Override
+	public boolean removeInstanteMessagePanel(Component comp) {
+		return webappCtrl.getCurrentGuiStack().removeInstantMessagePanel(comp);
+	}
+
+	@Override
 	public void pushFullScreen(Controller ctrl, String bodyClass) {
 		ChiefController cc = getWindowBackOffice().getChiefController();
 		String businessPath = ctrl.getWindowControlForDebug().getBusinessControl().getAsString();

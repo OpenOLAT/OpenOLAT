@@ -19,8 +19,9 @@
  */
 package org.olat.instantMessaging;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,10 +52,11 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	
 	@Test
 	public void testCreateMessage() {
-		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-1", System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-1-");
+		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-im-dao-1", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-dao-1");
 		String from = userManager.getUserDisplayName(id);
-		InstantMessage msg = imDao.createMessage(id, from, false, "Hello world", chatResources);
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello world",
+				chatResources, null, null, InstantMessageTypeEnum.text);
 		Assert.assertNotNull(msg);
 		Assert.assertNotNull(msg.getKey());
 		Assert.assertNotNull(msg.getCreationDate());
@@ -64,12 +66,13 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testLoadMessage_byId() {
+	public void testLoadMessageById() {
 		//create a message
-		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-2-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-2-");
+		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-im-dao-2", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-dao-2");
 		String from = userManager.getUserDisplayName(id);
-		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by id", chatResources);
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by id",
+				chatResources, null, null, InstantMessageTypeEnum.text);
 		Assert.assertNotNull(msg);
 		dbInstance.commitAndCloseSession();
 		
@@ -81,17 +84,18 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testLoadMessage_byResource() {
+	public void testLoadMessageByResource() {
 		//create a message
-		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-test-3-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-3-");
+		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-im-dao-3", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-dao-3");
 		String from = userManager.getUserDisplayName(id);
-		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by resource", chatResources);
+		InstantMessage msg = imDao.createMessage(id, from, false, "Hello load by resource",
+				chatResources, null, null, InstantMessageTypeEnum.text);
 		Assert.assertNotNull(msg);
 		dbInstance.commitAndCloseSession();
 		
 		//load the message
-		List<InstantMessage> messageList = imDao.getMessages(chatResources, null, 0, -1);
+		List<InstantMessage> messageList = imDao.getMessages(chatResources, null, null, null, 0, -1);
 		Assert.assertNotNull(messageList);
 		Assert.assertEquals(1, messageList.size());
 		Assert.assertEquals(msg.getKey(), messageList.get(0).getKey());
@@ -99,74 +103,21 @@ public class InstantMessageDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testCreateNotification() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-4", System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-3-");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-9-");
-		InstantMessageNotification notification = imDao.createNotification(id2.getKey(), id.getKey(), chatResource);
-		Assert.assertNotNull(notification);
-		Assert.assertNotNull(notification.getKey());
-		Assert.assertNotNull(notification.getCreationDate());
-		dbInstance.commitAndCloseSession();
-	}
-	
-	@Test
-	public void testDeleteNotification() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-5", System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-3-");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-7-");
-		InstantMessageNotification notification = imDao.createNotification(id2.getKey(), id.getKey(), chatResource);
-		Assert.assertNotNull(notification);
+	public void testLoadMessageByChannel() {
+		//create a message
+		OLATResourceable chatResources = OresHelper.createOLATResourceableInstance("unit-im-dao-4", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-dao-4");
+		String from = userManager.getUserDisplayName(id);
+		InstantMessage msgNoChannel = imDao.createMessage(id, from, false, "Hello load by resource",
+				chatResources, null, null, InstantMessageTypeEnum.text);
+		InstantMessage msgWithChannel = imDao.createMessage(id, from, false, "Hello load by resource",
+				chatResources, "sub-path", "channel", InstantMessageTypeEnum.text);
+		Assert.assertNotNull(msgNoChannel);
 		dbInstance.commitAndCloseSession();
 		
-		imDao.deleteNotification(notification.getKey());
-		dbInstance.commitAndCloseSession();
-	}
-	
-	@Test
-	public void testDeleteNotification_ByIdentity() {
-		OLATResourceable chatResource1 = OresHelper.createOLATResourceableInstance("unit-test-6", System.currentTimeMillis());
-		OLATResourceable chatResource2 = OresHelper.createOLATResourceableInstance("unit-test-7", System.currentTimeMillis());
-		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-5-");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-6-");
-		InstantMessageNotification notification_1_1 = imDao.createNotification(id2.getKey(), id1.getKey(), chatResource1);
-		InstantMessageNotification notification_1_2 = imDao.createNotification(id2.getKey(), id1.getKey(), chatResource2);
-		InstantMessageNotification notification_2_1 = imDao.createNotification(id1.getKey(), id2.getKey(), chatResource1);
-		InstantMessageNotification notification_2_2 = imDao.createNotification(id1.getKey(), id2.getKey(), chatResource2);
-		dbInstance.commitAndCloseSession();
-		
-		//delete notifications 1 - 1
-		imDao.deleteNotification(id1, chatResource1);
-		dbInstance.commitAndCloseSession();
-		
-		//check the rest
-		List<InstantMessageNotification> notifications_1 = imDao.getNotifications(id1);
-		Assert.assertNotNull(notifications_1);
-		Assert.assertEquals(1, notifications_1.size());
-		Assert.assertFalse(notifications_1.contains(notification_1_1));
-		Assert.assertTrue(notifications_1.contains(notification_1_2));
-		
-		List<InstantMessageNotification> notifications_2 = imDao.getNotifications(id2);
-		Assert.assertNotNull(notifications_2);
-		Assert.assertEquals(2, notifications_2.size());
-		Assert.assertTrue(notifications_2.contains(notification_2_1));
-		Assert.assertTrue(notifications_2.contains(notification_2_2));
-	}
-	
-	@Test
-	public void testLoadNotificationByIdentity() {
-		OLATResourceable chatResource1 = OresHelper.createOLATResourceableInstance("unit-test-4", System.currentTimeMillis());
-		OLATResourceable chatResource2 = OresHelper.createOLATResourceableInstance("unit-test-5", System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-4-");
-		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-10-");
-		InstantMessageNotification notification1 = imDao.createNotification(id2.getKey(), id.getKey(), chatResource1);
-		InstantMessageNotification notification2 = imDao.createNotification(id2.getKey(),id.getKey(), chatResource2);
-		dbInstance.commitAndCloseSession();
-		
-		List<InstantMessageNotification> notifications = imDao.getNotifications(id);
-		Assert.assertNotNull(notifications);
-		Assert.assertEquals(2, notifications.size());
-		Assert.assertTrue(notifications.contains(notification1));
-		Assert.assertTrue(notifications.contains(notification2));
+		//load the message
+		List<InstantMessage> messageList = imDao.getMessages(chatResources, "sub-path", "channel", null, 0, -1);
+		assertThat(messageList)
+			.containsExactly(msgWithChannel);
 	}
 }

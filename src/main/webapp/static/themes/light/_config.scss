@@ -732,7 +732,13 @@ $o-im-chat-load-font-size		: $font-size-small !default;
 $o-im-chat-history-border		: $gray-lighter !default;
 $o-im-chat-message-bg			: #fff !default;
 $o-im-chat-message-bg-alt		: #F4F4F4 !default;
-$o-im-chat-message-border		: #eee !default;
+$o-im-chat-message-border			: #eee !default;
+$o-im-chat-message-bg-me			: $gray-lighter !default;
+$o-im-chat-message-bg-status		: $state-warning-bg !default;
+$o-im-chat-message-border-radius	: $border-radius-base !default;
+$o-im-chat-roster-bg				: lighten($gray-lighter, 5%) !default;
+$o-im-chat-border				: $gray-lighter !default;
+
 $o-im-chat-from-color			: $gray-light !default;
 $o-im-chat-from-font-size		: floor($font-size-base * 0.9) !default;
 $o-im-chat-date-color			: $text-muted !default;

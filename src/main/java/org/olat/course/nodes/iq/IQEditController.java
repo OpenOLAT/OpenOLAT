@@ -63,6 +63,7 @@ import org.olat.repository.RepositoryManager;
 public class IQEditController extends ActivateableTabbableDefaultController {
 
 	private static final String PANE_TAB_IQLAYOUTCONFIG = "pane.tab.iqconfig.layout";
+	private static final String PANE_TAB_IQ_COMMUNICATION = "pane.tab.iqconfig.communication";
 	
 	public static final String PANE_TAB_IQCONFIG_SURV = "pane.tab.iqconfig.surv";
 	public static final String PANE_TAB_IQCONFIG_SELF = "pane.tab.iqconfig.self";
@@ -169,7 +170,10 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 	public static final String CONFIG_KEY_RESULTS_PASSED_END_DATE_REL_TO = "passedResultsEndDateRelTo";
 	public static final String CONFIG_KEY_RESULT_ON_FINISH = "showResultsOnFinish";
 	public static final String CONFIG_KEY_RESULT_ON_HOME_PAGE = "showResultsOnHomePage";
-
+	
+	public static final String CONFIG_KEY_IM_PARTICIPANT_CAN_START = "participantCanStartCommunication";
+	public static final String CONFIG_KEY_IM_NOTIFICATIONS_ROLES = "notificationCommunicationRoles";
+	
 	public static final String CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT = MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT;
 	public static final String CONFIG_KEY_DATE_DEPENDENT_TEST = "dateDependentTest";
 	public static final String CONFIG_KEY_START_TEST_DATE = "resultsStartTestDate";
@@ -209,6 +213,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 	
 	private IQConfigurationController configurationCtrl;
 	private GradingInformationsController gradingInfosCtrl;
+	private IQCommunicationConfigurationController communicationConfigurationCtrl;
 	private IQLayoutConfigurationController layoutConfigurationCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
 
@@ -313,7 +318,9 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 		configurationCtrl = new IQConfigurationController(ureq, getWindowControl(), stackPanel, course, courseNode, type);
 		listenTo(configurationCtrl);
 		layoutConfigurationCtrl = new IQLayoutConfigurationController(ureq, getWindowControl(), course, courseNode, type);
-		listenTo(layoutConfigurationCtrl);	
+		listenTo(layoutConfigurationCtrl);
+		communicationConfigurationCtrl = new IQCommunicationConfigurationController(ureq, getWindowControl(), courseNode);
+		listenTo(communicationConfigurationCtrl);
 		if (QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
 			highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), moduleConfiguration, course);
 			listenTo(highScoreNodeConfigController);
@@ -348,6 +355,10 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 				configurationCtrl.updateEditController(urequest, false);
 				layoutConfigurationCtrl.updateEditController(urequest);
 			}
+		} else if(source == communicationConfigurationCtrl) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
 	}
 	
@@ -356,6 +367,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(paneTabIQConfiguration), "o_sel_repo_entry", configurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), "o_sel_qti_layout", layoutConfigurationCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_IQ_COMMUNICATION), communicationConfigurationCtrl.getInitialComponent());
 		if (QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
 			tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		}

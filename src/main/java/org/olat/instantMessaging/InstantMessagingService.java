@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.GenericEventListener;
@@ -31,6 +32,7 @@ import org.olat.course.nodes.iq.AssessmentEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyGroup;
 import org.olat.instantMessaging.model.BuddyStats;
+import org.olat.instantMessaging.model.RosterChannelInfos;
 
 /**
  * 
@@ -44,9 +46,11 @@ public interface InstantMessagingService {
 	public static final String PRESENCE_MODE_DND = "do not disturb";
 	public static final String PRESENCE_MODE_UNAVAILABLE = "unavailable";
 	
+	public static final String PERSONAL_EVENT_ORES_NAME = "PersonalChatNotification";
+	
 	public static final OLATResourceable TOWER_EVENT_ORES = OresHelper.createOLATResourceableType("InstantMessagingTower");
 	public static final OLATResourceable ASSESSMENT_EVENT_ORES = OresHelper.createOLATResourceableType(AssessmentEvent.class);
-	
+
 	/**
 	 * 
 	 * @param me
@@ -61,11 +65,13 @@ public interface InstantMessagingService {
 	 * @param chatResource
 	 * @return
 	 */
-	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource);
+	public List<Buddy> getBuddiesListenTo(OLATResourceable chatResource, String resSubPath, String channel);
 	
 	public BuddyStats getBuddyStats(Identity me);
 	
 	public Map<Long,String> getBuddyStatus(List<Long> identityKeys);
+	
+	public boolean isOnline(IdentityRef identity);
 	
 	/**
 	 * Enter a chat conversation
@@ -73,17 +79,29 @@ public interface InstantMessagingService {
 	 * @param chatResource
 	 * @param listener
 	 */
-	public void listenChat(Identity identity, OLATResourceable chatResource, String nickName, boolean anonym, boolean asVip, GenericEventListener listener);
+	public void listenChat(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
+			String nickName, boolean anonym, boolean asVip, boolean persistent, GenericEventListener listener);
 	
 	/**
 	 * Go away
 	 * @param chatResource
 	 * @param listener
 	 */
-	public void unlistenChat(Identity identity, OLATResourceable chatResource, GenericEventListener listener);
+	public void unlistenChat(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
+			GenericEventListener listener);
 	
 	/**
-	 * Factory method to build the OLATResourceable for privat chat
+	 * Set the status to close and notify people.
+	 * 
+	 * @param identity The identity which ends the channel
+	 * @param chatResource The chat resource
+	 * @param resSubPath The resource sub-path
+	 * @param channel The channel
+	 */
+	public void endChannel(Identity identity, OLATResourceable chatResource, String resSubPath, String channel);
+	
+	/**
+	 * Factory method to build the OLATResourceable for private chat
 	 * @param identityKey1
 	 * @param identityKey2
 	 * @return
@@ -92,11 +110,26 @@ public interface InstantMessagingService {
 	
 
 	
-	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym,
-			String body, OLATResourceable chatResource);
+	public InstantMessage sendMessage(Identity from, String fromNickName, boolean anonym, String body, InstantMessageTypeEnum type,
+			OLATResourceable chatResource, String resSubPath, String channel, List<IdentityRef> toNotifyList);
 	
+	public InstantMessage sendStatusMessage(Identity from, String fromNickName, boolean anonym, InstantMessageTypeEnum type,
+			OLATResourceable chatResource, String resSubPath, String channel);
+	
+	
+	/**
+	 * One to one/direct messaging.
+	 * 
+	 * @param from The identity which send the message
+	 * @param toIdentityKey The receiver of the message
+	 * @param body The text
+	 * @param chatResource The resourceable identifier of the chat
+	 * @return
+	 */
 	public InstantMessage sendPrivateMessage(Identity from, Long toIdentityKey,
 			String body, OLATResourceable chatResource);
+	
+	public void updateLastSeen(Identity identity, OLATResourceable chatResource, String resSubPath, String channel);
 	
 	/**
 	 * 
@@ -115,7 +148,8 @@ public interface InstantMessagingService {
 	 * @param markAsRead
 	 * @return
 	 */
-	public List<InstantMessage> getMessages(Identity me, OLATResourceable ores, Date from, int firstResult, int maxResults, boolean markAsRead);
+	public List<InstantMessage> getMessages(Identity me, OLATResourceable ores, String resSubPath, String channel,
+			Date from, int firstResult, int maxResults, boolean markAsRead);
 	
 	/**
 	 * Delete the chat log
@@ -123,14 +157,48 @@ public interface InstantMessagingService {
 	 */
 	public void deleteMessages(OLATResourceable ores);
 	
-	public void sendPresence(Identity me, String nickName, boolean anonym, boolean vip, OLATResourceable chatResource);
+	public void sendPresence(Identity me, OLATResourceable chatResource, String resSubPath, String channel,
+			String nickName, boolean anonym, boolean vip, boolean persistent);
 	
 	/**
 	 * Get the notifications of message waiting to be read
 	 * @param identity
 	 * @return
 	 */
-	public List<InstantMessageNotification> getNotifications(Identity identity);
+	public List<InstantMessageNotification> getPrivateNotifications(IdentityRef identity);
+
+	public long countRequestNotifications(IdentityRef identity);
+	
+	public List<InstantMessageNotification> getRequestNotifications(IdentityRef identity);
+	
+	/**
+	 * Delete the notifications of all users for the specified chat, specified by its
+	 * resource, sub-path and channel. If sub-path or channel are null, the delelte will only
+	 * to be applied to null.
+	 * 
+	 * @param ores The chat resource
+	 * @param resSubPath The resource sub-path
+	 * @param channel The channel
+	 */
+	public void deleteNotifications(OLATResourceable ores, String resSubPath, String channel);
+	
+	
+	public List<RosterChannelInfos> getRosters(OLATResourceable ores, String resSubPath, IdentityRef me, boolean onlyMyActiveRosters);
+	
+	public RosterChannelInfos getRoster(OLATResourceable ores, String resSubPath, String channel, IdentityRef identity);
+	
+	/**
+	 * Add a permanent roster entry.
+	 * 
+	 * @param identity The identity
+	 * @param ores The resource
+	 * @param resSubPath The sub identifier
+	 * @param channel The sub-sub identifier
+	 * @param anonym If the user is anonymous
+	 * @param vip If the user is VIP (owner/coach typically)
+	 */
+	public void addToRoster(Identity identity, OLATResourceable ores, String resSubPath, String channel,
+			boolean anonym, boolean vip);
 	
 	
 	/**
@@ -161,15 +229,4 @@ public interface InstantMessagingService {
 	 */
 	public void updateStatus(Identity identity, String status);
 
-	/**
-	 * Enable chat of an user (this is a dummy implementation!!! used as marker)
-	 * @param identity
-	 */
-	public void enableChat(Identity identity);
-	
-	/**
-	 * Disable the chat function of an user (this is a dummy implementation!!! used as marker)
-	 * @param identity
-	 */
-	public void disableChat(Identity identity);
 }

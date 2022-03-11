@@ -452,6 +452,7 @@ The "important!" avoids hiding the image by bootstrap.
 .o_portrait_dummy_female_small	{background-image: url('#{$o-images-path}portrait/dummy_female_small.png') !important;}
 .o_portrait_dummy_male_small	{background-image: url('#{$o-images-path}portrait/dummy_male_small.png') !important;}
 .o_portrait_anonymous_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
+.o_portrait_openolat_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
 
 /* Date component, used in info course element, blog etc */
 .o_datecomp {
@@ -618,15 +619,6 @@ ul.o_certificates li {
 .o_tm_blue { background-color: #33FFFF; }
 .o_tm_red { background-color: #FF3333; }
 .o_tm_green { background-color: #99FF00; }
-
-/* Coaching */
-.o_coaching div#o_main_toolbar.o_toolbar {
-	margin-top: 0px;
-}
-
-.o_eff_statement_details .o_user_infos {
-	margin-top:20px;
-}
 
 /* Assessment */
 div.o_assessment_user_type_filter {

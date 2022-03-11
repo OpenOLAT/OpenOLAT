@@ -25,12 +25,9 @@
 
 package org.olat.course.nodes.iq;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.Windows;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.event.MultiUserEvent;
-import org.olat.instantMessaging.InstantMessagingModule;
-import org.olat.instantMessaging.InstantMessagingService;
 
 /**
  * 
@@ -49,7 +46,7 @@ public class AssessmentEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = -4619743031390573124L;
 
-	public static enum TYPE {STARTED, STOPPED}
+	public enum TYPE {STARTED, STOPPED}
 	
 	private TYPE eventType = TYPE.STARTED;
 	
@@ -64,14 +61,8 @@ public class AssessmentEvent extends MultiUserEvent {
 		this.eventType = type; 
 		if(TYPE.STARTED.equals(type)) {			
 			Windows.getWindows(userSession).getAssessmentStarted().incrementAndGet();
-			if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
-				CoreSpringFactory.getImpl(InstantMessagingService.class).disableChat(userSession.getIdentity());
-			}
 		} else if(TYPE.STOPPED.equals(type)) {
-			int counter = Windows.getWindows(userSession).getAssessmentStarted().decrementAndGet();
-			if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled() && counter == 0) {
-				CoreSpringFactory.getImpl(InstantMessagingService.class).enableChat(userSession.getIdentity());
-			}
+			Windows.getWindows(userSession).getAssessmentStarted().decrementAndGet();
 		}
 	}
 

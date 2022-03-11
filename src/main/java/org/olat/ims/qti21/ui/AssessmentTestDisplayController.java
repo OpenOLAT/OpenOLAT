@@ -29,13 +29,17 @@ import java.text.DecimalFormatSymbols;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -65,7 +69,8 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.Coordinator;
+import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.resource.WindowedResourceableList;
@@ -101,11 +106,19 @@ import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
 import org.olat.ims.qti21.ui.event.DeleteAssessmentTestSessionEvent;
 import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
+import org.olat.instantMessaging.CloseInstantMessagingEvent;
+import org.olat.instantMessaging.InstantMessagingEvent;
+import org.olat.instantMessaging.InstantMessagingService;
+import org.olat.instantMessaging.OpenInstantMessageEvent;
+import org.olat.instantMessaging.ui.ChatViewConfig;
+import org.olat.instantMessaging.ui.RosterFormDisplay;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -214,7 +227,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
+	private Coordinator coordinator;
+	@Autowired
+	private InstantMessagingService imService;
+	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
@@ -299,7 +318,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	        
 	        OLATResourceable sessionOres = OresHelper
 	        		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
-	        CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), sessionOres);
+	        coordinator.getEventBus().registerFor(this, getIdentity(), sessionOres);
 		}
         mainPanel = putInitialPanel(mainVC);
 	}
@@ -439,7 +458,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				
 				OLATResourceable sessionOres = OresHelper
 						.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
+				coordinator.getEventBus().deregisterFor(this, sessionOres);
 			}
 		} catch (Exception e) {
 			logError("", e);
@@ -581,6 +600,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private void doExitTest(UserRequest ureq) {
 		resourcesList.deregisterResourceable(entry, subIdent, getWindow());
 		fireEvent(ureq, new QTI21Event(QTI21Event.EXIT));
+		endChat(ureq);
 	}
 	
 	private void doCloseResults(UserRequest ureq) {
@@ -602,6 +622,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		suspendAssessmentTest(ureq.getRequestTimestamp());
 		resourcesList.deregisterResourceable(entry, subIdent, getWindow());
 		fireEvent(ureq, new Event("suspend"));
+	}
+	
+	private void endChat(UserRequest ureq) {
+		try {
+			imService.endChannel(getIdentity(), entry.getOlatResource(), subIdent, getIdentity().getKey().toString());
+			
+			CloseInstantMessagingEvent event = new CloseInstantMessagingEvent(entry.getOlatResource(), subIdent, getIdentity().getKey().toString());
+			ureq.getUserSession().getSingleUserEventCenter()
+				.fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
+		} catch (Exception e) {
+			logError("", e);
+		}
 	}
 
 	/**
@@ -2022,14 +2054,21 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
 	 *
 	 */
-	private class QtiWorksController extends AbstractQtiWorksController {
+	private class QtiWorksController extends AbstractQtiWorksController implements GenericEventListener {
 
 		private AssessmentTestFormItem qtiEl;
 		private AssessmentTreeFormItem qtiTreeEl;
 		private AssessmentTestTimerFormItem timerEl;
-		private ProgressBarItem scoreProgress, questionProgress;
-		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton, closeResultsButton;
+		private ProgressBarItem scoreProgress;
+		private ProgressBarItem questionProgress;
+		private FormLink closeTestButton;
+		private FormLink cancelTestButton;
+		private FormLink suspendTestButton;
+		private FormLink endTestPartButton;
+		private FormLink closeResultsButton;
 		private FormLink restartTest;
+		private FormLink chatButton;
+		private final EventBus singleUserEventBus;
 		
 		private String menuWidth;
 		private boolean resultsVisible = false;
@@ -2037,6 +2076,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl, "at_run");
+			
+			singleUserEventBus = ureq.getUserSession().getSingleUserEventCenter();
+			coordinator.getEventBus()
+				.registerFor(this, getIdentity(), entry.getOlatResource());
 			initPreferences(ureq);
 			initForm(ureq);
 		}
@@ -2048,6 +2091,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			} catch (Exception e) {
 				logError("", e);
 			}
+		}
+
+		@Override
+		protected void doDispose() {
+			coordinator.getEventBus()
+				.deregisterFor(this, entry.getOlatResource());
+			super.doDispose();
 		}
 
 		@Override
@@ -2105,6 +2155,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			restartTest.setTitle("assessment.test.restart.test.explanation");
 			restartTest.setElementCssClass("o_sel_restart_test");
 			restartTest.setVisible(false);
+			
+			chatButton = uifactory.addFormLink("chatTest", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+			chatButton.setIconLeftCSS("o_icon o_icon-fw o_icon_chat");
+			chatButton.setTitle(translate("assessment.test.chat.test.explanation"));
+			chatButton.setElementCssClass("o_sel_chat_test");
+			chatButton.setVisible(deliveryOptions.isChatCoaches() || deliveryOptions.isChatOwners());
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 			final ResourceLocator inputResourceLocator = 
@@ -2266,6 +2322,22 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 		
 		@Override
+		public void event(Event event) {
+			if(event instanceof InstantMessagingEvent) {
+				processInstantMessage((InstantMessagingEvent)event);
+			}
+		}
+		
+		private void processInstantMessage(InstantMessagingEvent event) {
+			if(getIdentity().getKey().toString().equals(event.getChannel())
+					&& !getIdentity().getKey().equals(event.getFromId())
+					&& entry.getOlatResource().getResourceableTypeName().equals(event.getChatResource().getResourceableTypeName())
+					&& entry.getOlatResource().getResourceableId().equals(event.getChatResource().getResourceableId())) {
+				doOpenChatWindow(null);
+			}
+		}
+
+		@Override
 		public void event(UserRequest ureq, Component source, Event event) {
 			if(source == flc.getFormItemComponent()) {
 				if("saveLeftColWidth".equals(event.getCommand())) {
@@ -2301,6 +2373,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					doCancelTest(ureq);
 				} else if(suspendTestButton == source) {
 					doSuspendTest(ureq);
+				} else if(chatButton == source) {
+					doChat();
 				} else if(source == qtiEl || source == qtiTreeEl) {
 					if(event instanceof QTIWorksAssessmentTestEvent) {
 						QTIWorksAssessmentTestEvent qwate = (QTIWorksAssessmentTestEvent)event;
@@ -2407,6 +2481,41 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			fireEvent(ureq, new Event("suspend"));
 		}
 		
+		private void doChat() {
+		
+			Set<Identity> coachingStaff = new HashSet<>();
+			if(deliveryOptions.isChatCoaches()) {
+				coachingStaff.addAll(repositoryService.getAssignedCoaches(getIdentity(), entry));
+			}
+			if(deliveryOptions.isChatOwners()) {
+				List<Identity> owners = repositoryService.getMembers(entry, RepositoryEntryRelationType.defaultGroup, GroupRoles.owner.name());
+				coachingStaff.addAll(owners);
+			}
+			
+			doOpenChatWindow(List.copyOf(coachingStaff));
+			
+			long onlineCoaches = coachingStaff.stream()
+				.filter(id -> imService.isOnline(id)).count();
+			if(onlineCoaches == 0l) {
+				showWarning("warning.no.coach.to.chat.with");
+			}
+		}
+		
+		private void doOpenChatWindow(List<IdentityRef> toNotifyRequests) {
+			ChatViewConfig  viewConfig = new ChatViewConfig();
+			viewConfig.setRoomName(translate("assessment.test.chat.test.title"));
+			viewConfig.setWelcome(translate("assessment.test.chat.welcome"));
+			viewConfig.setWelcomeFrom(translate("assessment.test.chat.welcome.from"));
+			viewConfig.setSendMessagePlaceholder(translate("assessment.test.chat.msg.placeholder"));
+			viewConfig.setToNotifyRequests(toNotifyRequests);
+			viewConfig.setCanClose(true);
+			viewConfig.setCanReactivate(false);
+			
+			OpenInstantMessageEvent event = new OpenInstantMessageEvent(entry.getOlatResource(), subIdent, getIdentity().getKey().toString(),
+					viewConfig, false, true, RosterFormDisplay.supervised);
+			singleUserEventBus.fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
+		}
+		
 		private void doSaveMenuWidth(UserRequest ureq, String newMenuWidth) {
 			this.menuWidth = newMenuWidth;
 			if(StringHelper.containsNonWhitespace(newMenuWidth)) {
@@ -2466,6 +2575,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			}
 			
 			closeResultsButton.setVisible(resultsVisible && showCloseResults);
+			if(resultsVisible && chatButton != null && chatButton.isVisible()) {
+				chatButton.setVisible(false);
+			}
 			updateQtiWorksStatus();
 			return resultsVisible;
 		}

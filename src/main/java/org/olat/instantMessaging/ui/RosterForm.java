@@ -19,7 +19,7 @@
  */
 package org.olat.instantMessaging.ui;
 
-import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,21 +49,31 @@ public class RosterForm extends FormBasicController {
 	private final String fullName;
 	private final boolean defaultAnonym;
 	private final boolean offerAnonymMode;
+	private final MapperKey avatarMapperKey;
 	private static final String[] anonKeys = new String[]{ "name", "anon"};
+	
+	@Autowired
+	private UserManager userManager;
 
-	public RosterForm(UserRequest ureq, WindowControl wControl, Roster buddyList, boolean defaultAnonym, boolean offerAnonymMode) {
-		super(ureq, wControl, "roster");
+	public RosterForm(UserRequest ureq, WindowControl wControl, Roster buddyList, boolean defaultAnonym, boolean offerAnonymMode,
+			RosterFormDisplay rosterDisplay, MapperKey avatarMapperKey) {
+		super(ureq, wControl, rosterDisplay == RosterFormDisplay.supervised ? "roster_supervised" : "roster");
 
 		this.defaultAnonym = defaultAnonym;
 		this.offerAnonymMode = offerAnonymMode;
 		this.buddyList = buddyList;
-		fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(getIdentity());
+		this.avatarMapperKey = avatarMapperKey;
+		fullName = userManager.getUserDisplayName(getIdentity());
 
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutcont = (FormLayoutContainer)formLayout;
+			layoutcont.contextPut("avatarBaseURL", avatarMapperKey.getUrl());
+		}
 		// for simplicity we initialize the form even when the anonymous mode is disabled
 		// and just hide the form elements in the GUI
 		String[] theValues = new String[]{ translate("yes"), translate("no") };
@@ -97,9 +108,8 @@ public class RosterForm extends FormBasicController {
 	};
 	
 	private String generateNickname() {
-		String prefix = anonymPrefix[ (int)(Math.random() * (anonymPrefix.length - 1)) ];
-		String name = prefix + " - "+ (int)(Math.random() * getIdentity().getKey());
-		return name;
+		String prefix = anonymPrefix[(int)(Math.random() * (anonymPrefix.length - 1)) ];
+		return prefix + " - "+ (int)(Math.random() * getIdentity().getKey());
 	}
 
 	@Override
@@ -116,9 +126,8 @@ public class RosterForm extends FormBasicController {
 	protected String getNickName() {
 		if(isUseNickName()) {
 			return nickNameEl.getValue();
-		} else {
-			return fullName;
 		}
+		return fullName;
 	}
 	
 	protected boolean isUseNickName() {

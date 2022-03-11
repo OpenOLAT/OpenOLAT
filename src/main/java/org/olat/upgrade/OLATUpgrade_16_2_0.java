@@ -20,8 +20,10 @@
 package org.olat.upgrade;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.coach.CoachingUserToolExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -36,9 +38,12 @@ public class OLATUpgrade_16_2_0 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_16.2.0";
 	private static final String MIGRATE_HELP_PROVIDER = "MIGRATE HELP PROVIDER";
+	private static final String ADD_USER_TOOL_COACHING = "ADD USER TOOL COACHING";
 	
 	@Autowired
 	private HelpModule helpModule;
+	@Autowired
+	private UserToolsModule userToolsModule;
 
 	
 	public OLATUpgrade_16_2_0() {
@@ -62,6 +67,7 @@ public class OLATUpgrade_16_2_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= migrateHelpProvider(upgradeManager, uhd);
+		allOk &= migrateUserToolCoaching(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -102,5 +108,26 @@ public class OLATUpgrade_16_2_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
-
+	private boolean migrateUserToolCoaching(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(ADD_USER_TOOL_COACHING)) {
+			try {
+				String availableTools = userToolsModule.getAvailableUserTools();
+				if(availableTools == null) {
+					availableTools = CoachingUserToolExtension.COACHING_USER_TOOL_ID;
+				} else if(!availableTools.contains(CoachingUserToolExtension.COACHING_USER_TOOL_ID)) {
+					availableTools += "," + CoachingUserToolExtension.COACHING_USER_TOOL_ID;
+				}
+				userToolsModule.setAvailableUserTools(availableTools);
+				log.info("User tool coaching added");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(ADD_USER_TOOL_COACHING, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
 }

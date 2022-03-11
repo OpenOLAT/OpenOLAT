@@ -20,7 +20,6 @@
 package org.olat.instantMessaging;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,9 +27,11 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.instantMessaging.manager.InstantMessageDAO;
 import org.olat.instantMessaging.manager.RosterDAO;
+import org.olat.instantMessaging.model.RosterChannelInfos;
+import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
 import org.olat.instantMessaging.model.RosterEntryImpl;
-import org.olat.instantMessaging.model.RosterEntryView;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,13 +48,16 @@ public class RosterDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private RosterDAO rosterDao;
+	@Autowired
+	private InstantMessageDAO messageDao;
 	
 	@Test
 	public void testCreateRosterEntry() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-1-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-roster-1-");
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-1", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-1-");
 		
-		RosterEntryImpl entry = rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false, false);
+		RosterEntryImpl entry = rosterDao.createRosterEntry(chatResource, null, null, id,
+				"My full name", "A nick name", false, false, false, true);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(entry);
@@ -68,17 +72,18 @@ public class RosterDAOTest extends OlatTestCase {
 
 	@Test
 	public void testLoadRosterEntries() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-2-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-roster-2-");
-		rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false, true);
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-2", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-2-");
+		rosterDao.createRosterEntry(chatResource, null, null, id,
+				"My full name", "A nick name", false, true, false, true);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entries
-		List<RosterEntryImpl> entries = rosterDao.getRoster(chatResource, 0, -1);
+		List<RosterEntry> entries = rosterDao.getRoster(chatResource, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		
-		RosterEntryImpl entry = entries.get(0);
+		RosterEntry entry = entries.get(0);
 		Assert.assertNotNull(entry);
 		Assert.assertNotNull(entry.getKey());
 		Assert.assertEquals(id.getKey(), entry.getIdentityKey());
@@ -90,17 +95,17 @@ public class RosterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testGetRosterViews() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-8-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-roster-8-");
-		rosterDao.createRosterEntry(chatResource, id, "My little name", "Nock", false, false);
+	public void testGetRoster() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-3", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-8-");
+		rosterDao.createRosterEntry(chatResource, null, null,  id, "My little name", "Nock", false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
-		List<RosterEntryView> entries = rosterDao.getRosterView(chatResource, 0, -1);
+		List<RosterEntry> entries = rosterDao.getRoster(chatResource, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		
-		RosterEntryView entry = entries.get(0);
+		RosterEntry entry = entries.get(0);
 		Assert.assertNotNull(entry);
 		Assert.assertNotNull(entry.getKey());
 		Assert.assertEquals(id.getKey(), entry.getIdentityKey());
@@ -113,26 +118,26 @@ public class RosterDAOTest extends OlatTestCase {
 	
 	@Test
 	public void testUpdateRosterEntry() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-7-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-roster-7-");
-		rosterDao.createRosterEntry(chatResource, id, "My name", "Nick", false, false);
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-4", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-7-");
+		rosterDao.createRosterEntry(chatResource, null, null,  id, "My name", "Nick", false, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entry
-		rosterDao.updateRosterEntry(chatResource, id, "My updated full name", "My updated nick name", true, false);
+		rosterDao.updateRosterEntry(chatResource, null, null,  id, "My updated full name", "My updated nick name", true, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entry
-		List<RosterEntryImpl> entries = rosterDao.getRoster(chatResource, 0, -1);
+		List<RosterEntry> entries = rosterDao.getRoster(chatResource, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 			
-		RosterEntryImpl entry = entries.get(0);
+		RosterEntry entry = entries.get(0);
 		
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		
-		RosterEntryImpl reloadEntry = entries.get(0);
+		RosterEntry reloadEntry = entries.get(0);
 		Assert.assertNotNull(reloadEntry);
 		Assert.assertNotNull(reloadEntry.getKey());
 		Assert.assertEquals(id.getKey(), reloadEntry.getIdentityKey());
@@ -144,23 +149,23 @@ public class RosterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testUpdateRosterEntry_createNew() {
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-7-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-roster-7-");
-		rosterDao.updateRosterEntry(chatResource, id, "My old name", "Truck", true, false);
+	public void testUpdateRosterEntryCreateNew() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-5", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-7-");
+		rosterDao.updateRosterEntry(chatResource, null, null, id, "My old name", "Truck", true, false, false, false);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entry
-		List<RosterEntryImpl> entries = rosterDao.getRoster(chatResource, 0, -1);
+		List<RosterEntry> entries = rosterDao.getRoster(chatResource, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		
-		RosterEntryImpl entry = entries.get(0);
+		RosterEntry entry = entries.get(0);
 		
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
 		
-		RosterEntryImpl reloadEntry = entries.get(0);
+		RosterEntry reloadEntry = entries.get(0);
 		Assert.assertNotNull(reloadEntry);
 		Assert.assertNotNull(reloadEntry.getKey());
 		Assert.assertEquals(id.getKey(), reloadEntry.getIdentityKey());
@@ -172,26 +177,103 @@ public class RosterDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testDeleteRosterEntries() {
-		//create an entry
-		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-test-3-" + UUID.randomUUID().toString(), System.currentTimeMillis());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsRndAdmin("im-roster-3-");
-		rosterDao.createRosterEntry(chatResource, id, "My full name", "A nick name", false, false);
+	public void updateRosterLastSeen() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-6", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-8");
+		RosterEntry entry = rosterDao.createRosterEntry(chatResource, null, null, id, null, null, false, true, true, true);
 		dbInstance.commitAndCloseSession();
 		
-		//check the presence of the entry
-		List<RosterEntryImpl> entries = rosterDao.getRoster(chatResource, 0, -1);
+		rosterDao.updateLastSeen(id, chatResource, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		//load the entry
+		List<RosterEntry> entries = rosterDao.getRoster(chatResource, null, null);
 		Assert.assertNotNull(entries);
 		Assert.assertEquals(1, entries.size());
-		dbInstance.commitAndCloseSession();
-		
-		//delete the entry
-		rosterDao.deleteEntry(id, chatResource);
-		dbInstance.commitAndCloseSession();
-		
-		//check the absence of the entry
-		List<RosterEntryImpl> reloadedEntries = rosterDao.getRoster(chatResource, 0, -1);
-		Assert.assertNotNull(reloadedEntries);
-		Assert.assertTrue(reloadedEntries.isEmpty());
+		Assert.assertEquals(entry, entries.get(0));
+		Assert.assertNotNull(entries.get(0).getLastSeen());
 	}
+	
+	@Test
+	public void inactivateEntry() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-6", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-8");
+		RosterEntry entry = rosterDao.createRosterEntry(chatResource, "sub-path", "channel", id, null, null, false, true, true, true);
+		dbInstance.commitAndCloseSession();
+		
+		rosterDao.inactivateEntry(id, chatResource, "sub-path", "channel");
+		dbInstance.commitAndCloseSession();
+		
+		//load the entry
+		List<RosterEntry> entries = rosterDao.getRoster(chatResource, "sub-path", "channel");
+		Assert.assertNotNull(entries);
+		Assert.assertEquals(1, entries.size());
+		Assert.assertEquals(entry, entries.get(0));
+		Assert.assertFalse(entries.get(0).isActive());
+	}
+	
+	@Test
+	public void getRosterAroundChannels() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-7", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-9");
+		RosterEntry entry = rosterDao.createRosterEntry(chatResource, "sub-path", "channel", id, null, null, false, true, true, true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(entry);
+		
+		//load the entry
+		List<RosterChannelInfos> infos = rosterDao.getRosterAroundChannels(chatResource, "sub-path", "channel", id, false);
+		Assert.assertNotNull(infos);
+		Assert.assertEquals(1, infos.size());
+		Assert.assertEquals("channel", infos.get(0).getChannel());
+		Assert.assertTrue(infos.get(0).inRoster(id));
+		Assert.assertTrue(infos.get(0).inRosterAndActive(id));
+	}
+	
+	@Test
+	public void getRosterAroundChannelsWithMessage() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-8", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-10");
+		RosterEntry entry = rosterDao.createRosterEntry(chatResource, "sub-path", "msg-channel", id, null, null, false, true, true, true);
+		InstantMessage msg = messageDao.createMessage(id, "From me", false, "Hello world",
+				chatResource, "sub-path", "msg-channel", InstantMessageTypeEnum.text);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(msg);
+		Assert.assertNotNull(entry);
+		
+		//load the entry
+		List<RosterChannelInfos> infos = rosterDao.getRosterAroundChannels(chatResource, "sub-path", "msg-channel", id, false);
+		Assert.assertNotNull(infos);
+		Assert.assertEquals(1, infos.size());
+		Assert.assertEquals("msg-channel", infos.get(0).getChannel());
+		Assert.assertNull(infos.get(0).getLastStatusMessage());
+		Assert.assertEquals(msg, infos.get(0).getLastTextMessage());
+		Assert.assertEquals(RosterStatus.active, infos.get(0).getRosterStatus());
+	}
+	
+	@Test
+	public void getRosterAroundChannelsWithStatusMessage() {
+		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-7", System.currentTimeMillis());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-9");
+		RosterEntry entry = rosterDao.createRosterEntry(chatResource, "sub-path", "msg-channel-2", id, null, null, false, true, true, true);
+		InstantMessage msg = messageDao.createMessage(id, "From me", false, "Hello world",
+				chatResource, "sub-path", "msg-channel-2", InstantMessageTypeEnum.text);
+		sleep(1200);
+		InstantMessage status = messageDao.createMessage(id, "From me", false, null,
+				chatResource, "sub-path", "msg-channel-2", InstantMessageTypeEnum.close);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(msg);
+		Assert.assertNotNull(entry);
+		Assert.assertNotNull(status);
+		
+		//load the entry
+		List<RosterChannelInfos> infos = rosterDao.getRosterAroundChannels(chatResource, "sub-path", "msg-channel-2", id, false);
+		Assert.assertNotNull(infos);
+		Assert.assertEquals(1, infos.size());
+		Assert.assertEquals("msg-channel-2", infos.get(0).getChannel());
+		Assert.assertEquals(status, infos.get(0).getLastStatusMessage());
+		Assert.assertEquals(msg, infos.get(0).getLastTextMessage());
+		Assert.assertEquals(RosterStatus.completed, infos.get(0).getRosterStatus());
+	}
+	
+	
 }

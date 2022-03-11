@@ -473,7 +473,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	
 	private void doOpenChat(Member member, UserRequest ureq) {
 		Buddy buddy = imService.getBuddyById(member.getKey());
-		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+		OpenInstantMessageEvent e = new OpenInstantMessageEvent(buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	
@@ -481,9 +481,9 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		if (!editable) return;
 		ContactList memberList;
 		if (userCourseEnv == null) {
-			memberList = new ContactList(translate("members.to", new String[]{ member.getFullName(), businessGroup.getName() }));
+			memberList = new ContactList(translate("members.to", member.getFullName(), businessGroup.getName()));
 		} else {
-			memberList = new ContactList(translate("members.to", new String[]{ member.getFullName(), userCourseEnv.getCourseEnvironment().getCourseTitle() }));
+			memberList = new ContactList(translate("members.to", member.getFullName(), userCourseEnv.getCourseEnvironment().getCourseTitle()));
 		}
 		Identity identity = securityManager.loadIdentityByKey(member.getKey());
 		memberList.add(identity);

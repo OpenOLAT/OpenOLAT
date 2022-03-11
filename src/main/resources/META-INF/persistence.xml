@@ -159,7 +159,6 @@
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>
-		<class>org.olat.instantMessaging.model.RosterEntryView</class>
 		<class>org.olat.instantMessaging.model.InstantMessageNotificationImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13ToolImpl</class>
 		<class>org.olat.ims.lti13.model.LTI13ToolDeploymentImpl</class>

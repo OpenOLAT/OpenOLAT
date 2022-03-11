@@ -77,14 +77,14 @@ public class ChatLogHelper {
 		logXStream.omitField(IdentityImpl.class, "user");
 	}
 	
-	public void archive(OLATResourceable ores, File exportDirectory) {
+	public void archiveResource(OLATResourceable ores, File exportDirectory) {
 		File file = new File(exportDirectory, "chat.xml");
 		try(Writer writer = new FileWriter(file);
 			ObjectOutputStream out = logXStream.createObjectOutputStream(writer)) {		
 			int counter = 0;
 			List<InstantMessage> messages;
 			do {
-				messages = imDao.getMessages(ores, null, counter, BATCH_SIZE);
+				messages = imDao.getMessages(ores, null, null, null, counter, BATCH_SIZE);
 				for(InstantMessage message:messages) {
 					out.writeObject(message);
 				}
@@ -95,7 +95,7 @@ public class ChatLogHelper {
 		}
 	}
 	
-	public MediaResource logMediaResource(OLATResourceable ores, Locale locale) {
+	public MediaResource logMediaResource(final OLATResourceable ores, final String resSubPath, final String channel, Locale locale) {
 		Translator translator = Util.createPackageTranslator(ChatController.class, locale);
 		String tableExportTitle = translator.translate("logChat.export.title");
 		String label = tableExportTitle
@@ -109,17 +109,22 @@ public class ChatLogHelper {
 					//headers
 					OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 					Row headerRow = exportSheet.newRow();
-					headerRow.addCell(0, "User", workbook.getStyles().getHeaderStyle());
-					headerRow.addCell(1, "Date", workbook.getStyles().getHeaderStyle());
-					headerRow.addCell(2, "Content", workbook.getStyles().getHeaderStyle());
+					headerRow.addCell(0, translator.translate("log.user"), workbook.getStyles().getHeaderStyle());
+					headerRow.addCell(1, translator.translate("log.date"), workbook.getStyles().getHeaderStyle());
+					headerRow.addCell(2, translator.translate("log.content"), workbook.getStyles().getHeaderStyle());
 
 					//content
-					List<InstantMessage> messages = imDao.getMessages(ores, null, 0, -1);
+					List<InstantMessage> messages = imDao.getMessages(ores, resSubPath, channel, null, 0, -1);
 					for(InstantMessage message:messages) {
+						
 						Row dataRow = exportSheet.newRow();
 						dataRow.addCell(0, message.getFromNickName(), null);
 						dataRow.addCell(1, message.getCreationDate(), workbook.getStyles().getDateStyle());
-						dataRow.addCell(2, message.getBody(), null);
+						if(message.getType().isStatus()) {
+							dataRow.addCell(2, translator.translate("log.status." + message.getType().name()), null);
+						} else {
+							dataRow.addCell(2, message.getBody(), null);
+						}
 					}
 				} catch (IOException e) {
 					log.error("", e);

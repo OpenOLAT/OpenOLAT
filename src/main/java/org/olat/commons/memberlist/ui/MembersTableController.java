@@ -338,7 +338,7 @@ public class MembersTableController extends FormBasicController {
 			StringBuilder courseLink = new StringBuilder();
 			courseLink.append(Settings.getServerContextPathURI())
 				.append("/auth/BusinessGroup/").append(businessGroup.getKey());
-			return translate("email.body.template", new String[]{courseName, courseLink.toString()});	
+			return translate("email.body.template", courseName, courseLink.toString());	
 		} else {
 			String courseName = courseEnv.getCourseTitle();
 			// Build REST URL to course element, use hack via group manager to access repo entry
@@ -346,7 +346,7 @@ public class MembersTableController extends FormBasicController {
 			RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 			courseLink.append(Settings.getServerContextPathURI())
 				.append("/url/RepositoryEntry/").append(entry.getKey());
-			return translate("email.body.template", new String[]{courseName, courseLink.toString()});		
+			return translate("email.body.template", courseName, courseLink.toString());		
 		}
 	}
 	
@@ -359,7 +359,7 @@ public class MembersTableController extends FormBasicController {
 	
 	private void doOpenChat(MemberRow member, UserRequest ureq) {
 		Buddy buddy = imService.getBuddyById(member.getIdentityKey());
-		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+		OpenInstantMessageEvent e = new OpenInstantMessageEvent(buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 

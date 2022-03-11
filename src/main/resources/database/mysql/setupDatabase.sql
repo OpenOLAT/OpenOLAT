@@ -1678,6 +1678,9 @@ create table if not exists o_im_message (
    creationdate datetime,
    msg_resname varchar(50) not null,
    msg_resid bigint not null,
+   msg_ressubpath varchar(255),
+   msg_channel varchar(255),
+   msg_type varchar(8) not null default 'text',
    msg_anonym bit default 0,
    msg_from varchar(255) not null,
    msg_body longtext,
@@ -1690,6 +1693,9 @@ create table if not exists o_im_notification (
    creationdate datetime,
    chat_resname varchar(50) not null,
    chat_resid bigint not null,
+   chat_ressubpath varchar(255),
+   chat_channel varchar(255),
+   chat_type varchar(16) not null default 'message',
    fk_to_identity_id bigint not null,
    fk_from_identity_id bigint not null,
    primary key (id)
@@ -1700,10 +1706,15 @@ create table if not exists o_im_roster_entry (
    creationdate datetime,
    r_resname varchar(50) not null,
    r_resid bigint not null,
+   r_ressubpath varchar(255),
+   r_channel varchar(255),
    r_nickname varchar(255),
    r_fullname varchar(255),
    r_anonym bit default 0,
    r_vip bit default 0,
+   r_persistent bool not null default false,
+   r_active bool not null default true,
+   r_read_upto timestamp,
    fk_identity_id bigint not null,
    primary key (id)
 );
@@ -3599,24 +3610,6 @@ create view o_gp_contactext_v as (
       (bgroup.participantsintern=1 and bg_member.g_role='participant')
 );
 
-
--- instant messaging
-create or replace view o_im_roster_entry_v as (
-   select
-      entry.id as re_id,
-      entry.creationdate as re_creationdate,
-      ident.id as ident_id,
-      ident.name as ident_name,
-      entry.r_nickname as re_nickname,
-      entry.r_fullname as re_fullname,
-      entry.r_anonym as re_anonym,
-      entry.r_vip as re_vip,
-      entry.r_resname as re_resname,
-      entry.r_resid as re_resid
-   from o_im_roster_entry as entry
-   inner join o_bs_identity as ident on (entry.fk_identity_id = ident.id)
-);
-
 -- question pool
 create or replace view o_qp_pool_2_item_short_v as (
    select
@@ -4211,13 +4204,16 @@ create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mim
 -- instant messaging
 alter table o_im_message add constraint idx_im_msg_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_msg_res_idx on o_im_message (msg_resid,msg_resname);
+create index idx_im_msg_channel_idx on o_im_message (msg_resid,msg_resname,msg_ressubpath,msg_channel);
 
 alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_to_identity_id) references o_bs_identity (id);
 alter table o_im_notification add constraint idx_im_not_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_chat_res_idx on o_im_notification (chat_resid,chat_resname);
+create index idx_im_chat_typed_idx on o_im_notification (fk_to_identity_id,chat_type);
 
 alter table o_im_roster_entry add constraint idx_im_rost_to_id foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_im_rost_res_idx on o_im_roster_entry (r_resid,r_resname);
+create index idx_im_rost_sub_idx on o_im_roster_entry (r_resid,r_resname,r_ressubpath);
 
 alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_from_identity_id) references o_bs_identity (id);
 

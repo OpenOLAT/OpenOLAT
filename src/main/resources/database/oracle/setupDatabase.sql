@@ -1734,6 +1734,9 @@ create table o_im_message (
    creationdate date,
    msg_resname varchar2(50 char) not null,
    msg_resid number(20) not null,
+   msg_ressubpath varchar(255),
+   msg_channel varchar(255),
+   msg_type varchar(8) default 'text' not null,
    msg_anonym number default 0,
    msg_from varchar2(255 char) not null,
    msg_body clob,
@@ -1746,6 +1749,9 @@ create table o_im_notification (
    creationdate date,
    chat_resname varchar(50) not null,
    chat_resid number(20) not null,
+   chat_ressubpath varchar(255),
+   chat_channel varchar(255),
+   chat_type varchar(16) default 'message' not null,
    fk_to_identity_id number(20) not null,
    fk_from_identity_id number(20) not null,
    primary key (id)
@@ -1756,10 +1762,15 @@ create table o_im_roster_entry (
    creationdate date,
    r_resname varchar2(50 char) not null,
    r_resid number(20) not null,
+   r_ressubpath varchar(255),
+   r_channel varchar(255),
    r_nickname varchar2(255 char),
    r_fullname varchar2(255 char),
    r_vip number default 0,
    r_anonym number default 0,
+   r_persistent number default 0 not null,
+   r_active number default 1 not null,
+   r_read_upto date,
    fk_identity_id number(20) not null,
    primary key (id)
 );
@@ -3674,23 +3685,6 @@ create view o_gp_contactext_v as (
 );
 
 
-create or replace view o_im_roster_entry_v as (
-   select
-      entry.id as re_id,
-      entry.creationdate as re_creationdate,
-      ident.id as ident_id,
-      ident.name as ident_name,
-      entry.r_nickname as re_nickname,
-      entry.r_fullname as re_fullname,
-      entry.r_anonym as re_anonym,
-      entry.r_vip as re_vip,
-      entry.r_resname as re_resname,
-      entry.r_resid as re_resid
-   from o_im_roster_entry entry
-   inner join o_bs_identity ident on (entry.fk_identity_id = ident.id)
-);
-
-
 create or replace view o_qp_pool_2_item_short_v as (
    select
       pool2item.id as item_to_pool_id,
@@ -4222,16 +4216,19 @@ create index idx_mail_att_siblings_idx on o_mail_attachment (datas_checksum, mim
 alter table o_im_message add constraint idx_im_msg_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_msg_from_idx on o_im_message(fk_from_identity_id);
 create index idx_im_msg_res_idx on o_im_message (msg_resid,msg_resname);
+create index idx_im_msg_channel_idx on o_im_message (msg_resid,msg_resname,msg_ressubpath,msg_channel);
 
 alter table o_im_notification add constraint idx_im_not_to_toid foreign key (fk_to_identity_id) references o_bs_identity (id);
 create index idx_im_chat_to_idx on o_im_notification (fk_to_identity_id);
 alter table o_im_notification add constraint idx_im_not_to_fromid foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_chat_from_idx on o_im_notification (fk_from_identity_id);
 create index idx_im_chat_res_idx on o_im_notification (chat_resid,chat_resname);
+create index idx_im_chat_typed_idx on o_im_notification (fk_to_identity_id,chat_type);
 
 alter table o_im_roster_entry add constraint idx_im_rost_to_id foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_im_rost_ident_idx on o_im_roster_entry (fk_identity_id);
 create index idx_im_rost_res_idx on o_im_roster_entry (r_resid,r_resname);
+create index idx_im_rost_sub_idx on o_im_roster_entry (r_resid,r_resname,r_ressubpath);
 
 alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_from_identity_id) references o_bs_identity (id);
 create index idx_im_prefs_ident_idx on o_im_preferences (fk_from_identity_id);

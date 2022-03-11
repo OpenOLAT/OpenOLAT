@@ -1,71 +1,59 @@
 <div id="${panelName}" class="${panelName} ${cssClass}" style="display:none;">
-	#if ($r.available("collapsibleContent"))
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-sm-8 col-xs-12">
-					$r.render("panelContent")
-				</div>
-				<div class="col-sm-4 col-xs-12">
-					$r.render("collapsibleContent")
-				</div>
-			</div>
-		</div>
-	#else
-		$r.render("panelContent")
-	#end
+	$r.render("panelContent")
 </div>
 ## make sur the script is loaded if the floating window is triggered by an other user
 <script src='$r.staticLink("js/jquery/ui/jquery-ui-1.11.4.custom.dialog.min.js")'></script>
 <script>
-/* <![CDATA[ */ 
-	jQuery(function() {
-		var duplicate = jQuery('.${panelName}').length > 1;
-		if(duplicate) {
-			jQuery('.${panelName}').each(function(index, el) {
-				if(jQuery(el).parent('.ui-dialog').length == 0) {
-					jQuery(el).remove();
-				}
-			}); 
-			return;
-		}
-		
-		jQuery('#${panelName}').dialog({
-			title: '$title',
-			width: ${width},
-			height: ${height},
-			position: [$offsetX, $offsetY],
-			dialogClass: 'o_modal-ui',
-			stack: true,
-			close: function() {
-				jQuery(this).dialog('destroy').remove();
-				$r.javaScriptCommand("close")
-			},
-			resize: function(event, ui) {
-				#if ($ajaxFlags.isIframePostEnabled())
-					if (!o_info.linkbusy) {
-						window.suppressOlatOnUnloadOnce = true;
-						$r.openBackgroundCommand("geometry"),"p",encodeURIComponent(ui.position.left + ',' + ui.position.top + ':' + ui.size.width + ',' + ui.size.height))
-					}
-				#end
-				try {
-					tweak_${panelName}();
-				} catch (Exception) {/**/}
-			},
-			dragStop: function(event, ui) {
-				#if ($ajaxFlags.isIframePostEnabled())
-					if (!o_info.linkbusy) {
-						window.suppressOlatOnUnloadOnce = true;
-						$r.openBackgroundCommand("geometry"),"p",encodeURIComponent(ui.position.left + ',' + ui.position.top))
-					}
-				#end	
-				try {
-					tweak_${panelName}(win);
-				} catch (Exception) { /**/ }
+jQuery(function() {
+	var duplicate = jQuery('.${panelName}').length > 1;
+	if(duplicate) {
+		jQuery('.${panelName}').each(function(index, el) {
+			if(jQuery(el).parent('.ui-dialog').length == 0) {
+				jQuery(el).remove();
 			}
-		});
-		
-		//override the default z-index of jQuery UI dialog
-		jQuery('#${panelName}').dialog("widget").css('z-index', 10000);
+		}); 
+		return;
+	}
+	
+	jQuery('#${panelName}').dialog({
+		title: '$title',
+		width: ${width},
+		height: ${height},
+		position: [$offsetX, $offsetY],
+		dialogClass: 'o_modal-ui',
+		#if($r.isNotEmpty($cssClass))
+		classes: '$cssClass',
+		#end
+		stack: true,
+		close: function() {
+			jQuery(this).dialog('destroy').remove();
+			$r.javaScriptCommand("close")
+		},
+		resize: function(event, ui) {
+			#if ($ajaxFlags.isIframePostEnabled())
+				if (!o_info.linkbusy) {
+					window.suppressOlatOnUnloadOnce = true;
+					$r.openBackgroundCommand("geometry"),"p",encodeURIComponent(ui.position.left + ',' + ui.position.top + ':' + ui.size.width + ',' + ui.size.height))
+				}
+			#end
+			try {
+				tweak_${panelName}();
+			} catch (Exception) {/**/}
+		},
+		dragStop: function(event, ui) {
+			#if ($ajaxFlags.isIframePostEnabled())
+				if (!o_info.linkbusy) {
+					window.suppressOlatOnUnloadOnce = true;
+					$r.openBackgroundCommand("geometry"),"p",encodeURIComponent(ui.position.left + ',' + ui.position.top))
+				}
+			#end	
+			try {
+				tweak_${panelName}(win);
+			} catch (Exception) { /**/ }
+		}
 	});
-/* ]]> */
+	
+	//override the default z-index of jQuery UI dialog
+	jQuery('#${panelName}').dialog("widget").css('z-index', 10000);
+});
 </script>

@@ -631,7 +631,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	 */
 	protected void doIm(UserRequest ureq, MemberRow member) {
 		Buddy buddy = imService.getBuddyById(member.getIdentityKey());
-		OpenInstantMessageEvent e = new OpenInstantMessageEvent(ureq, buddy);
+		OpenInstantMessageEvent e = new OpenInstantMessageEvent(buddy);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, InstantMessagingService.TOWER_EVENT_ORES);
 	}
 	

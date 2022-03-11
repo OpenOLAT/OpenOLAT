@@ -827,7 +827,7 @@ public class CourseFactory {
 
 		course.getCourseEnvironment().getCourseGroupManager().archiveCourseGroups(exportDirectory);
 
-		CoreSpringFactory.getImpl(ChatLogHelper.class).archive(course, exportDirectory);
+		CoreSpringFactory.getImpl(ChatLogHelper.class).archiveResource(course, exportDirectory);
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 

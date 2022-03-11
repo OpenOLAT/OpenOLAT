@@ -26,6 +26,7 @@
 package org.olat.core.gui.control.guistack;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.panel.ListPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 
@@ -77,5 +78,12 @@ public interface GuiStack {
 	public StackedPanel getModalPanel();
 	
 	public StackedPanel getTopModalPanel();
+	
+	
+	public void addInstantMessagePanel(Component imComponent);
+	
+	public boolean removeInstantMessagePanel(Component imComponent);
+	
+	public ListPanel getInstantMessagePanel();
 
 }

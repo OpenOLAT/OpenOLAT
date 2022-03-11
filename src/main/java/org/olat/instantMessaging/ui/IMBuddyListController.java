@@ -19,7 +19,6 @@
  */
 package org.olat.instantMessaging.ui;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,6 +33,7 @@ import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.instantMessaging.model.Buddy;
 import org.olat.instantMessaging.model.BuddyGroup;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -43,7 +43,8 @@ import org.olat.instantMessaging.model.BuddyGroup;
  */
 public class IMBuddyListController extends BasicController {
 	
-	private Link toggleOffline, toggleGroup; 
+	private Link toggleOffline;
+	private Link toggleGroup; 
 	private final VelocityContainer mainVC;
 	private final VelocityContainer buddiesListContent;
 
@@ -51,14 +52,13 @@ public class IMBuddyListController extends BasicController {
 	private ViewMode viewMode;
 	private boolean viewGroups = true;
 	
-	private final InstantMessagingModule imModule;
-	private final InstantMessagingService imService;
+	@Autowired
+	private InstantMessagingModule imModule;
+	@Autowired
+	private InstantMessagingService imService;
 	
 	public IMBuddyListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
-		imService = CoreSpringFactory.getImpl(InstantMessagingService.class);
 		
 		mainVC = createVelocityContainer("buddies");
 		buddiesListContent = createVelocityContainer("buddies_content");
@@ -79,7 +79,7 @@ public class IMBuddyListController extends BasicController {
 		toggleGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		toggleGroup.setElementCssClass("o_im_showgroupswitch");
 
-		buddyList = new Roster(getIdentity().getKey());
+		buddyList = new Roster(getIdentity().getKey(), true);
 		mainVC.contextPut("buddyList", buddyList);
 		buddiesListContent.contextPut("buddyList", buddyList);
 		buddiesListContent.contextPut("viewGroups", Boolean.TRUE);
@@ -119,7 +119,7 @@ public class IMBuddyListController extends BasicController {
 			Link link = (Link)source;
 			if("cmd.buddy".equals(link.getCommand())) {
 				Buddy buddy = (Buddy)link.getUserObject();
-				fireEvent(ureq, new OpenInstantMessageEvent(ureq, buddy));
+				fireEvent(ureq, new OpenInstantMessageEvent(buddy));
 			}
 		}
 	}

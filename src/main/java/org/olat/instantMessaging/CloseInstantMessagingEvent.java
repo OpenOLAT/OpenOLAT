@@ -38,33 +38,31 @@ public class CloseInstantMessagingEvent extends MultiUserEvent {
 	
 	public static final String CLOSE_IM = "closeim";
 
-	private Long chatId;
 	private OLATResourceable ores;
+	private String resSubPath;
+	private String channel;
 	
 	public CloseInstantMessagingEvent() {
 		super(CLOSE_IM);
 	}
 	
-	public CloseInstantMessagingEvent(Long chatId) {
-		super(CLOSE_IM);
-		this.chatId = chatId;
-	}
-	
-	public CloseInstantMessagingEvent(OLATResourceable ores) {
+	public CloseInstantMessagingEvent(OLATResourceable ores, String resSubPath, String channel) {
 		super(CLOSE_IM);
 		this.ores = ores;
-		this.chatId = ores.getResourceableId();
+		this.resSubPath = resSubPath;
+		this.channel = channel;
 	}
 
-	public Long getChatId() {
-		return chatId;
-	}
-
-	public void setChatId(Long chatId) {
-		this.chatId = chatId;
-	}
 	
 	public OLATResourceable getOres() {
 		return ores;
+	}
+
+	public String getResSubPath() {
+		return resSubPath;
+	}
+
+	public String getChannel() {
+		return channel;
 	}
 }

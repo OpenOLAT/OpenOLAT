@@ -34,7 +34,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.LockModeType;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -57,16 +56,14 @@ import org.olat.instantMessaging.ImPreferences;
  */
 @Entity(name="impreferences")
 @Table(name="o_im_preferences")
-@NamedQueries({
-	@NamedQuery(name="loadIMRosterStatusByIdentity", query="select msg.rosterDefaultStatus from impreferences msg where msg.identity.key=:identityKey"),
-	@NamedQuery(name="loadIMPreferencesByIdentity", query="select msg from impreferences msg where msg.identity.key=:identityKey"),
-	@NamedQuery(name="loadIMPreferencesForUpdate", query="select msg from impreferences msg where msg.identity.key=:identityKey",
-		lockMode=LockModeType.PESSIMISTIC_WRITE),
-	@NamedQuery(name="countAvailableBuddiesIn", query="select count(msg.identity.key) from impreferences msg where msg.identity.key in(:buddyKeys) and msg.rosterDefaultStatus='available'"),
-	@NamedQuery(name="mapStatusByBuddiesIn", query="select msg.identity.key, msg.rosterDefaultStatus from impreferences msg where msg.identity.key in (:buddyKeys)"),
-	@NamedQuery(name="updateIMPreferencesStatusByIdentity", query="update impreferences set rosterDefaultStatus=:status where identity.key=:identityKey"),
-	@NamedQuery(name="updateIMPreferencesVisibilityByIdentity", query="update impreferences set visibleToOthers=:visible where identity.key=:identityKey")
-})
+@NamedQuery(name="loadIMRosterStatusByIdentity", query="select msg.rosterDefaultStatus from impreferences msg where msg.identity.key=:identityKey")
+@NamedQuery(name="loadIMPreferencesByIdentity", query="select msg from impreferences msg where msg.identity.key=:identityKey")
+@NamedQuery(name="loadIMPreferencesForUpdate", query="select msg from impreferences msg where msg.identity.key=:identityKey",
+	lockMode=LockModeType.PESSIMISTIC_WRITE)
+@NamedQuery(name="countAvailableBuddiesIn", query="select count(msg.identity.key) from impreferences msg where msg.identity.key in(:buddyKeys) and msg.rosterDefaultStatus='available'")
+@NamedQuery(name="mapStatusByBuddiesIn", query="select msg.identity.key, msg.rosterDefaultStatus from impreferences msg where msg.identity.key in (:buddyKeys)")
+@NamedQuery(name="updateIMPreferencesStatusByIdentity", query="update impreferences set rosterDefaultStatus=:status where identity.key=:identityKey")
+@NamedQuery(name="updateIMPreferencesVisibilityByIdentity", query="update impreferences set visibleToOthers=:visible where identity.key=:identityKey")
 public class ImPreferencesImpl implements ImPreferences, Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -7269061512818714778L;

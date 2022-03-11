@@ -23,9 +23,10 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -47,9 +48,9 @@ import org.olat.instantMessaging.InstantMessageNotification;
  */
 @Entity(name="imnotification")
 @Table(name="o_im_notification")
-@NamedQueries({
-		@NamedQuery(name="loadIMNotificationByIdentity", query="select notification from imnotification notification where notification.toIdentityKey=:identityKey order by notification.creationDate desc")
-})
+@NamedQuery(name="loadIMPrivateNotificationByIdentity", query="select notification from imnotification notification where notification.toIdentityKey=:identityKey and notification.resSubPath is null and notification.channel is null order by notification.creationDate desc")
+@NamedQuery(name="loadIMTypedNotificationByIdentity", query="select notification from imnotification notification where notification.toIdentityKey=:identityKey and notification.type=:type order by notification.creationDate desc")
+@NamedQuery(name="countIMTypedNotificationByIdentity", query="select count(notification.key) from imnotification notification where notification.toIdentityKey=:identityKey and notification.type=:type")
 public class InstantMessageNotificationImpl implements InstantMessageNotification, Persistable, CreateInfo  {
 
 	private static final long serialVersionUID = -1244360269062615091L;
@@ -79,9 +80,17 @@ public class InstantMessageNotificationImpl implements InstantMessageNotificatio
 	
 	@Column(name="chat_resname", nullable=false, insertable=true, updatable=false)
 	private String resourceTypeName;
-	
 	@Column(name="chat_resid", nullable=false, insertable=true, updatable=false)
 	private Long resourceId;
+	@Column(name="chat_ressubpath", nullable=true, insertable=true, updatable=false)
+	private String resSubPath;
+	@Column(name="chat_channel", nullable=true, insertable=true, updatable=false)
+	private String channel;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name="chat_type", nullable=false, insertable=true, updatable=false)
+	private InstantMessageNotificationTypeEnum type;
+	
 
 	@Override
 	public Long getKey() {
@@ -100,7 +109,8 @@ public class InstantMessageNotificationImpl implements InstantMessageNotificatio
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
-	
+
+	@Override
 	public Long getToIdentityKey() {
 		return toIdentityKey;
 	}
@@ -137,6 +147,32 @@ public class InstantMessageNotificationImpl implements InstantMessageNotificatio
 	@Override
 	public OLATResourceable getChatResource() {
 		return OresHelper.createOLATResourceableInstance(resourceTypeName, resourceId);
+	}
+
+	@Override
+	public String getResSubPath() {
+		return resSubPath;
+	}
+
+	public void setResSubPath(String resSubPath) {
+		this.resSubPath = resSubPath;
+	}
+
+	@Override
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
+	public InstantMessageNotificationTypeEnum getType() {
+		return type;
+	}
+
+	public void setType(InstantMessageNotificationTypeEnum type) {
+		this.type = type;
 	}
 
 	@Override
