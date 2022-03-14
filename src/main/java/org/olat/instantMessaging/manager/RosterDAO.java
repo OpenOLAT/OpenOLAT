@@ -226,8 +226,12 @@ public class RosterDAO {
 		  .append("  and entry.resSubPath=lastStatusMessage.resSubPath and entry.channel=lastStatusMessage.channel")
 		  .append("  and lastStatusMessage.type ").in(InstantMessageTypeEnum.accept, InstantMessageTypeEnum.join, InstantMessageTypeEnum.close, InstantMessageTypeEnum.end)
 		  .append(" )")
-		  .where().append(" entry.resourceId=:resid and entry.resourceTypeName=:resname")
-		  .and().append(" entry.resSubPath=:ressubPath");
+		  .where().append(" entry.resourceId=:resid and entry.resourceTypeName=:resname");
+		if(resSubPath != null) {
+			sb.and().append(" entry.resSubPath=:ressubPath");
+		} else {
+			sb.and().append(" entry.resSubPath is null");
+		}
 
 		if(StringHelper.containsNonWhitespace(channel)) {
 			sb.and().append(" entry.channel=:channel");
