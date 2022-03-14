@@ -1756,8 +1756,6 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 	} else {
 		targetWindow = window;
 	}
-	
-	console.log('XHREvent', targetUrl);
 
 	jQuery.ajax(targetUrl,{
 		type:'POST',
@@ -2461,19 +2459,19 @@ function o_animateRadialProgress(radialProgessDomSelector, percent) {
  * Attach event listeners to enable inline translation tool hover links
  */ 
 function b_attach_i18n_inline_editing() {
-	// Add hover handler to display inline edit links
-	jQuery('span.o_translation_i18nitem').hover(function() {
-		jQuery(this.firstChild).show();
-	},function(){
-		jQuery('a.o_translation_i18nitem_launcher').hide();
-	});
-	// Add highlight effect on link to show which element is affected by this link
-	jQuery('a.o_translation_i18nitem_launcher').hover(function() {	
-		var parent = jQuery(this).parent('span.o_translation_i18nitem')
-		parent.effect("highlight");
-	});
-	// Add to on ajax ready callback for next execution
-	b_AddOnDomReplacementFinishedCallback(b_attach_i18n_inline_editing);
+	jQuery(document).on("oo.dom.replacement.after", function() {
+		// Add hover handler to display inline edit links
+		jQuery('span.o_translation_i18nitem').hover(function() {
+			jQuery(this.firstChild).show();
+		},function(){
+			jQuery('a.o_translation_i18nitem_launcher').hide();
+		});
+		// Add highlight effect on link to show which element is affected by this link
+		jQuery('a.o_translation_i18nitem_launcher').hover(function() {	
+			var parent = jQuery(this).parent('span.o_translation_i18nitem')
+			parent.effect("highlight");
+		});
+	});	
 }
 
 function b_hideExtMessageBox() {
