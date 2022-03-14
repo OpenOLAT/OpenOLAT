@@ -13,6 +13,7 @@ var o2cExclusions=new Array();
 // o_info is a global object that contains global variables
 o_info.guibusy = false;
 o_info.linkbusy = false;
+o_info.made_dirty = { dispatchFieldId: null, hideDirtyMarking: true };
 o_info.scrolling = false;
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
 o_info.debug = true;
@@ -57,7 +58,7 @@ var BLoader = {
 					dataType: 'script',
 					cache: true,
 					success: function(script, textStatus, jqXHR) {
-						//BLoader.executeGlobalJS(script, 'loadJS');
+						//
 					}
 				});
 				this._ajaxLoadedJS.push(jsURL);
@@ -99,7 +100,7 @@ var BLoader = {
 				var sheets = doc.styleSheets;
 				var cnt = 0;
 				var pos = 0;
-				for (i = 0; i < sheets.length; i++) {
+				for (var i = 0; i < sheets.length; i++) {
 					var sh = sheets[i];
 					var h = sh.href; 
 					if (h == cssURL) {
@@ -238,7 +239,7 @@ var BFormatter = {
 			var cellWidths = new Array();
 			// find all widest cells
 			jQuery(tableArray).each(function() {
-				for(j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+				for(var j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
 					var cell = jQuery(this)[0].rows[0].cells[j];
 					if(!cellWidths[j] || cellWidths[j] < cell.clientWidth) {
 						cellWidths[j] = cell.clientWidth;
@@ -247,7 +248,7 @@ var BFormatter = {
 			});
 			// set same width to columns of all tables
 			jQuery(tableArray).each(function() {
-				for(j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+				for(var j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
 					jQuery(this)[0].rows[0].cells[j].style.width = cellWidths[j]+'px';
 				}
 			});
@@ -324,12 +325,21 @@ function o_beforeserver() {
 	} else if (window.olatonunload) {
 		olatonunload();
 	}
+	
+	o_info.made_dirty.dispatchFieldId = null;
+	o_info.made_dirty.hideDirtyMarking = false;
 }
 
 function o_afterserver() {
 	o2c = 0;
 	o_info.linkbusy = false;
 	removeAjaxBusy();
+	
+	if(o_info.made_dirty.dispatchFieldId != null && o_info.made_dirty.dispatchFieldId !== "") {
+		o2c = 1;
+		o_info.dirty_form = true;
+		setFlexiFormDirty(o_info.made_dirty.dispatchFieldId, o_info.made_dirty.hideDirtyMarking);
+	}
 }
 
 function o2cl() {
@@ -474,31 +484,6 @@ if(!Array.prototype.indexOf) {
 	}
 }
 
-
-// b_AddOnDomReplacementFinishedCallback is used to add callback methods that are executed after
-// the DOM replacement has occured. Note that when not in AJAX mode, those methods will not be 
-// executed. Use this callback to execute some JS code to cleanup eventhandlers or alike
-//DEPRECATED: listen to event "oo.dom.replacement.after"
-var b_onDomReplacementFinished_callbacks=new Array();//array holding js callback methods that should be executed after the next ajax call
-function b_AddOnDomReplacementFinishedCallback(funct) {
-	b_onDomReplacementFinished_callbacks.push(funct);
-}
-
-var b_changedDomEl=new Array();
-
-//same as above, but with a filter to prevent adding a funct. more than once
-//funct then has to be an array("identifier", funct) 
-// DEPRECATED: listen to event "oo.dom.replacement.after"
-function b_AddOnDomReplacementFinishedUniqueCallback(funct) {
-	if (funct.constructor == Array){
-		//check if it has been added before
-		if (b_onDomReplacementFinished_callbacks.search(funct[0])){
-			return;
-		} 
-	}
-	b_AddOnDomReplacementFinishedCallback(funct);
-}
-
 function o_postInvoke(r, newWindow) {
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
@@ -536,13 +521,10 @@ function o_ainvoke(r) {
 		return;
 	}
 	
-	o_info.inainvoke = true;
 	var cmdcnt = r["cmdcnt"];
 	if (cmdcnt > 0) {
 		// let everybody know dom replacement has started
 		jQuery(document).trigger("oo.dom.replacement.before");
-
-		b_changedDomEl = new Array();
 		
 		if (o_info.debug) { o_debug_trid++; }
 		var cs = r["cmds"];
@@ -550,9 +532,7 @@ function o_ainvoke(r) {
 			var acmd = cs[i];
 			var co = acmd["cmd"];
 			var cda = acmd["cda"];
-			var wid = acmd["w"];
-			var wi = this.window; // for cross browser window: o_info.wins[wid]; 
-			var out;
+			var wi = this.window;
 			if (wi) {
 				switch (co) {
 					case 1: // Excecute JavaScript Code
@@ -571,7 +551,7 @@ function o_ainvoke(r) {
 							var jsol = c1["jsol"]; // javascript on load
 							var hdr = c1["hdr"]; // header
 							if (o_info.debug) o_log("c2: redraw: "+c1["cname"]+ " ("+ciid+") "+c1["hfragsize"]+" bytes, listener(s): "+c1["clisteners"]);
-							//var con = jQuery(hfrag).find('script').remove(); //Strip scripts
+							
 							var hdrco = hdr+"\n\n"+hfrag;
 							
 							var replaceElement = false;
@@ -640,7 +620,6 @@ function o_ainvoke(r) {
 										if(window.console) console.log(e);
 										if(window.console) console.log('Fragment',hdrco);
 									}
-									b_changedDomEl.push(newcId);
 								}
 								newc = null;
 
@@ -719,32 +698,9 @@ function o_ainvoke(r) {
 			}		
 		}
 
-		// BEGIN DEPRECATED DOM REPLACEMENT CALLBACK: new style below
-		// execute onDomReplacementFinished callback functions
-		var stacklength = b_onDomReplacementFinished_callbacks.length;
-		for (mycounter = 0; stacklength > mycounter; mycounter++) {
-			
-			if (mycounter > 50) {
-				break; // emergency break
-			}
-			var func = b_onDomReplacementFinished_callbacks.shift();
-			if (typeof func.length === 'number'){
-				if (func[0] == "glosshighlighter") {
-					var tmpArr = func[1];
-					func = tmpArr;
-				 }				
-			}
-			// don't use execScript here - must be executed outside this function scope so that dom replacement elements are available
-			
-			//func.delay(0.01);
-			func();//TODO jquery
-		}
-		// END DEPRECATED DOM REPLACEMENT CALLBACK: new style on next line
-		
 		// let everybody know dom replacement has finished
 		jQuery(document).trigger("oo.dom.replacement.after");
 	}
-	o_info.inainvoke = false;
 	
 /* minimalistic debugger / profiler	
 	BDebugger.logDOMCount();

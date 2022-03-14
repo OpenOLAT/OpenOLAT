@@ -460,6 +460,11 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
+	public final void markDirty() {
+		JSCommand dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(flc.getRootForm());
+		getWindowControl().getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+	}
+	
 	public String getAndRemoveFormTitle() {
 		String title = (String)flc.contextGet("off_title");
 		if(title != null) {

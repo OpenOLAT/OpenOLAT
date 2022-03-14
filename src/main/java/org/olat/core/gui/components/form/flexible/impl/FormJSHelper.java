@@ -368,34 +368,48 @@ public class FormJSHelper {
 		  .append("})();</script>");
 		return sb;
 	}
-	
+
 	/**
-	 * This is an hack because it use a timeout of 500ms to be executed after
-	 * o_afterserver() method
+	 * Set the flexi form dirty.
 	 * 
-	 * @param sb
-	 * @param form
-	 * @return
+	 * @param form The flexi-form
+	 * @return A command
 	 */
-	public static StringOutput setFlexiFormDirtyOnLoad(StringOutput sb, Form form) {
-		sb.append("<script>\n")
-		  .append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);")
-		  .append("\n</script>");
-		return sb;
+	public static JSCommand getFlexiFormDirtyOnLoadCommand(Form form) {
+		try(StringOutput sb = new StringOutput(128)) {
+			setFlexiFormDirtyOnLoad(sb, form);
+			return new JSCommand(sb.toString());
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 	
-	public static String setFlexiFormDirtyOnLoad(Form form) {
-		StringBuilder sb = new StringBuilder(256);
-		sb.append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);");
-		return sb.toString();
+	/**
+	 * JavaScript (with script tag) which set the flexi form dirty after o_afterserver().
+	 * 
+	 * @param sb The writer
+	 * @param form The flexi-form
+	 */
+	public static void appendFlexiFormDirtyOnLoad(StringOutput sb, Form form) {
+		sb.append("<script>\n");
+		setFlexiFormDirtyOnLoad(sb, form);
+		sb.append("</script>");
+	}
+	
+	private static StringOutput setFlexiFormDirtyOnLoad(StringOutput sb, Form form) {
+		sb.append("(function(){\n")
+		  .append("o_info.made_dirty.dispatchFieldId=\"").append(form.getDispatchFieldId()).append("\";\n")
+		  .append("o_info.made_dirty.hideDirtyMarking=").append(form.isHideDirtyMarkingMessage()).append(";\n")
+		  .append("})();\n");
+		return sb;
 	}
 	
 	public static String getSetFlexiFormDirtyFnCallOnly(Form form){
 		if(form.isDirtyMarking()){
 			return "setFlexiFormDirty('"+form.getDispatchFieldId()+"');";
-		}else{
-			return " ";
 		}
+		return " ";
 	}
 
 	/**
@@ -482,7 +496,6 @@ public class FormJSHelper {
 	public static JSCommand getFormFocusCommand(String formName, String formItemId) {
 		StringOutput sb = new StringOutput();
 		setFormFocus(sb, formName, formItemId, false);
-		JSCommand focusCommand = new JSCommand(sb.toString());
-		return focusCommand;
+		return new JSCommand(sb.toString());
 	}
 }

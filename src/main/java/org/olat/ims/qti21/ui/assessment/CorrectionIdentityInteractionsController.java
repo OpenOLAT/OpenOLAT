@@ -42,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
@@ -54,7 +53,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -739,9 +737,7 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 		} else {
 			overrideScoreCont.contextPut("score", AssessmentHelper.getRoundedScore(newScore));
 		}
-		
-		String dirtyOnLoad = FormJSHelper.setFlexiFormDirtyOnLoad(flc.getRootForm());
-		getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand(dirtyOnLoad));
+		markDirty();
 	}
 
 	private void doOverrideScore(UserRequest ureq) {
