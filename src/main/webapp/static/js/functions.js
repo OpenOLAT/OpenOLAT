@@ -14,7 +14,6 @@ var o2cExclusions=new Array();
 o_info.guibusy = false;
 o_info.linkbusy = false;
 o_info.made_dirty = { dispatchFieldId: null, hideDirtyMarking: true };
-o_info.scrolling = false;
 //debug flag for this file, to enable debugging to the olat.log set JavaScriptTracingController to level debug
 o_info.debug = true;
 // o_info.drake is supervised and linked to .o_drake DOM element
@@ -165,7 +164,7 @@ var BLoader = {
 					//remove the base url form the style url
 					relCssURL = cssURL.substring(baseURL.length);
 				}
-				for (i = 0; i < sheets.length; i++) {
+				for (var i = 0; i < sheets.length; i++) {
 					var h = sheets[i].href;
 					if (h == cssURL || h == relCssURL) {
 						cnt++;
@@ -177,16 +176,13 @@ var BLoader = {
 					}
 				}
 				if (cnt != 1 && o_info.debug) o_logwarn("stylesheet: when removeing: num of stylesheets found was not 1:"+cnt);
-				
 			} else { // mozilla
 				var el = jQuery('#' +linkid);
 				if (el) {
 					el.href = ""; // fix unload problem in safari
 					el.remove();
-					el = null;
-					return;
-				} else {
-					if (o_info.debug) o_logwarn("no link with id found to remove, id:"+linkid+", url "+cssURL);
+				} else if (o_info.debug) {
+					o_logwarn("no link with id found to remove, id:"+linkid+", url "+cssURL);
 				}
 			}
 		} catch(e){
@@ -631,14 +627,9 @@ function o_ainvoke(r) {
 							}
 						}
 						break;
-					case 3:  // createParentRedirectTo leads to a full page reload
-						wi.o2c = 0;//??
-						var rurl = cda["rurl"];
-						wi.o_afterserver();
-						wi.document.location.replace(rurl);
-						break;
+					case 3: // createParentRedirectTo leads to a full page reload
 					case 5: // create redirect for external resource mapper
-						wi.o2c = 0;//??
+						wi.o2c = 0;
 						var rurl = cda["rurl"];
 						//in case of a mapper served media resource (xls,pdf etc.)
 						wi.o_afterserver();
@@ -655,7 +646,7 @@ function o_ainvoke(r) {
 						if (loc.port != "" ) furlp += ":"+ loc.port; 
 						// 1. unload css file
 						var cssrm = cda["cssrm"];
-						for (j = 0; j<cssrm.length; j++) {
+						for (var j = 0; j<cssrm.length; j++) {
 							var ce = cssrm[j];
 							var id = ce["id"];
 							var url = furlp + ce["url"];
@@ -664,7 +655,7 @@ function o_ainvoke(r) {
 						}
 						// 2) load css file
 						var cssadd = cda["cssadd"];
-						for (k = 0; k<cssadd.length; k++) {
+						for (var k = 0; k<cssadd.length; k++) {
 							var ce = cssadd[k];
 							var id = ce["id"];
 							var url = furlp + ce["url"];
@@ -675,7 +666,7 @@ function o_ainvoke(r) {
 						
 						// 3) js lib adds
 						var jsadd = cda["jsadd"];
-						for (l=0; l<jsadd.length; l++) {
+						for (var l=0; l<jsadd.length; l++) {
 							var ce = jsadd[l];
 							// 3.1) execute before AJAX-code
 							var preJsAdd = ce["before"];
@@ -880,7 +871,7 @@ function b_handleFileUploadFormChange(fileInputElement, fakeInputElement, saveBu
 	// set focus to next element if available
 	var elements = fileInputElement.form.elements;
 	var fileInputCheckElement = (fakeInputElement ? fakeInputElement : fileInputElement);
-	for (i=0; i < elements.length; i++) {
+	for (var i=0; i < elements.length; i++) {
 		var elem = elements[i];
 		if (elem.name == fileInputCheckElement.name && i+1 < elements.length) {
 			elements[i+1].focus();
@@ -1052,9 +1043,13 @@ OPOL.adjustContentHeightForAbsoluteElement = function(itemDomSelector) {
 		}
 		// Current available height
 		mainDom = jQuery(mainDom);
+		var mainOffsetTop = 0;
 		var mainOffset = mainDom.offset();
+		if(mainOffset) {
+			mainOffsetTop = mainOffset.top;
+		}
 		var mainHeight = mainDom.outerHeight(true);
-		var availableHeight = mainOffset.top + mainHeight;
+		var availableHeight = mainOffsetTop + mainHeight;
 		
 		// Calculate minimum required height based on the position of the previous DOM element 
 		// (e.g. the pull-down button). Absolute positioned element have not offset
@@ -1105,12 +1100,9 @@ jQuery().ready(OPOL.adjustHeight);
 
 function o_scrollToElement(elem) {
 	try {
-		o_info.scrolling = true;
 		jQuery('html, body').animate({
 			scrollTop : jQuery(elem).offset().top
-		}, 333, function(e, el) {
-			o_info.scrolling = false;
-		});
+		}, 333);
 	} catch (e) {
 		//console.log(e);
 	}
@@ -1667,7 +1659,7 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 		data: data,
 		cache: false,
 		dataType: 'json',
-		success: function(data, textStatus, jqXHR) {
+		success: function(responseData, textStatus, jqXHR) {
 			//no response
 		}
 	})
@@ -1809,7 +1801,7 @@ function o_XHRNFEvent(targetUrl) {
 		data: data,
 		cache: false,
 		dataType: 'json',
-		success: function(data, textStatus, jqXHR) {
+		success: function(responseData, textStatus, jqXHR) {
 			//ok
 		},
 		error: o_onXHRError
@@ -2048,13 +2040,13 @@ function dismissInfoBox(uuid) {
 * renders an info msg that slides from top into the window
 * and hides automatically
 */
-function showInfoBox(title, content){
+function showInfoBox(title, content) {
 	// Factory method to create message box
 	var uuid = Math.floor(Math.random() * 0x10000 /* 65536 */).toString(16);
 	var info = '<div id="' + uuid
 	     + '" class="o_alert_info"><div class="alert alert-info clearfix o_sel_info_message"><a class="o_alert_close o_sel_info_close" href="javascript:;" onclick="dismissInfoBox(\'' + uuid + '\')"><i class="o_icon o_icon_close"> </i></a><h3><i class="o_icon o_icon_info"> </i> '
 		 + title + '</h3><p>' + content + '</p></div></div>';
-    var msgCt = jQuery('#o_messages').prepend(info);
+    jQuery('#o_messages').prepend(info);
     // Hide message automatically based on content length
     var time = (content.length > 150) ? 10000 : ((content.length > 70) ? 8000 : 6000);
 
@@ -2066,18 +2058,12 @@ function showInfoBox(title, content){
     		});    	
     };
     // Show info box now
-    o_info.scrolling = true;
     jQuery('#' + uuid).show().transition({ top: 0 }, 333);
     // Visually remove message box immediately when user clicks on it
     jQuery('#' + uuid).click(function(e) {
     	cleanup();
     });
 	o_scrollToElement('#o_top');
-	
-    // Help GC, prevent cyclic reference from on-click closure
-    title = null;
-    content = null;
-    msgCt = null;
     
     setTimeout(function(){
 		try {
@@ -2289,8 +2275,8 @@ function onTreeDrop(event, ui) {
 	} else if(droppableId.indexOf('dt') == 0) {
 		url += '%3Asne%3Aend';
 	}
-	jQuery('.ui-droppable').each(function(index, el) {
-		jQuery(el).droppable( "disable" );
+	jQuery('.ui-droppable').each(function(index, elem) {
+		jQuery(elem).droppable( "disable" );
 	});
 	o_XHREvent(url + '/', false, false);
 }
@@ -2337,13 +2323,11 @@ function treeNode_isDragNode(elId) {
  */
 function o_choice_toggleCheck(ref, checked) {
 	var checkboxes = document.forms[ref].elements;
-	len = checkboxes.length;
+	var len = checkboxes.length;
 	if (typeof(len) == 'undefined') {
 		checkboxes.checked = checked;
-	}
-	else {
-		var i;
-		for (i=0; i < len; i++) {
+	} else {
+		for (var i=0; i < len; i++) {
 			if (checkboxes[i].type == 'checkbox' && checkboxes[i].getAttribute('class') == 'o_checkbox' && checkboxes[i].getAttribute('disabled') != 'disabled') {
 				checkboxes[i].checked=checked;
 			}
@@ -2355,10 +2339,9 @@ function o_choice_toggleCheck(ref, checked) {
  * For briefcase
  */
 function b_briefcase_isChecked(ref, warning_text) {
-	var i;
 	var myElement = document.getElementById(ref);
 	var numselected = 0;
-	for (i=0; myElement.elements[i]; i++) {
+	for (var i=0; myElement.elements[i]; i++) {
 		if (myElement.elements[i].type == 'checkbox' && myElement.elements[i].name == 'paths' && myElement.elements[i].checked) {
 			numselected++;
 		}
@@ -2372,9 +2355,8 @@ function b_briefcase_isChecked(ref, warning_text) {
 }
 function b_briefcase_toggleCheck(ref, checked) {
 	var myElement = document.getElementById(ref);
-	len = myElement.elements.length;
-	var i;
-	for (i=0; i < len; i++) {
+	var len = myElement.elements.length;
+	for (var i=0; i < len; i++) {
 		if (myElement.elements[i].name=='paths') {
 			myElement.elements[i].checked=checked;
 		}
@@ -2494,7 +2476,7 @@ var BDebugger = {
 	},
 	_countGlobalObjects : function() {
 			var objCount=0; 
-			for (prop in window) {
+			for (var prop in window) {
 				objCount++;
 			} 
 			return objCount;
@@ -2506,7 +2488,6 @@ var BDebugger = {
 		var diff = DOMCount - self._lastDOMCount;
 		console.log( (diff > 0 ? "+" : "") + diff + " \t" + DOMCount + " \tDOM element count after DOM replacement");
 		self._lastDOMCount = DOMCount;
-		DOMCount = null;
 	},
 
 	logGlobalObjCount : function() {	
@@ -2515,13 +2496,12 @@ var BDebugger = {
 		var diff = objCount - self._lastObjCount;
 		console.log( (diff > 0 ? "+" : "") + diff + " \t" + objCount + " \tGlobal object count after DOM replacement");
 		self._lastObjCount = objCount;
-		objCount = null;
 	},
 	
 	logGlobalOLATObjects : function() {
 		var self = BDebugger;
 		var OLATObjects = new Array();
-		for (prop in window) {
+		for (var prop in window) {
 			if (prop.indexOf("o_") == 0 && self._knownGlobalOLATObjects.indexOf(prop) == -1) {
 				OLATObjects.push(prop);
 			}
@@ -2669,8 +2649,8 @@ var OOEdusharing = {
 			//clicked inside ".edusharing_metadata" - do nothing
 		} else if (jQuery(e.target).closest(".edusharing_metadata_toggle_button").length) {
 			jQuery(".edusharing_metadata").hide();
-			toggle_button = jQuery(e.target);
-			metadata = toggle_button.parent().find(".edusharing_metadata");
+			var toggle_button = jQuery(e.target);
+			var metadata = toggle_button.parent().find(".edusharing_metadata");
 			if (metadata.hasClass('open')) {
 				metadata.toggleClass('open');
 				metadata.hide();
