@@ -61,6 +61,8 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	private SingleSelection realtiveToDateEl;
 	private JSDateChooser absoluteDateEl;
 	private final DueDateConfigComponent component;
+	
+	private DueDateConfigFormItem pushDateValueTo;
 
 	DueDateFormItemImpl(String name, SelectionValues relativeToDates, boolean relative, DueDateConfig initialDueDateConfig) {
 		super(name);
@@ -290,6 +292,16 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 		realtiveToDateEl.select(selectedKey, true);
 		
 		absoluteDateEl.setDate(dueDateConfig.getAbsoluteDate());
+	}
+
+	@Override
+	public DueDateConfigFormItem getPushDateValueTo() {
+		return pushDateValueTo;
+	}
+
+	@Override
+	public void setPushDateValueTo(DueDateConfigFormItem pushDateValueTo) {
+		this.pushDateValueTo = pushDateValueTo;
 	}
 
 }

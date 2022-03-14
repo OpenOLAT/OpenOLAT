@@ -227,7 +227,8 @@ public class PdfDocument {
     public static String cleanCharacters(String string) {
     	return string.replace("\u00AD", "")
     			.replace('\u00A0', ' ')
-    			.replace('\u2212', '-');
+    			.replace('\u2212', '-')
+    			.replace('\u2666', '-');
     }
     
     public static void showTextToStream(String text, PDPageContentStream stream) throws IOException {

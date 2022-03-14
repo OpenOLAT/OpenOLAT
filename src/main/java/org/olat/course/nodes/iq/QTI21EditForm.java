@@ -51,7 +51,6 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
-import org.olat.course.duedate.model.NoDueDateConfig;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
 import org.olat.course.duedate.ui.DueDateConfigFormatter;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -102,9 +101,9 @@ public class QTI21EditForm extends FormBasicController {
 			IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME,
 	};
 	private final String[] dateValues = new String[dateKeys.length];
-	private final String ASSESSMENT_MODE_AUTO = "auto";
-	private final String ASSESSMENT_MODE_MANUAL = "manual";
-	private final String ASSESSMENT_MODE_NONE = "none";
+	private static final String ASSESSMENT_MODE_AUTO = "auto";
+	private static final String ASSESSMENT_MODE_MANUAL = "manual";
+	private static final String ASSESSMENT_MODE_NONE = "none";
 	private SelectionValues relativeToDatesKV;
 	
 	private SingleSelection correctionModeEl;
@@ -264,7 +263,6 @@ public class QTI21EditForm extends FormBasicController {
 				relativeDatesEl.isAtLeastSelected(1), courseNode.getDueDateConfig(IQEditController.CONFIG_KEY_START_TEST_DATE));
 		testStartDateEl.setLabel("qti.form.date.start", null);
 		testStartDateEl.setElementCssClass("o_qti_21_datetest_start");
-		testStartDateEl.addActionListener(FormEvent.ONCHANGE, true);
 		testStartDateEl.setMandatory(true);
 		formLayout.add(testStartDateEl);
 	
@@ -273,6 +271,7 @@ public class QTI21EditForm extends FormBasicController {
 		testEndDateEl.setLabel("qti.form.date.end", null);
 		testEndDateEl.setElementCssClass("o_qti_21_datetest_end");
 		testEndDateEl.setMandatory(wizard);
+		testStartDateEl.setPushDateValueTo(testEndDateEl);
 		formLayout.add(testEndDateEl);
 		
 		if (wizard) {
@@ -525,8 +524,6 @@ public class QTI21EditForm extends FormBasicController {
 		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
 			update();
 			updateAssessmentModeVisibility();
-		} else if(testStartDateEl == source) {
-			updateTestEndDate();
 		} else if(testDateDependentEl == source) {
 			if(testDateDependentEl.isAtLeastSelected(1)) {
 				confirmTestDates(ureq);
@@ -536,6 +533,7 @@ public class QTI21EditForm extends FormBasicController {
 			}
  		} else if(correctionModeEl == source) {
 			updateScoreVisibility();
+			markDirty();
 		} else if (assessmentModeEl == source) {
 			updateAssessmentModeVisibility();
 		}
@@ -567,12 +565,6 @@ public class QTI21EditForm extends FormBasicController {
 				followupTimeEl.setVisible(false);
 				testEndDateEl.setMandatory(false);
 			}
-		}
-	}
-	
-	private void updateTestEndDate() {
-		if (testEndDateEl.isVisible() && testEndDateEl.getDueDateConfig() == NoDueDateConfig.NO_DUE_DATE_CONFIG) {
-			testEndDateEl.setDueDateConfig(testStartDateEl.getDueDateConfig());
 		}
 	}
 
@@ -644,6 +636,7 @@ public class QTI21EditForm extends FormBasicController {
 		resultPassedStartDateEl.setRelative(relativeDates);
 		testStartDateEl.setRelative(relativeDates);
 		resultPassedEndDateEl.setRelative(relativeDates);
+		
 	}
 	
 	private void updateAssessmentResultsOnFinish(QTI21AssessmentResultsOptions resultsOptions) {
@@ -696,7 +689,7 @@ public class QTI21EditForm extends FormBasicController {
 		String passedTypeValue;
 		switch (passedType) {
 		case cutValue:
-			passedTypeValue = translate("score.passed.cut.value", new String[] { AssessmentHelper.getRoundedScore(cutValue) });
+			passedTypeValue = translate("score.passed.cut.value", AssessmentHelper.getRoundedScore(cutValue));
 			break;
 		case manually:
 			passedTypeValue = translate("score.passed.manually");
