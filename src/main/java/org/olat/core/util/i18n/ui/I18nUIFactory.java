@@ -49,20 +49,6 @@ public class I18nUIFactory {
 	}
 
 	/**
-	 * Creates an intercept handler and inline translation dispatch controller
-	 * that can be used to intercept the rendering process and add inline
-	 * translation start links to (almost) every translated item.
-	 * 
-	 * @param ureq
-	 * @param windowControl
-	 * @return
-	 */
-	public static InlineTranslationInterceptHandlerController createInlineTranslationIntercepHandlerController(UserRequest ureq,
-			WindowControl windowControl) {
-		return new InlineTranslationInterceptHandlerController(ureq, windowControl);
-	}
-
-	/**
 	 * Creates a controller to configure the i18n system, add or remove languages
 	 * 
 	 * @param ureq

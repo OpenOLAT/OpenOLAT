@@ -233,11 +233,6 @@ public class WindowControlMocker implements WindowControl{
 		}
 
 		@Override
-		public Controller createInlineTranslationDispatcherController(UserRequest ureq, WindowControl windowControl) {
-			return null;
-		}
-
-		@Override
 		public Controller createAJAXController(UserRequest ureq) {
 			return null;
 		}

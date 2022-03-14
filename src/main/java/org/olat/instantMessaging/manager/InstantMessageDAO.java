@@ -147,7 +147,7 @@ public class InstantMessageDAO {
 	
 	public List<InstantMessage> getAllResourcesMessages(OLATResourceable ores) {
 		return dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadAllRsourceMessages")
+				.createNamedQuery("loadAllRsourceMessages", InstantMessage.class)
 				.setParameter("resid", ores.getResourceableId())
 				.setParameter("resname", ores.getResourceableTypeName())
 				.getResultList();

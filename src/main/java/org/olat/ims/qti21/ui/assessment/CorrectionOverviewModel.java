@@ -146,10 +146,10 @@ public class CorrectionOverviewModel {
 		Map<Identity,String> names = new HashMap<>();
 		for(Identity assessedIdentity:assessedIdentities) {
 			if(lastSessions.containsKey(assessedIdentity)) {
-				String title = translator.translate("number.assessed.identity", new String[] { Integer.toString(++count)} );
+				String title = translator.translate("number.assessed.identity", Integer.toString(++count));
 				names.put(assessedIdentity, title);
 			} else {
-				String title = translator.translate("number.assessed.identity", new String[] { "ERR" } );
+				String title = translator.translate("number.assessed.identity", "ERR");
 				names.put(assessedIdentity, title);
 			}
 		}

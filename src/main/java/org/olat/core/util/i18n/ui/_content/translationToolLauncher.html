@@ -1,56 +1,20 @@
 #if ($transToolEnabled)
-	<fieldset>
+	<fieldset class="o_block_bottom">
 		<legend>$r.translate("launch.title")</legend>
 		<p>$r.translate("launch.intro")</p>
 		<div class="o_button_group o_button_group_left">
 			$r.render("start")
 		</div>
 	</fieldset>
-	
-	<fieldset>
-		<legend>$r.translate("inline.title")</legend>
-		<p>$r.translate("inline.intro")</p>
-		#if	($logoutRequired)
-		<p class="o_warning">$r.translate("inline.require.logout")</p>
-		#end
-		#if ($r.available("inline.enable"))
-			<p><i class="o_icon o_icon_disabled"> </i> $r.translate("inline.state"): $r.translate("inline.state.disabled")</span></p>
-			<div class="o_button_group o_button_group_left">
-				$r.render("inline.enable")
-			</div>
-		#elseif ($r.available("inline.disable"))
-			<p><i class="o_icon o_icon_enabled"> </i> $r.translate("inline.state"): $r.translate("inline.state.enabled")</p>
-			<div class="o_button_group o_button_group_left">
-				$r.render("inline.disable")
-			</div>
-		#end
-	</fieldset>
 #end
 
 #if ($customizingToolEnabled)
-	<fieldset>
+	<fieldset class="o_block_bottom">
 		<legend>$r.translate("launch.customize.title")</legend>
 		<p>$r.translate("launch.customize.intro")</p>
-		$r.render("start")
-	</fieldset>
-	
-	<fieldset>
-		<legend>$r.translate("inline.customize.title")</legend>
-		<p>$r.translate("inline.customize.intro")</p>
-		#if	($logoutRequired)
-		<p class="o_warning">$r.translate("inline.customize.require.logout")</p>
-		#end
-		#if ($r.available("inline.enable"))
-			<p><i class="o_icon o_icon_disabled"> </i> $r.translate("inline.state"): $r.translate("inline.state.disabled")</p>
-			<div class="o_button_group o_button_group_left">
-				$r.render("inline.enable")
-			</div>
-		#elseif ($r.available("inline.disable"))
-			<p><i class="o_icon o_icon_enabled"> </i>$r.translate("inline.state"): $r.translate("inline.state.enabled")</p>
-			<div class="o_button_group o_button_group_left">
-				$r.render("inline.disable")
-			</div>
-		#end
+		<div class="o_button_group o_button_group_left">
+			$r.render("start")
+		</div>
 	</fieldset>
 #end
 
@@ -58,7 +22,9 @@
 	<legend>$r.translate("cache.title")</legend>
 #if($r.available("cache.flush"))
 	<p>$r.translate("cache.intro")</p>
-	$r.render("cache.flush")
+	<div class="o_button_group o_button_group_left">
+		$r.render("cache.flush")
+	</div>
 #else
 	<p class="o_warning">$r.translate("cache.disabled")</p>
 #end

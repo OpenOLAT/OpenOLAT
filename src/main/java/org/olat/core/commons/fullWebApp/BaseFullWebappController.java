@@ -105,9 +105,6 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.i18n.I18nModule;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
@@ -202,10 +199,6 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	@Autowired
 	private CSPModule cspModule;
-	@Autowired
-	private I18nModule i18nModule;
-	@Autowired
-	private I18nManager i18nManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -405,29 +398,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		mainVc.contextPut("o_winid", w.getDispatchID());
 		mainVc.contextPut("buildversion", Settings.getVersion());
 		
-
 		if (wbo.isDebuging()) {
 			debugC = wbo.createDebugDispatcherController(ureq, getWindowControl());
 			mainVc.put("guidebug", debugC.getInitialComponent());
-		}		
-		
-		// Inline translation interceptor. when the translation tool is enabled it
-		// will start the translation tool in translation mode, if the overlay
-		// feature is enabled it will start in customizing mode
-		// fxdiff: allow user-managers to use the inline translation also.
-		if (usess.isAuthenticated()
-				&& (usess.getRoles().isAdministrator() || usess.getRoles().isSystemAdmin())
-				&& (i18nModule.isTransToolEnabled() || i18nModule.isOverlayEnabled())) {
-			inlineTranslationC = wbo.createInlineTranslationDispatcherController(ureq, getWindowControl());
-			Preferences guiPrefs = usess.getGuiPreferences();
-			Boolean isInlineTranslationEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED,
-					Boolean.FALSE);
-			i18nManager.setMarkLocalizedStringsEnabled(usess, isInlineTranslationEnabled);
-			mainVc.put("inlineTranslation", inlineTranslationC.getInitialComponent());
-		}
-
-		// debug info if debugging
-		if (wbo.isDebuging()) {
+			// debug info if debugging
 			developmentC = wbo.createDevelopmentController(ureq, getWindowControl());
 			mainVc.put("development", developmentC.getInitialComponent());
 		}
