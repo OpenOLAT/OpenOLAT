@@ -136,6 +136,17 @@ public interface DateChooser extends TextElement {
 	 */
 	public void setDefaultValue(DateChooser dateChooser);
 	
+	public DateChooser getPushDateValueTo();
+
+	/**
+	 * Copy the date value to an other date chooser via JavaScript (without server
+	 * interaction) and only if the receiver date chooser is empty. Push doesn't
+	 * overwrite.
+	 * 
+	 * @param copyDateValueTo The target chooser
+	 */
+	public void setPushDateValueTo(DateChooser copyDateValueTo);
+	
 	/**
 	 * This will set the default time to 23:59 instead of 00:00
 	 * 

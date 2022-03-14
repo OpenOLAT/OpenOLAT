@@ -45,6 +45,17 @@ public interface DueDateConfigFormItem extends FormItem, FormItemCollection {
 	
 	public void setDueDateConfig(DueDateConfig dueDateConfig);
 	
+	public DueDateConfigFormItem getPushDateValueTo();
+
+	/**
+	 * Copy the date value to an other date chooser via JavaScript (without server
+	 * interaction), only if the receiver date chooser is empty and the date absolute.
+	 * Push doesn't overwrite.
+	 * 
+	 * @param copyDateValueTo The target due date
+	 */
+	public void setPushDateValueTo(DueDateConfigFormItem copyDateValueTo);
+	
 	/**
 	 * Fine grain control of the action event, especially the onchange
 	 * event on the hours and minutes fields of the date chooser.

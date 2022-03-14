@@ -152,6 +152,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			  .append("'").append(dateTranslator.translate("day.short.sa")).append("'")
 			.append("],\n")
 			.append("  showOtherMonths:true,\n");
+
 			if(jsdcc.getFormItem().getDefaultValue() != null) {
 				String id = ((JSDateChooser)jsdcc.getFormItem().getDefaultValue()).getTextElementComponent().getFormDispatchId();
 				sb.append("  beforeShow:function(el, inst) {\n")
@@ -162,8 +163,16 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			sb.append("  onSelect:function(){\n")
 			  .append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
 			  .append("    jQuery(this).focus();\n")
-			  .append("    jQuery(this).change();\n")
-			  .append("  }\n")
+			  .append("    jQuery(this).change();\n");
+			if(jsdcc.getFormItem().getPushDateValueTo() != null) {
+				String pushId = ((JSDateChooser)jsdcc.getFormItem().getPushDateValueTo()).getTextElementComponent().getFormDispatchId();
+				sb.append("    var val = jQuery('#").append(pushId).append("').val();\n")
+				  .append("    if(val == null || val === '') {\n")
+				  .append("      var cDate = jQuery('#").append(receiverId).append("').val();\n")
+				  .append("      jQuery('#").append(pushId).append("').val(cDate);\n")
+				  .append("    }");
+			}
+			sb.append("  }\n")
 			  .append("})});")
 			  .append("\n</script>");
 		}
@@ -207,10 +216,15 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			minute = cal.get(Calendar.MINUTE);
 		}
 		sb.append("<div class='form-group o_date_ms ").append(cssClass).append("'>");
-		renderMS(sb, "o_dch_" + receiverId, receiverId, teC, hour);
+		String hId = "o_dch_".concat(receiverId);
+		renderMS(sb, hId, receiverId, teC, hour);
 		sb.append(" : ");
-		renderMS(sb, "o_dcm_" + receiverId, receiverId, teC, minute);
+		String mId = "o_dcm_".concat(receiverId);
+		renderMS(sb, mId, receiverId, teC, minute);
 		sb.append("</div>");
+		
+		FormJSHelper.appendFlexiFormDirty(sb, teC.getFormItem().getRootForm(), hId);
+		FormJSHelper.appendFlexiFormDirty(sb, teC.getFormItem().getRootForm(), mId);
 	}
 	
 	private void renderTimeDisabled(StringOutput sb, Date date, String receiverId, String cssClass) {
