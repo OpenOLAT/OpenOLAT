@@ -7,7 +7,7 @@
 			<table class="table">
 			<tbody>
 				<tr class="o_attempts">
-					<th>$r.translate("attempts.yourattempts")</th>
+					<th scope="row">$r.translate("attempts.yourattempts")</th>
 					<td>
 						$attempts
 						#if ($attemptsConfig && $attemptsConfig > 0)
@@ -16,7 +16,7 @@
 					</td>
 				</tr> 
 				<tr class="o_score">
-					<th>$r.translate("score.yourscore")</th>
+					<th scope="row">$r.translate("score.yourscore")</th>
 					<td>
 						#if($inReview)
 							<span id="o_score_in_review" class="o_in_review">
@@ -38,7 +38,7 @@
 					</td>
 				</tr> 
 				<tr class="o_state #if(!$resultsVisible || $inReview) #elseif($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
-					<th>$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
+					<th scope="row">$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yourpassed")</th>
 					<td>
 						#if($inReview)
 							<span id="o_passed_in_review" class="o_in_review">
@@ -78,14 +78,12 @@
 	  		</div>
 		</div></div>
 		<script>
-			/* <![CDATA[ */
-				jQuery('#collapseComment').on('hide.bs.collapse', function () {
-						jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-				})
-				jQuery('#collapseComment').on('show.bs.collapse', function () {
-						jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-				})
-			/* ]]> */
+		jQuery('#collapseComment').on('hide.bs.collapse', function () {
+				jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#collapseComment').on('show.bs.collapse', function () {
+				jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		})
 		</script>
 		#end
 	#else

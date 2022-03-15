@@ -102,7 +102,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	private Link previousScoBottom;
 	
 	private String username;
-	private String scorm_lesson_mode;
+	private String scormLessonMode;
 	private String scormAgaingCallbackUri;
 
 	private String requestScoId;
@@ -118,8 +118,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 * @param cpRoot
 	 * @param scormResourceId The SCORM learn resource
 	 * @param courseIdNodeId The course ID and optional the course node ID combined with "-". Example: 77554952047098-77554952047107
-	 * @param lesson_mode add null for the default value or "normal", "browse" or "review"
-	 * @param credit_mode add null for the default value or "credit", "no-credit"
+	 * @param lessonMode add null for the default value or "normal", "browse" or "review"
+	 * @param creditMode add null for the default value or "credit", "no-credit"
 	 * @param attemptsIncremented Is the attempts counter already incremented
 	 * @param assessableType
 	 * @param activate Open the layout
@@ -128,22 +128,16 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 * @param deliveryOptions This delivery options can override the default from the SCORM module
 	 */
 	ScormAPIandDisplayController(UserRequest ureq, WindowControl wControl, boolean showMenu,
-			File cpRoot, Long scormResourceId, String courseIdNodeId, String lesson_mode, String credit_mode,
-			String assessableType, boolean activate, ScormDisplayEnum fullWindow, boolean attemptsIncremented,
+			File cpRoot, Long scormResourceId, String courseIdNodeId, String lessonMode, String creditMode,
+			String assessableType, boolean activate, ScormDisplayEnum fullWindow,
 			boolean radomizeDelivery, DeliveryOptions deliveryOptions) {
 		super(ureq, wControl);
 		
 		// logging-note: the callers of createScormAPIandDisplayController make sure they have the scorm resource added to the ThreadLocalUserActivityLogger
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_OPEN, getClass());
 		this.username = ureq.getIdentity().getName();
-		if (!lesson_mode.equals(ScormConstants.SCORM_MODE_NORMAL) && !lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW) && !lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE)) {
-			//throw new AssertException("Wrong parameter for constructor, only 'normal', 'browse' or 'review' are allowed for lesson_mode");
-		}
-		if (!credit_mode.equals("credit") && !credit_mode.equals("no-credit")) {
-			//throw new AssertException("Wrong parameter for constructor, only 'credit' or 'no-credit' are allowed for credit_mode");
-		}
 		
-		scorm_lesson_mode = lesson_mode;
+		scormLessonMode = lessonMode;
 		
 		// id -> static component without timestamp
 		displayContent = createVelocityContainer("scorm_display", "display");
@@ -178,7 +172,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			sessionController = new ScormSessionController(getIdentity(), assessableType);
 			String fullname = UserManager.getInstance().getUserDisplayName(getIdentity());
 			String scormResourceIdStr = scormResourceId == null ? null : scormResourceId.toString();
-			sessionController.init(cpRoot, scormResourceIdStr, courseIdNodeId, FolderConfig.getCanonicalRoot(), username, fullname, lesson_mode, credit_mode, hashCode());
+			sessionController.init(cpRoot, scormResourceIdStr, courseIdNodeId, FolderConfig.getCanonicalRoot(), username, fullname, lessonMode, creditMode, hashCode());
 			if(course != null && courseNode instanceof ScormCourseNode) {
 				sessionController.initCurrentScore(course, (ScormCourseNode)courseNode);
 			}
@@ -206,7 +200,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 				&& packageConfig != null) {
 			deliveryOptions = packageConfig.getDeliveryOptions();
 		}
-		if(deliveryOptions != null && fullWindow == ScormDisplayEnum.fullWidthHeight) {
+		if(deliveryOptions != null && (fullWindow == ScormDisplayEnum.fullWidthHeight || fullWindow == ScormDisplayEnum.fullWidthHeightWithBack)) {
 			deliveryOptions.setHeight(DeliveryOptions.CONFIG_HEIGHT_IGNORE);
 		}
 		iframeCtr = new IFrameDisplayController(ureq, wControl, new LocalFolderImpl(cpRoot), SCORM_CONTENT_FRAME, courseOres, deliveryOptions, true, radomizeDelivery);
@@ -229,6 +223,9 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			} else if(fullWindow == ScormDisplayEnum.fullWidthHeight) {
 				ctr.setAsFullscreen();
 				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_full_width");
+			} else if(fullWindow == ScormDisplayEnum.fullWidthHeightWithBack) {
+				ctr.setAsFullscreen();
+				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_full_width o_scorm_with_back");
 			}
 			columnLayoutCtr = ctr;
 		} else {
@@ -543,8 +540,8 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 	 * in "browse" or "review" mode we dont collect sco data
 	 */
 	private void cleanUpCollectedScoData() {
-		if(scorm_lesson_mode.equals(ScormConstants.SCORM_MODE_BROWSE) ||
-			 scorm_lesson_mode.equals(ScormConstants.SCORM_MODE_REVIEW)) {
+		if(scormLessonMode.equals(ScormConstants.SCORM_MODE_BROWSE) ||
+			 scormLessonMode.equals(ScormConstants.SCORM_MODE_REVIEW)) {
 			StringBuilder path = new StringBuilder();
 			path.append(WebappHelper.getTmpDir())
 			  .append("/tmp").append(WebappHelper.getInstanceId()).append("scorm/")

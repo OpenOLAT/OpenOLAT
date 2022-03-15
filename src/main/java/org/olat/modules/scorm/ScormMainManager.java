@@ -111,11 +111,11 @@ public class ScormMainManager {
 	public ScormAPIandDisplayController createScormAPIandDisplayController(UserRequest ureq, WindowControl wControl,
 			boolean showMenu, File cpRoot, Long scormResourceId, String courseId,
 			String lessonMode, String creditMode, String assessableType, boolean activate,
-			ScormDisplayEnum fullWindow, boolean attemptsIncremented, boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
+			ScormDisplayEnum fullWindow, boolean randomizeDelivery, DeliveryOptions deliveryOptions) {
 		
 		ScormAPIandDisplayController ctrl= new ScormAPIandDisplayController(ureq, wControl, showMenu, cpRoot,
 				scormResourceId, courseId, lessonMode, creditMode, assessableType, activate, fullWindow,
-				attemptsIncremented, randomizeDelivery, deliveryOptions);
+				randomizeDelivery, deliveryOptions);
 		
 		DeliveryOptions config = ctrl.getDeliveryOptions();
 		boolean configAllowRawContent = (config == null || config.rawContent());

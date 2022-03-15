@@ -41,9 +41,16 @@ public enum ScormDisplayEnum {
 	fullWindow,
 	/**
 	 * The SCORM module is in full window mode, and take the height and width
-	 * of the window. SCORM menu for SCOs and navigation buttons are not visible.
+	 * of the window. SCORM menu for SCOs, navigation buttons and back link are
+	 * not visible. The SCORM module needs to go back to the LMS of its own.
 	 */
-	fullWidthHeight;
+	fullWidthHeight,
+	/**
+	 * The SCORM module is in full window mode, and take the height and width
+	 * of the window. SCORM menu for SCOs and navigation buttons are not visible
+	 * but the back link.
+	 */
+	fullWidthHeightWithBack;
 	
 	public static final ScormDisplayEnum fromConfiguration(ModuleConfiguration config) {
 		if(config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW, true)) {
@@ -51,6 +58,9 @@ public enum ScormDisplayEnum {
 		}
 		if(config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW_WIDTH_HEIGHT, false)) {
 			return fullWidthHeight;
+		}
+		if(config.getBooleanSafe(ScormEditController.CONFIG_FULLWINDOW_WIDTH_HEIGHT_WITH_BACK, false)) {
+			return fullWidthHeightWithBack;
 		}
 		return standard;
 	}

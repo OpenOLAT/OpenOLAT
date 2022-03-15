@@ -303,15 +303,13 @@ public class ScormRunController extends BasicController implements GenericEventL
 		if (isPreview) {
 			scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 					cpRoot, null, null, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-					null, doActivate, fullWindow, false, true, deliveryOptions);
+					null, doActivate, fullWindow, true, deliveryOptions);
 		} else {
-			boolean attemptsIncremented = false;
 			if (userCourseEnv.isParticipant()) {
 				//increment user attempts only once!
 				if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
 						|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 					courseAssessmentService.incrementAttempts(scormNode, userCourseEnv, Role.user);
-					attemptsIncremented = true;
 				}
 			}
 			
@@ -321,18 +319,18 @@ public class ScormRunController extends BasicController implements GenericEventL
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, fullWindow,
-						attemptsIncremented, false, deliveryOptions);
+						false, deliveryOptions);
 			} else if (chooseScormRunMode.getSelectedElement().equals(ScormConstants.SCORM_MODE_NORMAL)) {
 				// When not assessible users can choose between normal mode where data is stored...
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId + "-" + scormNode.getIdent(), ScormConstants.SCORM_MODE_NORMAL,
 						ScormConstants.SCORM_MODE_CREDIT, assessableType, doActivate, fullWindow,
-						attemptsIncremented, false, deliveryOptions);
+						false, deliveryOptions);
 			} else {
 				// ... and preview mode where no data is stored
 				scormDispC = scormMainManager.createScormAPIandDisplayController(ureq, getWindowControl(), showMenu,
 						cpRoot, null, courseId, ScormConstants.SCORM_MODE_BROWSE, ScormConstants.SCORM_MODE_NOCREDIT,
-						assessableType, doActivate, fullWindow, attemptsIncremented, false, deliveryOptions);
+						assessableType, doActivate, fullWindow, false, deliveryOptions);
 			}
 			
 		}
