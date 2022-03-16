@@ -449,6 +449,7 @@ public class QTI21EditForm extends FormBasicController {
 				testDateDependentEl.uncheckAll();
 			}
 			updateAssessmentModeVisibility();
+			markDirty();
 		}
 		super.event(ureq, source, event);
 	}
@@ -524,18 +525,21 @@ public class QTI21EditForm extends FormBasicController {
 		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
 			update();
 			updateAssessmentModeVisibility();
+			markDirty();
 		} else if(testDateDependentEl == source) {
 			if(testDateDependentEl.isAtLeastSelected(1)) {
 				confirmTestDates(ureq);
 			} else {
 				update();
 				updateAssessmentModeVisibility();
+				markDirty();
 			}
  		} else if(correctionModeEl == source) {
 			updateScoreVisibility();
 			markDirty();
 		} else if (assessmentModeEl == source) {
 			updateAssessmentModeVisibility();
+			markDirty();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
