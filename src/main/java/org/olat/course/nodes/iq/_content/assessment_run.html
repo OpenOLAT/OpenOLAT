@@ -220,6 +220,9 @@
 	#if($infobox)	
 		#if($type == "test")
 		<div class="o_note">
+			#if($r.visible("assessment.messages"))
+				$r.render("assessment.messages")
+			#end
 			<p>$r.translate("Intro.test")</p>
 			<p>$r.translate("info.assessment")</p>
 			#if($r.isNotNull($startDateMessage))

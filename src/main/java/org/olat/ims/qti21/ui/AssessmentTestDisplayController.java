@@ -57,6 +57,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.ServletUtil;
@@ -116,6 +117,8 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
+import org.olat.modules.message.ui.AssessmentMessageDisplayCalloutController;
+import org.olat.modules.message.ui.AssessmentMessageDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
@@ -2068,11 +2071,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		private FormLink closeResultsButton;
 		private FormLink restartTest;
 		private FormLink chatButton;
+		private FormLink messagesButton;
 		private final EventBus singleUserEventBus;
 		
 		private String menuWidth;
 		private boolean resultsVisible = false;
 		private final QtiWorksStatus qtiWorksStatus = new QtiWorksStatus();
+		
+		private CloseableCalloutWindowController calloutCtrl;
+		private AssessmentMessageDisplayController messageDisplayCtrl;
+		private AssessmentMessageDisplayCalloutController messageDisplayCalloutCtrl;
 		
 		public QtiWorksController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl, "at_run");
@@ -2080,6 +2088,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			singleUserEventBus = ureq.getUserSession().getSingleUserEventCenter();
 			coordinator.getEventBus()
 				.registerFor(this, getIdentity(), entry.getOlatResource());
+			
 			initPreferences(ureq);
 			initForm(ureq);
 		}
@@ -2212,6 +2221,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					formLayout.add("questionProgress", questionProgress);
 				}
 			}
+			
+			messageDisplayCtrl = new AssessmentMessageDisplayController(ureq, getWindowControl(), mainForm, entry, subIdent);
+			listenTo(messageDisplayCtrl);
+			formLayout.add("assessmentMessages", messageDisplayCtrl.getInitialFormItem());
+			
+			messagesButton = uifactory.addFormLink("messagesTest", "", null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
+			messagesButton.setDomReplacementWrapperRequired(true);
+			messagesButton.getComponent().setSpanAsDomReplaceable(true);
+			messagesButton.setIconLeftCSS("o_icon o_icon-fw o_infomsg_icon");
+			messagesButton.setTitle(translate("assessment.test.chat.test.explanation"));
+			messagesButton.setElementCssClass("o_sel_assessment_messages_test");
+			messagesButton.setVisible(messageDisplayCtrl.hasMessages());
 			
 			flc.getFormItemComponent().addListener(this);
 			if(StringHelper.containsNonWhitespace(menuWidth)) {
@@ -2353,8 +2374,32 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		protected void event(UserRequest ureq, Controller source, Event event) {
 			if(source == resultCtrl) {
 				fireEvent(ureq, event);
+			} else if(source == messageDisplayCtrl) {
+				if(event == Event.CHANGED_EVENT) {
+					updateMessagesButton();
+				}
+			} else if(messageDisplayCalloutCtrl == source) {
+				if(event == Event.DONE_EVENT || event == Event.CLOSE_EVENT) {
+					calloutCtrl.deactivate();
+					cleanUp();
+				} else if(event == Event.CHANGED_EVENT) {
+					if(messageDisplayCtrl != null) {
+						messageDisplayCtrl.loadMessages(ureq);
+					}
+					calloutCtrl.deactivate();
+					cleanUp();
+				}
+			} else if(calloutCtrl == source) {
+				cleanUp();
 			}
 			super.event(ureq, source, event);
+		}
+		
+		private void cleanUp() {
+			removeAsListenerAndDispose(messageDisplayCalloutCtrl);
+			removeAsListenerAndDispose(calloutCtrl);
+			messageDisplayCalloutCtrl = null;
+			calloutCtrl = null;
 		}
 
 		@Override
@@ -2375,6 +2420,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					doSuspendTest(ureq);
 				} else if(chatButton == source) {
 					doChat();
+				} else if(messagesButton == source) {
+					doOpenMessages(ureq, messagesButton);
 				} else if(source == qtiEl || source == qtiTreeEl) {
 					if(event instanceof QTIWorksAssessmentTestEvent) {
 						QTIWorksAssessmentTestEvent qwate = (QTIWorksAssessmentTestEvent)event;
@@ -2393,7 +2440,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					}
 				} else if(source instanceof FormLink) {
 					FormLink formLink = (FormLink)source;
-					processResponse(ureq, formLink);
+					if("read".equals(formLink.getCmd())) {
+						// do nothing
+					} else {
+						processResponse(ureq, formLink);
+					}
 				}
 				super.formInnerEvent(ureq, source, event);
 			}
@@ -2406,7 +2457,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		@Override
 		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
 			if(!"mark".equals(fe.getCommand()) && !"rubric".equals(fe.getCommand())
-					&& !"tmpResponse".equals(fe.getCommand())) {
+					&& !"tmpResponse".equals(fe.getCommand())
+					&& !(fiSrc instanceof FormLink && "read".equals(((FormLink)fiSrc).getCmd()))
+					&& messagesButton != fiSrc && chatButton != fiSrc) {
 				super.propagateDirtinessToContainer(fiSrc, fe);
 			}
 		}
@@ -2516,6 +2569,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			singleUserEventBus.fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
 		}
 		
+		private void doOpenMessages(UserRequest ureq, FormLink link) {
+			messageDisplayCalloutCtrl = new AssessmentMessageDisplayCalloutController(ureq, getWindowControl(), entry, subIdent);
+			listenTo(messageDisplayCalloutCtrl);
+			
+			calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					messageDisplayCalloutCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+			listenTo(calloutCtrl);
+			calloutCtrl.activate();
+		}
+		
 		private void doSaveMenuWidth(UserRequest ureq, String newMenuWidth) {
 			this.menuWidth = newMenuWidth;
 			if(StringHelper.containsNonWhitespace(newMenuWidth)) {
@@ -2615,6 +2678,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					scoreProgress.setActual((float)score);
 					scoreProgress.setMax((float)maxScore);
 				}
+			}
+		}
+		
+		private void updateMessagesButton() {
+			if(messagesButton != null && messageDisplayCtrl != null
+					&& messageDisplayCtrl.hasMessages() != messagesButton.isVisible()) {
+				messagesButton.setVisible(messageDisplayCtrl.hasMessages());
 			}
 		}
 	}

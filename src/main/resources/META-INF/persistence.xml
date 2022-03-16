@@ -228,6 +228,8 @@
 		<class>org.olat.modules.lecture.model.AbsenceNoticeImpl</class>
 		<class>org.olat.modules.lecture.model.AbsenceNoticeToLectureBlockImpl</class>
 		<class>org.olat.modules.lecture.model.AbsenceNoticeToRepositoryEntryImpl</class>
+		<class>org.olat.modules.message.model.AssessmentMessageImpl</class>
+		<class>org.olat.modules.message.model.AssessmentMessageLogImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>

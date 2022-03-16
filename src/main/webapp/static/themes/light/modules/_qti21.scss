@@ -1451,6 +1451,56 @@ table.o_qti_item_kprim {
 	}
 }
 
+/* Assessment messages */
+.o_assessment_message {
+	padding: 10px;
+	margin: 0 15px 1em 15px;
+	background-color: $o-box-note-bg;
+	border-left: $o-box-border-left-size solid $o-box-note-color;
+	display: flex;
+	align-items: center;
+	
+	.o_assessment_message_content {
+		flex: 3 3 150px;
+		margin: 0;
+		
+		small {
+			padding: 3em;
+		}
+	}
+	
+	.o_assessment_message_infos {
+		flex: 0 0 auto;
+		padding: 0 0 0 15px;
+	}
+}
+
+.popover-content .o_assessment_messages {
+	margin: 0 -15px 0 -15px;
+	
+	h4 {
+		margin: 5px 10px 10px 10px;
+	}
+	
+	.o_assessment_message {
+		margin: 0 0 2px 0;
+		display: flex;
+		
+		.o_assessment_message_content {
+			flex: 3 3 250px;
+		}
+	
+		.o_assessment_message_infos {
+			flex: 0 0 auto;
+		}
+	}
+}
+
+.o_note>a.o_assessment_messages_button {
+	display: block;
+	float: right;
+}
+
 /* Test feedback after test */
 .testFeedback {
 	h1:first-of-type {

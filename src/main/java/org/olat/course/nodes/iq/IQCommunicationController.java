@@ -44,8 +44,9 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.instantMessaging.ui.ChatViewConfig;
 import org.olat.instantMessaging.ui.SupervisorChatController;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
+import org.olat.modules.message.ui.AssessmentMessageListController;
 import org.olat.modules.teams.TeamsModule;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,6 +62,7 @@ public class IQCommunicationController extends BasicController implements Activa
 	private CloseableModalController cmc;
 	private UserSearchController userSearchCtrl;
 	private final SupervisorChatController supervisedChatsCtrl;
+	private final AssessmentMessageListController assessmentMessagesCtrl;
 
 	@Autowired
 	private TeamsModule teamsModule;
@@ -68,10 +70,14 @@ public class IQCommunicationController extends BasicController implements Activa
 	private BigBlueButtonModule bigBlueButtonModule;
 
 	public IQCommunicationController(UserRequest ureq, WindowControl wControl,
-			OLATResource resource, IQTESTCourseNode courseNode) {
+			RepositoryEntry entry, IQTESTCourseNode courseNode, boolean admin) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("communication");
+		
+		assessmentMessagesCtrl = new AssessmentMessageListController(ureq, wControl, entry, courseNode.getIdent(), admin);
+		listenTo(assessmentMessagesCtrl);
+		mainVC.put("messages", assessmentMessagesCtrl.getInitialComponent());
 		
 		addParticipantLink = LinkFactory.createButton("add.participant", mainVC, this);
 		
@@ -88,7 +94,7 @@ public class IQCommunicationController extends BasicController implements Activa
 		viewConfig.setWidth(620);
 		viewConfig.setHeight(480);
 		
-		supervisedChatsCtrl = new SupervisorChatController(ureq, getWindowControl(), resource, courseNode.getIdent(), viewConfig);
+		supervisedChatsCtrl = new SupervisorChatController(ureq, getWindowControl(), entry.getOlatResource(), courseNode.getIdent(), viewConfig);
 		listenTo(supervisedChatsCtrl);
 		mainVC.put("chats", supervisedChatsCtrl.getInitialComponent());
 

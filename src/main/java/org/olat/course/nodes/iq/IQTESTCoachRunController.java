@@ -49,7 +49,6 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
-import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -246,8 +245,8 @@ public class IQTESTCoachRunController extends BasicController implements Activat
 	private Activateable2 doOpenCommunication(UserRequest ureq) {
 		if(communicationCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_COMMUNICATION), null);
-			OLATResource resource = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-			communicationCtrl = new IQCommunicationController(ureq, swControl, resource, courseNode);
+			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			communicationCtrl = new IQCommunicationController(ureq, swControl, entry, courseNode, userCourseEnv.isAdmin());
 			listenTo(communicationCtrl);
 		} else {
 			communicationCtrl.reloadModels();

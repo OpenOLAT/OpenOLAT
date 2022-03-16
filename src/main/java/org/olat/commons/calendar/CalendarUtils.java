@@ -375,6 +375,14 @@ public class CalendarUtils {
 		return cal.getTime();
 	}
 	
+	public static Date removeSeconds(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);  
+		cal.set(Calendar.SECOND, 0);  
+		cal.set(Calendar.MILLISECOND, 0);  
+		return cal.getTime();
+	}
+	
 	public static boolean isToday(Date date) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);

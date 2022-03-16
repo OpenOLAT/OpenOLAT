@@ -1050,6 +1050,11 @@ public class VelocityRenderDecorator implements Closeable {
 		return f.formatTime(date);
 	}
 	
+	public String formatTimeShort(Date date) {
+		Formatter f = Formatter.getInstance(renderer.getTranslator().getLocale());
+		return f.formatTimeShort(date);
+	}
+	
 	/**
 	 * format a duration (in milliseconds)
 	 * @param durationInMillis

@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -114,6 +115,8 @@ import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grading.GradingService;
+import org.olat.modules.message.AssessmentMessageService;
+import org.olat.modules.message.ui.AssessmentMessageDisplayCalloutController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -134,6 +137,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private static final OLATResourceable assessmentInstanceOres = OresHelper.createOLATResourceableType(AssessmentInstance.class);
 	
 	private Link startButton;
+	private Link messagesButton;
 	private Link showResultsButton;
 	private Link hideResultsButton;
 	private Link signatureDownloadLink;
@@ -160,7 +164,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	private AssessmentResultController resultCtrl;
 	private AssessmentTestDisplayController displayCtrl;
+	private CloseableCalloutWindowController calloutCtrl;
 	private QTI21AssessmentMainLayoutController displayContainerController;
+	private AssessmentMessageDisplayCalloutController messageDisplayCalloutCtrl;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -178,6 +184,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private AssessmentMessageService assessmentMessageService;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	@Autowired
@@ -241,6 +249,15 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (!userCourseEnv.isParticipant() && !anonym) {
 			startButton.setCustomDisplayText(translate("preview"));
 		}
+		
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		boolean hasMessages = assessmentMessageService.hasMessagesFor(courseEntry, courseNode.getIdent(), ureq.getRequestTimestamp());
+		messagesButton = LinkFactory.createLink("assessment.messages", "assessment.messages", "messages", "", getTranslator(), mainVC, this, Link.BUTTON | Link.NONTRANSLATED);
+		messagesButton.setElementCssClass("o_assessment_messages_button");
+		messagesButton.setIconLeftCSS("o_icon o_icon-fw o_infomsg_icon");
+		messagesButton.setTitle(translate("assessment.messages"));
+		messagesButton.setVisible(hasMessages);
 		
 		// fetch disclaimer file
 		String sDisclaimer = config.getStringValue(IQEditController.CONFIG_KEY_DISCLAIMER);
@@ -703,7 +720,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(startButton == source && startButton.isEnabled() && startButton.isVisible()) {
 			doStart(ureq);
-		}else if(source == showResultsButton) {			
+		} else if(messagesButton == source) {
+			doOpenMessages(ureq, messagesButton);
+		} else if(source == showResultsButton) {			
 			doShowResults(ureq);
 		} else if (source == hideResultsButton) {
 			doHideResults(ureq);
@@ -741,8 +760,31 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
+		} else if(messageDisplayCalloutCtrl == source) {
+			calloutCtrl.deactivate();
+			cleanUp();
+		} else if(calloutCtrl == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(messageDisplayCalloutCtrl);
+		removeAsListenerAndDispose(calloutCtrl);
+		messageDisplayCalloutCtrl = null;
+		calloutCtrl = null;
+	}
+	
+	private void doOpenMessages(UserRequest ureq, Link link) {
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		messageDisplayCalloutCtrl = new AssessmentMessageDisplayCalloutController(ureq, getWindowControl(), courseEntry, courseNode.getIdent());
+		listenTo(messageDisplayCalloutCtrl);
+		
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				messageDisplayCalloutCtrl.getInitialComponent(), link.getDispatchID(), "", true, "");
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
 	}
 	
 	private void doShowResults(UserRequest ureq) {

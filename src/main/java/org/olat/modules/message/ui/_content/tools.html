@@ -1,0 +1,8 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("tool.edit"))
+	<li>$r.render("tool.edit")</li>
+	#end
+	#if($r.available("tool.delete"))
+	<li>$r.render("tool.delete")</li>
+	#end
+</ul>

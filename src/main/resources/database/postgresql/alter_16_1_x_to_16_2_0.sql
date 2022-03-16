@@ -40,6 +40,40 @@ alter table o_im_notification add column chat_type varchar(16) not null default 
 
 create index idx_im_chat_typed_idx on o_im_notification (fk_to_identity_id,chat_type);
 
+-- Message
+create table o_as_message (
+   id bigserial,
+   lastmodified timestamp not null,
+   creationdate timestamp not null,
+   a_message varchar(2000) not null,
+   a_publication_date timestamp not null,
+   a_expiration_date timestamp not null,
+   a_publication_type varchar(32) not null default 'asap',
+   a_message_sent bool not null default false,
+   fk_entry int8 not null,
+   fk_author int8,
+   a_ressubpath varchar(255),
+   primary key (id)
+);
+
+alter table o_as_message add constraint as_msg_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_as_msg_entry_idx on o_as_message (fk_entry);
+
+create table o_as_message_log (
+   id bigserial,
+   lastmodified timestamp not null,
+   creationdate timestamp not null,
+   a_read bool not null default false,
+   fk_message int8 not null,
+   fk_identity int8 not null,
+   primary key (id)
+);
+
+alter table o_as_message_log add constraint as_msg_log_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_as_msg_log_identity_idx on o_as_message_log (fk_identity);
+alter table o_as_message_log add constraint as_msg_log_msg_idx foreign key (fk_message) references o_as_message (id);
+create index idx_as_msg_log_msg_idx on o_as_message_log (fk_message);
+
 -- Grade
 create table o_gr_grade_system (
    id bigserial,

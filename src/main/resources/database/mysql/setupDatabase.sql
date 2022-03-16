@@ -1527,6 +1527,33 @@ create table o_as_mode_course_to_cur_el (
    primary key (id)
 );
 
+-- Assessment message
+create table o_as_message (
+   id bigint not null auto_increment,
+   lastmodified datetime not null,
+   creationdate datetime not null,
+   a_message varchar(2000) not null,
+   a_publication_date datetime not null,
+   a_expiration_date datetime not null,
+   a_publication_type varchar(32) not null default 'asap',
+   a_message_sent bool not null default false,
+   fk_entry bigint not null,
+   fk_author bigint,
+   a_ressubpath varchar(255),
+   primary key (id)
+);
+
+create table o_as_message_log (
+   id bigint not null auto_increment,
+   lastmodified datetime not null,
+   creationdate datetime not null,
+   a_read bool not null default false,
+   fk_message bigint not null,
+   fk_identity bigint not null,
+   primary key (id)
+);
+
+-- Certificate
 create table o_cer_template (
    id bigint not null,
    creationdate datetime not null,
@@ -3785,6 +3812,8 @@ alter table o_as_compensation ENGINE = InnoDB;
 alter table o_as_compensation_log ENGINE = InnoDB;
 alter table o_as_mode_course_to_area ENGINE = InnoDB;
 alter table o_as_mode_course_to_cur_el ENGINE = InnoDB;
+alter table o_as_message ENGINE = InnoDB;
+alter table o_as_message_log ENGINE = InnoDB;
 alter table o_gr_grade_system ENGINE = InnoDB;
 alter table o_gr_performance_class ENGINE = InnoDB;
 alter table o_gr_grade_scale ENGINE = InnoDB;
@@ -4304,6 +4333,12 @@ create index idx_satrigger_bs_group_idx on o_as_score_accounting_trigger (e_busi
 create index idx_satrigger_org_idx on o_as_score_accounting_trigger (e_organisation_key);
 create index idx_satrigger_curele_idx on o_as_score_accounting_trigger (e_curriculum_element_key);
 create index idx_satrigger_userprop_idx on o_as_score_accounting_trigger (e_user_property_value, e_user_property_name);
+
+-- Assessment message
+alter table o_as_message add constraint as_msg_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+alter table o_as_message_log add constraint as_msg_log_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_as_message_log add constraint as_msg_log_msg_idx foreign key (fk_message) references o_as_message (id);
 
 -- disadvantage compensation
 alter table o_as_compensation add constraint compensation_ident_idx foreign key (fk_identity) references o_bs_identity (id);
