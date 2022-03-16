@@ -79,12 +79,13 @@ public class AssessmentHelper {
 	public static final String KEY_TYPE = "type";
 	public static final String KEY_IDENTIFYER = "identifyer";
 	public static final String KEY_INDENT = "indent";
-
 	public static final String KEY_TITLE_SHORT = "short.title";
 	public static final String KEY_TITLE_LONG = "long.title";
 	public static final String KEY_PASSED = "passed";
 	public static final String KEY_SCORE = "score";
 	public static final String KEY_SCORE_F = "fscore";
+	public static final String KEY_GRADE = "grade";
+	public static final String KEY_PERFORMANCE_CLASS_IDENT = "performanceClassIdent";
 	public static final String KEY_ATTEMPTS = "attempts";
 	public static final String KEY_DETAILS = "details";
 	public static final String KEY_SELECTABLE = "selectable";
@@ -433,6 +434,10 @@ public class AssessmentHelper {
 						}
 						if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
+						}
+						if (assessmentConfig.hasGrade()) {
+							assessmentNodeData.setPerformanceClassIdent(scoreEvaluation.getPerformanceClassIdent());
+							assessmentNodeData.setGrade(scoreEvaluation.getGrade());
 						}
 						assessmentNodeData.setIgnoreInCourseAssessment(assessmentConfig.ignoreInCourseAssessment());
 					}

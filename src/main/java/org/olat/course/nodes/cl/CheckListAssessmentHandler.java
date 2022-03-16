@@ -38,6 +38,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.cl.ui.AssessedIdentityCheckListController;
+import org.olat.course.nodes.cl.ui.CheckListIdentityListCourseNodeController;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -100,15 +101,16 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public boolean hasCustomIdentityList() {
-		return false;
+		return true;
 	}
-
+	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		return null;
+		return new CheckListIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
+				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
 	@Override

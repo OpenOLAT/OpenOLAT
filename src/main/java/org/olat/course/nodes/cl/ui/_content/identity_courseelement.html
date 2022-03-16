@@ -1,0 +1,11 @@
+#if($showTitle)
+	<h2><i class="o_icon $courseNodeCssClass"> </i> $r.escapeHtml($courseNodeTitle)#if($r.isNotEmpty($businessGroupName)) <small><i class="o_icon o_icon_group"> </i> $r.escapeHtml($businessGroupName)</small>#end</h2>
+#end
+#if($r.available("tool.grade.scale"))
+	<div class="o_button_group o_button_group_right">
+		#if($r.available("tool.grade.scale"))
+			$r.render("tool.grade.scale")
+		#end
+	</div>
+#end
+$r.render("table")

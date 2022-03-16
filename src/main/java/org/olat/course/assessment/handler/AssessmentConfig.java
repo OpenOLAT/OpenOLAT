@@ -66,6 +66,17 @@ public interface AssessmentConfig {
 	public Float getMinScore();
 	
 	/**
+	 * @return if this course node produces a grade for the learner
+	 */
+	public boolean hasGrade();
+	
+	/**
+	 * @return true if the grade is set when the score is set of if the coach has to
+	 *         set the grade manually,
+	 */
+	public boolean isAutoGrade();
+	
+	/**
 	 * @return if this course node produces a passed variable for the learner
 	 */
 	public Mode getPassedMode();

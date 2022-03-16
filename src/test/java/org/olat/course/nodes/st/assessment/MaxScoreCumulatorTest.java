@@ -157,6 +157,16 @@ public class MaxScoreCumulatorTest {
 		public Float getMinScore() {
 			return null;
 		}
+		
+		@Override
+		public boolean hasGrade() {
+			return false;
+		}
+		
+		@Override
+		public boolean isAutoGrade() {
+			return false;
+		}
 
 		@Override
 		public Mode getPassedMode() {
@@ -237,7 +247,7 @@ public class MaxScoreCumulatorTest {
 		public boolean isObligationOverridable() {
 			return false;
 		}
-
+		
 	}
 
 }

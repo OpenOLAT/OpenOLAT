@@ -310,7 +310,8 @@ public class CourseAssessmentWebService {
 		userCourseEnvironment.getScoreAccounting().evaluateAll();
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Long.valueOf(nodeKey));//not directly pass this key
+		ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), null, null, Boolean.TRUE, null, null,
+				null, null, null, Long.valueOf(nodeKey));// not directly pass this key
 		courseAssessmentService.updateScoreEvaluation(node, scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
 
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());

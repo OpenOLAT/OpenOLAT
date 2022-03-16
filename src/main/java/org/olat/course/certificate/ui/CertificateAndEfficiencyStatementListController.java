@@ -97,6 +97,8 @@ import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -173,6 +175,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private BaseSecurityManager baseSecurityManager;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private GradeModule gradeModule;
 	
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
@@ -186,6 +190,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(HelpAdminController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.canModify = canModify;
 		this.assessedIdentity = assessedIdentity;
@@ -323,8 +328,11 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName, treeRenderer));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.curriculumElIdent));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.completion, new LearningProgressCompletionCellRenderer()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
+		if (gradeModule.isEnabled()) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.grade));
+		}
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new CertificateAndEfficiencyPassedCellRenderer(getLocale())));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));		
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUserUpdate));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity, getLocale())));
@@ -506,7 +514,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		}
 		
 		tableRows.sort(new CertificateAndEfficiencyStatementTreeComparator(getLocale()));
-		tableRows.forEach(row -> forgeToolsLinks(row));
+		tableRows.forEach(this::forgeToolsLinks);
 		
 		tableModel.setObjects(tableRows);
 		tableModel.openAll();
@@ -598,6 +606,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setDisplayName(efficiencyStatement.getTitle());
 			wrapper.setPassed(efficiencyStatement.getPassed());
 			wrapper.setScore(efficiencyStatement.getScore());
+			wrapper.setGrade(GradeUIFactory.translatePerformanceClass(getTranslator(), efficiencyStatement.getPerformanceClassIdent(), efficiencyStatement.getGrade()));
 			wrapper.setEfficiencyStatementKey(efficiencyStatement.getKey());
 			wrapper.setResourceKey(efficiencyStatement.getResourceKey());
 			wrapper.setLastModified(efficiencyStatement.getLastModified());
@@ -658,7 +667,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			statments.removeIf(statement -> coursesWithCurriculumKeys.contains(statement.getResourceKey()));
 		}
 		
-		statments.forEach(row -> forgeToolsLinks(row));
+		statments.forEach(this::forgeToolsLinks);
 		
 		tableModel.setObjects(statments);
 		tableModel.openAll();

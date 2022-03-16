@@ -37,7 +37,7 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
  */
 public class AssessmentEvaluation extends ScoreEvaluation {
 	
-	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation((Float)null, (Boolean)null);
+	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation();
 	
 	private final Float maxScore;
 	private final Overridable<Boolean> passedOverridable;
@@ -60,28 +60,22 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	private final Date fullyAssessedDate;
 	private final Date firstVisit;
 	private final Date lastVisit;
-
-	public AssessmentEvaluation(Float score, Boolean passed) {
-		this(score, passed, null, null);
+	
+	private AssessmentEvaluation() {
+		this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+				null, -1, null, null, null, null, null, null, null, null, null, null);
 	}
 
-	public AssessmentEvaluation(final Float score, final Boolean passed, final Boolean fullyAssessed) {
-		this(score, passed, fullyAssessed, null);
-	}
-
-	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, null, passed, Overridable.of(passed), null, null, null, null, null, fullyAssessed, null, null, null, null, assessmentID,
-				null, null, -1, null, null, null, null, null, null, null, null, null, null);
-	}
-
-	public AssessmentEvaluation(Float score, Float maxScore, Boolean passed, Overridable<Boolean> passedOverridable,
-			Integer attempts, Date lastAttempt, Double completion, AssessmentEntryStatus assessmentStatus,
-			Boolean userVisibility, Boolean fullyAssessed, Date fullyAssessedDate, Date currentRunStart, Double currentRunCompletion,
-			AssessmentRunStatus runStatus, Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs,
-			Date lastModified, Date lastUserModified, Date lastCoachModified, Date assessmentDone,
-			Date startDate, Overridable<Date> endDate, ObligationOverridable obligation, Integer duration,
-			Date firstVisit, Date lastVisit) {
-		super(score, passed, assessmentStatus, userVisibility, currentRunStart, currentRunCompletion, runStatus, assessmentID);
+	public AssessmentEvaluation(Float score, Float maxScore, String grade, String performanceClassIdent, Boolean passed,
+			Overridable<Boolean> passedOverridable, Integer attempts, Date lastAttempt, Double completion,
+			AssessmentEntryStatus assessmentStatus, Boolean userVisibility, Boolean fullyAssessed,
+			Date fullyAssessedDate, Date currentRunStart, Double currentRunCompletion, AssessmentRunStatus runStatus,
+			Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs, Date lastModified,
+			Date lastUserModified, Date lastCoachModified, Date assessmentDone, Date startDate,
+			Overridable<Date> endDate, ObligationOverridable obligation, Integer duration, Date firstVisit,
+			Date lastVisit) {
+		super(score, grade, performanceClassIdent, passed, assessmentStatus, userVisibility, currentRunStart,
+				currentRunCompletion, runStatus, assessmentID);
 		this.maxScore = maxScore;
 		this.passedOverridable = passedOverridable;
 		this.attempts = attempts;
@@ -111,12 +105,13 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 * @param assessmentStatus
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
-		this(eval.getScore(), eval.getMaxScore(), eval.getPassed(), eval.getPassedOverridable(), eval.getAttempts(),
-				eval.getLastAttempt(), eval.getCompletion(), assessmentStatus, eval.getUserVisible(),
-				eval.getFullyAssessed(), eval.getFullyAssessedDate(), eval.getCurrentRunStartDate(), eval.getCurrentRunCompletion(),
-				eval.getCurrentRunStatus(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1,
-				eval.getLastModified(), eval.getLastUserModified(), eval.getLastCoachModified(), eval.getAssessmentDone(),
-				eval.getStartDate(), eval.getEndDate(), eval.getObligation(), eval.getDuration(), eval.getFirstVisit(), eval.getLastVisit());
+		this(eval.getScore(), eval.getMaxScore(), eval.getGrade(), eval.getPerformanceClassIdent(), eval.getPassed(),
+				eval.getPassedOverridable(), eval.getAttempts(), eval.getLastAttempt(), eval.getCompletion(),
+				assessmentStatus, eval.getUserVisible(), eval.getFullyAssessed(), eval.getFullyAssessedDate(),
+				eval.getCurrentRunStartDate(), eval.getCurrentRunCompletion(), eval.getCurrentRunStatus(),
+				eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1, eval.getLastModified(),
+				eval.getLastUserModified(), eval.getLastCoachModified(), eval.getAssessmentDone(), eval.getStartDate(),
+				eval.getEndDate(), eval.getObligation(), eval.getDuration(), eval.getFirstVisit(), eval.getLastVisit());
 	}
 	
 	public Float getMaxScore() {
@@ -213,9 +208,15 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		
 		Float score = null;
 		Float maxScore = null;
+		String grade = null;
+		String performanceClassIdent = null;
 		if(Mode.none != assessmentConfig.getScoreMode()) {
 			score = entry.getScore() == null ? null : entry.getScore().floatValue();
 			maxScore = entry.getMaxScore() == null ? null : entry.getMaxScore().floatValue();
+			if (assessmentConfig.hasGrade()) {
+				grade = entry.getGrade();
+				performanceClassIdent = entry.getPerformanceClassIdent();
+			}
 		}
 		
 		Boolean passed = null;
@@ -243,11 +244,12 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			runStatus = entry.getCurrentRunStatus();
 		}
 		
-		return new AssessmentEvaluation(score, maxScore, passed, passedOverridable, attempts, lastAttempt, completion,
-				entry.getAssessmentStatus(), entry.getUserVisibility(), entry.getFullyAssessed(), entry.getFullyAssessedDate(), currentRunStartDate,
-				currentRunCompletion, runStatus, entry.getAssessmentId(), comment,
-				entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(), entry.getLastModified(),
-				entry.getLastUserModified(), entry.getLastCoachModified(), entry.getAssessmentDone(), entry.getStartDate(),
-				entry.getEndDate(), entry.getObligation(), entry.getDuration(), entry.getFirstVisit(), entry.getLastVisit());
+		return new AssessmentEvaluation(score, maxScore, grade, performanceClassIdent, passed, passedOverridable,
+				attempts, lastAttempt, completion, entry.getAssessmentStatus(), entry.getUserVisibility(),
+				entry.getFullyAssessed(), entry.getFullyAssessedDate(), currentRunStartDate, currentRunCompletion,
+				runStatus, entry.getAssessmentId(), comment, entry.getCoachComment(),
+				entry.getNumberOfAssessmentDocuments(), entry.getLastModified(), entry.getLastUserModified(),
+				entry.getLastCoachModified(), entry.getAssessmentDone(), entry.getStartDate(), entry.getEndDate(),
+				entry.getObligation(), entry.getDuration(), entry.getFirstVisit(), entry.getLastVisit());
 	}
 }

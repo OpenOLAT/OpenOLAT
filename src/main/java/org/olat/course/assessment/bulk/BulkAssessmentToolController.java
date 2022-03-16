@@ -117,7 +117,7 @@ public class BulkAssessmentToolController extends BasicController {
 	}
 	
 	private Feedback doBulkAssessment(Date scheduledDate, BulkAssessmentDatas datas) {
-		BulkAssessmentTask task = new BulkAssessmentTask(courseOres, courseNode, datas, getIdentity().getKey());
+		BulkAssessmentTask task = new BulkAssessmentTask(courseOres, courseNode, datas, getIdentity().getKey(), getLocale());
 		Feedback feedback;
 		if(scheduledDate == null) {
 			List<BulkAssessmentFeedback> feedbacks = task.process();

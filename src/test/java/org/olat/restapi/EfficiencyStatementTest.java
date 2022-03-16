@@ -73,7 +73,7 @@ public class EfficiencyStatementTest extends OlatRestTestCase {
 		
 		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		UserEfficiencyStatement statement = efficiencyStatementManager
-				.createUserEfficiencyStatement(new Date(), 5.0f, true, assessedIdentity, resource);
+				.createUserEfficiencyStatement(new Date(), 5.0f, "g1", "pc1", true, assessedIdentity, resource);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(statement);
 		
@@ -90,6 +90,8 @@ public class EfficiencyStatementTest extends OlatRestTestCase {
 		EfficiencyStatementVO statementVO = conn.parse(response, EfficiencyStatementVO.class);
 		Assert.assertNotNull(statementVO);
 		Assert.assertEquals(5.0f, statementVO.getScore(), 0.0001);
+		Assert.assertEquals("g1", statementVO.getGrade());
+		Assert.assertEquals("pc1", statementVO.getPerformanceClassIdent());
 		Assert.assertEquals(true, statementVO.getPassed());
 		Assert.assertEquals(assessedIdentity.getKey(), statementVO.getIdentityKey());
 	}

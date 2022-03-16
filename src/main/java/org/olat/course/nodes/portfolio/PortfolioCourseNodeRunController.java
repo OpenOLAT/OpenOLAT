@@ -46,6 +46,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -62,6 +63,8 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
@@ -99,10 +102,13 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	private PortfolioService portfolioService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
 	
 	public PortfolioCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			PortfolioCourseNode courseNode) {
 		super(ureq, wControl, "run");
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.courseNode = courseNode;
 		this.config = courseNode.getModuleConfiguration();
@@ -293,15 +299,23 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 				assessmentInfosContainer.contextPut("scoreMax", AssessmentHelper.getRoundedScore(maxScore));
 				assessmentInfosContainer.contextPut("score", AssessmentHelper.getRoundedScore(score));
 			}
-
+			
+			// grade
+			boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
+			assessmentInfosContainer.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
+			assessmentInfosContainer.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
+					scoreEval.getPerformanceClassIdent(), scoreEval.getGrade()));
+			
 			//passed
 			assessmentInfosContainer.contextPut("hasPassedField", hasPassed);
 			if(hasPassed.booleanValue()) {
 				Boolean passed = scoreEval.getPassed();
 				assessmentInfosContainer.contextPut("passed", passed);
-				assessmentInfosContainer.contextPut("hasPassedValue", new Boolean(passed != null));
-				Float cutValue = assessmentConfig.getCutValue();
-				assessmentInfosContainer.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(cutValue));
+				assessmentInfosContainer.contextPut("hasPassedValue", Boolean.valueOf(passed != null));
+				if (!hasGrade) {
+					Float cutValue = assessmentConfig.getCutValue();
+					assessmentInfosContainer.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(cutValue));
+				}
 			}
 
 			// get comment

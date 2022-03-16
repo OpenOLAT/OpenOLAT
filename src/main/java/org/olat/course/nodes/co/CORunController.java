@@ -352,7 +352,7 @@ public class CORunController extends BasicController {
 		if (!userCourseEnv.isCourseReadOnly() && userCourseEnv.isParticipant()) {
 			AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 			if (!AssessmentEntryStatus.done.equals(assessmentEvaluation.getAssessmentStatus())) {
-				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.done, null, null, null, null, null);
+				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, null, null, AssessmentEntryStatus.done, null, null, null, null, null);
 				courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, null, false, Role.user);
 				fireEvent(ureq, AssessmentEvents.CHANGED_EVENT);
 			}

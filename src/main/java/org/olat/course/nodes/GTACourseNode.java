@@ -105,6 +105,9 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext.CopyType;
@@ -396,6 +399,17 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 				sd.setDescriptionForUnit(getIdent());
 				sd.setActivateableViewIdentifier(GTAEditController.PANE_TAB_WORKLOW);
 				sdList.add(sd);
+			}
+			
+			// Grade
+			if (hasScoring) {
+				if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+					GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+					GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
+					if (gradeScale == null) {
+						addStatusErrorDescription("error.missing.grade.scale", GTAEditController.PANE_TAB_GRADING, sdList);
+					}
+				}
 			}
 		}
 
@@ -911,6 +925,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		notificationsManager.delete(markedSubscriptionContext);
 		SubscriptionContext subscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), this, false);
 		notificationsManager.delete(subscriptionContext);
+		
+		// Delete GradeScales
+		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, getIdent());
 	}
 	
 	public boolean isOptional(CourseEnvironment coursEnv, UserCourseEnvironment userCourseEnv) {

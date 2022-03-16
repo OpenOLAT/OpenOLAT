@@ -108,6 +108,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 
 	@Override
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
+		super.initGradeScaleEditButton(formLayout);
 		super.initBulkStatusTools(ureq, formLayout);
 		
 		ModuleConfiguration config =  courseNode.getModuleConfiguration();

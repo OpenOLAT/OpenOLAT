@@ -1362,6 +1362,8 @@ create table o_as_eff_statement (
    creationdate timestamp,
    passed boolean,
    score float4,
+   grade varchar(100),
+   performance_class_ident varchar(50),
    total_nodes int4,
    attempted_nodes int4,
    passed_nodes int4,
@@ -1401,6 +1403,8 @@ create table o_as_entry (
    a_last_attempt timestamp,
    a_score decimal default null,
    a_max_score decimal default null,
+   a_grade varchar(100),
+   a_performance_class_ident varchar(50),
    a_passed bool default null,
    a_passed_original bool,
    a_passed_mod_date timestamp,
@@ -1571,6 +1575,57 @@ create table o_cer_certificate (
    c_archived_resource_id int8 not null,
    fk_olatresource int8,
    fk_identity int8 not null,
+   primary key (id)
+);
+
+-- Grade
+create table o_gr_grade_system (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_identifier varchar(64) not null,
+   g_predefined bool not null default false,
+   g_type varchar(32) not null,
+   g_enabled bool not null default true,
+   g_resolution varchar(32),
+   g_rounding varchar(32),
+   g_best_grade int8,
+   g_lowest_grade int8,
+   g_cut_value decimal(65,30),
+   primary key (id)
+);
+
+create table o_gr_performance_class (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_identifier varchar(50),
+   g_best_to_lowest int8,
+   g_passed bool not null default false,
+   fk_grade_system int8 not null,
+   primary key (id)
+);
+
+create table o_gr_grade_scale (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_min_score decimal(65,30),
+   g_max_score decimal(65,30),
+   fk_grade_system int8,
+   fk_entry int8 not null,
+   g_subident varchar(64) not null,
+   primary key (id)
+);
+
+create table o_gr_breakpoint (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   g_value decimal(65,30),
+   g_grade varchar(50),
+   g_best_to_lowest int8,
+   fk_grade_scale int8 not null,
    primary key (id)
 );
 
@@ -4182,6 +4237,17 @@ create index idx_compensation_entry_idx on o_as_compensation(fk_entry);
 
 create index comp_log_entry_idx on o_as_compensation_log (fk_entry_id);
 create index comp_log_ident_idx on o_as_compensation_log (fk_identity_id);
+
+-- Grade
+create unique index idx_grade_system_ident on o_gr_grade_system (g_identifier);
+alter table o_gr_grade_scale add constraint grscale_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+create index idx_grscale_to_grsys_idx on o_gr_grade_scale (fk_grade_system);
+alter table o_gr_performance_class add constraint perf_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+create index idx_perf_to_grsys_idx on o_gr_performance_class (fk_grade_system);
+alter table o_gr_grade_scale add constraint grscale_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_grscale_entry_idx on o_gr_grade_scale (fk_entry);
+alter table o_gr_breakpoint add constraint grbp_to_grscale_idx foreign key (fk_grade_scale) references o_gr_grade_scale (id);
+create index idx_grbp_to_grscale_idx on o_gr_breakpoint (fk_grade_scale);
 
 -- calendar
 alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

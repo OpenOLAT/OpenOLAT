@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -86,6 +87,11 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessmentForm;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -109,6 +115,7 @@ public class GroupAssessmentController extends FormBasicController {
 	private GroupAssessmentModel model;
 	private FormLink saveAndDoneButton;
 	private TextElement groupScoreEl, groupCommentEl;
+	private MultipleSelectionElement groupApplyGradeEl;
 	private SingleSelection userVisibilityEl;
 	private MultipleSelectionElement groupPassedEl, applyToAllEl;
 	private FormLayoutContainer groupDocsLayoutCont;
@@ -122,12 +129,14 @@ public class GroupAssessmentController extends FormBasicController {
 	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private Float cutValue;
-	private final boolean withScore, withPassed, withDocs, withComment;
+	private final boolean withScore, withGrade, withAutoGrade, withPassed, withDocs, withComment;
 	private final GTACourseNode gtaNode;
 	private final RepositoryEntry courseEntry;
 	private final BusinessGroup assessedGroup;
 	private File assessmentDocsTmpDir;
 	private int counter = 0;
+	private final List<Long> duplicateMemberKeys;
+	
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -139,21 +148,26 @@ public class GroupAssessmentController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	
-	private final List<Long> duplicateMemberKeys;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	
 	public GroupAssessmentController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, GTACourseNode courseNode, BusinessGroup assessedGroup) {
 		super(ureq, wControl, "assessment_per_group");
 		setTranslator(Util.createPackageTranslator(AssessmentForm.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.gtaNode = courseNode;
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
 
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		withScore = Mode.none != assessmentConfig.getScoreMode();
+		withGrade = withScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
+		withAutoGrade = withGrade && assessmentConfig.isAutoGrade();
 		withPassed = Mode.none != assessmentConfig.getPassedMode();
-		if(withPassed) {
+		if(withPassed && !withGrade) {
 			cutValue = assessmentConfig.getCutValue();
 		}
 		withDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
@@ -189,15 +203,19 @@ public class GroupAssessmentController extends FormBasicController {
 		applyToAllEl.addActionListener(FormEvent.ONCHANGE);
 		applyToAllEl.setElementCssClass("o_sel_course_gta_apply_to_all");
 		
-		if(withPassed && cutValue == null) {
-			groupPassedEl = uifactory.addCheckboxesHorizontal("checkgroup", "group.passed", groupGradingCont, onKeys, onValues);
-			groupPassedEl.setElementCssClass("o_sel_course_gta_group_passed");
-		}
-		
 		if(withScore) {
 			String pointVal = "";
 			groupScoreEl = uifactory.addTextElement("pointgroup", "group.score", 5, pointVal, groupGradingCont);
 			groupScoreEl.setElementCssClass("o_sel_course_gta_group_score");
+		}
+		
+		if(withGrade && !withAutoGrade) {
+			groupApplyGradeEl = uifactory.addCheckboxesVertical("grade.apply", groupGradingCont, onKeys, onValues, 1);
+		}
+		
+		if(withPassed && cutValue == null && !withGrade) {
+			groupPassedEl = uifactory.addCheckboxesHorizontal("checkgroup", "group.passed", groupGradingCont, onKeys, onValues);
+			groupPassedEl.setElementCssClass("o_sel_course_gta_group_passed");
 		}
 		
 		if(withDocs) {
@@ -249,14 +267,18 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 		}
 		
-		if(withPassed && cutValue == null) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passedEl.i18nKey(), Cols.passedEl.ordinal()));
-		}
-
 		if(withScore) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.scoreEl.i18nKey(), Cols.scoreEl.ordinal()));
 		}
 		
+		if (withGrade && !withAutoGrade) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.applyGradeEl.i18nKey(), Cols.applyGradeEl.ordinal()));
+		}
+		
+		if(withPassed && cutValue == null && !withGrade) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passedEl.i18nKey(), Cols.passedEl.ordinal()));
+		}
+
 		if(withDocs) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.assessmentDocsEl.i18nKey(), Cols.assessmentDocsEl.ordinal()));
 		}
@@ -304,6 +326,18 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 			
+			if(groupApplyGradeEl != null) {
+				groupApplyGradeEl.setVisible(true);
+			}
+			if(userVisibilityEl != null) {
+				userVisibilityEl.setVisible(true);
+				if(modelInfos.getUserVisible() == null || modelInfos.getUserVisible().booleanValue()) {
+					userVisibilityEl.select(KEY_VISIBLE, true);
+				} else {
+					userVisibilityEl.select(KEY_HIDDEN, true);
+				}
+			}
+			
 			if(groupDocsLayoutCont != null) {
 				groupDocsLayoutCont.setVisible(true);
 				for (File assessmentDoc : modelInfos.getAssessmentDocs()) {
@@ -336,6 +370,12 @@ public class GroupAssessmentController extends FormBasicController {
 			if(groupScoreEl != null) {
 				groupScoreEl.setVisible(false);
 			}
+			if(groupApplyGradeEl != null) {
+				groupApplyGradeEl.setVisible(false);
+			}
+			if(userVisibilityEl != null) {
+				userVisibilityEl.setVisible(false);
+			}
 			if(groupDocsLayoutCont != null) {
 				groupDocsLayoutCont.setVisible(false);
 			}
@@ -344,15 +384,6 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 			if(groupCommentEl != null) {
 				groupCommentEl.setVisible(false);
-			}
-		}
-		
-		if(userVisibilityEl != null) {
-			userVisibilityEl.setVisible(true);
-			if(modelInfos.getUserVisible() == null || modelInfos.getUserVisible().booleanValue()) {
-				userVisibilityEl.select(KEY_VISIBLE, true);
-			} else {
-				userVisibilityEl.select(KEY_HIDDEN, true);
 			}
 		}
 		
@@ -416,7 +447,7 @@ public class GroupAssessmentController extends FormBasicController {
 			AssessmentEntry entry = identityToEntryMap.get(identity);
 			
 			ScoreEvaluation scoreEval = null;
-			if(withScore || withPassed) {
+			if(withScore || withGrade || withPassed) {
 				scoreEval = courseAssessmentService.toAssessmentEvaluation(entry, gtaNode);
 				if (scoreEval == null) {
 					scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
@@ -448,6 +479,19 @@ public class GroupAssessmentController extends FormBasicController {
 				} else if(!same(scoreRef, score)) {
 					same = false;
 				}
+			}
+			
+			if(withGrade) {
+				String grade = scoreEval.getGrade();
+				row.setGrade(grade);
+				
+				MultipleSelectionElement gradeEl = uifactory.addCheckboxesHorizontal("grade" + count, null, flc, onKeys, onValues);
+				gradeEl.setEvaluationOnlyVisible(true);
+				if(StringHelper.containsNonWhitespace(grade)) {
+					gradeEl.select(onKeys[0], true);
+					gradeEl.setEnabled(false);
+				}
+				row.setApplyGradeEl(gradeEl);
 			}
 			
 			if(withPassed && cutValue == null) {
@@ -603,6 +647,12 @@ public class GroupAssessmentController extends FormBasicController {
 			if(groupScoreEl != null) {
 				groupScoreEl.setVisible(allGroup);
 			}
+			if(groupApplyGradeEl != null) {
+				groupApplyGradeEl.setVisible(allGroup);
+			}
+			if(userVisibilityEl != null) {
+				userVisibilityEl.setVisible(allGroup);
+			}
 			if(groupDocsLayoutCont != null) {
 				groupDocsLayoutCont.setVisible(allGroup);
 			}
@@ -696,6 +746,12 @@ public class GroupAssessmentController extends FormBasicController {
 	
 	private void applyChangesForEveryMemberGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
+
+		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
+		if (withGrade) {
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, gtaNode.getIdent());
+			gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+		}
 		
 		for(AssessmentRow row:rows) {
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
@@ -709,7 +765,19 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 			
 			Boolean passed = null;
-			if(withPassed) {
+			String grade = null;
+			String performanceClassIdent = null;
+			if(withGrade && score != null && (withAutoGrade || row.getApplyGradeEl().isAtLeastSelected(1))) {
+				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+				grade = gradeScoreRange.getGrade();
+				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+				if (withPassed) {
+					passed = Boolean.valueOf(gradeScoreRange.isPassed());
+				}
+				
+			}
+			
+			if(withPassed && !withGrade) {
 				if(cutValue == null) {
 					passed = row.getPassedEl().isSelected(0);
 				} else if(score != null) {
@@ -719,9 +787,9 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, null, null,null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, userVisible, null, null,null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, userVisible, null, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
@@ -745,22 +813,41 @@ public class GroupAssessmentController extends FormBasicController {
 			}
 		}
 		
-		Boolean passed = null;
-		if(withPassed) {
-			if(cutValue == null) {
-				passed = groupPassedEl.isSelected(0);
-			} else if(score != null) {
-				passed = (score.floatValue() >= cutValue.floatValue()) ? Boolean.TRUE	: Boolean.FALSE;
-			}
+		GradeScoreRange gradeScoreRange = null;
+		if(withGrade && score != null) {
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, gtaNode.getIdent());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+			gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
 		}
 		
+		Boolean groupPassed = null;
+		if(withPassed && !withGrade) {
+			if(cutValue == null) {
+				groupPassed = groupPassedEl.isSelected(0);
+			} else if(score != null) {
+				groupPassed = (score.floatValue() >= cutValue.floatValue()) ? Boolean.TRUE : Boolean.FALSE;
+			}
+		}
+
 		for(AssessmentRow row:rows) {
+			String grade = null;
+			String performanceClassIdent = null;
+			Boolean passed = groupPassed;
+			if (withGrade && gradeScoreRange != null 
+					&& (withAutoGrade || groupApplyGradeEl.isAtLeastSelected(1) || StringHelper.containsNonWhitespace(row.getGrade()))) {
+				grade = gradeScoreRange.getGrade();
+				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+				if (withPassed) {
+					groupPassed = Boolean.valueOf(gradeScoreRange.isPassed());
+				}
+			}
+			
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, AssessmentEntryStatus.done, userVisible, null, null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, userVisible, null, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}

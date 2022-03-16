@@ -140,10 +140,11 @@ public class ConfirmReopenAssessmentEntryController extends FormBasicController 
 		if(courseNode != null) {
 			ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 			if (scoreEval != null) {
-				ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-						AssessmentEntryStatus.inReview, scoreEval.getUserVisible(),
-						scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
-						scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+				ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+						scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.inReview,
+						scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+						scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
+						scoreEval.getAssessmentID());
 				courseAssessmentService.updateScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
 						getIdentity(), false, Role.coach);
 			}

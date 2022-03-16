@@ -88,6 +88,8 @@ public enum StringResourceableType implements ILoggingResourceableType {
 	/** the number of attemts - in QTI **/
 	qtiAttempts,
 
+	qtiGrade,
+
 	/** the score - in QTI **/
 	qtiScore,
 

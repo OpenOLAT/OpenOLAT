@@ -338,7 +338,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	}
 	
 	private Feedback doUpdateBulkAssessment(Task task, CourseNode node, Date scheduledDate, BulkAssessmentDatas datas) {
-		BulkAssessmentTask runnable = new BulkAssessmentTask(courseEntry.getOlatResource(), node, datas, getIdentity().getKey());
+		BulkAssessmentTask runnable = new BulkAssessmentTask(courseEntry.getOlatResource(), node, datas, getIdentity().getKey(), getLocale());
 		Feedback feedback;
 		if(scheduledDate == null) {
 			List<BulkAssessmentFeedback> feedbacks = runnable.process();
@@ -354,7 +354,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	}
 	
 	private Feedback doBulkAssessment(CourseNode node, Date scheduledDate, BulkAssessmentDatas datas) {
-		BulkAssessmentTask task = new BulkAssessmentTask(courseEntry.getOlatResource(), node, datas, getIdentity().getKey());
+		BulkAssessmentTask task = new BulkAssessmentTask(courseEntry.getOlatResource(), node, datas, getIdentity().getKey(), getLocale());
 		Feedback feedback;
 		if(scheduledDate == null) {
 			List<BulkAssessmentFeedback> feedbacks = task.process();

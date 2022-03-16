@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xsi:schemaLocation="
+  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- Admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8213" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.grade.ui.GradeAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="grade" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.modules.grade.ui"/>
+		<property name="parentTreeNodeIdentifier" value="eAssessmentParent" />
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+	</bean>
+
+</beans>

@@ -131,7 +131,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		updateUserEfficiencyStatement(userCourseEnv, re);
 	}
 
-	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, Boolean passed, Identity identity, OLATResource resource) {
+	public UserEfficiencyStatement createUserEfficiencyStatement(Date creationDate, Float score, String grade,
+			String performanceClassIdent, Boolean passed, Identity identity, OLATResource resource) {
 		UserEfficiencyStatementImpl efficiencyProperty = new UserEfficiencyStatementImpl();
 		efficiencyProperty.setVersion(0);
 		if(creationDate == null) {
@@ -142,6 +143,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			efficiencyProperty.setLastModified(new Date());
 		}
 		efficiencyProperty.setScore(score);
+		efficiencyProperty.setGrade(grade);
+		efficiencyProperty.setPerformanceClassIdent(performanceClassIdent);
 		efficiencyProperty.setPassed(passed);
 
 		efficiencyProperty.setTotalNodes(0);
@@ -161,9 +164,9 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		return efficiencyProperty;
 	}
 	
-	public UserEfficiencyStatement createStandAloneUserEfficiencyStatement(Date creationDate, Float score, Boolean passed,
-			Integer totalNodes, Integer attemptedNodes, Integer passedNodes, String statementXml,
-			Identity identity, Long resourceKey, String courseTitle) {
+	public UserEfficiencyStatement createStandAloneUserEfficiencyStatement(Date creationDate, Float score, String grade,
+			String performanceClassIdent, Boolean passed, Integer totalNodes, Integer attemptedNodes,
+			Integer passedNodes, String statementXml, Identity identity, Long resourceKey, String courseTitle) {
 		UserEfficiencyStatementStandalone efficiencyProperty = new UserEfficiencyStatementStandalone();
 		if(creationDate != null) {
 			efficiencyProperty.setCreationDate(creationDate);
@@ -174,6 +177,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		}
 
 		efficiencyProperty.setScore(score);
+		efficiencyProperty.setGrade(grade);
+		efficiencyProperty.setPerformanceClassIdent(performanceClassIdent);
 		efficiencyProperty.setPassed(passed);
 
 		efficiencyProperty.setTotalNodes(totalNodes == null ? Integer.valueOf(0) : totalNodes);
@@ -330,6 +335,16 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 				efficiencyProperty.setScore(null);
 			}
 	
+			Object grade = rootNode.get(AssessmentHelper.KEY_GRADE);
+			if(grade instanceof String) {
+				efficiencyProperty.setGrade((String)grade);
+			}
+			
+			Object performanceClassIdent = rootNode.get(AssessmentHelper.KEY_PERFORMANCE_CLASS_IDENT);
+			if(performanceClassIdent instanceof String) {
+				efficiencyProperty.setPerformanceClassIdent((String)performanceClassIdent);
+			}
+			
 			Object shortTitle = rootNode.get(AssessmentHelper.KEY_TITLE_SHORT);
 			if(shortTitle instanceof String) {
 				efficiencyProperty.setShortTitle((String)shortTitle);
@@ -368,27 +383,6 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		efficiencyProperty.setLastModified(new Date());
 		efficiencyProperty.setStatementXml(toXML(efficiencyStatement));
 	}
-	
-	/**
-	 * LD: Debug method. 
-	 * @param efficiencyStatement
-	 */
-	protected void printEfficiencyStatement(EfficiencyStatement efficiencyStatement) {
-		List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
-		if (assessmentNodes != null) {
-			Iterator<Map<String,Object>> iter = assessmentNodes.iterator();
-			while (iter.hasNext()) {
-				Map<String,Object> nodeData = iter.next();
-				String title = (String)nodeData.get(AssessmentHelper.KEY_TITLE_SHORT);
-				String score = (String)nodeData.get(AssessmentHelper.KEY_SCORE);
-				Boolean passed = (Boolean)nodeData.get(AssessmentHelper.KEY_PASSED);
-				Integer attempts = (Integer)nodeData.get(AssessmentHelper.KEY_ATTEMPTS);
-				String attemptsStr = attempts==null ? null : String.valueOf(attempts.intValue());				
-				log.info("title: {} score: {} passed: {} attempts: {}", title, score, passed, attemptsStr);				
-			}
-		}		
-	}
-	
 
 	/**
 	 * Get the user efficiency statement list for this course

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -80,6 +81,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -100,6 +102,10 @@ import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.modules.grading.GraderToIdentity;
 import org.olat.modules.grading.GradingAssessedIdentityVisibility;
 import org.olat.modules.grading.GradingAssignment;
@@ -188,6 +194,10 @@ public class GradingAssignmentsListController extends FormBasicController implem
 	private UserManager userManager;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	@Autowired
 	private GradingService gradingService;
 	@Autowired
@@ -625,7 +635,7 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			
 			CourseEnvironment courseEnv = course.getCourseEnvironment();
 			Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-			
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(testSessionsToComplete.getIdentity(), courseEnv);
@@ -633,17 +643,31 @@ public class GradingAssignmentsListController extends FormBasicController implem
 			
 			BigDecimal finalScore = testSessionsToComplete.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
+			String grade = scoreEval.getGrade();
+			String performanceClassIdent = scoreEval.getPerformanceClassIdent();
 			Boolean passed = scoreEval.getPassed();
-			if(testSessionsToComplete.getManualScore() != null && finalScore != null && cutValue != null) {
-				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
-				passed = Boolean.valueOf(calculated);
+			if(testSessionsToComplete.getManualScore() != null && finalScore != null) {
+				if (assessmentConfig.hasGrade() && gradeModule.isEnabled()) {
+					if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(scoreEval.getGrade())) {
+						GradeScale gradeScale = gradeService.getGradeScale(
+								courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent());
+						NavigableSet<GradeScoreRange> gradeScoreRanges = null;gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+						grade = gradeScoreRange.getGrade();
+						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+						passed = Boolean.valueOf(gradeScoreRange.isPassed());
+					}
+				} else if (cutValue != null) {
+					boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+					passed = Boolean.valueOf(calculated);
+				}
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
 			userVisible = scoreEval.getUserVisible();
 			if(finalStatus == AssessmentEntryStatus.done && courseNode instanceof IQTESTCourseNode) {
 				userVisible = Boolean.valueOf(((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection());
 			}
-			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,
 					finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), testSessionsToComplete.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,

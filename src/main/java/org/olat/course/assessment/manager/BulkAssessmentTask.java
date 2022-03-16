@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.NavigableSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -95,6 +96,10 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -118,17 +123,19 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 	private BulkAssessmentDatas datas;
 	private BulkAssessmentSettings settings;
 	private Long coachedIdentity;
+	private Locale coachLocale;
 	
 	private transient Task task;
 	private transient File unzipped;
 
 	public BulkAssessmentTask(OLATResourceable courseRes, CourseNode courseNode, BulkAssessmentDatas datas,
-			Long coachedIdentity) {
+			Long coachedIdentity, Locale coachLocale) {
 		this.courseRes = OresHelper.clone(courseRes);
 		this.courseNodeIdent = courseNode.getIdent();
 		this.settings = new BulkAssessmentSettings(courseNode);
 		this.datas = datas;
 		this.coachedIdentity = coachedIdentity;
+		this.coachLocale = coachLocale;
 	}
 	
 	public String getCourseNodeIdent() {
@@ -313,6 +320,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		final DB dbInstance = DBFactory.getInstance();
 		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 		final CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		final GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
 		final CourseNode courseNode = getCourseNode();
@@ -320,6 +328,8 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		
 		final boolean hasUserComment = assessmentConfig.hasComment();
 		final boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		final boolean hasGrade = hasScore && assessmentConfig.hasGrade();
+		final boolean autoGrade = assessmentConfig.isAutoGrade() && CoreSpringFactory.getImpl(GradeModule.class).isEnabled();
 		final boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		final boolean hasReturnFiles = (StringHelper.containsNonWhitespace(datas.getReturnFiles())
 				&& (courseNode instanceof TACourseNode || courseNode instanceof GTACourseNode));
@@ -338,10 +348,17 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 		
 		Float min = null;
 		Float max = null;
+		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
 		Float cut = null;
 		if (hasScore) {
 			min = assessmentConfig.getMinScore();
 			max = assessmentConfig.getMaxScore();
+		}
+		if (hasGrade) {
+			GradeScale gradeScale = gradeService.getGradeScale(
+					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+					courseNode.getIdent());
+			gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, coachLocale);
 		}
 		if (hasPassed) {
 			cut = assessmentConfig.getCutValue();
@@ -384,13 +401,32 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 					// "bulk.action.greaterThanMax";
 				} else {
 					// score between minimum and maximum score
-					ScoreEvaluation se;
-					if (hasPassed && cut != null){
-						Boolean passed = (score.floatValue() >= cut.floatValue()) ? Boolean.TRUE	: Boolean.FALSE;
-						se = new ScoreEvaluation(score, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
-					} else {
-						se = new ScoreEvaluation(score, null, datas.getStatus(), datas.getVisibility(), null, null, null, null);
+					boolean applyGrade = autoGrade;
+					GradeScoreRange gradeScoreRange = null;
+					String grade = null;
+					String performanceClassIdent = null;
+					Boolean passed = null;
+					if (hasGrade) {
+						if (!applyGrade) {
+							ScoreEvaluation currentEval = uce.getScoreAccounting().evalCourseNode(courseNode);
+							applyGrade = StringHelper.containsNonWhitespace(currentEval.getGrade());
+						}
+						if (applyGrade) {
+							gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+							grade = gradeScoreRange.getGrade();
+							performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+						}
 					}
+					if (hasPassed) {
+						if (hasGrade) {
+							if (applyGrade && gradeScoreRange != null) {
+								passed = Boolean.valueOf(gradeScoreRange.isPassed());
+							}
+						} else if (cut != null) {
+							 passed = score.floatValue() >= cut.floatValue() ? Boolean.TRUE : Boolean.FALSE;
+						}
+					}
+					ScoreEvaluation se = new ScoreEvaluation(score, grade, performanceClassIdent, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 					
 					// Update score,passed properties in db, and the user's efficiency statement
 					courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, false, Role.auto);
@@ -401,8 +437,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			Boolean passed = row.getPassed();
 			if (hasPassed && passed != null && cut == null) { // Configuration of manual assessment --> Display passed/not passed: yes, Type of display: Manual by tutor
 				ScoreEvaluation seOld = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
-				Float oldScore = seOld.getScore();
-				ScoreEvaluation se = new ScoreEvaluation(oldScore, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
+				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), null, null, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
 				courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
@@ -432,10 +467,10 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable {
 			
 			if(!statusVisibilitySet && (datas.getStatus() != null || datas.getVisibility() != null)) {
 				ScoreEvaluation seOld = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
-				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getPassed(),
-						datas.getStatus(), datas.getVisibility(),
-						seOld.getCurrentRunStartDate(), seOld.getCurrentRunCompletion(),
-						seOld.getCurrentRunStatus(), seOld.getAssessmentID());
+				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getGrade(),
+						seOld.getPerformanceClassIdent(), seOld.getPassed(), datas.getStatus(), datas.getVisibility(),
+						seOld.getCurrentRunStartDate(), seOld.getCurrentRunCompletion(), seOld.getCurrentRunStatus(),
+						seOld.getAssessmentID());
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
 				courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);

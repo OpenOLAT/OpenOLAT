@@ -979,10 +979,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	private void updateCategories(OLATResourceable oresource, List<String> categories) {
 		List<Category> existingCategories = categoryDao.getCategories();
-		Map<String, Category> existingCategoriesMap = existingCategories.stream().collect(Collectors.toMap(category -> category.getName(), category -> category, (cat1, cat2) -> cat1));
+		Map<String, Category> existingCategoriesMap = existingCategories.stream().collect(Collectors.toMap(Category::getName, category -> category, (cat1, cat2) -> cat1));
 		
 		List<Category> currentCategories = categoryDao.getCategories(oresource);
-		Map<String,Category> currentCategoryMap = currentCategories.stream().collect(Collectors.toMap(category -> category.getName(), category -> category, (cat1, cat2) -> cat1));
+		Map<String,Category> currentCategoryMap = currentCategories.stream().collect(Collectors.toMap(Category::getName, category -> category, (cat1, cat2) -> cat1));
 		
 		List<String> newCategories = new ArrayList<>(categories);
 		for(String newCategory:newCategories) {
@@ -1113,7 +1113,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetencesToPortfolioPage(pageDelegate, false)) {
 				portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration(), TaxonomyCompetenceLinkLocations.PORTFOLIO));
 			}
-			updateCategories(page, getCategories(pageDelegate).stream().map(cat -> cat.getName()).collect(Collectors.toList()));
+			updateCategories(page, getCategories(pageDelegate).stream().map(Category::getName).collect(Collectors.toList()));
 		}
 		
 		groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
@@ -1601,7 +1601,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
-			ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), totalPassed, binderStatus, true, null, null, null, binder.getKey());
+			ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), null, null, totalPassed, binderStatus, true, null, null, null, binder.getKey());
 			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, coachingIdentity, false,
 					Role.coach);
@@ -1654,8 +1654,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 			AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(pfNode, userCourseEnv);
 			
-			ScoreEvaluation scoreEval = new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, true,
-					null, null, null, binder.getKey());
+			ScoreEvaluation scoreEval = new ScoreEvaluation(eval.getScore(), eval.getGrade(),
+					eval.getPerformanceClassIdent(), eval.getPassed(), status, true, null, null, null, binder.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv, coachingIdentity, false,
 					Role.coach);
 		} else {
@@ -1735,7 +1735,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public void linkCompetences(Page page, Identity identity, List<TextBoxItem> competences) {
 		List<TaxonomyCompetence> relatedCompetences = getRelatedCompetences(page, true);
-		List<TaxonomyLevel> relatedCompetenceLevels = relatedCompetences.stream().map(competence -> competence.getTaxonomyLevel()).collect(Collectors.toList());
+		List<TaxonomyLevel> relatedCompetenceLevels = relatedCompetences.stream().map(TaxonomyCompetence::getTaxonomyLevel).collect(Collectors.toList());
 		
 		List<Long> newTaxonomyLevelKeys = competences.stream()
 				.map(textBoxItem -> Long.valueOf(textBoxItem.getValue()))

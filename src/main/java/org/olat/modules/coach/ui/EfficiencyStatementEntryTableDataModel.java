@@ -87,6 +87,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 				}
 				case completion: return getCompletion(entry);
 				case score: return entry.getScore();
+				case grade: return entry;
 				case passed: return entry.getPassed();
 				case certificate: return getCertificate(entry);
 				case recertification: {
@@ -196,6 +197,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		repoName("table.header.course.name"),
 		completion("table.header.completion"),
 		score("table.header.score"),
+		grade("table.header.grade"),
 		passed("table.header.passed"),
 		certificate("table.header.certificate"),
 		recertification("table.header.recertification"),

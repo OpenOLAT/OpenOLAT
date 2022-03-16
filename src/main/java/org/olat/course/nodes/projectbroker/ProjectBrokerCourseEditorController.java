@@ -201,7 +201,8 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		editScoring = this.createVelocityContainer("editScoring");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", editScoring, this);
 
-		scoringController = new MSEditFormController(ureq, wControl, config, NodeAccessType.of(course));
+		scoringController = new MSEditFormController(ureq, wControl,
+				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), node, NodeAccessType.of(course));
 		listenTo(scoringController);
 		editScoring.put("scoringController", scoringController.getInitialComponent());
 		

@@ -1342,6 +1342,8 @@ create table if not exists o_as_eff_statement (
    creationdate datetime,
    passed bit default null,
    score float(65,30),
+   grade varchar(100),
+   performance_class_ident varchar(50),
    total_nodes mediumint,
    attempted_nodes mediumint,
    passed_nodes mediumint,
@@ -1379,6 +1381,8 @@ create table o_as_entry (
    a_last_attempt datetime null,
    a_score float(65,30) default null,
    a_max_score float(65,30) default null,
+   a_grade varchar(100),
+   a_performance_class_ident varchar(50),
    a_passed bit default null,
    a_passed_original bit,
    a_passed_mod_date datetime,
@@ -1552,6 +1556,58 @@ create table o_cer_certificate (
    primary key (id)
 );
 
+-- Grade
+create table o_gr_grade_system (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_identifier varchar(64) not null,
+   g_predefined bool not null default false,
+   g_type varchar(32) not null,
+   g_enabled bool not null default true,
+   g_resolution varchar(32),
+   g_rounding varchar(32),
+   g_best_grade integer,
+   g_lowest_grade integer,
+   g_cut_value decimal(65,30),
+   primary key (id)
+);
+
+create table o_gr_performance_class (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_identifier varchar(50),
+   g_best_to_lowest integer,
+   g_passed bool not null default false,
+   fk_grade_system bigint not null,
+   primary key (id)
+);
+
+create table o_gr_grade_scale (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_min_score decimal(65,30),
+   g_max_score decimal(65,30),
+   fk_grade_system bigint,
+   fk_entry bigint not null,
+   g_subident varchar(64) not null,
+   primary key (id)
+);
+
+create table o_gr_breakpoint (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_value decimal(65,30),
+   g_grade varchar(50),
+   g_best_to_lowest integer,
+   fk_grade_scale bigint not null,
+   primary key (id)
+);
+
+-- gotomeeting
 create table o_goto_organizer (
    id bigint not null,
    creationdate datetime not null,
@@ -3729,6 +3785,10 @@ alter table o_as_compensation ENGINE = InnoDB;
 alter table o_as_compensation_log ENGINE = InnoDB;
 alter table o_as_mode_course_to_area ENGINE = InnoDB;
 alter table o_as_mode_course_to_cur_el ENGINE = InnoDB;
+alter table o_gr_grade_system ENGINE = InnoDB;
+alter table o_gr_performance_class ENGINE = InnoDB;
+alter table o_gr_grade_scale ENGINE = InnoDB;
+alter table o_gr_breakpoint ENGINE = InnoDB;
 alter table o_cal_use_config ENGINE = InnoDB;
 alter table o_cal_import ENGINE = InnoDB;
 alter table o_cal_import_to ENGINE = InnoDB;
@@ -4252,6 +4312,13 @@ alter table o_as_compensation add constraint compensation_entry_idx foreign key 
 
 create index comp_log_entry_idx on o_as_compensation_log (fk_entry_id);
 create index comp_log_ident_idx on o_as_compensation_log (fk_identity_id);
+
+-- Grade
+create unique index idx_grsys_ident on o_gr_grade_system (g_identifier);
+alter table o_gr_grade_scale add constraint grscale_to_entry_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+alter table o_gr_performance_class add constraint perf_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+alter table o_gr_grade_scale add constraint grscale_to_grsys_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_gr_breakpoint add constraint grbp_to_grsys_idx foreign key (fk_grade_scale) references o_gr_grade_scale (id);
 
 -- gotomeeting
 alter table o_goto_organizer add constraint goto_organ_owner_idx foreign key (fk_identity) references o_bs_identity (id);

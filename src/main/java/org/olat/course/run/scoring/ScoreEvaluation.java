@@ -36,9 +36,11 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
  */
 public class ScoreEvaluation {
 	//works because it's immutable
-	public static final ScoreEvaluation EMPTY_EVALUATION = new ScoreEvaluation();
+	public static final ScoreEvaluation EMPTY_EVALUATION = new ScoreEvaluation(null, null);
 	
 	private final Float score;
+	private final String grade;
+	private final String performanceClassIdent;
 	private final Boolean passed; //could be Boolean.TRUE, Boolean.FALSE or null if "passed" info is not defined
 	private final Long assessmentID;
 	private final Boolean userVisible;
@@ -48,32 +50,26 @@ public class ScoreEvaluation {
 	private Double currentRunCompletion;
 	private AssessmentRunStatus runStatus;
 	
-	private ScoreEvaluation() {
-		this(null, null);
-	}
-	
 	/**
 	 * This make a clone of the given score evaluation.
 	 * 
 	 * @param scoreEval
 	 */
 	public ScoreEvaluation(ScoreEvaluation scoreEval) {
-		this(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
-				scoreEval.getAssessmentID());
+		this(scoreEval.getScore(), scoreEval.getGrade(), scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(),
+				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 	}
 
 	public ScoreEvaluation(Float score, Boolean passed) {
-		this(score, passed, null, null, null, null, null, null);
-	}
-
-	public ScoreEvaluation(Float score, Boolean passed, Long assessmentID) {
-		this(score, passed, null, null, null, null, null, assessmentID);
+		this(score, null, null, passed, null, null, null, null, null, null);
 	}
 	
-	public ScoreEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus,
+	public ScoreEvaluation(Float score, String grade, String performanceClassIdent, Boolean passed, AssessmentEntryStatus assessmentStatus,
 			Boolean userVisible, Date currentRunStartDate, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID) {
 		this.score = score;
+		this.grade = grade;
+		this.performanceClassIdent = performanceClassIdent;
 		this.passed = passed;
 		this.assessmentID = assessmentID;
 		this.userVisible = userVisible;
@@ -91,6 +87,14 @@ public class ScoreEvaluation {
 		return score;
 	}
 	
+	public String getGrade() {
+		return grade;
+	}
+
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return assessmentStatus;
 	}

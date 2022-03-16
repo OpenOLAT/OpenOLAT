@@ -349,7 +349,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 				
 				boolean currentValue = getSecureValue(checked, i);
 				boolean editedValue = getSecureValue(editedChecked, i);
-				Float currentPoint = getSecureValue(scores, i);;
+				Float currentPoint = getSecureValue(scores, i);
 				Float editedPoint;
 				if(box.getPoints() != null && box.getPoints().floatValue() > 0f) {
 					editedPoint = getSecureValue(editedScores, i);
@@ -377,7 +377,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
 			for(Identity assessedIdentity:assessedIdentities) {
 				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach);
+				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach, getLocale());
 			}
 		}
 		

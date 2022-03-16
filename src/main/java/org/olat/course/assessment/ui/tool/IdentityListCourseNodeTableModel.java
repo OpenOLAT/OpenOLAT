@@ -106,6 +106,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case min: return minScore;
 				case max: return getMaxScore(row);
 				case cut: return cutValue;
+				case grade: return row;
 				case status: return "";
 				case passedOverriden: return row.getPassedOverriden();
 				case passed: return row.getPassed();
@@ -151,6 +152,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		score("table.header.score"),
 		min("table.header.min"),
 		max("table.header.max"),
+		grade("table.header.grade"),
 		status("table.header.status"),
 		passedOverriden("table.header.passed.overriden"),
 		passed("table.header.passed"),

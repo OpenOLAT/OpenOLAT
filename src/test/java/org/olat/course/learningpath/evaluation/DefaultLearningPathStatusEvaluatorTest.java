@@ -124,7 +124,7 @@ public class DefaultLearningPathStatusEvaluatorTest {
 	}
 
 	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, assessmentStatus, null, fullyAssessd,
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, assessmentStatus, null, fullyAssessd,
 				null, null, null, null, null, null, null, 0, null, null, null, null, null, null, ObligationOverridable.of(obligation),
 				null, null, null);
 	}

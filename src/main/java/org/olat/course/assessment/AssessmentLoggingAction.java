@@ -66,6 +66,9 @@ public class AssessmentLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction ASSESSMENT_ATTEMPTS_UPDATED = 
 		new AssessmentLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.testattempts).setTypeList(
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiAttempts).addOptional(StringResourceableType.targetIdentity));
+	public static final ILoggingAction ASSESSMENT_GRADE_UPDATED = 
+		new AssessmentLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.testgrade).setTypeList(
+				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiGrade).addOptional(StringResourceableType.targetIdentity));
 	public static final ILoggingAction ASSESSMENT_SCORE_UPDATED = 
 		new AssessmentLoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.edit, ActionObject.testscore).setTypeList(
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiScore).addOptional(StringResourceableType.targetIdentity));

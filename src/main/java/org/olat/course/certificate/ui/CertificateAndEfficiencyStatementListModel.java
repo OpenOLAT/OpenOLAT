@@ -79,6 +79,8 @@ public class CertificateAndEfficiencyStatementListModel
 			return statement.getCurriculumElementIdentifier();
 		case score:
 			return statement.getScore();
+		case grade:
+			return statement.getGrade();
 		case passed:
 			return statement.getPassed();
 		case completion:
@@ -118,6 +120,7 @@ public class CertificateAndEfficiencyStatementListModel
 		displayName("table.header.course", true),
 		curriculumElIdent("table.header.curriculum.element", true),
 		score("table.header.score", true),
+		grade("table.header.grade", true),
 		passed("table.header.passed", true), 
 		completion("table.header.learning.progress", false),
 		lastModified("table.header.lastScoreDate", true), 

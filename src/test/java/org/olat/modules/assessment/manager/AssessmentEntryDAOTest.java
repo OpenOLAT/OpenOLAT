@@ -228,6 +228,26 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldGetHasGrades() {
+		// No Grade
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = random();
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.hasGrades(entry, subIdent)).isFalse();
+		
+		// Grade
+		ae.setGrade("Grade A");
+		assessmentEntryDao.updateAssessmentEntry(ae);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(assessmentEntryDao.hasGrades(entry, subIdent)).isTrue();
+		assessmentEntryDao.updateAssessmentEntry(ae);
+	}
+	
+	@Test
 	public void resetAssessmentEntry() {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -297,6 +317,10 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		ae.setLastAttempt(lastAttempt);
 		ae.setScore(BigDecimal.valueOf(2.0));
 		ae.setMaxScore(BigDecimal.valueOf(6.0));
+		String grade = random();
+		ae.setGrade(grade);
+		String performanceClassIdent = random();
+		ae.setPerformanceClassIdent(performanceClassIdent);
 		ae.setPassed(Boolean.TRUE);
 		ae.setUserVisibility(Boolean.TRUE);
 		ae.setCompletion(Double.valueOf(0.5));
@@ -318,6 +342,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		softly.assertThat(reloaded.getLastAttempt()).isCloseTo(lastAttempt, Duration.ofSeconds(2).toMillis());
 		softly.assertThat(reloaded.getScore()).isEqualByComparingTo(BigDecimal.valueOf(2.0));
 		softly.assertThat(reloaded.getMaxScore()).isEqualByComparingTo(BigDecimal.valueOf(6.0));
+		softly.assertThat(reloaded.getGrade()).isEqualTo(grade);
+		softly.assertThat(reloaded.getPerformanceClassIdent()).isEqualTo(performanceClassIdent);
 		softly.assertThat(reloaded.getPassed()).isTrue();
 		softly.assertThat(reloaded.getUserVisibility()).isTrue();
 		softly.assertThat(reloaded.getCompletion()).isEqualTo(0.5d);

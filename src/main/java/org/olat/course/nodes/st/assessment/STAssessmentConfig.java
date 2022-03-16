@@ -95,6 +95,16 @@ public class STAssessmentConfig implements AssessmentConfig {
 	public Float getMinScore() {
 		return null;
 	}
+	
+	@Override
+	public boolean hasGrade() {
+		return false;
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return false;
+	}
 
 	@Override
 	public Mode getPassedMode() {

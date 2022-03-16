@@ -1182,3 +1182,62 @@ body {
 .o_textbox_dropdown {
 	overflow-y: scroll;
 }
+
+
+/* Grade */
+.o_gr_scale_num,
+.o_gr_scale_text {
+	display: flex;
+	align-items: flex-start;
+	flex-flow: wrap;
+}
+.o_gr_scale_text {
+	.o_gr_table {
+		.table {
+			width: unset;
+			margin-top: 0px;
+			margin-right: 1em;
+			.form-control {
+				width: unset;
+			}
+			tr.o_gr_passed_row {
+				div.o_gr_passed_cell {
+					color: $o-course-state-passed-color;
+				}
+			}
+			tr.o_gr_failed_row {
+				div.o_gr_passed_cell {
+					color: $o-course-state-failed-color;
+				}
+			}
+		}
+	}
+}
+.o_gr_grade_scores {
+	display: flex;
+	align-items: flex-start;
+	.o_gr_grade_score_table {
+		&.table {
+			width: unset;
+			margin-right: 1em;
+		}
+		.o_gr_passed {
+			background-color: $o-course-state-passed-color;
+		}
+	}
+}
+.o_gr_cell {
+	&.o_gr_passed {
+		color: $o-course-state-passed-color;
+	}
+	&.o_gr_failed {
+		color: $o-course-state-failed-color;
+	}
+}
+.o_gr_ass_cont.form-inline {
+	:first-child {
+		display: inline-block;
+	}
+
+}
+

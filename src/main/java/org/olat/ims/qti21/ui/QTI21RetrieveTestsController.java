@@ -228,7 +228,7 @@ public class QTI21RetrieveTestsController extends FormBasicController {
 			CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(session.getIdentity(), courseEnv);
-			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach, getLocale());
 			
 			// End chat
 			String channel = session.getIdentity() == null ? session.getAnonymousIdentifier() : session.getIdentity().getKey().toString();

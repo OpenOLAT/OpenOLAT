@@ -39,6 +39,31 @@
 			</tr>
 			#end 
 			
+			#if ($hasGradeField)
+			<tr class="o_grade">
+				<th>$r.translateWithPackage("org.olat.course.nodes.ms", "grade.yourgrade")</th>
+				<td>
+					#if($inReview)
+						<span id="o_grade_in_review" class="o_in_review">
+							<i class="o_icon o_icon-fw o_icon_warn"> </i>
+							$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+						</span>
+						$r.mouseoverHelpTranslated("o_score_in_review", $r.translateWithPackage("org.olat.course.nodes.ms", "in.review.desc"))
+					#elseif(!$resultsVisible)
+						<span id="o_grade_in_release" class="o_in_release">
+							<i class="o_icon o_icon-fw o_icon_warn"> </i>
+							$r.translateWithPackage("org.olat.course.nodes.ms", "in.release")
+						</span>
+						$r.mouseoverHelpTranslated("o_score_in_release", $r.translateWithPackage("org.olat.course.nodes.ms", "in.release.desc"))
+					#elseif($grade)
+						$grade
+					#else
+						<div class="o_noinfo">$r.translate("score.noscore")</div>
+					#end
+				</td>
+			</tr>
+			#end 
+			
 			#if ($hasPassedValue)
 			#if ($passedCutValue)
 			<tr class="o_cutval">

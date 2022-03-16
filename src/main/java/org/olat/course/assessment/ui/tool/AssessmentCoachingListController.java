@@ -419,9 +419,9 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 		
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), userVisibility,
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
+				userVisibility, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);

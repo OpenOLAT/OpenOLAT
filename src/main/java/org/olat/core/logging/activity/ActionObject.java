@@ -93,6 +93,7 @@ public enum ActionObject {
 	statistic,
 	test,
 	testattempts,
+	testgrade,
 	testcomment,
 	testid,
 	testscore,

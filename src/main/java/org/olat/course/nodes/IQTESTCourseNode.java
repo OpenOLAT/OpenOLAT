@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -49,6 +50,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
@@ -56,6 +58,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
@@ -110,6 +113,10 @@ import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -356,7 +363,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			return oneClickStatusCache[0];
 		}
 		
-		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		List<StatusDescription> statusDescs = validateInternalConfiguration(null);
 		if(statusDescs.isEmpty()) {
 			statusDescs.add(StatusDescription.NOERROR);
 		}
@@ -373,12 +380,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			//isConfigValidWithTranslator add first
 			sds.remove(oneClickStatusCache[0]);
 		}
-		sds.addAll(validateInternalConfiguration());
+		sds.addAll(validateInternalConfiguration(cev));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
 
-	private List<StatusDescription> validateInternalConfiguration() {
+	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(2);
 
 		boolean hasTestReference = getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY) != null;
@@ -406,6 +413,17 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		if (isFullyAssessedPassedConfigError()) {
 			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
 					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
+		if (cev != null) {
+			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
+				if (gradeScale == null) {
+					addStatusErrorDescription("error.missing.grade.scale", "error.fully.assessed.passed",
+							IQEditController.PANE_TAB_IQCONFIG_TEST, sdList);
+				}
+			}
 		}
 		
 		return sdList;
@@ -477,6 +495,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		// 2) Delete all assessment test sessions (QTI 2.1)
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).deleteAllUserTestSessionsByCourse(courseEntry, getIdent());
+		
+		// Delete GradeScales
+		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(courseEntry, getIdent());
 	}
 
 	@Override
@@ -553,7 +574,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		}
 	}
 
-	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseEnv, Identity coachingIdentity, Role by) {
+	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseEnv,
+			Identity coachingIdentity, Role by, Locale locale) {
 		Boolean visibility;
 		AssessmentEntryStatus assessmentStatus;
 		String correctionMode = getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
@@ -565,8 +587,37 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			visibility = Boolean.TRUE;
 		}
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		ScoreEvaluation sceval = new ScoreEvaluation(session.getScore().floatValue(), session.getPassed(), assessmentStatus, visibility,
-				null, 1.0d, AssessmentRunStatus.done, session.getKey());
+
+		AssessmentTest assessmentTest = loadAssessmentTest(session.getTestEntry());
+		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+
+		BigDecimal finalScore = session.getFinalScore();
+		Float score = finalScore == null ? null : finalScore.floatValue();
+		String grade = null;
+		String performanceClassIdent = null;
+		Boolean passed = session.getPassed();
+		if(session.getManualScore() != null && finalScore != null) {
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(this);
+			if (assessmentConfig.hasGrade() && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+				if (assessmentConfig.isAutoGrade() || (assessmentEntry != null && StringHelper.containsNonWhitespace(assessmentEntry.getGrade()))) {
+					GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+					GradeScale gradeScale = gradeService.getGradeScale(
+							assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+							this.getIdent());
+					NavigableSet<GradeScoreRange> gradeScoreRanges = null;gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
+					GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+					grade = gradeScoreRange.getGrade();
+					performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+					passed = Boolean.valueOf(gradeScoreRange.isPassed());
+				}
+			} else if (cutValue != null) {
+				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+				passed = Boolean.valueOf(calculated);
+			}
+		}
+		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, assessmentStatus,
+				visibility, null, 1.0d, AssessmentRunStatus.done, session.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, true, by);
 		
 		if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
@@ -577,9 +628,13 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 	
 	public void promoteAssessmentTestSession(AssessmentTestSession testSession, UserCourseEnvironment assessedUserCourseEnv,
-			boolean updateScoring, Identity coachingIdentity, Role by) {
+			boolean updateScoring, Identity coachingIdentity, Role by, Locale locale) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentEntry currentAssessmentEntry = null;
 		
 		Float score = null;
+		String grade = null;
+		String performanceClassIdent = null;
 		Boolean passed = null;
 		if(updateScoring) {
 			AssessmentTest assessmentTest = loadAssessmentTest(testSession.getTestEntry());
@@ -588,16 +643,33 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			BigDecimal finalScore = testSession.getFinalScore();
 			score = finalScore == null ? null : finalScore.floatValue();
 			passed = testSession.getPassed();
-			if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
-				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
-				passed = Boolean.valueOf(calculated);
+			if(testSession.getManualScore() != null && finalScore != null) {
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(this);
+				if (assessmentConfig.hasGrade() && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+					currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+					if (assessmentConfig.isAutoGrade() || (currentAssessmentEntry != null && StringHelper.containsNonWhitespace(currentAssessmentEntry.getGrade()))) {
+						GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+						GradeScale gradeScale = gradeService.getGradeScale(
+								assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+								this.getIdent());
+						NavigableSet<GradeScoreRange> gradeScoreRanges = null;gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
+						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+						grade = gradeScoreRange.getGrade();
+						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+						passed = Boolean.valueOf(gradeScoreRange.isPassed());
+					}
+				} else if (cutValue != null) {
+					boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+					passed = Boolean.valueOf(calculated);
+				}
 			}
 		}
-
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentEntry currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+		
+		if (currentAssessmentEntry == null) {
+			currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+		}
 		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts().intValue() == 0;
-		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, null, null, null, 1.0d, AssessmentRunStatus.done, testSession.getKey());
+		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, null, null, 1.0d, AssessmentRunStatus.done, testSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);
 	}
 	

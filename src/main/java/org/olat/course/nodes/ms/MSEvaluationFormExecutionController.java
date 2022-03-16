@@ -156,7 +156,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		session = msService.getSession(session);
 		if (courseNode instanceof MSCourseNode) {
 			MSCourseNode msCourseNode = (MSCourseNode) courseNode;
-			msCourseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, Role.coach, session);
+			msCourseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, Role.coach, session, getLocale());
 		}
 		updateUIReopen();
 	}

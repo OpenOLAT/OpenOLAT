@@ -102,15 +102,16 @@ public class PortfolioAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public boolean hasCustomIdentityList() {
-		return false;
+		return true;
 	}
-
+	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
-		return null;
+		return new PortfolioIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
+				coachCourseEnv, toolContainer, assessmentCallback, showTitle);
 	}
 
 }

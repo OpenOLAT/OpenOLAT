@@ -67,6 +67,14 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 
 	public void setMaxScore(BigDecimal maxScore);
 
+	public String getGrade();
+	
+	public void setGrade(String grade);
+
+	public String getPerformanceClassIdent();
+
+	public void setPerformanceClassIdent(String performanceClassIdent);
+
 	public void setPassed(Boolean passed);
 	
 	public Overridable<Boolean> getPassedOverridable();
@@ -182,5 +190,5 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	 * @return The assessed identity
 	 */
 	public Identity getIdentity();
-
+	
 }

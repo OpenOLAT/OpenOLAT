@@ -23,6 +23,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Service;
@@ -134,6 +135,16 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasGrade() {
+		return courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
+	}
+	
+	@Override
 	public Mode getPassedMode() {
 		Mode mode = Mode.none;
 		
@@ -151,10 +162,14 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 						QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 						QTI21DeliveryOptions deliveryOptions = qti21Service.getDeliveryOptions(testEntry);
 						if (deliveryOptions != null) {
-							Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-							PassedType passedType = deliveryOptions.getPassedType(cutValue);
-							if (passedType == PassedType.cutValue || passedType == PassedType.manually) {
+							if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
 								mode = Mode.setByNode;
+							} else {
+								Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+								PassedType passedType = deliveryOptions.getPassedType(cutValue);
+								if (passedType == PassedType.cutValue || passedType == PassedType.manually) {
+									mode = Mode.setByNode;
+								}
 							}
 						}
 					}

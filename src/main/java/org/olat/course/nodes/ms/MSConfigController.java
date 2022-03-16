@@ -43,11 +43,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -60,6 +62,11 @@ import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeScaleEditController;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
@@ -87,6 +94,12 @@ public class MSConfigController extends FormBasicController {
 	private TextElement minEl;
 	private TextElement maxEl;
 	private TextElement scaleEl;
+	private SpacerElement gradeSpacer;
+	private MultipleSelectionElement gradeEnabledEl;
+	private SingleSelection gradeAutoEl;
+	private StaticTextElement gradeScaleEl;
+	private FormLayoutContainer gradeScaleButtonsCont;
+	private FormLink gradeScaleEditLink;
 	private MultipleSelectionElement passedEl;
 	private SingleSelection passedTypeEl;
 	private String[] trueFalseKeys;
@@ -102,6 +115,7 @@ public class MSConfigController extends FormBasicController {
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
 	private LayoutMain3ColsPreviewController previewCtr;
+	private GradeScaleEditController gradeScaleCtrl;
 	
 	private final ModuleConfiguration config;
 	private final RepositoryEntry ores;
@@ -110,6 +124,7 @@ public class MSConfigController extends FormBasicController {
 	private final boolean ignoreInCourseAssessmentAvailable;
 	private RepositoryEntry formEntry;
 	private MinMax formMinMax;
+	private GradeScale gradeScale;
 	
 	@Autowired
 	private MSService msService;
@@ -117,10 +132,15 @@ public class MSConfigController extends FormBasicController {
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 
 	public MSConfigController(UserRequest ureq, WindowControl wControl, ICourse course,
 			MSCourseNode courseNode) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.config = courseNode.getModuleConfiguration();
 		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		this.nodeIdent = courseNode.getIdent();
@@ -139,6 +159,9 @@ public class MSConfigController extends FormBasicController {
 		Map<String, FormItem> formItems = flc.getFormComponents();
 		for (String formItemName : formItems.keySet()) {
 			formItems.get(formItemName).setEnabled(!displayOnly);
+		}
+		if (gradeScaleButtonsCont != null) {
+			gradeScaleButtonsCont.setVisible(!displayOnly);
 		}
 		if (!displayOnly) {
 			updateUI();
@@ -200,6 +223,29 @@ public class MSConfigController extends FormBasicController {
 		max = max != null? max: MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
 		maxEl = uifactory.addTextElement("form.max", "form.max", 8, max.toString(), formLayout);
 		maxEl.setElementCssClass("o_sel_course_ms_max");
+		
+		if (gradeModule.isEnabled()) {
+			gradeSpacer = uifactory.addSpacerElement("spacer0", formLayout, false);
+			
+			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
+			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
+			boolean gradeEnabled = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+			gradeEnabledEl.select("xx", gradeEnabled);
+			
+			SelectionValues autoSV = new SelectionValues();
+			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
+			autoSV.add(new SelectionValue(Boolean.TRUE.toString(), translate("node.grade.auto.auto"), translate("node.grade.auto.auto.desc"), null, null, true));
+			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", formLayout, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
+			gradeAutoEl.select(Boolean.valueOf(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)).toString(), true);
+			
+			gradeScale = gradeService.getGradeScale(ores, nodeIdent);
+			gradeScaleEl = uifactory.addStaticTextElement("node.grade.scale.not", "grade.scale", "", formLayout);
+			
+			gradeScaleButtonsCont = FormLayoutContainer.createButtonLayout("gradeButtons", getTranslator());
+			gradeScaleButtonsCont.setRootForm(mainForm);
+			formLayout.add(gradeScaleButtonsCont);
+			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+		}
 		
 		uifactory.addSpacerElement("spacer1", formLayout, false);
 		
@@ -310,15 +356,29 @@ public class MSConfigController extends FormBasicController {
 			maxEl.setValue(formMinMax.getMax().toString());
 			maxEl.setEnabled(false);
 		}
+		boolean scoreEnabled = !MSCourseNode.CONFIG_VALUE_SCORE_NONE.equals(scoreKey);
 
 		// scaling factor
 		boolean scaleVisible = MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreKey)
 				|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreKey);
 		scaleEl.setVisible(scaleVisible);
+		
+		if (gradeEnabledEl != null) {
+			gradeSpacer.setVisible(scoreEnabled);
+			gradeEnabledEl.setVisible(scoreEnabled);
+			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			String gradeScaleText = gradeScale == null
+					? translate("node.grade.scale.not.available")
+					: translate("node.grade.scale.available");
+			gradeScaleEl.setValue(gradeScaleText);
+			gradeScaleEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+			gradeScaleButtonsCont.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
+		}
+		
+		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isAtLeastSelected(1);
 
 		// passed
-		boolean scoreEnabled = !MSCourseNode.CONFIG_VALUE_SCORE_NONE.equals(scoreKey);
-		boolean passedTypeVisible = scoreEnabled && passedEl.isAtLeastSelected(1);
+		boolean passedTypeVisible = scoreEnabled && gradeDisable && passedEl.isAtLeastSelected(1);
 		passedTypeEl.setVisible(passedTypeVisible);
 
 		// cut value
@@ -349,6 +409,10 @@ public class MSConfigController extends FormBasicController {
 		} else if (source == scaleEl) {
 			doCalculateMinMax();
 			updateUI();
+		} else if (source == gradeScaleEditLink) {
+			doEditGradeScale(ureq);
+		} else if (source == gradeEnabledEl) {
+			updateUI();
 		} else if (source == passedEl) {
 			updateUI();
 		} else if (source == passedTypeEl) {
@@ -367,6 +431,14 @@ public class MSConfigController extends FormBasicController {
 			cleanUp();
 		} else if (source == previewCtr) {
 			cleanUp();
+		} if (gradeScaleCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				gradeScale = gradeService.getGradeScale(ores, nodeIdent);
+				updateUI();
+				flc.setDirty(true);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
 		}
@@ -374,9 +446,11 @@ public class MSConfigController extends FormBasicController {
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(gradeScaleCtrl);
 		removeAsListenerAndDispose(previewCtr);
 		removeAsListenerAndDispose(searchCtrl);
 		removeAsListenerAndDispose(cmc);
+		gradeScaleCtrl = null;
 		previewCtr = null;
 		searchCtrl = null;
 		cmc = null;
@@ -517,13 +591,22 @@ public class MSConfigController extends FormBasicController {
 				: MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE;
 		config.setStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE, scale);
 		
+		// Grade
+		if (gradeEnabledEl != null) {
+			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isAtLeastSelected(1));
+			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.valueOf(gradeAutoEl.getSelectedKey()).booleanValue());
+		} else {
+			config.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+			config.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
+		}
+		
 		boolean showPassed = passedEl.isAtLeastSelected(1);
 		config.set(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.valueOf(showPassed));
 		
 		if (showPassed) {
 			// do cut value
 			Boolean cutAutomatically = Boolean.valueOf(passedTypeEl.getSelectedKey());
-			if (cutAutomatically.booleanValue()) {
+			if (cutAutomatically.booleanValue() && cutEl.isVisible()) {
 				config.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, Float.valueOf(cutEl.getValue()));
 			} else {
 				config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
@@ -624,6 +707,29 @@ public class MSConfigController extends FormBasicController {
 		previewCtr.addDisposableChildController(controller);
 		previewCtr.activate();
 		listenTo(previewCtr);
+	}
+
+	private void doEditGradeScale(UserRequest ureq) {
+		if (guardModalController(gradeScaleCtrl)) return;
+		
+		Float minScore = config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
+		Float maxScore = config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+		if ((minScore == null || minScore.intValue() == 0) && (maxScore == null || maxScore.intValue() == 0)) {
+			showWarning("error.score.min.max.not.set");
+			return;
+		}
+		
+		String gradeSystemKey = config.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_SYSTEM);
+		Long defautGradesystemKey = StringHelper.isLong(gradeSystemKey)? Long.valueOf(gradeSystemKey): null;
+
+		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), ores, nodeIdent,
+				minScore, maxScore, defautGradesystemKey);
+		listenTo(gradeScaleCtrl);
+		
+		String title = translate("grade.scale.edit");
+		cmc = new CloseableModalController(getWindowControl(), "close", gradeScaleCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 }

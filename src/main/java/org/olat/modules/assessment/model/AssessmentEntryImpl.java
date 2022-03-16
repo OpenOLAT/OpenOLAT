@@ -91,6 +91,10 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private BigDecimal score;
 	@Column(name="a_max_score", nullable=true, insertable=true, updatable=true)
 	private BigDecimal maxScore;
+	@Column(name="a_grade", nullable=true, insertable=true, updatable=true)
+	private String grade;
+	@Column(name="a_performance_class_ident", nullable=true, insertable=true, updatable=true)
+	private String performanceClassIdent;
 	private transient Overridable<Boolean> passedOverridable;
 	@Column(name="a_passed", nullable=true, insertable=true, updatable=true)
 	private Boolean passed;
@@ -285,6 +289,26 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setMaxScore(BigDecimal maxScore) {
 		this.maxScore = maxScore;
+	}
+
+	@Override
+	public String getGrade() {
+		return grade;
+	}
+
+	@Override
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	@Override
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
 	}
 
 	@Override

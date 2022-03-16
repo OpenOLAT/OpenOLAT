@@ -124,9 +124,9 @@ public class PullTestSessionsTask extends TimerTask implements Serializable {
 					.createAndInitUserCourseEnvironment(session.getIdentity(), courseEnv);
 			
 			if(actor != null) {
-				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, actor, Role.coach);
+				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, actor, Role.coach, locale);
 			} else {
-				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, null, Role.auto);
+				courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, null, Role.auto, locale);
 			}
 			
 			Identity imActor = actor == null ? identity : actor;

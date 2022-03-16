@@ -31,6 +31,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.NavigableSet;
+import java.util.Objects;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -82,6 +84,10 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -113,6 +119,10 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	/** configuration: score max value */
 	public static final String CONFIG_KEY_SCORE_MAX = "scoreMax";
 	public static final Float CONFIG_DEFAULT_SCORE_MAX = Float.valueOf(0);
+	/** configuration: grade */
+	public static final String CONFIG_KEY_GRADE_ENABLED = "grade.enabled";
+	public static final String CONFIG_KEY_GRADE_AUTO = "grade.auto";
+	public static final String CONFIG_KEY_GRADE_SYSTEM = "grade.system";
 	/** configuration: passed can be set */
 	public static final String CONFIG_KEY_HAS_PASSED_FIELD = "hasPassedField";
 	/** configuration: passed set to when score higher than cut value */
@@ -251,7 +261,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			return oneClickStatusCache[0];
 		}
 		
-		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		List<StatusDescription> statusDescs = validateInternalConfiguration(null);
 		if(statusDescs.isEmpty()) {
 			statusDescs.add(StatusDescription.NOERROR);
 		}
@@ -268,12 +278,12 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			//isConfigValidWithTranslator add first
 			sds.remove(oneClickStatusCache[0]);
 		}
-		sds.addAll(validateInternalConfiguration());
+		sds.addAll(validateInternalConfiguration(cev));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
 	
-	private List<StatusDescription> validateInternalConfiguration() {
+	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(1);
 		
 		if (isFullyAssessedScoreConfigError()) {
@@ -283,6 +293,17 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		if (isFullyAssessedPassedConfigError()) {
 			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
 					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
+		if (cev != null) {
+			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
+				if (gradeScale == null) {
+					addStatusErrorDescription("error.missing.grade.scale", "error.fully.assessed.passed",
+							MSCourseNodeEditController.PANE_TAB_CONFIGURATION, sdList);
+				}
+			}
 		}
 		
 		return sdList;
@@ -379,8 +400,11 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		
 		// Delete the surveys
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
-		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		msService.deleteSessions(ores, getIdent());
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		msService.deleteSessions(entry, getIdent());
+		
+		// Delete GradeScales
+		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, getIdent());
 	}
 	
 	private MinMax getMinMax() {
@@ -406,14 +430,19 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv,
-			Role by, EvaluationFormSession session) {
+			Role by, EvaluationFormSession session, Locale locale) {
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
 		
+		ScoreEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
 		Float score = getScore(msService, assessedUserCourseEnv, session);
-		Boolean passed = getPassed(assessedUserCourseEnv, score);
+		ScoreEvaluation updateEval = getUpdateScoreEvaluation(assessedUserCourseEnv, locale, score);
 		
 		// save
-		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score, passed);
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(updateEval.getScore(), updateEval.getGrade(),
+				updateEval.getPerformanceClassIdent(), updateEval.getPassed(), currentEval.getAssessmentStatus(),
+				currentEval.getUserVisible(), currentEval.getCurrentRunStartDate(),
+				currentEval.getCurrentRunCompletion(), currentEval.getCurrentRunStatus(),
+				currentEval.getAssessmentID());
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.saveScoreEvaluation(this, identity, scoreEvaluation, assessedUserCourseEnv, false, by);
 	}
@@ -425,7 +454,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 
 		int count = 0;
 		for(Identity assessedIdentity: assessedUsers) {
-			updateScorePassedOnPublish(course, assessedIdentity, publisher);
+			updateScorePassedOnPublish(course, assessedIdentity, publisher, locale);
 			if(++count % 10 == 0) {
 				DBFactory.getInstance().commitAndCloseSession();
 			}
@@ -434,7 +463,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
 	
-	private void updateScorePassedOnPublish(ICourse course, Identity assessedIdentity, Identity coachIdentity) {
+	private void updateScorePassedOnPublish(ICourse course, Identity assessedIdentity, Identity coachIdentity, Locale locale) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
 		RepositoryEntry ores = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -442,27 +471,23 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
 		
 		ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, userCourseEnv);
-		Float currentScore = currentEval.getScore();
-		Boolean currentPassed = currentEval.getPassed();
-		
 		EvaluationFormSession session = msService.getSession(ores, getIdent(), assessedIdentity, done);
+		
 		Float updatedScore = getScore(msService, userCourseEnv, session);
-		Boolean updatedPassed = getPassed(userCourseEnv, updatedScore);
+		ScoreEvaluation updateScoreEvaluation = getUpdateScoreEvaluation(userCourseEnv, locale, updatedScore);
+		String updateGrade = updateScoreEvaluation.getGrade();
+		String updatePerformanceClassIdent = updateScoreEvaluation.getPerformanceClassIdent();
+		Boolean updatedPassed = updateScoreEvaluation.getPassed();
 		
-		boolean needUpdate = false;
-		if((currentScore == null && updatedScore != null)
-				|| (currentScore != null && updatedScore == null)
-				|| (currentScore != null && !currentScore.equals(updatedScore))) {
-			needUpdate = true;
-		}
-		if((currentPassed == null && updatedPassed != null && updatedScore != null)
-				|| (currentPassed != null && updatedPassed == null)
-				|| (currentPassed != null && !currentPassed.equals(updatedPassed))) {
-			needUpdate = true;
-		}
-		
+		boolean needUpdate = !Objects.equals(updatedScore, currentEval.getScore())
+				|| !Objects.equals(updateGrade, currentEval.getGrade())
+				|| !Objects.equals(updatePerformanceClassIdent, currentEval.getPerformanceClassIdent())
+				|| !Objects.equals(updatedPassed, currentEval.getPassed()) ;
 		if(needUpdate) {
-			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updateGrade, updatePerformanceClassIdent,
+					updatedPassed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+					currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+					currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
 			courseAssessmentService.saveScoreEvaluation(this, coachIdentity, scoreEval, userCourseEnv, false, Role.coach);
 		}
 	}
@@ -499,19 +524,46 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 		return score;
 	}
 
-	private Boolean getPassed(UserCourseEnvironment assessedUserCourseEnv, Float score) {
+	private ScoreEvaluation getUpdateScoreEvaluation(UserCourseEnvironment assessedUserCourseEnv, Locale locale, Float score) {
+		GradeScoreRange gradeScoreRange = null;
+		String grade = null;
+		String performanceClassIdent = null;
 		Boolean passed = null;
 		ModuleConfiguration config = getModuleConfiguration();
-		Float cutConfig = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		if (cutConfig != null && score != null) {
-			boolean aboveCutValue = score.floatValue() >= cutConfig.floatValue();
-			passed = Boolean.valueOf(aboveCutValue);
-		} else {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			ScoreEvaluation currentEval = courseAssessmentService.getAssessmentEvaluation(this, assessedUserCourseEnv);
-			passed = currentEval.getPassed();
+		
+		if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)) {
+			if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
+				if (CoreSpringFactory.getImpl(GradeModule.class).isEnabled() && score != null) {
+					boolean applyGrade = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
+					if (!applyGrade) {
+						ScoreEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
+						applyGrade = StringHelper.containsNonWhitespace(currentEval.getGrade());
+					}
+					if (applyGrade) {
+						GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+						GradeScale gradeScale = gradeService.getGradeScale(assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
+						NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
+						gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+						grade = gradeScoreRange.getGrade();
+						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+						passed = Boolean.valueOf(gradeScoreRange.isPassed());
+					}
+				}
+			} else if (config.has(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)) {
+				Float cutConfig = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+				if (cutConfig != null && score != null) {
+					boolean aboveCutValue = score.floatValue() >= cutConfig.floatValue();
+					passed = Boolean.valueOf(aboveCutValue);
+				}
+			} else {
+				ScoreEvaluation currentEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(this);
+				grade = currentEval.getGrade();
+				performanceClassIdent = currentEval.getPerformanceClassIdent();
+				passed = currentEval.getPassed();
+			}
+			
 		}
-		return passed;
+		return new ScoreEvaluation(score, grade, performanceClassIdent, passed, null, null, null, null, null, null);
 	}
 
 	@Override

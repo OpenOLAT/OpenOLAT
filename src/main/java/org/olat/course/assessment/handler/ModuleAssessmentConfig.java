@@ -74,6 +74,16 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean hasGrade() {
+		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
+	}
+	
+	@Override
 	public Mode getPassedMode() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)? Mode.setByNode: Mode.none;
 	}

@@ -41,6 +41,8 @@ public class UserEfficiencyStatementVO {
 	private Long identityKey;
 	
 	private Float score;
+	private String grade;
+	private String perfromanceClassIdent;
 	private Boolean passed;
 	private Integer totalNodes;
 	private Integer attemptedNodes;
@@ -62,6 +64,8 @@ public class UserEfficiencyStatementVO {
 		
 		passed = efficiencyStatement.getPassed();
 		score = efficiencyStatement.getScore();
+		grade = efficiencyStatement.getGrade();
+		perfromanceClassIdent = efficiencyStatement.getPerformanceClassIdent();
 		totalNodes = efficiencyStatement.getTotalNodes();
 		passedNodes = efficiencyStatement.getPassedNodes();
 		attemptedNodes = efficiencyStatement.getAttemptedNodes();
@@ -104,6 +108,22 @@ public class UserEfficiencyStatementVO {
 
 	public void setScore(Float score) {
 		this.score = score;
+	}
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	public String getPerfromanceClassIdent() {
+		return perfromanceClassIdent;
+	}
+
+	public void setPerfromanceClassIdent(String perfromanceClassIdent) {
+		this.perfromanceClassIdent = perfromanceClassIdent;
 	}
 
 	public Boolean getPassed() {

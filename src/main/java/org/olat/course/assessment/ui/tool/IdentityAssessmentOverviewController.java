@@ -77,7 +77,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
+import org.olat.modules.grade.GradeModule;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -118,6 +120,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CourseNode selectedCourseNode;
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
+	private boolean hasGrade;
 	private boolean hasPassedOverridable;
 	private int counter = 0;
 	
@@ -127,6 +130,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	protected BaseSecurity securityManager;
+	@Autowired
+	private GradeModule gradeModul;
 
 	/**
 	 * Constructor for the identity assessment overview controller to be used in the assessment tool or in the users
@@ -150,11 +155,30 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.userCourseEnvironment = userCourseEnvironment;		
 		loadNodesFromCourse = true;
 		followUserResultsVisibility = false;
+		this.hasGrade = hasGrade(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 		this.hasPassedOverridable = hasPassedOverridable(userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode());
 
 		initForm(ureq);
 		initMultiSelectionTools();
 		loadModel();
+	}
+
+	private boolean hasGrade(CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (assessmentConfig.hasGrade()) {
+			return true;
+		} 
+		int childCount = courseNode.getChildCount();
+		for (int i = 0; i < childCount; i++) {
+			INode child = courseNode.getChildAt(i);
+			if (child instanceof CourseNode) {
+				CourseNode childCourseNode = (CourseNode) child;
+				if (hasGrade(childCourseNode)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private boolean hasPassedOverridable(CourseNode courseNode) {
@@ -167,7 +191,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			INode child = courseNode.getChildAt(i);
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode) child;
-				return hasPassedOverridable(childCourseNode);
+				if(hasPassedOverridable(childCourseNode)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -192,6 +218,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		loadNodesFromCourse = false;
 		followUserResultsVisibility = true;
 		preloadedNodesList = assessmentCourseNodes;
+		hasGrade = true;
 	
 		initForm(ureq);
 		initMultiSelectionTools();
@@ -308,6 +335,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.minMax, new ScoreMinMaxCellRenderer()));
+		if(gradeModul.isEnabled() && hasGrade) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.grade, new GradeCellRenderer(getLocale())));
+		}
 		if (hasPassedOverridable) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.passedOverriden, new PassedOverridenCellRenderer()));
 		}
@@ -462,9 +492,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		ScoreEvaluation scoreEval = userCourseEnvironment.getScoreAccounting().evalCourseNode(courseNode);
 		if (userVisibility.equals(scoreEval.getUserVisible())) return; // nothing to change
 		
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), userVisibility,
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
+				userVisibility, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, userCourseEnvironment, getIdentity(),
 				false, Role.coach);

@@ -1,0 +1,8 @@
+#if($r.visible("performance.class.add"))
+	<div class="o_button_group o_button_group_right">$r.render("performance.class.add")</div>
+#end
+$r.render("table")
+#if($f.hasError("table"))
+	<span class="o_icon o_icon_error form-control-feedback"></span>
+	$r.render("table_ERROR")
+#end

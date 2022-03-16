@@ -76,6 +76,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
@@ -126,12 +128,16 @@ import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.CompletionItem;
+import org.olat.modules.assessment.ui.component.GradeCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.ui.wizard.GradeScaleAdjustCallback;
+import org.olat.modules.grade.ui.wizard.GradeScaleAdjustStep;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
@@ -180,6 +186,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private Link nextLink;
 	private Link previousLink;
 	protected FlexiTableElement tableEl;
+	private FormLink gradeScaleButton;
 	private FormLink bulkDoneButton;
 	private FormLink bulkEmailButton;
 	private FormLink bulkVisibleButton;
@@ -194,6 +201,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private AssessedIdentityController currentIdentityCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private ContactFormController contactCtrl;
+	private StepsMainRunController gradeScaleEditCtrl;
 	
 	@Autowired
 	protected DB dbInstance;
@@ -213,6 +221,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
+	@Autowired
+	private GradeModule gradeModuel;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -558,6 +568,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 					}
 				}
 				initScoreColumns(columnsModel);
+				if(gradeModuel.isEnabled() && assessmentConfig.hasGrade()) {
+					columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale())));
+				}
 			}
 			if(assessmentConfig.isPassedOverridable()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.passedOverriden, new PassedOverridenCellRenderer()));
@@ -644,6 +657,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 			bulkEmailButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkEmailButton);
+		}
+	}
+	
+	protected void initGradeScaleEditButton(FormLayoutContainer formLayout) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade()) {
+			gradeScaleButton = uifactory.addFormLink("tool.grade.scale", formLayout, Link.BUTTON);
+			gradeScaleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}
 	
@@ -984,6 +1005,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 				reload(ureq);
 				stackPanel.popController(currentIdentityCtrl);
 			}
+		} else if(gradeScaleEditCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					reload(ureq);
+				}
+				cleanUp();
+			}
 		} else if(bulkToolsList != null && bulkToolsList.contains(source)) {
 			if(event == Event.CHANGED_EVENT) {
 				reload(ureq);
@@ -1018,10 +1047,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void cleanUp() {
+		removeAsListenerAndDispose(gradeScaleEditCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(cmc);
+		gradeScaleEditCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		contactCtrl = null;
@@ -1041,6 +1072,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			} else if(event instanceof FlexiTableSearchEvent || event instanceof FlexiTableFilterTabEvent) {
 				reload(ureq);
 			}
+		} else if(gradeScaleButton == source) {
+			doEditGradeScale(ureq);
 		} else if(bulkDoneButton == source) {
 			doSetDone(ureq);
 		} else if(bulkVisibleButton == source) {
@@ -1209,9 +1242,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), userVisibility,
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
+				userVisibility, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);
@@ -1282,8 +1315,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(cNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				status, null, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), status, null,
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(cNode, doneEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
@@ -1320,5 +1354,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 			row.setAssessmentEntry(assessmentEntry, grader);
 			tableEl.getComponent().setDirty(true);
 		}
+	}
+	
+	private void doEditGradeScale(UserRequest ureq) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		GradeScaleAdjustStep step = new GradeScaleAdjustStep(ureq, courseEntry, courseNode, assessmentConfig.isAutoGrade());
+		StepRunnerCallback finish = new GradeScaleAdjustCallback(coachCourseEnv, getLocale());
+		
+		removeAsListenerAndDispose(gradeScaleEditCtrl);
+		gradeScaleEditCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finish, null, translate("tool.grade.scale"), "");
+		listenTo(gradeScaleEditCtrl);
+		getWindowControl().pushAsModalDialog(gradeScaleEditCtrl.getInitialComponent());
 	}
 }

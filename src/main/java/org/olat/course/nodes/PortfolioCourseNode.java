@@ -70,6 +70,9 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeService;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
@@ -265,7 +268,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
 		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, PACKAGE_EP, getConditionExpressions());
-		statusDescs.addAll(validateInternalConfiguration());
+		statusDescs.addAll(validateInternalConfiguration(cev));
 		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
 		return oneClickStatusCache;
 	}
@@ -279,7 +282,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		return isScoreTrigger && !hasScore;
 	}
 	
-	private List<StatusDescription> validateInternalConfiguration() {
+	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(1);
 		
 		if (isFullyAssessedScoreConfigError()) {
@@ -289,6 +292,16 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		if (isFullyAssessedPassedConfigError()) {
 			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
 					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		if (cev != null) {
+			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
+				if (gradeScale == null) {
+					addStatusErrorDescription("error.missing.grade.scale", "error.missing.grade.scale",
+							PortfolioCourseNodeEditController.PANE_TAB_SCORING, sdList);
+				}
+			}
 		}
 		
 		return sdList;
@@ -348,6 +361,9 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CoreSpringFactory.getImpl(PortfolioService.class).detachRepositoryEntryFromBinders(entry, this);
+		
+		// Delete GradeScales
+		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, getIdent());
 	}
 	
 	@Override

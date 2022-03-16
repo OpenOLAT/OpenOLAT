@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -55,6 +56,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -97,6 +99,10 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
@@ -138,6 +144,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	@Autowired
 	private GradingService gradingService;
 	@Autowired
@@ -214,6 +224,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
+		super.initGradeScaleEditButton(formLayout);
 		super.initBulkStatusTools(ureq, formLayout);
 		
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
@@ -642,6 +653,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
+		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
 		boolean userVisibleAfter = ((IQTESTCourseNode)courseNode).isScoreVisibleAfterCorrection();
 
 		for(AssessmentTestSession testSession:testSessionsToComplete) {
@@ -651,17 +663,33 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			
 			BigDecimal finalScore = testSession.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
+			String grade = scoreEval.getGrade();
+			String performanceClassIdent = scoreEval.getPerformanceClassIdent();
 			Boolean passed = scoreEval.getPassed();
-			if(testSession.getManualScore() != null && finalScore != null && cutValue != null) {
-				boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
-				passed = Boolean.valueOf(calculated);
+			if(testSession.getManualScore() != null && finalScore != null) {
+				if (assessmentConfig.hasGrade() && gradeModule.isEnabled()) {
+					if (gradeScoreRanges == null) {
+						GradeScale gradeScale = gradeService.getGradeScale(
+								courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent());
+						gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+					}
+					if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(scoreEval.getGrade())) {
+						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+						grade = gradeScoreRange.getGrade();
+						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+						passed = Boolean.valueOf(gradeScoreRange.isPassed());
+					}
+				} else if (cutValue != null) {
+					boolean calculated = finalScore.compareTo(BigDecimal.valueOf(cutValue.doubleValue())) >= 0;
+					passed = Boolean.valueOf(calculated);
+				}
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
 			Boolean userVisible = scoreEval.getUserVisible();
 			if(finalStatus == AssessmentEntryStatus.done) {
 				userVisible = Boolean.valueOf(userVisibleAfter);
 			}
-			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
+			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, grade, performanceClassIdent, passed,
 					finalStatus, userVisible, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), testSession.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,

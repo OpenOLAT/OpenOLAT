@@ -74,6 +74,8 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,6 +105,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 	private CheckboxManager checkboxManager;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
 	
 	/**
 	 * Use this constructor to launch the checklist.
@@ -114,6 +118,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 	public CheckListRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			OLATResourceable courseOres, CheckListCourseNode courseNode, boolean preview) {
 		super(ureq, wControl, "run", Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.preview = preview;
 		this.courseNode = courseNode;
@@ -199,7 +204,14 @@ public class CheckListRunController extends FormBasicController implements Contr
 	}
 	
 	private void exposeConfigToVC(UserRequest ureq, FormLayoutContainer layoutCont) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
+		
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
+		layoutCont.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
+		
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
@@ -207,7 +219,12 @@ public class CheckListRunController extends FormBasicController implements Contr
 	    	layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
 	    	layoutCont.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
 	    }
-	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
+	    
+		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
+		if (hasPassed && !hasGrade) {
+			layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
+		}
+		
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
@@ -225,6 +242,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 			boolean resultsVisible = scoreEval.getUserVisibility() == null || scoreEval.getUserVisibility().booleanValue();
 			layoutCont.contextPut("resultsVisible", resultsVisible);
 			layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
+			layoutCont.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
+					scoreEval.getPerformanceClassIdent(), scoreEval.getGrade()));
 			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			layoutCont.contextPut("passed", scoreEval.getPassed());
 			layoutCont.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == scoreEval.getAssessmentStatus()));
@@ -349,7 +368,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			//make sure all results is on the database before calculating some scores
 			//manager commit already 
 			
-			courseNode.updateScoreEvaluation(getIdentity(), userCourseEnv, getIdentity(), Role.user);
+			courseNode.updateScoreEvaluation(getIdentity(), userCourseEnv, getIdentity(), Role.user, getLocale());
 			
 			Checkbox checkbox = wrapper.getCheckbox();
 			logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());

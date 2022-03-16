@@ -132,6 +132,17 @@ public class SingleKeyTranslatorController extends FormBasicController {
 		this.uobject = uobject;
 	}
 
+	public void setEnabled(boolean enabled) {
+		for (I18nRowBundle bundle : bundles) {
+			for(SingleKey i18nItemKey:i18nItemKeys) {
+				TextElement textElement = i18nItemKey.getTextElements().get(bundle.getLanguageKey());
+				if (textElement != null) {
+					textElement.setEnabled(enabled);
+				}
+			}
+		}
+	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (StringHelper.containsNonWhitespace(translatedDescription)) {

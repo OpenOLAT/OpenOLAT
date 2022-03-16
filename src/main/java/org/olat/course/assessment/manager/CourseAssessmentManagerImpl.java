@@ -508,6 +508,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		} else {
 			assessmentEntry.setScore(new BigDecimal(Float.toString(score)));
 		}
+		assessmentEntry.setGrade(scoreEvaluation.getGrade());
+		assessmentEntry.setPerformanceClassIdent(scoreEvaluation.getPerformanceClassIdent());
 		assessmentEntry.setPassed(passed);
 		if(assessmentId != null) {
 			assessmentEntry.setAssessmentId(assessmentId);
@@ -572,6 +574,12 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					getClass(), 
 					LoggingResourceable.wrap(assessedIdentity), 
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiScore, "", String.valueOf(scoreEvaluation.getScore())));
+		}
+		if (scoreEvaluation.getGrade()!=null) {
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_GRADE_UPDATED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiGrade, "", String.valueOf(scoreEvaluation.getGrade())));
 		}
 		if (incrementUserAttempts && attempts!=null) {
 			if(identity != null) {

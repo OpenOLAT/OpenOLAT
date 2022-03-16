@@ -73,8 +73,9 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		
 		checkboxListEditCtrl = new CheckListBoxListEditController(ureq, wControl, course, courseNode, numOfChecks > 0);
 		listenTo(checkboxListEditCtrl);
-		configurationCtrl = new CheckListConfigurationController(ureq, wControl, courseNode, NodeAccessType.of(course),
-				numOfChecks > 0);
+		configurationCtrl = new CheckListConfigurationController(ureq, wControl,
+				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode,
+				NodeAccessType.of(course), numOfChecks > 0);
 		listenTo(configurationCtrl);
 		
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode.getModuleConfiguration(), course);

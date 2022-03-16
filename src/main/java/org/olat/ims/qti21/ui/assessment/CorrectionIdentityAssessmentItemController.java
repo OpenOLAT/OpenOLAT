@@ -291,7 +291,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 			if(model.getCourseNode() != null && model.getCourseEnvironment() != null) {
 				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 				correctionManager.updateCourseNode(candidateSession, assessmentTest,
-						model.getCourseNode(), model.getCourseEnvironment(), getIdentity());
+						model.getCourseNode(), model.getCourseEnvironment(), getIdentity(), getLocale());
 			}
 		} catch(IOException e) {
 			logError("", e);

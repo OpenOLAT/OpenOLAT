@@ -57,6 +57,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,6 +82,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private CourseModule courseModule;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
 
 	/**
 	 * Constructor for a manual scoring course run controller
@@ -110,6 +114,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNode courseNode, boolean displayNodeInfo, boolean showLog, boolean overrideUserResultsVisiblity) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.showLog = showLog;
 		this.courseNode = courseNode;
@@ -195,11 +200,16 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScore()));
 			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScore()));
 		}
+		
+		boolean hasGrade = hasScore && assessmentConfig.hasGrade() && gradeModule.isEnabled();
+		myContent.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
+		
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		myContent.contextPut("hasPassedField", Boolean.valueOf(hasPassed));
-		if (hasPassed) {
+		if (hasPassed && !hasGrade) {
 			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
 		}
+		
 		myContent.contextPut("hasCommentField", assessmentConfig.hasComment());
 		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		if(StringHelper.containsNonWhitespace(infoTextUser)) {
@@ -226,6 +236,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 					|| assessmentEntry.getUserVisibility().booleanValue();
 			myContent.contextPut("resultsVisible", resultsVisible);
 			myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+			myContent.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
+					assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade()));
 			myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			myContent.contextPut("passed", assessmentEntry.getPassed());
 			myContent.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));

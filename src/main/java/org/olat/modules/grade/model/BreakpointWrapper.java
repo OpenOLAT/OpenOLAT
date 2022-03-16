@@ -1,0 +1,79 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.grade.model;
+
+import java.math.BigDecimal;
+
+import org.olat.modules.grade.Breakpoint;
+import org.olat.modules.grade.GradeScale;
+
+/**
+ * 
+ * Initial date: 10 Mar 2022<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ */
+public class BreakpointWrapper implements Breakpoint {
+	
+	private BigDecimal value;
+	private String grade;
+	private Integer bestToLowest;
+
+	@Override
+	public Long getKey() {
+		return null;
+	}
+	
+	@Override
+	public BigDecimal getValue() {
+		return value;
+	}
+	
+	@Override
+	public void setValue(BigDecimal value) {
+		this.value = value;
+	}
+	
+	@Override
+	public String getGrade() {
+		return grade;
+	}
+	
+	@Override
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+	
+	@Override
+	public Integer getBestToLowest() {
+		return bestToLowest;
+	}
+	
+	@Override
+	public void setBestToLowest(Integer bestToLowest) {
+		this.bestToLowest = bestToLowest;
+	}
+
+	@Override
+	public GradeScale getGradeScale() {
+		return null;
+	}
+	
+}

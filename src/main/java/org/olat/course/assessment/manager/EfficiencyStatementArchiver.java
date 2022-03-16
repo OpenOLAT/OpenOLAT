@@ -47,6 +47,8 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -59,15 +61,20 @@ public class EfficiencyStatementArchiver {
 	
 	private static final Logger log = Tracing.createLoggerFor(EfficiencyStatementArchiver.class);
 	
-	private final Translator translator;
+	private final boolean withGrades;
+	private Translator translator;
 	private final List<UserPropertyHandler> userPropertyHandler;
 
 	public EfficiencyStatementArchiver(Locale locale) {
+		withGrades = CoreSpringFactory.getImpl(GradeModule.class).isEnabled();
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
 		// fallback for user properties translation
 		translator = userManager.getPropertyHandlerTranslator(
 				Util.createPackageTranslator(EfficiencyStatement.class, locale,
-						Util.createPackageTranslator(CourseNode.class, locale)));		
+				Util.createPackageTranslator(CourseNode.class, locale)));
+		if (withGrades) {
+			translator = Util.createPackageTranslator(GradeUIFactory.class, locale, translator);
+		}
 		// list of user property handlers used in this archiver
 		userPropertyHandler = userManager.getUserPropertyHandlersFor(EfficiencyStatementArchiver.class.getCanonicalName(), true);
 	}
@@ -94,23 +101,31 @@ public class EfficiencyStatementArchiver {
 
 	private void appendDetailsHeader(OpenXMLWorksheet sheet) {
 		Row row = sheet.newRow();
-		row.addCell(0, translator.translate("table.header.node"));
-		row.addCell(1, translator.translate("table.header.details"));
-		row.addCell(2, translator.translate("table.header.type")); 
-		row.addCell(3, translator.translate("table.header.attempts"));
-		row.addCell(4, translator.translate("table.header.score"));
-		row.addCell(5, translator.translate("table.header.passed"));
+		int counter = 0;
+		row.addCell(counter++, translator.translate("table.header.node"));
+		row.addCell(counter++, translator.translate("table.header.details"));
+		row.addCell(counter++, translator.translate("table.header.type")); 
+		row.addCell(counter++, translator.translate("table.header.attempts"));
+		row.addCell(counter++, translator.translate("table.header.score"));
+		if (withGrades) {
+			row.addCell(counter++, translator.translate("table.header.grade"));
+		}
+		row.addCell(counter++, translator.translate("table.header.passed"));
 	}
 
 	private void appendDetailsTable(EfficiencyStatement efficiencyStatement, OpenXMLWorksheet sheet) {
 		for (Map<String,Object> nodeData : efficiencyStatement.getAssessmentNodes()) {
 			Row row = sheet.newRow();
-			appendValue(nodeData, AssessmentHelper.KEY_TITLE_SHORT, 0, row);		
-			appendValue(nodeData, AssessmentHelper.KEY_TITLE_LONG, 1, row);
-			appendTypeValue(nodeData, AssessmentHelper.KEY_TYPE, 2, row);
-			appendValue(nodeData, AssessmentHelper.KEY_ATTEMPTS, 3, row);
-			appendValue(nodeData, AssessmentHelper.KEY_SCORE, 4, row);
-			appendValue(nodeData, AssessmentHelper.KEY_PASSED, 5, row);
+			int counter = 0;
+			appendValue(nodeData, AssessmentHelper.KEY_TITLE_SHORT, counter++, row);
+			appendValue(nodeData, AssessmentHelper.KEY_TITLE_LONG, counter++, row);
+			appendTypeValue(nodeData, AssessmentHelper.KEY_TYPE, counter++, row);
+			appendValue(nodeData, AssessmentHelper.KEY_ATTEMPTS, counter++, row);
+			appendValue(nodeData, AssessmentHelper.KEY_SCORE, counter++, row);
+			if (withGrades) {
+				appendGradeValue(nodeData, counter++, row);
+			}
+			appendValue(nodeData, AssessmentHelper.KEY_PASSED, counter++, row);
 		}
 	}
 
@@ -123,6 +138,19 @@ public class EfficiencyStatementArchiver {
 			} else {
 				row.addCell(col,translator.translate("title_" + valueString));
 			}
+		}
+	}
+
+	private void appendGradeValue(Map<String,Object> nodeData, int col, Row row) {
+		Object gradeValue = nodeData.get(AssessmentHelper.KEY_GRADE);
+		if (gradeValue != null && (gradeValue instanceof String)) {
+			String grade = (String)gradeValue;
+			Object performanceClassIdentValue = nodeData.get(AssessmentHelper.KEY_PERFORMANCE_CLASS_IDENT);
+			String performanceClassIdent = null;
+			if (performanceClassIdentValue != null && (performanceClassIdentValue instanceof String)) {
+				performanceClassIdent = (String) performanceClassIdentValue;
+			}
+			row.addCell(col, GradeUIFactory.translatePerformanceClass(translator, performanceClassIdent, grade));
 		}
 	}
 

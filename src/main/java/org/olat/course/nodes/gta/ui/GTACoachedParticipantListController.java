@@ -638,8 +638,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(cNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				status, null, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), status, null,
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(cNode, doneEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
@@ -673,9 +674,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(gtaNode, assessedUserCourseEnv);
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), userVisibility,
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
+				userVisibility, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(gtaNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);

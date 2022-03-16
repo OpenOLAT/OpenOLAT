@@ -39,3 +39,65 @@ alter table o_im_notification add chat_channel varchar(255) default null;
 alter table o_im_notification add chat_type varchar(16) default 'message' not null;
 
 create index idx_im_chat_typed_idx on o_im_notification (fk_to_identity_id,chat_type);
+
+-- Grade
+create table o_gr_grade_system (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   g_identifier varchar(64) not null,
+   g_predefined number default 0 not null,
+   g_type varchar(32) not null,
+   g_enabled number default 1 not null,
+   g_resolution varchar(32),
+   g_rounding varchar(32),
+   g_best_grade number(20),
+   g_lowest_grade number(20),
+   g_cut_value decimal,
+   primary key (id)
+);
+create table o_gr_performance_class (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   g_identifier varchar(50),
+   g_best_to_lowest number(20),
+   g_passed number default 0 not null,
+   fk_grade_system number(20) not null,
+   primary key (id)
+);
+create table o_gr_grade_scale (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   g_min_score decimal,
+   g_max_score decimal,
+   fk_grade_system number(20),
+   fk_entry number(20) not null,
+   g_subident varchar(64) not null,
+   primary key (id)
+);
+create table o_gr_breakpoint (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   g_value decimal,
+   g_grade varchar(50),
+   g_best_to_lowest number(20),
+   fk_grade_scale number(20) not null,
+   primary key (id)
+);
+alter table o_as_entry add a_grade varchar(100);
+alter table o_as_entry add a_performance_class_ident varchar(50);
+alter table o_as_eff_statement add grade varchar(100);
+alter table o_as_eff_statement add performance_class_ident varchar(50);
+
+create unique index idx_grade_system_ident on o_gr_grade_system (g_identifier);
+alter table o_gr_grade_scale add constraint grscale_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+create index idx_grscale_to_grsys_idx on o_gr_grade_scale (fk_grade_system);
+alter table o_gr_performance_class add constraint perf_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+create index idx_perf_to_grsys_idx on o_gr_performance_class (fk_grade_system);
+alter table o_gr_grade_scale add constraint grscale_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_grscale_entry_idx on o_gr_grade_scale (fk_entry);
+alter table o_gr_breakpoint add constraint grbp_to_grscale_idx foreign key (fk_grade_scale) references o_gr_grade_scale (id);
+create index idx_grbp_to_grscale_idx on o_gr_breakpoint (fk_grade_scale);

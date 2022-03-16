@@ -213,9 +213,9 @@ public class AssessmentViewController extends BasicController {
 
 	private void doSetUserVisibility(UserRequest ureq, Boolean userVisibility) {
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), userVisibility,
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(),
+				userVisibility, scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		
@@ -225,9 +225,10 @@ public class AssessmentViewController extends BasicController {
 
 	private void doReopen(UserRequest ureq) {
 		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
-		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(),
-				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		ScoreEvaluation eval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.inReview,
+				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		
 		courseAssessmentService.updateScoreEvaluation(courseNode, eval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));

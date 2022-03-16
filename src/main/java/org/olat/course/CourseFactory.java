@@ -132,6 +132,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -444,6 +445,8 @@ public class CourseFactory {
 		CoreSpringFactory.getImpl(GTAManager.class).deleteAllTaskLists(entry);
 		//delete the storage folder of info messages attachments
 		CoreSpringFactory.getImpl(InfoMessageFrontendManager.class).deleteStorage(course);
+		// Delete GradeScales
+		CoreSpringFactory.getImpl(GradeService.class).deleteGradeScale(entry, null);
 		// Delete course elements
 		CoreSpringFactory.getImpl(CourseNodeService.class).deleteCourseElements(entry);
 

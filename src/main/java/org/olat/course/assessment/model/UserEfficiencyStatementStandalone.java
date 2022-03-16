@@ -78,6 +78,10 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 
 	@Column(name="score", nullable=true, insertable=true, updatable=true)
 	private Float score;
+	@Column(name="grade", nullable=true, insertable=true, updatable=true)
+	private String grade;
+	@Column(name="performance_class_ident", nullable=true, insertable=true, updatable=true)
+	private String performanceClassIdent;
 	@Column(name="passed", nullable=true, insertable=true, updatable=true)
 	private Boolean passed;
 	@Column(name="total_nodes", nullable=true, insertable=true, updatable=true)
@@ -138,6 +142,7 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public Date getLastUserModified() {
 		return lastUserModified;
 	}
@@ -146,6 +151,7 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 		this.lastUserModified = lastUserModified;
 	}
 
+	@Override
 	public Date getLastCoachModified() {
 		return lastCoachModified;
 	}
@@ -161,6 +167,24 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 		
 	public void setScore(Float score) {
 		this.score = score;
+	}
+
+	@Override
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
 	}
 
 	@Override
@@ -224,6 +248,7 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 		this.resourceKey = resourceKey;
 	}
 
+	@Override
 	public String getTitle() {
 		return title;
 	}
@@ -232,6 +257,7 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 		this.title = title;
 	}
 
+	@Override
 	public String getShortTitle() {
 		return shortTitle;
 	}
@@ -240,6 +266,7 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 		this.shortTitle = shortTitle;
 	}
 
+	@Override
 	public Long getCourseRepoKey() {
 		return courseRepoKey;
 	}

@@ -195,6 +195,23 @@ public class AssessmentEntryDAO {
 				.getSingleResult();
 		return exists.booleanValue();
 	}
+
+	public boolean hasGrades(RepositoryEntryRef remositoryEntry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select data.key");
+		sb.append("  from assessmententry data");
+		sb.and().append(" data.repositoryEntry.key=:repositoryEntryKey");
+		sb.and().append(" data.subIdent=:subIdent");
+		sb.and().append(" data.grade is not null");
+		
+		return !dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("repositoryEntryKey", remositoryEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setMaxResults(1)
+				.getResultList()
+				.isEmpty();
+	}
 	
 	public AssessmentEntry resetAssessmentEntry(AssessmentEntry nodeAssessment) {
 		nodeAssessment.setScore(null);

@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool.tools;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NavigableSet;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -34,9 +35,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
 import org.olat.course.nodes.CourseNode;
@@ -47,6 +51,10 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AbstractToolsController extends BasicController {
 	
-	private Link detailsLink, setDoneLink, reopenLink, visibleLink, notVisibleLink;
+	private Link detailsLink, applyGradeLink, setDoneLink, reopenLink, visibleLink, notVisibleLink;
 	private Link resetAttemptsButton;
 	private final VelocityContainer mainVC;
 	private final List<String> links = new ArrayList<>();
@@ -80,9 +88,14 @@ public abstract class AbstractToolsController extends BasicController {
 	private final AssessmentEvaluation scoreEval;
 	protected final CourseNode courseNode;
 	protected final UserCourseEnvironment assessedUserCourseEnv;
+	protected final AssessmentConfig assessmentConfig;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
 	
 	public AbstractToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
@@ -102,6 +115,7 @@ public abstract class AbstractToolsController extends BasicController {
 		assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, coachCourseEnv.getCourseEnvironment());
 		scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 	}
 	
 	public boolean isCourseReadonly() {
@@ -114,6 +128,7 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	protected final void initTools() {
 		initDetails();
+		initApplyGrade();
 		initStatus();
 		addSeparator();
 		initResetAttempts();
@@ -138,6 +153,14 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	protected void initDetails() {
 		detailsLink = addLink("tool.details", "tool.details", "o_icon o_icon-fw o_icon_details");
+	}
+	
+	protected void initApplyGrade() {
+		if (gradeModule.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() && !courseReadonly) {
+			if (scoreEval != null && scoreEval.getScore() != null && !StringHelper.containsNonWhitespace(scoreEval.getGrade())) {
+				applyGradeLink = addLink("tool.grade.apply", "tool.grade.apply", "o_icon o_icon-fw ");
+			}
+		}
 	}
 	
 	protected void initStatus() {
@@ -196,6 +219,8 @@ public abstract class AbstractToolsController extends BasicController {
 			doSetVisibility(ureq, true);
 		} else if(notVisibleLink == source) {
 			doSetVisibility(ureq, false);
+		} else if(applyGradeLink == source) {
+			doApplyGrade(ureq);
 		} else if(detailsLink == source) {
 			fireEvent(ureq, new ShowDetailsEvent(courseNode, assessedIdentity));
 		}
@@ -238,9 +263,9 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void reopenEvaluation() {
-		ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(),
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.inReview,
+				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				AssessmentRunStatus.running, scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
@@ -254,9 +279,9 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void doneEvalution() {
-		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-				AssessmentEntryStatus.done, scoreEval.getUserVisible(),
-				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+				scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.done,
+				scoreEval.getUserVisible(), scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);
@@ -264,8 +289,8 @@ public abstract class AbstractToolsController extends BasicController {
 	
 	private void doSetVisibility(UserRequest ureq, boolean visible) {
 		if (scoreEval != null) {
-			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					AssessmentEntryStatus.done, visible,
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getGrade(),
+					scoreEval.getPerformanceClassIdent(), scoreEval.getPassed(), AssessmentEntryStatus.done, visible,
 					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
 					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
@@ -273,4 +298,28 @@ public abstract class AbstractToolsController extends BasicController {
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
+
+	
+	private void doApplyGrade(UserRequest ureq) {
+		if (scoreEval != null && scoreEval.getScore() != null) {
+			Boolean passed = null;
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
+			String grade = gradeScoreRange.getGrade();
+			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+			passed = Mode.none != assessmentConfig.getPassedMode()
+					? Boolean.valueOf(gradeScoreRange.isPassed())
+					: null;
+			
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), grade,
+					performanceClassIdent, passed, scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
+					scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+					scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
+					getIdentity(), false, Role.coach);
+		}
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
 }

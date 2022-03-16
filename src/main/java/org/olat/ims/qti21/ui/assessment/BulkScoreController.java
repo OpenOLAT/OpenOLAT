@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
@@ -44,6 +45,7 @@ import org.olat.ims.qti21.manager.CorrectionManagerImpl;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.model.CorrectionAssessmentItemRow;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -81,6 +83,7 @@ public class BulkScoreController extends FormBasicController {
 	public BulkScoreController(UserRequest ureq, WindowControl wControl,
 			CorrectionOverviewModel model, CorrectionAssessmentItemRow itemRow, Mode mode) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.mode = mode;
 		this.model = model;
 		this.itemRow = itemRow;
@@ -206,7 +209,7 @@ public class BulkScoreController extends FormBasicController {
 			if(model.getCourseNode() != null && model.getCourseEnvironment() != null) {
 				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 				correctionManager.updateCourseNode(candidateSession, assessmentTest,
-						model.getCourseNode(), model.getCourseEnvironment(), getIdentity());
+						model.getCourseNode(), model.getCourseEnvironment(), getIdentity(), getLocale());
 			}
 		} catch(IOException e) {
 			logError("", e);

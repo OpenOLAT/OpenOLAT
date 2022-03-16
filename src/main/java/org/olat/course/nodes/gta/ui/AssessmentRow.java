@@ -44,12 +44,15 @@ public class AssessmentRow {
 	private UserCourseEnvironment userCourseEnv;
 	
 	private TextElement scoreEl;
+	private MultipleSelectionElement applyGradeEl;
 	private MultipleSelectionElement passedEl;
 	private FormLink assessmentDocsTooltipLink;
 	private FormLink assessmentDocsEditLink;
 	private FormLink commentTooltipLink, commentEditLink;
 	
 	private String score;
+	private String grade;
+	private String translatedGrade;
 	private Boolean passed;
 	private String comment;
 	
@@ -79,6 +82,22 @@ public class AssessmentRow {
 
 	public void setScore(String score) {
 		this.score = score;
+	}
+
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	public String getTranslatedGrade() {
+		return translatedGrade;
+	}
+
+	public void setTranslatedGrade(String translatedGrade) {
+		this.translatedGrade = translatedGrade;
 	}
 
 	public Boolean getPassed() {
@@ -135,6 +154,14 @@ public class AssessmentRow {
 
 	public void setScoreEl(TextElement scoreEl) {
 		this.scoreEl = scoreEl;
+	}
+
+	public MultipleSelectionElement getApplyGradeEl() {
+		return applyGradeEl;
+	}
+
+	public void setApplyGradeEl(MultipleSelectionElement applyGradeEl) {
+		this.applyGradeEl = applyGradeEl;
 	}
 
 	public MultipleSelectionElement getPassedEl() {

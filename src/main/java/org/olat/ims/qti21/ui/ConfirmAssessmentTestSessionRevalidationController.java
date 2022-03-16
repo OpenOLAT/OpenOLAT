@@ -170,7 +170,7 @@ public class ConfirmAssessmentTestSessionRevalidationController extends FormBasi
 			if(courseNode == null) {
 				qtiService.updateAssessmentEntry(session, updateEntryResults);
 			} else {
-				courseNode.promoteAssessmentTestSession(session, assessedUserCourseEnv, updateEntryResults, getIdentity(), Role.coach);
+				courseNode.promoteAssessmentTestSession(session, assessedUserCourseEnv, updateEntryResults, getIdentity(), Role.coach, getLocale());
 			}
 			
 			if(runningAssignment != null) {

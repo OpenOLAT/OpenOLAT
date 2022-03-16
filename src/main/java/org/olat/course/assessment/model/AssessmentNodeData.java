@@ -21,6 +21,7 @@ package org.olat.course.assessment.model;
 
 import static org.olat.course.assessment.AssessmentHelper.KEY_ATTEMPTS;
 import static org.olat.course.assessment.AssessmentHelper.KEY_DETAILS;
+import static org.olat.course.assessment.AssessmentHelper.KEY_GRADE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_IDENTIFYER;
 import static org.olat.course.assessment.AssessmentHelper.KEY_INDENT;
 import static org.olat.course.assessment.AssessmentHelper.KEY_LAST_COACH_MODIFIED;
@@ -28,6 +29,7 @@ import static org.olat.course.assessment.AssessmentHelper.KEY_LAST_USER_MODIFIED
 import static org.olat.course.assessment.AssessmentHelper.KEY_MAX;
 import static org.olat.course.assessment.AssessmentHelper.KEY_MIN;
 import static org.olat.course.assessment.AssessmentHelper.KEY_PASSED;
+import static org.olat.course.assessment.AssessmentHelper.KEY_PERFORMANCE_CLASS_IDENT;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SCORE_F;
 import static org.olat.course.assessment.AssessmentHelper.KEY_SELECTABLE;
@@ -72,6 +74,8 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	
 	private Float maxScore;
 	private Float minScore;
+	private String grade;
+	private String performanceClassIdent;
 	
 	private Boolean passed;
 	private Overridable<Boolean> passedOverridable;
@@ -216,6 +220,22 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		this.minScore = minScore;
 	}
 
+	public String getGrade() {
+		return grade;
+	}
+
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+
+	public String getPerformanceClassIdent() {
+		return performanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.performanceClassIdent = performanceClassIdent;
+	}
+
 	public Boolean getPassed() {
 		return passed;
 	}
@@ -312,6 +332,12 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		if(minScore != null) {
 			nodeData.put(KEY_MIN, minScore);
 		}
+		if(grade != null) {
+			nodeData.put(KEY_GRADE, grade);
+		}
+		if(performanceClassIdent != null) {
+			nodeData.put(KEY_PERFORMANCE_CLASS_IDENT, performanceClassIdent);
+		}
 		if (passed != null) {
 			nodeData.put(KEY_PASSED, passed);
 		}
@@ -339,6 +365,8 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		roundedScore = (String)nodeData.get(KEY_SCORE);
 		maxScore = (Float)nodeData.get(KEY_MAX);
 		minScore = (Float)nodeData.get(KEY_MIN);
+		grade = (String)nodeData.get(KEY_GRADE);
+		performanceClassIdent = (String)nodeData.get(KEY_PERFORMANCE_CLASS_IDENT);
 		passed = (Boolean)nodeData.get(KEY_PASSED);
 		if(nodeData.get(KEY_SELECTABLE) instanceof Boolean) {
 			selectable = ((Boolean)nodeData.get(KEY_SELECTABLE)).booleanValue();

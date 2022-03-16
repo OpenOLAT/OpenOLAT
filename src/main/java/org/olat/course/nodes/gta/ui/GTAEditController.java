@@ -219,11 +219,12 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 			workflowCtrl.onNodeConfigChanged();
 		}
+		
 	}
 
 	public MSEditFormController createManualAssessmentCtrl(UserRequest ureq) {
-		return new MSEditFormController(ureq, getWindowControl(), config, nodeAccessType,
-				translate("pane.tab.grading"), "Three Steps to Your Task#_task_configuration");
+		return new MSEditFormController(ureq, getWindowControl(), courseEnv.getCourseGroupManager().getCourseEntry(),
+				gtaNode, nodeAccessType, translate("pane.tab.grading"), "Three Steps to Your Task#_task_configuration");
 	}
 	
 }

@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.statistics;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.statistic.StatisticResourceNode;
@@ -50,6 +52,9 @@ import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -144,8 +149,21 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	}
 	
 	public Double getCutValue() {
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		return QtiNodesExtractor.extractCutValue(assessmentTest);
+		Double cutValue = null;
+		if (courseEntry != null && courseNode != null 
+				&& courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED)
+				&& CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+			GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+			BigDecimal minPassedScore = gradeService.getMinPassedScore(gradeScale);
+			if (minPassedScore != null) {
+				cutValue = Double.valueOf(minPassedScore.doubleValue());
+			}
+		} else {
+			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+			cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+		}
+		return cutValue;
 	}
 	
 	public File getAssessmentItemFile(AssessmentItemRef itemRef) {

@@ -67,6 +67,8 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 	public Object getValueAt(AssessmentRow row, int col) {
 		if(col == Cols.scoreVal.ordinal()) {
 			return row.getScore();
+		} else if(col == Cols.gradeVal.ordinal()) {
+			return row.getTranslatedGrade();
 		} else if(col == Cols.passedVal.ordinal()) {
 			return row.getPassed();
 		} else if(col == Cols.assessmentDocsVal.ordinal()) {
@@ -75,6 +77,8 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 			return row.getCommentTooltipLink();
 		} else if(col == Cols.scoreEl.ordinal()) {
 			return row.getScoreEl();
+		} else if(col == Cols.applyGradeEl.ordinal()) {
+			return row.getApplyGradeEl();
 		} else if(col == Cols.passedEl.ordinal()) {
 			return row.getPassedEl();
 		} else if(col == Cols.assessmentDocsEl.ordinal()) {
@@ -92,9 +96,11 @@ public class GroupAssessmentModel extends DefaultFlexiTableDataModel<AssessmentR
 	public enum Cols {
 		passedVal("table.header.passed"),
 		scoreVal("table.header.score"),
+		gradeVal("table.header.grade"),
 		assessmentDocsVal("table.header.assessment.docs"),
 		commentVal("table.header.comment"),
 		passedEl("table.header.passed"),
+		applyGradeEl("table.header.grade.apply"),
 		scoreEl("table.header.score"),
 		assessmentDocsEl("table.header.assessment.docs"),
 		commentEl("table.header.comment");

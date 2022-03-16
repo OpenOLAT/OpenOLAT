@@ -205,6 +205,10 @@
 		<class>org.olat.modules.gotomeeting.model.GoToMeetingImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToOrganizerImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToRegistrantImpl</class>
+		<class>org.olat.modules.grade.model.BreakpointImpl</class>
+		<class>org.olat.modules.grade.model.GradeScaleImpl</class>
+		<class>org.olat.modules.grade.model.GradeSystemImpl</class>
+		<class>org.olat.modules.grade.model.PerformanceClassImpl</class>
 		<class>org.olat.modules.grading.model.GraderToIdentityImpl</class>
 		<class>org.olat.modules.grading.model.GradingAssignmentImpl</class>
 		<class>org.olat.modules.grading.model.GradingTimeRecordImpl</class>

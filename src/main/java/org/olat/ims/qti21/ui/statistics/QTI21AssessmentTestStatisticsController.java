@@ -23,11 +23,13 @@ import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.duration;
 import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.format;
 import static org.olat.ims.qti21.ui.statistics.StatisticFormatter.getModeString;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -55,12 +57,16 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
 import org.olat.ims.qti21.model.statistics.StatisticAssessment;
 import org.olat.modules.assessment.ui.UserFilterController;
 import org.olat.modules.assessment.ui.event.UserFilterEvent;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -163,9 +169,22 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	}
 	
 	private Float getCutValueSetting(QTICourseNode testNode) {
-		return testNode instanceof IQTESTCourseNode
-					? courseAssessmentService.getAssessmentConfig(courseNode).getCutValue()
-					: null;
+		Float cutValue = null;
+		if (testNode instanceof IQTESTCourseNode) {
+			if (resourceResult.getCourseEntry() != null && courseNode != null 
+					&& courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED)
+					&& CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+				GradeScale gradeScale = gradeService.getGradeScale(resourceResult.getCourseEntry(), courseNode.getIdent());
+				BigDecimal minPassedScore = gradeService.getMinPassedScore(gradeScale);
+				if (minPassedScore != null) {
+					cutValue = Float.valueOf(minPassedScore.floatValue());
+				}
+			} else {
+				cutValue = courseAssessmentService.getAssessmentConfig(courseNode).getCutValue();
+			}
+		}
+		return cutValue;
 	}
 
 	private void initCourseNodeInformation(StatisticAssessment stats) {

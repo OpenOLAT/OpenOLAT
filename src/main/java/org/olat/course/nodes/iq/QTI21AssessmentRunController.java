@@ -24,6 +24,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.NavigableSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.basesecurity.GroupRoles;
@@ -107,6 +108,11 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
 import org.olat.modules.dcompensation.DisadvantageCompensationService;
+import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -143,6 +149,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final UserCourseEnvironment userCourseEnv;
 	private final QTICourseNode courseNode;
 	private final RepositoryEntry testEntry;
+	private final AssessmentConfig assessmentConfig;
 	private final QTI21DeliveryOptions deliveryOptions;
 	private final QTI21OverrideOptions overrideOptions;
 	// The test is really assessment not a self test or a survey
@@ -160,6 +167,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	@Autowired
 	private CourseModule courseModule;
 	@Autowired
+	private GradeModule gradeModule;
+	@Autowired
+	private GradeService gradeService;
+	@Autowired
 	private DueDateService dueDateService;
 	@Autowired
 	private GradingService gradingService;
@@ -176,6 +187,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			UserCourseEnvironment userCourseEnv, QTICourseNode courseNode) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
@@ -183,6 +195,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		anonym = userSession.getRoles().isGuestOnly();
 		config = courseNode.getModuleConfiguration();
 		testEntry = courseNode.getReferencedRepositoryEntry();
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
 		mainVC.setDomReplaceable(false); // DOM ID set in velocity
@@ -263,6 +276,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		mainVC.contextPut("enableScoreInfo", Boolean.valueOf(enableScoreInfo));
 		
+		boolean hasGrade = enableScoreInfo && assessmentConfig.hasGrade() && gradeModule.isEnabled();
+		mainVC.contextPut("hasGradeField", Boolean.valueOf(hasGrade));
+		
 		mainVC.contextPut("showPassed", getPassedType() != PassedType.none);
 		
 	    // configuration data
@@ -278,7 +294,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		// time limit
 		initTimeLimits();
 
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if (assessmentConfig.isAssessable()) {
 			if (Mode.none != assessmentConfig.getScoreMode() || userCourseEnv.isCoach()){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
@@ -335,6 +350,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				boolean resultsVisible = assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue();
 				mainVC.contextPut("resultsVisible", resultsVisible);
 				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+				mainVC.contextPut("grade", GradeUIFactory.translatePerformanceClass(getTranslator(),
+						assessmentEntry.getPerformanceClassIdent(), assessmentEntry.getGrade()));
 				mainVC.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);
 				mainVC.contextPut("inReview", Boolean.valueOf(AssessmentEntryStatus.inReview == assessmentEntry.getAssessmentStatus()));
@@ -1072,6 +1089,21 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 		
 		if(courseNode instanceof IQTESTCourseNode) {
+			String grade = null;
+			String performanceClassIdent = null;
+			Boolean updatePass = pass;
+			if(assessmentConfig.hasGrade() && score != null && gradeModule.isEnabled()
+					&& (assessmentConfig.isAutoGrade() || isAssessmentWithGrade())) {
+				GradeScale gradeScale = gradeService.getGradeScale(
+						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+						courseNode.getIdent());
+				NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+				grade = gradeScoreRange.getGrade();
+				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+				updatePass = Boolean.valueOf(gradeScoreRange.isPassed());
+			}
+			
 			Boolean visibility;
 			AssessmentEntryStatus assessmentStatus;
 			String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
@@ -1082,8 +1114,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				assessmentStatus = AssessmentEntryStatus.done;
 				visibility = Boolean.TRUE;
 			}
-			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, start, completion,
-					AssessmentRunStatus.done, assessmentId);
+			
+			ScoreEvaluation sceval = new ScoreEvaluation(score, grade, performanceClassIdent, updatePass,
+					assessmentStatus, visibility, start, completion, AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
 			courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),
@@ -1108,5 +1141,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				((SelfAssessableCourseNode)courseNode).incrementUserAttempts(null, userCourseEnv, Role.user);
 			}
 		}
+	}
+
+	private boolean isAssessmentWithGrade() {
+		return StringHelper.containsNonWhitespace(courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv).getGrade());
 	}
 }

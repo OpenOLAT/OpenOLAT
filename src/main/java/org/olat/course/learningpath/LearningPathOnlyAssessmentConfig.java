@@ -60,6 +60,16 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean hasGrade() {
+		return false;
+	}
+	
+	@Override
+	public boolean isAutoGrade() {
+		return false;
+	}
+
+	@Override
 	public Mode getPassedMode() {
 		return Mode.none;
 	}

@@ -37,3 +37,66 @@ alter table o_im_notification add column chat_channel varchar(255) default null;
 alter table o_im_notification add column chat_type varchar(16) not null default 'message';
 
 create index idx_im_chat_typed_idx on o_im_notification (fk_to_identity_id,chat_type);
+
+-- Grade
+create table o_gr_grade_system (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_identifier varchar(64) not null,
+   g_predefined bool not null default false,
+   g_type varchar(32) not null,
+   g_enabled bool not null default true,
+   g_resolution varchar(32),
+   g_rounding varchar(32),
+   g_best_grade integer,
+   g_lowest_grade integer,
+   g_cut_value decimal(65,30),
+   primary key (id)
+);
+create table o_gr_performance_class (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_identifier varchar(50),
+   g_best_to_lowest integer,
+   g_passed bool not null default false,
+   fk_grade_system bigint not null,
+   primary key (id)
+);
+create table o_gr_grade_scale (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_min_score decimal(65,30),
+   g_max_score decimal(65,30),
+   fk_grade_system bigint,
+   fk_entry bigint not null,
+   g_subident varchar(64) not null,
+   primary key (id)
+);
+create table o_gr_breakpoint (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   g_value decimal(65,30),
+   g_grade varchar(50),
+   g_best_to_lowest integer,
+   fk_grade_scale bigint not null,
+   primary key (id)
+;
+alter table o_as_entry add a_grade varchar(100);
+alter table o_as_entry add a_performance_class_ident varchar(50);
+alter table o_as_eff_statement add grade varchar(100);
+alter table o_as_eff_statement add performance_class_ident varchar(50);
+
+alter table o_gr_grade_system ENGINE = InnoDB;
+alter table o_gr_performance_class ENGINE = InnoDB;
+alter table o_gr_grade_scale ENGINE = InnoDB;
+alter table o_gr_breakpoint ENGINE = InnoDB;
+
+create unique index idx_grsys_ident on o_gr_grade_system (g_identifier);
+alter table o_gr_grade_scale add constraint grscale_to_entry_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+alter table o_gr_performance_class add constraint perf_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);
+alter table o_gr_grade_scale add constraint grscale_to_grsys_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_gr_breakpoint add constraint grbp_to_grsys_idx foreign key (fk_grade_scale) references o_gr_grade_scale (id);

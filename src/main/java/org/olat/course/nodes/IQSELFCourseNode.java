@@ -300,7 +300,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 					.getLastAssessmentTestSessions(courseEntry, getIdent(), referencedRepositoryEntry, assessedIdentity);
 			if(testSession != null) {
 				Float score = testSession.getScore() == null ? null : testSession.getScore().floatValue();
-				return new ScoreEvaluation(score, testSession.getPassed(), testSession.getKey());
+				return new ScoreEvaluation(score, null, null, testSession.getPassed(), null, null, null, null, null, testSession.getKey());
 			}
 		}
 		return scoreEvaluation;

@@ -449,21 +449,20 @@ public class STRootPassedEvaluatorTest {
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		Counts counts = new CountsImpl(3, 2, 0);
-		PassCounter passCounter = mock(PassCounter.class);
+			PassCounter passCounter = mock(PassCounter.class);
 		when(passCounter.getCounts(any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, null);
 		
 		assertThat(passed).isNull();
-	}
-	
-	private AssessmentEvaluation createAssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed) {
-		return new AssessmentEvaluation(score, null, passed, Overridable.of(passed), null, null, null, null, null,
+		}
+
+	private AssessmentEvaluation createAssessmentEvaluation(Float score, final Boolean passed, Boolean fullyAssessed) {
+		return new AssessmentEvaluation(score, null, null, null, passed, Overridable.of(passed), null, null, null, null, null,
 				fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null, null, null,
 				null, null, null);
 	}
-
 	
 	private final static class CountsImpl implements Counts {
 
