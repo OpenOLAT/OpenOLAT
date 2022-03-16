@@ -745,10 +745,12 @@ public class CopyCourseContext {
 		if (getCourseNodesMap() != null) {
 			CopyCourseOverviewRow overviewRow = getCourseNodesMap().get(courseNodeIdent);
 			
-			if (overviewRow.getNewStartDate() != null && DueDateConfig.isAbsolute(overviewRow.getStart())) {
-				dateDifference = overviewRow.getNewStartDate().getTime() - overviewRow.getStart().getAbsoluteDate().getTime();
-			} else if (overviewRow.getNewEndDate() != null && DueDateConfig.isAbsolute(overviewRow.getEnd())) {
-				dateDifference = overviewRow.getNewEndDate().getTime() - overviewRow.getEnd().getAbsoluteDate().getTime();
+			if (overviewRow != null) {
+				if (overviewRow.getNewStartDate() != null && DueDateConfig.isAbsolute(overviewRow.getStart())) {
+					dateDifference = overviewRow.getNewStartDate().getTime() - overviewRow.getStart().getAbsoluteDate().getTime();
+				} else if (overviewRow.getNewEndDate() != null && DueDateConfig.isAbsolute(overviewRow.getEnd())) {
+					dateDifference = overviewRow.getNewEndDate().getTime() - overviewRow.getEnd().getAbsoluteDate().getTime();
+				}
 			}
 		} 
 		
