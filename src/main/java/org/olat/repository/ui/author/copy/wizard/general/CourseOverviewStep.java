@@ -147,14 +147,14 @@ public class CourseOverviewStep extends BasicStep {
 
 		@Override
 		protected void formOK(UserRequest ureq) {			
-			saveDatesToContext(context, dataModel.getObjects());
+			saveDatesToContext(context);
 			removeFormElementsFromContext(context);
 			
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);			
 		}
 		
-		private void saveDatesToContext(CopyCourseContext context, List<CopyCourseOverviewRow> rows) {
-			for (CopyCourseOverviewRow row : rows) {
+		private void saveDatesToContext(CopyCourseContext context) {
+			for (CopyCourseOverviewRow row : context.getCourseNodes()) {
 				if (row.getObligationChooser() != null) {
 					row.setAssesssmentObligation(AssessmentObligation.valueOf(row.getObligationChooser().getSelectedKey()));
 				}
@@ -175,7 +175,6 @@ public class CourseOverviewStep extends BasicStep {
 			}
 			
 			context.setCustomConfigsLoaded(true);
-			context.setCourseNodes(rows);
 		}
 		
 		private void removeFormElementsFromContext(CopyCourseContext context) {
@@ -191,8 +190,6 @@ public class CourseOverviewStep extends BasicStep {
 				row.setNewEndDateChooser(null);
 				row.setNewStartDateChooser(null);
 			}
-			
-			context.setCourseNodes(rows);
 		}
 
 		@Override
@@ -434,7 +431,7 @@ public class CourseOverviewStep extends BasicStep {
 					CopyCourseOverviewRow row = (CopyCourseOverviewRow) sourceSelection.getUserObject();
 					updateVisibility(row);
 					
-					saveDatesToContext(context, dataModel.getObjects());
+					saveDatesToContext(context);
 				}
 			} else if (source instanceof DateChooser) {
 				if (source.getName().startsWith("start_") || source.getName().startsWith("end_")) {
@@ -447,7 +444,7 @@ public class CourseOverviewStep extends BasicStep {
 						sourceDateChooser.setInitialDate(sourceDateChooser.getDate());
 					}
 					
-					saveDatesToContext(context, dataModel.getObjects());
+					saveDatesToContext(context);
 					courseNodeDatesListController.updateDates(ureq);
 				}
 			}
@@ -467,7 +464,7 @@ public class CourseOverviewStep extends BasicStep {
 					askForDateMove = !moveDatesEvent.isRememberChoice();
 				}
 				
-				saveDatesToContext(context, dataModel.getObjects());
+				saveDatesToContext(context);
 				courseNodeDatesListController.updateDates(ureq);
 				
 				cmc.deactivate();
