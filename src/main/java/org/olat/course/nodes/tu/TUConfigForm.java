@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ModuleConfiguration;
@@ -186,7 +187,13 @@ public class TUConfigForm extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		try {
 			URL url = new URL(thost.getValue());
-			allOk &= StringHelper.containsNonWhitespace(url.getHost());
+			if (!StringHelper.containsNonWhitespace(url.getHost())) {
+				thost.setErrorKey("TUConfigForm.invalidurl", null);
+				allOk &= false;
+			} else if (url.getHost().startsWith(Settings.getServerDomainName())) {
+				thost.setErrorKey("error.internal", true);
+				allOk &= false;
+			}
 		} catch (MalformedURLException e) {
 			thost.setErrorKey("TUConfigForm.invalidurl", null);
 			allOk &= false;

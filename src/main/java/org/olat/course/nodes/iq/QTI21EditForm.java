@@ -508,6 +508,7 @@ public class QTI21EditForm extends FormBasicController {
 			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
+			markDirty();
 		}
 		super.event(ureq, source, event);
 	}
@@ -590,20 +591,24 @@ public class QTI21EditForm extends FormBasicController {
 		if(showResultsOnFinishEl == source || showResultsDateDependentEl == source || relativeDatesEl == source) {
 			update();
 			updateAssessmentModeVisibility();
+			markDirty();
 		} else if(testDateDependentEl == source) {
 			if(testDateDependentEl.isAtLeastSelected(1)) {
 				confirmTestDates(ureq);
 			} else {
 				update();
 				updateAssessmentModeVisibility();
+				markDirty();
 			}
  		} else if(correctionModeEl == source) {
 			updateScoreVisibility();
 			markDirty();
 		} else if (assessmentModeEl == source) {
 			updateAssessmentModeVisibility();
+			markDirty();
 		} else if (source == gradeEnabledEl) {
 			updateGradeUI();
+			markDirty();
 		} else if (source == gradeScaleEditLink) {
 			doEditGradeScale(ureq);
 		}
