@@ -225,7 +225,10 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_full_width");
 			} else if(fullWindow == ScormDisplayEnum.fullWidthHeightWithBack) {
 				ctr.setAsFullscreen();
-				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_full_width o_scorm_with_back");
+				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_full_width");
+				wControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_scorm_with_back");
+				
+				
 			}
 			columnLayoutCtr = ctr;
 		} else {
@@ -443,6 +446,7 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 		if(columnLayoutCtr instanceof LayoutMain3ColsBackController) {
 			((LayoutMain3ColsBackController)columnLayoutCtr).deactivate();
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
+			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
 		}
 	}
 	
@@ -523,10 +527,12 @@ public class ScormAPIandDisplayController extends MainLayoutBasicController impl
 			LayoutMain3ColsBackController layoutCtr = (LayoutMain3ColsBackController)columnLayoutCtr;
 			layoutCtr.deactivate();
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
+			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
 		} else if(columnLayoutCtr instanceof LayoutMain3ColsController) {
 			LayoutMain3ColsController layoutCtr = (LayoutMain3ColsController)columnLayoutCtr;
 			layoutCtr.deactivate(null);
 			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_full_width");
+			getWindowControl().getWindowBackOffice().getChiefController().removeBodyCssClass("o_scorm_with_back");
 		}
 	}
 
