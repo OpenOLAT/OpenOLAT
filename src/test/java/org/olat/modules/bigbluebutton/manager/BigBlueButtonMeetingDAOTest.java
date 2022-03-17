@@ -19,6 +19,8 @@
  */
 package org.olat.modules.bigbluebutton.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -191,6 +193,22 @@ public class BigBlueButtonMeetingDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		Assert.assertNotNull(reloadedMeeting);
 		Assert.assertEquals(meeting, reloadedMeeting);
+	}
+	
+	@Test
+	public void getAllResourceMeetings() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String name = "BigBlueButton - 2";
+		String subIdent = UUID.randomUUID().toString();
+		
+		BigBlueButtonMeeting meeting1 = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, subIdent, null, null);
+		BigBlueButtonMeeting meeting2 = bigBlueButtonMeetingDao.createAndPersistMeeting(name, entry, null, null, null);
+		dbInstance.commit();
+		
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAllResourceMeetings(entry, null);
+		assertThat(meetings)
+			.hasSize(2)
+			.containsExactlyInAnyOrder(meeting1, meeting2);
 	}
 	
 	@Test
