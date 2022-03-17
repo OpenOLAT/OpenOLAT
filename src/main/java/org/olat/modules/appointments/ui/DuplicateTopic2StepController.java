@@ -20,7 +20,11 @@
 package org.olat.modules.appointments.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
+import static org.olat.core.util.DateUtils.toDate;
+import static org.olat.core.util.DateUtils.toLocalDateTime;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -96,7 +100,9 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 	private final List<Appointment> sourceAppointments;
 	private final boolean meetings;
 	private final Date currentFirstStart;
-	private long moveMillis;
+	private long moveDays;
+	private long moveHours;
+	private long moveMinutes;
 	
 	@Autowired
 	private AppointmentsService appointmentsService;
@@ -205,8 +211,8 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		boolean meetingValidationFailures = false;
 		List<AppointmentInput> rows = new ArrayList<>(sourceAppointments.size());
 		for (Appointment appointment : sourceAppointments) {
-			Date start = new Date(appointment.getStart().getTime() + moveMillis);
-			Date end = new Date(appointment.getEnd().getTime() + moveMillis);
+			Date start = toDate(toLocalDateTime(appointment.getStart()).plusDays(moveDays).plusHours(moveHours).plusMinutes(moveMinutes));
+			Date end = toDate(toLocalDateTime(appointment.getEnd()).plusDays(moveDays).plusHours(moveHours).plusMinutes(moveMinutes));
 			Boolean meetingValidation = validateMeeting(appointment, start, end);
 			AppointmentInput row = new AppointmentInput(appointment, start, end, meetingValidation);
 			rows.add(row);
@@ -242,21 +248,25 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 
 		boolean none = moveEl.isOneSelected() && moveEl.getSelectedKey().equals(KEY_NONE);
 		if (none) {
-			moveMillis = 0;
+			moveDays = 0;
+			moveHours = 0;
+			moveMinutes = 0;
 		}
 		
 		boolean period = moveEl.isOneSelected() && moveEl.getSelectedKey().equals(KEY_PERIOD);
 		periodCont.setVisible(period);
 		if (period && validatePeriod()) {
-			moveMillis = 0;
+			moveDays = 0;
+			moveHours = 0;
+			moveMinutes = 0;
 			if (StringHelper.containsNonWhitespace(periodDaysEl.getValue())) {
-				moveMillis += Integer.parseInt(periodDaysEl.getValue()) * 24 * 60 * 60 * 1000;
+				moveDays = Long.parseLong(periodDaysEl.getValue());
 			}
 			if (StringHelper.containsNonWhitespace(periodHoursEl.getValue())) {
-				moveMillis += Integer.parseInt(periodHoursEl.getValue()) * 60 * 60 * 1000;
+				moveHours = Long.parseLong(periodHoursEl.getValue());
 			}
 			if (StringHelper.containsNonWhitespace(periodMinutesEl.getValue())) {
-				moveMillis += Integer.parseInt(periodMinutesEl.getValue()) * 60 * 1000;
+				moveMinutes += Long.parseLong(periodMinutesEl.getValue());
 			}
 		}
 		
@@ -264,7 +274,11 @@ public class DuplicateTopic2StepController extends StepFormBasicController {
 		boolean firstDate = moveEl.isOneSelected() && moveEl.getSelectedKey().equals(KEY_FIRST);
 		firstEl.setVisible(firstDate);
 		if (firstDate && firstEl.getDate() != null) {
-			moveMillis = firstEl.getDate().getTime() - currentFirstStart.getTime();
+			LocalDateTime currentFirstDateTime = toLocalDateTime(currentFirstStart);
+			LocalDateTime firstDateTime = toLocalDateTime(firstEl.getDate());
+			moveDays = ChronoUnit.DAYS.between(currentFirstDateTime.toLocalDate(), firstDateTime.toLocalDate());
+			moveHours = 0;
+			moveMinutes = ChronoUnit.MINUTES.between(currentFirstDateTime.toLocalTime(), firstDateTime.toLocalTime());
 		}
 		
 		loadModel();
