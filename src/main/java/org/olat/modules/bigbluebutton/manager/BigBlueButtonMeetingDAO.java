@@ -358,6 +358,28 @@ public class BigBlueButtonMeetingDAO {
 				.getResultList();
 	}
 	
+	public List<BigBlueButtonMeeting> getAllResourceMeetings(RepositoryEntryRef entry, BusinessGroup businessGroup) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select meeting from bigbluebuttonmeeting as meeting")
+		  .append(" left join fetch meeting.template as template")
+		  .append(" left join fetch meeting.server as server");
+		if(entry != null) {
+			sb.and().append("meeting.entry.key=:entryKey");
+		} else {
+			sb.and().append("meeting.businessGroup.key=:businessGroupKey");
+		}
+		
+		TypedQuery<BigBlueButtonMeeting> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), BigBlueButtonMeeting.class);
+		
+		if(entry != null) {
+			query.setParameter("entryKey", entry.getKey());
+		} else {
+			query.setParameter("businessGroupKey", businessGroup.getKey());
+		}
+		return query.getResultList();
+	}
+	
 	public List<BigBlueButtonMeeting> getMeetings(RepositoryEntryRef entry, String subIdent, BusinessGroup businessGroup, boolean guestOnly) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select meeting from bigbluebuttonmeeting as meeting")

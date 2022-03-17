@@ -311,7 +311,7 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 	
 	@Override
 	public boolean deleteRepositoryEntryData(RepositoryEntry re) {
-		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getMeetings(re, null, null, false);
+		List<BigBlueButtonMeeting> meetings = bigBlueButtonMeetingDao.getAllResourceMeetings(re, null);
 		BigBlueButtonErrors errors = new BigBlueButtonErrors();
 		for(BigBlueButtonMeeting meeting:meetings) {
 			deleteMeeting(meeting, errors);
@@ -870,9 +870,14 @@ public class BigBlueButtonManagerImpl implements BigBlueButtonManager,
 		if(meeting.getBusinessGroup() != null) {
 			wrapper = calendarManager.getGroupCalendar(meeting.getBusinessGroup());
 		} else if(meeting.getEntry() != null) {
-			RepositoryEntry entry = repositoryEntryDao.loadByKey(meeting.getEntry().getKey());
-			ICourse course = CourseFactory.loadCourse(entry);
-			wrapper = calendarManager.getCourseCalendar(course);
+			try {
+				RepositoryEntry entry = repositoryEntryDao.loadByKey(meeting.getEntry().getKey());
+				ICourse course = CourseFactory.loadCourse(entry);
+				wrapper = calendarManager.getCourseCalendar(course);
+			} catch (Exception e) {
+				log.error("", e);
+				return null;
+			}
 		}
 		return wrapper == null ? null: wrapper.getKalendar();
 	}
