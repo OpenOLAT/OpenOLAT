@@ -1185,6 +1185,11 @@ body {
 
 
 /* Grade */
+.o_gr_breakpoint_edit {
+	div {
+		display: inline-block;
+	}
+}
 .o_gr_scale_num,
 .o_gr_scale_text {
 	display: flex;
@@ -1234,10 +1239,17 @@ body {
 		color: $o-course-state-failed-color;
 	}
 }
+.o_gr_scale_chart_line {
+	stroke-width: 2;
+	stroke: $o-d3chart-default;
+	fill: none;
+}
+.o_gr_scale_chart_passed {
+	fill: $o-course-state-passed-color;
+}
 .o_gr_ass_cont.form-inline {
 	:first-child {
 		display: inline-block;
 	}
-
 }
 

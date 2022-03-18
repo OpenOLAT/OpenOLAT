@@ -19,6 +19,7 @@
  */
 package org.olat.modules.grade.ui;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -101,7 +102,7 @@ public class GradeUIFactory {
 		return allOk;
 	}
 	
-	public static boolean validateDouble(TextElement el) {
+	public static boolean validateDouble(TextElement el, boolean mandatory) {
 		boolean allOk = true;
 		el.clearError();
 		if(el.isEnabled() && el.isVisible()) {
@@ -113,6 +114,33 @@ public class GradeUIFactory {
 					el.setErrorKey("error.double", null);
 					allOk = false;
 				}
+			} else if (mandatory) {
+				el.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+	
+	public static boolean validateBigDecimal(TextElement el, boolean mandatory, BigDecimal min, BigDecimal max) {
+		boolean allOk = true;
+		el.clearError();
+		if(el.isEnabled() && el.isVisible()) {
+			String val = el.getValue();
+			if (StringHelper.containsNonWhitespace(val)) {
+				try {
+					BigDecimal value = new BigDecimal(val);
+					if (min != null && max != null && (value.compareTo(min) < 0 || value.compareTo(max) > 0)) {
+						el.setErrorKey("error.double.range", new String[] {THREE_DIGITS.format(min), THREE_DIGITS.format(max)});
+						allOk = false;
+					}
+				} catch (NumberFormatException e) {
+					el.setErrorKey("error.double", null);
+					allOk = false;
+				}
+			} else if (mandatory) {
+				el.setErrorKey("form.legende.mandatory", null);
+				allOk = false;
 			}
 		}
 		return allOk;

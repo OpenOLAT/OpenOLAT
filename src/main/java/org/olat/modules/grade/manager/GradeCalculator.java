@@ -49,42 +49,100 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class GradeCalculator {
+	
+	public NavigableSet<GradeScoreRange> createNumericalRanges(BigDecimal lowestGrade, BigDecimal bestGrade, NumericResolution resolution,
+			Rounding rounding, BigDecimal cutValue, BigDecimal minScore, BigDecimal maxScore, List<Breakpoint> breakpoints) {
+		if (breakpoints == null || breakpoints.isEmpty()) {
+			return createNumericalRanges(lowestGrade, bestGrade, resolution, rounding, cutValue, minScore, maxScore);
+		}
+		
+		breakpoints.sort((b1, b2) -> b2.getValue().compareTo(b1.getValue()));
+		
+		NavigableSet<GradeScoreRange> ranges = null;
+		int bestToLowestOffset = 0;
+		BigDecimal pBestGrade = bestGrade;
+		BigDecimal pMaxScore = maxScore;
+		for (int i = 0; i < breakpoints.size(); i++) {
+			Breakpoint breakpoint = breakpoints.get(i);
+			BigDecimal pLowestGrade =  new BigDecimal(breakpoint.getGrade());
+			BigDecimal pMinScore = breakpoint.getValue();
+			
+			NavigableSet<GradeScoreRange> nextRanges = createNumericalRanges(pLowestGrade, pBestGrade, resolution, rounding, cutValue, pMinScore, pMaxScore, bestToLowestOffset);
+			if (ranges == null) {
+				ranges = nextRanges;
+			} else {
+				addNextRanges(ranges, nextRanges);
+			}
+			
+			pMaxScore = pMinScore;
+			pBestGrade = pLowestGrade;
+			bestToLowestOffset = ranges.size()-1;
+		}
+		
+		// From last breakpoint to the best grade
+		NavigableSet<GradeScoreRange> nextRanges = createNumericalRanges(lowestGrade, pBestGrade, resolution, rounding, cutValue, minScore, pMaxScore, bestToLowestOffset);
+		addNextRanges(ranges, nextRanges);
+		
+		return ranges;
+	}
 
-	public NavigableSet<GradeScoreRange> createNumericalRanges(int lowestGrade, int bestGrade, NumericResolution resolution,
-			Rounding rounding, BigDecimal cutValue, BigDecimal minScore, BigDecimal maxScore) {
-		int numRanges = Math.abs(bestGrade - lowestGrade) * getResolutionRanges(resolution) + 1;
-		if (numRanges < 2) return Collections.emptyNavigableSet();
-		
-		boolean lowestHigherBest = lowestGrade > bestGrade;
-		BigDecimal widthDivisor = new BigDecimal(numRanges - 1);
-		BigDecimal gradeRangeWidth = new BigDecimal(bestGrade - lowestGrade).divide(widthDivisor, 5, RoundingMode.HALF_DOWN);
-		
-		BigDecimal scoreAbsRange = maxScore.subtract(minScore).abs();
-		BigDecimal scorRangeWidth = scoreAbsRange.divide(widthDivisor, 5, RoundingMode.HALF_DOWN);
-		
+	private void addNextRanges(NavigableSet<GradeScoreRange> ranges, NavigableSet<GradeScoreRange> nextRanges) {
+		GradeScoreRange upperHalfRange = ranges.last();
+		GradeScoreRange lowerHalfRange = nextRanges.first();
+		GradeScoreRange mergedRange = new GradeScoreRangeImpl(upperHalfRange.getBestToLowest(), upperHalfRange.getGrade(),
+				upperHalfRange.getPerformanceClassIdent(), upperHalfRange.getUpperBound(), upperHalfRange.isUpperBoundInclusive(),
+				lowerHalfRange.getLowerBound(), lowerHalfRange.isLowerBoundInclusive(), upperHalfRange.isPassed());
+		ranges.addAll(nextRanges);
+		// Add is optional, so first remove the half range one.
+		ranges.remove(mergedRange);
+		ranges.add(mergedRange);
+	}
+	
+	public NavigableSet<GradeScoreRange> createNumericalRanges(BigDecimal lowestGrade, BigDecimal bestGrade,
+			NumericResolution resolution, Rounding rounding, BigDecimal cutValue, BigDecimal minScore,
+			BigDecimal maxScore) {
+		return createNumericalRanges(lowestGrade, bestGrade, resolution, rounding, cutValue, minScore, maxScore, 0);
+	}
+
+	private NavigableSet<GradeScoreRange> createNumericalRanges(BigDecimal lowestGrade, BigDecimal bestGrade,
+			NumericResolution resolution, Rounding rounding, BigDecimal cutValue, BigDecimal minScore,
+			BigDecimal maxScore, int bestToLowestOffset) {
 		TreeSet<GradeScoreRange> ranges = new TreeSet<>();
-		BigDecimal grade = new BigDecimal(lowestGrade);
-		BigDecimal lowerBound = minScore;
-		BigDecimal upperBound = null;
+		
+		BigDecimal gradeRangeWidth = getGradeRangeWidth(resolution);
+		int numRanges = geNumOfRanges(lowestGrade.subtract(bestGrade).abs(), gradeRangeWidth);
+		if (numRanges < 2) {
+			return ranges;
+		}
+		
+		boolean lowestHigherBest = lowestGrade.compareTo(bestGrade) > 0;
+		BigDecimal widthDivisor = new BigDecimal(numRanges - 1);
+		gradeRangeWidth = lowestHigherBest? gradeRangeWidth.multiply(new BigDecimal(-1)): gradeRangeWidth;
+		BigDecimal scoreAbsRange = maxScore.subtract(minScore).abs();
+		BigDecimal scoreRangeWidth = scoreAbsRange.divide(widthDivisor, 5, RoundingMode.HALF_DOWN);
+		
+		BigDecimal grade = bestGrade;
+		BigDecimal upperBound = maxScore;
+		BigDecimal lowerBound = null;
 		for (int i = 1; i <= numRanges; i++) {
 			boolean upperBoundInclusive = Rounding.up == rounding;
 			boolean lowerBoundInclusive = !upperBoundInclusive;
 			if (i == 1) {
-				lowerBoundInclusive = true;
+				upperBoundInclusive = true;
 				if (Rounding.nearest == rounding) {
-					upperBound = lowerBound.add(scorRangeWidth.divide(new BigDecimal(2), 5, RoundingMode.HALF_DOWN));
-				} else if (Rounding.down == rounding) {
-					upperBound = lowerBound.add(scorRangeWidth);
-				} else { // Rounding.up
-					upperBound = lowerBound;
+					lowerBound = upperBound.subtract(scoreRangeWidth.divide(new BigDecimal(2), 5, RoundingMode.HALF_DOWN));
+				} else if (Rounding.up == rounding) {
+					lowerBound = upperBound.subtract(scoreRangeWidth);
+				} else { // Rounding.down
+					lowerBound = upperBound;
 				}
 			} else if (i == numRanges) {
-				upperBoundInclusive = true;
-				upperBound = maxScore;
+				lowerBoundInclusive = true;
+				lowerBound = minScore;
 			} else {
-				upperBound = lowerBound.add(scorRangeWidth);
+				lowerBound = upperBound.subtract(scoreRangeWidth);
 			}
-			upperBound = upperBound.stripTrailingZeros();
+			lowerBound = lowerBound.stripTrailingZeros();
 			
 			boolean passed = false;
 			if (cutValue != null) {
@@ -94,24 +152,36 @@ public class GradeCalculator {
 					passed = true;
 				}
 			}
-			GradeScoreRange gradeScoreRange = new GradeScoreRangeImpl(numRanges - i, THREE_DIGITS.format(grade), null,
+			GradeScoreRange gradeScoreRange = new GradeScoreRangeImpl(i + bestToLowestOffset, THREE_DIGITS.format(grade), null,
 					upperBound, upperBoundInclusive, lowerBound, lowerBoundInclusive, passed);
 			ranges.add(gradeScoreRange);
 			
-			lowerBound = upperBound;
-			grade = grade.add(gradeRangeWidth);
+			upperBound = lowerBound;
+			grade = grade.subtract(gradeRangeWidth);
 		}
+		
 		return ranges;
 	}
 	
-	private int getResolutionRanges(NumericResolution resolution) {
+	private BigDecimal getGradeRangeWidth(NumericResolution resolution) {
 		switch (resolution) {
-			case whole: return 1;
-			case half: return 2;
-			case quarter: return 4;
-			case tenth: return 10;
-			default: return 1;
+		case whole: return new BigDecimal("1");
+		case half: return new BigDecimal("0.5");
+		case quarter: return new BigDecimal("0.25");
+		case tenth: return new BigDecimal("0.1");
+		default: return new BigDecimal("1");
+	}
+	}
+
+	private int geNumOfRanges(BigDecimal totalRange, BigDecimal rangeWidth) {
+		int numRanges = 0;
+		BigDecimal bound = new BigDecimal(0);
+		while (bound.compareTo(totalRange) <= 0) {
+			numRanges++;
+			bound = bound.add(rangeWidth);
 		}
+		
+		return numRanges;
 	}
 
 	public NavigableSet<GradeScoreRange> getTextGradeScoreRanges(List<PerformanceClass> performanceClasses,

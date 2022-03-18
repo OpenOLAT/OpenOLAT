@@ -3,6 +3,11 @@
 		#if($r.available("table"))
 			$r.render("table")
 		#end
+		#if($r.available("grade.scale.update.text"))
+			<div class="o_button_group">
+				$r.render("grade.scale.update.text")
+			</div>
+		#end
 	</div>
 	<div class="o_gr_chart">
 		#if($r.available("chart"))

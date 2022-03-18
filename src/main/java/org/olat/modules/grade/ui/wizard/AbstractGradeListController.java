@@ -19,6 +19,7 @@
  */
 package org.olat.modules.grade.ui.wizard;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NavigableSet;
@@ -141,8 +142,9 @@ public abstract class AbstractGradeListController extends StepFormBasicControlle
 	private void loadModel() {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale.getGradeSystem(),
-				breakpoints, assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), getLocale());
-		
+				breakpoints, BigDecimal.valueOf(assessmentConfig.getMinScore().doubleValue()),
+				BigDecimal.valueOf(assessmentConfig.getMaxScore().doubleValue()), getLocale());
+
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdentWithStatus(courseEntry, courseNode.getIdent(), null, true);
 		List<GradeChangeRow> rows = new ArrayList<>(assessmentEntries.size());
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {

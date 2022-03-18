@@ -1,0 +1,7 @@
+<div class="o_gr_breakpoint_edit form-inline">$r.render("grade.scale.breakpoint.grade.$counter") = $r.render("grade.scale.breakpoint.score.$counter") $r.translate("grade.scale.breakpoint.score")</div>
+#if($f.hasError("grade.scale.breakpoint.grade.$counter"))
+	<div>$r.render("grade.scale.breakpoint.grade.${counter}_ERROR")</div>
+#end
+#if($f.hasError("grade.scale.breakpoint.score.$counter"))
+	<div>$r.render("grade.scale.breakpoint.score.${counter}_ERROR")</div>
+#end

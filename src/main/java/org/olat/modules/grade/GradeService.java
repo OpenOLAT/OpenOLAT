@@ -86,19 +86,22 @@ public interface GradeService {
 	
 	public List<Breakpoint> getBreakpoints(GradeScaleRef gradeScale);
 
-	public NavigableSet<GradeScoreRange> createGradeScoreRanges(GradeSystem gradeSystem, Float minScore, Float maxScore);
+	/** 
+	 * Get all possible grades.
+	 */
+	public List<String> getGrades(GradeSystem gradeSystem, BigDecimal minScore, BigDecimal maxScore);
 	
 	/**
 	 * Returns initial lower bounds for the performances classes. The
 	 * PerformanceClass.getBestToLowest() acts as the key in the map.
 	 */
-	public Map<Integer, BigDecimal> getInitialTextLowerBounds(List<PerformanceClass> performanceClasses, Float minScore,
-			Float maxScore);
-
+	public Map<Integer, BigDecimal> getInitialTextLowerBounds(List<PerformanceClass> performanceClasses,
+			BigDecimal minScore, BigDecimal maxScore);
+	
 	public NavigableSet<GradeScoreRange> getGradeScoreRanges(GradeScale gradeScale, Locale locale);
 	
 	public NavigableSet<GradeScoreRange> getGradeScoreRanges(GradeSystem gradeSystem, List<Breakpoint> breakpoints,
-			Float minScore, Float maxScore, Locale locale);
+			BigDecimal minScore, BigDecimal maxScore, Locale locale);
 
 	public GradeScoreRange getGradeScoreRange(NavigableSet<GradeScoreRange> gradeScoreRanges, Float score);
 

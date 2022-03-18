@@ -195,6 +195,7 @@ public class GradeServiceImpl implements GradeService {
 		
 		List<Breakpoint> currentBreakpoints = breakpointDAO.load(gradeScale);
 		Map<Object, Breakpoint> identToBreakpoint = currentBreakpoints.stream()
+				.filter(bp -> getIdent(bp, gradeSystemType) != null)
 				.collect(Collectors.toMap(bp -> getIdent(bp, gradeSystemType), Function.identity()));
 		
 		Set<Object> idents = new HashSet<>(breakpoints.size());
@@ -246,53 +247,52 @@ public class GradeServiceImpl implements GradeService {
 	public List<Breakpoint> getBreakpoints(GradeScaleRef gradeScale) {
 		return breakpointDAO.load(gradeScale);
 	}
+	
+	@Override
+	public List<String> getGrades(GradeSystem gradeSystem, BigDecimal minScore, BigDecimal maxScore) {
+		if (gradeSystem == null || GradeSystemType.numeric != gradeSystem.getType()) return Collections.emptyList();
+		
+		return gradeCalculator
+				.createNumericalRanges(new BigDecimal(gradeSystem.getLowestGrade().intValue()),
+						new BigDecimal(gradeSystem.getBestGrade().intValue()), gradeSystem.getResolution(),
+						gradeSystem.getRounding(), null, minScore, maxScore)
+				.stream()
+				.map(GradeScoreRange::getGrade)
+				.collect(Collectors.toList());
+	}
 
 	@Override
-	public NavigableSet<GradeScoreRange> createGradeScoreRanges(GradeSystem gradeSystem, Float minScore, Float maxScore) {
-		if (GradeSystemType.numeric == gradeSystem.getType()) {
-			return gradeCalculator.createNumericalRanges(gradeSystem.getLowestGrade().intValue(),
-					gradeSystem.getBestGrade().intValue(), gradeSystem.getResolution(), gradeSystem.getRounding(),
-					gradeSystem.getCutValue(), new BigDecimal(minScore.floatValue()), new BigDecimal(maxScore.floatValue()));
-		} else if (GradeSystemType.text == gradeSystem.getType()) {
-			
-		}
-		return Collections.emptyNavigableSet();
-	}
-	@Override
-	public Map<Integer, BigDecimal> getInitialTextLowerBounds(List<PerformanceClass> performanceClasses, Float minScore,
-			Float maxScore) {
+	public Map<Integer, BigDecimal> getInitialTextLowerBounds(List<PerformanceClass> performanceClasses,
+			BigDecimal minScore, BigDecimal maxScore) {
 		if (performanceClasses == null || performanceClasses.isEmpty()) return Collections.emptyMap();
 		
 		return gradeCalculator
-				.createNumericalRanges(performanceClasses.get(performanceClasses.size() - 1).getBestToLowest(),
-						performanceClasses.get(0).getBestToLowest(), NumericResolution.whole, Rounding.nearest, null,
-						new BigDecimal(minScore.floatValue()), new BigDecimal(maxScore.floatValue())).stream()
+				.createNumericalRanges(
+						new BigDecimal(performanceClasses.get(performanceClasses.size() - 1).getBestToLowest()),
+						new BigDecimal(performanceClasses.get(0).getBestToLowest()), NumericResolution.whole,
+						Rounding.nearest, null, minScore, maxScore)
+				.stream()
 				.collect(Collectors.toMap(range -> Integer.valueOf(range.getGrade()), GradeScoreRange::getLowerBound));
 	}
 
 	@Override
 	public NavigableSet<GradeScoreRange> getGradeScoreRanges(GradeScale gradeScale, Locale locale) {
 		GradeSystem gradeSystem = gradeScale.getGradeSystem();
-		if (GradeSystemType.numeric == gradeSystem.getType()) {
-			return createGradeScoreRanges(gradeSystem, Float.valueOf(gradeScale.getMinScore().floatValue()),
-					Float.valueOf(gradeScale.getMaxScore().floatValue()));
-		} else if (GradeSystemType.text == gradeSystem.getType()) {
-			Translator translator = Util.createPackageTranslator(GradeUIFactory.class, locale);
-			return gradeCalculator.getTextGradeScoreRanges(getPerformanceClasses(gradeSystem),
-					getBreakpoints(gradeScale), gradeScale.getMinScore(), gradeScale.getMaxScore(), translator);
-		}
-		return Collections.emptyNavigableSet();
+		return getGradeScoreRanges(gradeSystem, getBreakpoints(gradeScale), gradeScale.getMinScore(),
+				gradeScale.getMaxScore(), locale);
 	}
 
 	@Override
 	public NavigableSet<GradeScoreRange> getGradeScoreRanges(GradeSystem gradeSystem, List<Breakpoint> breakpoints,
-			Float minScore, Float maxScore, Locale locale) {
+			BigDecimal minScore, BigDecimal maxScore, Locale locale) {
 		if (GradeSystemType.numeric == gradeSystem.getType()) {
-			return createGradeScoreRanges(gradeSystem, minScore, maxScore);
+			return gradeCalculator.createNumericalRanges(new BigDecimal(gradeSystem.getLowestGrade().intValue()),
+					new BigDecimal(gradeSystem.getBestGrade().intValue()), gradeSystem.getResolution(),
+					gradeSystem.getRounding(), gradeSystem.getCutValue(), minScore, maxScore, breakpoints);
 		} else if (GradeSystemType.text == gradeSystem.getType()) {
 			Translator translator = Util.createPackageTranslator(GradeUIFactory.class, locale);
-			return gradeCalculator.getTextGradeScoreRanges(getPerformanceClasses(gradeSystem), breakpoints,
-					new BigDecimal(minScore.floatValue()), new BigDecimal(maxScore.floatValue()), translator);
+			return gradeCalculator.getTextGradeScoreRanges(getPerformanceClasses(gradeSystem), breakpoints, minScore,
+					maxScore, translator);
 		}
 		return Collections.emptyNavigableSet();
 	}

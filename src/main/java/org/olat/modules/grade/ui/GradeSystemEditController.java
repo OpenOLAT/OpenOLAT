@@ -297,7 +297,7 @@ public class GradeSystemEditController extends FormBasicController {
 		
 		allOk &= GradeUIFactory.validateInteger(bestGradeEl);
 		allOk &= GradeUIFactory.validateInteger(lowestGradeEl);
-		allOk &= GradeUIFactory.validateDouble(cutValueEl);
+		allOk &= GradeUIFactory.validateDouble(cutValueEl, false);
 		
 		tableEl.clearError();
 		if (performanceClassCont.isVisible() && performanceClassRows.isEmpty()) {

@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,7 @@ import org.olat.modules.grade.NumericResolution;
 import org.olat.modules.grade.PerformanceClass;
 import org.olat.modules.grade.Rounding;
 import org.olat.modules.grade.model.BreakpointImpl;
+import org.olat.modules.grade.model.BreakpointWrapper;
 import org.olat.modules.grade.model.GradeScoreRangeImpl;
 import org.olat.modules.grade.model.PerformanceClassImpl;
 import org.olat.test.KeyTranslator;
@@ -52,7 +54,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_simpleExample() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(1, 6, NumericResolution.whole, Rounding.nearest, null, new BigDecimal(1), new BigDecimal(6))
+		List<GradeScoreRange> ranges = createNumericalRanges(1, 6, NumericResolution.whole, Rounding.nearest, null, 1, 6)
 				.stream().collect(Collectors.toList());
 		
 		assertThat(ranges).hasSize(6);
@@ -85,7 +87,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_lowestHigherThanBest() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(6, 1, NumericResolution.whole, Rounding.nearest, null, new BigDecimal(1), new BigDecimal(6))
+		List<GradeScoreRange> ranges = createNumericalRanges(6, 1, NumericResolution.whole, Rounding.nearest, null, 1, 6)
 				.stream().collect(Collectors.toList());
 
 		assertThat(ranges).hasSize(6);
@@ -118,7 +120,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_resolutionHalf() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(1, 3, NumericResolution.half, Rounding.nearest, null, new BigDecimal(1), new BigDecimal(3))
+		List<GradeScoreRange> ranges = createNumericalRanges(1, 3, NumericResolution.half, Rounding.nearest, null, 1, 3)
 				.stream().collect(Collectors.toList());
 		
 		assertThat(ranges).hasSize(5);
@@ -147,7 +149,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_resolutionQuarter() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(2, 3, NumericResolution.quarter, Rounding.nearest, null, new BigDecimal(1), new BigDecimal(3))
+		List<GradeScoreRange> ranges = createNumericalRanges(2, 3, NumericResolution.quarter, Rounding.nearest, null, 1, 3)
 				.stream().collect(Collectors.toList());
 		
 		assertThat(ranges).hasSize(5);
@@ -176,7 +178,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_resolutionTeanth() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(9, 10, NumericResolution.tenth, Rounding.nearest, null, new BigDecimal(0), new BigDecimal(10))
+		List<GradeScoreRange> ranges = createNumericalRanges(9, 10, NumericResolution.tenth, Rounding.nearest, null, 0, 10)
 				.stream().collect(Collectors.toList());
 		
 		assertThat(ranges).hasSize(11);
@@ -229,7 +231,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_roundingUp() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(2, 3, NumericResolution.quarter, Rounding.up, null, new BigDecimal(1), new BigDecimal(3))
+		List<GradeScoreRange> ranges = createNumericalRanges(2, 3, NumericResolution.quarter, Rounding.up, null, 1, 3)
 				.stream().collect(Collectors.toList());
 		
 		assertThat(ranges).hasSize(5);
@@ -258,7 +260,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_roundingDown() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(2, 3, NumericResolution.quarter, Rounding.down, null, new BigDecimal(1), new BigDecimal(3))
+		List<GradeScoreRange> ranges = createNumericalRanges(2, 3, NumericResolution.quarter, Rounding.down, null, 1, 3)
 				.stream().collect(Collectors.toList());
 		
 		assertThat(ranges).hasSize(5);
@@ -287,7 +289,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_boundsInclusive() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(1, 3, NumericResolution.whole, Rounding.nearest, null, new BigDecimal(1), new BigDecimal(3))
+		List<GradeScoreRange> ranges = createNumericalRanges(1, 3, NumericResolution.whole, Rounding.nearest, null, 1, 3)
 				.stream().collect(Collectors.toList());
 		
 		GradeScoreRange range = ranges.get(0);
@@ -309,7 +311,7 @@ public class GradeCalculatorTest {
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
 		
-		ranges = sut.createNumericalRanges(1, 3, NumericResolution.whole, Rounding.up, null, new BigDecimal(1), new BigDecimal(3))
+		ranges = createNumericalRanges(1, 3, NumericResolution.whole, Rounding.up, null, 1, 3)
 				.stream().collect(Collectors.toList());
 		range = ranges.get(0);
 		assertThat(range.getGrade()).isEqualTo("3");
@@ -330,7 +332,7 @@ public class GradeCalculatorTest {
 		assertThat(range.isUpperBoundInclusive()).isTrue();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
 		
-		ranges = sut.createNumericalRanges(1, 3, NumericResolution.whole, Rounding.down, null, new BigDecimal(1), new BigDecimal(3))
+		ranges = createNumericalRanges(1, 3, NumericResolution.whole, Rounding.down, null, 1, 3)
 				.stream().collect(Collectors.toList());
 		range = ranges.get(0);
 		assertThat(range.getGrade()).isEqualTo("3");
@@ -354,7 +356,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_passed() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(1, 4, NumericResolution.whole, Rounding.nearest, BigDecimal.valueOf(2.5), new BigDecimal(11), new BigDecimal(14))
+		List<GradeScoreRange> ranges = createNumericalRanges(1, 4, NumericResolution.whole, Rounding.nearest, 2.5, 11, 14)
 				.stream().collect(Collectors.toList());
 		
 		GradeScoreRange range = ranges.get(0);
@@ -389,7 +391,7 @@ public class GradeCalculatorTest {
 	
 	@Test
 	public void shouldCreateNumericRanges_passedLowestHigherBest() {
-		List<GradeScoreRange> ranges = sut.createNumericalRanges(5, 1, NumericResolution.half, Rounding.nearest, BigDecimal.valueOf(3), new BigDecimal(11), new BigDecimal(13))
+		List<GradeScoreRange> ranges = createNumericalRanges(5, 1, NumericResolution.half, Rounding.nearest, 3.0, 11, 13)
 				.stream().collect(Collectors.toList());
 		
 		GradeScoreRange range = ranges.get(0);
@@ -455,6 +457,194 @@ public class GradeCalculatorTest {
 		assertThat(range.isUpperBoundInclusive()).isFalse();
 		assertThat(range.isLowerBoundInclusive()).isTrue();
 		assertThat(range.isPassed()).isFalse();
+	}
+	
+	private NavigableSet<GradeScoreRange> createNumericalRanges(int lowestGrade, int bestGrade,
+			NumericResolution resolution, Rounding rounding, Double cutValue, int minScore,
+			int maxScore) {
+		return sut.createNumericalRanges(new BigDecimal(lowestGrade), new BigDecimal(bestGrade), resolution, rounding,
+				cutValue != null? BigDecimal.valueOf(cutValue): null, new BigDecimal(minScore), new BigDecimal(maxScore));
+	}
+	
+
+	@Test
+	public void shouldCreateNumericRanges_breakpointsStillLinear() {
+		List<Breakpoint> breakpoints = new ArrayList<>(1);
+		BreakpointWrapper breakpoint = new BreakpointWrapper();
+		breakpoint.setGrade("4");
+		breakpoint.setValue(new BigDecimal(4));
+		breakpoints.add(breakpoint);
+		List<GradeScoreRange> ranges = createNumericalRanges(1, 6, NumericResolution.whole, Rounding.nearest, null, 1, 6, breakpoints)
+				.stream().collect(Collectors.toList());
+		
+		assertThat(ranges).hasSize(6);
+		
+		GradeScoreRange range = ranges.get(0);
+		assertThat(range.getGrade()).isEqualTo("6");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("6"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("5.5"));
+		range = ranges.get(1);
+		assertThat(range.getGrade()).isEqualTo("5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("5.5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("4.5"));
+		range = ranges.get(2);
+		assertThat(range.getGrade()).isEqualTo("4");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("4.5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("3.5"));
+		range = ranges.get(3);
+		assertThat(range.getGrade()).isEqualTo("3");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("3.5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("2.5"));
+		range = ranges.get(4);
+		assertThat(range.getGrade()).isEqualTo("2");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("2.5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("1.5"));
+		range = ranges.get(5);
+		assertThat(range.getGrade()).isEqualTo("1");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("1.5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("1"));
+	}
+	
+	@Test
+	public void shouldCreateNumericRanges_breakpointsLowestHigherBest() {
+		List<Breakpoint> breakpoints = new ArrayList<>(1);
+		BreakpointWrapper breakpoint = new BreakpointWrapper();
+		breakpoint.setGrade("4");
+		breakpoint.setValue(new BigDecimal(20));
+		breakpoints.add(breakpoint);
+		List<GradeScoreRange> ranges = createNumericalRanges(6, 1, NumericResolution.whole, Rounding.nearest, null, 0, 80, breakpoints)
+				.stream().collect(Collectors.toList());
+		
+		assertThat(ranges).hasSize(6);
+		
+		GradeScoreRange range = ranges.get(0);
+		assertThat(range.getGrade()).isEqualTo("1");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("80"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("70"));
+		range = ranges.get(1);
+		assertThat(range.getGrade()).isEqualTo("2");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("70"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("50"));
+		range = ranges.get(2);
+		assertThat(range.getGrade()).isEqualTo("3");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("50"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("30"));
+		range = ranges.get(3);
+		assertThat(range.getGrade()).isEqualTo("4");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("30"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("15"));
+		range = ranges.get(4);
+		assertThat(range.getGrade()).isEqualTo("5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("15"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("5"));
+		range = ranges.get(5);
+		assertThat(range.getGrade()).isEqualTo("6");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("0"));
+	}
+	
+	@Test
+	public void shouldCreateNumericRanges_breakpointsTwo() {
+		List<Breakpoint> breakpoints = new ArrayList<>(1);
+		BreakpointWrapper breakpoint = new BreakpointWrapper();
+		breakpoint.setGrade("4");
+		breakpoint.setValue(new BigDecimal(100));
+		breakpoints.add(breakpoint);
+		breakpoint = new BreakpointWrapper();
+		breakpoint.setGrade("8");
+		breakpoint.setValue(new BigDecimal(20));
+		breakpoints.add(breakpoint);
+		List<GradeScoreRange> ranges = createNumericalRanges(10, 1, NumericResolution.whole, Rounding.nearest, null, 0, 190, breakpoints)
+				.stream().collect(Collectors.toList());
+		
+		assertThat(ranges).hasSize(10);
+		
+		GradeScoreRange range = ranges.get(0);
+		assertThat(range.getGrade()).isEqualTo("1");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("190"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("175"));
+		range = ranges.get(1);
+		assertThat(range.getGrade()).isEqualTo("2");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("175"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("145"));
+		range = ranges.get(2);
+		assertThat(range.getGrade()).isEqualTo("3");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("145"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("115"));
+		range = ranges.get(3);
+		assertThat(range.getGrade()).isEqualTo("4");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("115"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("90"));
+		range = ranges.get(4);
+		assertThat(range.getGrade()).isEqualTo("5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("90"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("70"));
+		range = ranges.get(5);
+		assertThat(range.getGrade()).isEqualTo("6");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("70"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("50"));
+		range = ranges.get(6);
+		assertThat(range.getGrade()).isEqualTo("7");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("50"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("30"));
+		range = ranges.get(7);
+		assertThat(range.getGrade()).isEqualTo("8");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("30"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("15"));
+		range = ranges.get(8);
+		assertThat(range.getGrade()).isEqualTo("9");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("15"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("5"));
+		range = ranges.get(9);
+		assertThat(range.getGrade()).isEqualTo("10");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("0"));
+	}
+	
+	@Test
+	public void shouldCreateNumericRanges_breakpoints() {
+		List<Breakpoint> breakpoints = new ArrayList<>(1);
+		BreakpointWrapper breakpoint = new BreakpointWrapper();
+		breakpoint.setGrade("3");
+		breakpoint.setValue(new BigDecimal(20));
+		breakpoints.add(breakpoint);
+		List<GradeScoreRange> ranges = createNumericalRanges(1, 6, NumericResolution.whole, Rounding.nearest, null, 0, 80, breakpoints)
+				.stream().collect(Collectors.toList());
+		
+		assertThat(ranges).hasSize(6);
+		
+		GradeScoreRange range = ranges.get(0);
+		assertThat(range.getGrade()).isEqualTo("6");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("80"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("70"));
+		range = ranges.get(1);
+		assertThat(range.getGrade()).isEqualTo("5");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("70"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("50"));
+		range = ranges.get(2);
+		assertThat(range.getGrade()).isEqualTo("4");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("50"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("30"));
+		range = ranges.get(3);
+		assertThat(range.getGrade()).isEqualTo("3");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("30"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("15"));
+		range = ranges.get(4);
+		assertThat(range.getGrade()).isEqualTo("2");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("15"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("5"));
+		range = ranges.get(5);
+		assertThat(range.getGrade()).isEqualTo("1");
+		assertThat(range.getUpperBound()).isEqualByComparingTo(new BigDecimal("5"));
+		assertThat(range.getLowerBound()).isEqualByComparingTo(new BigDecimal("0"));
+	}
+	
+	private NavigableSet<GradeScoreRange> createNumericalRanges(int lowestGrade, int bestGrade,
+			NumericResolution resolution, Rounding rounding, Double cutValue, int minScore,
+			int maxScore, List<Breakpoint> breakpoints) {
+		return sut.createNumericalRanges(new BigDecimal(lowestGrade), new BigDecimal(bestGrade), resolution, rounding,
+				cutValue != null ? BigDecimal.valueOf(cutValue) : null, new BigDecimal(minScore),
+				new BigDecimal(maxScore), breakpoints);
 	}
 	
 	@Test

@@ -19,8 +19,15 @@
  */
 package org.olat.modules.grade.ui.component;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.NavigableSet;
+
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
+import org.olat.core.gui.components.chart.DefaultD3Component;
+import org.olat.modules.grade.Breakpoint;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeSystem;
 
 /**
  * 
@@ -28,26 +35,47 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class GradeScaleChart extends FormBaseComponentImpl {
+public class GradeScaleChart extends DefaultD3Component {
 	
 	private static final GradeScaleChartRenderer RENDERER = new GradeScaleChartRenderer();
 	
-	private int donePercent;
+	private GradeSystem gradeSystem;
+	private BigDecimal minScore;
+	private BigDecimal maxScore;
+	private List<Breakpoint> breakpoints;
+	private NavigableSet<GradeScoreRange> gradeScoreRanges;
 
 	public GradeScaleChart(String name) {
 		super(name);
 	}
-	
-	public int getGradeScalePercent() {
-		return donePercent;
+
+	public GradeSystem getGradeSystem() {
+		return gradeSystem;
 	}
-	
-	public void setGradeScalePercent(int donePercent) {
-		this.donePercent = donePercent;
+
+	public void setGradeSystem(GradeSystem gradeSystem) {
+		this.gradeSystem = gradeSystem;
+	}
+
+	public List<Breakpoint> getBreakpoints() {
+		return breakpoints;
+	}
+
+	public void setBreakpoints(List<Breakpoint> breakpoints) {
+		this.breakpoints = breakpoints;
+	}
+
+	public NavigableSet<GradeScoreRange> getGradeScoreRanges() {
+		return gradeScoreRanges;
+	}
+
+	public void setGradeScoreRanges(NavigableSet<GradeScoreRange> gradeScoreRanges) {
+		this.gradeScoreRanges = gradeScoreRanges;
 	}
 
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
+
 }
