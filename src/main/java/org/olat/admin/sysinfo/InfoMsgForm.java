@@ -56,7 +56,6 @@ public class InfoMsgForm extends FormBasicController {
 	
 	private RichTextElement msg;
 	private DateChooser start;
-	private DateChooser end;
 	private SysInfoMessage sysInfoMessage;
 	
 	@Autowired
@@ -85,7 +84,7 @@ public class InfoMsgForm extends FormBasicController {
 	}
 
 	public Date getEnd() {
-		return end.getDate();
+		return start.getSecondDate();
 	}
 	
 	public void reset() {
@@ -113,8 +112,9 @@ public class InfoMsgForm extends FormBasicController {
 		dateLayout.setExampleKey("msg.example", null);
 		start = uifactory.addDateChooser("msg.beginning", sysInfoMessage.getStart(), dateLayout);
 		start.setDateChooserTimeEnabled(true);
-		end = uifactory.addDateChooser("msg.ending", sysInfoMessage.getEnd(), dateLayout);
-		end.setDateChooserTimeEnabled(true);
+		start.setSecondDate(true);
+		start.setSecondDate(sysInfoMessage.getEnd());
+		start.setSeparator("msg.ending");
 
 		RichTextConfiguration richTextConfig = msg.getEditorConfiguration();
 		// manually enable the source edit button
