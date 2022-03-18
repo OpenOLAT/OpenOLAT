@@ -25,14 +25,22 @@
 
 package org.olat.admin;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.sysinfo.InfoMessageManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.session.UserSessionManager;
 
 /**
@@ -46,9 +54,12 @@ import org.olat.core.util.session.UserSessionManager;
  * @author christian guretzki
  */
 public class AdminModuleDispatcher implements Dispatcher {
-	
+	private static final Logger log = Tracing.createLoggerFor(AdminModuleDispatcher.class);
+
 	private static final String PARAMETER_CMD          = "cmd"; 
 	private static final String PARAMETER_MSG          = "msg";
+	private static final String PARAMETER_START        = "start";
+	private static final String PARAMETER_END          = "end";
 	private static final String PARAMETER_MAX_MESSAGE  = "maxsessions";
 	private static final String PARAMETER_NBR_SESSIONS = "nbrsessions";
 	private static final String PARAMETER_SESSIONTIMEOUT ="sec";
@@ -62,6 +73,8 @@ public class AdminModuleDispatcher implements Dispatcher {
 	private static final String CMD_INVALIDATE_OLDEST_SESSIONS = "invalidateoldestsessions";
 	private static final String CMD_SET_SESSIONTIMEOUT         = "sessiontimeout";
 	
+	private static final DateFormat FORMAT_DATETIME = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm");
+	private static final DateFormat FORMAT_DATE = new SimpleDateFormat("yyyy-MM-dd");
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) {
@@ -167,16 +180,50 @@ public class AdminModuleDispatcher implements Dispatcher {
 		AdminModule adminModule = CoreSpringFactory.getImpl(AdminModule.class);
 		if (adminModule.checkMaintenanceMessageToken(request)) {
 			String message = request.getParameter(PARAMETER_MSG);
-			if (cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)){
+			if (cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)){				
+				Date start = parseDateFromRequest(request, PARAMETER_START);
+				Date end = parseDateFromRequest(request, PARAMETER_END);				
 				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
-				mrg.setInfoMessage(message);
+				mrg.setInfoMessage(message, start, end);
 				ServletUtil.serveStringResource(request, response, "Ok, new infoMessage is::" + message);
 			} else if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE)){
-				adminModule.setMaintenanceMessage(message);
+				Date start = parseDateFromRequest(request, PARAMETER_START);
+				Date end = parseDateFromRequest(request, PARAMETER_END);				
+				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
+				mrg.setMaintenanceMessage(message, start, end);
 				ServletUtil.serveStringResource(request, response, "Ok, new maintenanceMessage is::" + message);
 			}
 		} else {
 			DispatcherModule.sendForbidden(request.getPathInfo(), response);
 		}
 	}
+	
+	/**
+	 * Helper to parse the date from the request using the datetime
+	 * yyyy-MM-ddTHH-mm or date yyyy-MM-dd format
+	 * 
+	 * @param request
+	 * @param paramName
+	 * @return The date representing the request parameter or NULL if not available
+	 *         or can't be parsed
+	 */
+	private Date parseDateFromRequest(final HttpServletRequest request, final String paramName) {		
+		Date date = null;
+		String dateParam = request.getParameter(paramName);
+		if (StringHelper.containsNonWhitespace(dateParam)) {
+			dateParam = StringHelper.escapeHtml(dateParam); // prevent XSS attacks
+			try {
+				if (dateParam.length() == 10) {
+					date = FORMAT_DATE.parse(dateParam);
+				} else if (dateParam.length() == 16) {
+					date = FORMAT_DATETIME.parse(dateParam);
+				}
+			} catch (ParseException e) {
+				log.error("Can not parse date parameter::" + paramName + " with value::" + dateParam, e);
+			}
+		}
+		return date;					
+	}
+	
+	
 }

@@ -67,6 +67,7 @@ How to add a new job:
             <ref bean="documentAccessDeletionTrigger"/>
             <ref bean="vfsStatisticsTrigger" />
             <ref bean="vfsExpiredTrigger" />
+            <ref bean="maintenanceMessageTrigger" />
         </list>
     </property>
 </bean>

@@ -29,9 +29,12 @@
 
 package org.olat.admin.sysinfo;
 
+import java.util.Date;
+
 import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -52,8 +55,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class InfoMsgForm extends FormBasicController {
 	
 	private RichTextElement msg;
-	private final String infomsg;
-
+	private DateChooser start;
+	private DateChooser end;
+	private SysInfoMessage sysInfoMessage;
+	
 	@Autowired
 	private CustomStaticFolderManager staticFolderMgr;
 	
@@ -61,9 +66,9 @@ public class InfoMsgForm extends FormBasicController {
 	 * @param name
 	 * @param infomsg
 	 */
-	public InfoMsgForm(UserRequest ureq, WindowControl wControl, String infomsg) {
+	public InfoMsgForm(UserRequest ureq, WindowControl wControl, SysInfoMessage sysInfoMessage) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		this.infomsg = infomsg;
+		this.sysInfoMessage = sysInfoMessage;
 		initForm(ureq);
 	}
 	
@@ -73,6 +78,14 @@ public class InfoMsgForm extends FormBasicController {
 	public String getInfoMsg() {
 		// use raw value to circumvent XSS filtering of script tags
 		return msg.getRawValue();
+	}
+	
+	public Date getStart() {
+		return start.getDate();
+	}
+
+	public Date getEnd() {
+		return end.getDate();
 	}
 	
 	public void reset() {
@@ -91,8 +104,17 @@ public class InfoMsgForm extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		msg = uifactory.addRichTextElementForStringData("msg", "infomsg", infomsg, 20, 70, true, staticFolderMgr.getRootContainer(), null, formLayout, ureq.getUserSession(), getWindowControl());
+		msg = uifactory.addRichTextElementForStringData("msg", "infomsg", sysInfoMessage.getMessage(), 20, 70, true, staticFolderMgr.getRootContainer(), null, formLayout, ureq.getUserSession(), getWindowControl());
 		msg.setMaxLength(1024);
+		
+		FormLayoutContainer dateLayout = FormLayoutContainer.createHorizontalFormLayout("msg.active", getTranslator());
+		formLayout.add(dateLayout);
+		dateLayout.setLabel("msg.active", null);
+		dateLayout.setExampleKey("msg.example", null);
+		start = uifactory.addDateChooser("msg.beginning", sysInfoMessage.getStart(), dateLayout);
+		start.setDateChooserTimeEnabled(true);
+		end = uifactory.addDateChooser("msg.ending", sysInfoMessage.getEnd(), dateLayout);
+		end.setDateChooserTimeEnabled(true);
 
 		RichTextConfiguration richTextConfig = msg.getEditorConfiguration();
 		// manually enable the source edit button

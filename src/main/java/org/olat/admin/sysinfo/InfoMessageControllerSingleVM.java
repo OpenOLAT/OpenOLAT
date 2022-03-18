@@ -24,9 +24,10 @@
 */
 package org.olat.admin.sysinfo;
 
+import java.util.Date;
+
 import org.olat.admin.AdminModule;
 import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
-import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -82,31 +83,35 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		String adminToken = (p == null ? "" : p.getStringValue());
 		infoMsgView.contextPut("admintoken", adminToken);
 		String protocol = Settings.getURIScheme().substring(0, Settings.getURIScheme().length()-1);
-		String changeUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum";
-		infoMsgView.contextPut("admintokenusage", translate("infomsg.token.usage", new String[] { protocol, changeUrl }));
+		String changeInfoUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum&start=2022-05-25'T'12-30&end=2022-05-30";
+		String changeMaintenanceUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setmaintenancemessage&msg=Lorem Ipsum&start=2022-05-25'T'12-30&end=2022-05-30";
+		infoMsgView.contextPut("admintokenusage", translate("infomsg.token.usage", new String[] { protocol }));
+		infoMsgView.contextPut("changeInfoUrl", changeInfoUrl);
+		infoMsgView.contextPut("changeMaintenanceUrl", changeMaintenanceUrl);
+
 		
 		infomsgEditButton = LinkFactory.createButton("infomsgEdit", infoMsgView, this);
+		infomsgEditButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		infomsgClearButton = LinkFactory.createButton("infomsgClear", infoMsgView, this);
+		infomsgClearButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 		maintenancemsgEditButton = LinkFactory.createButton("maintenancemsgEdit", infoMsgView, this);
+		maintenancemsgEditButton.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		maintenancemsgEditButton.setElementCssClass("o_sel_maintenance_msg_edit");
 		maintenancemsgClearButton = LinkFactory.createButton("maintenancemsgClear", infoMsgView, this);
+		maintenancemsgClearButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 		maintenancemsgClearButton.setElementCssClass("o_sel_maintenance_msg_clear");
 		
-		//login
-		String infoMsg = mrg.getInfoMessage();
-		if (infoMsg != null && infoMsg.length() > 0) {
-			infoMsgView.contextPut("infomsg", infoMsg);
-		}
-		infoMsgForm = new InfoMsgForm(ureq, control, infoMsg);
+		// Info message stuff
+		SysInfoMessage sysInfoMsg = mrg.getInfoMessage();
+		infoMsgView.contextPut("infomsg", sysInfoMsg);
+		infoMsgForm = new InfoMsgForm(ureq, control, sysInfoMsg);
 		listenTo(infoMsgForm);
 		infoMsgEdit.put("infoMsgForm", infoMsgForm.getInitialComponent());
 		
-		//maintenance message stuff
-		String maintenanceMsg = GlobalStickyMessage.getGlobalStickyMessage(true);
-		if (maintenanceMsg != null && maintenanceMsg.length() > 0) {
-			infoMsgView.contextPut("maintenanceMsgAllNodes", maintenanceMsg);
-		}
-		maintenanceMsgForm = new InfoMsgForm(ureq, control, maintenanceMsg);
+		// Maintenance message stuff
+		SysInfoMessage sysMaintenanceMsg = mrg.getMaintenanceMessage();
+		infoMsgView.contextPut("maintenanceMsg", sysMaintenanceMsg);		
+		maintenanceMsgForm = new InfoMsgForm(ureq, control, sysMaintenanceMsg);
 		listenTo(maintenanceMsgForm);
 		infoMsgEdit.put("maintenanceMsgForm", maintenanceMsgForm.getInitialComponent());
 		
@@ -132,11 +137,11 @@ public class InfoMessageControllerSingleVM extends BasicController {
 			infoMsgEdit.contextPut("cluster", Boolean.FALSE);
 			container.pushContent(infoMsgEdit);
 		} else if (source == maintenancemsgClearButton){
-			GlobalStickyMessage.setGlobalStickyMessage("", true);
-			infoMsgView.contextRemove("maintenanceMsgAllNodes");
+			mrg.setMaintenanceMessage(null, null, null);
+			infoMsgView.contextRemove("maintenanceMsg");
 			maintenanceMsgForm.reset();
 		} else if (source == infomsgClearButton){
-			mrg.setInfoMessage("");
+			mrg.setInfoMessage(null, null, null);
 			infoMsgView.contextRemove("infomsg");
 			infoMsgForm.reset();
 		}
@@ -147,24 +152,24 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		if (source == infoMsgForm) {
 			if(event == Event.DONE_EVENT) {
 				String infoMsg = infoMsgForm.getInfoMsg();
-				mrg.setInfoMessage(infoMsg);
-				if (infoMsg != null && infoMsg.length() > 0) {
-					infoMsgView.contextPut("infomsg", infoMsg);
+				Date start = infoMsgForm.getStart();
+				Date end = infoMsgForm.getEnd();
+				SysInfoMessage sysInfoMsg = mrg.setInfoMessage(infoMsg, start, end);
+				infoMsgView.contextPut("infomsg", sysInfoMsg);				
+				if (sysInfoMsg.hasMessage()) {	
 					getWindowControl().setInfo("New info message activated.");
-				} else {
-					infoMsgView.contextRemove("infomsg");
 				}
 			}
 			container.popContent();
 		} else if (source == maintenanceMsgForm) {
 			if(event == Event.DONE_EVENT) {
 				String maintenanceMsg = maintenanceMsgForm.getInfoMsg();
-				GlobalStickyMessage.setGlobalStickyMessage(maintenanceMsg, true);
-				if (maintenanceMsg != null && maintenanceMsg.length() > 0) {
-					infoMsgView.contextPut("maintenanceMsgAllNodes", maintenanceMsg);
+				Date start = maintenanceMsgForm.getStart();
+				Date end = maintenanceMsgForm.getEnd();
+				SysInfoMessage sysMaintenanceMsg = mrg.setMaintenanceMessage(maintenanceMsg, start, end); 
+				infoMsgView.contextPut("maintenanceMsg", sysMaintenanceMsg);		
+				if (sysMaintenanceMsg.hasMessage()) {
 					getWindowControl().setInfo("New maintenance message activated.");
-				} else {
-					infoMsgView.contextRemove("maintenanceMsgAllNodes");
 				}
 			}
 			container.popContent();

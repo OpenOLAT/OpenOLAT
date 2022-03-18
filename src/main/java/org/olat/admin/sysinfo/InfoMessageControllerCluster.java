@@ -24,8 +24,9 @@
 */
 package org.olat.admin.sysinfo;
 
+import java.util.Date;
+
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.util.GlobalStickyMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -61,22 +62,18 @@ public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM 
 		infomsgClearButtonCluster = LinkFactory.createButton("infomsgClearCluster", getViewContainer(), this);
 		maintenancemsgEditButtonCluster = LinkFactory.createButton("maintenancemsgEditCluster", getViewContainer(), this);
 		maintenancemsgClearButtonCluster = LinkFactory.createButton("maintenancemsgClearCluster", getViewContainer(), this);
-		
-		//info message stuff
+				
+		// Info message stuff
 		InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-		String infoMsg = mrg.getInfoMessageNodeOnly();
-		if (infoMsg != null && infoMsg.length() > 0) {
-			getViewContainer().contextPut("infoMsgCluster", infoMsg);
-		}
-		infoMsgFormCluster = new InfoMsgForm(ureq, control, infoMsg);
+		SysInfoMessage sysInfoMsg = mrg.getInfoMessageNodeOnly();
+		getViewContainer().contextPut("infoMsgCluster", sysInfoMsg);
+		infoMsgFormCluster = new InfoMsgForm(ureq, control, sysInfoMsg);
 		listenTo(infoMsgFormCluster);
 		getEditContainer().put("infoMsgFormCluster", infoMsgFormCluster.getInitialComponent());
 		
-		//maintenance message stuff
-		String maintenanceMsg = GlobalStickyMessage.getGlobalStickyMessage(false);
-		if (maintenanceMsg != null && maintenanceMsg.length() > 0) {
-			getViewContainer().contextPut("maintenanceMsgThisNodeOnly", maintenanceMsg);
-		}
+		// Maintenance message stuff
+		SysInfoMessage maintenanceMsg = mrg.getMaintenanceMessageNodeOnly();
+		getViewContainer().contextPut("maintenanceMsgThisNodeOnly", maintenanceMsg);		
 		maintenanceMsgFormCluster = new InfoMsgForm(ureq, control, maintenanceMsg);
 		listenTo(maintenanceMsgFormCluster);
 		getEditContainer().put("maintenanceMsgFormCluster", maintenanceMsgFormCluster.getInitialComponent());
@@ -102,13 +99,14 @@ public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM 
 		
 		// clear buttons
 		else if (source == maintenancemsgClearButtonCluster) {
-			GlobalStickyMessage.setGlobalStickyMessage("", true);
+			InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
+			mrg.setMaintenanceMessageNodeOnly(null, null, null);
 			getViewContainer().contextRemove("maintenanceMsgThisNodeOnly");
 			maintenanceMsgFormCluster.reset();
 		}
 		else if (source == infomsgClearButtonCluster) {
 			InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-			mrg.setInfoMessage("");
+			mrg.setInfoMessageNodeOnly(null, null, null);
 			getViewContainer().contextRemove("infoMsgCluster");
 			infoMsgFormCluster.reset();
 		}
@@ -120,35 +118,33 @@ public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM 
 		
 		super.event(ureq, source, event);
 		
-		if (source == infoMsgFormCluster && event == Event.DONE_EVENT) {
-					String infoMsg = infoMsgFormCluster.getInfoMsg();
-					InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-					mrg.setInfoMessageNodeOnly(infoMsg);
-					if (infoMsg != null && infoMsg.length() > 0) {
-						getViewContainer().contextPut("infoMsgCluster", infoMsg);
-						getWindowControl().setInfo("New info message activated. Only on this node!");
-					} else {
-						getViewContainer().contextRemove("infoMsgCluster");
-					}
-					getMainContainer().popContent();
-		} else if (source == maintenanceMsgFormCluster && event == Event.DONE_EVENT) {
-					String infoMsg = maintenanceMsgFormCluster.getInfoMsg();
-					GlobalStickyMessage.setGlobalStickyMessage(infoMsg, false);
-					if (infoMsg != null && infoMsg.length() > 0) {
-						getViewContainer().contextPut("maintenanceMsgThisNodeOnly", infoMsg);
-						getWindowControl().setInfo("New maintenance message activated. Only on this node!");
-						getMaintenanceMsgForm().reset();
-					} else {
-						getViewContainer().contextRemove("maintenanceMsgThisNodeOnly");
-					}
-					getMainContainer().popContent();
-				
-		} 
-		
-		
-		if (event == Event.CANCELLED_EVENT  && (source == infoMsgFormCluster || source == maintenanceMsgFormCluster)) {
+		if (source == infoMsgFormCluster) {
+			if(event == Event.DONE_EVENT) {
+				String infoMsg = infoMsgFormCluster.getInfoMsg();
+				Date start = infoMsgFormCluster.getStart();
+				Date end = infoMsgFormCluster.getEnd();
+				InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
+				SysInfoMessage sysInfoMsg = mrg.setInfoMessageNodeOnly(infoMsg, start, end);
+				getViewContainer().contextPut("infoMsgCluster", sysInfoMsg);				
+				if (sysInfoMsg.hasMessage()) {	
+					getWindowControl().setInfo("New info message activated. Only on this node!");
+				}
+			}
 			getMainContainer().popContent();
-		}
+		} else if (source == maintenanceMsgFormCluster) {
+			if(event == Event.DONE_EVENT) {
+				String maintenanceMsg = maintenanceMsgFormCluster.getInfoMsg();
+				Date start = maintenanceMsgFormCluster.getStart();
+				Date end = maintenanceMsgFormCluster.getEnd();
+				InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
+				SysInfoMessage sysMaintenanceMsg = mrg.setMaintenanceMessageNodeOnly(maintenanceMsg, start, end); 
+				getViewContainer().contextPut("maintenanceMsgThisNodeOnly", sysMaintenanceMsg);		
+				if (sysMaintenanceMsg.hasMessage()) {
+					getWindowControl().setInfo("New maintenance message activated. Only on this node!");
+				}
+			}
+			getMainContainer().popContent();
+		} 
 		
 	}
 

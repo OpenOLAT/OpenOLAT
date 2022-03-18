@@ -1,18 +1,44 @@
 <fieldset>
 	<legend>$r.translate("infomsg.token.title")</legend>
-	<p class="o_info">$admintokenusage</p>
-	<p><i>Message Admin-Token: $!admintoken</i></p>
+	<div class="o_info">
+		<p>$admintokenusage</p>
+		<div class="o_copy_code o_nowrap">$changeInfoUrl</div>
+		<div class="o_copy_code o_nowrap">$changeMaintenanceUrl</div>
+		<p class="o_block_top"><i>Message Admin-Token:</i> <span class="o_copy_code">$!admintoken</span></p>
+	</div>
 </fieldset>
 <div class="o_block_large">
 	<fieldset>
 		<legend>$r.translate("infomsg.title")</legend>
-		#if ($infomsg)
-		     $infomsg
+		#if ($infomsg.hasMessage())		
+			#if ($infomsg.start || $infomsg.end)
+			<div class="o_period o_block_bottom text-muted">
+				<i class="o_icon o_icon_calendar"> </i>
+				$r.translate("msg.active")
+				#if ($infomsg.start)
+					$r.translate("msg.beginning") $r.formatDateAndTime($infomsg.start)
+				#end
+				#if ($maintenanceMsg.end)
+					$r.translate("msg.ending") $r.formatDateAndTime($infomsg.end)
+				#end
+				<span class="o_small">
+				#if ($infomsg.timedMessage))
+					<span class="o_labeled o_repo_status_published"><i class="o_icon o_icon o_icon o_icon_results_visible"> </i> PUBLISHED</span>
+				#else
+					<span class="o_labeled o_repo_status_closed"><i class="o_icon o_icon o_icon o_icon_results_hidden"> </i> NOT PUBLISHED</span>				
+				#end
+				</span>
+			</div>
+			#end
+			<div class="o_info">		
+			     $infomsg.message
+			</div>
 		#else
+			<i class="o_icon o_icon_info"> </i>
 			<i>$r.translate("infomsg.nomsg")</i>
 		#end
 		<div class="o_block">
-			$r.render("infomsgEdit") $r.render("infomsgClear")
+			$r.render("infomsgEdit") #if ($infomsg.hasMessage()) $r.render("infomsgClear") #end
 		</div>
 	</fieldset>
 </div>
@@ -22,13 +48,28 @@
 <div class="o_block_large">
 	<fieldset>
 		<legend>$r.translate("infomsg.title.cluster")</legend>
-		#if ($infoMsgCluster)
-		     $infoMsgCluster
+		#if ($infoMsgCluster.hasMessage())
+			#if ($infomsg.start || $infomsg.end)
+			<div class="o_period o_block_bottom text-muted">
+				<i class="o_icon o_icon_calendar"> </i>
+				$r.translate("msg.active")
+				#if ($infoMsgCluster.start)
+					$r.translate("msg.beginning") $r.formatDateAndTime($infoMsgCluster.start)
+				#end
+				#if ($infoMsgCluster.end)
+					$r.translate("msg.ending") $r.formatDateAndTime($infoMsgCluster.end)
+				#end
+			</div>
+			#end
+			<div class="o_info">
+		    	$infoMsgCluster.message
+			</div>
 		#else
+			<i class="o_icon o_icon_info"> </i>
 			<i>$r.translate("infomsg.nomsg")</i>
 		#end
 		<div class="o_block">
-			$r.render("infomsgEditCluster") $r.render("infomsgClearCluster")
+			$r.render("infomsgEditCluster") #if ($infoMsgCluster.hasMessage()) $r.render("infomsgClearCluster") #end
 		</div>
 	</fieldset>
 </div>
@@ -37,16 +78,36 @@
 <div class="o_block_large">
 	<fieldset>
 		<legend>$r.translate("maintenancemsg.title")</legend>
-	#if ($maintenanceMsgAllNodes)
+	#if ($maintenanceMsg.hasMessage())
+		#if ($maintenanceMsg.start || $maintenanceMsg.end)
+		<div class="o_period o_block_bottom text-muted">
+			<i class="o_icon o_icon_calendar"> </i>
+			$r.translate("msg.active")
+			#if ($maintenanceMsg.start)
+				$r.translate("msg.beginning") $r.formatDateAndTime($maintenanceMsg.start)
+			#end
+			#if ($maintenanceMsg.end)
+				$r.translate("msg.ending") $r.formatDateAndTime($maintenanceMsg.end)
+			#end
+			<span class="o_small">
+			#if ($maintenanceMsg.timedMessage))
+				<span class="o_labeled o_repo_status_published"><i class="o_icon o_icon o_icon o_icon_results_visible"> </i> PUBLISHED</span>
+			#else
+				<span class="o_labeled o_repo_status_closed"><i class="o_icon o_icon o_icon o_icon_results_hidden"> </i> NOT PUBLISHED</span>				
+			#end
+			</span>
+		</div>
+		#end
 	  	<div id="o_msg_sticky_preview">
 			<i class="o_icon o_icon_info_msg"></i> 
-	     	$maintenanceMsgAllNodes
+	     	$maintenanceMsg.message
 	  	</div>
 	#else
+		<i class="o_icon o_icon_info"> </i>
 		<i>$r.translate("maintenancemsg.nomsg")</i>
 	#end
 		<div class="o_block">
-		$r.render("maintenancemsgEdit") $r.render("maintenancemsgClear")
+		$r.render("maintenancemsgEdit") #if ($maintenanceMsg.hasMessage()) $r.render("maintenancemsgClear") #end
 		</div>
 	</fieldset>
 </div>
@@ -56,16 +117,29 @@
 <div class="o_block_large">
 	<fieldset>
 		<legend>$r.translate("maintenancemsg.title.cluster")</legend>
-	#if ($maintenanceMsgThisNodeOnly)
+	#if ($maintenanceMsgThisNodeOnly.hasMessage())
+		#if ($maintenanceMsgThisNodeOnly.start || $maintenanceMsgThisNodeOnly.end)
+		<div class="o_period o_block_bottom text-muted">
+			<i class="o_icon o_icon_calendar"> </i>
+			$r.translate("msg.active")
+			#if ($maintenanceMsgThisNodeOnly.start)
+				$r.translate("msg.beginning") $r.formatDateAndTime($maintenanceMsgThisNodeOnly.start)
+			#end
+			#if ($maintenanceMsgThisNodeOnly.end)
+				$r.translate("msg.ending") $r.formatDateAndTime($maintenanceMsgThisNodeOnly.end)
+			#end
+		</div>
+		#end
 	 	<div id="o_msg_sticky_preview">
 			<i class="o_icon o_icon_info_msg"></i> 
-	    	$maintenanceMsgThisNodeOnly
+	    	$maintenanceMsgThisNodeOnly.message
 	  	</div>
 	#else
+		<i class="o_icon o_icon_info"> </i>
 		<i>$r.translate("maintenancemsg.nomsg")</i>
 	#end
 	<div class="o_block">
-		$r.render("maintenancemsgEditCluster") $r.render("maintenancemsgClearCluster")
+		$r.render("maintenancemsgEditCluster") #if ($maintenanceMsgThisNodeOnly.hasMessage()) $r.render("maintenancemsgClearCluster") #end
 	</div>
 	</fieldset>
 </div>

@@ -76,7 +76,7 @@ div.o_callout_overlay {
 	background-color: $state-danger-bg; 
 	border: 1px solid $state-danger-border;
 	padding: $padding-large-vertical $padding-large-horizontal $padding-large-vertical $line-height-computed * 3;
-	min-height: $line-height-computed * 2;
+	min-height: $line-height-computed * 2 + ($padding-large-vertical * 2);
 	
 	margin: -$navbar-margin-bottom 0 $navbar-margin-bottom 0;
 	
@@ -90,6 +90,9 @@ div.o_callout_overlay {
 	&.o_msg_sticky_fullscreen {
 		margin-top: 0;
 	}
+}
+#o_msg_sticky_preview { 	
+	margin-top: 0;
 }
 
 /* extend bootstrap modal classes for extra large modal views that should us entire available space, e.g. in wizards */

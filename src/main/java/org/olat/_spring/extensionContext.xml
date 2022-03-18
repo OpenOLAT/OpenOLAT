@@ -193,7 +193,7 @@
 			<property name="order" value="7110" />
 			<property name="actionController">	
 				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-					<property name="className" value="org.olat.admin.sysinfo.InfoMessageControllerSingleVM"/>
+					<property name="className" value="org.olat.admin.sysinfo.InfoMessageController${cluster.mode}"/>
 				</bean>
 			</property>
 			<property name="navigationKey" value="sysinfo" />

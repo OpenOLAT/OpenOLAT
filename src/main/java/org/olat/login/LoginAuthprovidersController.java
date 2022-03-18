@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.olat.admin.sysinfo.InfoMessageManager;
+import org.olat.admin.sysinfo.SysInfoMessage;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
@@ -187,14 +188,20 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 
 		// prepare info message
 		InfoMessageManager mrg = CoreSpringFactory.getImpl(InfoMessageManager.class);
-		String infomsg = mrg.getInfoMessage();
-		if (infomsg != null && infomsg.length() > 0) {
-			contentBorn.contextPut("infomsg", infomsg);
+		SysInfoMessage sysInfoMsg = mrg.getInfoMessage();
+		if (sysInfoMsg.hasMessage()) {
+			String infomsg = sysInfoMsg.getTimedMessage();
+			if (infomsg.length() > 0) {
+				contentBorn.contextPut("infomsg", infomsg);				
+			}
 		}
-		
-		String infomsgNode = mrg.getInfoMessageNodeOnly();
-		if (infomsgNode != null && infomsgNode.length() > 0) {
-			contentBorn.contextPut("infomsgNode", infomsgNode);
+
+		SysInfoMessage sysInfoNodeMsg = mrg.getInfoMessageNodeOnly();
+		if (sysInfoNodeMsg.hasMessage()) {
+			String infomsgNode = sysInfoNodeMsg.getTimedMessage();
+			if (infomsgNode.length() > 0) {
+				contentBorn.contextPut("infomsgNode", infomsgNode);
+			}
 		}
 		
 		// add additional login intro message for custom content
