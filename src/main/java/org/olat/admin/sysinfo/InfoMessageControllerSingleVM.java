@@ -83,8 +83,8 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		String adminToken = (p == null ? "" : p.getStringValue());
 		infoMsgView.contextPut("admintoken", adminToken);
 		String protocol = Settings.getURIScheme().substring(0, Settings.getURIScheme().length()-1);
-		String changeInfoUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum&start=2022-05-25'T'12-30&end=2022-05-30";
-		String changeMaintenanceUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setmaintenancemessage&msg=Lorem Ipsum&start=2022-05-25'T'12-30&end=2022-05-30";
+		String changeInfoUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum&start=2022-05-25T12-30&end=2022-05-30";
+		String changeMaintenanceUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setmaintenancemessage&msg=Lorem Ipsum&start=2022-05-25T12-30&end=2022-05-30";
 		infoMsgView.contextPut("admintokenusage", translate("infomsg.token.usage", new String[] { protocol }));
 		infoMsgView.contextPut("changeInfoUrl", changeInfoUrl);
 		infoMsgView.contextPut("changeMaintenanceUrl", changeMaintenanceUrl);
