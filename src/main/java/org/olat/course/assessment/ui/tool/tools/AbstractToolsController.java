@@ -34,6 +34,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -79,6 +81,7 @@ public abstract class AbstractToolsController extends BasicController {
 	private final List<String> links = new ArrayList<>();
 
 	private CloseableModalController cmc;
+	private DialogBoxController applyGradeCtrl;
 	private ResetAttemptsConfirmationController resetAttemptsConfirmationCtrl;
 	
 	private final boolean courseReadonly;
@@ -220,25 +223,32 @@ public abstract class AbstractToolsController extends BasicController {
 		} else if(notVisibleLink == source) {
 			doSetVisibility(ureq, false);
 		} else if(applyGradeLink == source) {
-			doApplyGrade(ureq);
+			doConfirmApplyGrade(ureq);
 		} else if(detailsLink == source) {
 			fireEvent(ureq, new ShowDetailsEvent(courseNode, assessedIdentity));
 		}
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(resetAttemptsConfirmationCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 			fireEvent(ureq, event);
+		} else if (applyGradeCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doApplyGrade(ureq);
+			}
+			cleanUp();
 		}
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(resetAttemptsConfirmationCtrl);
+		removeAsListenerAndDispose(applyGradeCtrl);
 		removeAsListenerAndDispose(cmc);
 		resetAttemptsConfirmationCtrl = null;
+		applyGradeCtrl = null;
 		cmc = null;
 	}
 	
@@ -298,17 +308,42 @@ public abstract class AbstractToolsController extends BasicController {
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
-
+	
+	private void doConfirmApplyGrade(UserRequest ureq) {
+		fireEvent(ureq, Event.CLOSE_EVENT);
+		
+		if (scoreEval != null && scoreEval.getScore() != null) {
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
+			String grade = gradeScoreRange.getGrade();
+			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
+					? Boolean.valueOf(gradeScoreRange.isPassed())
+					: null;
+			
+			String text = null;
+			if (passed != null) {
+				if (passed.booleanValue()) {
+					text = translate("grade.apply.text.passed", grade);
+				} else {
+					text = translate("grade.apply.text.failed", grade);
+				}
+			} else {
+				text = translate("grade.apply.text", grade);
+			}
+			String title = translate("grade.apply");
+			applyGradeCtrl = activateYesNoDialog(ureq, title, text, applyGradeCtrl);
+		}
+	}
 	
 	private void doApplyGrade(UserRequest ureq) {
 		if (scoreEval != null && scoreEval.getScore() != null) {
-			Boolean passed = null;
 			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
 			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
 			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
 			String grade = gradeScoreRange.getGrade();
 			String performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-			passed = Mode.none != assessmentConfig.getPassedMode()
+			Boolean passed = Mode.none != assessmentConfig.getPassedMode()
 					? Boolean.valueOf(gradeScoreRange.isPassed())
 					: null;
 			

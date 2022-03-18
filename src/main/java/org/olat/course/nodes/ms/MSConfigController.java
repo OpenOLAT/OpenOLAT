@@ -227,10 +227,10 @@ public class MSConfigController extends FormBasicController {
 		if (gradeModule.isEnabled()) {
 			gradeSpacer = uifactory.addSpacerElement("spacer0", formLayout, false);
 			
-			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
+			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
 			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
 			boolean gradeEnabled = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
-			gradeEnabledEl.select("xx", gradeEnabled);
+			gradeEnabledEl.select(gradeEnabledEl.getKey(0), gradeEnabled);
 			
 			SelectionValues autoSV = new SelectionValues();
 			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));

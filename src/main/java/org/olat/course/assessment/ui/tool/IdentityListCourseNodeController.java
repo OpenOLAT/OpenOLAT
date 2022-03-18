@@ -556,6 +556,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility, new UserVisibilityCellRenderer(false)));
 			}
 			if(Mode.none != assessmentConfig.getScoreMode()) {
+				boolean hasGrade = gradeModuel.isEnabled() && assessmentConfig.hasGrade();
 				if(Mode.setByNode == assessmentConfig.getScoreMode()) {
 					if(assessmentConfig.getMinScore() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.min, new ScoreCellRenderer()));
@@ -563,12 +564,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 					if(assessmentConfig.getMaxScore() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.max, new ScoreCellRenderer()));
 					}
-					if(Mode.none != assessmentConfig.getPassedMode() && assessmentConfig.getCutValue() != null) {
+					if(Mode.none != assessmentConfig.getPassedMode() && assessmentConfig.getCutValue() != null && !hasGrade) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.cut, new ScoreCellRenderer()));
 					}
 				}
 				initScoreColumns(columnsModel);
-				if(gradeModuel.isEnabled() && assessmentConfig.hasGrade()) {
+				if(hasGrade) {
 					columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.grade, new GradeCellRenderer(getLocale())));
 				}
 			}

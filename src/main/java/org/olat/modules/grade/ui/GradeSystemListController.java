@@ -186,18 +186,21 @@ public class GradeSystemListController extends FormBasicController {
 				GradeSystem gradeSystem = (GradeSystem)deleteCtrl.getUserObject();
 				doDeleteGradeSystem(gradeSystem);
 			}
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(toolsCalloutCtrl);
-		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(createCtrl);
+		removeAsListenerAndDispose(deleteCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
 		toolsCalloutCtrl = null;
 		createCtrl = null;
+		deleteCtrl = null;
 		toolsCtrl = null;
 		editCtrl = null;
 		cmc = null;

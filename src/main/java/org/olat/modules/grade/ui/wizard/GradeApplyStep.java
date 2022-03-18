@@ -40,13 +40,13 @@ public class GradeApplyStep extends BasicStep {
 	public GradeApplyStep(UserRequest ureq) {
 		super(ureq);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale()));
-		setI18nTitleAndDescr("grade.apply.title", "grade.apply.title");
+		setI18nTitleAndDescr("grade.applications.title", "grade.applications.title");
 		setNextStep(NOSTEP);
 	}
 	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(true, true, false);
+		return new PrevNextFinishConfig(true, false, true);
 	}
 
 	@Override
