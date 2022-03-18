@@ -572,6 +572,10 @@ public class CourseFactory {
 					+ TACourseNode.getTaskFoldersPathRelToFolderRoot(sourceCourse.getCourseEnvironment()));
 			if (fSourceTaskfoldernodesFolder.exists()) FileUtils.copyDirToDir(fSourceTaskfoldernodesFolder, fTargetCourseBasePath, false, "copy task folder directories");
 
+			// create DB entries for course nodes
+			CourseNodeService courseNodeService = (CourseNodeService)CoreSpringFactory.getBean(CourseNodeService.class);
+			courseNodeService.syncCourseElements(targetCourse);
+
 			// update references
 			List<Reference> refs = referenceManager.getReferences(sourceCourse);
 			int count = 0;
