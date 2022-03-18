@@ -529,6 +529,10 @@ public class CourseFactory {
 			targetCourse.setEditorTreeModel((CourseEditorTreeModel) XStreamHelper.xstreamClone(sourceCourse.getEditorTreeModel()));
 			targetCourse.saveEditorTreeModel();
 			
+			// create DB entries for course nodes
+			CourseNodeService courseNodeService = CoreSpringFactory.getImpl(CourseNodeService.class);
+			courseNodeService.syncCourseElements(targetCourse);
+			
 			// copy course style folder
 			VFSContainer sourceCourseStyleCont = VFSManager.olatRootContainer(
 					sourceCourse.getCourseEnvironment().getCourseBaseContainer().getRelPath() + "/" + CourseStyleService.FOLDER_ROOT);
@@ -571,10 +575,6 @@ public class CourseFactory {
 			File fSourceTaskfoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
 					+ TACourseNode.getTaskFoldersPathRelToFolderRoot(sourceCourse.getCourseEnvironment()));
 			if (fSourceTaskfoldernodesFolder.exists()) FileUtils.copyDirToDir(fSourceTaskfoldernodesFolder, fTargetCourseBasePath, false, "copy task folder directories");
-
-			// create DB entries for course nodes
-			CourseNodeService courseNodeService = (CourseNodeService)CoreSpringFactory.getBean(CourseNodeService.class);
-			courseNodeService.syncCourseElements(targetCourse);
 
 			// update references
 			List<Reference> refs = referenceManager.getReferences(sourceCourse);
