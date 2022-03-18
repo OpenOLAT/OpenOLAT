@@ -73,7 +73,7 @@ public class OnlyOfficeEditor implements DocEditor {
 
 	@Override
 	public int getPriority() {
-		return 100;
+		return onlyOfficeModule.getPriority();
 	}
 
 	@Override
