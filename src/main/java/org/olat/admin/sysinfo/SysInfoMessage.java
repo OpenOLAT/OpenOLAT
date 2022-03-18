@@ -37,29 +37,33 @@ import org.olat.core.util.StringHelper;
 
 public class SysInfoMessage implements Serializable {
 	private static final long serialVersionUID = -5726906655347623869L;
-	private static final String EMPTY_MESSAGE = "";
+	protected static final String EMPTY_MESSAGE = "";
 
 	private String type;
 	private String message;
 	private Date start;
 	private Date end;
+	private boolean clearOnRestart;
 
 	/**
 	 * A SysInfoMessage that represents an info or maintenance message
 	 * 
-	 * @param type    InfoMessageManager.INFO_MSG or
-	 *                InfoMessageManager.MAINTENANCE_MSG
-	 * @param message The message. An emtpy message, message containing only
-	 *                whitespace or NULL is treated as "no message"
-	 * @param start Optional publication start date or NULL
-	 * @param end Optional publication end date or NULL
+	 * @param type           InfoMessageManager.INFO_MSG or
+	 *                       InfoMessageManager.MAINTENANCE_MSG
+	 * @param message        The message. An empty message, message containing only
+	 *                       whitespace or NULL is treated as "no message"
+	 * @param start          Optional publication start date or NULL
+	 * @param end            Optional publication end date or NULL
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
 	 */
-	public SysInfoMessage(final String type, final String message, final Date start, final Date end) {
+	public SysInfoMessage(final String type, final String message, final Date start, final Date end, boolean clearOnRestart) {
 		super();
 		this.type = type;
 		this.message = (StringHelper.containsNonWhitespace(message) ? message : EMPTY_MESSAGE);
 		this.start = start;
 		this.end = end;
+		this.clearOnRestart = clearOnRestart;
 	}
 	
 	/**
@@ -105,6 +109,14 @@ public class SysInfoMessage implements Serializable {
 	 */
 	public Date getEnd() {
 		return end;
+	}
+	
+	/**
+	 * @return true: remove the message when the system restarts; false: persist
+	 *         message
+	 */
+	public boolean isClearOnRestart() {
+		return clearOnRestart;
 	}
 	
 	/**

@@ -60,6 +60,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 	private static final String PARAMETER_MSG          = "msg";
 	private static final String PARAMETER_START        = "start";
 	private static final String PARAMETER_END          = "end";
+	private static final String PARAMETER_CLEAR_ON_RESTART  = "clearOnRestart";
 	private static final String PARAMETER_MAX_MESSAGE  = "maxsessions";
 	private static final String PARAMETER_NBR_SESSIONS = "nbrsessions";
 	private static final String PARAMETER_SESSIONTIMEOUT ="sec";
@@ -183,14 +184,22 @@ public class AdminModuleDispatcher implements Dispatcher {
 			if (cmd.equalsIgnoreCase(CMD_SET_INFO_MESSAGE)){				
 				Date start = parseDateFromRequest(request, PARAMETER_START);
 				Date end = parseDateFromRequest(request, PARAMETER_END);				
+				boolean clearOnRestart = false; // Default
+				if (request.getParameter(PARAMETER_CLEAR_ON_RESTART) != null) {
+					clearOnRestart = Boolean.parseBoolean(request.getParameter(PARAMETER_CLEAR_ON_RESTART));					
+				}
 				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
-				mrg.setInfoMessage(message, start, end);
+				mrg.setInfoMessage(message, start, end, clearOnRestart);
 				ServletUtil.serveStringResource(request, response, "Ok, new infoMessage is::" + message);
 			} else if (cmd.equalsIgnoreCase(CMD_SET_MAINTENANCE_MESSAGE)){
 				Date start = parseDateFromRequest(request, PARAMETER_START);
 				Date end = parseDateFromRequest(request, PARAMETER_END);				
+				boolean clearOnRestart = true; // Default
+				if (request.getParameter(PARAMETER_CLEAR_ON_RESTART) != null) {
+					clearOnRestart= Boolean.parseBoolean(request.getParameter(PARAMETER_CLEAR_ON_RESTART));
+				}
 				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
-				mrg.setMaintenanceMessage(message, start, end);
+				mrg.setMaintenanceMessage(message, start, end, clearOnRestart);
 				ServletUtil.serveStringResource(request, response, "Ok, new maintenanceMessage is::" + message);
 			}
 		} else {

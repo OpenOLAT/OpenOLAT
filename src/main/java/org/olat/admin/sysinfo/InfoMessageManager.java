@@ -128,10 +128,12 @@ public class InfoMessageManager implements GenericEventListener {
 	 * @param message The message: empty or NULL value means "no message"
 	 * @param start The optional display start date or NULL to start immediately
 	 * @param end The optional display end date  or NULL to never expire the message
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
 	 * @return The SysInfoMessage
 	 */
-	public SysInfoMessage setInfoMessage(final String message, final Date start, final Date end) {
-		infoMessage = new SysInfoMessage(INFO_MSG, message, start, end);
+	public SysInfoMessage setInfoMessage(final String message, final Date start, final Date end, boolean clearOnRestart) {
+		infoMessage = new SysInfoMessage(INFO_MSG, message, start, end, clearOnRestart);
 		saveSysInfoMessageAndFireEvent(infoMessage);	
 		return infoMessage;
 	}
@@ -142,10 +144,12 @@ public class InfoMessageManager implements GenericEventListener {
 	 * @param message The message: empty or NULL value means "no message"
 	 * @param start The optional display start date or NULL to start immediately
 	 * @param end The optional display end date  or NULL to never expire the message
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
 	 * @return The SysInfoMessage
 	 */
-	public SysInfoMessage setInfoMessageNodeOnly(final String message, final Date start, final Date end) {
-		infoMessageNodeOnly = new SysInfoMessage(INFO_MSG_NODE_ONLY + nodeId, message, start, end);
+	public SysInfoMessage setInfoMessageNodeOnly(final String message, final Date start, final Date end, boolean clearOnRestart) {
+		infoMessageNodeOnly = new SysInfoMessage(INFO_MSG_NODE_ONLY + nodeId, message, start, end, clearOnRestart);
 		saveSysInfoMessageAndFireEvent(infoMessageNodeOnly);		
 		return infoMessageNodeOnly;
 	}	
@@ -156,10 +160,12 @@ public class InfoMessageManager implements GenericEventListener {
 	 * @param message The message: empty or NULL value means "no message"
 	 * @param start The optional display start date or NULL to start immediately
 	 * @param end The optional display end date  or NULL to never expire the message
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
 	 * @return The SysInfoMessage
 	 */
-	public SysInfoMessage setMaintenanceMessage(final String message,final  Date start, final Date end) {
-		this.maintenanceMessage = new SysInfoMessage(MAINTENANCE_MSG, message, start, end);
+	public SysInfoMessage setMaintenanceMessage(final String message,final  Date start, final Date end, boolean clearOnRestart) {
+		this.maintenanceMessage = new SysInfoMessage(MAINTENANCE_MSG, message, start, end, clearOnRestart);
 		GlobalStickyMessage.setGlobalStickyMessage(this.maintenanceMessage.getTimedMessage(), true);
 		saveSysInfoMessageAndFireEvent(maintenanceMessage);
 		return maintenanceMessage;
@@ -171,10 +177,12 @@ public class InfoMessageManager implements GenericEventListener {
 	 * @param message The message: empty or NULL value means "no message"
 	 * @param start The optional display start date or NULL to start immediately
 	 * @param end The optional display end date  or NULL to never expire the message
+	 * @param clearOnRestart true: remove the message when the system restarts;
+	 *                       false: persist message
 	 * @return The SysInfoMessage
 	 */
-	public SysInfoMessage setMaintenanceMessageNodeOnly(final String message, final Date start, final Date end)  {
-		this.maintenanceMessageNodeOnly = new SysInfoMessage(MAINTENANCE_MSG_NODE_ONLY + nodeId, message, start, end);
+	public SysInfoMessage setMaintenanceMessageNodeOnly(final String message, final Date start, final Date end, boolean clearOnRestart)  {
+		this.maintenanceMessageNodeOnly = new SysInfoMessage(MAINTENANCE_MSG_NODE_ONLY + nodeId, message, start, end, clearOnRestart);
 		GlobalStickyMessage.setGlobalStickyMessage(this.maintenanceMessageNodeOnly.getTimedMessage(), false);
 		saveSysInfoMessageAndFireEvent(maintenanceMessageNodeOnly);		
 		return maintenanceMessageNodeOnly;
@@ -220,13 +228,21 @@ public class InfoMessageManager implements GenericEventListener {
 					p =	pm.createPropertyInstance(null,	null,	null,	"_o3_", sysInfoMessage.getType(), null, null, null, "");
 					pm.saveProperty(p);
 				}
-				// Message stored as text, start as long and end as float in one single property
-				// to reduce queries and compact storage
-				p.setTextValue(sysInfoMessage.getMessage());
-				Date start = sysInfoMessage.getStart();
-				p.setLongValue(start == null ? null : start.getTime());
-				Date end = sysInfoMessage.getEnd();
-				p.setFloatValue(end == null ? null : (float)end.getTime());
+				if (sysInfoMessage.isClearOnRestart()) {
+					// Remove any old message and save an empty one instead. On next startup the
+					// system will initialize with the cleared message
+					p.setTextValue(SysInfoMessage.EMPTY_MESSAGE);
+					p.setLongValue(null);
+					p.setFloatValue(null);					
+				} else {
+					// Message stored as text, start as long and end as float in one single property
+					// to reduce queries and compact storage
+					p.setTextValue(sysInfoMessage.getMessage());
+					Date start = sysInfoMessage.getStart();
+					p.setLongValue(start == null ? null : start.getTime());
+					Date end = sysInfoMessage.getEnd();
+					p.setFloatValue(end == null ? null : (float)end.getTime());					
+				}
 				
 				pm.updateProperty(p);
 			}
@@ -271,7 +287,7 @@ public class InfoMessageManager implements GenericEventListener {
 				end =  new Date(endValue.longValue());
 			}	
 			
-			return new SysInfoMessage(type, msg, start, end);
+			return new SysInfoMessage(type, msg, start, end, false);
 			
 			}
 			

@@ -100,13 +100,13 @@ public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM 
 		// clear buttons
 		else if (source == maintenancemsgClearButtonCluster) {
 			InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-			mrg.setMaintenanceMessageNodeOnly(null, null, null);
+			mrg.setMaintenanceMessageNodeOnly(null, null, null, false);
 			getViewContainer().contextRemove("maintenanceMsgThisNodeOnly");
 			maintenanceMsgFormCluster.reset();
 		}
 		else if (source == infomsgClearButtonCluster) {
 			InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-			mrg.setInfoMessageNodeOnly(null, null, null);
+			mrg.setInfoMessageNodeOnly(null, null, null, false);
 			getViewContainer().contextRemove("infoMsgCluster");
 			infoMsgFormCluster.reset();
 		}
@@ -124,7 +124,7 @@ public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM 
 				Date start = infoMsgFormCluster.getStart();
 				Date end = infoMsgFormCluster.getEnd();
 				InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-				SysInfoMessage sysInfoMsg = mrg.setInfoMessageNodeOnly(infoMsg, start, end);
+				SysInfoMessage sysInfoMsg = mrg.setInfoMessageNodeOnly(infoMsg, start, end, false);
 				getViewContainer().contextPut("infoMsgCluster", sysInfoMsg);				
 				if (sysInfoMsg.hasMessage()) {	
 					getWindowControl().setInfo("New info message activated. Only on this node!");
@@ -137,7 +137,7 @@ public class InfoMessageControllerCluster extends InfoMessageControllerSingleVM 
 				Date start = maintenanceMsgFormCluster.getStart();
 				Date end = maintenanceMsgFormCluster.getEnd();
 				InfoMessageManager mrg = (InfoMessageManager)CoreSpringFactory.getBean(InfoMessageManager.class);
-				SysInfoMessage sysMaintenanceMsg = mrg.setMaintenanceMessageNodeOnly(maintenanceMsg, start, end); 
+				SysInfoMessage sysMaintenanceMsg = mrg.setMaintenanceMessageNodeOnly(maintenanceMsg, start, end, false); 
 				getViewContainer().contextPut("maintenanceMsgThisNodeOnly", sysMaintenanceMsg);		
 				if (sysMaintenanceMsg.hasMessage()) {
 					getWindowControl().setInfo("New maintenance message activated. Only on this node!");

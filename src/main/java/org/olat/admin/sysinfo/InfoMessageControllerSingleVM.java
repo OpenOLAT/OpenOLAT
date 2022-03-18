@@ -83,8 +83,8 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		String adminToken = (p == null ? "" : p.getStringValue());
 		infoMsgView.contextPut("admintoken", adminToken);
 		String protocol = Settings.getURIScheme().substring(0, Settings.getURIScheme().length()-1);
-		String changeInfoUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum&start=2022-05-25T12-30&end=2022-05-30";
-		String changeMaintenanceUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setmaintenancemessage&msg=Lorem Ipsum&start=2022-05-25T12-30&end=2022-05-30";
+		String changeInfoUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum";
+		String changeMaintenanceUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setmaintenancemessage&msg=Lorem Ipsum";
 		infoMsgView.contextPut("admintokenusage", translate("infomsg.token.usage", new String[] { protocol }));
 		infoMsgView.contextPut("changeInfoUrl", changeInfoUrl);
 		infoMsgView.contextPut("changeMaintenanceUrl", changeMaintenanceUrl);
@@ -137,11 +137,11 @@ public class InfoMessageControllerSingleVM extends BasicController {
 			infoMsgEdit.contextPut("cluster", Boolean.FALSE);
 			container.pushContent(infoMsgEdit);
 		} else if (source == maintenancemsgClearButton){
-			mrg.setMaintenanceMessage(null, null, null);
+			mrg.setMaintenanceMessage(null, null, null, true);
 			infoMsgView.contextRemove("maintenanceMsg");
 			maintenanceMsgForm.reset();
 		} else if (source == infomsgClearButton){
-			mrg.setInfoMessage(null, null, null);
+			mrg.setInfoMessage(null, null, null, true);
 			infoMsgView.contextRemove("infomsg");
 			infoMsgForm.reset();
 		}
@@ -154,7 +154,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 				String infoMsg = infoMsgForm.getInfoMsg();
 				Date start = infoMsgForm.getStart();
 				Date end = infoMsgForm.getEnd();
-				SysInfoMessage sysInfoMsg = mrg.setInfoMessage(infoMsg, start, end);
+				SysInfoMessage sysInfoMsg = mrg.setInfoMessage(infoMsg, start, end, false);//TODO FG
 				infoMsgView.contextPut("infomsg", sysInfoMsg);				
 				if (sysInfoMsg.hasMessage()) {	
 					getWindowControl().setInfo("New info message activated.");
@@ -166,7 +166,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 				String maintenanceMsg = maintenanceMsgForm.getInfoMsg();
 				Date start = maintenanceMsgForm.getStart();
 				Date end = maintenanceMsgForm.getEnd();
-				SysInfoMessage sysMaintenanceMsg = mrg.setMaintenanceMessage(maintenanceMsg, start, end); 
+				SysInfoMessage sysMaintenanceMsg = mrg.setMaintenanceMessage(maintenanceMsg, start, end, false); //TODO FG
 				infoMsgView.contextPut("maintenanceMsg", sysMaintenanceMsg);		
 				if (sysMaintenanceMsg.hasMessage()) {
 					getWindowControl().setInfo("New maintenance message activated.");
