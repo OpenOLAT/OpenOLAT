@@ -122,6 +122,8 @@ alter table o_as_entry add a_grade varchar(100);
 alter table o_as_entry add a_performance_class_ident varchar(50);
 alter table o_as_eff_statement add grade varchar(100);
 alter table o_as_eff_statement add performance_class_ident varchar(50);
+alter table o_course_element add c_grade bool not null default false;
+alter table o_course_element add c_auto_grade bool not null default false;
 
 alter table o_gr_grade_system ENGINE = InnoDB;
 alter table o_gr_performance_class ENGINE = InnoDB;

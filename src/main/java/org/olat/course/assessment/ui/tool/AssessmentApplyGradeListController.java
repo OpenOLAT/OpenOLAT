@@ -26,17 +26,17 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.CoachingAssessmentEntry;
 import org.olat.course.assessment.CoachingAssessmentSearchParams;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 
 /**
  * 
- * Initial date: 22 Nov 2021<br>
+ * Initial date: 21 Mar 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentReviewListController extends AssessmentCoachingListController {
+public class AssessmentApplyGradeListController extends AssessmentCoachingListController {
 
-	public AssessmentReviewListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String translatedFormTitle) {
+	public AssessmentApplyGradeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String translatedFormTitle) {
 		super(ureq, wControl, stackPanel, translatedFormTitle);
 	}
 
@@ -57,7 +57,7 @@ public class AssessmentReviewListController extends AssessmentCoachingListContro
 
 	@Override
 	protected boolean canAssess() {
-		return true;
+		return false;
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class AssessmentReviewListController extends AssessmentCoachingListContro
 
 	@Override
 	protected boolean canApplyGrade() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -75,7 +75,12 @@ public class AssessmentReviewListController extends AssessmentCoachingListContro
 		CoachingAssessmentSearchParams  params = new CoachingAssessmentSearchParams();
 		params.setSearchString(getQuickSearchString());
 		params.setCoach(getIdentity());
-		params.setStatus(AssessmentEntryStatus.inReview);
+		params.setScoreNull(Boolean.FALSE);
+		params.setGradeNull(Boolean.TRUE);
+		params.setConfigScoreModes(List.of(Mode.setByNode, Mode.evaluated));
+		params.setConfigHasGrade(Boolean.TRUE);
+		params.setConfigIsAutoGrade(Boolean.FALSE);
+		params.setGradeApplicable(true);
 		
 		return assessmentToolManager.getCoachingEntries(params);
 	}

@@ -780,7 +780,8 @@ public class AssessmentForm extends FormBasicController {
 			gradeEl.setValue("");
 		}
 		
-		gradeApplyLink.setVisible(!gradeApplied && StringHelper.containsNonWhitespace(gradeEl.getValue()));
+		gradeApplyLink.setVisible(!gradeApplied && StringHelper.containsNonWhitespace(gradeEl.getValue())
+				&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY)));
 	}
 
 	private NavigableSet<GradeScoreRange> getGradeScoreRanges() {

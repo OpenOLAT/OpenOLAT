@@ -110,7 +110,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "st";
 	private static final String ICON_CSS_CLASS = "o_st_icon";
 	
-	private static final int CURRENT_VERSION = 7;
+	private static final int CURRENT_VERSION = 8;
 	
 	// Score calculation without conditions.
 	public static final String CONFIG_SCORE_KEY = "score.key";
@@ -125,6 +125,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	// Defines whether the COACH can override the passed.
 	public static final String CONFIG_PASSED_MANUALLY = "passed.manually";
 	public static final String CONFIG_COACH_USER_VISIBILITY = "coach.user.visibility";
+	public static final String CONFIG_COACH_GRADE_APPLY = "coach.user.grade.apply";
 
 	// Score calculation with conditions.
 	public static final String CONFIG_SCORE_CALCULATOR_SUPPORTED = "score.calculator.supported";
@@ -432,6 +433,9 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		}
 		if (config.getConfigurationVersion() < 7) {
 			config.setBooleanEntry(CONFIG_COACH_USER_VISIBILITY, true);
+		}
+		if (config.getConfigurationVersion() < 8) {
+			config.setBooleanEntry(CONFIG_COACH_GRADE_APPLY, true);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

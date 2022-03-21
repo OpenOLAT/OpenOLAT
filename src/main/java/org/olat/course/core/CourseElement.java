@@ -44,6 +44,10 @@ public interface CourseElement extends CourseElementRef {
 	public boolean isAssesseable();
 
 	public Mode getScoreMode();
+	
+	public boolean hasGrade();
+	
+	public boolean isAutoGrade();
 
 	public Mode getPassedMode();
 

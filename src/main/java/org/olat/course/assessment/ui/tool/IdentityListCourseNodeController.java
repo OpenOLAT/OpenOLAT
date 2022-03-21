@@ -642,7 +642,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkDoneButton);
 			
-			if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade()) {
+			if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() 
+					&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
 				bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", formLayout, Link.BUTTON);
 				bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
 				bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw");

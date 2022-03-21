@@ -152,12 +152,14 @@ public class AssessmentCourseOverviewController extends BasicController {
 		listenTo(toReleaseCtrl);
 		mainVC.put("toRelease", toReleaseCtrl.getInitialComponent());
 		
-		List<String> manualGradeSubIdents = new ArrayList<>();
-		addManualGradeSubIdents(manualGradeSubIdents, coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode());
-		if (gradeModule.isEnabled() && !manualGradeSubIdents.isEmpty()) {
-			toApplyGradeCtrl = new CourseNodeToApplyGradeSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback, manualGradeSubIdents);
-			listenTo(toApplyGradeCtrl);
-			mainVC.put("toApplyGrade", toApplyGradeCtrl.getInitialComponent());
+		if (coachUserEnv.isAdmin() || rootNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY)) {
+			List<String> manualGradeSubIdents = new ArrayList<>();
+			addManualGradeSubIdents(manualGradeSubIdents, coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode());
+			if (gradeModule.isEnabled() && !manualGradeSubIdents.isEmpty()) {
+				toApplyGradeCtrl = new CourseNodeToApplyGradeSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback, manualGradeSubIdents);
+				listenTo(toApplyGradeCtrl);
+				mainVC.put("toApplyGrade", toApplyGradeCtrl.getInitialComponent());
+			}
 		}
 		
 		assessmentModeListCtrl = new AssessmentModeOverviewListController(ureq, getWindowControl(), courseEntry, assessmentCallback);

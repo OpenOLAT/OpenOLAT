@@ -79,6 +79,10 @@ public class CourseElementImpl implements Persistable, ModifiedInfo, CreateInfo,
 	@Enumerated(EnumType.STRING)
 	@Column(name="c_score_mode", nullable=false, insertable=true, updatable=true)
 	private Mode scoreMode;
+	@Column(name="c_grade", nullable=false, insertable=true, updatable=true)
+	private boolean grade;
+	@Column(name="c_auto_grade", nullable=false, insertable=true, updatable=true)
+	private boolean autoGrade;
 	@Enumerated(EnumType.STRING)
 	@Column(name="c_passed_mode", nullable=false, insertable=true, updatable=true)
 	private Mode passedMode;
@@ -162,6 +166,24 @@ public class CourseElementImpl implements Persistable, ModifiedInfo, CreateInfo,
 
 	public void setScoreMode(Mode scoreMode) {
 		this.scoreMode = scoreMode;
+	}
+
+	@Override
+	public boolean hasGrade() {
+		return grade;
+	}
+
+	public void setGrade(boolean grade) {
+		this.grade = grade;
+	}
+
+	@Override
+	public boolean isAutoGrade() {
+		return autoGrade;
+	}
+
+	public void setAutoGrade(boolean autoGrade) {
+		this.autoGrade = autoGrade;
 	}
 
 	@Override

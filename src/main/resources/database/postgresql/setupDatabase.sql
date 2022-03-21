@@ -3464,6 +3464,8 @@ create table o_course_element (
    c_long_title varchar(1024) not null,
    c_assesseable bool not null,
    c_score_mode varchar(16) not null,
+   c_grade bool not null default false,
+   c_auto_grade bool not null default false,
    c_passed_mode varchar(16) not null,
    c_cut_value decimal,
    fk_entry int8 not null,

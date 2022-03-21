@@ -821,11 +821,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable = params.isUserVisibilitySettable()
 				? getCoachUserVisibleSettable(repositoryEntries)
 				: Collections.emptyMap();
+		Map<Long, Boolean> repoKeyToCoachGradeApplicable = params.isGradeApplicable()
+				? getCoachGradeApplicable(repositoryEntries)
+				: Collections.emptyMap();
 		
 		List<CoachingAssessmentEntry> coachedEntries = new ArrayList<>();
 		for (CoachingAssessmentEntryImpl coachedEntry : loadedCoachedEntries) {
 			filterAndAppend(coachedEntries, params, coachedEntry, assessedIdentityKeyToIdentity,
-					statusDoneByIdentityKeyToIdentity, repoKeyToEntry, repoKeyToCoachUserVisibilitySettable);
+					statusDoneByIdentityKeyToIdentity, repoKeyToEntry, repoKeyToCoachUserVisibilitySettable,
+					repoKeyToCoachGradeApplicable);
 		}
 		
 		return coachedEntries;
@@ -834,7 +838,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	private void filterAndAppend(List<CoachingAssessmentEntry> coachedEntries, CoachingAssessmentSearchParams params,
 			CoachingAssessmentEntryImpl coachedEntry, Map<Long, Identity> assessedIdentityKeyToIdentity,
 			Map<Long, Identity> statusDoneByIdentityKeyToIdentity, Map<Long, RepositoryEntry> repoKeyToEntry,
-			Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable) {
+			Map<Long, Boolean> repoKeyToCoachUserVisibilitySettable, Map<Long, Boolean> repoKeyToCoachGradeApplicable) {
 		if (!coachedEntry.isOwner() && !coachedEntry.isCoach()) {
 			return;
 		}
@@ -853,6 +857,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		coachedEntry.setRepositoryEntryName(repositoryEntry.getDisplayname());
 		
 		if (params.isUserVisibilitySettable() && !canSetUserVisibility(coachedEntry, repoKeyToCoachUserVisibilitySettable)) {
+			return;
+		}
+		
+		if (params.isGradeApplicable() && !canApplyGrade(coachedEntry, repoKeyToCoachGradeApplicable)) {
 			return;
 		}
 		
@@ -894,6 +902,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append("              and courseele.assesseable is true");
 		sb.append("              and (courseele.scoreMode = '").append(Mode.setByNode).append("'");
 		sb.append("                   or courseele.passedMode = '").append(Mode.setByNode).append("')");
+		if (params.getConfigHasGrade() != null) {
+			sb.append(" and courseele.grade = ").append(params.getConfigHasGrade());
+		}
+		if (params.getConfigIsAutoGrade() != null) {
+			sb.append(" and courseele.autoGrade = ").append(params.getConfigIsAutoGrade());
+		}
+		if (params.getConfigScoreModes() != null && !params.getConfigScoreModes().isEmpty()) {
+			sb.append(" and courseele.scoreMode in :scoreModes");
+		}
 		sb.and().append("(aentry.obligation is null or aentry.obligation <> '").append(AssessmentObligation.excluded).append("')");
 		sb.and().append(" exists (select 1");
 		sb.append("                 from repoentrytogroup as rtg, bgroupmember as rtgm");
@@ -901,6 +918,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append("                  and rtg.group=rtgm.group and rtgm.role").in(GroupRoles.owner, GroupRoles.coach);
 		sb.append("                  and rtgm.identity.key=:identityKey");
 		sb.append(")");
+		if(params.getScoreNull() != null) {
+			sb.append(" and aentry.score is").append(" not", !params.getScoreNull()).append(" null");
+		}
+		if(params.getGradeNull() != null) {
+			sb.append(" and aentry.grade is").append(" not", !params.getGradeNull()).append(" null");
+		}
 		if (params.getStatus() != null) {
 			sb.and().append("aentry.status = :status");
 		}
@@ -911,6 +934,9 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		TypedQuery<CoachingAssessmentEntryImpl> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CoachingAssessmentEntryImpl.class)
 				.setParameter("identityKey", params.getCoach().getKey());
+		if (params.getConfigScoreModes() != null && !params.getConfigScoreModes().isEmpty()) {
+			query.setParameter("scoreModes", params.getConfigScoreModes());
+		}
 		if (params.getStatus() != null) {
 			query.setParameter("status", params.getStatus().name());
 		}
@@ -981,7 +1007,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 				.getResultList();
 	}
 
-	private HashMap<Long, Boolean>  getCoachUserVisibleSettable(List<RepositoryEntry> repositoryEntries) {
+	private HashMap<Long, Boolean> getCoachUserVisibleSettable(List<RepositoryEntry> repositoryEntries) {
 		HashMap<Long, Boolean> repoEntryKeyToCoachUserVisibilitySettable = new HashMap<>(repositoryEntries.size());
 		for (RepositoryEntry repositoryEntry : repositoryEntries) {
 			ICourse course = CourseFactory.loadCourse(repositoryEntry);
@@ -996,6 +1022,25 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			return true;
 		} else if (coachedEntry.isCoach()) {
 			return repoEntryKeyToCoachUserVisibilitySettable.get(coachedEntry.getRepositoryEntryKey()).booleanValue();
+		}
+		return false;
+	}
+
+	private HashMap<Long, Boolean> getCoachGradeApplicable(List<RepositoryEntry> repositoryEntries) {
+		HashMap<Long, Boolean> repoEntryKeyToCoachGradeApplicable = new HashMap<>(repositoryEntries.size());
+		for (RepositoryEntry repositoryEntry : repositoryEntries) {
+			ICourse course = CourseFactory.loadCourse(repositoryEntry);
+			Boolean gradeApplicable = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY, true);
+			repoEntryKeyToCoachGradeApplicable.put(repositoryEntry.getKey(), gradeApplicable);
+		}
+		return repoEntryKeyToCoachGradeApplicable;
+	}
+	
+	private boolean canApplyGrade(CoachingAssessmentEntry coachedEntry, Map<Long, Boolean> repoEntryKeyToCoachGradeApplicable) {
+		if (coachedEntry.isOwner()) {
+			return true;
+		} else if (coachedEntry.isCoach()) {
+			return repoEntryKeyToCoachGradeApplicable.get(coachedEntry.getRepositoryEntryKey()).booleanValue();
 		}
 		return false;
 	}

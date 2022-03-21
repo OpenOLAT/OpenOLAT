@@ -66,6 +66,8 @@ public class CourseElementDAOTest extends OlatTestCase {
 		AssessmentConfigMock assessmentConfig = new AssessmentConfigMock();
 		assessmentConfig.setAssessable(true);
 		assessmentConfig.setScoreMode(Mode.none);
+		assessmentConfig.setGrade(true);
+		assessmentConfig.setAutoGrade(false);
 		assessmentConfig.setPassedMode(Mode.setByNode);
 		assessmentConfig.setCutValue(Float.valueOf(2.4f));
 		
@@ -80,6 +82,8 @@ public class CourseElementDAOTest extends OlatTestCase {
 		assertThat(courseElement.getLongTitle()).isEqualTo(longTitle);
 		assertThat(courseElement.isAssesseable()).isTrue();
 		assertThat(courseElement.getScoreMode()).isEqualTo(Mode.none);
+		assertThat(courseElement.hasGrade()).isTrue();
+		assertThat(courseElement.isAutoGrade()).isFalse();
 		assertThat(courseElement.getPassedMode()).isEqualTo(Mode.setByNode);
 		assertThat(courseElement.getCutValue().floatValue()).isCloseTo(assessmentConfig.getCutValue(), offset(0.001f));
 	}
@@ -93,6 +97,8 @@ public class CourseElementDAOTest extends OlatTestCase {
 		AssessmentConfigMock assessmentConfig = new AssessmentConfigMock();
 		assessmentConfig.setAssessable(true);
 		assessmentConfig.setScoreMode(Mode.none);
+		assessmentConfig.setGrade(true);
+		assessmentConfig.setAutoGrade(false);
 		assessmentConfig.setPassedMode(Mode.setByNode);
 		assessmentConfig.setCutValue(Float.valueOf(2.4f));
 		CourseElement courseElement = sut.create(entry, courseNode, assessmentConfig);
@@ -104,6 +110,8 @@ public class CourseElementDAOTest extends OlatTestCase {
 		courseNode.setLongTitle(longTitle);
 		assessmentConfig.setAssessable(false);
 		assessmentConfig.setScoreMode(Mode.evaluated);
+		assessmentConfig.setGrade(false);
+		assessmentConfig.setAutoGrade(true);
 		assessmentConfig.setPassedMode(Mode.evaluated);
 		assessmentConfig.setCutValue(Float.valueOf(1.1f));
 		courseElement = sut.update(courseElement, courseNode, assessmentConfig);
@@ -114,6 +122,8 @@ public class CourseElementDAOTest extends OlatTestCase {
 		assertThat(courseElement.getLongTitle()).isEqualTo(longTitle);
 		assertThat(courseElement.isAssesseable()).isFalse();
 		assertThat(courseElement.getScoreMode()).isEqualTo(Mode.evaluated);
+		assertThat(courseElement.hasGrade()).isFalse();
+		assertThat(courseElement.isAutoGrade()).isTrue();
 		assertThat(courseElement.getPassedMode()).isEqualTo(Mode.evaluated);
 		assertThat(courseElement.getCutValue().floatValue()).isCloseTo(assessmentConfig.getCutValue(), offset(0.001f));
 	}

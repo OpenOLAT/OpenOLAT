@@ -125,6 +125,8 @@ alter table o_as_entry add a_grade varchar(100);
 alter table o_as_entry add a_performance_class_ident varchar(50);
 alter table o_as_eff_statement add grade varchar(100);
 alter table o_as_eff_statement add performance_class_ident varchar(50);
+alter table o_course_element add c_grade bool not null default false;
+alter table o_course_element add c_auto_grade bool not null default false;
 
 create unique index idx_grade_system_ident on o_gr_grade_system (g_identifier);
 alter table o_gr_grade_scale add constraint grscale_to_grsys_idx foreign key (fk_grade_system) references o_gr_grade_system (id);

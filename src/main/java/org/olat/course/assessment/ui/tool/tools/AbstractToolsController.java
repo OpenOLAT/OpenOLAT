@@ -159,10 +159,17 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void initApplyGrade() {
-		if (gradeModule.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() && !courseReadonly) {
-			if (scoreEval != null && scoreEval.getScore() != null && !StringHelper.containsNonWhitespace(scoreEval.getGrade())) {
-				applyGradeLink = addLink("tool.grade.apply", "tool.grade.apply", "o_icon o_icon-fw ");
-			}
+		boolean canApplyGrade = gradeModule.isEnabled() 
+				&& Mode.none != assessmentConfig.getScoreMode()
+				&& assessmentConfig.hasGrade()
+				&& !assessmentConfig.isAutoGrade()
+				&& !courseReadonly
+				&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))
+				&& scoreEval != null
+				&& scoreEval.getScore() != null
+				&& !StringHelper.containsNonWhitespace(scoreEval.getGrade());
+		if (canApplyGrade) {
+			applyGradeLink = addLink("tool.grade.apply", "tool.grade.apply", "o_icon o_icon-fw ");
 		}
 	}
 	
