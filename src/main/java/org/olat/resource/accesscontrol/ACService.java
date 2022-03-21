@@ -200,8 +200,6 @@ public interface ACService {
 
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
 
-	public List<Order> findOrder(OLATResource resource, Identity identity, AccessMethod method);
-
 	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
 			OrderStatus[] statuss);
 

@@ -664,11 +664,6 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	}
 
 	@Override
-	public List<Order> findOrder(OLATResource resource, Identity identity, AccessMethod method) {
-		return orderManager.findOrdersByResource(resource, identity, method);
-	}
-
-	@Override
 	public List<AccessTransaction> findAccessTransactions(Order order) {
 		return transactionManager.loadTransactionsForOrder(order);
 	}
