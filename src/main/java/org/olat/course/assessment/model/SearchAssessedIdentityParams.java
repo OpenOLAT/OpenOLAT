@@ -50,6 +50,8 @@ public class SearchAssessedIdentityParams {
 	private final boolean nonMembers;
 	private final boolean coach;
 	
+	private Boolean scoreNull;
+	private Boolean gradeNull;
 	private List<AssessmentEntryStatus> assessmentStatus;
 	private List<Passed> passed;
 	private Boolean userVisibility;
@@ -115,6 +117,22 @@ public class SearchAssessedIdentityParams {
 		this.assessmentStatus = assessmentStatus;
 	}
 	
+	public Boolean getScoreNull() {
+		return scoreNull;
+	}
+
+	public void setScoreNull(Boolean scoreNull) {
+		this.scoreNull = scoreNull;
+	}
+
+	public Boolean getGradeNull() {
+		return gradeNull;
+	}
+
+	public void setGradeNull(Boolean gradeNull) {
+		this.gradeNull = gradeNull;
+	}
+
 	public List<Passed> getPassed() {
 		return passed;
 	}

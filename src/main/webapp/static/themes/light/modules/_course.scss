@@ -590,6 +590,17 @@
 		}	
 	}
 }
+.o_assessment_grade_stats {
+	.o_stats {
+		display: flex;
+		>div {
+			width: 50%;
+		}
+		.o_chart {
+			padding: 10px;
+		}
+	}
+}
 #o_assessment_tool_main {
 	.o_chelp_wrapper {
 		margin-bottom: 0;

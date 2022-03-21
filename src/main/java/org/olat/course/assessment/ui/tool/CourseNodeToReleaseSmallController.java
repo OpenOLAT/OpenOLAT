@@ -53,6 +53,7 @@ public class CourseNodeToReleaseSmallController extends CourseNodeToReviewAbstra
 	public CourseNodeToReleaseSmallController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, courseEntry, assessmentCallback);
+		loadModel();
 	}
 	
 	@Override

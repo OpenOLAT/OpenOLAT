@@ -97,6 +97,8 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 	private FlexiTableElement groupTableEl;
 	private GroupTableModel curriculumElementTableModel;
 	private FlexiTableElement curriculumElementTableEl;
+	
+	private AssessmentGradeStatsController gradeStatsCtrl;
 
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final SearchAssessedIdentityParams params;
@@ -126,6 +128,12 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		this.courseInfoLaunch = courseInfoLaunch;
 		this.readOnly = readOnly;
 		this.small = small;
+		
+		if (scoreStat.isGradeEnabled()) {
+			gradeStatsCtrl = new AssessmentGradeStatsController(ureq, wControl, params);
+			listenTo(gradeStatsCtrl);
+			flc.put("gradeStats", gradeStatsCtrl.getInitialComponent());
+		}
 
 		initForm(ureq);
 		reload();
@@ -251,6 +259,9 @@ public class AssessmentStatsController extends FormBasicController implements Ex
 		if (scoreStat.isEnabled()) {
 			scoreToCount = assessmentToolManager.getScoreStatistics(getIdentity(), params).stream()
 					.collect(Collectors.toMap(AssessmentScoreStatistic::getScore, AssessmentScoreStatistic::getCount));
+			if (gradeStatsCtrl != null) {
+				gradeStatsCtrl.reload(statistics, scoreToCount);
+			}
 		}
 		
 		updateUI();

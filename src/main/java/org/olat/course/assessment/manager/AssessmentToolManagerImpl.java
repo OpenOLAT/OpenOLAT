@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -184,6 +185,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	public AssessmentStatistics getStatistics(Identity coach, SearchAssessedIdentityParams params) {
 		QueryBuilder sf = new QueryBuilder();
 		sf.append("select avg(aentry.score) as scoreAverage, ")
+		  .append(" max(aentry.score) as scoreMax,")
 		  .append(" sum(case when aentry.passed=true then 1 else 0 end) as numOfPassed,")
 		  .append(" sum(case when aentry.passed=false then 1 else 0 end) as numOfFailed,")
 		  .append(" sum(case when aentry.passed=null then 1 else 0 end) as numOfUndefined,")
@@ -252,13 +254,15 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		if(results != null && !results.isEmpty()) {
 			Object[] result = results.get(0);
 			Double averageScore = (Double)result[0];
-			Long numOfPassed = (Long)result[1];
-			Long numOfFailed = (Long)result[2];
-			Long numOfUndefined = (Long)result[3];
-			Long numDone = (Long)result[4];
-			Long numNotDone = (Long)result[5];
+			BigDecimal maxScore = (BigDecimal)result[1];
+			Long numOfPassed = (Long)result[2];
+			Long numOfFailed = (Long)result[3];
+			Long numOfUndefined = (Long)result[4];
+			Long numDone = (Long)result[5];
+			Long numNotDone = (Long)result[6];
 			
 			entry.setAverageScore(averageScore);
+			entry.setMaxScore(maxScore);
 			entry.setCountPassed(numOfPassed == null ? 0 : numOfPassed.intValue());
 			entry.setCountFailed(numOfFailed == null ? 0 : numOfFailed.intValue());
 			entry.setCountUndefined(numOfUndefined == null ? 0 : numOfUndefined.intValue());
@@ -723,6 +727,12 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		if(status != null) {
 			sb.append(" and aentry.status=:assessmentStatus");
+		}
+		if(params.getScoreNull() != null) {
+			sb.append(" and aentry.score is").append(" not", !params.getScoreNull()).append(" null");
+		}
+		if(params.getGradeNull() != null) {
+			sb.append(" and aentry.grade is").append(" not", !params.getGradeNull()).append(" null");
 		}
 		if(params.getUserVisibility() != null) {
 			sb.append(" and (");

@@ -19,17 +19,16 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -38,50 +37,62 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 07.10.2015<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 21.03.2022<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CourseNodeToReviewSmallController extends CourseNodeToReviewAbstractSmallController {
+public class CourseNodeToApplyGradeSmallController extends CourseNodeToReviewAbstractSmallController {
 	
 	private static final Supplier<AssessedIdentityListState> IDENTITY_FILTER = 
-			() -> new AssessedIdentityListState(null, null, null, null, null, null, IdentityListCourseNodeController.TO_REVIEW_TAB_ID, true);
+			() -> new AssessedIdentityListState(null, null, null, null, null, null, IdentityListCourseNodeController.ALL_TAB_ID, true);
+	
+	private final List<String> manualGradeSubIdents;
 	
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
-	
-	public CourseNodeToReviewSmallController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
+
+	public CourseNodeToApplyGradeSmallController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback, List<String> manualGradeSubIdents) {
 		super(ureq, wControl, courseEntry, assessmentCallback);
+		this.manualGradeSubIdents = manualGradeSubIdents;
 		loadModel();
 	}
 	
 	@Override
 	protected String getIconCssClass() {
-		return "o_icon_status_in_review";
+		return "o_icon_empty_objects";
 	}
 
 	@Override
 	protected String getTitleI18nKey() {
-		return "review.open";
+		return "grades.to.apply";
 	}
 
 	@Override
 	protected String getTitleNumberI18nKey() {
-		return "review.open.number";
+		return "grades.to.apply.number";
 	}
 
 	@Override
 	protected String getTableEmptyI18nKey() {
-		return "review.open.empty";
+		return "grades.to.apply.empty";
 	}
 
 	@Override
 	protected Map<String, List<AssessmentEntry>> loadNodeIdentToEntries() {
-		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, assessmentCallback);
+		Map<String, List<AssessmentEntry>> nodeIdentToEntries = new HashMap<>(manualGradeSubIdents.size());
+		for (String subIdent : manualGradeSubIdents) {
+			nodeIdentToEntries.put(subIdent, loadAssessmentEntries(subIdent));
+		}
+		return nodeIdentToEntries;
+	}
+	
+	private List<AssessmentEntry> loadAssessmentEntries(String subIdent) {
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, subIdent, null, assessmentCallback);
+		params.setScoreNull(Boolean.FALSE);
+		params.setGradeNull(Boolean.TRUE);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
-		return assessmentToolManager.getAssessmentEntries(getIdentity(), params, AssessmentEntryStatus.inReview).stream()
-				.collect(Collectors.groupingBy(AssessmentEntry::getSubIdent));
+		return assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
 	}
 
 	@Override

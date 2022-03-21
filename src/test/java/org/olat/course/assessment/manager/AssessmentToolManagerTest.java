@@ -327,6 +327,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		// statistics
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(admin, params);
 		Assert.assertEquals(5.28571d, statistics.getAverageScore().doubleValue(), 0.0001);
+		Assert.assertEquals(9d, statistics.getMaxScore().doubleValue(), 0.0001);
 		Assert.assertEquals(9, statistics.getCountTotal());
 		Assert.assertEquals(1, statistics.getCountFailed());
 		Assert.assertEquals(6, statistics.getCountPassed());
@@ -534,6 +535,86 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		params.setUserVisibility(Boolean.FALSE);
 		assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae3);
+	}
+	
+	@Test
+	public void getCoachingEntries_filter_scoreNull() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		String subIdent = random();
+		createCourseElement(entry, subIdent);
+		
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.coach.name());
+		
+		// some datas
+		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		ae1.setScore(new BigDecimal("1"));
+		assessmentEntryDao.updateAssessmentEntry(ae1);
+		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		ae2.setScore(new BigDecimal("2"));
+		assessmentEntryDao.updateAssessmentEntry(ae2);
+		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		ae3.setScore(null);
+		assessmentEntryDao.updateAssessmentEntry(ae3);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
+		params.setScoreNull(Boolean.FALSE);
+		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2).doesNotContain(ae3);
+		
+		params.setScoreNull(Boolean.TRUE);
+		assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae3).doesNotContain(ae1, ae2);
+	}
+	
+	@Test
+	public void getCoachingEntries_filter_gradeNull() {
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(admin);
+		String subIdent = random();
+		createCourseElement(entry, subIdent);
+		
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		
+		repositoryEntryRelationDao.addRole(coach, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity1, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity2, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(assessedIdentity3, entry, GroupRoles.coach.name());
+		
+		// some datas
+		AssessmentEntry ae1 = createAssessmentEntry(assessedIdentity1, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		ae1.setGrade(random());
+		assessmentEntryDao.updateAssessmentEntry(ae1);
+		AssessmentEntry ae2 = createAssessmentEntry(assessedIdentity2, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		ae2.setGrade(random());
+		assessmentEntryDao.updateAssessmentEntry(ae2);
+		AssessmentEntry ae3 = createAssessmentEntry(assessedIdentity3, entry, subIdent, AssessmentObligation.mandatory, AssessmentEntryStatus.inReview, Boolean.FALSE);
+		ae3.setScore(null);
+		assessmentEntryDao.updateAssessmentEntry(ae3);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null);
+		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
+		params.setGradeNull(Boolean.FALSE);
+		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2).doesNotContain(ae3);
+		
+		params.setGradeNull(Boolean.TRUE);
+		assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
+		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae3).doesNotContain(ae1, ae2);
 	}
 	
 	@Test

@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -136,6 +137,9 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.modules.grade.GradeModule;
+import org.olat.modules.grade.GradeScale;
+import org.olat.modules.grade.GradeScoreRange;
+import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustCallback;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustStep;
 import org.olat.modules.grading.GradingAssignment;
@@ -175,6 +179,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final boolean showTitle;
 	private final boolean learningPath;
+	private final AssessmentConfig assessmentConfig;
 	protected final boolean canEditUserVisibility;
 
 	private FlexiFiltersTab allTab;
@@ -189,6 +194,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private FormLink gradeScaleButton;
 	private FormLink bulkDoneButton;
 	private FormLink bulkEmailButton;
+	private FormLink bulkApplyGradeButton;
 	private FormLink bulkVisibleButton;
 	private FormLink bulkHiddenButton;
 	protected final TooledStackedPanel stackPanel;
@@ -223,6 +229,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private GradeModule gradeModuel;
+	@Autowired
+	private GradeService gradeService;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -244,7 +252,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(courseEnv).getType());
 		canEditUserVisibility = coachCourseEnv.isAdmin()
 				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
-		
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		if(courseNode.needsReferenceToARepositoryEntry()) {
 			referenceEntry = courseNode.getReferencedRepositoryEntry();
@@ -360,12 +368,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 			colIndex++;
 		}
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		initAssessmentColumns(columnsModel, assessmentConfig);
+		initAssessmentColumns(columnsModel);
 		initStatusColumns(columnsModel);
 		initModificationDatesColumns(columnsModel);
-		initExternalGradingColumns(columnsModel, assessmentConfig);
-		initCalloutColumns(columnsModel, assessmentConfig);
+		initExternalGradingColumns(columnsModel);
+		initCalloutColumns(columnsModel);
 
 		usersTableModel = new IdentityListCourseNodeTableModel(columnsModel, courseNode, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", usersTableModel, 20, false, getTranslator(), formLayout);
@@ -375,12 +382,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 		tableEl.setMultiSelect(!coachCourseEnv.isCourseReadOnly());
 		tableEl.setSortSettings(options);
 		tableEl.setSelectAllEnable(true);
-		initFilters(assessmentConfig);
-		initFiltersPresets(assessmentConfig);
+		initFilters();
+		initFiltersPresets();
 		tableEl.setAndLoadPersistedPreferences(ureq, getTableId());
 	}
 	
-	protected final void initFiltersPresets(AssessmentConfig assessmentConfig) {
+	protected final void initFiltersPresets() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 		
 		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
@@ -431,7 +438,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
-	protected void initFilters(AssessmentConfig assessmentConfig) {
+	protected void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		// life-cycle
@@ -547,7 +554,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		return "assessment-tool-identity-list-v2";
 	}
 	
-	protected void initAssessmentColumns(FlexiTableColumnModel columnsModel, AssessmentConfig assessmentConfig) {
+	protected void initAssessmentColumns(FlexiTableColumnModel columnsModel) {
 		if(assessmentConfig.isAssessable()) {
 			if(assessmentConfig.hasAttempts()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
@@ -600,13 +607,13 @@ public class IdentityListCourseNodeController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.lastCoachModified, select));
 	}
 	
-	protected void initExternalGradingColumns(FlexiTableColumnModel columnsModel, AssessmentConfig assessmentConfig) {
+	protected void initExternalGradingColumns(FlexiTableColumnModel columnsModel) {
 		if(assessmentConfig.isExternalGrading()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.externalGrader));
 		}
 	}
 	
-	protected void initCalloutColumns(FlexiTableColumnModel columnsModel, AssessmentConfig assessmentConfig) {
+	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
 		if(assessmentConfig.isAssessable()) {
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(IdentityCourseElementCols.tools);
 			toolsCol.setExportable(false);
@@ -619,7 +626,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected boolean isSelectable() {
-		return courseAssessmentService.getAssessmentConfig(courseNode).isAssessable();
+		return assessmentConfig.isAssessable();
 	}
 	
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
@@ -628,12 +635,20 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 
 	protected void initBulkStatusTools(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
-		if(courseAssessmentService.getAssessmentConfig(courseNode).isAssessable()) {
+		if(assessmentConfig.isAssessable()) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);
 			bulkDoneButton.setElementCssClass("o_sel_assessment_bulk_done");
 			bulkDoneButton.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkDoneButton);
+			
+			if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade()) {
+				bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", formLayout, Link.BUTTON);
+				bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
+				bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw");
+				bulkApplyGradeButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+				tableEl.addBatchButton(bulkApplyGradeButton);
+			}
 			
 			if (canEditUserVisibility) {
 				bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
@@ -652,7 +667,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void initBulkEmailTool(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
-		if(courseAssessmentService.getAssessmentConfig(courseNode).isAssessable()) {
+		if(assessmentConfig.isAssessable()) {
 			bulkEmailButton = uifactory.addFormLink("bulk.email", formLayout, Link.BUTTON);
 			bulkEmailButton.setElementCssClass("o_sel_assessment_bulk_email");
 			bulkEmailButton.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
@@ -662,7 +677,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void initGradeScaleEditButton(FormLayoutContainer formLayout) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if (Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade()) {
 			gradeScaleButton = uifactory.addFormLink("tool.grade.scale", formLayout, Link.BUTTON);
 			gradeScaleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
@@ -687,7 +701,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 		assessedIdentities = applyFilters(assessedIdentities, entryMap, params);
 		
 		Map<Long,String> assessmentEntriesKeysToGraders = Collections.emptyMap();
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if(assessmentConfig.isExternalGrading()) {
 			List<GradingAssignment> assignments = assessmentToolManager.getGradingAssignments(getIdentity(), params, null);
 			assessmentEntriesKeysToGraders = assignments.stream()
@@ -1077,6 +1090,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			doEditGradeScale(ureq);
 		} else if(bulkDoneButton == source) {
 			doSetDone(ureq);
+		} else if(bulkApplyGradeButton == source) {
+			doApplyGrade(ureq);
 		} else if(bulkVisibleButton == source) {
 			doSetUserVisibility(ureq, true);
 		} else if(bulkHiddenButton == source) {
@@ -1296,7 +1311,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 		if(rows.isEmpty()) {
 			showWarning("warning.bulk.done");
-		} else if(courseAssessmentService.getAssessmentConfig(courseNode).isAssessable()) {
+		} else if(assessmentConfig.isAssessable()) {
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			for(AssessedIdentityElementRow row:rows) {
 				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
@@ -1324,6 +1339,53 @@ public class IdentityListCourseNodeController extends FormBasicController
 				getIdentity(), false, Role.coach);
 	}
 	
+	private void doApplyGrade(UserRequest ureq) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
+		for(Integer i:selections) {
+			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
+			if(row != null && !StringHelper.containsNonWhitespace(row.getGrade())) {
+				rows.add(row);
+			}
+		}
+
+		if(assessmentConfig.isAssessable()) {
+			ICourse course = CourseFactory.loadCourse(courseEntry);
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, courseNode.getIdent());
+			NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+			for(AssessedIdentityElementRow row:rows) {
+				Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+				doApplyGrade(assessedIdentity, courseNode, course, gradeScoreRanges);
+				dbInstance.commitAndCloseSession();
+			}
+			reload(ureq);
+		}
+	}
+	
+	protected void doApplyGrade(Identity assessedIdentity, CourseNode cNode, ICourse course, NavigableSet<GradeScoreRange> gradeScoreRanges) {
+		Roles roles = securityManager.getRoles(assessedIdentity);
+		
+		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+				coachCourseEnv.getCourseReadOnlyDetails());
+		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
+
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(cNode, assessedUserCourseEnv);
+		String grade = scoreEval.getGrade();
+		String performanceClassIdent = scoreEval.getPerformanceClassIdent();
+		if (scoreEval.getScore() != null) {
+			GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreEval.getScore());
+			grade = gradeScoreRange.getGrade();
+			performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+		}
+		ScoreEvaluation applyGradeEval = new ScoreEvaluation(scoreEval.getScore(), grade,
+				performanceClassIdent, scoreEval.getPassed(), scoreEval.getAssessmentStatus(), null,
+				scoreEval.getCurrentRunStartDate(), scoreEval.getCurrentRunCompletion(),
+				scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
+		courseAssessmentService.updateScoreEvaluation(cNode, applyGradeEval, assessedUserCourseEnv,
+				getIdentity(), false, Role.coach);
+	}
+	
 	private void doUpdateCompletion(Date start, Double completion, AssessmentRunStatus status, Long assessedIdentityKey) {
 		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
 		for(AssessedIdentityElementRow row:rows) {
@@ -1345,7 +1407,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		boolean statusChanged = assessmentEntry.getAssessmentStatus() != row.getAssessmentStatus();
 		if(statusChanged || (endedEvent && !endedRow)) {
 			String grader = null;
-			if(courseAssessmentService.getAssessmentConfig(courseNode).isExternalGrading()) {
+			if(assessmentConfig.isExternalGrading()) {
 				RepositoryEntry testEntry = referenceEntry == null ? courseEntry : referenceEntry;
 				GradingAssignment assignment = gradingService.getGradingAssignment(testEntry, assessmentEntry);
 				if(assignment != null && assignment.getGrader() != null) {
@@ -1358,7 +1420,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	private void doEditGradeScale(UserRequest ureq) {
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		GradeScaleAdjustStep step = new GradeScaleAdjustStep(ureq, courseEntry, courseNode, assessmentConfig.isAutoGrade());
 		StepRunnerCallback finish = new GradeScaleAdjustCallback(coachCourseEnv, getLocale());
 		

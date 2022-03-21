@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.model;
 
+import java.math.BigDecimal;
+
 /**
  * 
  * Initial date: 07.10.2015<br>
@@ -34,6 +36,7 @@ public class AssessmentStatistics {
 	private int countDone;
 	private int countNotDone;
 	private Double averageScore;
+	private BigDecimal maxScore;
 	
 	public int getCountTotal() {
 		return countTotal;
@@ -89,5 +92,13 @@ public class AssessmentStatistics {
 	
 	public void setAverageScore(Double averageScore) {
 		this.averageScore = averageScore;
+	}
+
+	public BigDecimal getMaxScore() {
+		return maxScore;
+	}
+
+	public void setMaxScore(BigDecimal maxScore) {
+		this.maxScore = maxScore;
 	}
 }

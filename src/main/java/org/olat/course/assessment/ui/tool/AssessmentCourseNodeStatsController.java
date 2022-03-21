@@ -40,6 +40,7 @@ import org.olat.modules.assessment.ui.AssessmentStatsController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.PercentStat;
 import org.olat.modules.assessment.ui.ScoreStat;
+import org.olat.modules.grade.GradeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,6 +60,8 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private GradeModule gradeModule;
 
 	public AssessmentCourseNodeStatsController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNode courseNode, AssessmentToolSecurityCallback assessmentCallback, boolean courseInfoLaunch, boolean readOnly) {
@@ -87,7 +90,8 @@ public class AssessmentCourseNodeStatsController extends BasicController impleme
 		if (Mode.none != assessmentConfig.getScoreMode()) {
 			Double minScore = assessmentConfig.getMinScore()!= null? Double.valueOf(assessmentConfig.getMinScore().doubleValue()): null;
 			Double maxScore = assessmentConfig.getMaxScore()!= null? Double.valueOf(assessmentConfig.getMaxScore().doubleValue()): null;
-			scoreStat = ScoreStat.of(minScore, maxScore);
+			boolean gradeEnabled = gradeModule.isEnabled() && assessmentConfig.hasGrade();
+			scoreStat = ScoreStat.of(minScore, maxScore, gradeEnabled);
 		}
 		
 		assessmentStatsCtrl = new AssessmentStatsController(ureq, wControl, assessmentCallback, params, percentStat, scoreStat, courseInfoLaunch, readOnly, false);
