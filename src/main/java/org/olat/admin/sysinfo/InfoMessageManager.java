@@ -287,7 +287,12 @@ public class InfoMessageManager implements GenericEventListener {
 				end =  new Date(endValue.longValue());
 			}	
 			
-			return new SysInfoMessage(type, msg, start, end, false);
+			boolean clearOnRestart = false;
+			if ( type.equals(MAINTENANCE_MSG) || type.equals(MAINTENANCE_MSG_NODE_ONLY) ) {
+				clearOnRestart = true;
+			}
+			
+			return new SysInfoMessage(type, msg, start, end, clearOnRestart);
 			
 			}
 			

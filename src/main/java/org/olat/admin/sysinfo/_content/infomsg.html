@@ -4,11 +4,12 @@
 		<p>$admintokenusage</p>
 		<div class="o_copy_code o_nowrap">$changeInfoUrl</div>
 		<div class="o_copy_code o_nowrap">$changeMaintenanceUrl</div>
+		<div class="o_copy_code o_nowrap">$getMessagesUrl</div>
 		<p><br />$r.translate("msg.optional"):
 		<ul>
 			<li><span class="o_copy_code">start=2022-05-25T12-30</span>  <span class="o_copy_code">(yyyy-MM-ddTHH-mm / yyyy-MM-dd)</span></li>
 			<li><span class="o_copy_code">end=2022-05-30</span>  <span class="o_copy_code">(yyyy-MM-ddTHH-mm / yyyy-MM-dd)</span></li>
-			<li><span class="o_copy_code">clearOnRestart=false</span>  <span class="o_copy_code">setinfomessage : false / setmaintenanceMessage : true</span></li>
+			<li><span class="o_copy_code">clearOnRestart=false</span>  Defaults: <span class="o_copy_code">setinfomessage : false / setmaintenanceMessage : true</span></li>
 		</ul>
 		<p class="o_block_top"><i>Message Admin-Token:</i> <span class="o_copy_code">$!admintoken</span></p>
 	</div>
@@ -17,23 +18,23 @@
 	<fieldset>
 		<legend>$r.translate("infomsg.title")</legend>
 		#if ($infomsg.hasMessage())		
+			<span class="o_small pull-right">
+			#if ($infomsg.timedMessage)
+				<span class="o_labeled o_repo_status_published"><i class="o_icon o_icon o_icon o_icon_results_visible"> </i> PUBLISHED</span>
+			#else
+				<span class="o_labeled o_repo_status_closed"><i class="o_icon o_icon o_icon o_icon_results_hidden"> </i> NOT PUBLISHED</span>				
+			#end
+			</span>
 			#if ($infomsg.start || $infomsg.end)
 			<div class="o_period text-muted">
 				<i class="o_icon o_icon_calendar"> </i>
-				$r.translate("msg.active")
+				$r.translate("publication")
 				#if ($infomsg.start)
 					$r.translate("msg.beginning") $r.formatDateAndTime($infomsg.start)
 				#end
 				#if ($maintenanceMsg.end)
 					$r.translate("msg.ending") $r.formatDateAndTime($infomsg.end)
 				#end
-				<span class="o_small">
-				#if ($infomsg.timedMessage)
-					<span class="o_labeled o_repo_status_published"><i class="o_icon o_icon o_icon o_icon_results_visible"> </i> PUBLISHED</span>
-				#else
-					<span class="o_labeled o_repo_status_closed"><i class="o_icon o_icon o_icon o_icon_results_hidden"> </i> NOT PUBLISHED</span>				
-				#end
-				</span>
 			</div>
 			#end
 			#if ($infomsg.clearOnRestart)
@@ -64,7 +65,7 @@
 			#if ($infomsg.start || $infomsg.end)
 			<div class="o_period text-muted">
 				<i class="o_icon o_icon_calendar"> </i>
-				$r.translate("msg.active")
+				$r.translate("publication")
 				#if ($infoMsgCluster.start)
 					$r.translate("msg.beginning") $r.formatDateAndTime($infoMsgCluster.start)
 				#end
@@ -97,24 +98,24 @@
 	<fieldset>
 		<legend>$r.translate("maintenancemsg.title")</legend>
 	#if ($maintenanceMsg.hasMessage())
+		<span class="o_small pull-right">
+		#if ($maintenanceMsg.timedMessage)
+			<span class="o_labeled o_repo_status_published"><i class="o_icon o_icon o_icon o_icon_results_visible"> </i> PUBLISHED</span>
+		#else
+			<span class="o_labeled o_repo_status_closed"><i class="o_icon o_icon o_icon o_icon_results_hidden"> </i> NOT PUBLISHED</span>				
+		#end
+		</span>
 		#if ($maintenanceMsg.start || $maintenanceMsg.end)
 		<div class="o_block_bottom">
 		<div class="o_period text-muted">
 			<i class="o_icon o_icon_calendar"> </i>
-			$r.translate("msg.active")
+			$r.translate("publication")
 			#if ($maintenanceMsg.start)
 				$r.translate("msg.beginning") $r.formatDateAndTime($maintenanceMsg.start)
 			#end
 			#if ($maintenanceMsg.end)
 				$r.translate("msg.ending") $r.formatDateAndTime($maintenanceMsg.end)
 			#end
-			<span class="o_small">
-			#if ($maintenanceMsg.timedMessage)
-				<span class="o_labeled o_repo_status_published"><i class="o_icon o_icon o_icon o_icon_results_visible"> </i> PUBLISHED</span>
-			#else
-				<span class="o_labeled o_repo_status_closed"><i class="o_icon o_icon o_icon o_icon_results_hidden"> </i> NOT PUBLISHED</span>				
-			#end
-			</span>
 		</div>
 		#end
 		#if ($maintenanceMsg.clearOnRestart)
@@ -147,7 +148,7 @@
 		#if ($maintenanceMsgThisNodeOnly.start || $maintenanceMsgThisNodeOnly.end)
 		<div class="o_period text-muted">
 			<i class="o_icon o_icon_calendar"> </i>
-			$r.translate("msg.active")
+			$r.translate("publication")
 			#if ($maintenanceMsgThisNodeOnly.start)
 				$r.translate("msg.beginning") $r.formatDateAndTime($maintenanceMsgThisNodeOnly.start)
 			#end

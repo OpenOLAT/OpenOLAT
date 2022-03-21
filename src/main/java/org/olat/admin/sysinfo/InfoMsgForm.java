@@ -33,10 +33,13 @@ import java.util.Date;
 
 import org.olat.admin.sysinfo.manager.CustomStaticFolderManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
 import org.olat.core.gui.control.Controller;
@@ -57,6 +60,7 @@ public class InfoMsgForm extends FormBasicController {
 	private RichTextElement msg;
 	private DateChooser start;
 	private SysInfoMessage sysInfoMessage;
+	private SingleSelection publication;
 	
 	@Autowired
 	private CustomStaticFolderManager staticFolderMgr;
@@ -80,11 +84,23 @@ public class InfoMsgForm extends FormBasicController {
 	}
 	
 	public Date getStart() {
-		return start.getDate();
+		if (publication.isSelected(2)) {
+			return start.getDate();			
+		} else {
+			return null;
+		}
 	}
 
 	public Date getEnd() {
-		return start.getSecondDate();
+		if (publication.isSelected(2)) {
+			return start.getSecondDate();
+		} else {
+			return null;
+		}
+	}
+	
+	public boolean getClearOnReboot() {
+		return publication.isSelected(0);
 	}
 	
 	public void reset() {
@@ -102,14 +118,34 @@ public class InfoMsgForm extends FormBasicController {
 	}
 	
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		super.formInnerEvent(ureq, source, event);
+		if (source == publication) {
+			updateFormDependencies();
+		}		
+	}
+
+	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		msg = uifactory.addRichTextElementForStringData("msg", "infomsg", sysInfoMessage.getMessage(), 20, 70, true, staticFolderMgr.getRootContainer(), null, formLayout, ureq.getUserSession(), getWindowControl());
 		msg.setMaxLength(1024);
 		
+		String[] lcKeys = new String[] {"publication.clear", "publication.always", "publication.timed"};
+		String[] lcValues = new String[] {translate("publication.clear"), translate("publication.always"), translate("publication.timed")};
+		String[] lcDesc = new String[] {translate("publication.clear.desc"), translate("publication.always.desc"), translate("publication.timed.desc")};
+		publication = uifactory.addCardSingleSelectHorizontal("publication", formLayout, lcKeys, lcValues, lcDesc, null);
+		if (sysInfoMessage.isClearOnRestart()){
+			publication.select("publication.clear", true);
+		} else if (sysInfoMessage.getStart() != null || sysInfoMessage.getEnd() != null) {
+			publication.select("publication.timed", true);			
+		} else {
+			publication.select("publication.always", true);
+		}
+		publication.addActionListener(FormEvent.ONCHANGE);
+		
 		FormLayoutContainer dateLayout = FormLayoutContainer.createHorizontalFormLayout("msg.active", getTranslator());
 		formLayout.add(dateLayout);
-		dateLayout.setLabel("msg.active", null);
-		dateLayout.setExampleKey("msg.example", null);
+		
 		start = uifactory.addDateChooser("msg.beginning", sysInfoMessage.getStart(), dateLayout);
 		start.setDateChooserTimeEnabled(true);
 		start.setSecondDate(true);
@@ -131,5 +167,11 @@ public class InfoMsgForm extends FormBasicController {
 		formLayout.add(buttonGroupLayout);
 		uifactory.addFormSubmitButton("submit", "submit", buttonGroupLayout);
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+		
+		updateFormDependencies();
+	}
+	
+	private void updateFormDependencies() {
+		start.setVisible(publication.isSelected(2));
 	}
 }

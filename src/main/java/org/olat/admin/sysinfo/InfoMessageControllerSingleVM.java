@@ -85,9 +85,11 @@ public class InfoMessageControllerSingleVM extends BasicController {
 		String protocol = Settings.getURIScheme().substring(0, Settings.getURIScheme().length()-1);
 		String changeInfoUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setinfomessage&msg=Lorem Ipsum";
 		String changeMaintenanceUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=setmaintenancemessage&msg=Lorem Ipsum";
+		String getMessagesUrl = Settings.getServerContextPathURI() + "/admin.html?token=TOKEN&cmd=getmessages";
 		infoMsgView.contextPut("admintokenusage", translate("infomsg.token.usage", new String[] { protocol }));
 		infoMsgView.contextPut("changeInfoUrl", changeInfoUrl);
 		infoMsgView.contextPut("changeMaintenanceUrl", changeMaintenanceUrl);
+		infoMsgView.contextPut("getMessagesUrl", getMessagesUrl);
 
 		
 		infomsgEditButton = LinkFactory.createButton("infomsgEdit", infoMsgView, this);
@@ -141,7 +143,7 @@ public class InfoMessageControllerSingleVM extends BasicController {
 			infoMsgView.contextRemove("maintenanceMsg");
 			maintenanceMsgForm.reset();
 		} else if (source == infomsgClearButton){
-			mrg.setInfoMessage(null, null, null, true);
+			mrg.setInfoMessage(null, null, null, false);
 			infoMsgView.contextRemove("infomsg");
 			infoMsgForm.reset();
 		}
@@ -154,7 +156,8 @@ public class InfoMessageControllerSingleVM extends BasicController {
 				String infoMsg = infoMsgForm.getInfoMsg();
 				Date start = infoMsgForm.getStart();
 				Date end = infoMsgForm.getEnd();
-				SysInfoMessage sysInfoMsg = mrg.setInfoMessage(infoMsg, start, end, false);//TODO FG
+				boolean clearOnReboot = infoMsgForm.getClearOnReboot();
+				SysInfoMessage sysInfoMsg = mrg.setInfoMessage(infoMsg, start, end, clearOnReboot);
 				infoMsgView.contextPut("infomsg", sysInfoMsg);				
 				if (sysInfoMsg.hasMessage()) {	
 					getWindowControl().setInfo("New info message activated.");
@@ -166,7 +169,8 @@ public class InfoMessageControllerSingleVM extends BasicController {
 				String maintenanceMsg = maintenanceMsgForm.getInfoMsg();
 				Date start = maintenanceMsgForm.getStart();
 				Date end = maintenanceMsgForm.getEnd();
-				SysInfoMessage sysMaintenanceMsg = mrg.setMaintenanceMessage(maintenanceMsg, start, end, false); //TODO FG
+				boolean clearOnReboot = maintenanceMsgForm.getClearOnReboot();
+				SysInfoMessage sysMaintenanceMsg = mrg.setMaintenanceMessage(maintenanceMsg, start, end, clearOnReboot);
 				infoMsgView.contextPut("maintenanceMsg", sysMaintenanceMsg);		
 				if (sysMaintenanceMsg.hasMessage()) {
 					getWindowControl().setInfo("New maintenance message activated.");

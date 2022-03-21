@@ -35,10 +35,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.sysinfo.InfoMessageManager;
+import org.olat.admin.sysinfo.SysInfoMessage;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.session.UserSessionManager;
@@ -65,6 +67,7 @@ public class AdminModuleDispatcher implements Dispatcher {
 	private static final String PARAMETER_NBR_SESSIONS = "nbrsessions";
 	private static final String PARAMETER_SESSIONTIMEOUT ="sec";
 	
+	private static final String CMD_GET_MESSAGES	           = "getmessages";
 	private static final String CMD_SET_MAINTENANCE_MESSAGE    = "setmaintenancemessage";
 	private static final String CMD_SET_INFO_MESSAGE    	   = "setinfomessage"; 
 	private static final String CMD_SET_LOGIN_BLOCKED          = "setloginblocked";
@@ -82,6 +85,17 @@ public class AdminModuleDispatcher implements Dispatcher {
 		String cmd = request.getParameter(PARAMETER_CMD);
 		if (CMD_SET_MAINTENANCE_MESSAGE.equalsIgnoreCase(cmd) || CMD_SET_INFO_MESSAGE.equalsIgnoreCase(cmd)) {
 			handleSetMaintenanceOrInfoMessage(request, response, cmd);
+		} else if (cmd.equalsIgnoreCase(CMD_GET_MESSAGES)) {	
+			InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
+			StringBuilder result = new StringBuilder();
+			SysInfoMessage2XML(mrg.getInfoMessage(), result);
+			SysInfoMessage2XML(mrg.getMaintenanceMessage(), result);
+			if ("Cluster".equals(Settings.getClusterMode())) {				
+				SysInfoMessage2XML(mrg.getInfoMessageNodeOnly(), result);
+				SysInfoMessage2XML(mrg.getMaintenanceMessageNodeOnly(), result);
+			}
+			ServletUtil.serveStringResource(request, response, result.toString());
+			
 		} else {
 			if (CoreSpringFactory.getImpl(AdminModule.class).checkSessionAdminToken(request)) {
 				handleSessionsCommand(request, response, cmd);
@@ -201,10 +215,27 @@ public class AdminModuleDispatcher implements Dispatcher {
 				InfoMessageManager mrg = (InfoMessageManager) CoreSpringFactory.getBean(InfoMessageManager.class);
 				mrg.setMaintenanceMessage(message, start, end, clearOnRestart);
 				ServletUtil.serveStringResource(request, response, "Ok, new maintenanceMessage is::" + message);
-			}
+			} 
 		} else {
 			DispatcherModule.sendForbidden(request.getPathInfo(), response);
 		}
+	}
+	
+	
+	private void SysInfoMessage2XML(SysInfoMessage sim, StringBuilder result) {
+		if (sim.hasMessage()) {
+			result.append("<").append(sim.getType()).append(">");
+			result.append("<message>").append(sim.getMessage()).append("</message>");
+			if (sim.getStart() != null) {
+				result.append("<start>").append(FORMAT_DATETIME.format(sim.getStart())).append("</start>");				
+			}
+			if (sim.getEnd() != null) {
+				result.append("<end>").append(FORMAT_DATETIME.format(sim.getEnd())).append("</end>");
+			}
+			result.append("<clearOnRestart>").append(sim.isClearOnRestart()).append("</clearOnRestart>");			
+			result.append("</").append(sim.getType()).append(">\n");
+		}
+		
 	}
 	
 	/**
