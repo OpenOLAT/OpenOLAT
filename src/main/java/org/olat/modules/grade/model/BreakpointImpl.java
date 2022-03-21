@@ -64,8 +64,8 @@ public class BreakpointImpl implements Breakpoint, Persistable, CreateInfo, Modi
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	@Column(name="g_value", nullable=true, insertable=true, updatable=true)
-	private BigDecimal value;
+	@Column(name="g_score", nullable=true, insertable=true, updatable=true)
+	private BigDecimal score;
 	@Column(name="g_grade", nullable=true, insertable=true, updatable=true)
 	private String grade;
 	@Column(name="g_best_to_lowest", nullable=true, insertable=true, updatable=true)
@@ -100,13 +100,13 @@ public class BreakpointImpl implements Breakpoint, Persistable, CreateInfo, Modi
 	}
 
 	@Override
-	public BigDecimal getValue() {
-		return value;
+	public BigDecimal getScore() {
+		return score;
 	}
 
 	@Override
-	public void setValue(BigDecimal value) {
-		this.value = value;
+	public void setScore(BigDecimal score) {
+		this.score = score;
 	}
 
 	@Override

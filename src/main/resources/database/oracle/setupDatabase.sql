@@ -1682,7 +1682,7 @@ create table o_gr_breakpoint (
    id number(20) generated always as identity,
    creationdate date not null,
    lastmodified date not null,
-   g_value decimal,
+   g_score decimal,
    g_grade varchar(50),
    g_best_to_lowest number(20),
    fk_grade_scale number(20) not null,

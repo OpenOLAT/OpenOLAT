@@ -134,9 +134,9 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 		
 		sb.append("[").append(ranges.first().getGrade()).append(",").append(THREE_DIGITS.format(ranges.first().getUpperBound())).append("],");
 		
-		breakpoints.sort((b1, b2) -> b2.getValue().compareTo(b1.getValue()));
+		breakpoints.sort((b1, b2) -> b2.getScore().compareTo(b1.getScore()));
 		for (Breakpoint breakpoint: breakpoints) {
-			sb.append("[").append(breakpoint.getGrade()).append(",").append(THREE_DIGITS.format(breakpoint.getValue())).append("],");
+			sb.append("[").append(breakpoint.getGrade()).append(",").append(THREE_DIGITS.format(breakpoint.getScore())).append("],");
 		}
 		
 		sb.append("[").append(ranges.last().getGrade()).append(",").append(THREE_DIGITS.format(ranges.last().getLowerBound())).append("]");

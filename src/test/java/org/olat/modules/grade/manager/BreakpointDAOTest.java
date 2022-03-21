@@ -67,7 +67,7 @@ public class BreakpointDAOTest extends OlatTestCase {
 		softly.assertThat(((BreakpointImpl)breakpoint).getCreationDate()).isNotNull();
 		softly.assertThat(((BreakpointImpl)breakpoint).getLastModified()).isNotNull();
 		softly.assertThat(breakpoint.getGradeScale()).isEqualTo(gradeScale);
-		softly.assertThat(breakpoint.getValue()).isNull();
+		softly.assertThat(breakpoint.getScore()).isNull();
 		softly.assertThat(breakpoint.getGrade()).isNull();
 		softly.assertThat(breakpoint.getBestToLowest()).isNull();
 		softly.assertAll();
@@ -80,8 +80,8 @@ public class BreakpointDAOTest extends OlatTestCase {
 		Breakpoint breakpoint = sut.create(gradeScale);
 		dbInstance.commitAndCloseSession();
 		
-		BigDecimal value = BigDecimal.valueOf(3.3);
-		breakpoint.setValue(value);
+		BigDecimal score = BigDecimal.valueOf(3.3);
+		breakpoint.setScore(score);
 		String grade = random();
 		breakpoint.setGrade(grade);
 		Integer bestToLowest = Integer.valueOf(3);
@@ -92,7 +92,7 @@ public class BreakpointDAOTest extends OlatTestCase {
 		breakpoint = sut.load(gradeScale).get(0);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(breakpoint.getValue()).isEqualByComparingTo(value);
+		softly.assertThat(breakpoint.getScore()).isEqualByComparingTo(score);
 		softly.assertThat(breakpoint.getGrade()).isEqualTo(grade);
 		softly.assertThat(breakpoint.getBestToLowest()).isEqualTo(bestToLowest);
 		softly.assertAll();

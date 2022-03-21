@@ -1649,7 +1649,7 @@ create table o_gr_breakpoint (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
-   g_value decimal(65,30),
+   g_score decimal(65,30),
    g_grade varchar(50),
    g_best_to_lowest int8,
    fk_grade_scale int8 not null,

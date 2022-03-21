@@ -31,9 +31,9 @@ public interface Breakpoint {
 
 	public Long getKey();
 
-	public BigDecimal getValue();
+	public BigDecimal getScore();
 
-	public void setValue(BigDecimal value);
+	public void setScore(BigDecimal score);
 
 	public String getGrade();
 

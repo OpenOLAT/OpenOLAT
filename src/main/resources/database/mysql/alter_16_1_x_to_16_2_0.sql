@@ -112,7 +112,7 @@ create table o_gr_breakpoint (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
-   g_value decimal(65,30),
+   g_score decimal(65,30),
    g_grade varchar(50),
    g_best_to_lowest integer,
    fk_grade_scale bigint not null,

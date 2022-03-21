@@ -472,7 +472,7 @@ public class GradeCalculatorTest {
 		List<Breakpoint> breakpoints = new ArrayList<>(1);
 		BreakpointWrapper breakpoint = new BreakpointWrapper();
 		breakpoint.setGrade("4");
-		breakpoint.setValue(new BigDecimal(4));
+		breakpoint.setScore(new BigDecimal(4));
 		breakpoints.add(breakpoint);
 		List<GradeScoreRange> ranges = createNumericalRanges(1, 6, NumericResolution.whole, Rounding.nearest, null, 1, 6, breakpoints)
 				.stream().collect(Collectors.toList());
@@ -510,7 +510,7 @@ public class GradeCalculatorTest {
 		List<Breakpoint> breakpoints = new ArrayList<>(1);
 		BreakpointWrapper breakpoint = new BreakpointWrapper();
 		breakpoint.setGrade("4");
-		breakpoint.setValue(new BigDecimal(20));
+		breakpoint.setScore(new BigDecimal(20));
 		breakpoints.add(breakpoint);
 		List<GradeScoreRange> ranges = createNumericalRanges(6, 1, NumericResolution.whole, Rounding.nearest, null, 0, 80, breakpoints)
 				.stream().collect(Collectors.toList());
@@ -548,11 +548,11 @@ public class GradeCalculatorTest {
 		List<Breakpoint> breakpoints = new ArrayList<>(1);
 		BreakpointWrapper breakpoint = new BreakpointWrapper();
 		breakpoint.setGrade("4");
-		breakpoint.setValue(new BigDecimal(100));
+		breakpoint.setScore(new BigDecimal(100));
 		breakpoints.add(breakpoint);
 		breakpoint = new BreakpointWrapper();
 		breakpoint.setGrade("8");
-		breakpoint.setValue(new BigDecimal(20));
+		breakpoint.setScore(new BigDecimal(20));
 		breakpoints.add(breakpoint);
 		List<GradeScoreRange> ranges = createNumericalRanges(10, 1, NumericResolution.whole, Rounding.nearest, null, 0, 190, breakpoints)
 				.stream().collect(Collectors.toList());
@@ -606,7 +606,7 @@ public class GradeCalculatorTest {
 		List<Breakpoint> breakpoints = new ArrayList<>(1);
 		BreakpointWrapper breakpoint = new BreakpointWrapper();
 		breakpoint.setGrade("3");
-		breakpoint.setValue(new BigDecimal(20));
+		breakpoint.setScore(new BigDecimal(20));
 		breakpoints.add(breakpoint);
 		List<GradeScoreRange> ranges = createNumericalRanges(1, 6, NumericResolution.whole, Rounding.nearest, null, 0, 80, breakpoints)
 				.stream().collect(Collectors.toList());
@@ -668,15 +668,15 @@ public class GradeCalculatorTest {
 		List<Breakpoint> breakpoints = new ArrayList<>(3);
 		BreakpointImpl breakpoint1 = new BreakpointImpl();
 		breakpoint1.setBestToLowest(Integer.valueOf(1));
-		breakpoint1.setValue(new BigDecimal(8));
+		breakpoint1.setScore(new BigDecimal(8));
 		breakpoints.add(breakpoint1);
 		BreakpointImpl breakpoint2 = new BreakpointImpl();
 		breakpoint2.setBestToLowest(Integer.valueOf(2));
-		breakpoint2.setValue(new BigDecimal(5));
+		breakpoint2.setScore(new BigDecimal(5));
 		breakpoints.add(breakpoint2);
 		BreakpointImpl breakpoint3 = new BreakpointImpl();
 		breakpoint3.setBestToLowest(Integer.valueOf(3));
-		breakpoint3.setValue(new BigDecimal(1));
+		breakpoint3.setScore(new BigDecimal(1));
 		breakpoints.add(breakpoint3);
 		BigDecimal minScore = new BigDecimal(1);
 		BigDecimal maxScore = new BigDecimal(10);

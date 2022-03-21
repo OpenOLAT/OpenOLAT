@@ -227,7 +227,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 				? Collections.emptyList()
 				: gradeService.getBreakpoints(gradeScale).stream()
 						.filter(b -> b.getGrade() != null)
-						.sorted((b1, b2) -> b2.getValue().compareTo(b1.getValue()))
+						.sorted((b1, b2) -> b2.getScore().compareTo(b1.getScore()))
 						.collect(Collectors.toList());
 		
 		SelectionValues breakpointSV = new SelectionValues();
@@ -256,7 +256,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			Breakpoint breakpoint = breakpoints.get(0);
 			if (breakpoint1GradeEl.containsKey(breakpoint.getGrade())) {
 				breakpoint1GradeEl.select(breakpoint.getGrade(), true);
-				breakpoint1ScoreEl.setValue(THREE_DIGITS.format(breakpoint.getValue()));
+				breakpoint1ScoreEl.setValue(THREE_DIGITS.format(breakpoint.getScore()));
 			}
 		}
 		if (!breakpoint1GradeEl.isOneSelected() && breakpoint1GradeEl.getKeys().length > 0) {
@@ -275,7 +275,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			Breakpoint breakpoint = breakpoints.get(1);
 			if (breakpoint2GradeEl.containsKey(breakpoint.getGrade())) {
 				breakpoint2GradeEl.select(breakpoint.getGrade(), true);
-				breakpoint2ScoreEl.setValue(THREE_DIGITS.format(breakpoint.getValue()));
+				breakpoint2ScoreEl.setValue(THREE_DIGITS.format(breakpoint.getScore()));
 			}
 		}
 		if (!breakpoint2GradeEl.isOneSelected() && breakpoint2GradeEl.getKeys().length > 0) {
@@ -294,7 +294,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			Breakpoint breakpoint = breakpoints.get(2);
 			if (breakpoint3GradeEl.containsKey(breakpoint.getGrade())) {
 				breakpoint3GradeEl.select(breakpoint.getGrade(), true);
-				breakpoint3ScoreEl.setValue(THREE_DIGITS.format(breakpoint.getValue()));
+				breakpoint3ScoreEl.setValue(THREE_DIGITS.format(breakpoint.getScore()));
 			}
 		}
 		if (!breakpoint3GradeEl.isOneSelected() && breakpoint3GradeEl.getKeys().length > 0) {
@@ -543,8 +543,8 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			List<Breakpoint> breakpoints = new ArrayList<>(numBreakpoints);
 			if (numBreakpoints >= 1) {
 				BreakpointWrapper breakpoint = new BreakpointWrapper();
-				BigDecimal value = new BigDecimal(breakpoint1ScoreEl.getValue());
-				breakpoint.setValue(value);
+				BigDecimal score = new BigDecimal(breakpoint1ScoreEl.getValue());
+				breakpoint.setScore(score);
 				String grade = breakpoint1GradeEl.getSelectedKey();
 				breakpoint.setGrade(grade);
 				breakpoints.add(breakpoint);
@@ -552,7 +552,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			if (numBreakpoints >= 2) {
 				BreakpointWrapper breakpoint = new BreakpointWrapper();
 				BigDecimal value = new BigDecimal(breakpoint2ScoreEl.getValue());
-				breakpoint.setValue(value);
+				breakpoint.setScore(value);
 				String grade = breakpoint2GradeEl.getSelectedKey();
 				breakpoint.setGrade(grade);
 				breakpoints.add(breakpoint);
@@ -560,7 +560,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			if (numBreakpoints >= 3) {
 				BreakpointWrapper breakpoint = new BreakpointWrapper();
 				BigDecimal value = new BigDecimal(breakpoint3ScoreEl.getValue());
-				breakpoint.setValue(value);
+				breakpoint.setScore(value);
 				String grade = breakpoint3GradeEl.getSelectedKey();
 				breakpoint.setGrade(grade);
 				breakpoints.add(breakpoint);
@@ -572,7 +572,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			for (PerformanceClassBreakpointRow row : rows) {
 				BreakpointWrapper breakpoint = new BreakpointWrapper();
 				BigDecimal value = new BigDecimal(row.getLowerBoundEl().getValue());
-				breakpoint.setValue(value);
+				breakpoint.setScore(value);
 				Integer bestToLowest = Integer.valueOf(row.getPerformanceClass().getBestToLowest());
 				breakpoint.setBestToLowest(bestToLowest);
 				breakpoints.add(breakpoint);
@@ -728,7 +728,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 				lowerBound = new BigDecimal(currentRow.getLowerBoundEl().getValue());
 			}
 			if (lowerBound == null && !positionToBreakpoint.isEmpty() && breakpoint != null) {
-				lowerBound = breakpoint.getValue();
+				lowerBound = breakpoint.getScore();
 			}
 			if (lowerBound == null && positionToLowerBound != null && positionToLowerBound.containsKey(performanceClass.getBestToLowest())) {
 				lowerBound = positionToLowerBound.get(performanceClass.getBestToLowest());

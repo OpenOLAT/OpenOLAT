@@ -90,10 +90,10 @@ public class GradeServiceTest extends OlatTestCase {
 		
 		// Create 2 breakpoints
 		BreakpointWrapper breakpoint11 = new BreakpointWrapper();
-		breakpoint11.setValue(new BigDecimal(11));
+		breakpoint11.setScore(new BigDecimal(11));
 		breakpoint11.setGrade("g11");
 		BreakpointWrapper breakpoint12 = new BreakpointWrapper();
-		breakpoint12.setValue(new BigDecimal(12));
+		breakpoint12.setScore(new BigDecimal(12));
 		breakpoint12.setGrade("g12");
 		dbInstance.commitAndCloseSession();
 		
@@ -103,16 +103,16 @@ public class GradeServiceTest extends OlatTestCase {
 		Map<String, Breakpoint> positionToBreakpoint = sut.getBreakpoints(gradeScale).stream()
 				.collect(Collectors.toMap(Breakpoint::getGrade, Function.identity()));
 		assertThat(positionToBreakpoint).hasSize(2);
-		assertThat(positionToBreakpoint.get("g11").getValue()).isEqualByComparingTo(new BigDecimal(11));
-		assertThat(positionToBreakpoint.get("g12").getValue()).isEqualByComparingTo(new BigDecimal(12));
+		assertThat(positionToBreakpoint.get("g11").getScore()).isEqualByComparingTo(new BigDecimal(11));
+		assertThat(positionToBreakpoint.get("g12").getScore()).isEqualByComparingTo(new BigDecimal(12));
 		
 		
 		// Create a new breakpoint, updeate a breakpoint and delete a breakpoint
 		BreakpointWrapper breakpoint21 = new BreakpointWrapper();
-		breakpoint21.setValue(new BigDecimal(11));
+		breakpoint21.setScore(new BigDecimal(11));
 		breakpoint21.setGrade("g21");
 		BreakpointWrapper breakpoint23 = new BreakpointWrapper();
-		breakpoint23.setValue(new BigDecimal(23));
+		breakpoint23.setScore(new BigDecimal(23));
 		breakpoint23.setGrade("g23");
 		
 		sut.updateOrCreateBreakpoints(gradeScale, List.of(breakpoint21, breakpoint23));
@@ -121,8 +121,8 @@ public class GradeServiceTest extends OlatTestCase {
 		positionToBreakpoint = sut.getBreakpoints(gradeScale).stream()
 				.collect(Collectors.toMap(Breakpoint::getGrade, Function.identity()));
 		assertThat(positionToBreakpoint).hasSize(2);
-		assertThat(positionToBreakpoint.get("g21").getValue()).isEqualByComparingTo(new BigDecimal(11));
-		assertThat(positionToBreakpoint.get("g23").getValue()).isEqualByComparingTo(new BigDecimal(23));
+		assertThat(positionToBreakpoint.get("g21").getScore()).isEqualByComparingTo(new BigDecimal(11));
+		assertThat(positionToBreakpoint.get("g23").getScore()).isEqualByComparingTo(new BigDecimal(23));
 	}
 
 	@Test
@@ -137,10 +137,10 @@ public class GradeServiceTest extends OlatTestCase {
 		// Create 2 breakpoints
 		BreakpointWrapper breakpoint11 = new BreakpointWrapper();
 		breakpoint11.setBestToLowest(Integer.valueOf(1));
-		breakpoint11.setValue(new BigDecimal(11));
+		breakpoint11.setScore(new BigDecimal(11));
 		BreakpointWrapper breakpoint12 = new BreakpointWrapper();
 		breakpoint12.setBestToLowest(Integer.valueOf(2));
-		breakpoint12.setValue(new BigDecimal(12));
+		breakpoint12.setScore(new BigDecimal(12));
 		dbInstance.commitAndCloseSession();
 		
 		sut.updateOrCreateBreakpoints(gradeScale, List.of(breakpoint11, breakpoint12));
@@ -149,16 +149,16 @@ public class GradeServiceTest extends OlatTestCase {
 		Map<Integer, Breakpoint> positionToBreakpoint = sut.getBreakpoints(gradeScale).stream()
 				.collect(Collectors.toMap(Breakpoint::getBestToLowest, Function.identity()));
 		assertThat(positionToBreakpoint).hasSize(2);
-		assertThat(positionToBreakpoint.get(Integer.valueOf(1)).getValue()).isEqualByComparingTo(new BigDecimal(11));
-		assertThat(positionToBreakpoint.get(Integer.valueOf(2)).getValue()).isEqualByComparingTo(new BigDecimal(12));
+		assertThat(positionToBreakpoint.get(Integer.valueOf(1)).getScore()).isEqualByComparingTo(new BigDecimal(11));
+		assertThat(positionToBreakpoint.get(Integer.valueOf(2)).getScore()).isEqualByComparingTo(new BigDecimal(12));
 		
 		
 		// Create a new breakpoint, updeate a breakpoint and delete a breakpoint
 		BreakpointWrapper breakpoint21 = new BreakpointWrapper();
 		breakpoint21.setBestToLowest(Integer.valueOf(1));
-		breakpoint21.setValue(new BigDecimal(11));
+		breakpoint21.setScore(new BigDecimal(11));
 		BreakpointWrapper breakpoint23 = new BreakpointWrapper();
-		breakpoint23.setValue(new BigDecimal(23));
+		breakpoint23.setScore(new BigDecimal(23));
 		breakpoint23.setBestToLowest(Integer.valueOf(3));
 		
 		sut.updateOrCreateBreakpoints(gradeScale, List.of(breakpoint21, breakpoint23));
@@ -167,8 +167,8 @@ public class GradeServiceTest extends OlatTestCase {
 		positionToBreakpoint = sut.getBreakpoints(gradeScale).stream()
 				.collect(Collectors.toMap(Breakpoint::getBestToLowest, Function.identity()));
 		assertThat(positionToBreakpoint).hasSize(2);
-		assertThat(positionToBreakpoint.get(Integer.valueOf(1)).getValue()).isEqualByComparingTo(new BigDecimal(11));
-		assertThat(positionToBreakpoint.get(Integer.valueOf(3)).getValue()).isEqualByComparingTo(new BigDecimal(23));
+		assertThat(positionToBreakpoint.get(Integer.valueOf(1)).getScore()).isEqualByComparingTo(new BigDecimal(11));
+		assertThat(positionToBreakpoint.get(Integer.valueOf(3)).getScore()).isEqualByComparingTo(new BigDecimal(23));
 	}
 
 }

@@ -56,7 +56,7 @@ public class GradeCalculator {
 			return createNumericalRanges(lowestGrade, bestGrade, resolution, rounding, cutValue, minScore, maxScore);
 		}
 		
-		breakpoints.sort((b1, b2) -> b2.getValue().compareTo(b1.getValue()));
+		breakpoints.sort((b1, b2) -> b2.getScore().compareTo(b1.getScore()));
 		
 		NavigableSet<GradeScoreRange> ranges = null;
 		int bestToLowestOffset = 0;
@@ -65,7 +65,7 @@ public class GradeCalculator {
 		for (int i = 0; i < breakpoints.size(); i++) {
 			Breakpoint breakpoint = breakpoints.get(i);
 			BigDecimal pLowestGrade =  new BigDecimal(breakpoint.getGrade());
-			BigDecimal pMinScore = breakpoint.getValue();
+			BigDecimal pMinScore = breakpoint.getScore();
 			
 			NavigableSet<GradeScoreRange> nextRanges = createNumericalRanges(pLowestGrade, pBestGrade, resolution, rounding, cutValue, pMinScore, pMaxScore, bestToLowestOffset);
 			if (ranges == null) {
@@ -188,7 +188,7 @@ public class GradeCalculator {
 			List<Breakpoint> breakpoints, BigDecimal minScore, BigDecimal maxScore, Translator translator) {
 		Collections.sort(performanceClasses);
 		Map<Integer, BigDecimal> positionToLowerBound = breakpoints.stream()
-				.collect(Collectors.toMap(Breakpoint::getBestToLowest, Breakpoint::getValue));
+				.collect(Collectors.toMap(Breakpoint::getBestToLowest, Breakpoint::getScore));
 		
 		TreeSet<GradeScoreRange> ranges  = new TreeSet<>();
 		

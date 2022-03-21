@@ -208,12 +208,12 @@ public class GradeServiceImpl implements GradeService {
 			if (currentBreakpoint == null) {
 				currentBreakpoint = breakpointDAO.create(gradeScale);
 			}
-			if ((breakpoint.getValue() != null && currentBreakpoint.getValue() == null)
-					|| (breakpoint.getValue() == null && currentBreakpoint.getValue() != null)
-					|| breakpoint.getValue().compareTo(currentBreakpoint.getValue()) != 0
+			if ((breakpoint.getScore() != null && currentBreakpoint.getScore() == null)
+					|| (breakpoint.getScore() == null && currentBreakpoint.getScore() != null)
+					|| breakpoint.getScore().compareTo(currentBreakpoint.getScore()) != 0
 					|| !Objects.equals(breakpoint.getGrade(), currentBreakpoint.getGrade())
 					|| !Objects.equals(breakpoint.getBestToLowest(), currentBreakpoint.getBestToLowest())) {
-				currentBreakpoint.setValue(breakpoint.getValue());
+				currentBreakpoint.setScore(breakpoint.getScore());
 				currentBreakpoint.setGrade(breakpoint.getGrade());
 				currentBreakpoint.setBestToLowest(breakpoint.getBestToLowest());
 				breakpointDAO.save(currentBreakpoint);

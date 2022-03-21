@@ -32,7 +32,7 @@ import org.olat.modules.grade.GradeScale;
  */
 public class BreakpointWrapper implements Breakpoint {
 	
-	private BigDecimal value;
+	private BigDecimal score;
 	private String grade;
 	private Integer bestToLowest;
 
@@ -42,13 +42,13 @@ public class BreakpointWrapper implements Breakpoint {
 	}
 	
 	@Override
-	public BigDecimal getValue() {
-		return value;
+	public BigDecimal getScore() {
+		return score;
 	}
 	
 	@Override
-	public void setValue(BigDecimal value) {
-		this.value = value;
+	public void setScore(BigDecimal score) {
+		this.score = score;
 	}
 	
 	@Override
