@@ -532,6 +532,10 @@ public class CourseFactory {
 			targetCourse.setEditorTreeModel((CourseEditorTreeModel) XStreamHelper.xstreamClone(sourceCourse.getEditorTreeModel()));
 			targetCourse.saveEditorTreeModel();
 			
+			// create DB entries for course nodes
+			CourseNodeService courseNodeService = CoreSpringFactory.getImpl(CourseNodeService.class);
+			courseNodeService.syncCourseElements(targetCourse);
+			
 			// copy course style folder
 			VFSContainer sourceCourseStyleCont = VFSManager.olatRootContainer(
 					sourceCourse.getCourseEnvironment().getCourseBaseContainer().getRelPath() + "/" + CourseStyleService.FOLDER_ROOT);
