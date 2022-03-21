@@ -68,7 +68,9 @@ function o_mathjax(fct_success) {
 				processHtmlClass: 'tex2jax_process',
 				renderActions: {
 					findScripts: [11, function (doc) {
-						for (var node of document.querySelectorAll('.math')) {
+						var nodes = document.querySelectorAll('.math');
+						for (var i=0; i<nodes.length; i++) {
+							var node = nodes[i];
 							var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));
 							var text = document.createTextNode('');
 							node.parentNode.replaceChild(text, node);

@@ -646,7 +646,9 @@ public class IFrameDeliveryMapper implements Mapper {
 			append("  enableMenu: false,\n");
 			append("  renderActions: {\n");
 			append("   findScripts: [11, function (doc) {\n");
-			append("    for (var node of document.querySelectorAll('.math')) {\n");
+			append("    var nodes = document.querySelectorAll('.math');\n");
+			append("    for (var i=0; i<nodes.length; i++) {\n");
+			append("     var node = nodes[i];\n");
 			append("     var math = new doc.options.MathItem(node.textContent, doc.inputJax[0], (node.tagName !== 'SPAN'));\n");
 			append("     var text = document.createTextNode('');\n");
 			append("     node.parentNode.replaceChild(text, node);\n");
