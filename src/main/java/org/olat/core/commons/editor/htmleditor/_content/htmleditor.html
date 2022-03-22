@@ -14,7 +14,7 @@
 #if ($r.available("rtfElement"))
 	<script>
 	function b_resizetofit_htmleditor() {
-		var mceEditEl = jQuery('.mce-edit-area');
+		var mceEditEl = jQuery('.tox-edit-area');
 		if (mceEditEl.lengh == 0) {
 			return;
 		}
@@ -23,7 +23,7 @@
 		editorWrapperEl = jQuery(mceEditEl[0]);
 		availableHeight -= editorWrapperEl.offset().top;
 		// minus the mce status bar
-		var mceStatusEl = jQuery('.mce-statusbar');
+		var mceStatusEl = jQuery('.tox-statusbar');
 		if (mceStatusEl.lengh == 0) {
 			return;
 		}

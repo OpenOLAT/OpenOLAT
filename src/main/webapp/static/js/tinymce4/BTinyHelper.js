@@ -24,16 +24,16 @@ var BTinyHelper = {
 	// Current media browser callback field
 	currentField : null,
 	currentFieldId: null,
+	currentCallback: null,
 	
 	// Open link browser in new window. Only one browser window is supported at any time
-	openLinkBrowser : function (formitemId, field_name, url, type, win) {
-		if(win != null) {
-			BTinyHelper.currentField = win.document.forms[0].elements[field_name];	
-			BTinyHelper.currentFieldId = field_name;
-			BTinyHelper.currentWindow = win;
-			var editor = tinymce.activeEditor;
-			var ffxhrevent = editor.settings.ffxhrevent;
-			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, 'browser', type);
+	openLinkBrowser : function (editorId, callback, value, meta) {
+		if(callback != null) {
+			BTinyHelper.currentField = meta.fieldname;	
+			BTinyHelper.currentFieldId = meta.fieldname;
+			BTinyHelper.currentCallback = callback;
+			var ffxhrevent = tinymce.activeEditor.settings.ffxhrevent;
+			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, 'browser', meta.filetype);
 		}
 	},
 
@@ -41,9 +41,8 @@ var BTinyHelper = {
 	writeLinkSelectionToTiny : function (link, width, height) {
 		if (link != "") {
 			try {
-				jQuery('#' + BTinyHelper.currentFieldId).val(link);
 				var infos = { "link" : link, "width": width, "height": height };
-				BTinyHelper.currentWindow.tinymce.activeEditor.execCommand('updateOOMovie', false, infos);
+				BTinyHelper.currentCallback(link, infos);
 			} catch(e) {
 				if(window.console) console.log(e);
 			}
@@ -55,9 +54,8 @@ var BTinyHelper = {
 	// - relative-absolute links: media that belong to the framework from the static dir
 	// - absolute links: media an links to external sites
 	linkConverter : function (url, node, on_save, name) {
-		var orig = url + '';
 		var editor = tinymce.activeEditor;
-		if(editor === undefined) {
+		if(editor === undefined || editor == null) {
 			//do nothing
 		} else {
 			var settings = editor.settings;

@@ -166,6 +166,7 @@
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
+										<exclude>**/tinymce4/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -206,6 +207,7 @@
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
+										<exclude>**/tinymce4/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -264,55 +266,6 @@
 											</includes>
 										</aggregation>
 										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatmatheditor/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatmatheditor/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatqti/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatqti/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatmovieviewer/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatmovieviewer/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatcharcount/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatcharcount/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatsmileys/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatsmileys/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/quotespliter/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/quotespliter/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
-											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatedusharing/plugin.min.js</output>
-											<removeIncluded>false</removeIncluded>
-											<includes>
-												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatedusharing/plugin.min.js</include>
-											</includes>
-										</aggregation>
-										<aggregation>
 											<output>${basedir}/src/main/webapp/static/js/jquery/openolat/jquery.statistics.chart.min.js</output>
 											<removeIncluded>false</removeIncluded>
 											<includes>
@@ -339,6 +292,7 @@
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
+										<exclude>**/tinymce4/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -383,6 +337,7 @@
 										<exclude>**/openolat/jquery.contenteditor.v2.js</exclude>
 										<exclude>**/interactjs/*</exclude>
 										<exclude>**/scorm/*</exclude>
+										<exclude>**/tinymce4/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>

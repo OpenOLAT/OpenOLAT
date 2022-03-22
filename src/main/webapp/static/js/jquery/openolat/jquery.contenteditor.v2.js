@@ -147,10 +147,9 @@
 					var jTarget = jQuery(e.target);
 					var excludedEls = jTarget.closest(".o_popover").length > 0
 						|| jTarget.closest(".o_page_add_in_container").length > 0
-						|| jTarget.closest(".mce-menu").length > 0
-						|| jTarget.closest(".mce-window").length > 0
-						|| jTarget.closest(".mce-container").length > 0
-						|| jTarget.closest(".mce-widget").length > 0
+						|| jTarget.closest(".tox-tinymce").length > 0
+						|| jTarget.closest(".tox-dialog").length > 0
+						|| jTarget.closest(".mce-content-body").length > 0
 						|| jTarget.closest(".o_layered_panel .popover").length > 0
 						|| jTarget.closest(".o_layered_panel .modal-dialog").length > 0
 						|| jTarget.closest(".o_evaluation_editor_form").length > 0
@@ -161,7 +160,6 @@
 						var edited = jQuery(e.target).closest(".o_page_fragment_edit").length > 0
 							|| jQuery(e.target).closest(".o_page_side_options").length > 0;
 						var parts = jQuery(e.target).closest(".o_page_part");
-						
 						if(parts.length == 1) {
 							var element = jQuery(parts.get(0));
 							var elementUrl = element.data("oo-content-editor-url");

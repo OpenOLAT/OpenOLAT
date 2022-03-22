@@ -48,14 +48,14 @@ public class TinyPage {
 	}
 	
 	public TinyPage uploadImage(File image) {
-		By tinyImageButtonBy = By.xpath("//div[@class='o_richtext_mce']//div[contains(@class,'mce-container-body')]//button[i[contains(@class,'mce-i-image')]]");
+		By tinyImageButtonBy = By.xpath("//div[@class='o_richtext_mce']//div[contains(@class,'tox-editor-container')]//button[contains(@title,'Bild')]");
 		OOGraphene.waitElement(tinyImageButtonBy, browser);
 		browser.findElement(tinyImageButtonBy).click();
 		
-		By windowBy = By.cssSelector("div.mce-window");
+		By windowBy = By.cssSelector("div.tox-dialog");
 		OOGraphene.waitElement(windowBy, browser);
 		OOGraphene.waitingALittleLonger();// wait calculation of position...
-		By tinyUploadButtonBy = By.xpath("//div[contains(@class,'mce-window')]//button[i[contains(@class,'mce-i-browse')]]");
+		By tinyUploadButtonBy = By.xpath("//div[contains(@class,'tox-dialog')]//button[contains(@class,'tox-browse-url')]");
 		OOGraphene.waitElement(tinyUploadButtonBy, browser);
 		browser.findElement(tinyUploadButtonBy).click();
 		OOGraphene.waitTopModalDialog(browser);
@@ -78,7 +78,7 @@ public class TinyPage {
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitTopModalDialogDisappears(browser);
 		
-		By tinyOkButtonBy = By.cssSelector("div.mce-foot div.mce-primary button");
+		By tinyOkButtonBy = By.xpath("//div[contains(@class,'tox-dialog')]//button[@class='tox-button']");
 		browser.findElement(tinyOkButtonBy).click();
 		waitTinyDialogDisappears();
 		OOGraphene.waitingALittleLonger();// let some time to Tiny

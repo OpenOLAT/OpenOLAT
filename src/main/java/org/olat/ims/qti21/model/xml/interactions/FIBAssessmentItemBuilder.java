@@ -207,7 +207,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 						TextEntry textEntry = new TextEntry(textInteraction);
 						extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, countAlternatives, mappedScore);
 						String marker = "responseIdentifier=\"" + interaction.getResponseIdentifier().toString() + "\"";
-						question = question.replace(marker, marker + " openolatType=\"string\"");
+						question = question.replace(marker, marker + " data-qti-gap-type=\"string\"");
 						if(StringHelper.containsNonWhitespace(textEntry.getSolution())) {
 							question = question.replace(marker, marker + " data-qti-solution=\"" + escapeForDataQtiSolution(textEntry.getSolution()) + "\"");
 						}
@@ -219,7 +219,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 						extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, countAlternatives, mappedScore);
 						
 						String marker = "responseIdentifier=\"" + interaction.getResponseIdentifier().toString() + "\"";
-						question = question.replace(marker, marker + " openolatType=\"float\"");
+						question = question.replace(marker, marker + " data-qti-gap-type=\"float\"");
 						if(numericalEntry.getSolution() != null) {
 							question = question.replace(marker, marker + " data-qti-solution=\"" + Double.toString(numericalEntry.getSolution()) + "\"");
 						}

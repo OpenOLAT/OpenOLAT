@@ -444,7 +444,7 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	private static final void waitTinymce(String containerCssSelector, WebDriver browser) {
-		waitElement(By.cssSelector(containerCssSelector + " div.o_richtext_mce div.mce-edit-area>iframe"), browser);
+		waitElement(By.cssSelector(containerCssSelector + " div.o_richtext_mce div.tox-edit-area>iframe"), browser);
 	}
 
 	/**

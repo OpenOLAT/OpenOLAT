@@ -77,9 +77,8 @@ import org.olat.modules.edusharing.EdusharingProvider;
  */
 public class RichTextConfiguration implements Disposable {
 	private static final Logger log = Tracing.createLoggerFor(RichTextConfiguration.class);
-	private static final String MODE = "mode";
-	private static final String MODE_VALUE_EXACT = "exact";
-	private static final String ELEMENTS = "elements";
+
+	private static final String SELECTOR = "selector";
 
 	// Doctype and language
 	private static final String LANGUAGE = "language";
@@ -121,8 +120,8 @@ public class RichTextConfiguration implements Disposable {
 	private static final String DOCUMENT_BASE_URL = "document_base_url";
 	private static final String PASTE_DATA_IMAGES = "paste_data_images";
 	private static final String AUTORESIZE_BOTTOM_MARGIN = "autoresize_bottom_margin";
-	private static final String AUTORESIZE_MAX_HEIGHT = "autoresize_max_height";
-	private static final String AUTORESIZE_MIN_HEIGHT = "autoresize_min_height";
+	private static final String AUTORESIZE_MAX_HEIGHT = "max_height";
+	private static final String AUTORESIZE_MIN_HEIGHT = "min_height";
 
 	//
 	// Generic boolean true / false values
@@ -132,7 +131,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String ONCHANGE_CALLBACK = "onchange_callback";
 	private static final String ONCHANGE_CALLBACK_VALUE_TEXT_AREA_ON_CHANGE = "BTinyHelper.triggerOnChangeOnFormElement";
 
-	private static final String FILE_BROWSER_CALLBACK = "file_browser_callback";
+	private static final String FILE_BROWSER_CALLBACK = "file_picker_callback";
 	private static final String FILE_BROWSER_CALLBACK_VALUE_LINK_BROWSER = "BTinyHelper.openLinkBrowser";
 	private static final String URLCONVERTER_CALLBACK = "urlconverter_callback";
 	private static final String URLCONVERTER_CALLBACK_VALUE_BRASATO_URL_CONVERTER = "BTinyHelper.linkConverter";
@@ -194,9 +193,7 @@ public class RichTextConfiguration implements Disposable {
 	public RichTextConfiguration(String domID, Locale locale) {
 		this.domID = domID;
 		this.locale = locale;
-		// use exact mode that only applies to this DOM element
-		setQuotedConfigValue(MODE, MODE_VALUE_EXACT);
-		setQuotedConfigValue(ELEMENTS, domID);
+		setQuotedConfigValue(SELECTOR, "#".concat(domID));
 		// set the on change handler to delegate to flexi element on change handler
 		setQuotedConfigValue(ONCHANGE_CALLBACK, ONCHANGE_CALLBACK_VALUE_TEXT_AREA_ON_CHANGE);
 		// set custom url converter to deal with framework and content urls properly
@@ -903,8 +900,9 @@ public class RichTextConfiguration implements Disposable {
 	}
 
 	public void enableEdusharing(Identity identity, EdusharingProvider provider) {
-		if (identity == null || provider == null)
+		if (identity == null || provider == null) {
 			return;
+		}
 
 		EdusharingModule edusharingModule = CoreSpringFactory.getImpl(EdusharingModule.class);
 		if (edusharingModule.isEnabled()) {
@@ -1094,6 +1092,11 @@ public class RichTextConfiguration implements Disposable {
 		// new with menu
 		StringOutput tinyMenuSb = new StringOutput();
 		tinyMenuSb
+			//new tinyMCE 5
+		    .append("theme: 'silver',\n")
+			.append("removed_menuitems: 'newdocument',\n")
+			.append("elementpath: false,\n")
+			// classic
 			.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
 			.append("image_advtab:true,\n")
 			.append("image_caption:").append(figCaption).append(",\n")

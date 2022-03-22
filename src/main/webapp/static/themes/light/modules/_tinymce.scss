@@ -2,6 +2,8 @@
 	See https://www.tinymce.com/docs/advanced/boilerplate-content-css/
 */
 
+@use "sass:list";
+
 /* Image captions using the HTML5 figure element */
 figure.align-left {
     float: left;
@@ -40,16 +42,118 @@ img.align-right {
 }
 
 /* Basic styles for Table of Contents plugin (toc) */
-.mce-toc {
+.tox-toc {
     border: 1px solid gray;
 }
 
-.mce-toc h2 {
+.tox-toc h2 {
     margin: 4px;
 }
 
-.mce-toc li {
+.tox-toc li {
     list-style-type: none;
+}
+
+// override the label in _forms.scss of bootstrap
+label.mce-label {
+  	display: inline;
+	max-width: 150px;
+	margin-bottom: 0;
+	font-weight: normal;
+}
+
+.o_richtext_mce_without_path {
+	.tox-statusbar {
+		border: none;
+	}
+
+	.tox-statusbar__path {
+    	display: none !important;
+	}
+	
+	.tox-menubtn.tox-fixed-width span {
+		width: auto;
+	}
+}
+
+.o_richtext_mce>.o_richtext_mce_modes {
+	text-align: right;
+	padding-right: $input-border-radius;
+	a {
+		border-bottom: none;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+}
+
+i.mce-ico.mce-i-help, i.mce-ico.mce-i-edit {
+	display: inline-block;
+	font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
+	font-size: inherit; // can't have font-size inherit on line above, so need to override
+	text-rendering: auto; // optimizelegibility throws things off #1094
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	transform: translate(0, 0); // ensures no half-pixel rendering in firefox
+}
+
+i.mce-ico.mce-i-edit:before {
+	content: $fa-var-edit;
+}
+
+i.mce-ico.mce-i-help {
+	width: 9px;
+	height: 9px;
+	padding-top:1px;
+}
+i.mce-ico.mce-i-help:before {
+	content: $fa-var-question-circle;
+	color: white;
+}
+
+.mce-tabs span.o_chelp_wrapper {
+	float:right;
+	margin:5px;
+}
+
+.tox .tox-statusbar {
+
+	&.danger .o_char_count:after {
+		color: $brand-danger;
+		content: $fa-var-exclamation-circle;
+	}
+
+	&.danger {
+		background-color: $alert-danger-bg;
+	}
+
+	.o_char_count:after {
+		display: inline-block;
+		font: normal normal normal list.slash($fa-font-size-base, 1) FontAwesome; // shortening font declaration
+		font-size: inherit; // can't have font-size inherit on line above, so need to override
+		text-rendering: auto; // optimizelegibility throws things off #1094
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		transform: translate(0, 0); // ensures no half-pixel rendering in firefox
+		content: $fa-var-question-circle;
+	}
+}
+
+.tox-textbox.danger {
+	border-color: darken($alert-danger-bg, 25%);
+	background-color: $alert-danger-bg;
+}
+
+body .modal #o_link_chooser .container-fluid {
+	@include container-fixed;
+}
+
+// Show ok / cancel button on very small devices
+@media (max-width: 470px) {
+	.mce-foot {
+		.mce-container-body.mce-abs-layout {
+			left: -337px;
+		}
+	}
 }
 
 
@@ -102,4 +206,6 @@ figure.image {
 		font-style: italic;
 	}
 }
+
+
 

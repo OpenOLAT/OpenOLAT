@@ -129,7 +129,7 @@ public class FIBEditorController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				String solution = textEntrySettingsCtrl.getSolution();
 				String responseIdentifier = textEntrySettingsCtrl.getResponseIdentifier().toString();
-				feedbackToTextElement(responseIdentifier, solution);
+				feedbackToTextElement(responseIdentifier, "string", solution);
 			} else if(event == Event.CANCELLED_EVENT) {
 				cancelFeedbackToTextElement();
 			}
@@ -140,7 +140,7 @@ public class FIBEditorController extends FormBasicController {
 				Double val = numericalEntrySettingsCtrl.getSolution();
 				String solution = val == null ? "" : Double.toString(val);
 				String responseIdentifier = numericalEntrySettingsCtrl.getResponseIdentifier().toString();
-				feedbackToTextElement(responseIdentifier, solution);
+				feedbackToTextElement(responseIdentifier, "float", solution);
 			} else if(event == Event.CANCELLED_EVENT) {
 				cancelFeedbackToTextElement();
 			}
@@ -152,11 +152,12 @@ public class FIBEditorController extends FormBasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private void feedbackToTextElement(String responseIdentifier, String solution) {
+	private void feedbackToTextElement(String responseIdentifier, String gapType, String solution) {
 		try {
 			JSONObject jo = new JSONObject();
 			jo.put("responseIdentifier", responseIdentifier);
 			jo.put("data-qti-solution", solution);
+			jo.put("data-qti-gap-type", gapType);
 			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiUpdateTextEntry', false, " + jo.toString() + "); } catch(e){if(window.console) console.log(e) }");
 			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
 		} catch (JSONException e) {

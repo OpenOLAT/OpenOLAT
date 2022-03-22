@@ -53,7 +53,7 @@ public class QTI21HottextEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21HottextEditorPage addHottext() {
-		By hottextBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_hottext_text')]//button[i[contains(@class,'mce-i-hottext')]]");
+		By hottextBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_hottext_text')]//button[contains(@title,'Hottext')]");
 		browser.findElement(hottextBy).click();
 		return this;
 	}
@@ -65,7 +65,7 @@ public class QTI21HottextEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21HottextEditorPage check(int index) {
-		By frameBy = By.cssSelector("div.o_sel_assessment_item_hottext_text div.mce-edit-area iframe");
+		By frameBy = By.cssSelector("div.o_sel_assessment_item_hottext_text div.tox-edit-area iframe");
 		WebElement frameEl = browser.findElement(frameBy);
 		browser.switchTo().frame(frameEl);
 		
@@ -86,7 +86,7 @@ public class QTI21HottextEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @return Itself
 	 */
 	public QTI21HottextEditorPage uncheck(int index) {
-		By frameBy = By.cssSelector("div.o_sel_assessment_item_hottext_text div.mce-edit-area iframe");
+		By frameBy = By.cssSelector("div.o_sel_assessment_item_hottext_text div.tox-edit-area iframe");
 		WebElement frameEl = browser.findElement(frameBy);
 		browser.switchTo().frame(frameEl);
 		
