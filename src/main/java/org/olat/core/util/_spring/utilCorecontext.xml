@@ -51,6 +51,7 @@
 		<property name="mathJaxCdn" value="${mathjax.cdn}"/>
 		<property name="mathJaxConfig" value="${mathjax.config}"/>
 		<property name="mathJaxMarkers" value="${mathjax.markers}"/>
+		<property name="mathLiveCdn" value="${mathlive.cdn}"/>
 	</bean>
 
 	<bean id="org.olat.core.helpers.Settings" class="org.olat.core.helpers.Settings" depends-on="org.olat.core.util.WebappHelper">

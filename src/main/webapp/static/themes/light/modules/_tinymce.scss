@@ -208,4 +208,10 @@ figure.image {
 }
 
 
+/* MathLive z-index of keyboard over Tiny */
+.ML__keyboard {
+    --keyboard-zindex: 3400;
+}
+
+
 

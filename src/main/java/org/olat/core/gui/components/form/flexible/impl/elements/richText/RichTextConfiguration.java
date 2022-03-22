@@ -1054,7 +1054,7 @@ public class RichTextConfiguration implements Disposable {
 		return toolLinkTreeModel;
 	}
 
-	protected void appendConfigToTinyJSArray_4(StringOutput out, Translator translator) {
+	protected void appendConfigToTinyJSArray(StringOutput out, Translator translator) {
 		// Now add the quoted values
 		Map<String, String> copyValues = new HashMap<>(quotedConfigValues);
 

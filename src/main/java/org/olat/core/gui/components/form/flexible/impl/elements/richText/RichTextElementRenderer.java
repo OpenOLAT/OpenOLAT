@@ -98,7 +98,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			
 			switch(currentTextMode) {
 				case formatted:
-					renderTinyMCE_5(renderer, sb, domID, teC, ubu, source.getTranslator());
+					renderTinyMCE(renderer, sb, domID, teC, ubu, source.getTranslator());
 					break;
 				case multiLine:
 					renderMultiLine(sb, domID, teC);
@@ -190,14 +190,14 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append(FormJSHelper.getJSEnd());
 	}
 
-	private void renderTinyMCE_5(Renderer renderer, StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {
+	private void renderTinyMCE(Renderer renderer, StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {
 		RichTextElementImpl te = teC.getRichTextElementImpl();
 		te.setRenderingMode(TextMode.formatted);
 		RichTextConfiguration config = te.getEditorConfiguration();
 		List<String> onInit = config.getOnInit();
 
 		StringOutput configurations = new StringOutput();
-		config.appendConfigToTinyJSArray_4(configurations, translator);
+		config.appendConfigToTinyJSArray(configurations, translator);
 		if(config.getAdditionalConfiguration() != null) {
 			config.getAdditionalConfiguration().appendConfigToTinyJSArray_4(configurations, translator);
 		}
@@ -215,6 +215,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		configurations.append("contextPath: \"").append(Settings.getServerContextPath()).append("\",\n");
 		if(StringHelper.containsNonWhitespace(WebappHelper.getMathJaxCdn())) {
 			configurations.append("mathJaxUrl: \"").append(WebappHelper.getMathJaxCdn()).append("\",\n");
+		}
+		if(StringHelper.containsNonWhitespace(WebappHelper.getMathLiveCdn())) {
+			configurations.append("mathLiveUrl: \"").append(WebappHelper.getMathLiveCdn()).append("\",\n");
 		}
 		if(te.getMaxLength() > 0) {
 			configurations.append("maxSize:").append(te.getMaxLength()).append("\n");
