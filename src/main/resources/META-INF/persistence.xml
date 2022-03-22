@@ -238,6 +238,7 @@
 		<class>org.olat.modules.portfolio.model.AbstractPart</class>
 		<class>org.olat.modules.portfolio.model.MediaImpl</class>
 		<class>org.olat.modules.portfolio.model.HTMLPart</class>
+		<class>org.olat.modules.portfolio.model.MathPart</class>
 		<class>org.olat.modules.portfolio.model.ParagraphPart</class>
 		<class>org.olat.modules.portfolio.model.ContainerPart</class>
 		<class>org.olat.modules.portfolio.model.TitlePart</class>
