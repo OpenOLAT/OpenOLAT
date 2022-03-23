@@ -157,33 +157,57 @@ body.o_dmz {
 	.o_login_form {
 		position: relative;
 		padding: $padding-large-vertical $padding-base-horizontal;
-		.o_login_pwd {
-			position: absolute;
-			bottom: 2em;
-			right: $padding-base-horizontal;
-		}		
 		/* Remove to much color form login screen */
 		.o_form .o_desc {
-		    margin: 0 0 30px 0;
+		    margin: 0 0 20px 0;
 		    padding: 0;
 		    border-left: 0;
 		    background-color: transparent;
 		}
+		/* re-format the standard spaces to match the compact login form */
+		legend {
+			margin-bottom: 10px;
+		}
+		.form-group {
+			margin-bottom: 5px;
+		}
+		/* the login button */
+		.btn-primary {
+			width: 100%;
+			font-size: floor($font-size-base * 1.3);
+			border-radius: $border-radius-base;
+			margin-top: $padding-large-horizontal;
+			padding: $padding-large-vertical $padding-base-horizontal;
+			font-weight: bold;
+			margin-top: 10px;
+			margin-bottom: 5px;
+		}
 	}
-	.o_login_register {
-		display: block;
-		line-height: 2em;
-		font-size: floor($font-size-base * 1.3);
+	.o_login_pw_wrapper {
 		text-align: center;
+	}
+	.o_login_register_wrapper { 
+		text-align: center;
+		padding: 0 $padding-base-horizontal $padding-large-vertical $padding-base-horizontal;
+		font-size: floor($font-size-base * 1.2);
+		line-height: 3em;
+		text-align: center;
+		
+		hr {
+			border-color: lighten($gray-base, 80%);
+			margin-top: 5px; 
+			margin-bottom: 10px;
+		}
+	}	
+	.o_login_register {
 		@include button-variant($o-login-btn-register-color, $o-login-btn-register-bg, $o-login-btn-register-border);
 		border-radius: $border-radius-base;
 		margin-top: $padding-large-horizontal;
 		padding: $padding-large-vertical $padding-base-horizontal;
 		@extend %o_undecorated;
-		small {
-			font-size: $font-size-base;
-		}
-	}
+	}	
+	
+	
 	
 	.o_login_social {
 		position: relative;
