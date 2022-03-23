@@ -2563,6 +2563,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			viewConfig.setToNotifyRequests(toNotifyRequests);
 			viewConfig.setCanClose(true);
 			viewConfig.setCanReactivate(false);
+			viewConfig.setCreateRosterEntry(false);
 			
 			OpenInstantMessageEvent event = new OpenInstantMessageEvent(entry.getOlatResource(), subIdent, getIdentity().getKey().toString(),
 					viewConfig, false, true, RosterFormDisplay.supervised);

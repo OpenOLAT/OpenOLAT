@@ -74,26 +74,34 @@ public class RosterDAO {
 		return entry;
 	}
 
+
 	/**
-	 * The method commit the transaction in case of a select for update
+	 * 
 	 * @param chatResource
+	 * @param resSubPath
+	 * @param channel
 	 * @param identity
 	 * @param fullName
 	 * @param nickName
 	 * @param anonym
 	 * @param vip
+	 * @param persistent
+	 * @param active
+	 * @param createRosterEntry
+	 * @return true if roster entry is available
 	 */
-	public void updateRosterEntry(OLATResourceable chatResource, String resSubPath, String channel,
-			Identity identity, String fullName, String nickName, boolean anonym, boolean vip, boolean persistent, boolean active) {
+	public boolean updateRosterEntry(OLATResourceable chatResource, String resSubPath, String channel,
+			Identity identity, String fullName, String nickName, boolean anonym, boolean vip, boolean persistent, boolean active,
+			boolean createRosterEntry) {
 		RosterEntry entry = load(chatResource, resSubPath, channel, identity);
-		if(entry == null) {
-			createRosterEntry(chatResource, resSubPath, channel, identity, fullName, nickName, anonym, vip, persistent, active);
-		} else {
+		if(entry == null && createRosterEntry) {
+			entry = createRosterEntry(chatResource, resSubPath, channel, identity, fullName, nickName, anonym, vip, persistent, active);
+		} else if(entry != null) {
 			if(entry.isAnonym() == anonym
 				&& ((fullName == null && entry.getFullName() == null) || (fullName != null && fullName.equals(entry.getFullName())))
 				&& ((nickName == null && entry.getNickName() == null) || (nickName != null && nickName.equals(entry.getNickName())))
 				&& entry.isActive() == active) {
-				return;
+				return true;
 			}
 			
 			RosterEntryImpl reloadedEntry = loadForUpdate(entry);
@@ -102,10 +110,11 @@ public class RosterDAO {
 				reloadedEntry.setNickName(nickName);
 				reloadedEntry.setAnonym(anonym);
 				reloadedEntry.setActive(active);
-				dbInstance.getCurrentEntityManager().merge(reloadedEntry);
+				entry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 			}
 			dbInstance.commit();
 		}
+		return entry != null;
 	}
 	
 	public void updateLastSeen(Identity identity, OLATResourceable chatResource, String resSubPath, String channel) {

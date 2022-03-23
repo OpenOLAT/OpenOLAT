@@ -131,6 +131,7 @@ public class ChatController extends BasicController implements GenericEventListe
 	private ChatViewConfig chatViewConfig;
 	private String meetingAvatarUrl;
 
+	private boolean rosterEntry = false;
 	private final boolean persistent;
 	private final Long privateReceiverKey;
 	private final RosterFormDisplay rosterDisplay;
@@ -203,12 +204,13 @@ public class ChatController extends BasicController implements GenericEventListe
 			defaultAnonym = false;
 		}
 		
-		initRoster(ureq, defaultAnonym, offerAnonymMode);
-
 		// register to chat events for this resource
 		if(privateReceiverKey != null) {
-			imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
-					null, defaultAnonym, highlightVip, persistent, this);
+			rosterEntry = imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
+					null, defaultAnonym, highlightVip, persistent, chatViewConfig.isCreateRosterEntry(),
+					this);
+		} else {
+			initRoster(ureq, defaultAnonym, offerAnonymMode);
 		}
 
 		chatPanelCtr = new FloatingResizableDialogController(ureq, getWindowControl(), mainVC,
@@ -228,7 +230,7 @@ public class ChatController extends BasicController implements GenericEventListe
 		initChatMessageField(pn);
 
 		putInitialPanel(chatPanelCtr.getInitialComponent());
-		if(rosterCtrl != null) {
+		if(rosterCtrl != null && chatViewConfig.isCreateRosterEntry()) {
 			doSendPresence(rosterCtrl.getNickName(), rosterCtrl.isUseNickName());
 		}
 	}
@@ -282,8 +284,9 @@ public class ChatController extends BasicController implements GenericEventListe
 			nickName = rosterCtrl.getNickName();
 		}
 
-		imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
-				nickName, defaultAnonym, highlightVip, persistent, this);
+		rosterEntry = imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
+				nickName, defaultAnonym, highlightVip, persistent, chatViewConfig.isCreateRosterEntry(),
+				this);
 		mainVC.contextPut("rosterDisplay", rosterDisplay.name());
 	}
 	
@@ -507,8 +510,8 @@ public class ChatController extends BasicController implements GenericEventListe
 			name = userManager.getUserDisplayName(getIdentity());
 		}
 		
-		imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
-				name, false, highlightVip, persistent, this);
+		rosterEntry = imService.listenChat(getIdentity(), getOlatResourceable(), resSubPath, channel,
+				name, false, highlightVip, persistent, true, this);
 		loadModel(currentDateFrom, currentMaxResults);
 		
 		chatMsgFieldContent.contextPut("chatMessages", messageHistory);
@@ -607,6 +610,12 @@ public class ChatController extends BasicController implements GenericEventListe
 	private InstantMessage doSendMessage(String text) {
 		boolean anonym = isAnonym();
 		String fromName = getFromName();
+		
+		// create the roster entry if it not exists
+		if(!rosterEntry) {
+			imService.addToRoster(getIdentity(), getOlatResourceable(), resSubPath, channel, fromName, anonym, highlightVip);
+			rosterEntry = true;
+		}
 
 		InstantMessage message;
 		if(privateReceiverKey == null) {
@@ -620,6 +629,7 @@ public class ChatController extends BasicController implements GenericEventListe
 				msgType = InstantMessageTypeEnum.request;
 				toNotifyRequests = getRequestToNotifiyTo();
 			}
+			
 			message = imService.sendMessage(getIdentity(), fromName, anonym, text, msgType, getOlatResourceable(), resSubPath, channel, toNotifyRequests);
 		} else {
 			message = imService.sendPrivateMessage(getIdentity(), privateReceiverKey, text, getOlatResourceable());

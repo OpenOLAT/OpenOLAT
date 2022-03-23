@@ -74,13 +74,22 @@ public interface InstantMessagingService {
 	public boolean isOnline(IdentityRef identity);
 	
 	/**
-	 * Enter a chat conversation
-	 * @param identity
-	 * @param chatResource
-	 * @param listener
+	 * Enter a chat conversation.
+	 * 
+	 * @param identity The user
+	 * @param chatResource The resource
+	 * @param resSubPath The sub-path
+	 * @param channel The channel
+	 * @param nickName A nick name
+	 * @param anonym If the user is anonym
+	 * @param asVip If the user is VIP
+	 * @param persistent Persist the entry
+	 * @param createRosterEntry Create the roster entry if it's doesn't exist
+	 * @param listener The listener
+	 * @return true if a roster entry exists
 	 */
-	public void listenChat(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
-			String nickName, boolean anonym, boolean asVip, boolean persistent, GenericEventListener listener);
+	public boolean listenChat(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
+			String nickName, boolean anonym, boolean asVip, boolean persistent, boolean createRosterEntry, GenericEventListener listener);
 	
 	/**
 	 * Go away
@@ -200,7 +209,7 @@ public interface InstantMessagingService {
 	 * @param vip If the user is VIP (owner/coach typically)
 	 */
 	public void addToRoster(Identity identity, OLATResourceable ores, String resSubPath, String channel,
-			boolean anonym, boolean vip);
+			String nickName, boolean anonym, boolean vip);
 	
 	
 	/**

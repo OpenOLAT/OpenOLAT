@@ -410,7 +410,7 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 			event.setName(nickName);
 		}
 		String fullName = userManager.getUserDisplayName(me);
-		rosterDao.updateRosterEntry(chatResource, resSubPath, channel, me, fullName, nickName, anonym, vip, persistent, false);
+		rosterDao.updateRosterEntry(chatResource, resSubPath, channel, me, fullName, nickName, anonym, vip, persistent, false, true);
 		coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, chatResource);
 	}
 	
@@ -603,12 +603,13 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	}
 
 	@Override
-	public void listenChat(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
-			String nickName, boolean anonym, boolean vip, boolean persistent, GenericEventListener listener) {
+	public boolean listenChat(Identity identity, OLATResourceable chatResource, String resSubPath, String channel,
+			String nickName, boolean anonym, boolean vip, boolean persistent, boolean createRosterEntry, GenericEventListener listener) {
 		String fullName = userManager.getUserDisplayName(identity);
-		rosterDao.updateRosterEntry(chatResource, resSubPath, channel, identity,
-				fullName, nickName, anonym, vip, persistent, true);
+		boolean entry = rosterDao.updateRosterEntry(chatResource, resSubPath, channel, identity,
+				fullName, nickName, anonym, vip, persistent, true, createRosterEntry);
 		coordinator.getCoordinator().getEventBus().registerFor(listener, identity, chatResource);
+		return entry;
 	}
 
 	@Override
@@ -677,8 +678,8 @@ public class InstantMessagingServiceImpl implements InstantMessagingService, Del
 	}
 
 	@Override
-	public void addToRoster(Identity identity, OLATResourceable chatResource, String resSubPath, String channel, boolean anonym, boolean vip) {
+	public void addToRoster(Identity identity, OLATResourceable chatResource, String resSubPath, String channel, String nickName, boolean anonym, boolean vip) {
 		String fullName = userManager.getUserDisplayName(identity);
-		rosterDao.updateRosterEntry(chatResource, resSubPath, channel, identity, fullName, null, anonym, vip, true, false);
+		rosterDao.updateRosterEntry(chatResource, resSubPath, channel, identity, fullName, nickName, anonym, vip, true, false, true);
 	}
 }

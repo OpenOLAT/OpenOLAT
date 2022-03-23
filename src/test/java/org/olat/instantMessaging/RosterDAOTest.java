@@ -124,7 +124,7 @@ public class RosterDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load the entry
-		rosterDao.updateRosterEntry(chatResource, null, null,  id, "My updated full name", "My updated nick name", true, false, false, false);
+		rosterDao.updateRosterEntry(chatResource, null, null,  id, "My updated full name", "My updated nick name", true, false, false, false, true);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entry
@@ -152,7 +152,7 @@ public class RosterDAOTest extends OlatTestCase {
 	public void testUpdateRosterEntryCreateNew() {
 		OLATResourceable chatResource = OresHelper.createOLATResourceableInstance("unit-roster-dao-5", System.currentTimeMillis());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("im-roster-7-");
-		rosterDao.updateRosterEntry(chatResource, null, null, id, "My old name", "Truck", true, false, false, false);
+		rosterDao.updateRosterEntry(chatResource, null, null, id, "My old name", "Truck", true, false, false, false, true);
 		dbInstance.commitAndCloseSession();
 		
 		//load the entry

@@ -154,7 +154,8 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	}
 
 	public void add(Identity identity, String channel) {
-		imService.addToRoster(identity, chatResource, resSubPath, channel, false, false);
+		String fullName = userManager.getUserDisplayName(identity);
+		imService.addToRoster(identity, chatResource, resSubPath, channel, fullName, false, false);
 	}
 
 	@Override
@@ -490,7 +491,7 @@ public class SupervisorChatController extends FormBasicController implements Gen
 	
 	private void doJoin(UserRequest ureq, RosterRow row) {
 		String channel = row.getRoster().getChannel();
-		imService.addToRoster(getIdentity(), chatResource, resSubPath, channel, false, true);
+		imService.addToRoster(getIdentity(), chatResource, resSubPath, channel, fromMe, false, true);
 		boolean joinRoster = !row.inRoster(getIdentity());
 		if(joinRoster) {
 			imService.sendStatusMessage(getIdentity(), fromMe, false, InstantMessageTypeEnum.join,
@@ -537,19 +538,19 @@ public class SupervisorChatController extends FormBasicController implements Gen
 		private Link activateLink;
 		private Link closeLink;
 		private Link exportLogLink;
-		private final VelocityContainer mainVC;
-		
 		private final RosterRow row;
 		
 		public ToolsController(UserRequest ureq, WindowControl wControl, RosterRow row) {
 			super(ureq, wControl);
 			this.row = row;
 			
-			mainVC = createVelocityContainer("tools");
-			if(row.getRosterStatus() == RosterStatus.completed) {
+			VelocityContainer mainVC = createVelocityContainer("tools");
+			
+			RosterChannelInfos lastInfos = imService.getRoster(chatResource, resSubPath, row.getChannel(), getIdentity());	
+			if(lastInfos.getRosterStatus() == RosterStatus.completed) {
 				activateLink = LinkFactory.createLink("tool.activate", "activate", getTranslator(), mainVC, this, Link.LINK);
 				mainVC.put("tool.activate", activateLink);
-			} else {
+			} else if(lastInfos.getRosterStatus() == RosterStatus.active) {
 				closeLink = LinkFactory.createLink("tool.complete", "complete", getTranslator(), mainVC, this, Link.LINK);
 				mainVC.put("tool.complete", closeLink);
 			}

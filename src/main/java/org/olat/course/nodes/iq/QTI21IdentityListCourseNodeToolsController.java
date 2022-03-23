@@ -495,7 +495,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private void doOpenChat(UserRequest ureq) {
 		final String channel = assessedIdentity.getKey().toString();
 		final String from = userManager.getUserDisplayName(getIdentity());
-		imService.addToRoster(getIdentity(), courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, false, true);
+		imService.addToRoster(getIdentity(), courseEntry.getOlatResource(), testCourseNode.getIdent(), channel, from, false, true);
 		imService.sendStatusMessage(getIdentity(), from, false, InstantMessageTypeEnum.join,
 				courseEntry.getOlatResource(), testCourseNode.getIdent(), channel);
 		imService.deleteNotifications(courseEntry.getOlatResource(), testCourseNode.getIdent(), channel);

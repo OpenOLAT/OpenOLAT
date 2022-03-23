@@ -153,7 +153,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		main.put("rosterPanel", rosterPanel);
 		
 		//listen to private chat messages
-		imService.listenChat(getIdentity(), getPrivatListenToResourceable(), null, null, null, false, false, false, this);
+		imService.listenChat(getIdentity(), getPrivatListenToResourceable(), null, null, null, false, false, false, true, this);
 		
 		singleUserEventCenter = ureq.getUserSession().getSingleUserEventCenter();
 		singleUserEventCenter.registerFor(this, getIdentity(), InstantMessagingService.ASSESSMENT_EVENT_ORES);

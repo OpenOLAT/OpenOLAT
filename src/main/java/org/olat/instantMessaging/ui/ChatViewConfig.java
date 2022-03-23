@@ -43,6 +43,8 @@ public class ChatViewConfig {
 	private boolean canReactivate = false;
 	private boolean canMeeting = false;
 	private boolean assessmentAllowed = false;
+	
+	private boolean createRosterEntry = true;
 
 	private List<IdentityRef> toNotifyRequests;
 	
@@ -65,6 +67,7 @@ public class ChatViewConfig {
 		copy.canClose = original.canClose;
 		copy.canReactivate = original.canReactivate;
 		copy.canMeeting = original.canMeeting;
+		copy.createRosterEntry = original.createRosterEntry;
 		copy.width = original.width;
 		copy.height = original.height;
 		return copy;
@@ -178,5 +181,13 @@ public class ChatViewConfig {
 
 	public void setHeight(int height) {
 		this.height = height;
+	}
+
+	public boolean isCreateRosterEntry() {
+		return createRosterEntry;
+	}
+
+	public void setCreateRosterEntry(boolean createRosterEntry) {
+		this.createRosterEntry = createRosterEntry;
 	}
 }
