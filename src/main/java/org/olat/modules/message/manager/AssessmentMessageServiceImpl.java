@@ -113,6 +113,12 @@ public class AssessmentMessageServiceImpl implements AssessmentMessageService {
 		if(reloadedMessage != null) {
 			assessmentMessageLogDao.deleteLog(reloadedMessage);
 			assessmentMessageDao.deleteMessage(reloadedMessage);
+			dbInstance.commit();
+			
+			OLATResourceable messageOres = getEventResourceable(reloadedMessage.getEntry(), reloadedMessage.getResSubPath());
+			AssessmentMessageEvent event = new AssessmentMessageEvent(AssessmentMessageEvent.DELETED,
+					message.getKey(), message.getEntry().getKey(), message.getResSubPath(), null);
+			coordinator.getEventBus().fireEventToListenersOf(event, messageOres);
 		}
 	}
 

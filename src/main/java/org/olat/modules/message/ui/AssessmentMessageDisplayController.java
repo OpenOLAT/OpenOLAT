@@ -19,6 +19,7 @@
  */
 package org.olat.modules.message.ui;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -118,6 +119,25 @@ public class AssessmentMessageDisplayController extends FormBasicController impl
 		flc.contextPut("messages", messagesList);
 		flc.setDirty(true);
 	}
+	
+	public void removeMessage(Long messageKey) {
+		List<AssessmentMessageDisplayRow> tmpMessagesRows = new ArrayList<>(messagesList);
+		for(AssessmentMessageDisplayRow row:tmpMessagesRows) {
+			if(row.getMessage().getKey().equals(messageKey)) {
+				messagesList.remove(row);
+			}
+		}
+		
+		List<AssessmentMessageWithReadFlag> tmpMessages = new ArrayList<>(allMessagesList);
+		for(AssessmentMessageWithReadFlag message:tmpMessages) {
+			if(message.getMessage().getKey().equals(messageKey)) {
+				allMessagesList.remove(message);
+			}
+		}
+		
+		flc.contextPut("messages", messagesList);
+		flc.setDirty(true);
+	}
 
 	@Override
 	public void event(Event event) {
@@ -139,6 +159,10 @@ public class AssessmentMessageDisplayController extends FormBasicController impl
 			if(messagesList.size() != messageSize) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+		} else if(AssessmentMessageEvent.DELETED.equals(event.getCommand()) && isInList(event.getMessageKey())) {
+			SyntheticUserRequest ureq = new SyntheticUserRequest(getIdentity(), getLocale());
+			removeMessage(event.getMessageKey());
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 	
